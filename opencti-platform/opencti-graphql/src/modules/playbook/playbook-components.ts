@@ -35,7 +35,7 @@ import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation }
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
-import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
+import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -82,6 +82,7 @@ import { EditOperation } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { generateCreateMessage } from '../../database/generate-message';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -154,6 +155,31 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   schema: async () => PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
+  executor: async ({ bundle }) => {
+    return ({ output_port: 'out', bundle, forceBundleTracking: true });
+  }
+};
+
+export interface ManualTriggerConfiguration {
+  filters: string
+}
+const PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA: JSONSchemaType<ManualTriggerConfiguration> = {
+  type: 'object',
+  properties: {
+    filters: { type: 'string' },
+  },
+  required: [],
+};
+const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfiguration> = {
+  id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
+  name: 'Available for manual enrollment / trigger',
+  description: 'To be used in manual enrollment / trigger',
+  icon: 'manual',
+  is_entry_point: true,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
+  schema: async () => PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
   executor: async ({ bundle }) => {
     return ({ output_port: 'out', bundle, forceBundleTracking: true });
   }
@@ -921,7 +947,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
           notification_id: playbookNode.id,
           instance: stixObject,
           type: 'create', // TODO Improve that with type event follow up
-          message: `\`${playbookNode.name}\``
+          message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
         }))
       };
       notificationsCall.push(storeNotificationEvent(context, notificationEvent));
@@ -1288,6 +1314,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
 
 // @ts-expect-error TODO improve playbook types to avoid this
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
+  [PLAYBOOK_INTERNAL_MANUAL_TRIGGER.id]: PLAYBOOK_INTERNAL_MANUAL_TRIGGER,
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
   [PLAYBOOK_INTERNAL_DATA_CRON.id]: PLAYBOOK_INTERNAL_DATA_CRON,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,

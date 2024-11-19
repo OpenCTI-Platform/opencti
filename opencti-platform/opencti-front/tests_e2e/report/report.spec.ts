@@ -160,19 +160,14 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
   let processingStatus = reportDetailsPage.getTextForHeading('Processing status', 'NEW');
   await expect(processingStatus).toBeVisible();
 
-  const assignees = reportDetailsPage.getTextForHeading('Assignees', 'ADMIN');
-  await expect(assignees).toBeVisible();
-
-  const participants = reportDetailsPage.getTextForHeading('Participants', 'ADMIN');
-  await expect(participants).toBeVisible();
+  await expect(reportDetailsPage.overview.getAssignee('ADMIN')).toBeVisible();
+  await expect(reportDetailsPage.overview.getParticipant('ADMIN')).toBeVisible();
 
   const revoked = reportDetailsPage.getTextForHeading('Revoked', 'NO');
   await expect(revoked).toBeVisible();
 
-  let labelCampaign = reportDetailsPage.getTextForHeading('Labels', 'campaign');
-  await expect(labelCampaign).toBeVisible();
-  let labelReport = reportDetailsPage.getTextForHeading('Labels', 'report');
-  await expect(labelReport).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('campaign')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('report')).toBeVisible();
 
   const creators = reportDetailsPage.getTextForHeading('Creators', 'ADMIN');
   await expect(creators).toBeVisible();
@@ -275,12 +270,9 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
   await reportDetailsPage.openLabelsSelect();
   await reportDetailsPage.labelsSelect.selectOption('covid-19');
   await reportDetailsPage.addLabels();
-  labelCampaign = reportDetailsPage.getTextForHeading('Labels', 'campaign');
-  await expect(labelCampaign).toBeVisible();
-  labelReport = reportDetailsPage.getTextForHeading('Labels', 'report');
-  await expect(labelReport).toBeVisible();
-  const labelCovid = reportDetailsPage.getTextForHeading('Labels', 'covid-19');
-  await expect(labelCovid).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('campaign')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('report')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('covid-19')).toBeVisible();
 
   // ---------
   // endregion
@@ -383,8 +375,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  const labelCampaign = reportDetailsPage.getTextForHeading('Labels', 'threat');
-  await expect(labelCampaign).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('threat')).toBeVisible();
 
   const externalReference = reportDetailsPage.getTextForHeading('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
   await expect(externalReference).toBeVisible();

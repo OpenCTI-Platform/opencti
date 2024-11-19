@@ -1,4 +1,4 @@
-import { isFeatureEnabled, logApp } from '../config/conf';
+import { logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
@@ -10,10 +10,10 @@ import { VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
-import { addCapability, addGroup, addRole, PROTECT_SENSITIVE_CHANGES_FF } from '../domain/grant';
+import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -32,6 +32,7 @@ const KNOWLEDGE_CAPABILITIES = {
   attribute_order: 100,
   dependencies: [
     { name: KNOWLEDGE_COLLABORATION, description: 'Access to collaborative creation', attribute_order: 150 },
+    { name: KNOWLEDGE_FRONTEND_EXPORT, description: 'Can use web interface export functions (PDF, PNG, etc.)', attribute_order: 160 },
     {
       name: KNOWLEDGE_UPDATE,
       description: 'Create / Update knowledge',
@@ -243,10 +244,11 @@ const createBasicRolesAndCapabilities = async (context) => {
   await createCapabilities(context, CAPABILITIES);
 
   // Create Default(s) Role and Group
-  const defaultRole = await addRole(context, SYSTEM_USER, {
+  const defaultRoleInput = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to the default group',
     capabilities: [KNOWLEDGE_CAPABILITY],
+    can_manage_sensitive_config: false,
   });
 
   const defaultGroup = await addGroup(context, SYSTEM_USER, {
@@ -255,23 +257,19 @@ const createBasicRolesAndCapabilities = async (context) => {
     default_assignation: true,
   });
   const defaultRoleRelationInput = {
-    toId: defaultRole.id,
+    toId: defaultRoleInput.id,
     relationship_type: 'has-role',
   };
   await groupAddRelation(context, SYSTEM_USER, defaultGroup.id, defaultRoleRelationInput);
 
   // Create Administrator(s) Role and Group
-  let administratorRoleInput = {
+  const administratorRoleInput = {
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],
+    can_manage_sensitive_config: false,
   };
-  if (isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))) {
-    administratorRoleInput = {
-      ...administratorRoleInput,
-      can_manage_sensitive_config: false
-    };
-  }
+
   const administratorRole = await addRole(context, SYSTEM_USER, administratorRoleInput);
 
   const administratorGroup = await addGroup(context, SYSTEM_USER, {
@@ -286,7 +284,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   await groupAddRelation(context, SYSTEM_USER, administratorGroup.id, administratorRoleRelationInput);
 
   // Create Connector(s) Role and Group
-  let connectorRoleInput = {
+  const connectorRoleInput = {
     name: 'Connector',
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
@@ -304,14 +302,8 @@ const createBasicRolesAndCapabilities = async (context) => {
       'SETTINGS_SETMARKINGS',
       'SETTINGS_SETLABELS',
     ],
+    can_manage_sensitive_config: false
   };
-
-  if (isFeatureEnabled((PROTECT_SENSITIVE_CHANGES_FF))) {
-    connectorRoleInput = {
-      ...connectorRoleInput,
-      can_manage_sensitive_config: false
-    };
-  }
 
   const connectorRole = await addRole(context, SYSTEM_USER, connectorRoleInput);
   // Create default group with default role

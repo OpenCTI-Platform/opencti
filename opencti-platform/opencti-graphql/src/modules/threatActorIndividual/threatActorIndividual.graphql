@@ -20,6 +20,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -94,6 +95,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -102,6 +104,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # ThreatActorIndividual
   name: String!

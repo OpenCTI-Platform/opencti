@@ -1,17 +1,19 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Typography from '@mui/material/Typography';
+import StixCoreObjectOpinionsList, { stixCoreObjectOpinionsListQuery } from '@components/analyses/opinions/StixCoreObjectOpinionsList';
+import StixCoreObjectOpinionsRadarDialog from '@components/analyses/opinions/StixCoreObjectOpinionsRadarDialog';
 import StixCoreObjectOpinionsRadar, { stixCoreObjectOpinionsRadarDistributionQuery } from './StixCoreObjectOpinionsRadar';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import {
   StixCoreObjectOpinionsRadarDistributionQuery,
   StixCoreObjectOpinionsRadarDistributionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
+import { StixCoreObjectOpinionsListQuery, StixCoreObjectOpinionsListQuery$variables } from './__generated__/StixCoreObjectOpinionsListQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreObjectOpinionsOpenVocabQuery } from './__generated__/StixCoreObjectOpinionsOpenVocabQuery.graphql';
-import StixCoreObjectOpinionsDialog from './StixCoreObjectOpinionsRadarDialog';
 
 interface StixCoreObjectOpinionsProps {
   stixCoreObjectId: string
@@ -38,7 +40,9 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   queryVocabulariesRef,
 }) => {
   const { t_i18n } = useFormatter();
-
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const { vocabularies } = usePreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>(
     stixCoreObjectOpinionsOpenVocabQuery,
     queryVocabulariesRef,
@@ -56,59 +60,88 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
       value: idx + 1,
     })) ?? [];
 
-  const variables: StixCoreObjectOpinionsRadarDistributionQuery$variables = {
+  const variablesDistribution: StixCoreObjectOpinionsRadarDistributionQuery$variables = {
     objectId: stixCoreObjectId,
     field: 'opinion',
     operation: 'count',
     limit: 8,
   };
-  const [queryRef, fetchLoadQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDistributionQuery>(
+  const [distributionQueryRef, fetchLoadDistributionQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDistributionQuery>(
     stixCoreObjectOpinionsRadarDistributionQuery,
   );
+  const variablesList: StixCoreObjectOpinionsListQuery$variables = {
+    first: 100,
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['objects'],
+          values: [stixCoreObjectId],
+        },
+      ],
+      filterGroups: [],
+    },
+  };
+  const [listQueryRef, fetchLoadListQuery] = useQueryLoader<StixCoreObjectOpinionsListQuery>(
+    stixCoreObjectOpinionsListQuery,
+  );
   const fetchDistributionQuery = useCallback(
-    () => fetchLoadQuery(variables, { fetchPolicy: 'network-only' }),
+    () => {
+      fetchLoadDistributionQuery(variablesDistribution, { fetchPolicy: 'network-only' });
+      fetchLoadListQuery(variablesList, { fetchPolicy: 'network-only' });
+    },
     [],
   );
   useEffect(
-    () => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }),
+    () => {
+      fetchLoadDistributionQuery(variablesDistribution, { fetchPolicy: 'store-and-network' });
+      fetchLoadListQuery(variablesList, { fetchPolicy: 'store-and-network' });
+    },
     [],
   );
-
-  const height = 260;
-
+  const height = 240;
   return (
-    <div style={{ height, marginTop: 20 }}>
+    <>
       <Typography
         variant={'h3'}
         gutterBottom={true}
-        style={{ float: 'left' }}
+        style={{ display: 'flex', marginTop: 20 }}
       >
-        <div style={{ display: 'flex' }}>
-          {t_i18n('Distribution of opinions')}
-          <StixCoreObjectOpinionsDialog
-            stixCoreObjectId={stixCoreObjectId}
-            opinionOptions={opinionOptions}
-            fetchDistributionQuery={fetchDistributionQuery}
-          />
-        </div>
+        {t_i18n('Distribution of opinions')}
+        <StixCoreObjectOpinionsRadarDialog
+          stixCoreObjectId={stixCoreObjectId}
+          opinionOptions={opinionOptions}
+          fetchDistributionQuery={fetchDistributionQuery}
+        />
       </Typography>
-      <div className="clearfix" />
-      {queryRef && (
-        <React.Suspense
-          fallback={
-            <div style={{ height }}>
-              <Loader variant={LoaderVariant.inElement} />
-            </div>
-          }
-        >
-          <StixCoreObjectOpinionsRadar
-            queryRef={queryRef}
-            height={height}
-            opinionOptions={opinionOptions}
+      {listQueryRef && (
+        <React.Suspense fallback={<span />}>
+          <StixCoreObjectOpinionsList
+            queryRef={listQueryRef}
+            handleClose={handleClose}
+            open={open}
           />
         </React.Suspense>
       )}
-    </div>
+      <div style={{ height, cursor: 'pointer' }}>
+        {distributionQueryRef && (
+          <React.Suspense
+            fallback={
+              <div style={{ height }}>
+                <Loader variant={LoaderVariant.inElement} />
+              </div>
+            }
+          >
+            <StixCoreObjectOpinionsRadar
+              queryRef={distributionQueryRef}
+              height={height}
+              opinionOptions={opinionOptions}
+              handleOpen={handleOpen}
+            />
+          </React.Suspense>
+        )}
+      </div>
+    </>
   );
 };
 

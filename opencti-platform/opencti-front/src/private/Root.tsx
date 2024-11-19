@@ -10,13 +10,13 @@ import { FilterDefinition, UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
-import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import Index from './Index';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
-import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
+import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
+import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -39,6 +39,7 @@ const rootSettingsFragment = graphql`
         }
       }
     }
+    platform_language
     platform_map_tile_server_dark
     platform_map_tile_server_light
     platform_openbas_url
@@ -71,6 +72,38 @@ const rootSettingsFragment = graphql`
     platform_ai_enabled
     platform_ai_type
     platform_ai_has_token
+    platform_trash_enabled
+    platform_protected_sensitive_config {
+      enabled
+      markings {
+        enabled
+        protected_ids
+      }
+      groups {
+        enabled
+        protected_ids
+      }
+      roles {
+        enabled
+        protected_ids
+      }
+      rules {
+        enabled
+        protected_ids
+      }
+      file_indexing {
+        enabled
+        protected_ids
+      }
+      platform_organization {
+        enabled
+        protected_ids
+      }
+      ce_ee_toggle {
+        enabled
+        protected_ids
+      }
+    }
   }
 `;
 
@@ -85,6 +118,10 @@ const meUserFragment = graphql`
     individual_id
     no_creators
     restrict_delete
+    draftContext {
+      id
+      name
+    }
     effective_confidence_level {
       max_confidence
       overrides {

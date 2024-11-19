@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { useTheme } from '@mui/styles';
 import { campaignEditionOverviewFocus, campaignMutationRelationAdd, campaignMutationRelationDelete } from './CampaignEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -49,6 +50,7 @@ const campaignEditionDetailsFocus = graphql`
 const CampaignEditionDetailsComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   const basicShape = {
     first_seen: Yup.date()
@@ -160,7 +162,7 @@ const CampaignEditionDetailsComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={campaign} />
           <Field
             component={DateTimePickerField}

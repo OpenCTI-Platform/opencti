@@ -32,7 +32,7 @@ export interface ModuleHelper {
   isFileIndexManagerEnable: () => boolean;
   isIndicatorDecayManagerEnable: () => boolean;
   isTelemetryManagerEnable: () => boolean;
-  isGarbageCollectionManagerEnable: () => boolean;
+  isTrashEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -41,8 +41,11 @@ const isFeatureEnable = (
   id: string,
 ) => {
   const flags = settings.platform_feature_flags ?? [];
-  const feature = flags.find((f) => f.id === id);
-  return feature === undefined || feature.enable === true;
+  // config can target all FF available with special FF id "*"
+  if (flags.find((f) => f.id === '*' && f.enable)) {
+    return true;
+  }
+  return flags.some((flag) => flag.id === id && flag.enable);
 };
 
 const isModuleEnable = (
@@ -50,8 +53,7 @@ const isModuleEnable = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = modules.find((f) => f.id === id);
-  return module !== undefined && module.enable === true;
+  return modules.some((module) => module.id === id && module.enable);
 };
 
 const isModuleWarning = (
@@ -59,8 +61,7 @@ const isModuleWarning = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = modules.find((f) => f.id === id);
-  return module !== undefined && module.warning === true;
+  return modules.some((module) => module.id === id && module.warning);
 };
 
 const platformModuleHelper = (
@@ -79,7 +80,7 @@ const platformModuleHelper = (
   isFileIndexManagerEnable: () => isModuleEnable(settings, FILE_INDEX_MANAGER),
   isIndicatorDecayManagerEnable: () => isModuleEnable(settings, INDICATOR_DECAY_MANAGER),
   isTelemetryManagerEnable: () => isModuleEnable(settings, TELEMETRY_MANAGER),
-  isGarbageCollectionManagerEnable: () => isModuleEnable(settings, GARBAGE_COLLECTION_MANAGER),
+  isTrashEnable: () => settings.platform_trash_enabled,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 

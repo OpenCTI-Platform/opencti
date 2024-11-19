@@ -152,19 +152,14 @@ test('Incident Response Creation', async ({ page }) => {
   const processingStatus = incidentResponseDetailsPage.getTextForHeading('Processing status', 'DISABLED');
   await expect(processingStatus).toBeVisible();
 
-  const assignees = incidentResponseDetailsPage.getTextForHeading('Assignees', 'ADMIN');
-  await expect(assignees).toBeVisible();
-
-  const participants = incidentResponseDetailsPage.getTextForHeading('Participants', 'ADMIN');
-  await expect(participants).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getAssignee('ADMIN')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getParticipant('ADMIN')).toBeVisible();
 
   const revoked = incidentResponseDetailsPage.getTextForHeading('Revoked', 'NO');
   await expect(revoked).toBeVisible();
 
-  let labelCampaign = incidentResponseDetailsPage.getTextForHeading('Labels', 'campaign');
-  await expect(labelCampaign).toBeVisible();
-  let labelReport = incidentResponseDetailsPage.getTextForHeading('Labels', 'report');
-  await expect(labelReport).toBeVisible();
+  await expect( incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
+  await expect( incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
 
   const creators = incidentResponseDetailsPage.getTextForHeading('Creators', 'ADMIN');
   await expect(creators).toBeVisible();
@@ -264,12 +259,9 @@ test('Incident Response Creation', async ({ page }) => {
   await incidentResponseDetailsPage.openLabelsSelect();
   await incidentResponseDetailsPage.labelsSelect.selectOption('covid-19');
   await incidentResponseDetailsPage.addLabels();
-  labelCampaign = incidentResponseDetailsPage.getTextForHeading('Labels', 'campaign');
-  await expect(labelCampaign).toBeVisible();
-  labelReport = incidentResponseDetailsPage.getTextForHeading('Labels', 'report');
-  await expect(labelReport).toBeVisible();
-  const labelCovid = incidentResponseDetailsPage.getTextForHeading('Labels', 'covid-19');
-  await expect(labelCovid).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('covid-19')).toBeVisible();
 
   // ---------
   // endregion
@@ -372,8 +364,7 @@ test('Incident response live entities creation and relationships', async ({ page
   const author = incidentResponseDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  const labelCampaign = incidentResponseDetailsPage.getTextForHeading('Labels', 'threat');
-  await expect(labelCampaign).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('threat')).toBeVisible();
 
   // ---------
   // endregion

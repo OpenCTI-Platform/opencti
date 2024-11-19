@@ -33,6 +33,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     onSort,
     disableToolBar,
     disableSelectAll,
+    actions,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -59,6 +60,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
   };
 
   const ordonableColumns = useMemo(() => effectiveColumns.filter(({ id }) => !['select', 'navigate'].includes(id)), [columns]);
+  const endWithNavigate = effectiveColumns.at(-1)?.id === 'navigate' || actions;
   return (
     <div
       style={{
@@ -81,6 +83,13 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
         >
           <Checkbox
             checked={selectAll}
+            sx={{
+              marginRight: 1,
+              width: 24,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
             onChange={handleToggleSelectAll}
             disabled={!handleToggleSelectAll || disableSelectAll}
           />
@@ -172,7 +181,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
                 orderAsc={!!orderAsc}
               />
             ))}
-          <span style={{ width: 'calc( 42px + 12px )' }} />
+          {endWithNavigate && (<span style={{ width: 'calc( 42px + 12px )' }} />)}
         </>
       )}
     </div>

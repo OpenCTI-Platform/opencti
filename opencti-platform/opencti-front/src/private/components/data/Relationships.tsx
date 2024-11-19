@@ -36,6 +36,10 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
     created_at
     updated_at
     is_inferred
+    draftVersion{
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         name
@@ -190,6 +194,10 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
           id
           entity_type
           created_at
+          draftVersion{
+            draft_id
+            draft_operation
+          }
           createdBy {
             ... on Identity {
               name

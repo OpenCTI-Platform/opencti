@@ -5,6 +5,7 @@ import { onlyStableStixIds } from '../database/stix';
 import { isInferredIndex } from '../database/utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
+import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const stixObjectOrStixRelationshipResolvers = {
   Query: {
@@ -14,10 +15,12 @@ const stixObjectOrStixRelationshipResolvers = {
   },
   StixObject: {
     is_inferred: (object) => isInferredIndex(object._index),
+    draftVersion: (object) => buildDraftVersion(object),
     x_opencti_stix_ids: (object) => onlyStableStixIds(object.x_opencti_stix_ids || []),
   },
   StixRelationship: {
     is_inferred: (object) => isInferredIndex(object._index),
+    draftVersion: (object) => buildDraftVersion(object),
     x_opencti_stix_ids: (object) => onlyStableStixIds(object.x_opencti_stix_ids || []),
   },
   StixObjectOrStixRelationship: {

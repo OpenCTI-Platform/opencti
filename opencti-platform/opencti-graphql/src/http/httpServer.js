@@ -11,7 +11,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import passport from 'passport/lib';
-import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
+import conf, { basePath, booleanConf, isFeatureEnabled, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
@@ -119,12 +119,18 @@ const createHttpServer = async () => {
         executeContext.req = req;
         executeContext.res = res;
         executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
+        if (isFeatureEnabled('DRAFT_WORKSPACE')) {
+          executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
+        }
         executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
         executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
         try {
           const user = await authenticateUserFromRequest(executeContext, req, res);
           if (user) {
+            if (isFeatureEnabled('DRAFT_WORKSPACE') && !executeContext.draft_context) {
+              executeContext.draft_context = user.draft_context;
+            }
             executeContext.user = userWithOrigin(req, user);
           }
         } catch (error) {

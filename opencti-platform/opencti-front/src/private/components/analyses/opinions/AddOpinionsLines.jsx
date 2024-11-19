@@ -125,7 +125,6 @@ class AddOpinionsLinesContainer extends Component {
           return (
             <ListItem
               key={opinion.id}
-              classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
               onClick={this.toggleOpinion.bind(this, opinion)}

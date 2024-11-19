@@ -23,6 +23,7 @@ import {
   computeAverage,
   extractIdsFromStoreObject,
   fillTimeSeries,
+  INDEX_DRAFT_OBJECTS,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -203,6 +204,8 @@ import {
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
+import { getDraftContext } from '../utils/draftContext';
+import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -339,7 +342,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   return loadedElementMap;
 };
 
-const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+export const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const fileMarkings = [];
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
@@ -562,11 +565,11 @@ export const timeSeriesRelations = async (context, user, args) => {
 };
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data'))) {
+  if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
-  if (field.includes('.' && !field.includes('context_data'))) {
+  if (field.includes('.' && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -598,11 +601,11 @@ export const distributionHistory = async (context, user, types, args) => {
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && !field.endsWith('internal_id')) {
+  if (field.includes('.') && !field.endsWith('internal_id') && !field.includes('opinions_metrics')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
-  if (field.includes('.')) {
+  if (field.includes('.') && !field.includes('opinions_metrics')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -782,7 +785,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         return { [k]: isMultiple ? val : R.head(val) };
       }
       if (!isMultiple) {
-        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val });
+        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val, doc_code: 'ELEMENT_ID_COLLISION' });
       }
       return { [k]: val };
     });
@@ -790,7 +793,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     // In case of missing from / to, fail directly
     const expectedUnresolvedIds = unresolvedIds.filter((u) => u === input.fromId || u === input.toId);
     if (expectedUnresolvedIds.length > 0) {
-      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds, ...extendedErrors({ input }) });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
     // In case of missing reference NOT from or to, we reject twice before accepting
     // TODO this retry must be removed in favor of reworking the workers synchronization
@@ -800,7 +803,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber <= 2) {
-      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, ...extendedErrors({ input }) });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
@@ -827,7 +830,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-        throw MissingReferenceError({ reason: 'User trying to create the data has missing markings' });
+        throw MissingReferenceError({ reason: 'User trying to create the data has missing markings', doc_code: 'ELEMENT_NOT_FOUND' });
       }
     }
     // Check if available created_by is a correct identity
@@ -914,6 +917,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
   const inputData = updatedInputsToData(instance, inputs);
   return {
     _index: instance._index,
+    _id: instance._id,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
     ...inputData,
@@ -1384,7 +1388,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Elastic update with partial instance to prevent data override
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
-    await elUpdateElement(updateAsInstance);
+    await elUpdateElement(context, user, updateAsInstance);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
 };
@@ -1437,7 +1441,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
 
 export const mergeEntities = async (context, user, targetEntityId, sourceEntityIds, opts = {}) => {
   // Pre-checks
-  if (R.includes(targetEntityId, sourceEntityIds)) {
+  if (sourceEntityIds.includes(targetEntityId)) {
     throw FunctionalError('Cannot merge entities, same ID detected in source and destination', {
       targetEntityId,
       sourceEntityIds,
@@ -1460,7 +1464,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     const target = { ...initialInstance };
@@ -1811,7 +1815,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     if (ins) { // If update will really produce a data change
       impactedInputs.push(ins);
       // region Compute the update to push in the stream
-      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data' && !input.key.startsWith('decay_')) {
+      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data' && !input.key.startsWith('decay_') && input.key !== 'opinions_metrics') {
         const previous = getPreviousInstanceValue(input.key, instance);
         if (input.operation === UPDATE_OPERATION_ADD || input.operation === UPDATE_OPERATION_REMOVE) {
           // Check symmetric difference for add and remove
@@ -1971,7 +1975,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities = [];
@@ -2155,7 +2159,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Impacting information
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      await elUpdateElement(updateAsInstance);
+      if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
+        updateAsInstance.draft_change = getDraftChanges(initial, impactedInputs);
+      }
+      await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);
@@ -2240,7 +2247,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
-    throw FunctionalError('Cant find element to update', { id, type });
+    throw FunctionalError(`Cant find element to update ${id} (${type})`, { id, type });
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2739,7 +2746,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
-    const errorData = { from: input.fromId, relationshipType };
+    const errorData = { from: input.fromId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
@@ -2770,7 +2777,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       // In this case we need to revoke the fromId stixId of the relation
       // TODO Handle RELATION_REVOKED_BY special case
     }
-    const errorData = { from: input.fromId, to: input.toId, relationshipType };
+    const errorData = { from: input.fromId, to: input.toId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // It's not possible to create a single ref relationship if one already exists
@@ -2789,7 +2796,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -2964,7 +2971,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
@@ -2991,13 +2998,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        throw UnsupportedError('Restricted entity already exists');
+        throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
       }
       // If inferred entity
       if (fromRule) {
         // Entity reference must be uniq to be upserted
         if (filteredEntities.length > 1) {
-          throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
+          throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds, doc_code: 'MULTIPLE_REFERENCES_FOUND' });
         }
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, R.head(filteredEntities), input, { ...opts, locks: participantIds });
@@ -3139,13 +3146,38 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 // endregion
 
 // region mutation deletion
+
+// We need to add the ability to revert deleted entities when in draft:
+const draftInternalDeleteElement = async (context, user, draftElement) => {
+  let lock;
+  const participantIds = [draftElement.internal_id];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+
+    await elDeleteElements(context, user, [draftElement]);
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+
+  return { element: draftElement, event: {} };
+};
+
 export const internalDeleteElementById = async (context, user, id, opts = {}) => {
   let lock;
   let event;
-  const element = await storeLoadByIdWithRefs(context, user, id);
+  const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, includeDeletedInDraft: true });
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
+
+  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return draftInternalDeleteElement(context, user, element);
+
   // region confidence control
   controlUserConfidenceAgainstElement(user, element);
   // region restrict delete control
@@ -3180,7 +3212,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds);
+    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);
@@ -3223,14 +3255,15 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const isTrashableElement = !isInferredIndex(element._index)
         && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
-      if (!forceDelete) {
-        // do not delete files if logical deletion enabled
+      const isTrashEnabled = conf.get('app:trash:enabled');
+      if (isTrashEnabled && !forceDelete) {
         // mark indexed files as removed to exclude them from search
         await elUpdateRemovedFiles(element, true);
       } else {
-        // if logical deletion is disabled, delete files as usual
+        // if trash is disabled globally or for this element, delete permanently
         await deleteAllObjectFiles(context, user, element);
       }
+
       // Delete all linked elements
       await elDeleteElements(context, user, [element], { forceDelete });
       // Publish event in the stream

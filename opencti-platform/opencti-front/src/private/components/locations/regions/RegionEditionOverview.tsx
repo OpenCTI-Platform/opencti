@@ -232,7 +232,7 @@ RegionEdititionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={region} />
           <Field
             component={TextField}

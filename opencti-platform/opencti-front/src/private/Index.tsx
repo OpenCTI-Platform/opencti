@@ -11,6 +11,7 @@ import Message from '../components/Message';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
+import useHelper from '../utils/hooks/useHelper';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
@@ -32,6 +33,7 @@ const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('./components/data/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
+const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
@@ -42,9 +44,12 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
+  const { isTrashEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const boxSx = {
     flexGrow: 1,
@@ -93,52 +98,60 @@ const Index = ({ settings }: IndexProps) => {
         <Box component="main" sx={boxSx}>
           <Suspense fallback={<Loader />}>
             <Routes>
-              <Route path="/" Component={boundaryWrapper(Dashboard)}/>
+              <Route path="/" element={boundaryWrapper(Dashboard)}/>
 
               {/* Search need to be rework */}
-              <Route path="/search/*" Component={boundaryWrapper(RootSearch)} />
-              <Route path="/id/:id" Component={boundaryWrapper(StixObjectOrStixRelationship)} />
-              <Route path="/search_bulk" Component={boundaryWrapper(SearchBulk)} />
-              <Route path="/analyses/*" Component={boundaryWrapper(RootAnalyses)} />
-              <Route path="/cases/*" Component={boundaryWrapper(RootCases)} />
-              <Route path="/events/*" Component={boundaryWrapper(RootEvents)} />
-              <Route path="/threats/*" Component={boundaryWrapper(RootThreats)} />
-              <Route path="/arsenal/*" Component={boundaryWrapper(RootArsenal)} />
-              <Route path="/techniques/*" Component={boundaryWrapper(RootTechnique)} />
+              <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
+              <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
+              <Route path="/search_bulk" element={boundaryWrapper(SearchBulk)} />
+              <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
+              <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
+              <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
+              <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
+              <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
+              <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
               {/* Need to refactor below */}
               <Route
                 path="/entities/*"
-                Component={boundaryWrapper(RootEntities)}
+                element={boundaryWrapper(RootEntities)}
               />
               <Route
                 path="/locations/*"
-                Component={boundaryWrapper(RootLocation)}
+                element={boundaryWrapper(RootLocation)}
               />
               <Route path="/data/*"
-                Component={boundaryWrapper(RootData)}
+                element={boundaryWrapper(RootData)}
               />
-              <Route path="/trash/*"
-                Component={boundaryWrapper(RootTrash)}
-              />
+              {isTrashEnable() && (
+                <Route
+                  path="/trash/*"
+                  element={boundaryWrapper(RootTrash)}
+                />
+              )}
+              {isDraftFeatureEnabled && (
+                <Route path="/drafts/*"
+                  element={boundaryWrapper(RootDrafts)}
+                />
+              )}
               <Route
                 path="/workspaces/*"
-                Component={boundaryWrapper(RootWorkspaces)}
+                element={boundaryWrapper(RootWorkspaces)}
               />
               <Route
                 path="/settings/*"
-                Component={boundaryWrapper(RootSettings)}
+                element={boundaryWrapper(RootSettings)}
               />
               <Route
                 path="/audits/*"
-                Component={boundaryWrapper(RootAudit)}
+                element={boundaryWrapper(RootAudit)}
               />
               <Route
                 path="/profile/*"
-                Component={boundaryWrapper(RootProfile)}
+                element={boundaryWrapper(RootProfile)}
               />
               <Route
                 path="/observations/*"
-                Component={boundaryWrapper(RootObservations)}
+                element={boundaryWrapper(RootObservations)}
               />
               <Route
                 element={<NoMatch/>}

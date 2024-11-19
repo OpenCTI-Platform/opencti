@@ -13,12 +13,14 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import useHelper from 'src/utils/hooks/useHelper';
+import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseRfiEditionContainer, { caseRfiEditionQuery } from './CaseRfiEditionContainer';
 import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
@@ -46,28 +48,40 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
+  const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
+  const [displayEnroll, setDisplayEnroll] = useState<boolean>(false);
 
   const [commit] = useApiMutation(caseRfiPopoverDeletionMutation);
   const queryRef = useQueryLoading<CaseRfiEditionContainerCaseQuery>(
     caseRfiEditionQuery,
     { id },
   );
-
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(undefined);
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => {
     setDisplayEdit(false);
+  };
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+    handleClose();
+  };
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
+  };
+  const handleOpenEnroll = () => {
+    setDisplayEnroll(true);
+    handleClose();
+  };
+  const handleCloseEnroll = () => {
+    setDisplayEnroll(false);
   };
 
   const {
@@ -108,10 +122,22 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
         </ToggleButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnrichment}>
+              {t_i18n('Enrich')}
+            </MenuItem>
+          </Security>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnroll}>
+              {t_i18n('Enroll in playbook')}
+            </MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={displayDelete}

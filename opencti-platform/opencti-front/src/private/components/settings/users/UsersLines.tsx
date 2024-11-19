@@ -9,11 +9,16 @@ import { DataColumns } from '../../../../components/list_lines';
 const nbOfRowsToLoad = 50;
 
 export const usersLinesSearchQuery = graphql`
-  query UsersLinesSearchQuery($search: String) {
-    users(search: $search) {
+  query UsersLinesSearchQuery(
+      $first: Int, $search: String,
+      $orderBy: UsersOrdering
+      $orderMode: OrderingMode
+  ) {
+    users(first: $first, search: $search, orderBy: $orderBy, orderMode: $orderMode) {
       edges {
         node {
           id
+          entity_type
           name
           user_email
         }

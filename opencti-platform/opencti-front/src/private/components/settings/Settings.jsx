@@ -42,12 +42,12 @@ import Transition from '../../../components/Transition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: '0 0 60px 0',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 20,
     borderRadius: 4,
   },
@@ -206,7 +206,7 @@ const Settings = () => {
   const classes = useStyles();
   const theme = useTheme();
 
-  const { isSensitiveModificationEnabled, isAllowed } = useSensitiveModifications();
+  const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
 
   const { t_i18n } = useFormatter();
@@ -428,11 +428,12 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
-                    <div style={{ float: 'right', marginTop: isSensitiveModificationEnabled ? theme.spacing(-5) : theme.spacing(-4.5), position: 'relative' }}>
+                    <div style={{ float: 'right', marginTop: isSensitive ? theme.spacing(-5) : theme.spacing(-4.5), position: 'relative' }}>
                       {!isEnterpriseEdition ? (
                         <EnterpriseEditionButton disabled={!isAllowed} inLine />
                       ) : (
                         <DangerZoneBlock
+                          type={'ce_ee_toggle'}
                           sx={{
                             root: { border: 'none', padding: 0, margin: 0 },
                             title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
@@ -443,13 +444,15 @@ const Settings = () => {
                               <Button
                                 size="small"
                                 variant="outlined"
-                                color={isSensitiveModificationEnabled ? 'dangerZone' : 'primary'}
+                                color={isSensitive ? 'dangerZone' : 'primary'}
                                 onClick={() => setOpenEEChanges(true)}
                                 disabled={disabled}
-                                style={isSensitiveModificationEnabled ? {
-                                  color: theme.palette.dangerZone.text.primary,
-                                  borderColor: theme.palette.dangerZone.main,
-                                } : undefined}
+                                style={isSensitive
+                                  ? {
+                                    color: isAllowed ? theme.palette.dangerZone.text.primary : theme.palette.dangerZone.text.nullable,
+                                    borderColor: theme.palette.dangerZone.main,
+                                  }
+                                  : undefined}
                               >
                                 {t_i18n('Disable Enterprise Edition')}
                               </Button>

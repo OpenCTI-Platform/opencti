@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -10,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiLineChartQuery } from './__generated__/PublicStixRelationshipsMultiLineChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsMultiLineChartQuery = graphql`
   query PublicStixRelationshipsMultiLineChartQuery(
@@ -33,8 +33,8 @@ const publicStixRelationshipsMultiLineChartQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiLineChartComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsMultiLineChartQuery>
 }
 
@@ -59,8 +59,8 @@ const PublicStixRelationshipsMultiLineChartComponent = ({
             y: entry?.value,
           })),
         }))}
-        interval={parameters.interval}
-        hasLegend={parameters.legend}
+        interval={parameters?.interval}
+        hasLegend={!!parameters?.legend}
         withExport={false}
         readonly={true}
       />
@@ -90,7 +90,7 @@ const PublicStixRelationshipsMultiLineChart = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

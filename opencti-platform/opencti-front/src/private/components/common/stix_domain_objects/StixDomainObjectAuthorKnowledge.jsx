@@ -29,7 +29,7 @@ const styles = (theme) => ({
     position: 'relative',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '20px 20px 0 20px',
     borderRadius: 4,
   },

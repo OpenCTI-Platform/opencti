@@ -14,7 +14,9 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  getIndicesToQuery,
   INDEX_DELETED_OBJECTS,
+  INDEX_DRAFT_OBJECTS,
   INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -24,6 +26,7 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
+  READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
@@ -90,7 +93,7 @@ import {
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
   computeUserMemberAccessIds,
@@ -164,8 +167,11 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
+import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 
 const ELK_ENGINE = 'elk';
@@ -1377,6 +1383,7 @@ const elDataConverter = (esHit, withoutRels = false) => {
   const elementData = esHit._source;
   const data = {
     _index: esHit._index,
+    _id: esHit._id,
     id: elementData.internal_id,
     sort: esHit.sort,
     ...elRebuildRelation(elementData),
@@ -1525,7 +1532,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const computedIndices = computeQueryIndices(indices, types);
+  const queryIndices = computeQueryIndices(indices, types);
+  const computedIndices = getIndicesToQuery(context, user, queryIndices);
   const hits = [];
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
@@ -1561,11 +1569,13 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
+    // Handle draft
+    const draftMust = buildDraftFilter(context, user, opts);
     const body = {
       sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
-          must: mustTerms,
+          must: [...mustTerms, ...draftMust],
           must_not: markingRestrictions.must_not,
         },
       },
@@ -2828,7 +2838,6 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     filterGroups: finalFilterGroups,
   };
 };
-
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
@@ -2921,11 +2930,13 @@ const elQueryBodyBuilder = async (context, user, options) => {
   } else { // If not ordering criteria, order by standard_id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
+  // Handle draft
+  const draftMust = buildDraftFilter(context, user, options);
   // Build query
   const body = {
     query: {
       bool: {
-        must: [...accessMust, ...mustFilters],
+        must: [...accessMust, ...mustFilters, ...draftMust],
         must_not: accessMustNot,
       },
     },
@@ -2957,7 +2968,7 @@ export const elRawCount = async (query) => {
 };
 export const elCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const query = { index: indexName, body };
+  const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
@@ -3004,7 +3015,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
     },
   };
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(context, user, indexName),
     _source_excludes: '*', // Dont need to get anything
     body,
   };
@@ -3037,7 +3048,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     },
   };
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(context, user, indexName),
     body,
   };
   logApp.debug('[SEARCH] aggregationCount', { query });
@@ -3151,7 +3162,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       },
     };
   }
-  const query = { index: indexName, body };
+  const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
@@ -3202,7 +3213,7 @@ export const elAggregationNestedTermsWithFilter = async (context, user, indexNam
     }
   };
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(context, user, indexName),
     body,
   };
   logApp.debug('[SEARCH] elAggregationNestedTermsWithFilter', { query });
@@ -3245,7 +3256,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
     }
   }
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
     _source: false,
     body,
@@ -3282,7 +3293,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     body.size = ES_MAX_PAGINATION;
   }
   const query = {
-    index: indexName,
+    index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
     _source: baseData ? baseFields : true,
     body,
@@ -3474,7 +3485,7 @@ export const elDelete = (indexName, documentId) => {
   });
 };
 
-const getRelatedRelations = async (context, user, targetIds, elements, level, cache) => {
+const getRelatedRelations = async (context, user, targetIds, elements, level, cache, opts = {}) => {
   const fromOrToIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filtersContent = [{
     key: 'connections',
@@ -3497,20 +3508,20 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
     });
     elements.unshift(...preparedElements);
   };
-  const opts = { filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
+  const finalOpts = { ...opts, filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  await elList(context, user, READ_RELATIONSHIPS_INDICES, finalOpts);
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_BULK_OPERATIONS, foundRelations);
-    const concurrentFetch = (gIds) => getRelatedRelations(context, user, gIds, elements, level + 1, cache);
+    const concurrentFetch = (gIds) => getRelatedRelations(context, user, gIds, elements, level + 1, cache, opts);
     await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
-export const getRelationsToRemove = async (context, user, elements) => {
+export const getRelationsToRemove = async (context, user, elements, opts = {}) => {
   const relationsToRemoveMap = new Map();
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap);
+  await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap, opts);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
 export const elDeleteInstances = async (instances) => {
@@ -3521,7 +3532,7 @@ export const elDeleteInstances = async (instances) => {
     for (let i = 0; i < groupsOfInstances.length; i += 1) {
       const instancesBulk = groupsOfInstances[i];
       const bodyDelete = instancesBulk.flatMap((doc) => {
-        return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
+        return [{ delete: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
       });
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
     }
@@ -3532,6 +3543,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
     const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true });
+    const elIdsCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._id })));
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const groupsOfImpacts = R.splitEvery(MAX_BULK_OPERATIONS, impacts);
     for (let i = 0; i < groupsOfImpacts.length; i += 1) {
@@ -3539,6 +3551,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
       const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
         return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
           const updates = [];
+          const elId = elIdsCache[impactId];
           const fromIndex = indexCache[impactId];
           if (isEmptyField(fromIndex)) { // No need to clean up the connections if the target is already deleted.
             return updates;
@@ -3552,7 +3565,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
           }
           const script = { source, params: { cleanupIds, updated_at: now() } };
           updates.push([
-            { update: { _index: fromIndex, _id: impactId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+            { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
           ]);
           return updates;
@@ -3612,7 +3625,12 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
   return elementsImpact;
 };
 
-export const elReindexElements = async (context, user, ids, sourceIndex, destIndex) => {
+export const elReindexElements = async (context, user, ids, sourceIndex, destIndex, opts = {}) => {
+  const { dbId, sourceUpdate = {} } = opts;
+  const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('rel_has-reference'); ctx._source.remove('objectOrganization');";
+  const idReplaceScript = dbId ? `ctx._id="${dbId}";` : '';
+  const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
+  const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
   const reindexParams = {
     body: {
       source: {
@@ -3627,18 +3645,82 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
         index: destIndex
       },
       script: { // remove old fields that are not mapped anymore but can be present in DB
-        source: "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative'); "
-            + "ctx._source.remove('rel_has-reference'); ctx._source.remove('objectOrganization');"
+        params: { changes: sourceUpdate },
+        source,
       },
-    }
+    },
+    refresh: true
   };
   return engine.reindex(reindexParams).catch((err) => {
     throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
   });
 };
 
+export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
+  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+  const draftContext = getDraftContext(context, user);
+  // Relations from and to need to be elements that are also in draft.
+  for (let i = 0; i < elements.length; i += 1) {
+    const e = elements[i];
+    if (e.base_type === BASE_TYPE_RELATION) {
+      const { from, to } = e;
+      const draftFrom = await loadDraftElement(context, user, from);
+      e.from = draftFrom;
+      e.fromId = draftFrom.id;
+      const draftTo = await loadDraftElement(context, user, to);
+      e.to = draftTo;
+      e.toId = draftTo.id;
+    }
+  }
+
+  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, elements, { includeDeletedInDraft: true });
+
+  // 01. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
+  const draftRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
+  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  await elDeleteInstances(draftRelations);
+  liveRelations.map((r) => copyLiveElementToDraft(context, user, r, DRAFT_OPERATION_DELETE_LINKED));
+  // 02/ Remove all elements: delete instances created in draft, mark as deletion for others
+  const draftElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
+  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  await elDeleteInstances(draftElements);
+  liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
+  // 03/ Remove draft_ids from live relations and live elements of draft reverts
+  const allDraftIds = [...draftRelations, ...draftElements].map((d) => d.internal_id);
+  const revertDraftIdSource = `
+    if (ctx._source.containsKey('draft_ids')) { 
+      for (int i = 0; i < ctx._source.draft_ids.length; ++i){
+        if(ctx._source.draft_ids[i] == '${draftContext}'){
+          ctx._source.draft_ids.remove(i);
+        }
+      }
+    }  
+  `;
+  if (allDraftIds.length > 0) {
+    await elRawUpdateByQuery({
+      index: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source: revertDraftIdSource },
+        query: {
+          terms: {
+            'id.keyword': allDraftIds
+          }
+        },
+      },
+    }).catch((err) => {
+      throw DatabaseError('Revert live entities indexing fail', { cause: err });
+    });
+  }
+};
+
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
   if (elements.length === 0) return;
+  if (getDraftContext(context, user)) {
+    await elMarkElementsAsDraftDelete(context, user, elements);
+    return;
+  }
   const { forceDelete = true } = opts;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
   // User must have access to all relations to remove to be able to delete
@@ -3657,7 +3739,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   // CURRENT LIMITATION: we only handle forceDelete when elDeleteElements is called with 1 element. This is because getRelationsToRemove returns all related relations without
   // linking the relations to a specific element, which we would need for the deleted_elements of deleteOperations. The difficulty in changing getRelationsToRemove is handling the
   // case where a relationship is linked to two elements given in elDeleteElements: how do we decide which element to link the relationship to?
-  if (!forceDelete && elements.length === 1) {
+  if (conf.get('app:trash:enabled') && !forceDelete && elements.length === 1) {
     // map of index => ids to save
     const idsByIndex = new Map();
     entitiesToDelete.forEach((element) => {
@@ -3795,24 +3877,110 @@ const prepareIndexingElement = async (thing) => {
   const entity = prepareEntity(thing);
   return prepareElementForIndexing(entity);
 };
-const prepareIndexing = async (elements) => {
+const prepareIndexing = async (context, user, elements) => {
+  const draftContext = getDraftContext(context, user);
   const preparedElements = [];
   for (let i = 0; i < elements.length; i += 1) {
     const element = elements[i];
+    if (draftContext) {
+      // If we are in a draft, relations from and to need to be elements that are also in draft.
+      if (element.base_type === BASE_TYPE_RELATION) {
+        const { from, to } = element;
+        if (!elements.some((e) => e.internal_id === from.internal_id)) {
+          const draftFrom = await loadDraftElement(context, user, from);
+          element.from = draftFrom;
+          element.fromId = draftFrom.id;
+        } else {
+          element.from._index = INDEX_DRAFT_OBJECTS;
+        }
+        if (!elements.some((e) => e.internal_id === to.internal_id)) {
+          const draftTo = await loadDraftElement(context, user, to);
+          element.to = draftTo;
+          element.toId = draftTo.id;
+        } else {
+          element.to._index = INDEX_DRAFT_OBJECTS;
+        }
+      }
+      element._index = INDEX_DRAFT_OBJECTS;
+      element.draft_ids = [draftContext];
+      element.draft_change = { draft_operation: DRAFT_OPERATION_CREATE };
+    }
     const prepared = await prepareIndexingElement(element);
     preparedElements.push(prepared);
   }
   return preparedElements;
 };
+export const elListExistingDraftWorkspaces = async (context, user) => {
+  const listArgs = {
+    connectionFormat: false,
+    filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_DRAFT_WORKSPACE] }], filterGroups: [] }
+  };
+  return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
+};
+// Creates a copy of a live element in the draft index with the current draft context
+const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE) => {
+  const draftContext = getDraftContext(context, user);
+  if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
+
+  const updatedElement = structuredClone(element);
+  const newId = generateInternalId();
+  const reindexOpts = { dbId: newId, sourceUpdate: { draft_ids: [draftContext], draft_change: { draft_operation: draftOperation } } };
+  await elReindexElements(context, user, [element.internal_id], element._index, INDEX_DRAFT_OBJECTS, reindexOpts);
+  updatedElement._id = newId;
+  updatedElement._index = INDEX_DRAFT_OBJECTS;
+
+  // Add draftId to live element draftsIds
+  const allDrafts = await elListExistingDraftWorkspaces(context, SYSTEM_USER);
+  const allDraftIds = allDrafts.map((d) => d.internal_id);
+  const addDraftIdScript = {
+    script: {
+      source: `
+        if (ctx._source.containsKey('draft_ids')) { 
+          for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
+            if (!params.allDraftIds.contains(ctx._source['draft_ids'][i])) {
+              ctx._source['draft_ids'].remove(i);
+            }
+          }
+          ctx._source['draft_ids'].add('${draftContext}'); 
+        } 
+        else 
+          {ctx._source.draft_ids = ['${draftContext}']}
+      `,
+      params: { allDraftIds }
+    }
+  };
+  await elUpdate(element._index, element.internal_id, addDraftIdScript);
+
+  return updatedElement;
+};
+// Gets the version of the element in current draft context if it exists
+// If it doesn't exist, creates a copy of live element to draft context then returns it
+const loadDraftElement = async (context, user, element) => {
+  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
+
+  const loadedElement = await elLoadById(context, user, element.internal_id);
+  if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
+
+  return await copyLiveElementToDraft(context, user, element);
+};
+const validateElementsToIndex = (context, user, elements) => {
+  const draftContext = getDraftContext(context, user);
+  // If any element to index is not supported in draft, raise exception
+  if (draftContext && elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot index unsupported element in draft context');
+};
 export const elIndexElements = async (context, user, indexingType, elements) => {
+  validateElementsToIndex(context, user, elements);
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
-    const transformedElements = await prepareIndexing(elements);
+    const transformedElements = await prepareIndexing(context, user, elements);
     // 01. Bulk the indexing of row elements
-    const body = transformedElements.flatMap((doc) => [
-      { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.pipe(R.dissoc('_index'))(doc),
-    ]);
+    const body = transformedElements.flatMap((elementDoc) => {
+      const doc = elementDoc;
+      return [
+        { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        R.pipe(R.dissoc('_index'))(doc),
+      ];
+    });
     if (body.length > 0) {
       meterManager.directBulk(body.length, { type: indexingType });
       await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
@@ -3882,7 +4050,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
     const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       R.dissoc('_index', doc.data),
     ]);
     if (bodyUpdate.length > 0) {
@@ -3974,14 +4142,24 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
     throw DatabaseError('Error updating connections', { cause: err, documentId, body: documentBody });
   });
 };
-export const elUpdateElement = async (instance) => {
-  const esData = prepareElementForIndexing(instance);
+
+const getInstanceToUpdate = async (context, user, instance) => {
+  const draftContext = getDraftContext(context, user);
+  // We still want to be able to update internal entities in draft, but we don't want to copy them to draft index
+  if (draftContext && isDraftSupportedEntity(instance)) {
+    return await loadDraftElement(context, user, instance);
+  }
+  return instance;
+};
+export const elUpdateElement = async (context, user, instance) => {
+  const instanceToUse = await getInstanceToUpdate(context, user, instance);
+  const esData = prepareElementForIndexing(instanceToUse);
   validateDataBeforeIndexing(esData);
-  const dataToReplace = R.dissoc('representative', esData);
-  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
+  const dataToReplace = R.pipe(R.dissoc('representative'), R.dissoc('_id'))(esData);
+  const replacePromise = elReplace(instanceToUse._index, instanceToUse._id ?? instanceToUse.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
-  if (esData.name && isStixObject(instance.entity_type)) {
+  if (esData.name && isStixObject(instanceToUse.entity_type)) {
     connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: extractEntityRepresentativeName(esData) });
   }
   return Promise.all([replacePromise, connectionPromise]);

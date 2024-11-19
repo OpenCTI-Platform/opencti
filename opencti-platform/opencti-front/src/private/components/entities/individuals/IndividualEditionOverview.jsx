@@ -185,7 +185,7 @@ const IndividualEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={individual} />
           <Field
             component={TextField}

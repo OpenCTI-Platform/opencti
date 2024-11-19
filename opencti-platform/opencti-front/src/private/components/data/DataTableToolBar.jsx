@@ -59,6 +59,11 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { map, pathOr, pipe } from 'ramda';
+import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
+import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
+import { vocabularyQuery } from '../common/form/OpenVocabField';
+import { usersLinesSearchQuery } from '../settings/users/UsersLines';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
@@ -70,12 +75,14 @@ import { identitySearchIdentitiesSearchQuery } from '../common/identities/Identi
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
 import {
+  BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
   INVESTIGATION_INUPDATE_INDELETE,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
@@ -83,7 +90,12 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import {
+  findFilterFromKey,
+  getEntityTypeTwoFirstLevelsFilterValues,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+  serializeFilterGroupForBackend,
+} from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -188,14 +200,22 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
-const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
 const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
+const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
+const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
+const typesWithAssignee = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report'];
+const typesWithParticipant = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report'];
+const typesWithIncidentResponseType = ['Case-Incident'];
+const typesWithRfiTypes = ['Case-Rfi'];
+const typesWithRftTypes = ['Case-Rft'];
+
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
-const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace'];
+const notShareableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -294,6 +314,7 @@ class DataTableToolBar extends Component {
       markingDefinitions: [],
       labels: [],
       identities: [],
+      users: [],
       containers: [],
       organizations: [],
       statuses: [],
@@ -302,7 +323,17 @@ class DataTableToolBar extends Component {
       enrichSelected: [],
       organizationInput: '',
       shareOrganizations: [],
+      selectedCategory: '',
+      vocabularies: {
+        case_severity_ov: [],
+        case_priority_ov: [],
+        incident_response_types_ov: [],
+        request_for_information_types_ov: [],
+        request_for_takedown_types_ov: [],
+      },
       navOpen: localStorage.getItem('navOpen') === 'true',
+      assignees: [],
+      participants: [],
     };
   }
 
@@ -430,8 +461,27 @@ class DataTableToolBar extends Component {
 
   handleLaunchUpdate() {
     const { actionsInputs } = this.state;
-    const actions = R.map(
-      (n) => ({
+    const categoryAttributeMapping = {
+      case_severity_ov: 'severity',
+      case_priority_ov: 'priority',
+      incident_response_types_ov: 'response_types',
+      request_for_information_types_ov: 'information_types',
+      request_for_takedown_types_ov: 'takedown_types',
+    };
+
+    const actions = actionsInputs.map((n) => {
+      if (categoryAttributeMapping[n.field]) {
+        return ({
+          type: n.type,
+          context: {
+            field: categoryAttributeMapping[n.field],
+            type: n.fieldType,
+            values: n.values.map((value) => value.label),
+            options: n.options,
+          },
+        });
+      }
+      return {
         type: n.type,
         context: {
           field: n.field,
@@ -439,9 +489,8 @@ class DataTableToolBar extends Component {
           values: n.values,
           options: n.options,
         },
-      }),
-      actionsInputs,
-    );
+      };
+    });
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
@@ -451,6 +500,7 @@ class DataTableToolBar extends Component {
   handleChangeActionInput(i, key, event) {
     const { value } = event.target;
     const { actionsInputs } = this.state;
+
     actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
     if (key === 'field') {
       const values = [];
@@ -460,6 +510,8 @@ class DataTableToolBar extends Component {
         || value === 'object-label'
         || value === 'created-by'
         || value === 'external-reference'
+        || value === 'object-assignee'
+        || value === 'object-participant'
       ) {
         actionsInputs[i] = R.assoc(
           'fieldType',
@@ -717,43 +769,38 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, selectedTypes, entityTypeFilterValues) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
     const { t } = this.props;
     const { actionsInputs } = this.state;
-    const disabled = R.isNil(actionsInputs[i]?.type) || R.isEmpty(actionsInputs[i]?.type);
-    const typesHaveScore = selectedTypes.every((selectedType) => typesWithScore.includes(selectedType))
-      && entityTypeFilterValues.every((filterType) => typesWithScore.includes(filterType));
-    const typesHaveStatus = selectedTypes.length === 1 // the proposed statuses values depends on the entity type, so we should have only one type selected
-      && !typesWithoutStatus.includes(selectedTypes[0]);
-    let options = [];
-    if (actionsInputs[i]?.type === 'ADD') {
-      options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('External references'), value: 'external-reference' },
-        { label: t('In containers'), value: 'container-object' },
-      ];
-    } else if (actionsInputs[i]?.type === 'REPLACE') {
-      options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
+    const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
+
+    const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
+      && entityTypeFilterValues.every((type) => typesList.includes(type));
+
+    const options = [
+      { label: t('Marking definitions'), value: 'object-marking' },
+      { label: t('Labels'), value: 'object-label' },
+      checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
+      checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
+      actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
+      ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
+      (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
+      ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
         { label: t('Confidence'), value: 'confidence' },
         { label: t('Description'), value: 'description' },
-      ];
-      if (typesHaveScore) {
-        options.push({ label: t('Score'), value: 'x_opencti_score' });
-      }
-      if (typesHaveStatus) {
-        options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
-      }
-    } else if (actionsInputs[i]?.type === 'REMOVE') {
-      options = [
-        { label: t('Marking definitions'), value: 'object-marking' },
-        { label: t('Labels'), value: 'object-label' },
-        { label: t('External references'), value: 'external-reference' },
-      ];
-    }
+        checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
+        checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
+        checkTypes(typesWithIncidentResponseType) && { label: t('Incident response type'), value: 'incident_response_types_ov' },
+        checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
+        checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
+        checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
+        selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && { label: t('Status'), value: 'x_opencti_workflow_id' },
+      ] : []),
+    ].filter(Boolean);
+
+    const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
+
     return (
       <Select
         variant="standard"
@@ -761,14 +808,13 @@ class DataTableToolBar extends Component {
         value={actionsInputs[i]?.type}
         onChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
-        {options.length > 0 ? (
-          R.map(
+        {sortedOptions.length > 0 ? (
+          sortedOptions.map(
             (n) => (
               <MenuItem key={n.value} value={n.value}>
                 {n.label}
               </MenuItem>
             ),
-            options,
           )
         ) : (
           <MenuItem value="none">{t('None')}</MenuItem>
@@ -978,11 +1024,128 @@ class DataTableToolBar extends Component {
       });
   }
 
+  searchVocabulary(i, category, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(vocabularyQuery, {
+      category,
+      orderBy: 'name',
+      orderMode: 'asc',
+    })
+      .toPromise()
+      .then((data) => {
+        const vocabularies = (data.vocabularies.edges ?? []).map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+        }));
+        this.setState((prevState) => ({
+          vocabularies: R.assoc(
+            category,
+            R.union(prevState.vocabularies[category] || [], vocabularies),
+            prevState.vocabularies,
+          ),
+        }));
+      });
+  }
+
+  searchParticipants(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
+    this.setState({ actionsInputs });
+    fetchQuery(objectParticipantFieldMembersSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+      entityTypes: ['User'],
+      first: 10,
+    })
+      .toPromise()
+      .then((data) => {
+        const participants = (data.members?.edges ?? []).map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+          type: n.node.entity_type,
+        })).sort((a, b) => a.label.localeCompare(b.label));
+        this.setState({
+          participants: R.union(this.state.participants, participants),
+        });
+      });
+  }
+
+  searchAssignees(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
+    this.setState({ actionsInputs });
+    fetchQuery(objectAssigneeFieldMembersSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+      entityTypes: ['User'],
+      first: 10,
+    })
+      .toPromise()
+      .then((data) => {
+        const assignees = pipe(
+          pathOr([], ['members', 'edges']),
+          map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+            entity: n.node,
+          })),
+        )(data);
+        this.setState({
+          assignees: R.union(this.state.assignees, assignees),
+        });
+      });
+  }
+
+  searchUsers(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(usersLinesSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+      first: 100,
+    })
+      .toPromise()
+      .then((data) => {
+        const users = (data?.users?.edges ?? [])
+          .map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.type.localeCompare(b.type));
+        this.setState({
+          users: R.union(this.state.users, users),
+        });
+      });
+  }
+
   renderValuesOptions(i, selectedTypes) {
     const { t, classes } = this.props;
     const { actionsInputs } = this.state;
-    const disabled = R.isNil(actionsInputs[i]?.field) || R.isEmpty(actionsInputs[i]?.field);
-    switch (actionsInputs[i]?.field) {
+    const selectedField = actionsInputs[i]?.field;
+    const disabled = selectedField == null || selectedField === '';
+
+    switch (selectedField) {
       case 'container-object':
         return (
           <>
@@ -1238,6 +1401,149 @@ class DataTableToolBar extends Component {
             )}
           />
         );
+      case 'object-assignee':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchAssignees.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.assignees}
+            onInputChange={this.searchAssignees.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type}/>
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'object-participant':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchParticipants.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.participants}
+            onInputChange={this.searchParticipants.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type}/>
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'case_severity_ov':
+      case 'case_priority_ov':
+      case 'incident_response_types_ov':
+      case 'request_for_information_types_ov':
+      case 'request_for_takedown_types_ov':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values[0] || null}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Select Value')}
+                fullWidth={true}
+                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.vocabularies[selectedField] || []}
+            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'creator_id':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchUsers.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.users}
+            onInputChange={this.searchUsers.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type} />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
       case 'x_opencti_score':
       case 'confidence':
         return (
@@ -1277,10 +1583,9 @@ class DataTableToolBar extends Component {
     this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
   }
 
-  getSelectedTypes() {
-    const entityTypeFilterValues = findFilterFromKey(this.props.filters?.filters ?? [], 'entity_type', 'eq')?.values ?? [];
+  getSelectedTypes(observableTypes, domainObjectTypes) {
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
     const selectedElementsList = Object.values(this.props.selectedElements || {});
-
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
@@ -1310,66 +1615,6 @@ class DataTableToolBar extends Component {
       taskScope,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
-    const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes();
-
-    // Some filter types are high level, we do not want to check them as "Different"
-    // We might need to add some other types here before refactoring the toolbar
-    const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
-    const preventMerge = selectedTypes.at(0) === 'Vocabulary'
-      && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
-    // region update
-    const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notUpdatableTypes.includes(entityTypeFilterValues[0]));
-    // endregion
-    // region rules
-    const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notScannableTypes.includes(entityTypeFilterValues[0]));
-    // endregion
-    // region enrich
-    const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable'].includes(st))).length === 1;
-    const isAllEnrichSelect = selectAll
-      && entityTypeFilterValues.length === 1
-      && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-      && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
-    const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-      || (!isManualEnrichSelect && !isAllEnrichSelect);
-    // endregion
-    // region orgaSharing
-    const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
-    // endregion
-    const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
-    const enableMerge = !typesAreNotMergable && !mergeDisable;
-    const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
-      || (entityTypeFilterValues.length === 1
-        && notScannableTypes.includes(entityTypeFilterValues[0]));
-    const titleCopy = this.titleCopy();
-    let keptElement = null;
-    let newAliases = [];
-    if (!typesAreNotMergable && !typesAreDifferent) {
-      keptElement = keptEntityId
-        ? selectedElementsList.find((o) => o.id === keptEntityId)
-        : selectedElementsList[0];
-      if (keptElement) {
-        const names = selectedElementsList
-          .map((el) => el.name)
-          .filter((name) => name !== keptElement.name);
-        const aliases = keptElement.aliases !== null
-          ? selectedElementsList
-            .map((el) => el.aliases)
-            .flat()
-            .filter((alias) => alias !== null && alias !== undefined)
-          : selectedElementsList
-            .map((el) => el.x_opencti_aliases)
-            .flat()
-            .filter((alias) => alias !== null && alias !== undefined);
-
-        newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
-      }
-    }
 
     let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;
     if (taskScope === 'DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_EXDELETE;
@@ -1378,7 +1623,71 @@ class DataTableToolBar extends Component {
 
     return (
       <UserContext.Consumer>
-        {({ schema, settings }) => {
+        {({ schema, settings, me }) => {
+          const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
+          const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
+          const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
+          const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+          // Some filter types are high level, we do not want to check them as "Different"
+          // We might need to add some other types here before refactoring the toolbar
+          const typesAreDifferent = (selectedTypes.filter((type) => !['Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type))).length > 1;
+          const preventMerge = selectedTypes.at(0) === 'Vocabulary'
+              && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+          // region update
+          const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+          // endregion
+          // region rules
+          const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+          // endregion
+          // region enrich
+          const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
+          const isAllEnrichSelect = selectAll
+              && entityTypeFilterValues.length === 1
+              && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+              && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+          const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+              || (!isManualEnrichSelect && !isAllEnrichSelect);
+          // endregion
+          // region orgaSharing
+          const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
+          // endregion
+          // region merge
+          const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
+          const enableMerge = !typesAreNotMergable && !mergeDisable;
+          const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
+              || (entityTypeFilterValues.length === 1
+                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+          const titleCopy = this.titleCopy();
+          let keptElement = null;
+          let newAliases = [];
+          if (!typesAreNotMergable && !typesAreDifferent) {
+            keptElement = keptEntityId
+              ? selectedElementsList.find((o) => o.id === keptEntityId)
+              : selectedElementsList[0];
+            if (keptElement) {
+              const names = selectedElementsList
+                .map((el) => el.name)
+                .filter((name) => name !== keptElement.name);
+              const aliases = keptElement.aliases !== null
+                ? selectedElementsList
+                  .map((el) => el.aliases)
+                  .flat()
+                  .filter((alias) => alias !== null && alias !== undefined)
+                : selectedElementsList
+                  .map((el) => el.x_opencti_aliases)
+                  .flat()
+                  .filter((alias) => alias !== null && alias !== undefined);
+
+              newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
+            }
+          }
+          // endregion
           // region EE
           const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
           // endregion
@@ -1409,14 +1718,14 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 12 }} data-testid='opencti-toolbar'>
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid='opencti-toolbar'>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
                     color="inherit"
                     variant="subtitle1"
                   >
-                    {`${numberOfSelectedElements} ${t('selected')}`}{' '}
+                    <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
                   </Typography>
                   <IconButton
                     aria-label="clear"
@@ -1906,7 +2215,7 @@ class DataTableToolBar extends Component {
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues)}
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
                           <Grid item xs={6}>

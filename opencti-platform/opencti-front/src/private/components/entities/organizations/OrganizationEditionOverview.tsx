@@ -7,7 +7,6 @@ import { OrganizationEditionContainer_organization$data } from '@components/enti
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
-import makeStyles from '@mui/styles/makeStyles';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -24,14 +23,6 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  formContainer: {
-    margin: '20px 0 20px 0',
-  },
-}));
 
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
@@ -111,7 +102,6 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   context,
   handleClose,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const basicShape = {
@@ -210,7 +200,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
         isValid,
         dirty,
       }) => (
-        <Form className={classes.formContainer}>
+        <Form>
           <AlertConfidenceForEntity entity={organization} />
           <Field
             component={TextField}

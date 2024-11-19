@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -10,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsHorizontalBarsQuery.graphql';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsHorizontalBarsQuery = graphql`
   query PublicStixRelationshipsHorizontalBarsQuery(
@@ -71,8 +71,8 @@ const publicStixRelationshipsHorizontalBarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsHorizontalBarsComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsHorizontalBarsQuery>
 }
 
@@ -96,7 +96,7 @@ const PublicStixRelationshipsHorizontalBarsComponent = ({
     return (
       <WidgetHorizontalBars
         series={series}
-        distributed={parameters.distributed}
+        distributed={!!parameters?.distributed}
         withExport={false}
         readonly={true}
         redirectionUtils={redirectionUtils}
@@ -127,7 +127,7 @@ const PublicStixRelationshipsHorizontalBars = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
+      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
       variant="inLine"
     >
       {queryRef ? (

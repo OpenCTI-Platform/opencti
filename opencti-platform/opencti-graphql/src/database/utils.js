@@ -13,6 +13,7 @@ import conf from '../config/conf';
 import { now } from '../utils/format';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { getDraftContext } from '../utils/draftContext';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -65,7 +66,10 @@ export const INDEX_INFERRED_ENTITIES = `${ES_INDEX_PREFIX}_inferred_entities`;
 export const READ_INDEX_INFERRED_ENTITIES = `${INDEX_INFERRED_ENTITIES}*`;
 export const INDEX_INFERRED_RELATIONSHIPS = `${ES_INDEX_PREFIX}_inferred_relationships`;
 export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS}*`;
+export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
+export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
+export const isDraftIndex = (index) => index.startsWith(INDEX_DRAFT_OBJECTS);
 
 // indices that we only use as read only, not created anymore on new platforms
 export const DEPRECATED_INDICES = [
@@ -83,6 +87,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_STIX_CORE_RELATIONSHIPS,
   INDEX_INFERRED_ENTITIES,
   INDEX_INFERRED_RELATIONSHIPS,
+  INDEX_DRAFT_OBJECTS,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
 ];
@@ -146,6 +151,11 @@ export const READ_RELATIONSHIPS_INDICES = [
 
 export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = (field) => !isNotEmptyField(field);
+
+export const getIndicesToQuery = (context, user, index) => {
+  const draftContext = getDraftContext(context, user);
+  return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
+};
 
 const getMonday = (d) => {
   const day = d.getDay();

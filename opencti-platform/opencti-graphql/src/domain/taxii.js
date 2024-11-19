@@ -2,7 +2,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES, READ_STIX_DATA_WITH_INFERRED } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
@@ -14,6 +14,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -135,7 +136,18 @@ export const collectionQuery = async (context, user, collection, args) => {
 export const restCollectionStix = async (context, user, collection, args) => {
   const { edges, pageInfo } = await collectionQuery(context, user, collection, args);
   const edgeIds = edges.map((e) => e.node.internal_id);
-  const instances = await stixLoadByIds(context, user, edgeIds);
+  let instances = await stixLoadByIds(context, user, edgeIds);
+  if (collection.score_to_confidence === true) {
+    instances = instances.map((i) => {
+      if (i.type === 'indicator') {
+        const score = i.x_opencti_score ?? i.extensions[STIX_EXT_OCTI]?.score;
+        if (isNotEmptyField(score)) {
+          return { ...i, confidence: score };
+        }
+      }
+      return i;
+    });
+  }
   return {
     more: pageInfo.hasNextPage,
     next: R.last(edges)?.cursor || '',

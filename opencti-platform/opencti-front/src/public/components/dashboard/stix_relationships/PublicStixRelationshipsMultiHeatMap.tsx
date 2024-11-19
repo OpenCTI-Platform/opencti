@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -10,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiHeatMapQuery } from './__generated__/PublicStixRelationshipsMultiHeatMapQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsMultiHeatMapQuery = graphql`
   query PublicStixRelationshipsMultiHeatMapQuery(
@@ -33,8 +33,8 @@ const publicStixRelationshipsMultiHeatMapQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiHeatMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsMultiHeatMapQuery>
 }
 
@@ -67,7 +67,7 @@ const PublicStixRelationshipsMultiHeatMapComponent = ({
         })).sort((a, b) => b.name.localeCompare(a.name))}
         minValue={minValue}
         maxValue={maxValue}
-        isStacked={parameters.stacked}
+        isStacked={!!parameters?.stacked}
         withExport={false}
         readonly={true}
       />
@@ -97,7 +97,7 @@ const PublicStixRelationshipsMultiHeatMap = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

@@ -15,22 +15,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FilterGroup, PlaybookAddInput, PlaybookAddLinkInput, PlaybookAddNodeInput, PositionInput } from '../../generated/graphql';
+import {
+  type EditInput,
+  type FilterGroup,
+  FilterMode,
+  type PlaybookAddInput,
+  type PlaybookAddLinkInput,
+  type PlaybookAddNodeInput,
+  type PositionInput
+} from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { SYSTEM_USER } from '../../utils/access';
-import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
-import { checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
+import { getEntitiesListFromCache } from '../../database/cache';
+import { SYSTEM_USER } from '../../utils/access';
+import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -42,6 +51,33 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 
 export const findAllPlaybooks = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
   return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
+};
+
+export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUser, id: string) => {
+  const stixEntity = await stixLoadById(context, user, id);
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  const filteredPlaybooks = [];
+  for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
+    const playbook = playbooks[playbookIndex];
+    if (playbook.playbook_definition) {
+      const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+      const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
+      if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
+        const { filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+        const jsonFilters = filters ? JSON.parse(filters) : null;
+        const newFilters = {
+          mode: FilterMode.And,
+          filters: findFiltersFromKey(jsonFilters?.filters ?? [], 'entity_type'),
+          filterGroups: []
+        };
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, newFilters);
+        if (isMatch) {
+          filteredPlaybooks.push(playbook);
+        }
+      }
+    }
+  }
+  return filteredPlaybooks;
 };
 
 export const availableComponents = () => {
@@ -105,11 +141,11 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
-    throw UnsupportedError('Playbook related component not found');
+    throw UnsupportedError('Playbook related component not found', { input });
   }
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
-    throw UnsupportedError('Playbook multiple entrypoint is not supported');
+    throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
   }
   const nodeId = uuidv4();
   definition.nodes.push({

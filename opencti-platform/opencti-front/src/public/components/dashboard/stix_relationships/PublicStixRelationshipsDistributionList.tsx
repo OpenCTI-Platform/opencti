@@ -7,9 +7,9 @@ import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsDistributionListQuery } from './__generated__/PublicStixRelationshipsDistributionListQuery.graphql';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsDistributionListQuery = graphql`
   query PublicStixRelationshipsDistributionListQuery(
@@ -54,7 +54,7 @@ const publicStixRelationshipsDistributionListQuery = graphql`
 `;
 
 interface PublicStixRelationshipsDistributionListComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsDistributionListQuery>
 }
 
@@ -108,7 +108,7 @@ const PublicStixRelationshipsDistributionList = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

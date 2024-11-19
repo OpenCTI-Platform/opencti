@@ -33,7 +33,7 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,6 +103,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
+
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
@@ -204,7 +205,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             name="name"

@@ -30,6 +30,7 @@ export interface ElementContextData {
   creator_ids?: string[]
   granted_refs_ids?: string[]
   object_marking_refs_ids?: string[]
+  object_marking_refs_definitions?: string[]
   created_by_ref_id?: string
   workspace_type?: string
   labels_ids?: string[]

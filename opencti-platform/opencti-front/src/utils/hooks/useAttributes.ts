@@ -3,6 +3,8 @@ import useAuth from './useAuth';
 
 const ignoredAttributes = [
   'id',
+  'draft_ids',
+  'draft_change',
   'parent_types',
   'base_type',
   'internal_id',
@@ -23,6 +25,7 @@ const ignoredAttributes = [
   'importFiles',
   'startup_info',
   'creator_id',
+  'opinions_metrics',
 ];
 
 const workbenchAttributes = [
@@ -46,6 +49,7 @@ const ignoredAttributesInFeeds = [
   'spec_version',
   'extensions',
   'importFiles',
+  'opinions_metrics',
 ];
 
 const ignoredAttributesInDashboards = [
@@ -66,6 +70,7 @@ const ignoredAttributesInDashboards = [
   'published',
   'content',
   'content_mapping',
+  'opinions_metrics',
 ];
 
 // TODO check the attribute type from backend

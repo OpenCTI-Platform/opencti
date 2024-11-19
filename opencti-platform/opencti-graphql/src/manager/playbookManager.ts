@@ -21,7 +21,7 @@ import moment from 'moment';
 import type { Moment } from 'moment/moment';
 import { createStreamProcessor, lockResource, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-common';
@@ -306,6 +306,57 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
   } catch (e) {
     logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
   }
+};
+
+export const executePlaybookOnEntity = async (context: AuthContext, id: string, entityId: string) => {
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  let playbook = null;
+  const filteredPlaybooks = playbooks.filter((n) => n.id === id);
+  if (filteredPlaybooks.length > 0) {
+    playbook = filteredPlaybooks.at(0);
+  } else {
+    throw FunctionalError('Playbook does not exist', { id });
+  }
+  // Execute only of definition is available
+  if (playbook && playbook.playbook_definition) {
+    const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+    const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
+    if (instance) {
+      const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+      const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId);
+      if (data) {
+        try {
+          const eventId = `${utcDate().toDate().getTime()}-0`;
+          const nextStep = { component: connector, instance };
+          const bundle: StixBundle = {
+            id: uuidv4(),
+            spec_version: STIX_SPEC_VERSION,
+            type: 'bundle',
+            objects: [data]
+          };
+          playbookExecutor({
+            eventId,
+            // Basic
+            executionId: uuidv4(),
+            playbookId: playbook.id,
+            dataInstanceId: data.id,
+            definition: def,
+            // Steps
+            previousStep: null,
+            nextStep,
+            // Data
+            previousStepBundle: null,
+            bundle,
+          }).catch((reason) => logApp.error(reason, { id: entityId, manager: 'PLAYBOOK_MANAGER' }));
+          return true;
+        } catch (e) {
+          logApp.error(e, { id: entityId, manager: 'PLAYBOOK_MANAGER' });
+          return false;
+        }
+      }
+    }
+  }
+  return false;
 };
 
 const initPlaybookManager = () => {

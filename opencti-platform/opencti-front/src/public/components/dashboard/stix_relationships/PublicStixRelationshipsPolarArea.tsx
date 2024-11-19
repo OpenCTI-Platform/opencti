@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,6 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsPolarAreaQuery } from './__generated__/PublicStixRelationshipsPolarAreaQuery.graphql';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsPolarAreaQuery = graphql`
   query PublicStixRelationshipsPolarAreaQuery(
@@ -70,7 +70,7 @@ const publicStixRelationshipsPolarAreaQuery = graphql`
 `;
 
 interface PublicStixRelationshipsPolarAreaComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsPolarAreaQuery>
 }
 
@@ -121,7 +121,7 @@ const PublicStixRelationshipsPolarArea = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

@@ -35,6 +35,7 @@ interface TaxiiCollectionCreationForm {
   include_inferences?: boolean
   name: string
   taxii_public?: boolean
+  score_to_confidence?: boolean
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -71,6 +72,7 @@ const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.obje
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
   include_inferences: Yup.bool().nullable(),
+  score_to_confidence: Yup.bool().nullable(),
 });
 
 const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
@@ -137,13 +139,14 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             authorized_members: [],
             taxii_public: false,
             include_inferences: true,
+            score_to_confidence: false,
           }}
           validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
           onReset={onClose}
         >
           {({ values, setFieldValue, submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"
@@ -167,7 +170,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 style={{ position: 'relative' }}
               >
                 <AlertTitle>
-                  {t_i18n('Make this taxii collection public and available to anyone')}
+                  {t_i18n('Make this TAXII collection public and available to anyone')}
                 </AlertTitle>
                 <FormControlLabel
                   control={<Switch />}
@@ -194,6 +197,16 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   name="include_inferences"
                   onChange={(_, checked) => setFieldValue('include_inferences', checked)}
                   label={t_i18n('Include inferences')}
+                />
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+                <FormControlLabel
+                  control={<Switch />}
+                  style={{ marginLeft: 1 }}
+                  checked={values.score_to_confidence}
+                  name="score_to_confidence"
+                  onChange={(_, checked) => setFieldValue('score_to_confidence', checked)}
+                  label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}
                 />
               </Box>
               <Box sx={{ paddingTop: 4,

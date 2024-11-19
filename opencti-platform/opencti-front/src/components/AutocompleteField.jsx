@@ -10,6 +10,12 @@ import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
 
 const AutocompleteField = (props) => {
+  // Separate props used only for this component
+  // and props to be passed to MUI Autocomplete.
+  const {
+    optionLength = 40,
+    ...otherProps
+  } = props;
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
@@ -24,7 +30,7 @@ const AutocompleteField = (props) => {
     getOptionLabel,
     onInternalChange,
     endAdornment,
-  } = props;
+  } = otherProps;
   const [, meta] = useField(name);
   const { t_i18n } = useFormatter();
   const internalOnChange = React.useCallback(
@@ -48,7 +54,7 @@ const AutocompleteField = (props) => {
   const internalOnBlur = React.useCallback(() => {
     setFieldTouched(name, true);
   }, [setFieldTouched]);
-  const fieldProps = fieldToAutocomplete(props);
+  const fieldProps = fieldToAutocomplete(otherProps);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
   // Properly handle no selected option
@@ -66,8 +72,8 @@ const AutocompleteField = (props) => {
         handleHomeEndKeys={true}
         getOptionLabel={
           getOptionLabel || ((option) => (typeof option === 'object'
-            ? truncate(option.label, 40)
-            : truncate(option, 40)))
+            ? truncate(option.label, optionLength)
+            : truncate(option, optionLength)))
         }
         noOptionsText={noOptionsText}
         {...fieldProps}
@@ -85,7 +91,7 @@ const AutocompleteField = (props) => {
             required={required}
             fullWidth={true}
             error={!isNil(meta.error)}
-            helperText={meta.error || textfieldprops.helperText}
+            helperText={meta.error ?? textfieldprops?.helperText ?? ''}
           />
         )}
         onChange={internalOnChange}

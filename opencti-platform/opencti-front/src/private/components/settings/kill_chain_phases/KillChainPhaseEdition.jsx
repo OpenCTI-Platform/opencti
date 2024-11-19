@@ -113,7 +113,7 @@ class KillChainPhaseEditionContainer extends Component {
           validationSchema={killChainPhaseValidation(t)}
         >
           {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"

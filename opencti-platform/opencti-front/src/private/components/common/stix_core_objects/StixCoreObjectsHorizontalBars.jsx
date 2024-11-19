@@ -130,7 +130,7 @@ const StixCoreObjectsHorizontalBars = ({
             && props.stixCoreObjectsDistribution
             && props.stixCoreObjectsDistribution.length > 0
           ) {
-            const { series, redirectionUtils } = buildWidgetProps(props.stixCoreObjectsDistribution, selection, 'Number of relationships');
+            const { series, redirectionUtils } = buildWidgetProps(props.stixCoreObjectsDistribution, selection, 'Number of entities');
             return (
               <WidgetHorizontalBars
                 series={series}

@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsTimelineQuery } from './__generated__/PublicStixRelationshipsTimelineQuery.graphql';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixRelationshipsTimelineQuery = graphql`
@@ -951,7 +951,7 @@ const publicStixRelationshipsTimelineQuery = graphql`
 `;
 
 interface PublicStixRelationshipsTimelineComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsTimelineQuery>
 }
 
@@ -1012,7 +1012,7 @@ const PublicStixRelationshipsTimeline = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

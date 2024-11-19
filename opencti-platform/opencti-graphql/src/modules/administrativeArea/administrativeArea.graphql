@@ -10,6 +10,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
+    draftVersion: DraftVersion
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
@@ -83,6 +84,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # StixDomainObject
     revoked: Boolean!
     confidence: Int
@@ -91,6 +93,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: [Assignee!]
+    objectParticipant: [Participant!]
     avatar: OpenCtiFile
     # Location
     name: String!

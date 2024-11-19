@@ -19,6 +19,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontFamily: 'Consolas, monaco, monospace',
     fontSize: 12,
   },
+  containerWrap: {
+    position: 'relative',
+    paddingRight: 18,
+  },
   container: {
     position: 'relative',
     paddingRight: 18,
@@ -29,6 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     position: 'absolute',
     right: 0,
+    top: 0,
     cursor: 'pointer',
     '&:hover': {
       color: theme.palette.primary.main,
@@ -47,30 +52,36 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface ItemCopyProps {
   content: string;
-  variant?: string;
+  value?: string;
+  variant?: 'default' | 'inLine' | 'wrap';
   limit?: number;
 }
 
 const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   content,
-  variant,
+  value,
+  variant = 'default',
   limit = null,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const textToCopy = value || content;
+
+  const classNameVariant = () => {
+    if (variant === 'inLine') return classes.containerInline;
+    if (variant === 'wrap') return classes.containerWrap;
+    return classes.container;
+  };
+
   return (
-    <div
-      className={
-        variant === 'inLine' ? classes.containerInline : classes.container
-      }
-    >
+    <div className={classNameVariant()}>
       {limit ? truncate(content, limit) : content}
       <span
         className={variant === 'inLine' ? classes.iconInline : classes.icon}
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
-          copyToClipboard(t_i18n, content);
+          copyToClipboard(t_i18n, textToCopy);
         }}
       >
         <ContentCopyOutlined

@@ -30,11 +30,12 @@ import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
+import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -50,7 +51,7 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
   },
@@ -126,7 +127,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const { t_i18n } = useFormatter();
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const { isAllowed } = useSensitiveModifications(group.standard_id);
+  const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
 
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
@@ -159,7 +160,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         {group.name}
       </Typography>
       <div className={classes.popover}>
-        <GroupPopover groupId={group.id} disabled={!isAllowed} />
+        <GroupPopover groupId={group.id} disabled={!isAllowed && isSensitive} />
       </div>
       <div className="clearfix" />
       <Grid
@@ -466,7 +467,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       </Grid>
       <GroupEdition
         groupId={group.id}
-        disabled={!isAllowed}
+        disabled={!isAllowed && isSensitive}
       />
     </div>
   );

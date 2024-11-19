@@ -70,7 +70,7 @@ class UserEditionPasswordComponent extends Component {
         onSubmit={this.onSubmit.bind(this)}
       >
         {({ submitForm, isSubmitting }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form style={{ marginTop: this.props.theme.spacing(2) }}>
             <PasswordPolicies style={{ marginBottom: 20 }} />
             <Field
               component={TextField}

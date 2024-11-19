@@ -6,16 +6,11 @@ import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
-import htmlToPdfmake from 'html-to-pdfmake';
-import pdfMake from 'pdfmake';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
 import { interval } from 'rxjs';
-import { compiler } from 'markdown-to-jsx';
-import { renderToString } from 'react-dom/server';
-import { Buffer } from 'buffer';
 import StixCoreObjectMappableContent from './StixCoreObjectMappableContent';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import inject18n from '../../../../components/i18n';
@@ -29,14 +24,15 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
+import { htmlToPdf } from '../../../../utils/htmlToPdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
   },
   documentContainer: {
     margin: '5px 0 0 0',
@@ -95,8 +91,7 @@ const styles = () => ({
   editorContainer: {
     height: '100%',
     minHeight: '100%',
-    margin: '20px 0 0 0',
-    padding: '0 0 15px 0',
+    padding: `0 0 ${theme.spacing(2)} 0`,
     borderRadius: 4,
     position: 'relative',
   },
@@ -165,6 +160,13 @@ const getFiles = (stixCoreObject) => {
       ].includes(n.metaData.mimetype);
     }),
   );
+};
+
+const getContentsFromTemplate = (stixCoreObject) => {
+  const contentsFromTemplate = stixCoreObject.contentsFromTemplate?.edges
+    ?.filter((n) => !!n?.node)
+    .map((n) => n.node) ?? [];
+  return sortByLastModified(contentsFromTemplate);
 };
 
 const getExportFiles = (stixCoreObject) => {
@@ -240,6 +242,7 @@ class StixCoreObjectContentComponent extends Component {
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
+      ...getContentsFromTemplate(stixCoreObject),
     ];
     this.setState({ isLoading: true }, () => {
       const { currentFileId } = this.state;
@@ -278,6 +281,7 @@ class StixCoreObjectContentComponent extends Component {
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
+      ...getContentsFromTemplate(stixCoreObject),
     ];
     const currentFile = files.find((f) => f.id === currentFileId);
 
@@ -366,7 +370,7 @@ class StixCoreObjectContentComponent extends Component {
   prepareSaveFile() {
     const { stixCoreObject } = this.props;
     const { currentFileId } = this.state;
-    const files = getFiles(stixCoreObject);
+    const files = [...getFiles(stixCoreObject), ...getContentsFromTemplate(stixCoreObject)];
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const fragment = currentFileId.split('/');
@@ -392,7 +396,13 @@ class StixCoreObjectContentComponent extends Component {
       mutation: isExternalReference
         ? stixCoreObjectContentUploadExternalReferenceMutation
         : stixCoreObjectContentFilesUploadStixCoreObjectMutation,
-      variables: { file, id: currentId, noTriggerImport: true, fileMarkings },
+      variables: {
+        file,
+        id: currentId,
+        noTriggerImport: true,
+        fileMarkings,
+        fromTemplate: !!currentFile.id.startsWith('fromTemplate/'),
+      },
       onCompleted: () => this.setState({ changed: false }),
     });
   }
@@ -413,108 +423,16 @@ class StixCoreObjectContentComponent extends Component {
     this.setState({ markdownSelectedTab: tab });
   }
 
-  async handleDownloadPdf() {
-    const { currentFileId, currentContent } = this.state;
+  async handleDownloadMappableContentInPdf() {
+    const { currentContent } = this.state;
     const { stixCoreObject } = this.props;
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
-    let htmlData = currentContent
+    const htmlData = currentContent
       .replaceAll('id="undefined" ', '')
       .replaceAll(regex, '');
-    if (currentFileId && currentFileId.endsWith('.md')) {
-      htmlData = renderToString(compiler(htmlData, { wrapper: null }));
-    }
-    const ret = htmlToPdfmake(htmlData, {
-      imagesByReference: true,
-      ignoreStyles: ['font-family'],
-    });
-    Promise.all(
-      R.pipe(
-        R.toPairs,
-        R.map((n) => {
-          if (n[1].includes('data:')) {
-            const split = n[1].split(',');
-            const mime = split[0].split(';')[0].split(':')[1];
-            const data = split[1];
-            return {
-              ref: n[0],
-              mime,
-              data,
-            };
-          }
-          return Axios.get(n[1], { responseType: 'arraybuffer' })
-            .then((response) => {
-              if (
-                ['image/jpeg', 'image/png'].includes(
-                  response.headers['content-type'],
-                )
-              ) {
-                return {
-                  ref: n[0],
-                  mime: response.headers['content-type'],
-                  data: Buffer.from(response.data, 'binary').toString('base64'),
-                };
-              }
-              return null;
-            })
-            .catch(() => null);
-        }),
-        R.filter((n) => n !== null),
-      )(ret.images),
-    ).then((result) => {
-      const imagesIndex = R.indexBy(R.prop('ref'), result);
-      const images = R.pipe(
-        R.toPairs,
-        R.map((n) => (imagesIndex[n[0]]
-          ? [
-            n[0],
-            `data:${imagesIndex[n[0]].mime};base64,${
-              imagesIndex[n[0]].data
-            }`,
-          ]
-          : [
-            n[0],
-            'data:image/png;base64,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',
-          ])),
-        R.fromPairs,
-      )(ret.images);
-
-      let pdfElementMaxWidth = 0;
-      // We need to get tables width inside ckeditor in order to know which mode we should save the PDF
-      const elementCkEditor = document.querySelector(
-        '.ck-content.ck-editor__editable.ck-editor__editable_inline',
-      );
-      if (elementCkEditor) {
-        Array.from(
-          elementCkEditor.querySelectorAll('figure.table') ?? [],
-        ).forEach((c) => {
-          if (c.offsetWidth > pdfElementMaxWidth) {
-            pdfElementMaxWidth = c.offsetWidth;
-          }
-        });
-      }
-      const maxContentForPortraitMode = 680;
-      const pageOrientation = pdfElementMaxWidth > maxContentForPortraitMode
-        ? 'landscape'
-        : 'portrait';
-      const pdfData = {
-        content: ret.content,
-        images,
-        pageOrientation,
-      };
-      const { protocol, hostname, port } = window.location;
-      const url = `${protocol}//${hostname}:${port || ''}`;
-      const fonts = {
-        Roboto: {
-          normal: `${url}${APP_BASE_PATH}/static/ext/Roboto-Regular.ttf`,
-          bold: `${url}${APP_BASE_PATH}/static/ext/Roboto-Bold.ttf`,
-          italics: `${url}${APP_BASE_PATH}/static/ext/Roboto-Italic.ttf`,
-          bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
-        },
-      };
-      const fragment = (currentFileId ?? stixCoreObject.name).split('/');
-      const currentName = R.last(fragment);
-      pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
-    });
+    const fragment = stixCoreObject.name.split('/');
+    const currentName = R.last(fragment);
+    htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
   }
 
   render() {
@@ -531,12 +449,11 @@ class StixCoreObjectContentComponent extends Component {
     } = this.state;
     const files = getFiles(stixCoreObject);
     const exportFiles = getExportFiles(stixCoreObject);
+    const contentsFromTemplate = getContentsFromTemplate(stixCoreObject);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
-    const currentGetUrl = currentFileId
-      && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
     const currentFile = currentFileId
-      && [...files, ...exportFiles].find((n) => n.id === currentFileId);
+      && [...files, ...exportFiles, ...contentsFromTemplate].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
     const height = innerHeight - 300;
@@ -545,15 +462,18 @@ class StixCoreObjectContentComponent extends Component {
       <div className={classes.container} data-testid='sco-content-page'>
         <StixCoreObjectContentFiles
           stixCoreObjectId={stixCoreObject.id}
+          stixCoreObjectName={stixCoreObject.name}
           content={isContentCompatible ? stixCoreObject.contentField ?? '' : null}
           contentSelected={contentSelected}
           files={files}
           exportFiles={exportFiles}
           handleSelectContent={this.handleSelectContent.bind(this)}
           handleSelectFile={this.handleSelectFile.bind(this)}
-          handleSelectExportFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
+          contentsFromTemplate={contentsFromTemplate}
+          hasOutcomesTemplate={isContentCompatible}
+          templates={stixCoreObject.templates}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
@@ -562,7 +482,7 @@ class StixCoreObjectContentComponent extends Component {
             {contentSelected && (
               <StixCoreObjectMappableContent
                 containerData={stixCoreObject}
-                handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+                handleDownloadPdf={this.handleDownloadMappableContentInPdf.bind(this)}
                 askAi={true}
                 editionMode={true}
               />
@@ -570,8 +490,6 @@ class StixCoreObjectContentComponent extends Component {
             {currentFileType === 'text/plain' && (
               <>
                 <StixCoreObjectContentBar
-                  directDownload={currentGetUrl}
-                  handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   navOpen={navOpen}
                   handleSave={this.saveFile.bind(this)}
                   changed={changed}
@@ -607,8 +525,6 @@ class StixCoreObjectContentComponent extends Component {
             {(currentFileType === 'text/html') && (
               <>
                 <StixCoreObjectContentBar
-                  directDownload={currentGetUrl}
-                  handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   handleSave={() => (this.saveFile())}
                   changed={changed}
                   navOpen={navOpen}
@@ -641,8 +557,6 @@ class StixCoreObjectContentComponent extends Component {
             {currentFileType === 'text/markdown' && (
               <>
                 <StixCoreObjectContentBar
-                  directDownload={currentGetUrl}
-                  handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   navOpen={navOpen}
                   handleSave={this.saveFile.bind(this)}
                   changed={changed}
@@ -691,7 +605,6 @@ class StixCoreObjectContentComponent extends Component {
                 <StixCoreObjectContentBar
                   handleZoomIn={this.handleZoomIn.bind(this)}
                   handleZoomOut={this.handleZoomOut.bind(this)}
-                  directDownload={currentGetUrl}
                   currentZoom={this.state.pdfViewerZoom}
                   navOpen={navOpen}
                 />
@@ -854,6 +767,47 @@ const StixCoreObjectContent = createRefetchContainer(
               }
               ...FileLine_file
             }
+          }
+        }
+        ... on Container {
+          contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
+            edges {
+              node {
+                id
+                name
+                uploadStatus
+                lastModified
+                lastModifiedSinceMin
+                objectMarking {
+                  id
+                  representative {
+                    main
+                  }
+                }
+                  metaData {
+                    mimetype
+                    list_filters
+                    file_markings
+                    messages {
+                      timestamp
+                      message
+                    }
+                    errors {
+                      timestamp
+                      message
+                    }
+                  }
+                  metaData {
+                    mimetype
+                  }
+              }
+            }
+          }
+          templates {
+            id
+            name
+            content
+            template_widgets_ids
           }
         }
         externalReferences {

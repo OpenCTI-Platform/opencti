@@ -5,6 +5,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
@@ -19,6 +20,7 @@ const ReportPopover = ({ id }) => {
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayEnrichment, setDisplayEnrichment] = useState(false);
+  const [displayEnroll, setDisplayEnroll] = useState(false);
 
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
@@ -44,6 +46,13 @@ const ReportPopover = ({ id }) => {
   const handleCloseEnrichment = () => {
     setDisplayEnrichment(false);
   };
+  const handleOpenEnroll = () => {
+    setDisplayEnroll(true);
+    handleClose();
+  };
+  const handleCloseEnroll = () => {
+    setDisplayEnroll(false);
+  };
   return isFABReplaced
     ? (<></>)
     : (
@@ -61,11 +70,15 @@ const ReportPopover = ({ id }) => {
           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
             <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </Security>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
         <ReportPopoverDeletion
           reportId={id}
           displayDelete={displayDelete}

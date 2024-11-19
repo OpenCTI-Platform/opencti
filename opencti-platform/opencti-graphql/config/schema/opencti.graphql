@@ -415,6 +415,12 @@ input StixCoreObjectsNumberParameters {
   filters: FilterGroup
   search: String
 }
+type OpinionsMetrics {
+  mean: Float
+  min: Int
+  max: Int
+  total: Int
+}
 
 ### INTERFACES & TYPES
 
@@ -501,6 +507,7 @@ type TaxiiCollection {
   description: String
   filters: String
   include_inferences: Boolean
+  score_to_confidence: Boolean
   taxii_public: Boolean
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
@@ -520,6 +527,7 @@ input TaxiiCollectionAddInput {
   taxii_public: Boolean
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
+  score_to_confidence: Boolean
 }
 enum TaxiiCollectionOrdering {
   name
@@ -852,6 +860,71 @@ type FileConnection {
   edges: [FileEdge!]!
 }
 
+enum WidgetPerspective {
+  entities
+  relationships
+  audits
+}
+type WidgetColumn {
+  attribute: String!
+  displayStyle: String
+  label: String
+  variableName: String
+}
+type WidgetDataSelection {
+  label: String
+  number: Int
+  attribute: String
+  date_attribute: String
+  centerLat: Float
+  centerLng: Float
+  zoom: Float
+  isTo: Boolean
+  perspective: WidgetPerspective
+  filters: String
+  dynamicFrom: String
+  dynamicTo: String
+  columns: [WidgetColumn!]
+  instance_id: String
+}
+type WidgetParameters {
+  title: String
+  description: String
+  interval: String
+  stacked: Boolean
+  legend: Boolean
+  distributed: Boolean
+}
+type WidgetLayout {
+  w: Float
+  h: Float
+  x: Float
+  y: Float
+  i: Float
+  moved: Boolean
+  static: Boolean
+}
+type Widget {
+  id: ID!
+  type: String!
+  perspective: WidgetPerspective
+  dataSelection: [WidgetDataSelection!]!
+  parameters: WidgetParameters
+  layout: WidgetLayout
+}
+type Template {
+  id: ID!
+  name: String!
+  description: String
+  filters: String
+  content: String!
+  template_widgets_ids: [String!]!
+}
+type TemplateAndUtils {
+  template: Template!,
+  template_widgets: [Widget!]!,
+}
+
 type IndexedFile {
   id: ID!
   name: String!
@@ -1168,7 +1241,21 @@ type PlatformCriticalAlert {
   type: PlatformCriticalAlertType!
   details: PlatformCriticalAlertDetails
 }
+type PlatformProtectedSubConfig {
+  enabled: Boolean!
+  protected_ids: [String!]!
+}
 
+type PlatformProtectedSensitiveConfig {
+  enabled: Boolean!
+  markings: PlatformProtectedSubConfig!
+  groups: PlatformProtectedSubConfig!
+  roles: PlatformProtectedSubConfig!
+  rules: PlatformProtectedSubConfig!
+  ce_ee_toggle: PlatformProtectedSubConfig!
+  file_indexing: PlatformProtectedSubConfig!
+  platform_organization: PlatformProtectedSubConfig!
+}
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1226,6 +1313,8 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
   platform_critical_alerts: [PlatformCriticalAlert!]!
+  platform_trash_enabled: Boolean!
+  platform_protected_sensitive_config: PlatformProtectedSensitiveConfig! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   enterprise_edition: DateTime
@@ -1543,6 +1632,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   can_manage_sensitive_config: Boolean
+  draftContext: DraftWorkspace
 }
 type SessionDetail {
   id: ID!
@@ -1862,6 +1952,17 @@ type Inference {
   attributes: [InferenceAttribute]
 }
 
+enum DraftOperation {
+  create
+  update
+  delete
+}
+
+type DraftVersion {
+  draft_id: String!
+  draft_operation: DraftOperation!
+}
+
 interface StixObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1874,6 +1975,7 @@ interface StixObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # Technical
   creators: [Creator!]
   # inferences
@@ -1909,6 +2011,7 @@ interface StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixMetaObject
   created: DateTime
   modified: DateTime
@@ -1946,6 +2049,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixMetaObject
@@ -2014,6 +2118,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixMetaObject
@@ -2071,6 +2176,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixMetaObject
@@ -2154,6 +2260,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixMetaObject
@@ -2208,6 +2315,10 @@ enum StixCoreObjectsOrdering {
   observable_value
   subject
   value
+  opinions_metrics_mean
+  opinions_metrics_min
+  opinions_metrics_max
+  opinions_metrics_total
   _score
 }
 type StixCoreObjectConnection {
@@ -2231,6 +2342,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2327,6 +2439,7 @@ interface StixCoreObject {
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  opinions_metrics: OpinionsMetrics
 }
 
 ########## STIX DOMAIN OBJECT ENTITIES
@@ -2395,6 +2508,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2467,6 +2581,7 @@ interface StixDomainObject {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2475,6 +2590,7 @@ interface StixDomainObject {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Technical
   creators: [Creator!]
@@ -2558,6 +2674,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -2632,6 +2749,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2640,6 +2758,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # AttackPattern
   name: String!
@@ -2783,6 +2902,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -2857,6 +2977,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2865,6 +2986,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Campaign
   name: String!
@@ -2961,6 +3083,7 @@ interface Container {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3033,6 +3156,7 @@ interface Container {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3065,6 +3189,19 @@ interface Container {
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3105,6 +3242,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -3179,6 +3317,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3187,6 +3326,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
@@ -3237,6 +3377,19 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3324,6 +3477,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -3398,6 +3552,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3406,6 +3561,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
@@ -3455,6 +3611,19 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3519,6 +3688,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -3593,6 +3763,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3601,6 +3772,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
@@ -3649,6 +3821,19 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3659,7 +3844,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input OpinionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  opinion: String!
+  opinion: String! @constraint(minLength: 2)
   explanation: String
   authors: [String]
   revoked: Boolean
@@ -3733,6 +3918,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -3807,6 +3993,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3868,6 +4055,19 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3937,6 +4137,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -4011,6 +4212,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4019,6 +4221,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # CourseOfAction
   name: String!
@@ -4114,6 +4317,7 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4186,6 +4390,7 @@ interface Identity {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4284,6 +4489,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -4358,6 +4564,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4366,6 +4573,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -4466,6 +4674,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -4540,6 +4749,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4548,6 +4758,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -4643,6 +4854,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -4717,6 +4929,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4725,6 +4938,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -4829,6 +5043,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -4903,6 +5118,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4911,6 +5127,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Infrastructure
   name: String!
@@ -5007,6 +5224,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -5081,6 +5299,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5089,6 +5308,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # IntrusionSet
   name: String!
@@ -5190,6 +5410,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5262,6 +5483,7 @@ interface Location {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5361,6 +5583,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -5435,6 +5658,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5443,6 +5667,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -5541,6 +5766,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -5615,6 +5841,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5623,6 +5850,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -5715,6 +5943,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -5789,6 +6018,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5797,6 +6027,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -5888,6 +6119,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -5962,6 +6194,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5970,6 +6203,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -6070,6 +6304,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -6144,6 +6379,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6152,6 +6388,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Malware
   name: String!
@@ -6262,6 +6499,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -6336,6 +6574,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6344,6 +6583,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # ThreatActorGroup
   name: String!
@@ -6411,6 +6651,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -6485,6 +6726,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6493,6 +6735,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # ThreatActorGroup
   name: String!
@@ -6602,6 +6845,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -6676,6 +6920,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6684,6 +6929,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Tool
   name: String!
@@ -6779,6 +7025,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -6853,6 +7100,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -6861,6 +7109,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Vulnerability
   name: String!
@@ -6973,6 +7222,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7047,6 +7297,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -7156,6 +7407,7 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -7228,6 +7480,7 @@ interface StixCyberObservable {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7270,6 +7523,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7344,6 +7598,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7396,6 +7651,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7470,6 +7726,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7526,6 +7783,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7600,6 +7858,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   observable_value: String!
   x_opencti_score: Int
@@ -7648,6 +7907,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7722,6 +7982,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7772,6 +8033,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7846,6 +8108,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7906,6 +8169,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -7980,6 +8244,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8050,6 +8315,7 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -8122,6 +8388,7 @@ interface HashedObservable {
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8166,6 +8433,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -8240,6 +8508,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8301,6 +8570,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -8375,6 +8645,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8445,6 +8716,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -8519,6 +8791,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8624,6 +8897,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -8698,6 +8972,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8749,6 +9024,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -8823,6 +9099,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8872,6 +9149,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -8946,6 +9224,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8994,6 +9273,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9068,6 +9348,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9116,6 +9397,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9190,6 +9472,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9259,6 +9542,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9333,6 +9617,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9427,6 +9712,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9501,6 +9787,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9568,6 +9855,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9642,6 +9930,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9690,6 +9979,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9764,6 +10054,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9839,6 +10130,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -9913,6 +10205,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9965,6 +10258,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10039,6 +10333,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10091,6 +10386,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10165,6 +10461,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10213,6 +10510,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10287,6 +10585,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10335,6 +10634,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10409,6 +10709,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10457,6 +10758,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10531,6 +10833,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10579,6 +10882,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10653,6 +10957,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10701,6 +11006,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10776,6 +11082,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10828,6 +11135,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -10905,6 +11213,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
     filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -10953,6 +11262,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -11030,6 +11340,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
     filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11078,6 +11389,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -11152,6 +11464,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11200,6 +11513,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -11274,6 +11588,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11328,6 +11643,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -11402,6 +11718,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11459,6 +11776,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -11533,6 +11851,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -11949,6 +12268,7 @@ interface StixRelationship {
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
   toStix: String
+  draftVersion: DraftVersion
   # Technical
   creators: [Creator!]
 }
@@ -12026,6 +12346,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
+  draftVersion: DraftVersion
   # StixCoreRelationship
   description: String
   start_time: DateTime
@@ -12156,6 +12477,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
+  draftVersion: DraftVersion
   # StixSightingRelationship
   description: String
   first_seen: DateTime
@@ -12254,6 +12576,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
+  draftVersion: DraftVersion
   # StixRefRelationship
   start_time: DateTime
   stop_time: DateTime
@@ -12427,6 +12750,7 @@ type Query {
     filterMode: FilterMode,
     entityTypes: [MemberType!]
   ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, INGESTION_SETINGESTIONS])
+  systemMembers: MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, INGESTION_SETINGESTIONS])
   users(
     first: Int
     after: ID
@@ -13674,7 +13998,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
@@ -13697,7 +14021,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])

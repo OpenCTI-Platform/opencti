@@ -17,7 +17,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
@@ -26,7 +26,7 @@ const styles = () => ({
   },
   paper: {
     height: '100%',
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },

@@ -7,6 +7,7 @@ import { CloudUploadOutlined, InsertChartOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import useHelper from '../../../utils/hooks/useHelper';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import Drawer, { DrawerVariant } from '../common/drawer/Drawer';
@@ -66,6 +67,7 @@ const workspaceValidation = (t_i18n) => Yup.object().shape({
 
 const WorkspaceCreation = ({ paginationOptions, type }) => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const inputRef = useRef();
   const { isFeatureEnable } = useHelper();
@@ -120,19 +122,20 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   ) : undefined;
 
   const createDashboardButton = FAB_REPLACED ? (props) => (
-    <div>
+    <>
       <CreateEntityControlledDial entityType='Dashboard' {...props} />
       <Button
         color='primary'
         variant='outlined'
+        size="small"
         disableElevation
         onClick={() => inputRef.current?.click()}
-        sx={{ marginLeft: '10px' }}
+        sx={{ marginLeft: theme.spacing(1) }}
         data-testid='ImportDashboard'
       >
         {t_i18n('Import dashboard')}
       </Button>
-    </div>
+    </>
   ) : ({ onOpen }) => (
     <SpeedDial
       className={classes.createButton}
@@ -178,7 +181,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
             onReset={onClose}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+              <Form>
                 <Field
                   component={TextField}
                   name="name"

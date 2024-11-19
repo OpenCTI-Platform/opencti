@@ -193,7 +193,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           onSubmit={onSubmit}
         >
           {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"

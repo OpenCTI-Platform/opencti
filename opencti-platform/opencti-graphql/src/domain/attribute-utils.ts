@@ -3,6 +3,8 @@ import {
   baseType,
   createdAt,
   creators,
+  draftChange,
+  draftIds,
   entityLocationType,
   entityType,
   files,
@@ -27,6 +29,8 @@ export const INTERNAL_ATTRIBUTES = [
   id.name,
   internalId.name,
   standardId.name,
+  draftIds.name,
+  draftChange.name,
   xOpenctiStixIds.name,
   iAliasedIds.name,
   // Auditing
@@ -82,6 +86,8 @@ export const INTERNAL_ATTRIBUTES = [
   'decay_base_score_date',
   'decay_history',
   'decay_applied_rule',
+  // Opinions
+  'opinions_metrics'
 ];
 
 export const INTERNAL_REFS = [

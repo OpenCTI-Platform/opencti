@@ -10,6 +10,7 @@ import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
   AccountBalanceOutlined,
+  ArchitectureOutlined,
   AssignmentOutlined,
   BiotechOutlined,
   BugReportOutlined,
@@ -100,6 +101,7 @@ import useGranted, {
 import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
+import useHelper from '../../../utils/hooks/useHelper';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import logoFiligranDark from '../../../static/images/logo_filigran_dark.png';
 import logoFiligranLight from '../../../static/images/logo_filigran_light.png';
@@ -108,8 +110,8 @@ import logoFiligranTextLight from '../../../static/images/logo_filigran_text_lig
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
-const SMALL_BAR_WIDTH = 55;
-const OPEN_BAR_WIDTH = 180;
+export const SMALL_BAR_WIDTH = 55;
+export const OPEN_BAR_WIDTH = 180;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -216,9 +218,11 @@ const LeftBar = () => {
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
-    me: { submenu_auto_collapse, submenu_show_icons },
+    me: { submenu_auto_collapse, submenu_show_icons, draftContext },
     settings: { platform_whitemark },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -235,6 +239,7 @@ const LeftBar = () => {
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
+
   const anchors = {
     analyses: useRef(null),
     cases: useRef(null),
@@ -352,6 +357,8 @@ const LeftBar = () => {
     'City',
     'Position',
   );
+
+  const { isTrashEnable } = useHelper();
 
   const {
     bannerSettings: { bannerHeightNumber },
@@ -797,57 +804,84 @@ const LeftBar = () => {
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
-              <>
-                <MenuItem
-                  ref={anchors.dashboards}
-                  selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/workspaces/dashboards'))}
-                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
-                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <InsertChartOutlinedOutlined />
-                  </ListItemIcon>
-                  {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Dashboards')}
-                    />
+              {!draftContext && (
+                <>
+                  <MenuItem
+                    ref={anchors.dashboards}
+                    selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                    onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/workspaces/dashboards'))}
+                    onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
+                    onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <InsertChartOutlinedOutlined />
+                    </ListItemIcon>
+                    {navOpen && (
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Dashboards')}
+                      />
+                    )}
+                    {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                  </MenuItem>
+                  {generateSubMenu(
+                    'dashboards',
+                    [
+                      { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards', exact: true },
+                      { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: 'Public dashboards', exact: true },
+                    ],
                   )}
-                  {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-                </MenuItem>
-                {generateSubMenu(
-                  'dashboards',
-                  [
-                    { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: 'Custom dashboards', exact: true },
-                    { granted: isGrantedToExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: 'Public dashboards', exact: true },
-                  ],
-                )}
-              </>
+                </>
+              )}
             </Security>
             <Security needs={[INVESTIGATION]}>
-              <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/workspaces/investigations"
-                  selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <ExploreOutlined />
-                  </ListItemIcon>
-                  {navOpen && (
+              {!draftContext && (
+                <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/workspaces/investigations"
+                    selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <ExploreOutlined />
+                    </ListItemIcon>
+                    {navOpen && (
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Investigations')}
+                      />
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              )}
+            </Security>
+            {isDraftFeatureEnabled && (
+              <Security needs={[KNOWLEDGE]}>
+                <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/drafts"
+                    selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <ArchitectureOutlined/>
+                    </ListItemIcon>
+                    {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Investigations')}
+                      primary={t_i18n('Drafts')}
                     />
-                  )}
-                </MenuItem>
-              </StyledTooltip>
-            </Security>
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              </Security>
+            )}
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
@@ -881,27 +915,33 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
-            <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-              <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/trash"
-                  selected={!navOpen && location.pathname.includes('/dashboard/trash')}
-                  dense={true}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <DeleteOutlined />
-                  </ListItemIcon>
-                  {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Trash')}
-                    />
+            {
+              isTrashEnable() && (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  {!draftContext && (
+                  <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/trash"
+                      selected={!navOpen && location.pathname.includes('/dashboard/trash')}
+                      dense={true}
+                      classes={{ root: classes.menuItem }}
+                    >
+                      <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                        <DeleteOutlined />
+                      </ListItemIcon>
+                      {navOpen && (
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Trash')}
+                      />
+                      )}
+                    </MenuItem>
+                  </StyledTooltip>
                   )}
-                </MenuItem>
-              </StyledTooltip>
-            </Security>
+                </Security>
+              )
+            }
           </MenuList>
         </Security>
         <Security needs={[
@@ -917,40 +957,42 @@ const LeftBar = () => {
         ]}
         >
           <Divider />
-          <MenuList component="nav">
-            <MenuItem
-              ref={anchors.settings}
-              selected={!navOpen && location.pathname.includes('/dashboard/settings')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <CogOutline />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Settings')}
-                />
+          {!draftContext && (
+            <MenuList component="nav">
+              <MenuItem
+                ref={anchors.settings}
+                selected={!navOpen && location.pathname.includes('/dashboard/settings')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <CogOutline />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Settings')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
+              {generateSubMenu(
+                'settings',
+                [
+                  { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
+                  { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: 'Security' },
+                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
+                  { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
+                  { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
+                  { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
+                  { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
+                ],
               )}
-              {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
-            {generateSubMenu(
-              'settings',
-              [
-                { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
-                { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: 'Security' },
-                { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
-                { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
-                { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
-                { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
-                { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
-              ],
-            )}
-          </MenuList>
+            </MenuList>
+          )}
         </Security>
       </div>
       <div style={{ marginTop: 'auto' }}>

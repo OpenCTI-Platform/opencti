@@ -29,6 +29,10 @@ const notesLineFragment = graphql`
     note_types
     likelihood
     confidence
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

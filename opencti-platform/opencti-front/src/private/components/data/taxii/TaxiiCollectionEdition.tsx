@@ -61,6 +61,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
   include_inferences: Yup.bool().nullable(),
+  score_to_confidence: Yup.bool().nullable(),
 });
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
@@ -72,6 +73,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     taxii_public: taxiiCollection.taxii_public,
     authorized_members: convertAuthorizedMembers(taxiiCollection),
     include_inferences: taxiiCollection.include_inferences,
+    score_to_confidence: taxiiCollection.score_to_confidence,
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
@@ -142,7 +144,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       validationSchema={taxiiCollectionValidation(t_i18n('This field is required'))}
     >
       {() => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"
@@ -168,13 +170,13 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             style={{ position: 'relative' }}
           >
             <AlertTitle>
-              {t_i18n('Make this taxii collection public and available to anyone')}
+              {t_i18n('Make this TAXII collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
               control={<Switch defaultChecked={!!initialValues.taxii_public}/>}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
-              label={t_i18n('Public taxii collection')}
+              label={t_i18n('Public collection')}
             />
             {!initialValues.taxii_public && (
               <ObjectMembersField
@@ -187,16 +189,23 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               />
             )}
           </Alert>
-          <FormControlLabel
-            control={<Switch defaultChecked={!!initialValues.include_inferences}/>}
-            style={{ marginLeft: 1, marginTop: '20px' }}
-            onChange={(_, checked) => handleSubmitField('include_inferences', checked.toString())}
-            label={t_i18n('Include inferences')}
-          />
-          <Box sx={{ paddingTop: 4,
-            display: 'flex',
-            gap: 1 }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+            <FormControlLabel
+              control={<Switch defaultChecked={!!initialValues.include_inferences}/>}
+              style={{ marginLeft: 1 }}
+              onChange={(_, checked) => handleSubmitField('include_inferences', checked.toString())}
+              label={t_i18n('Include inferences')}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+            <FormControlLabel
+              control={<Switch defaultChecked={!!initialValues.score_to_confidence}/>}
+              style={{ marginLeft: 1 }}
+              onChange={(_, checked) => handleSubmitField('score_to_confidence', checked.toString())}
+              label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}
+            />
+          </Box>
+          <Box sx={{ paddingTop: 4, display: 'flex', gap: 1 }}>
             <Filters
               availableFilterKeys={availableFilterKeys}
               helpers={helpers}
@@ -227,6 +236,7 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
         filters
         taxii_public
         include_inferences
+        score_to_confidence
         authorized_members {
           id
           name

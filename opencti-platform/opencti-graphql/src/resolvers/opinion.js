@@ -11,6 +11,7 @@ import {
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
+  updateOpinionsMetrics
 } from '../domain/opinion';
 import {
   stixDomainObjectAddRelation,
@@ -77,7 +78,9 @@ const opinionResolvers = {
         await checkUserAccess(context, context.user, id);
         const isManager = isUserHasCapability(context.user, KNOWLEDGE_KNUPDATE);
         const availableInputs = isManager ? input : input.filter((i) => i.key !== 'createdBy');
-        return stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
+        const opinion = await stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
+        await updateOpinionsMetrics(context, context.user, id);
+        return opinion;
       },
       contextPatch: async ({ input }) => {
         await checkUserAccess(context, context.user, id);
@@ -89,11 +92,15 @@ const opinionResolvers = {
       },
       relationAdd: async ({ input }) => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectAddRelation(context, context.user, id, input);
+        const rel = await stixDomainObjectAddRelation(context, context.user, id, input);
+        await updateOpinionsMetrics(context, context.user, id);
+        return rel;
       },
       relationDelete: async ({ toId, relationship_type: relationshipType }) => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+        const rel = await stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+        await updateOpinionsMetrics(context, context.user, id);
+        return rel;
       },
     }),
     // For collaborative creation
@@ -105,11 +112,24 @@ const opinionResolvers = {
         const individual = await userAddIndividual(context, user);
         opinionToCreate.createdBy = individual.id;
       }
-      return addOpinion(context, user, opinionToCreate);
+      const opinion = await addOpinion(context, user, opinionToCreate);
+      await updateOpinionsMetrics(context, user, opinion.id);
+      return opinion;
     },
     // For knowledge
-    opinionAdd: (_, { input }, context) => {
-      return addOpinion(context, context.user, input);
+    opinionAdd: async (_, { input }, context) => {
+      const { user } = context;
+      const opinionToCreate = { ...input };
+      if (!opinionToCreate.createdBy) {
+        opinionToCreate.createdBy = user.individual_id;
+        if (opinionToCreate.createdBy === undefined) {
+          const individual = await userAddIndividual(context, user);
+          opinionToCreate.createdBy = individual.id;
+        }
+      }
+      const opinion = await addOpinion(context, context.user, opinionToCreate);
+      await updateOpinionsMetrics(context, user, opinion.id);
+      return opinion;
     },
   },
 };

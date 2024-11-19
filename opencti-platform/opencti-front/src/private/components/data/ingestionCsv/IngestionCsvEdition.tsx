@@ -33,6 +33,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -54,7 +55,7 @@ export const ingestionCsvEditionPatch = graphql`
   } 
 `;
 
-const ingestionCsvEditionFragment = graphql`
+export const ingestionCsvEditionFragment = graphql`
   fragment IngestionCsvEditionFragment_ingestionCsv on IngestionCsv {
     id
     name
@@ -297,7 +298,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"
@@ -345,7 +346,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           />
           {
             queryRef && (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
                 <Box sx={{ width: '100%', marginTop: 5 }}>
                   <Alert
                     severity="info"
@@ -418,26 +419,18 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <Field
-                component={TextField}
-                variant="standard"
+              <PasswordTextField
                 name="password"
                 label={t_i18n('Password')}
                 onSubmit={handleSubmitField}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
               />
             </>
           )}
           {values.authentication_type === BEARER_AUTH && (
-            <Field
-              component={TextField}
-              variant="standard"
+            <PasswordTextField
               name="authentication_value"
               label={t_i18n('Token')}
               onSubmit={handleSubmitField}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
             />
           )}
           {values.authentication_type === CERT_AUTH && (
@@ -451,14 +444,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <Field
-                component={TextField}
-                variant="standard"
+              <PasswordTextField
                 name="key"
                 label={t_i18n('Key (base64)')}
                 onSubmit={handleSubmitField}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
               />
               <Field
                 component={TextField}

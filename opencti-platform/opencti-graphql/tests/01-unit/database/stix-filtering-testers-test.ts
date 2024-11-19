@@ -127,6 +127,40 @@ describe('Stix filter testers', () => {
     });
   });
 
+  describe('by Report Types (key=report_types)', () => {
+    const stixReportWithThreatReportTypes = stixReports[0];
+    const stixIndicator = stixIndicators[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      let filter: Filter = {
+        key: ['report_types'],
+        mode: 'or',
+        operator: 'nil',
+        values: []
+      } as Filter;
+      expect(testers.testReportTypes(stixReportWithThreatReportTypes, filter)).toEqual(false);
+      expect(testers.testReportTypes(stixIndicator, filter)).toEqual(true);
+
+      filter = {
+        key: ['report_types'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['<some-id>', '<some-other-id>']
+      } as Filter;
+      expect(testers.testReportTypes(stixReportWithThreatReportTypes, filter)).toEqual(false);
+      expect(testers.testReportTypes(stixIndicator, filter)).toEqual(false);
+
+      filter = {
+        key: ['report_types'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['threat-report']
+      } as Filter;
+      expect(testers.testReportTypes(stixReportWithThreatReportTypes, filter)).toEqual(true);
+      expect(testers.testReportTypes(stixIndicator, filter)).toEqual(false);
+    });
+  });
+
   describe('by Workflow (key=x_opencti_workflow_id)', () => {
     const reportWithWorkflow = stixReports[0];
     const reportWithoutWorkflow = stixIncidents[0];

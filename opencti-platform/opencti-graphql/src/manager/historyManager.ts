@@ -40,6 +40,7 @@ interface HistoryContext {
   creator_ids?: Array<string>;
   labels_ids?: Array<string>;
   created_by_ref_id?: string;
+  marking_definitions?: Array<string>;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -104,9 +105,11 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? []));
       eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? []));
     }
+    if (R.uniq(eventMarkingRefs).length > 0) {
+      contextData.marking_definitions = R.uniq(eventMarkingRefs).map((n) => markingsById.get(n)?.definition ?? 'Unknown');
+    }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -125,7 +128,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       context_data: contextData,
       authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
-      'rel_granted.internal_id': R.uniq(eventGrantedRefs)
+      'rel_granted.internal_id': R.uniq(eventGrantedRefs),
     };
   });
   // Bulk the history data insertions

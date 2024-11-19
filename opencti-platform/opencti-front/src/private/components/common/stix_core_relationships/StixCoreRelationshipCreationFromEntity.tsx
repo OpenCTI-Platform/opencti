@@ -1,10 +1,8 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { Add, ChevronRightOutlined, Close } from '@mui/icons-material';
+import { Add, ChevronRightOutlined } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
@@ -26,6 +24,7 @@ import {
   StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import { PaginationOptions } from 'src/components/list_lines';
+import Drawer from '@components/common/drawer/Drawer';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -44,39 +43,15 @@ import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const useStyles = makeStyles<Theme>(() => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
     zIndex: 1001,
-  },
-  title: {
-    float: 'left',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
   continue: {
     position: 'fixed',
@@ -85,7 +60,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     zIndex: 1001,
   },
   container: {
-    padding: theme.spacing(2),
     width: '100%',
     height: '100%',
     maxHeight: '100%',
@@ -747,7 +721,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       },
       value: {
         label: 'Value',
-        percentWidth: 32,
+        percentWidth: 35,
         isSortable: false,
       },
       createdBy: {
@@ -757,7 +731,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       },
       objectLabel: {
         label: 'Labels',
-        percentWidth: 22,
+        percentWidth: 20,
         isSortable: false,
       },
       objectMarking: {
@@ -799,20 +773,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           height: '100%',
         }}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={() => handleClose()}
-            size="large"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t_i18n('Create a relationship')}
-          </Typography>
-          <div className="clearfix" />
-        </div>
         <div data-testid="stixCoreRelationshipCreationFromEntity-component" className={classes.container}>
           <UserContext.Consumer>
             {({ platformModuleHelpers }) => (
@@ -825,7 +785,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       disableNavigation
                       selectOnLineClick
                       rootRef={tableRootRef ?? undefined}
-                      variant={DataTableVariant.inline}
                       dataColumns={buildColumns(platformModuleHelpers)}
                       resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
                       storageKey={getLocalStorageKey(entityId)}
@@ -885,7 +844,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               <SpeedDial
                 className={classes.createButton}
                 ariaLabel="Create"
-                icon={<SpeedDialIcon/>}
+                icon={<SpeedDialIcon />}
                 onClose={handleCloseSpeedDial}
                 onOpen={handleOpenSpeedDial}
                 open={openSpeedDial}
@@ -895,7 +854,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               >
                 <SpeedDialAction
                   title={t_i18n('Create an observable')}
-                  icon={<HexagonOutline/>}
+                  icon={<HexagonOutline />}
                   tooltipTitle={t_i18n('Create an observable')}
                   onClick={handleOpenCreateObservable}
                   FabProps={{
@@ -904,7 +863,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 />
                 <SpeedDialAction
                   title={t_i18n('Create an entity')}
-                  icon={<GlobeModel/>}
+                  icon={<GlobeModel />}
                   tooltipTitle={t_i18n('Create an entity')}
                   onClick={handleOpenCreateEntity}
                   FabProps={{
@@ -949,7 +908,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               onClick={handleNextStep}
             >
               {t_i18n('Continue')}
-              <ChevronRightOutlined/>
+              <ChevronRightOutlined />
             </Fab>
           )}
         </div>
@@ -980,35 +939,20 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             ),
           ));
           return (
-            <>
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={handleClose}
-                  size="large"
-                >
-                  <Close fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">
-                  {t_i18n('Create a relationship')}
-                </Typography>
-              </div>
-              <StixCoreRelationshipCreationForm
-                fromEntities={fromEntities}
-                toEntities={toEntities}
-                relationshipTypes={relationshipTypes}
-                handleReverseRelation={handleReverseRelation}
-                handleResetSelection={handleResetSelection}
-                onSubmit={onSubmit}
-                handleClose={handleClose}
-                defaultStartTime={defaultStartTime}
-                defaultStopTime={defaultStopTime}
-                defaultConfidence={undefined}
-                defaultCreatedBy={undefined}
-                defaultMarkingDefinitions={undefined}
-              />
-            </>
+            <StixCoreRelationshipCreationForm
+              fromEntities={fromEntities}
+              toEntities={toEntities}
+              relationshipTypes={relationshipTypes}
+              handleReverseRelation={handleReverseRelation}
+              handleResetSelection={handleResetSelection}
+              onSubmit={onSubmit}
+              handleClose={handleClose}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              defaultConfidence={undefined}
+              defaultCreatedBy={undefined}
+              defaultMarkingDefinitions={undefined}
+            />
           );
         }}
       </UserContext.Consumer>
@@ -1059,16 +1003,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       )}
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-        SlideProps={{
-          // containerRef is forwarded to ListLinesContent so it listens to scroll events and load data with an InfiniteLoader
-          // we must target the element inside the Drawer that holds the scrolling = the Slide
-          ref: containerRef,
-        }}
+        title={t_i18n('Create a relationship')}
+        ref={containerRef}
       >
         <QueryRenderer
           query={stixCoreRelationshipCreationFromEntityQuery}

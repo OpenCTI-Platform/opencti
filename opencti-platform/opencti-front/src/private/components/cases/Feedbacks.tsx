@@ -25,6 +25,10 @@ const feedbackFragment = graphql`
     rating
     entity_type
     created
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

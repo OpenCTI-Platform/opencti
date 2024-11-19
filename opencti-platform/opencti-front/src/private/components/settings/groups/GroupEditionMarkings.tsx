@@ -235,7 +235,7 @@ const GroupEditionMarkingsComponent = ({
                 || resolvedMaxShareableMarkingDefinitions.some((maxMarking) => maxMarking?.entity.id === m.id));
             return (
               <>
-                <Typography variant="h2" style={{ marginTop: 35 }}>
+                <Typography variant="h2" style={{ marginTop: 20 }}>
                   {t_i18n('Allowed marking definitions')}
                 </Typography>
                 <Alert severity="warning" variant="outlined" style={{ marginBottom: 10 }}>

@@ -5,7 +5,6 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
-import AuditsPolarArea from '../../common/audits/AuditsPolarArea';
 import StixCoreObjectsPolarArea from '../../common/stix_core_objects/StixCoreObjectsPolarArea';
 import StixRelationshipsPolarArea from '../../common/stix_relationships/StixRelationshipsPolarArea';
 import { computerRelativeDate, dayStartDate, parse } from '../../../../utils/Time';
@@ -29,6 +28,7 @@ import StixCoreObjectsHorizontalBars from '../../common/stix_core_objects/StixCo
 import StixCoreObjectsRadar from '../../common/stix_core_objects/StixCoreObjectsRadar';
 import StixCoreObjectsMultiHeatMap from '../../common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjectsTreeMap';
+import StixCoreObjectsWordCloud from '../../common/stix_core_objects/StixCoreObjectsWordCloud';
 import StixCoreObjectsMultiHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
 import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
@@ -45,6 +45,7 @@ import StixRelationshipsRadar from '../../common/stix_relationships/StixRelation
 import StixRelationshipsMultiHeatMap from '../../common/stix_relationships/StixRelationshipsMultiHeatMap';
 import StixRelationshipsTreeMap from '../../common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '../../common/stix_relationships/StixRelationshipsMap';
+import StixRelationshipsWordCloud from '../../common/stix_relationships/StixRelationshipsWordCloud';
 import AuditsList from '../../common/audits/AuditsList';
 import AuditsMultiLineChart from '../../common/audits/AuditsMultiLineChart';
 import AuditsMultiAreaChart from '../../common/audits/AuditsMultiAreaChart';
@@ -52,10 +53,12 @@ import AuditsMultiVerticalBars from '../../common/audits/AuditsMultiVerticalBars
 import AuditsNumber from '../../common/audits/AuditsNumber';
 import AuditsDonut from '../../common/audits/AuditsDonut';
 import AuditsHorizontalBars from '../../common/audits/AuditsHorizontalBars';
+import AuditsPolarArea from '../../common/audits/AuditsPolarArea';
 import AuditsRadar from '../../common/audits/AuditsRadar';
 import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
+import AuditsWordCloud from '../../common/audits/AuditsWordCloud';
 import { ErrorBoundary } from '../../Error';
 import {
   deserializeDashboardManifestForFrontend,
@@ -95,6 +98,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   const manifest = workspace.manifest && workspace.manifest.length > 0
     ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
     : { widgets: {}, config: {} };
+
   const saveManifest = (newManifest) => {
     const strManifest = serializeDashboardManifestForBackend(newManifest);
     const newManifestEncoded = toB64(strManifest);
@@ -398,6 +402,18 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             isReadOnly={!isWrite}
           />
         );
+      case 'wordcloud':
+        return (
+          <StixCoreObjectsWordCloud
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={true}
+            isReadOnly={!isWrite}
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -583,6 +599,18 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             variant="inLine"
           />
         );
+      case 'wordcloud':
+        return (
+          <StixRelationshipsWordCloud
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={true}
+            isReadOnly={!isWrite}
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -722,6 +750,18 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'tree':
         return (
           <AuditsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={true}
+            isReadOnly={!isWrite}
+          />
+        );
+      case 'wordcloud':
+        return (
+          <AuditsWordCloud
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

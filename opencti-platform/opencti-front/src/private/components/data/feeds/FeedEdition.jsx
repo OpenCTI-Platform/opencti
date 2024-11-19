@@ -30,10 +30,10 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import {
-  useAvailableFilterKeysForEntityTypes,
   cleanFilters,
   deserializeFilterGroupForFrontend,
   serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
   useFetchFilterKeysSchema,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -330,7 +330,7 @@ const FeedEditionContainer = (props) => {
                 onReset={onReset}
               >
                 {({ values, submitForm, handleReset, isSubmitting }) => (
-                  <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Form>
                     <Field
                       component={TextField}
                       variant="standard"

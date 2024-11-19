@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import { Link } from 'react-router-dom';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Menu from '@mui/material/Menu';
 import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { ListItemIcon, ListItemText } from '@mui/material';
@@ -16,7 +13,7 @@ import withRouter from '../../../../utils/compat_router/withRouter';
 import { attackPatternsLinesQuery } from '../AttackPatterns';
 import inject18n from '../../../../components/i18n';
 import { computeLevel } from '../../../../utils/Number';
-import AttackPtternsMatrixBar from './AttackPtternsMatrixBar';
+import AttackPtternsMatrixBar from './AttackPatternsMatrixBar';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -260,8 +257,9 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       handleToggleColorsReversed,
       currentColorsReversed,
       currentModeOnlyActive,
-      hideBar,
       handleAdd,
+      selectedKillChain,
+      noBottomBar,
     } = this.props;
     const { hover, menuElement, navOpen } = this.state;
     let toggleModeOnlyActive = handleToggleModeOnlyActive;
@@ -300,10 +298,19 @@ class AttackPatternsMatrixColumnsComponent extends Component {
         R.values,
       )(selectedPatterns),
     );
+
     const killChains = R.uniq(data.attackPatternsMatrix.attackPatternsOfPhases.map((a) => a.kill_chain_name))
       .sort((a, b) => a.localeCompare(b));
+    let activKillChainValue;
+    if (noBottomBar && killChains.includes(selectedKillChain)) {
+      activKillChainValue = selectedKillChain;
+    } else if (!noBottomBar && killChains.includes(this.state.currentKillChain)) {
+      activKillChainValue = this.state.currentKillChain;
+    } else {
+      activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
+    }
     const attackPatternsOfPhases = data.attackPatternsMatrix.attackPatternsOfPhases
-      .filter((a) => a.kill_chain_name === this.state.currentKillChain)
+      .filter((a) => a.kill_chain_name === activKillChainValue)
       .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
       .map((a) => {
         return {
@@ -317,15 +324,9 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     let heightCalc = 310;
     let className = navOpen ? classes.containerNavOpen : classes.container;
     if (marginRight) {
-      if (hideBar) {
-        className = navOpen
-          ? classes.containerWithMarginRightNoBarNavOpen
-          : classes.containerWithMarginRightNoBar;
-      } else {
-        className = navOpen
-          ? classes.containerWithMarginRightNavOpen
-          : classes.containerWithMarginRight;
-      }
+      className = navOpen
+        ? classes.containerWithMarginRightNavOpen
+        : classes.containerWithMarginRight;
     }
     return (
       <UserContext.Consumer>
@@ -340,36 +341,13 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                 maxHeight: `calc(100vh - ${heightCalc}px)`,
               }}
             >
-              {hideBar ? (
-                <div
-                  className={
-                    navOpen
-                      ? classes.switchKillChainNavOpen
-                      : classes.switchKillChain
-                  }
-                >
-                  <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <InputLabel>{t('Kill chain')}</InputLabel>
-                    <Select
-                      size="small"
-                      value={this.state.currentKillChain}
-                      onChange={this.handleChangeKillChain.bind(this)}
-                    >
-                      {killChains.map((killChainName) => (
-                        <MenuItem key={killChainName} value={killChainName}>
-                          {killChainName}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-              ) : (
+              {!noBottomBar && (
                 <AttackPtternsMatrixBar
                   currentModeOnlyActive={modeOnlyActive}
                   handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
                   currentColorsReversed={modeColorsReversed}
                   handleToggleColorsReversed={toggleColorsReversed.bind(this)}
-                  currentKillChain={this.state.currentKillChain}
+                  currentKillChain={activKillChainValue}
                   handleChangeKillChain={this.handleChangeKillChain.bind(this)}
                   killChains={killChains}
                   navOpen={navOpen}
@@ -486,8 +464,9 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
   handleToggleColorsReversed: PropTypes.func,
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
-  hideBar: PropTypes.bool,
   handleAdd: PropTypes.func,
+  selectedKillChain: PropTypes.string,
+  noBottomBar: PropTypes.bool,
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`
@@ -496,30 +475,32 @@ export const attackPatternsMatrixColumnsQuery = graphql`
   }
 `;
 
+export const attackPatternsMatrixColumnsFragment = graphql`
+    fragment AttackPatternsMatrixColumns_data on Query {
+        attackPatternsMatrix {
+            attackPatternsOfPhases {
+                kill_chain_id
+                kill_chain_name
+                phase_name
+                x_opencti_order
+                attackPatterns {
+                    attack_pattern_id
+                    name
+                    description
+                    x_mitre_id
+                    subAttackPatternsIds
+                    subAttackPatternsSearchText
+                    killChainPhasesIds
+                }
+            }
+        }
+    }
+`;
+
 const AttackPatternsMatrixColumns = createRefetchContainer(
   AttackPatternsMatrixColumnsComponent,
   {
-    data: graphql`
-      fragment AttackPatternsMatrixColumns_data on Query {
-        attackPatternsMatrix {
-          attackPatternsOfPhases {
-            kill_chain_id
-            kill_chain_name
-            phase_name
-            x_opencti_order
-            attackPatterns {
-              attack_pattern_id
-              name
-              description
-              x_mitre_id
-              subAttackPatternsIds
-              subAttackPatternsSearchText
-              killChainPhasesIds
-            }
-          }
-        }
-      }
-    `,
+    data: attackPatternsMatrixColumnsFragment,
   },
   attackPatternsLinesQuery,
 );

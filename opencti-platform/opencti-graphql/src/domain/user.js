@@ -60,10 +60,11 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
+  INTERNAL_USERS_WITHOUT_REDACTED
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
-import { addGroup, PROTECT_SENSITIVE_CHANGES_FF } from './grant';
+import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -202,6 +203,11 @@ export const findAllMembers = (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
   return listEntities(context, user, types, args);
+};
+
+export const findAllSystemMembers = () => {
+  const members = R.values(INTERNAL_USERS_WITHOUT_REDACTED);
+  return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
 };
 
 // build only a creator object with what we need to expose of users
@@ -684,6 +690,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw ForbiddenAccess();
     }
   }
+  let refreshSessionNeeded = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
@@ -708,11 +715,23 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     }
     if (input.key === 'user_confidence_level') {
       // user's effective level might have changed, we need to refresh session info
-      await userSessionRefresh(userId);
+      refreshSessionNeeded = true;
+    }
+    if (input.key === 'draft_context') {
+      // draft context might have changed, we need to check draft context exists and refresh session info
+      const draftContext = R.head(input.value).toString();
+      if (draftContext !== '') {
+        const draftWorkspace = await internalLoadById(context, user, draftContext);
+        if (!draftWorkspace) throw Error('Could not find draft workspace');
+      }
+      refreshSessionNeeded = true;
     }
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  if (refreshSessionNeeded) { // refresh session after update
+    await userSessionRefresh(userId);
+  }
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -806,6 +825,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'submenu_auto_collapse',
   'monochrome_labels',
   'password',
+  'draft_context',
 ];
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   const input = R.head(inputs);
@@ -1211,7 +1231,7 @@ const regenerateUserSession = async (user, req, res) => {
 
 const buildSessionUser = (origin, impersonate, provider, settings) => {
   const user = impersonate ?? origin;
-  return {
+  const sessionUser = {
     id: user.id,
     individual_id: user.individual_id,
     session_creation: now(),
@@ -1277,6 +1297,11 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     personal_notifiers: user.personal_notifiers,
     ...user.provider_metadata
   };
+
+  if (isFeatureEnabled('DRAFT_WORKSPACE')) {
+    return { ...sessionUser, draft_context: user.draft_context };
+  }
+  return sessionUser;
 };
 
 const virtualOrganizationAdminCapability = {
@@ -1298,7 +1323,7 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return true;
   }
-  return roles.some((role) => role.can_manage_sensitive_config !== false);
+  return roles.some(({ can_manage_sensitive_config }) => can_manage_sensitive_config);
 };
 
 export const buildCompleteUser = async (context, client) => {
@@ -1351,10 +1376,7 @@ export const buildCompleteUser = async (context, client) => {
   const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
   const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
 
-  let canManageSensitiveConfig = null;
-  if (isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
-    canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-  }
+  const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
 
   return {
     ...client,

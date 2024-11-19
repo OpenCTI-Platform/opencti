@@ -137,12 +137,12 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     // And invalid me ?? or invalidSession
   };
 
-  const { isSensitiveModificationEnabled } = useSensitiveModifications();
+  const { isSensitive } = useSensitiveModifications('roles');
 
   if (capabilities && capabilities.edges) {
     return (
       <List dense={true}>
-        {isSensitiveModificationEnabled && (
+        {isSensitive && (
           <ListItem
             key="sensitive"
             divider={true}
@@ -162,7 +162,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             <ListItemSecondaryAction>
               <Checkbox
                 onChange={(event) => handleSensitiveToggle(event)}
-                checked={role.can_manage_sensitive_config !== false} // beware: undefined value means access is granted
+                checked={!!role.can_manage_sensitive_config}
                 style={{ color: theme.palette.dangerZone.main }}
                 disabled={false}
               />
@@ -211,7 +211,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
       </List>
     );
   }
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <Loader variant={LoaderVariant.inline} />;
 };
 
 const RoleEditionCapabilities = createFragmentContainer(

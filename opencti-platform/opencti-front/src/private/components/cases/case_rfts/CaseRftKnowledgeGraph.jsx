@@ -236,14 +236,20 @@ class CaseRftKnowledgeGraphComponent extends Component {
   savePositions() {
     const initialPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.graphData.nodes),
+      R.map((n) => ({
+        id: n.id,
+        x: n.fx !== null ? n.fx : n.x,
+        y: n.fy !== null ? n.fy : n.y,
+      }), this.graphData.nodes),
     );
+
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map(
-        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
-        this.state.graphData.nodes,
-      ),
+      R.map((n) => ({
+        id: n.id,
+        x: n.fx !== null ? n.fx : n.x,
+        y: n.fy !== null ? n.fy : n.y,
+      }), this.state.graphData.nodes),
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
@@ -319,11 +325,16 @@ class CaseRftKnowledgeGraphComponent extends Component {
   }
 
   handleToggleFixedMode() {
-    this.setState({ modeFixed: !this.state.modeFixed }, () => {
+    const { modeFixed } = this.state;
+    this.setState({ modeFixed: !modeFixed }, () => {
       this.saveParameters();
       this.handleDragEnd();
       this.forceUpdate();
-      this.graph.current.d3ReheatSimulation();
+      if (!this.state.modeFixed) {
+        this.handleResetLayout();
+      } else {
+        this.graph.current.d3ReheatSimulation();
+      }
     });
   }
 
@@ -526,7 +537,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.caseData.graph_data),
+      decodeGraphData(this.props.caseData.x_opencti_graph_data),
       this.props.t,
     );
     await this.resetAllFilters();
@@ -1312,14 +1323,17 @@ class CaseRftKnowledgeGraphComponent extends Component {
                         this.forceUpdate();
                       }}
                       onNodeDrag={(node, translate) => {
+                        const withForces = !this.state.modeFixed;
                         if (this.selectedNodes.has(node)) {
                           [...this.selectedNodes]
                             .filter((selNode) => selNode !== node)
-                            // eslint-disable-next-line no-shadow
-                            .forEach((selNode) => ['x', 'y'].forEach(
-                              // eslint-disable-next-line no-param-reassign,no-return-assign
-                              (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                            ));
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach((coord) => {
+                                const nodeKey = withForces ? `f${coord}` : coord;
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[nodeKey] = selNode[coord] + translate[coord];
+                              });
+                            });
                         }
                       }}
                       onNodeDragEnd={(node) => {
@@ -1327,7 +1341,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
                           // finished moving a selected node
                           [...this.selectedNodes]
                             .filter((selNode) => selNode !== node) // don't touch node being dragged
-                            // eslint-disable-next-line no-shadow
+                          // eslint-disable-next-line no-shadow
                             .forEach((selNode) => {
                               ['x', 'y'].forEach(
                                 // eslint-disable-next-line no-param-reassign,no-return-assign

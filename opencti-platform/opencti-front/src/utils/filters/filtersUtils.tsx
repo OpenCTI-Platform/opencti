@@ -8,7 +8,7 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
-import { generateUniqueItemsArray } from '../utils';
+import { generateUniqueItemsArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -91,6 +91,7 @@ export const stixFilters = [
   'x_opencti_epss_percentile',
   'x_opencti_cvss_base_score',
   'x_opencti_cvss_base_severity',
+  'report_types',
 ];
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -180,6 +181,27 @@ export const findFilterIndexFromKey = (
   return null;
 };
 
+// create a new filter: filters AND new filter built with (key, value, operator, mode)
+export const addFilter = (
+  filters: FilterGroup | undefined,
+  key: string,
+  value: string | string[],
+  operator = 'eq',
+  mode = 'or',
+): FilterGroup | undefined => {
+  const filterFromParameters = {
+    key,
+    values: Array.isArray(value) ? value : [value],
+    operator,
+    mode,
+  };
+  return {
+    mode: 'and',
+    filters: [filterFromParameters],
+    filterGroups: filters ? [filters] : [],
+  };
+};
+
 // remove filter with key=entity_type and values contains 'all'
 // because in this case we want everything, so no need for filters
 export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
@@ -196,6 +218,36 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
   return inputFilters;
 };
 
+// fetch the entity type filters possible values of first and second levels
+// and remove Observable if the filters target only some sub observable types
+// exemple: Observable AND (Domain-Name) --> [Domain-Name]
+// exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
+// exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
+export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, observableTypes?: string[], domainObjectTypes?: string []) => {
+  if (!filters) {
+    return [];
+  }
+  let firstLevelValues = findFilterFromKey(filters.filters, 'entity_type', 'eq')?.values ?? [];
+  const subFiltersSeparatedWithAnd = filters.filterGroups
+    .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
+    .map((fg) => fg.filters)
+    .flat();
+  if (subFiltersSeparatedWithAnd.length > 0) {
+    const secondLevelValues = findFilterFromKey(subFiltersSeparatedWithAnd, 'entity_type', 'eq')?.values ?? [];
+    if (filters.mode === 'and') {
+      // if all second values are observables sub types : remove observable from firstLevelValue
+      if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
+        firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
+      }
+      if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
+        firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
+      }
+    }
+    return [...firstLevelValues, ...secondLevelValues];
+  }
+  return firstLevelValues;
+};
+
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined,
@@ -203,11 +255,11 @@ export const buildFiltersAndOptionsForWidgets = (
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
   let filters = inputFilters;
-  // 02. remove 'all' in filter with key=entity_type
+  // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
     filters = removeEntityTypeAllFromFilterGroup(filters);
   }
-  // 03. handle startDate and endDate options
+  // handle startDate and endDate options
   const dateFiltersContent = [];
   if (startDate) {
     dateFiltersContent.push({
@@ -235,6 +287,36 @@ export const buildFiltersAndOptionsForWidgets = (
   return {
     filters,
   };
+};
+
+export const useBuildFiltersForTemplateWidgets = () => {
+  // fetch not allowed markings for content widgets
+  const { me } = useAuth();
+  const allowedMarkings = me.allowed_marking ?? [];
+  const maxShareableMarkings = me.max_shareable_marking ?? [];
+
+  const buildFiltersForTemplateWidgets = (
+    inputFilters: string | undefined | null,
+    containerId: string,
+    maxContentMarkingsIds: string[],
+  ) => {
+    // replace SELF_ID
+    let filters = inputFilters ? JSON.parse(inputFilters.replace('SELF_ID', containerId)) : undefined;
+    // restrict markings
+    const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
+    const notAllowedMarkingIds = allowedMarkings
+      .filter((def) => {
+        const maxMarkingsOfType = [...maxShareableMarkings, ...maxContentMarkings].filter((marking) => marking.definition_type === def.definition_type);
+        return isEmptyField(maxMarkingsOfType) || maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order < def.x_opencti_order);
+      })
+      .map((m) => m.id);
+    if (notAllowedMarkingIds.length > 0) {
+      filters = addFilter(filters, 'objectMarking', notAllowedMarkingIds, 'not_eq', 'and');
+    }
+    return filters;
+  };
+
+  return { buildFiltersForTemplateWidgets };
 };
 
 // return the i18n label corresponding to a value
@@ -429,37 +511,6 @@ export const deserializeDashboardManifestForFrontend = (
   return {
     ...manifest,
     widgets: newWidgets,
-  };
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-
-// create a new filter: filters AND new filter built with (key, value, operator, mode)
-export const addFilter = (
-  filters: FilterGroup | undefined,
-  key: string,
-  value: string | string[],
-  operator = 'eq',
-  mode = 'or',
-): FilterGroup | undefined => {
-  const filterFromParameters = {
-    id: uuid(),
-    key,
-    values: Array.isArray(value) ? value : [value],
-    operator,
-    mode,
-  };
-  if (!filters) { // Add on nothing = create a new filter
-    return {
-      mode,
-      filters: [filterFromParameters],
-      filterGroups: [],
-    };
-  }
-  return {
-    mode: 'and',
-    filters: [filterFromParameters],
-    filterGroups: [filters],
   };
 };
 

@@ -31,6 +31,10 @@ const indicatorLineFragment = graphql`
     x_opencti_main_observable_type
     created
     confidence
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     createdBy {
       ... on Identity {
         id

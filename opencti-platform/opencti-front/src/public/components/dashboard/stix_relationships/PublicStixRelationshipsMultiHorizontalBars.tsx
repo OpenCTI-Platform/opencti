@@ -1,7 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import * as R from 'ramda';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
@@ -11,6 +10,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsMultiHorizontalBarsQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsMultiHorizontalBarsQuery = graphql`
   query PublicStixRelationshipsMultiHorizontalBarsQuery(
@@ -119,8 +119,8 @@ const publicStixRelationshipsMultiHorizontalBarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiHorizontalBarsComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsMultiHorizontalBarsQuery>
 }
 
@@ -246,7 +246,7 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
     return (
       <WidgetHorizontalBars
         series={chartData}
-        distributed={parameters.distributed}
+        distributed={!!parameters?.distributed}
         withExport={false}
         readonly={true}
         redirectionUtils={redirectionUtils}
@@ -281,7 +281,7 @@ const PublicStixRelationshipsMultiHorizontalBars = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
+      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
       variant="inLine"
     >
       {queryRef ? (

@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -9,6 +8,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsRadarQuery } from './__generated__/PublicStixRelationshipsRadarQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsRadarsQuery = graphql`
   query PublicStixRelationshipsRadarQuery(
@@ -73,7 +73,7 @@ const publicStixRelationshipsRadarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsRadarComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixRelationshipsRadarQuery>
 }
 
@@ -124,7 +124,7 @@ const PublicStixRelationshipsRadar = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

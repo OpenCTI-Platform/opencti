@@ -1,10 +1,11 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import React, { ReactNode } from 'react';
-import { render } from '@testing-library/react';
+import { render, renderHook } from '@testing-library/react';
 import { createMockEnvironment } from 'relay-test-utils';
 import { EnvironmentConfig } from 'relay-runtime';
 import userEvent from '@testing-library/user-event';
+import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
 import { UserContext, UserContextType } from '../hooks/useAuth';
 import AppIntlProvider from '../../components/AppIntlProvider';
 
@@ -59,12 +60,11 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
 
 export interface ProvidersWrapperProps {
   children: ReactNode
-  relayConfig?: Partial<EnvironmentConfig>
+  relayEnv: RelayMockEnvironment
   userContext?: Partial<UserContextType>
 }
 
-export const ProvidersWrapper = ({ children, relayConfig, userContext }: ProvidersWrapperProps) => {
-  const relayEnv = createMockEnvironment(relayConfig);
+export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersWrapperProps) => {
   const defaultUserContext = userContext ?? createMockUserContext();
 
   return (
@@ -94,16 +94,48 @@ interface TestRenderOptions {
  */
 const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
   const { relayConfig, userContext } = options ?? {};
+  // TODO Fix this
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const relayEnv = createMockEnvironment(relayConfig);
+
   return {
     user: userEvent.setup(),
+    relayEnv,
     ...render(ui, {
       wrapper: ({ children }) => (
-        <ProvidersWrapper relayConfig={relayConfig} userContext={userContext}>
+        <ProvidersWrapper relayEnv={relayEnv} userContext={userContext}>
           {children}
         </ProvidersWrapper>
       ),
     }),
   };
 };
+
+/**
+ * Renders a React component to test it.
+ *
+ * @param hook The React hook to test.
+ * @param options (optional) Options to configure mocked providers needed to render the hook.
+ * @returns Rendered hook we can manipulate and make assertions on.
+ */
+export function testRenderHook<A, R>(hook: (args: A) => R, options?: TestRenderOptions) {
+  const { relayConfig, userContext } = options ?? {};
+  // TODO Fix this
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const relayEnv = createMockEnvironment(relayConfig);
+
+  return {
+    relayEnv,
+    hook: renderHook(hook, {
+      wrapper: ({ children }) => (
+        <ProvidersWrapper relayEnv={relayEnv} userContext={userContext}>
+          {children}
+        </ProvidersWrapper>
+      ),
+    }),
+  };
+}
 
 export default testRender;

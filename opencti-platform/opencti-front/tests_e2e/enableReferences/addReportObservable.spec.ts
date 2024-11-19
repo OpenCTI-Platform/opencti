@@ -112,7 +112,6 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   const containerObservablesPage = new ContainerObservablesPage(page);
   const containerAddObservablesPage = new ContainerAddObservablesPage(page);
   const leftBarPage = new LeftBarPage(page);
-  const search = new SearchPageModel(page);
 
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
@@ -134,6 +133,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   // Enable report references and check that removing observable is still possible as admin user
   await leftBarPage.clickOnMenu('Settings', 'Customization');
+  const search = new SearchPageModel(page);
   await search.addSearch('report');
   await page.getByRole('link', { name: 'Report' }).click();
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();

@@ -128,7 +128,7 @@ const PublicDashboardCreationFormComponent = ({
             name="dashboard_id"
             label={t_i18n('Custom dashboard')}
             fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
+            containerstyle={{ width: '100%' }}
             disabled={!!dashboard_id}
           >
             {dashboards?.map((dashboard) => (

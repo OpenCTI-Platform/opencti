@@ -7,7 +7,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsRadarQuery } from './__generated__/PublicStixCoreObjectsRadarQuery.graphql';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsRadarQuery = graphql`
@@ -70,7 +70,7 @@ const publicStixCoreObjectsRadarQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsRadarComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsRadarQuery>
 }
 
@@ -121,7 +121,7 @@ const PublicStixCoreObjectsRadar = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

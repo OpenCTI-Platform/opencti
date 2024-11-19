@@ -440,6 +440,13 @@ input StixCoreObjectsNumberParameters {
   search: String
 }
 
+type OpinionsMetrics {
+  mean: Float
+  min: Int
+  max: Int
+  total: Int
+}
+
 type LogsWorkerConfig {
   elasticsearch_url: [String]!
   elasticsearch_proxy: String
@@ -526,6 +533,7 @@ type TaxiiCollection {
   description: String
   filters: String
   include_inferences: Boolean
+  score_to_confidence: Boolean
   taxii_public: Boolean
   authorized_members: [MemberAccess!]
 }
@@ -547,6 +555,7 @@ input TaxiiCollectionAddInput {
   taxii_public: Boolean
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
+  score_to_confidence: Boolean
 }
 
 enum TaxiiCollectionOrdering {
@@ -902,6 +911,78 @@ type FileConnection {
   edges: [FileEdge!]!
 }
 
+enum WidgetPerspective {
+  entities
+  relationships
+  audits
+}
+
+type WidgetColumn {
+  attribute: String!
+  displayStyle: String
+  label: String
+  variableName: String
+}
+
+type WidgetDataSelection {
+  label: String
+  number: Int
+  attribute: String
+  date_attribute: String
+  centerLat: Float
+  centerLng: Float
+  zoom: Float
+  isTo: Boolean
+  perspective: WidgetPerspective
+  filters: String
+  dynamicFrom: String
+  dynamicTo: String
+  columns: [WidgetColumn!]
+  instance_id: String
+}
+
+type WidgetParameters {
+  title: String
+  description: String
+  interval: String
+  stacked: Boolean
+  legend: Boolean
+  distributed: Boolean
+}
+
+type WidgetLayout {
+  w: Float
+  h: Float
+  x: Float
+  y: Float
+  i: Float
+  moved: Boolean
+  static: Boolean
+}
+
+type Widget {
+  id: ID!
+  type: String!
+  perspective: WidgetPerspective
+  dataSelection: [WidgetDataSelection!]!
+  parameters: WidgetParameters
+  layout: WidgetLayout
+}
+
+type Template {
+  id: ID!
+  name: String!
+  description: String
+  filters: String
+  content: String!
+  template_widgets_ids: [String!]!
+}
+
+type TemplateAndUtils {
+  template: Template!
+  template_widgets: [Widget!]!
+}
+
 type IndexedFile {
   id: ID!
   name: String!
@@ -1236,6 +1317,22 @@ type PlatformCriticalAlert {
   details: PlatformCriticalAlertDetails
 }
 
+type PlatformProtectedSubConfig {
+  enabled: Boolean!
+  protected_ids: [String!]!
+}
+
+type PlatformProtectedSensitiveConfig {
+  enabled: Boolean!
+  markings: PlatformProtectedSubConfig!
+  groups: PlatformProtectedSubConfig!
+  roles: PlatformProtectedSubConfig!
+  rules: PlatformProtectedSubConfig!
+  ce_ee_toggle: PlatformProtectedSubConfig!
+  file_indexing: PlatformProtectedSubConfig!
+  platform_organization: PlatformProtectedSubConfig!
+}
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -1292,6 +1389,8 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
+  platform_trash_enabled: Boolean!
+  platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   created_at: DateTime!
   updated_at: DateTime!
   enterprise_edition: DateTime
@@ -1609,6 +1708,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   can_manage_sensitive_config: Boolean
+  draftContext: DraftWorkspace
 }
 
 type SessionDetail {
@@ -1931,6 +2031,17 @@ type Inference {
   attributes: [InferenceAttribute]
 }
 
+enum DraftOperation {
+  create
+  update
+  delete
+}
+
+type DraftVersion {
+  draft_id: String!
+  draft_operation: DraftOperation!
+}
+
 interface StixObject {
   id: ID!
   standard_id: String!
@@ -1942,6 +2053,7 @@ interface StixObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   creators: [Creator!]
   x_opencti_inferences: [Inference]
 }
@@ -1976,6 +2088,7 @@ interface StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   created: DateTime
   modified: DateTime
 }
@@ -2013,6 +2126,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
   modified: DateTime
@@ -2080,6 +2194,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
   modified: DateTime
@@ -2135,6 +2250,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
   modified: DateTime
@@ -2201,6 +2317,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
   modified: DateTime
@@ -2250,6 +2367,10 @@ enum StixCoreObjectsOrdering {
   observable_value
   subject
   value
+  opinions_metrics_mean
+  opinions_metrics_min
+  opinions_metrics_max
+  opinions_metrics_total
   _score
 }
 
@@ -2276,6 +2397,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2301,6 +2423,7 @@ interface StixCoreObject {
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
+  opinions_metrics: OpinionsMetrics
 }
 
 enum StixDomainObjectsOrdering {
@@ -2369,6 +2492,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2386,6 +2510,7 @@ interface StixDomainObject {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2393,6 +2518,7 @@ interface StixDomainObject {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -2462,6 +2588,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2480,6 +2607,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2487,6 +2615,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -2598,6 +2727,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2616,6 +2746,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2623,6 +2754,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -2704,6 +2836,7 @@ interface Container {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -2721,6 +2854,7 @@ interface Container {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2733,6 +2867,9 @@ interface Container {
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
@@ -2773,6 +2910,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2791,6 +2929,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2798,6 +2937,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -2812,6 +2952,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -2902,6 +3045,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2920,6 +3064,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -2927,6 +3072,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -2940,6 +3086,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3006,6 +3155,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3024,6 +3174,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3031,6 +3182,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -3043,6 +3195,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3130,6 +3285,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3148,6 +3304,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3172,6 +3329,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3243,6 +3403,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3261,6 +3422,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3268,6 +3430,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3349,6 +3512,7 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -3366,6 +3530,7 @@ interface Identity {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3448,6 +3613,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3466,6 +3632,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3473,6 +3640,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3557,6 +3725,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3575,6 +3744,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3582,6 +3752,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3661,6 +3832,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3679,6 +3851,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3686,6 +3859,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3774,6 +3948,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3792,6 +3967,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3799,6 +3975,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   aliases: [String]
@@ -3880,6 +4057,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3898,6 +4076,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -3905,6 +4084,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3991,6 +4171,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -4008,6 +4189,7 @@ interface Location {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4091,6 +4273,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4109,6 +4292,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4116,6 +4300,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4198,6 +4383,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4216,6 +4402,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4223,6 +4410,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4300,6 +4488,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4318,6 +4507,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4325,6 +4515,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4400,6 +4591,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4418,6 +4610,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4425,6 +4618,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4509,6 +4703,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4527,6 +4722,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4534,6 +4730,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4627,6 +4824,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4645,6 +4843,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4652,6 +4851,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4701,6 +4901,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4719,6 +4920,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4726,6 +4928,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4819,6 +5022,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4837,6 +5041,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4844,6 +5049,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4924,6 +5130,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4942,6 +5149,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -4949,6 +5157,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -5046,6 +5255,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5064,6 +5274,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -5156,6 +5367,7 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5173,6 +5385,7 @@ interface StixCyberObservable {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5198,6 +5411,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5216,6 +5430,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5251,6 +5466,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5269,6 +5485,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5308,6 +5525,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5326,6 +5544,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   observable_value: String!
   x_opencti_score: Int
   x_opencti_description: String
@@ -5357,6 +5576,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5375,6 +5595,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5408,6 +5629,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5426,6 +5648,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5469,6 +5692,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5487,6 +5711,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5542,6 +5767,7 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -5559,6 +5785,7 @@ interface HashedObservable {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5585,6 +5812,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5603,6 +5831,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5646,6 +5875,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5664,6 +5894,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5716,6 +5947,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5734,6 +5966,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5819,6 +6052,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5837,6 +6071,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5871,6 +6106,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5889,6 +6125,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5921,6 +6158,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5939,6 +6177,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -5970,6 +6209,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5988,6 +6228,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6019,6 +6260,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6037,6 +6279,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6089,6 +6332,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6107,6 +6351,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6180,6 +6425,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6198,6 +6444,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6250,6 +6497,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6268,6 +6516,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6299,6 +6548,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6317,6 +6567,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6375,6 +6626,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6393,6 +6645,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6428,6 +6681,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6446,6 +6700,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6481,6 +6736,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6499,6 +6755,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6530,6 +6787,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6548,6 +6806,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6579,6 +6838,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6597,6 +6857,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6628,6 +6889,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6646,6 +6908,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6677,6 +6940,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6695,6 +6959,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6726,6 +6991,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6744,6 +7010,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6779,6 +7046,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6797,6 +7065,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, filterMode: FilterMode, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6828,6 +7097,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6846,6 +7116,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, filterMode: FilterMode, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, filterMode: FilterMode): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6877,6 +7148,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6895,6 +7167,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6926,6 +7199,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6944,6 +7218,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -6981,6 +7256,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6999,6 +7275,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -7039,6 +7316,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -7057,6 +7335,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   x_opencti_score: Int
   x_opencti_description: String
   observable_value: String!
@@ -7211,6 +7490,7 @@ interface StixRelationship {
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
   toStix: String
+  draftVersion: DraftVersion
   creators: [Creator!]
 }
 
@@ -7289,6 +7569,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
+  draftVersion: DraftVersion
   description: String
   start_time: DateTime
   stop_time: DateTime
@@ -7395,6 +7676,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
+  draftVersion: DraftVersion
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -7490,6 +7772,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
+  draftVersion: DraftVersion
   start_time: DateTime
   stop_time: DateTime
   datable: Boolean
@@ -7569,6 +7852,7 @@ type Query {
   assignees(entityTypes: [String!]): AssigneeConnection
   participants(entityTypes: [String!]): ParticipantConnection
   members(first: Int, search: String, filters: FilterGroup, filterMode: FilterMode, entityTypes: [MemberType!]): MemberConnection
+  systemMembers: MemberConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]
   role(id: String!): Role
@@ -7814,6 +8098,7 @@ type Query {
   playbook(id: String!): Playbook
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
+  playbooksForEntity(id: String!): [Playbook]
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
@@ -7851,6 +8136,12 @@ type Query {
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
   supportPackage(id: String!): SupportPackage
   supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
+  exclusionList(id: String!): ExclusionList
+  exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
+  draftWorkspace(id: String!): DraftWorkspace
+  draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
+  draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
 }
 
 type Subscription {
@@ -8034,7 +8325,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
 }
@@ -8055,7 +8346,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -8605,6 +8896,7 @@ type Mutation {
   playbookUpdatePositions(id: ID!, positions: String!): ID
   playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook
   playbookStepExecution(execution_id: ID!, event_id: ID!, execution_start: DateTime!, data_instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean
+  playbookExecute(id: ID!, entityId: String!): Boolean
   ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
@@ -8641,10 +8933,10 @@ type Mutation {
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
-  aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
-  aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, fileIds: [String]): String
+  aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, language: String, fileIds: [String]): String
   aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String
   aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String
   aiImproveWriting(id: ID!, content: String!, format: Format): String
@@ -8662,6 +8954,12 @@ type Mutation {
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
   supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
   supportPackageDelete(id: ID!): ID
+  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
+  exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
+  exclusionListDelete(id: ID!): ID
+  draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
+  draftWorkspaceValidate(id: ID!): Work
+  draftWorkspaceDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -8675,6 +8973,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -8693,6 +8992,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -8700,6 +9000,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8775,6 +9076,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -8793,6 +9095,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -8800,6 +9103,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   aliases: [String]
@@ -8868,6 +9172,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -8886,6 +9191,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -8893,6 +9199,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8972,6 +9279,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -8990,6 +9298,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -8997,6 +9306,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -9013,6 +9323,9 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -9081,6 +9394,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -9099,6 +9413,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -9106,6 +9421,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -9344,6 +9660,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -9362,6 +9679,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -9369,6 +9687,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -9442,6 +9761,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -9460,6 +9780,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -9467,6 +9788,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -9605,6 +9927,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
   modified: DateTime
@@ -9659,6 +9982,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -9676,6 +10000,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -9683,6 +10008,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -9761,6 +10087,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -9779,6 +10106,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -9796,6 +10124,9 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -9898,6 +10229,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -9916,6 +10248,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -9934,6 +10267,9 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -10018,6 +10354,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -10036,6 +10373,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -10053,6 +10391,9 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10139,6 +10480,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -10157,6 +10499,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -10174,6 +10517,9 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10258,6 +10604,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -10276,6 +10623,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -10293,6 +10641,9 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10378,6 +10729,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -10396,6 +10748,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -10413,6 +10766,9 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  templates: [Template!]
+  templateAndUtils(templateId: String!): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10631,6 +10987,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   created_at: DateTime!
   updated_at: DateTime!
   x_opencti_inferences: [Inference]
+  draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -10648,6 +11005,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -10655,6 +11013,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -10838,6 +11197,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -10856,6 +11216,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -10863,6 +11224,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -11141,6 +11503,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  confidence_to_score: Boolean
 }
 
 enum IngestionTaxiiOrdering {
@@ -11172,6 +11535,7 @@ input IngestionTaxiiAddInput {
   collection: String!
   added_after_start: DateTime
   ingestion_running: Boolean
+  confidence_to_score: Boolean
   user_id: String
 }
 
@@ -11282,6 +11646,11 @@ type DecayChartData {
   live_score_serie: [DecayHistory!]
 }
 
+type ObservablesValues {
+  type: String
+  value: String
+}
+
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -11293,6 +11662,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -11311,6 +11681,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -11318,6 +11689,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   pattern_type: String
   pattern_version: String
@@ -11330,6 +11702,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
+  x_opencti_observable_values: [ObservablesValues!]
   x_mitre_platforms: [String]
   killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
@@ -11449,6 +11822,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -11467,6 +11841,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
   revoked: Boolean!
   confidence: Int
   lang: String
@@ -11474,6 +11849,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -11594,14 +11970,14 @@ type CsvMapperRepresentationAttribute {
   default_values: [DefaultValue!]
 }
 
-enum Operator {
+enum CsvMapperOperator {
   eq
-  neq
+  not_eq
 }
 
 type CsvMapperRepresentationTargetColumn {
   column_reference: String
-  operator: Operator
+  operator: CsvMapperOperator
   value: String
 }
 
@@ -11705,7 +12081,7 @@ input CsvMapperRepresentationAttributeInput {
 
 input CsvMapperRepresentationTargetColumnInput {
   column_reference: String
-  operator: Operator
+  operator: CsvMapperOperator
   value: String
 }
 
@@ -11924,4 +12300,85 @@ input SupportPackageAddInput {
 
 input SupportPackageForceZipInput {
   id: String!
+}
+
+type ExclusionList implements InternalObject & BasicObject {
+  id: ID!
+  name: String!
+  description: String
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  enabled: Boolean!
+  list_entity_types: [ExclusionListEntityTypes!]!
+  file_id: String!
+}
+
+type ExclusionListConnection {
+  pageInfo: PageInfo!
+  edges: [ExclusionListEdge!]
+}
+
+type ExclusionListEdge {
+  cursor: String!
+  node: ExclusionList!
+}
+
+enum ExclusionListOrdering {
+  name
+  created_at
+}
+
+enum ExclusionListEntityTypes {
+  IPV4_ADDR
+  IPV6_ADDR
+  DOMAIN_NAME
+  URL
+}
+
+input ExclusionListContentAddInput {
+  name: String!
+  description: String
+  list_entity_types: [ExclusionListEntityTypes!]!
+  content: String!
+}
+
+input ExclusionListFileAddInput {
+  name: String!
+  description: String
+  list_entity_types: [ExclusionListEntityTypes!]!
+  file: Upload!
+}
+
+type DraftWorkspace implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  created_at: DateTime!
+  creators: [Creator!]
+  entity_id: String
+}
+
+enum DraftWorkspacesOrdering {
+  name
+  created_at
+  creator
+}
+
+type DraftWorkspaceConnection {
+  pageInfo: PageInfo!
+  edges: [DraftWorkspaceEdge!]!
+}
+
+type DraftWorkspaceEdge {
+  cursor: String!
+  node: DraftWorkspace!
+}
+
+input DraftWorkspaceAddInput {
+  name: String!
+  entity_id: String
 }

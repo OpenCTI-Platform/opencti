@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS_SETACCESSES, INGESTION, CSVMAPPERS } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS_SETACCESSES, INGESTION, CSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -23,6 +23,8 @@ const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 
 const Root = () => {
+  const isConnectorReader = useGranted([MODULES]);
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -32,11 +34,11 @@ const Root = () => {
         />
         <Route
           path="/entities"
-          Component={boundaryWrapper(Entities)}
+          element={boundaryWrapper(Entities)}
         />
         <Route
           path="/relationships"
-          Component={boundaryWrapper(Relationships)}
+          element={boundaryWrapper(Relationships)}
         />
         <Route
           path="/ingestion"
@@ -54,29 +56,29 @@ const Root = () => {
                 </Security>
               )}
             >
-              <Navigate to="/dashboard/data/ingestion/sync" />
+              <Navigate to={isConnectorReader ? '/dashboard/data/ingestion/connectors' : '/dashboard/data/ingestion/sync'} />
             </Security>
           }
         />
         <Route
           path="/ingestion/sync"
-          Component={boundaryWrapper(Sync)}
+          element={boundaryWrapper(Sync)}
         />
         <Route
           path="/ingestion/rss"
-          Component={boundaryWrapper(IngestionRss)}
+          element={boundaryWrapper(IngestionRss)}
         />
         <Route
           path="/ingestion/taxii"
-          Component={boundaryWrapper(IngestionTaxiis)}
+          element={boundaryWrapper(IngestionTaxiis)}
         />
         <Route
           path="/ingestion/csv"
-          Component={boundaryWrapper(IngestionCsv)}
+          element={boundaryWrapper(IngestionCsv)}
         />
         <Route
           path="/ingestion/connectors"
-          Component={boundaryWrapper(Connectors)}
+          element={boundaryWrapper(Connectors)}
         />
         <Route
           path="/ingestion/connectors/:connectorId"
@@ -84,7 +86,7 @@ const Root = () => {
         />
         <Route
           path="/import/*"
-          Component={boundaryWrapper(RootImport)}
+          element={boundaryWrapper(RootImport)}
         />
         <Route
           path="/sharing"
@@ -92,15 +94,15 @@ const Root = () => {
         />
         <Route
           path="/sharing/streams"
-          Component={boundaryWrapper(Stream)}
+          element={boundaryWrapper(Stream)}
         />
         <Route
           path="/sharing/feeds"
-          Component={boundaryWrapper(Feed)}
+          element={boundaryWrapper(Feed)}
         />
         <Route
           path="/sharing/taxii"
-          Component={boundaryWrapper(Taxii)}
+          element={boundaryWrapper(Taxii)}
         />
         <Route
           path="/processing"
@@ -122,11 +124,11 @@ const Root = () => {
         />
         <Route
           path="/processing/automation"
-          Component={boundaryWrapper(Playbooks)}
+          element={boundaryWrapper(Playbooks)}
         />
         <Route
           path="/processing/automation/:playbookId"
-          Component={boundaryWrapper(RootPlaybook)}
+          element={boundaryWrapper(RootPlaybook)}
         />
         <Route
           path="/processing/csv_mapper"

@@ -1,4 +1,3 @@
-version: '3'
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
@@ -139,6 +138,8 @@ services:
   opencti-dev-keycloak:
       profiles: [ keycloak ]
       image: quay.io/keycloak/keycloak:25.0.6
+      volumes:
+        - keycloakdata:/opt/keycloak/data
       container_name: opencti-dev-keycloak
       command: start-dev
       environment:
@@ -211,4 +212,6 @@ volumes:
   osdata:
     driver: local
   ossnapshots:
+    driver: local
+  keycloakdata:
     driver: local

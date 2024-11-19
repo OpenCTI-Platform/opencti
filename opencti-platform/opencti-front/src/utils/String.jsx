@@ -89,6 +89,8 @@ export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R
 
 export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+export const capitalizeWords = (str) => str.split(' ').map(capitalizeFirstLetter).join(' ');
+
 export const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':
@@ -133,3 +135,5 @@ export const splitMultilines = (str) => (str ?? '')
   .split(/\r?\n/)
   .filter((v) => !!v)
   .map((s) => s.trim());
+
+export const maskString = (value) => (value ? '•'.repeat(value.length) : '');

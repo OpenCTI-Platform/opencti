@@ -7,7 +7,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsDonutQuery } from './__generated__/PublicStixCoreObjectsDonutQuery.graphql';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsDonutQuery = graphql`
@@ -70,7 +70,7 @@ const publicStixCoreObjectsDonutQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsDonutComponentProps {
-  dataSelection: PublicManifestWidget['dataSelection']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsDonutQuery>
 }
 
@@ -120,7 +120,7 @@ const PublicStixCoreObjectsDonut = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

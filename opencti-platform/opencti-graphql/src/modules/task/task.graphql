@@ -10,6 +10,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: Identity
@@ -83,6 +84,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -136,6 +138,19 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     search: String
     filters: FilterGroup
   ): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

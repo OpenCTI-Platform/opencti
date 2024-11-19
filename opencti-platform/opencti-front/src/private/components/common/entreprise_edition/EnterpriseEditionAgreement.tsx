@@ -69,7 +69,7 @@ EnterpriseEditionAgreementProps
         <ul>
           <li>
             {t_i18n(
-              'OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.',
+              'OpenCTI EE is free-to-use for development, testing and research purposes as well as for charity organizations with NGO status.',
             )}
           </li>
           <li>

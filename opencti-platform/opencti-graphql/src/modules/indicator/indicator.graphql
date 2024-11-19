@@ -51,6 +51,11 @@ type DecayChartData {
   live_score_serie: [DecayHistory!]
 }
 
+type ObservablesValues {
+  type: String
+  value: String
+}
+
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -63,6 +68,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
@@ -137,6 +143,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -145,6 +152,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Indicator
   pattern_type: String
@@ -158,6 +166,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
+  x_opencti_observable_values: [ObservablesValues!]
   x_mitre_platforms: [String]
   killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection

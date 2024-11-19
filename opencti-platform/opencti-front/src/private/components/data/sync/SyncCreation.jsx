@@ -28,6 +28,7 @@ import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import PasswordTextField from '../../../../components/PasswordTextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -211,7 +212,7 @@ const SyncCreation = ({ paginationOptions }) => {
             errors,
           }) => {
             return (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+              <Form>
                 <Field
                   component={TextField}
                   variant="standard"
@@ -247,14 +248,10 @@ const SyncCreation = ({ paginationOptions }) => {
                     disabled={streams.length > 0}
                     style={fieldSpacingContainerStyle}
                   />
-                  <Field
-                    component={TextField}
-                    variant="standard"
+                  <PasswordTextField
                     name="token"
                     label={t_i18n('Remote OpenCTI token')}
-                    fullWidth={true}
                     disabled={streams.length > 0}
-                    style={fieldSpacingContainerStyle}
                   />
                   {streams.length > 0 && (
                     <Field
@@ -266,7 +263,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       containerstyle={fieldSpacingContainerStyle}
                       renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
                         .name
-                      }
+                            }
                     >
                       {streams.map(
                         ({ value, label, name, description, filters }) => {
@@ -295,7 +292,7 @@ const SyncCreation = ({ paginationOptions }) => {
                                     />
                                   </Grid>
                                 </Grid>
-                              }
+                                        }
                               placement="bottom-start"
                             >
                               <MenuItem key={value} value={value}>
@@ -313,7 +310,7 @@ const SyncCreation = ({ paginationOptions }) => {
                         variant="contained"
                         color="secondary"
                         onClick={() => handleGetStreams(values, setErrors, errors)
-                        }
+                              }
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >

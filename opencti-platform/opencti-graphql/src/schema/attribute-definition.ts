@@ -95,6 +95,39 @@ export const id: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
 };
 
+export const draftIds: AttributeDefinition = {
+  name: 'draft_ids',
+  label: 'Draft ids',
+  type: 'string',
+  format: 'id',
+  update: false,
+  mandatoryType: 'no',
+  multiple: true,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
+  featureFlag: 'DRAFT_WORKSPACE'
+};
+
+export const draftChange: AttributeDefinition = {
+  name: 'draft_change',
+  label: 'Draft change',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: 'DRAFT_WORKSPACE',
+  mappings: [
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    // draftUpdatePatch
+  ]
+};
+
 export const iAttributes: AttributeDefinition = {
   name: 'i_attributes',
   label: 'Attributes',
@@ -133,7 +166,7 @@ export const creators: AttributeDefinition = {
   label: 'Creators',
   type: 'string',
   format: 'id',
-  update: false,
+  update: true,
   entityTypes: [ENTITY_TYPE_USER],
   mandatoryType: 'no',
   editDefault: false,
@@ -317,6 +350,24 @@ export const errors: AttributeDefinition = {
     { name: 'error', label: 'Error', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'source', label: 'Source', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+  ]
+};
+
+export const opinionsMetrics: AttributeDefinition = {
+  name: 'opinions_metrics',
+  label: 'Opinion metrics',
+  type: 'object',
+  format: 'standard',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: true,
+  isFilterable: true,
+  mappings: [
+    { name: 'mean', label: 'Opinions mean', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'max', label: 'Opinions max', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'min', label: 'Opinions min', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'total', label: 'Opinions total number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
   ]
 };
 

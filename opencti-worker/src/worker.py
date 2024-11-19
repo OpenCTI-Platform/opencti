@@ -213,6 +213,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.api.set_applicant_id_header(data.get("applicant_id"))
         self.api.set_playbook_id_header(data.get("playbook_id"))
         self.api.set_event_id(data.get("event_id"))
+        self.api.set_draft_id(data.get("draft_id"))
         work_id = data["work_id"] if "work_id" in data else None
         synchronized = data["synchronized"] if "synchronized" in data else False
         self.api.set_synchronized_upsert_header(synchronized)

@@ -35,6 +35,10 @@ const externalReferencesLineFragment = graphql`
     external_id
     url
     created
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     creators {
       id
       name

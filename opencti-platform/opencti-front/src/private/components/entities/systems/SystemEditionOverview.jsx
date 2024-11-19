@@ -183,7 +183,7 @@ const SystemEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={system} />
           <Field
             component={TextField}

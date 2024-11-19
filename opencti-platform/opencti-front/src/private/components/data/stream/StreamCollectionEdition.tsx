@@ -135,7 +135,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       validationSchema={streamCollectionValidation(t_i18n('This field is required'))}
     >
       {() => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             variant="standard"

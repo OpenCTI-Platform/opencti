@@ -19,12 +19,8 @@ const StixCoreObjectEnrichment = (props) => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpenEnrichment = () => {
-    if (props.closeMenu) {
-      props.closeMenu();
-    }
     setOpenDrawer(true);
   };
-
   const handleCloseEnrichment = () => {
     setOpenDrawer(false);
   };

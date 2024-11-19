@@ -42,6 +42,7 @@ export const caseRfiMutationFieldPatch = graphql`
         commitMessage: $commitMessage
         references: $references
       ) {
+        x_opencti_graph_data
         ...CaseRfiEditionOverview_case
         ...CaseUtils_case
       }
@@ -271,7 +272,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={caseData}/>
           <Field
             component={TextField}

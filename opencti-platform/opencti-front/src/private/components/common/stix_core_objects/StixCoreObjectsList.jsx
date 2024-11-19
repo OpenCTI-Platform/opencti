@@ -8,7 +8,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-const stixCoreObjectsListQuery = graphql`
+export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
     $types: [String]
     $first: Int
@@ -28,6 +28,15 @@ const stixCoreObjectsListQuery = graphql`
           id
           entity_type
           created_at
+          representative {
+            main
+          }
+          opinions_metrics {
+            mean
+            min
+            max
+            total
+          }
           ... on StixDomainObject {
             created
             modified
@@ -67,10 +76,12 @@ const stixCoreObjectsListQuery = graphql`
           ... on Individual {
             name
             description
+            x_opencti_aliases
           }
           ... on Organization {
             name
             description
+            x_opencti_aliases
           }
           ... on Sector {
             name
@@ -79,10 +90,16 @@ const stixCoreObjectsListQuery = graphql`
           ... on System {
             name
             description
+            x_opencti_aliases
           }
           ... on Indicator {
             name
             description
+            indicator_types
+            pattern
+            pattern_type
+            valid_from
+            valid_until
           }
           ... on Infrastructure {
             name
@@ -91,6 +108,7 @@ const stixCoreObjectsListQuery = graphql`
           ... on IntrusionSet {
             name
             description
+            aliases
           }
           ... on Position {
             name
@@ -122,6 +140,7 @@ const stixCoreObjectsListQuery = graphql`
           ... on ThreatActor {
             name
             description
+            aliases
           }
           ... on Tool {
             name
@@ -162,6 +181,7 @@ const stixCoreObjectsListQuery = graphql`
           ... on Task {
             name
             description
+            due_date
           }
           ... on StixCyberObservable {
             observable_value
@@ -215,6 +235,9 @@ const StixCoreObjectsList = ({
   const { t_i18n } = useFormatter();
   const selection = dataSelection[0];
   const dataSelectionTypes = ['Stix-Core-Object'];
+  const sortBy = selection.sort_by && selection.sort_by.length > 0
+    ? selection.sort_by
+    : 'created_at';
   const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
     ? selection.date_attribute
     : 'created_at';
@@ -234,8 +257,8 @@ const StixCoreObjectsList = ({
         variables={{
           types: dataSelectionTypes,
           first: selection.number ?? 10,
-          orderBy: dateAttribute,
-          orderMode: 'desc',
+          orderBy: sortBy,
+          orderMode: selection.sort_mode ?? 'asc',
           filters,
         }}
         render={({ props }) => {
@@ -252,6 +275,7 @@ const StixCoreObjectsList = ({
                 rootRef={rootRef.current ?? undefined}
                 widgetId={widgetId}
                 pageSize={selection.number ?? 10}
+                sortBy={sortBy}
               />
             );
           }

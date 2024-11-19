@@ -39,9 +39,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   marginTop: {
     marginTop: 20,
   },
-  formContainer: {
-    margin: '20px 0',
-  },
   representationContainer: {
     marginTop: 20,
     display: 'flex',
@@ -53,6 +50,13 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   has_header: Yup.boolean().required(t_i18n('This field is required')),
   separator: Yup.string().trim().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
+  entity_representations: Yup.array().of(
+    Yup.object().shape({
+      column_based: Yup.object().shape({
+        value: Yup.string().matches(/^[^'"]*$/, t_i18n('Quotes are not allowed for the value')),
+      }),
+    }),
+  ),
 });
 
 interface CsvMapperFormProps {
@@ -61,13 +65,12 @@ interface CsvMapperFormProps {
     values: CsvMapperFormData,
     formikHelpers: FormikHelpers<CsvMapperFormData>,
   ) => void;
+  isDuplicated?: boolean,
 }
 
-const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit }) => {
+const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-
-  // -- INIT --
 
   // accordion state
   const [open, setOpen] = useState(false);
@@ -142,6 +145,16 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
     ]);
   };
 
+  const getButtonText = () => {
+    if (isDuplicated) {
+      return t_i18n('Duplicate');
+    }
+    if (csvMapper.id) {
+      return t_i18n('Update');
+    }
+    return t_i18n('Create');
+  };
+
   // -- ERRORS --
   // on edit mode, csvMapper.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
@@ -153,7 +166,6 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
     errors = { ...errors, [key]: value };
     setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
-
   return (
     <>
       <Formik<CsvMapperFormData>
@@ -164,7 +176,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       >
         {({ submitForm, isSubmitting, setFieldValue, values }) => {
           return (
-            <Form className={classes.formContainer}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"
@@ -203,17 +215,17 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   >
                     <FormControlLabel
                       value=","
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Comma')}
                     />
                     <FormControlLabel
                       value=";"
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
                       value={'|'}
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={t_i18n('Pipe')}
                     />
                   </RadioGroup>
@@ -334,7 +346,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {csvMapper.id ? t_i18n('Update') : t_i18n('Create')}
+                  {getButtonText()}
                 </Button>
               </div>
               <CsvMapperTestDialog

@@ -1,5 +1,5 @@
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { type AttributeDefinition, entityType, type IdAttribute, type NestedObjectAttribute } from '../../schema/attribute-definition';
+import { type AttributeDefinition, entityType, type IdAttribute, type NestedObjectAttribute, opinionsMetrics } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { connections } from './basicRelationship-registrationAttributes';
@@ -15,6 +15,7 @@ import {
 
 export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   entityType,
+  opinionsMetrics,
   {
     ...connections as NestedObjectAttribute,
     isFilterable: true,

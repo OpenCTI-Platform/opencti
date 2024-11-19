@@ -11,6 +11,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
+    draftVersion: DraftVersion
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
@@ -85,6 +86,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # Stix Domain Object
     revoked: Boolean!
     confidence: Int
@@ -93,6 +95,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: [Assignee!]
+    objectParticipant: [Participant!]
     avatar: OpenCtiFile
     # Technical
     creators: [Creator!]

@@ -133,6 +133,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'list_params', label: 'List of parameters', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'input', label: 'Input', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'external_references', label: 'External references', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      { name: 'marking_definitions', label: 'Marking definitions', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     ]
   },
   { ...creators, isFilterable: false },
@@ -311,6 +312,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'otp_qr', label: 'OTP QR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_activated', label: '2FA state', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'draft_context', label: 'Current draft context', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'DRAFT_WORKSPACE' },
     { name: 'default_time_field', label: 'Default time field', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_status', label: 'Account status', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_lock_after_date', label: 'User account expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -349,7 +351,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'can_manage_sensitive_config', label: 'Is sensitive changes allowed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'PROTECT_SENSITIVE_CHANGES' },
+    { name: 'can_manage_sensitive_config', label: 'Is sensitive changes allowed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_RULE]: [
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }
@@ -385,7 +387,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'taxii_public', label: 'Public taxii', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'include_inferences', label: 'Include inferences', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
-    authorizedMembers
+    { name: 'score_to_confidence', label: 'Copy OpenCTI scores to confidence level for indicators', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_FEED]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

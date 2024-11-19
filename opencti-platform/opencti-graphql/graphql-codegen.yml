@@ -51,6 +51,8 @@ generates:
         PublicDashboard: ../modules/publicDashboard/publicDashboard-types#BasicStoreEntityPublicDashboard
         DeleteOperation: ../modules/deleteOperation/deleteOperation-types#BasicStoreEntityDeleteOperation
         SupportPackage: ../modules/support/support-types#BasicStoreEntitySupportPackage
+        DraftWorkspace: ../modules/draftWorkspace/draftWorkspace-types#BasicStoreEntityDraftWorkspace
+        ExclusionList: ../modules/exclusionList/exclusionList-types#BasicStoreEntityExclusionList
   ./graphql.schema.json:
     plugins:
       - "introspection"

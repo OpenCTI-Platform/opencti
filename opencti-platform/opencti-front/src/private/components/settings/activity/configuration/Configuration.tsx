@@ -29,6 +29,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import { useTheme } from '@mui/styles';
 import ActivityMenu from '../../ActivityMenu';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
@@ -49,7 +50,7 @@ import Security from '../../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   alert: {
     width: '100%',
     marginBottom: 20,
@@ -59,7 +60,7 @@ const useStyles = makeStyles<Theme>(() => ({
     padding: '0 200px 50px 0',
   },
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 20,
     borderRadius: 4,
   },
@@ -102,6 +103,8 @@ ConfigurationComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
   const [commit] = useApiMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(
     configurationQuery,
@@ -158,7 +161,7 @@ ConfigurationComponentProps
                 >
                   {({ resetForm }) => {
                     return (
-                      <Form style={{ margin: '20px 0 20px 0' }}>
+                      <Form style={{ margin: `${theme.spacing(1)} 0` }}>
                         <Grid container={true} spacing={0}>
                           <Grid
                             key="users"

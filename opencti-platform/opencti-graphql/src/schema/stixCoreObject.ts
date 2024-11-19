@@ -16,5 +16,10 @@ export const isStixExportableData = (instance: StoreObject) => isStixObject(inst
   || isStixRelationshipExceptRef(instance.entity_type) || INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type);
 
 export const stixCoreObjectOptions = {
-  StixCoreObjectsOrdering: {}
+  StixCoreObjectsOrdering: {
+    opinions_metrics_mean: 'opinions_metrics.mean',
+    opinions_metrics_max: 'opinions_metrics.max',
+    opinions_metrics_min: 'opinions_metrics.min',
+    opinions_metrics_total: 'opinions_metrics.total'
+  }
 };

@@ -5,10 +5,6 @@ import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -19,16 +15,21 @@ import Tooltip from '@mui/material/Tooltip';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import { ConnectorWorks_data$data } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
-import { ConnectorWorksQuery$variables } from '@components/data/connectors/__generated__/ConnectorWorksQuery.graphql';
+import Drawer from '@components/common/drawer/Drawer';
+import Alert from '@mui/material/Alert';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import parseWorkErrors, { ParsedWorkMessage } from '@components/data/connectors/parseWorkErrors';
+import { ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
+import { ConnectorWorks_data$data } from './__generated__/ConnectorWorks_data.graphql';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { MESSAGING$ } from '../../../../relay/environment';
-import Transition from '../../../../components/Transition';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import ConnectorWorksErrorLine from './ConnectorWorksErrorLine';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -72,7 +73,7 @@ export const connectorWorksWorkDeletionMutation = graphql`
   }
 `;
 
-type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
+export type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 
 interface ConnectorWorksComponentProps {
   data: ConnectorWorks_data$data
@@ -80,22 +81,33 @@ interface ConnectorWorksComponentProps {
   relay: RelayRefetchProp
 }
 
-const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({ data, options, relay }) => {
+const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({
+  data,
+  options,
+  relay,
+}) => {
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
-  const [displayErrors, setDisplayErrors] = useState<boolean>(false);
-  const [errors, setErrors] = useState<WorkMessages>([]);
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
+  const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
+  const [errors, setErrors] = useState<ParsedWorkMessage[]>([]);
+  const [criticals, setCriticals] = useState<ParsedWorkMessage[]>([]);
+  const [warnings, setWarnings] = useState<ParsedWorkMessage[]>([]);
+  const [tabValue, setTabValue] = useState<string>('Critical');
 
-  const handleOpenErrors = (errorsList: WorkMessages) => {
-    if (!errorsList) return;
-    setDisplayErrors(true);
-    setErrors(errorsList);
+  const handleOpenDrawerErrors = async (errorsList: WorkMessages) => {
+    setOpenDrawerErrors(true);
+    const parsedList = await parseWorkErrors(errorsList);
+    setErrors(parsedList);
+    const criticalErrors = parsedList.filter((error) => error.level === 'Critical');
+    setCriticals(criticalErrors);
+    const warningErrors = parsedList.filter((error) => error.level === 'Warning');
+    setWarnings(warningErrors);
   };
 
-  const handleCloseErrors = () => {
-    setDisplayErrors(false);
+  const handleCloseDrawerErrors = () => {
+    setOpenDrawerErrors(false);
     setErrors([]);
   };
 
@@ -220,7 +232,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 classes={{ root: classes.errorButton }}
                 variant="outlined"
                 color={(work.errors ?? []).length === 0 ? 'success' : 'warning'}
-                onClick={() => handleOpenErrors(work.errors ?? [])}
+                onClick={() => handleOpenDrawerErrors(work.errors ?? [])}
                 size="small"
               >
                 {work.errors?.length} {t_i18n('errors')}
@@ -240,43 +252,43 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           </Paper>
         );
       })}
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayErrors}
-        TransitionComponent={Transition}
-        onClose={handleCloseErrors}
-        fullScreen={true}
+      <Drawer
+        title={t_i18n('Errors')}
+        open={openDrawerErrors}
+        onClose={handleCloseDrawerErrors}
       >
-        <DialogContent>
-          <DialogContentText>
-            <TableContainer component={Paper}>
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
-                    <TableCell>{t_i18n('Source')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {errors?.map((error) => error && (
-                    <TableRow key={error.timestamp}>
-                      <TableCell>{nsdt(error.timestamp)}</TableCell>
-                      <TableCell>{error.message}</TableCell>
-                      <TableCell>{error.source}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseErrors} color="primary">
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <>
+          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
+          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+            <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
+            <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
+            <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
+          </Tabs>
+          <TableContainer component={Paper}>
+            <Table aria-label="errors table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Timestamp')}</TableCell>
+                  <TableCell>{t_i18n('Code')}</TableCell>
+                  <TableCell>{t_i18n('Message')}</TableCell>
+                  <TableCell>{t_i18n('Source')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tabValue === 'Critical' && criticals.map((error, i) => (
+                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                ))}
+                {tabValue === 'Warning' && warnings.map((error, i) => (
+                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                ))}
+                {tabValue === 'All' && errors.map((error, i) => (
+                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      </Drawer>
     </div>
   );
 };

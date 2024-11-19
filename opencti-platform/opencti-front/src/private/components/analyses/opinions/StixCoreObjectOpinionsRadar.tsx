@@ -41,22 +41,13 @@ interface StixCoreObjectOpinionsRadarProps {
   queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>
   height: number
   opinionOptions: { label: string, value: number }[]
+  handleOpen: () => void
 }
 
-const StixCoreObjectOpinionsRadar: FunctionComponent<
-StixCoreObjectOpinionsRadarProps
-> = ({
-  queryRef,
-  height,
-  opinionOptions,
-}) => {
+const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadarProps> = ({ queryRef, opinionOptions, height, handleOpen }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(
-    stixCoreObjectOpinionsRadarDistributionQuery,
-    queryRef,
-  );
-
+  const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(stixCoreObjectOpinionsRadarDistributionQuery, queryRef);
   const distributionData = R.indexBy(
     R.prop('label'),
     (opinionsDistribution || []).map((n) => ({
@@ -72,17 +63,16 @@ StixCoreObjectOpinionsRadarProps
   ];
   const labels = opinionOptions.map((m) => m.label);
   const colors = generateGreenToRedColors(opinionOptions.length);
-
   return (
     <Chart
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // Need to migrate Chart Charts.js file to TSX
-      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, true, 'transparent')}
+      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, 'transparent', (height / 2) - 20, handleOpen)}
       series={chartData}
       type="radar"
       width="100%"
-      height={height}
+      height="100%"
     />
   );
 };

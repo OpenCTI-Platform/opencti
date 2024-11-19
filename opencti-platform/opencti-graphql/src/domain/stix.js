@@ -35,6 +35,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { getDraftContext } from '../utils/draftContext';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -180,9 +181,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
-
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-
   const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [entity.id] });
 
   const baseEvent = {
@@ -274,6 +273,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot restrict organization in draft');
   const from = await internalLoadById(context, user, fromId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
   // We skip references validation when updating organization sharing
@@ -285,6 +285,7 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
 };
 
 export const removeOrganizationRestriction = async (context, user, fromId, organizationId) => {
+  if (getDraftContext(context, user)) throw new Error('Cannot remove organization restriction in draft');
   const from = await internalLoadById(context, user, fromId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
   // We skip references validation when updating organization sharing

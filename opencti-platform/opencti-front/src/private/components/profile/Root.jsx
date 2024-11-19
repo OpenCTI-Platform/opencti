@@ -17,11 +17,11 @@ const Root = () => (
     />
     <Route
       path="/notifications"
-      Component={boundaryWrapper(Notifications)}
+      element={boundaryWrapper(Notifications)}
     />
     <Route
       path="/triggers"
-      Component={boundaryWrapper(Triggers)}
+      element={boundaryWrapper(Triggers)}
     />
   </Routes>
 );

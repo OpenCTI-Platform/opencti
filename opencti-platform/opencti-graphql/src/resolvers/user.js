@@ -20,6 +20,7 @@ import {
   deleteBookmark,
   findAll,
   findAllMembers,
+  findAllSystemMembers,
   findAssignees,
   findById,
   findCapabilities,
@@ -56,6 +57,7 @@ import {
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
@@ -77,6 +79,7 @@ const userResolvers = {
     assignees: (_, args, context) => findAssignees(context, context.user, args),
     participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findAllMembers(context, context.user, args),
+    systemMembers: () => findAllSystemMembers(),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
@@ -114,6 +117,7 @@ const userResolvers = {
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
+    draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
     effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },

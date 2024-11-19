@@ -94,6 +94,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/settings/accesses/users';
     case 'Group':
       return '/dashboard/settings/accesses/groups';
+    case 'DraftWorkspace':
+      return '/dashboard/drafts';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

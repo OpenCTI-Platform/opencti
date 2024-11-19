@@ -29,12 +29,13 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
-    margin: '10px 0 0 0',
+    marginTop: theme.spacing(1),
     padding: 0,
     borderRadius: 4,
   },

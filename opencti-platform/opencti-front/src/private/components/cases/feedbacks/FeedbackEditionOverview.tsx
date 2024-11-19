@@ -250,7 +250,7 @@ FeedbackEditionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={feedbackData} />
           <Field
             component={TextField}
@@ -258,7 +258,6 @@ FeedbackEditionOverviewProps
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={

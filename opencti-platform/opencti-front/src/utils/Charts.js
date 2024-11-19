@@ -2,7 +2,7 @@ import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
 
-const colors = (temp) => [
+export const colors = (temp) => [
   C.red[temp],
   C.purple[temp],
   C.pink[temp],
@@ -563,8 +563,9 @@ export const horizontalBarsChartOptions = (
  * @param {string[]} labels
  * @param {string[]} chartColors
  * @param {boolean} legend
- * @param {boolean} offset
  * @param {string} background
+ * @param {int} size
+ * @param {function} handleClick
  */
 export const radarChartOptions = (
   theme,
@@ -572,20 +573,20 @@ export const radarChartOptions = (
   xFormatter = null,
   chartColors = [],
   legend = false,
-  offset = false,
   background = theme.palette.background.paper,
+  size = undefined,
+  handleClick = undefined,
 ) => ({
   chart: {
     type: 'radar',
     background,
     toolbar: toolbarOptions,
-    offsetY: offset ? -20 : 0,
-    parentHeightOffset: 0,
     width: '100%',
     height: '100%',
-  },
-  events: {
-
+    events: {
+      click: () => handleClick(),
+      markerClick: () => handleClick(),
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -648,6 +649,7 @@ export const radarChartOptions = (
   },
   plotOptions: {
     radar: {
+      size,
       polygons: {
         strokeColors:
           theme.palette.mode === 'dark'

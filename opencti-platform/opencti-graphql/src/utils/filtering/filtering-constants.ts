@@ -49,6 +49,7 @@ export const EPSS_PERCENTILE_FILTER = 'x_opencti_epss_percentile';
 export const EPSS_SCORE_FILTER = 'x_opencti_epss_score';
 export const CVSS_BASE_SCORE_FILTER = 'x_opencti_cvss_base_score';
 export const CVSS_BASE_SEVERITY_FILTER = 'x_opencti_cvss_base_severity';
+export const REPORT_TYPES_FILTER = 'report_types';
 // special cases
 export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
@@ -57,6 +58,12 @@ export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
 export const COMPUTED_RELIABILITY_FILTER = 'computed_reliability';
+
+// for opinions
+export const OPINIONS_METRICS_MEAN_FILTER = 'opinionsMetricsMean';
+export const OPINIONS_METRICS_MAX_FILTER = 'opinionsMetricsMax';
+export const OPINIONS_METRICS_MIN_FILTER = 'opinionsMetricsMin';
+export const OPINIONS_METRICS_TOTAL_FILTER = 'opinionsMetricsTotal';
 
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId'; // 'context_data.id'
@@ -99,6 +106,10 @@ export const specialFilterKeys = [
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
+  OPINIONS_METRICS_MEAN_FILTER,
+  OPINIONS_METRICS_MAX_FILTER,
+  OPINIONS_METRICS_MIN_FILTER,
+  OPINIONS_METRICS_TOTAL_FILTER,
   CONTEXT_ENTITY_ID_FILTER,
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_CREATOR_FILTER,

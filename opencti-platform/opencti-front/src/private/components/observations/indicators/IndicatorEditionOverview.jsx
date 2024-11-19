@@ -224,7 +224,7 @@ const IndicatorEditionOverviewComponent = ({
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={indicator} />
           <Field
             component={TextField}

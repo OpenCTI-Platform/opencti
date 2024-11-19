@@ -11,7 +11,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 const generateAliases = (aliases, additionalFields = {}) => {
   return R.map((a) => {
     const dataUUID = { name: normalizeName(a), ...additionalFields };
-    const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
+    const uuid = idGen('ALIAS', dataUUID, OPENCTI_NAMESPACE);
     return `aliases--${uuid}`;
   }, aliases);
 };

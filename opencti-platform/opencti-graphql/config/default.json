@@ -6,14 +6,7 @@
     "public_dashboard_authorized_domains": "",
     "enabled": true,
     "enabled_ui": true,
-    "disabled_dev_features": [
-      "FAB_REPLACEMENT",
-      "NEW_IMPORT_SCREENS",
-      "FILIGRAN_LOADER",
-      "CONTAINERS_AUTHORIZED_MEMBERS",
-      "TELEMETRY_COUNT_ACTIVE_USERS",
-      "PROTECT_SENSITIVE_CHANGES"
-    ],
+    "enabled_dev_features": [],
     "https_cert": {
       "ca": [],
       "key": null,
@@ -112,6 +105,9 @@
     },
     "group_confidence_level": {
       "max_confidence_default": 100
+    },
+    "trash": {
+      "enabled": true
     }
   },
   "demo_mode": false,
@@ -124,6 +120,33 @@
     "past_days": 30,
     "next_days": 30,
     "created_by_based": false
+  },
+  "protected_sensitive_config": {
+    "enabled": true,
+    "markings": {
+      "enabled": true,
+      "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:RED"]
+    },
+    "groups": {
+      "enabled": true,
+      "protected_names": ["Administrators", "Connectors", "Default"]
+    },
+    "roles": {
+      "enabled": true,
+      "protected_names": ["Administrator", "Connector", "Default"]
+    },
+    "rules": {
+      "enabled": true
+    },
+    "ce_ee_toggle": {
+      "enabled": true
+    },
+    "file_indexing": {
+      "enabled": true
+    },
+    "platform_organization": {
+      "enabled": true
+    }
   },
   "ai": {
     "enabled": true,

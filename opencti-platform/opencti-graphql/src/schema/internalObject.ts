@@ -3,6 +3,8 @@ import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -40,6 +42,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_PUBLIC_DASHBOARD,
   ENTITY_TYPE_DELETE_OPERATION,
+  ENTITY_TYPE_DRAFT_WORKSPACE,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -65,7 +68,9 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_INTERNAL_FILE,
-  ENTITY_TYPE_WORK
+  ENTITY_TYPE_WORK,
+  ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_EXCLUSION_LIST,
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 

@@ -10,6 +10,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
   # Stix Core Object
@@ -84,6 +85,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
   # Stix Domain Object
   revoked: Boolean!
   confidence: Int
@@ -137,6 +139,19 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
+  contentsFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  templates: [Template!]
+  templateAndUtils(
+    templateId: String!
+  ): TemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

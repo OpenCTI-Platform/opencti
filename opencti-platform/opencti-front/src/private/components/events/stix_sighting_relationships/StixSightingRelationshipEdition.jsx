@@ -55,7 +55,7 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
         onClose={handleClose}
       >
         {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
             <StixSightingRelationshipEditionOverview
               queryRef={queryRef}
               handleClose={handleClose}
@@ -65,7 +65,7 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
             />
           </React.Suspense>
         ) : (
-          <Loader variant={LoaderVariant.inElement} />
+          <Loader variant={LoaderVariant.inline} />
         )}
       </Drawer>
     );
@@ -81,7 +81,7 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
         onClose={handleClose}
       >
         {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
             <StixSightingRelationshipEditionOverview
               queryRef={queryRef}
               handleClose={handleClose}
@@ -91,7 +91,7 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
             />
           </React.Suspense>
         ) : (
-          <Loader variant={LoaderVariant.inElement} />
+          <Loader variant={LoaderVariant.inline} />
         )}
       </Drawer>
     );

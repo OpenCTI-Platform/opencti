@@ -17,6 +17,10 @@ import {
   LinkOutlined,
   ScatterPlotOutlined,
   VisibilityOutlined,
+  SwipeVertical,
+  SwipeDown,
+  SwipeUp,
+  TouchApp,
 } from '@mui/icons-material';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -98,6 +102,7 @@ class ReportKnowledgeGraphBar extends Component {
       openCreatedNested: false,
       relationReversed: false,
       sightingReversed: false,
+      selectRelationshipByType: null,
       nestedReversed: false,
       nestedRelationExist: false,
       openEditRelation: false,
@@ -114,6 +119,9 @@ class ReportKnowledgeGraphBar extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.openCreatedRelation === false && this.props.openCreatedRelation) {
       this.setState({ openCreatedRelation: true });
+    }
+    if (prevProps.numberOfSelectedNodes !== this.props.numberOfSelectedNodes) {
+      this.setState({ selectRelationshipByType: null });
     }
   }
 
@@ -264,6 +272,26 @@ class ReportKnowledgeGraphBar extends Component {
     ) {
       this.setState({ openEditNested: true });
     }
+  }
+
+  handleSelectRelationships() {
+    const { handleSelectRelationshipsByAdjacentNode } = this.props;
+    const { selectRelationshipByType } = this.state;
+
+    handleSelectRelationshipsByAdjacentNode(selectRelationshipByType);
+
+    let nextType;
+    if (selectRelationshipByType === null) {
+      nextType = 'children';
+    } else if (selectRelationshipByType === 'children') {
+      nextType = 'parent';
+    } else if (selectRelationshipByType === 'parent') {
+      nextType = 'deselect';
+    } else if (selectRelationshipByType === 'deselect') {
+      nextType = null;
+    }
+
+    this.setState({ selectRelationshipByType: nextType });
   }
 
   handleCloseDomainObjectEdition() {
@@ -675,6 +703,44 @@ class ReportKnowledgeGraphBar extends Component {
                         size="large"
                       >
                         <SelectAll />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip
+                    title={
+                      (() => {
+                        switch (this.state.selectRelationshipByType) {
+                          case 'children':
+                            return t('Select Child Relationships of Selected Nodes (From)');
+                          case 'parent':
+                            return t('Select Parent Relationships of Selected Nodes (To)');
+                          case 'deselect':
+                            return t('Deselect Relationships of Selected Nodes');
+                          default:
+                            return t('Select Relationships of Selected Nodes');
+                        }
+                      })()
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleSelectRelationships.bind(this)}
+                        disabled={numberOfSelectedNodes === 0}
+                        size="large"
+                      >
+                        {(() => {
+                          switch (this.state.selectRelationshipByType) {
+                            case 'children':
+                              return <SwipeDown />;
+                            case 'parent':
+                              return <SwipeUp />;
+                            case 'deselect':
+                              return <TouchApp />;
+                            default:
+                              return <SwipeVertical />;
+                          }
+                        })()}
                       </IconButton>
                     </span>
                   </Tooltip>

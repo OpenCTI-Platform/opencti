@@ -12,10 +12,10 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: 0,
-    padding: '0 180px 0 0',
+    padding: `0 calc( 200px - ${theme.spacing(3)} + ${theme.spacing(1)} ) 0 0`, // 200 of menu size, 3 space from main html, 1 for correct alignment
     maxWidth: '100%',
   },
 }));

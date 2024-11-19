@@ -10,6 +10,7 @@ interface WidgetListCoreObjectsProps {
   rootRef: DataTableProps['rootRef']
   widgetId: string
   pageSize: number
+  sortBy?: string
 }
 
 const WidgetListCoreObjects = ({
@@ -19,32 +20,46 @@ const WidgetListCoreObjects = ({
   rootRef,
   widgetId,
   pageSize,
-}: WidgetListCoreObjectsProps) => (
-  <DataTableWithoutFragment
-    dataColumns={{
-      entity_type: { percentWidth: 10 },
-      value: { percentWidth: 20 },
-      createdBy: { percentWidth: 15 },
-      date: {
-        id: 'date',
-        isSortable: false,
-        percentWidth: 15,
-        label: 'Date',
-        render: (({ [dateAttribute]: date }, { fsd }) => fsd(date)),
-      },
-      objectLabel: { percentWidth: 10 },
-      x_opencti_workflow_id: { percentWidth: 15 },
-      objectMarking: { percentWidth: 15 },
-    }}
-    storageKey={widgetId}
-    data={data.map(({ node }) => node)}
-    globalCount={data.length}
-    variant={DataTableVariant.widget}
-    pageSize={pageSize.toString()}
-    disableNavigation={publicWidget}
-    rootRef={rootRef}
-  />
-);
+  sortBy,
+}: WidgetListCoreObjectsProps) => {
+  const dataColumns = {
+    entity_type: { percentWidth: 10, isSortable: false },
+    value: { percentWidth: 20, isSortable: false },
+    createdBy: { percentWidth: 15, isSortable: false },
+    date: {
+      id: 'date',
+      isSortable: false,
+      percentWidth: 15,
+      label: 'Date',
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      render: (({ [dateAttribute]: date }, { fsd }) => fsd(date)),
+    },
+    objectLabel: { percentWidth: 10, isSortable: false },
+    x_opencti_workflow_id: { percentWidth: 15, isSortable: false },
+    objectMarking: { percentWidth: 15, isSortable: false },
+  };
+  if (sortBy && !['entity_type', 'name', 'value', 'observable_value', 'createdBy', 'objectLabel', 'x_opencti_workflow_id', 'objectMarking'].includes(sortBy)) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    delete dataColumns.x_opencti_workflow_id;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    dataColumns[sortBy] = { percentWidth: 15, isSortable: false };
+  }
+  return (
+    <DataTableWithoutFragment
+      dataColumns={dataColumns}
+      storageKey={widgetId}
+      data={data.map(({ node }) => node)}
+      globalCount={data.length}
+      variant={DataTableVariant.widget}
+      pageSize={pageSize.toString()}
+      disableNavigation={publicWidget}
+      rootRef={rootRef}
+    />
+  );
+};
 
 WidgetListCoreObjects.displayName = 'WidgetListCoreObjects';
 

@@ -7,7 +7,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsTreeMapQuery } from './__generated__/PublicStixCoreObjectsTreeMapQuery.graphql';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
-import type { PublicManifestWidget } from '../PublicManifest';
+import type { Widget } from '../../../../utils/widget/widget';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const publicStixCoreObjectsTreeMapQuery = graphql`
@@ -54,8 +54,8 @@ const publicStixCoreObjectsTreeMapQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsTreeMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsTreeMapQuery>
 }
 
@@ -77,7 +77,7 @@ const PublicStixCoreObjectsTreeMapComponent = ({
       <WidgetTree
         data={[...publicStixCoreObjectsDistribution]}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
-        isDistributed={parameters.distributed}
+        isDistributed={!!parameters?.distributed}
         readonly={true}
         withExport={false}
       />
@@ -107,7 +107,7 @@ const PublicStixCoreObjectsTreeMap = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

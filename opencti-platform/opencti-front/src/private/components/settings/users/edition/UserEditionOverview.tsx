@@ -9,6 +9,7 @@ import { UserEditionOverview_user$data } from '@components/settings/users/editio
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
@@ -23,6 +24,8 @@ import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import PasswordTextField from '../../../../../components/PasswordTextField';
+import type { Theme } from '../../../../../components/Theme';
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -101,6 +104,7 @@ UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
+  const theme = useTheme<Theme>();
 
   const [commitFocus] = useApiMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
@@ -187,7 +191,7 @@ UserEditionOverviewComponentProps
       onSubmit={() => {}}
     >
       {() => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ marginTop: theme.spacing(2) }}>
           <Field
             component={TextField}
             variant="standard"
@@ -198,8 +202,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+              <SubscriptionFocus context={context} fieldName="name"/>
+                }
           />
           <Field
             component={TextField}
@@ -212,8 +216,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="user_email" />
-            }
+              <SubscriptionFocus context={context} fieldName="user_email"/>
+                }
           />
           <Field
             component={TextField}
@@ -225,8 +229,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="firstname" />
-            }
+              <SubscriptionFocus context={context} fieldName="firstname"/>
+                }
           />
           <Field
             component={TextField}
@@ -238,8 +242,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="lastname" />
-            }
+              <SubscriptionFocus context={context} fieldName="lastname"/>
+                }
           />
           <Field
             component={MarkdownField}
@@ -252,8 +256,8 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-              }
+              <SubscriptionFocus context={context} fieldName="description"/>
+                }
           />
           <Field
             component={SelectField}
@@ -272,7 +276,7 @@ UserEditionOverviewComponentProps
             <MenuItem value="fr">Français</MenuItem>
           </Field>
           <FormHelperText>
-            <SubscriptionFocus context={context} fieldName="language" />
+            <SubscriptionFocus context={context} fieldName="language"/>
           </FormHelperText>
           <ObjectOrganizationField
             name="objectOrganization"
@@ -286,19 +290,16 @@ UserEditionOverviewComponentProps
             style={fieldSpacingContainerStyle}
             outlined={false}
           />
-          <Field
-            component={TextField}
-            variant="standard"
+          <PasswordTextField
             name="api_token"
-            disabled={true}
             label={t_i18n('Token')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
+            disabled={true}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
+            style={{ marginTop: 20 }}
             helperText={
-              <SubscriptionFocus context={context} fieldName="api_token" />
-            }
+              <SubscriptionFocus context={context} fieldName="api_token"/>
+              }
           />
           <Field
             component={SelectField}
@@ -315,7 +316,7 @@ UserEditionOverviewComponentProps
             })}
           </Field>
           <FormHelperText>
-            <SubscriptionFocus context={context} fieldName="account_status" />
+            <SubscriptionFocus context={context} fieldName="account_status"/>
           </FormHelperText>
           <Field
             component={DateTimePickerField}

@@ -237,15 +237,22 @@ class ReportKnowledgeGraphComponent extends Component {
   savePositions() {
     const initialPositions = R.indexBy(
       R.prop('id'),
-      R.map((n) => ({ id: n.id, x: n.fx, y: n.fy }), this.graphData.nodes),
+      R.map((n) => ({
+        id: n.id,
+        x: n.fx !== null ? n.fx : n.x,
+        y: n.fy !== null ? n.fy : n.y,
+      }), this.graphData.nodes),
     );
+
     const newPositions = R.indexBy(
       R.prop('id'),
-      R.map(
-        (n) => ({ id: n.id, x: n.fx, y: n.fy }),
-        this.state.graphData.nodes,
-      ),
+      R.map((n) => ({
+        id: n.id,
+        x: n.fx !== null ? n.fx : n.x,
+        y: n.fy !== null ? n.fy : n.y,
+      }), this.state.graphData.nodes),
     );
+
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
       mutation: reportMutationFieldPatch,
@@ -320,11 +327,16 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleToggleFixedMode() {
-    this.setState({ modeFixed: !this.state.modeFixed }, () => {
+    const { modeFixed } = this.state;
+    this.setState({ modeFixed: !modeFixed }, () => {
       this.saveParameters();
       this.handleDragEnd();
       this.forceUpdate();
-      this.graph.current.d3ReheatSimulation();
+      if (!this.state.modeFixed) {
+        this.handleResetLayout();
+      } else {
+        this.graph.current.d3ReheatSimulation();
+      }
     });
   }
 
@@ -527,7 +539,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.graph_data),
+      decodeGraphData(this.props.report.x_opencti_graph_data),
       this.props.t,
     );
     await this.resetAllFilters();
@@ -906,6 +918,36 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
   }
 
+  handleSelectRelationshipsByAdjacentNode(type) {
+    const selectedNodes = Array.from(this.selectedNodes);
+    const selectedNodesIds = selectedNodes.map((n) => n.id);
+    this.selectedLinks = new Set(
+      Array.from(this.selectedLinks).filter((link) => !selectedNodesIds.includes(link.source_id) && !selectedNodesIds.includes(link.target_id)),
+    );
+
+    const relationshipsToSelect = this.state.graphData.links.filter(
+      (link) => {
+        const isSourceSelected = selectedNodesIds.includes(link.source_id);
+        const isTargetSelected = selectedNodesIds.includes(link.target_id);
+
+        if (type === 'children') {
+          return isSourceSelected;
+        }
+        if (type === 'parent') {
+          return isTargetSelected;
+        }
+        if (type === 'deselect') {
+          return null;
+        }
+        return isSourceSelected || isTargetSelected;
+      },
+      this.state.graphData.links,
+    );
+
+    relationshipsToSelect.forEach((link) => this.selectedLinks.add(link));
+    this.setState({ numberOfSelectedLinks: this.selectedLinks.size });
+  }
+
   handleResetLayout() {
     this.graphData = buildGraphData(this.graphObjects, {}, this.props.t);
     this.setState(
@@ -1084,6 +1126,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 selectedLinks={Array.from(this.selectedLinks)}
                 numberOfSelectedNodes={numberOfSelectedNodes}
                 numberOfSelectedLinks={numberOfSelectedLinks}
+                handleSelectRelationshipsByAdjacentNode={this.handleSelectRelationshipsByAdjacentNode.bind(this)}
                 handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
                   this,
                 )}
@@ -1312,14 +1355,17 @@ class ReportKnowledgeGraphComponent extends Component {
                         this.forceUpdate();
                       }}
                       onNodeDrag={(node, translate) => {
+                        const withForces = !this.state.modeFixed;
                         if (this.selectedNodes.has(node)) {
                           [...this.selectedNodes]
                             .filter((selNode) => selNode !== node)
-                            // eslint-disable-next-line no-shadow
-                            .forEach((selNode) => ['x', 'y'].forEach(
-                              // eslint-disable-next-line no-param-reassign,no-return-assign
-                              (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                            ));
+                            .forEach((selNode) => {
+                              ['x', 'y'].forEach((coord) => {
+                                const nodeKey = withForces ? `f${coord}` : coord;
+                                // eslint-disable-next-line no-param-reassign
+                                selNode[nodeKey] = selNode[coord] + translate[coord];
+                              });
+                            });
                         }
                       }}
                       onNodeDragEnd={(node) => {

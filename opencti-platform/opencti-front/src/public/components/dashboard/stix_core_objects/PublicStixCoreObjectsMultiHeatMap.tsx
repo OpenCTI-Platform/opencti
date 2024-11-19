@@ -7,9 +7,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsMultiHeatMapQuery } from './__generated__/PublicStixCoreObjectsMultiHeatMapQuery.graphql';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsMultiHeatMapQuery = graphql`
   query PublicStixCoreObjectsMultiHeatMapQuery(
@@ -33,8 +33,8 @@ const publicStixCoreObjectsMultiHeatMapQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiHeatMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsMultiHeatMapQuery>
 }
 
@@ -67,7 +67,7 @@ const PublicStixCoreObjectsMultiHeatMapComponent = ({
         })).sort((a, b) => b.name.localeCompare(a.name))}
         minValue={minValue}
         maxValue={maxValue}
-        isStacked={parameters.stacked}
+        isStacked={!!parameters?.stacked}
         withExport={false}
         readonly={true}
       />
@@ -97,7 +97,7 @@ const PublicStixCoreObjectsMultiHeatMap = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

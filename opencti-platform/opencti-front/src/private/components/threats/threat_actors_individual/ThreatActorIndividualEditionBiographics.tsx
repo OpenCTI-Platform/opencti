@@ -179,7 +179,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
           dirty,
         }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <AlertConfidenceForEntity entity={threatActorIndividual} />
               <OpenVocabField
                 name="eye_color"

@@ -185,7 +185,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <Field
             component={TextField}
             name="name"

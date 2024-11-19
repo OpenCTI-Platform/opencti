@@ -1,42 +1,33 @@
-import { assoc, dissoc, pipe } from 'ramda';
+import { assoc, dissoc, pipe, uniq } from 'ramda';
 import nconf from 'nconf';
 import { createEntity, createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
-import { isFeatureEnabled } from '../config/conf';
-
-export const PROTECT_SENSITIVE_CHANGES_FF = 'PROTECT_SENSITIVE_CHANGES';
 
 export const addCapability = async (context, user, capability) => {
   return createEntity(context, user, capability, ENTITY_TYPE_CAPABILITY);
 };
 
 export const addRole = async (context, user, role) => {
-  const capabilities = role.capabilities ?? [];
+  const capabilities = uniq(role.capabilities ?? []);
   const roleToCreate = pipe(
     assoc('description', role.description ? role.description : ''),
     dissoc('capabilities'),
   )(role);
 
-  let completeRoleToCreate;
-  if (isFeatureEnabled(PROTECT_SENSITIVE_CHANGES_FF)) {
-    completeRoleToCreate = {
-      ...roleToCreate,
-      can_manage_sensitive_config: role.can_manage_sensitive_config ?? false, // default when undefined is false
-    };
-  } else {
-    completeRoleToCreate = {
-      ...roleToCreate
-    };
-  }
+  const completeRoleToCreate = {
+    ...roleToCreate,
+    can_manage_sensitive_config: role.can_manage_sensitive_config ?? false, // default when undefined is false
+  };
+
   const { element, isCreation } = await createEntity(context, user, completeRoleToCreate, ENTITY_TYPE_ROLE, { complete: true });
-  const relationPromises = capabilities.map(async (capabilityName) => {
-    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
-    return createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
-  });
-  await Promise.all(relationPromises);
+  for (let index = 0; index < capabilities.length; index += 1) {
+    const capability = capabilities[index];
+    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
+    await createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
+  }
   if (isCreation) {
     await publishUserAction({
       user,

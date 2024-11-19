@@ -10,6 +10,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
+    draftVersion: DraftVersion
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
@@ -84,6 +85,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
         search: String
         filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    opinions_metrics: OpinionsMetrics
     # StixDomainObject
     revoked: Boolean!
     confidence: Int
@@ -92,6 +94,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: [Assignee!]
+    objectParticipant: [Participant!]
     avatar: OpenCtiFile
     # Event
     name: String!

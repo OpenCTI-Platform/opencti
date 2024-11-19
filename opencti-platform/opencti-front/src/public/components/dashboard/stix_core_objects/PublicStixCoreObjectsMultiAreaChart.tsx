@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
@@ -10,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsMultiAreaChartQuery } from './__generated__/PublicStixCoreObjectsMultiAreaChartQuery.graphql';
 import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { Widget } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsMultiAreaChartQuery = graphql`
   query PublicStixCoreObjectsMultiAreaChartQuery(
@@ -33,8 +33,8 @@ const publicStixCoreObjectsMultiAreaChartQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsMultiAreaChartComponentProps {
-  parameters: PublicManifestWidget['parameters']
-  dataSelection: PublicManifestWidget['dataSelection']
+  parameters: Widget['parameters']
+  dataSelection: Widget['dataSelection']
   queryRef: PreloadedQuery<PublicStixCoreObjectsMultiAreaChartQuery>
 }
 
@@ -59,9 +59,9 @@ const PublicStixCoreObjectsMultiAreaChartComponent = ({
             y: entry?.value,
           })),
         }))}
-        interval={parameters.interval}
-        isStacked={parameters.stacked}
-        hasLegend={parameters.legend}
+        interval={parameters?.interval}
+        isStacked={!!parameters?.stacked}
+        hasLegend={!!parameters?.legend}
         withExport={false}
         readonly={true}
       />
@@ -91,7 +91,7 @@ const PublicStixCoreObjectsMultiAreaChart = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (
