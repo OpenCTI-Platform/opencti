@@ -30,7 +30,7 @@ const MarkingDefinitions = () => {
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
-    sortBy: params.sortBy ?? 'name',
+    sortBy: params.sortBy ?? 'definition',
   });
 
   function saveView() {

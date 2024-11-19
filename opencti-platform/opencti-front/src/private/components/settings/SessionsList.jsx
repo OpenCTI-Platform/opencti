@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -117,16 +116,11 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
     });
   };
 
-  const sortByNameCaseInsensitive = R.sortBy(
-    R.compose(R.toLower, R.path(['user', 'name'])),
-  );
+  const sortByNameCaseInsensitive = (a, b) => a.user.name.toLowerCase().localeCompare(b.user.name.toLowerCase());
   const filterByKeyword = (n) => keyword === ''
     || n.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-  const sessions = R.pipe(
-    R.propOr([], 'sessions'),
-    R.filter(filterByKeyword),
-    sortByNameCaseInsensitive,
-  )(data);
+  const sessions = (data.sessions ?? []).filter(filterByKeyword).toSorted(sortByNameCaseInsensitive);
+
   return (
     <>
       <List
@@ -136,9 +130,8 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
       >
         {sessions.map((session) => {
           const { user, sessions: userSessions } = session;
-          const orderedSessions = R.sort(
+          const orderedSessions = userSessions.toSorted(
             (a, b) => timestamp(a.created) - timestamp(b.created),
-            userSessions,
           );
           return (
             <div key={session.user.id}>
