@@ -12,6 +12,7 @@ import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
+import { canDeleteElement } from '../../../src/database/data-consistency';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
 
 describe('Retention Manager tests ', () => {
@@ -303,11 +304,33 @@ describe('Retention Manager tests ', () => {
     expect(workbenchesToDelete.edges[0].node.id).toEqual(workbench1Id);
   });
   it('should fetch the correct report to be deleted by a retention rule on knowledge', async () => {
-    // retention rule on workbenches not modified since 2023-07-01
+    // retention rule on knowledge not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
     const reportsToDelete = await getElementsToDelete(context, 'knowledge', before);
-    expect(reportsToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
+    expect(reportsToDelete.edges.length).toEqual(1);
     expect(reportsToDelete.edges[0].node.id).toEqual(report1Id);
+    const canDeleteReport = await canDeleteElement(context, ADMIN_USER, reportsToDelete.edges[0].node);
+    expect(canDeleteReport).toBeTruthy();
+  });
+  it('should fetch individuals to delete', async () => {
+    // retention rule on workbenches not modified since 2023-07-01
+    const before = utcDate();
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['entity_type'],
+        values: [ENTITY_TYPE_IDENTITY_INDIVIDUAL],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const elementsToDelete = await getElementsToDelete(context, 'knowledge', before, JSON.stringify(filters));
+    expect(elementsToDelete.edges.length).toEqual(2);
+    const adminIndividual = elementsToDelete.edges.find((e: any) => e.node.name === 'admin');
+    expect(await canDeleteElement(context, ADMIN_USER, adminIndividual.node)).toBeFalsy();
+    const otherIndividual = elementsToDelete.edges.find((e: any) => e.node.name !== 'admin');
+    expect(await canDeleteElement(context, ADMIN_USER, otherIndividual.node)).toBeTruthy();
   });
   it('should delete the fetched files and workbenches', async () => {
     // delete file

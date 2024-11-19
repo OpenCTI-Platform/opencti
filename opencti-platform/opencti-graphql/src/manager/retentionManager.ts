@@ -67,8 +67,9 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const before = utcDate().subtract(maxNumber, unit ?? 'days');
   const result = await getElementsToDelete(context, scope, before, filters);
-  const remainingDeletions = result.pageInfo.globalCount;
+  let remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
+  let deletedCount = elements.length;
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
@@ -76,13 +77,15 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
       const { node } = element;
       const { updated_at: up } = node;
       try {
-        const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
         const canElementBeDeleted = await canDeleteElement(context, RETENTION_MANAGER_USER, node);
         if (canElementBeDeleted) { // filter elements that can't be deleted (ex: user individuals)
+          const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
           await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
         } else {
-          // TODO update counters ?
+          // remove element from counters, since we can't delete it
+          remainingDeletions -= 1;
+          deletedCount -= 1;
           logApp.debug(`[OPENCTI] Retention manager cannot delete ${node.id}.`);
         }
       } catch (err: any) {
@@ -99,7 +102,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   const patch = {
     last_execution_date: now(),
     remaining_count: remainingDeletions,
-    last_deleted_count: elements.length,
+    last_deleted_count: deletedCount,
   };
   await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
 };
