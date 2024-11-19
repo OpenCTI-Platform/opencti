@@ -184,9 +184,9 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
 
     expect(firstIdentity.name).toBe('AlienVault');
     expect(firstIp.value).toBe('91.200.148.232');
-    expect(firstIp.extensions[STIX_EXT_OCTI_SCO].score).toBe(41);
+    expect(firstIp.extensions[STIX_EXT_OCTI_SCO]?.score).toBe(41);
     expect(firstUrl.value).toBe('http://requestrepo.com/r/2yxp98b3');
-    expect(firstUrl.extensions[STIX_EXT_OCTI_SCO].score).toBe(22);
+    expect(firstUrl.extensions[STIX_EXT_OCTI_SCO]?.score).toBe(22);
     expect(firstIdentity.name).toBe('AlienVault');
     expect(firstIdentity.identity_class).toBe('individual');
   });

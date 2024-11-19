@@ -105,12 +105,12 @@ interface StixRelationshipObject extends StixObject {
 
 // SCO
 interface CyberObjectExtension {
-  extension_type : 'property-extension',
-  labels: Array<string>;
-  description: string;
-  score: number;
-  created_by_ref: StixId | undefined;
-  external_references: Array<StixInternalExternalReference>;
+  extension_type? : 'property-extension';
+  labels?: Array<string>;
+  description?: string;
+  score?: number;
+  created_by_ref?: StixId;
+  external_references?: Array<StixInternalExternalReference>;
 }
 
 interface StixCyberObject extends StixObject {
@@ -119,7 +119,7 @@ interface StixCyberObject extends StixObject {
   x_opencti_score?: number; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO]: CyberObjectExtension
+    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension
   };
 }
 
