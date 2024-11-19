@@ -12,13 +12,12 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import conf, { logApp } from '../config/conf';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixBundle, StixObject } from '../types/stix-common';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 const LOG_PREFIX = '[OPENCTI MODULE] CSV';
-const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('app:csv_ingestion:max_bundle_size') || 500;
+const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('app:csv_ingestion:max_bundle_size') || 1000;
 
 // ----------------------------
 // region CSV actual Ingestion
@@ -37,13 +36,13 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
   if (opts.entity && isStixDomainObjectContainer(opts.entity.entity_type)) {
     const refs = bundle.ids();
     const stixEntity = { ...convertStoreToStix(opts.entity), [objects.stixName]: refs };
-    bundle.addObject(stixEntity);
+    bundle.addObject(stixEntity, '');
   }
 
   const bundleBuilt = bundle.build();
   const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
 
-  logApp.info(`${LOG_PREFIX} push bundle to worker with ${bundleBuilt.objects.length} objects`);
+  // logApp.info(`${LOG_PREFIX} push bundle to worker with ${bundleBuilt.objects.length} objects`);
   await pushToWorkerForConnector(opts.connectorId, {
     type: 'bundle',
     update: true,
@@ -65,7 +64,7 @@ export const generateAndSendBundleProcess = async (
   opts: CsvBundlerIngestionOpts
 ) => {
   logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
-  let bundleNew = new BundleBuilder();
+  let bundleBuilder = new BundleBuilder();
   const { csvMapper, applicantUser } = opts;
   const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
   const records = opts.maxRecordNumber ? rawRecords.slice(0, opts.maxRecordNumber) : rawRecords;
@@ -83,30 +82,29 @@ export const generateAndSendBundleProcess = async (
           // Remove inline elements
           const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
           // Transform entity to stix
+          const csvData = record.join(csvMapper.separator);
           const stixObjects = withoutInlineInputs.map((input) => {
-            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            // FIXME do we need that ?
-            // stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
-            return stixObject;
+            return convertStoreToStix(input as unknown as StoreCommon);
           });
 
           // Add to bundle or else send current bundle content and move to next bundle.
-          if (bundleNew.canAddObjects(stixObjects) && bundleNew.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
-            bundleNew.addObjects(stixObjects);
+          if (bundleBuilder.canAddObjects(stixObjects) && bundleBuilder.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
+            bundleBuilder.addObjects(stixObjects, csvData);
           } else {
-            await sendBundleToWorker(bundleNew, opts);
+            await sendBundleToWorker(bundleBuilder, opts);
             totalBundleSend += 1;
-            totalObjectSend += bundleNew.objects.length;
-            bundleNew = new BundleBuilder();
+            totalObjectSend += bundleBuilder.objects.length;
+            bundleBuilder = new BundleBuilder();
+            bundleBuilder.addObjects(stixObjects, csvData);
           }
         } catch (e) {
           logApp.error(e);
         }
       }
     }
-    if (bundleNew.objects.length > 0) {
-      await sendBundleToWorker(bundleNew, opts);
-      totalObjectSend += bundleNew.objects.length;
+    if (bundleBuilder.objects.length > 0) {
+      await sendBundleToWorker(bundleBuilder, opts);
+      totalObjectSend += bundleBuilder.objects.length;
       totalBundleSend += 1;
     }
   }
@@ -153,18 +151,16 @@ export const generateTestBundle = async (
           const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
           // Transform entity to stix
           const stixObjects = withoutInlineInputs.map((input) => {
-            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            // FIXME is it needed ??
-            // stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
-            return stixObject;
+            return convertStoreToStix(input as unknown as StoreCommon);
           });
 
           // Add to bundle
           let added: boolean = false;
           let bundleIndex = 0;
+          const csvData = record.join(csvMapper.separator);
           while (!added && bundleIndex < allBundles.length) {
             if (allBundles[bundleIndex].canAddObjects(stixObjects)) {
-              allBundles[0].addObjects(stixObjects);
+              allBundles[0].addObjects(stixObjects, csvData);
               added = true;
             }
             bundleIndex += 1;
@@ -172,7 +168,7 @@ export const generateTestBundle = async (
 
           if (!added) {
             const nextBuilder = new BundleBuilder();
-            nextBuilder.addObjects(stixObjects);
+            nextBuilder.addObjects(stixObjects, csvData);
             allBundles.push(nextBuilder);
           }
         } catch (e) {
@@ -278,12 +274,11 @@ export const bundleProcess = async (
           const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
           // Transform entity to stix
           const stixObjects = withoutInlineInputs.map((input) => {
-            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(sanitizedMapper.separator);
-            return stixObject;
+            return convertStoreToStix(input as unknown as StoreCommon);
           });
           // Add to bundle
-          bundleBuilder.addObjects(stixObjects);
+          const csvData = record.join(sanitizedMapper.separator);
+          bundleBuilder.addObjects(stixObjects, csvData);
         } catch (e) {
           logApp.error(e);
         }
@@ -294,7 +289,7 @@ export const bundleProcess = async (
   if (entity && isStixDomainObjectContainer(entity.entity_type)) {
     const refs = bundleBuilder.ids();
     const stixEntity = { ...convertStoreToStix(entity), [objects.stixName]: refs };
-    bundleBuilder.addObject(stixEntity);
+    bundleBuilder.addObject(stixEntity, '');
   }
   // Build and return the result
   return bundleBuilder.build();

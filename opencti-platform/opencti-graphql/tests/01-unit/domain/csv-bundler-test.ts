@@ -13,7 +13,7 @@ import {
   indicatorsWithKillChainPhasesExpectedBundle
 } from '../../data/csv-bundler/kill-chains-constants';
 import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
-import { BundleBuilder, canAddObjectToBundle } from '../../../src/parser/bundle-creator';
+import { BundleBuilder } from '../../../src/parser/bundle-creator';
 import type { StixBundle, StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
 import type { StixLocation } from '../../../src/types/stix-sdo';
@@ -172,7 +172,9 @@ describe('CSV bundler', () => {
         } as unknown as StixLocation
       ];
 
-      expect(canAddObjectToBundle(newObjectsLabels, objectsInBundle)).toBeFalsy();
+      const bundleBuilder = new BundleBuilder();
+      bundleBuilder.addObjects(objectsInBundle, 'ville du pont;label2');
+      expect(bundleBuilder.canAddObjects(newObjectsLabels)).toBeFalsy();
 
       // For example different description
       const newObjectsDesc: StixObject[] = [
@@ -196,7 +198,7 @@ describe('CSV bundler', () => {
         } as unknown as StixLocation
       ];
 
-      expect(canAddObjectToBundle(newObjectsDesc, objectsInBundle)).toBeFalsy();
+      expect(bundleBuilder.canAddObjects(newObjectsDesc)).toBeFalsy();
     });
 
     it('Should not request a new bundle when id are new', async () => {
@@ -239,8 +241,9 @@ describe('CSV bundler', () => {
           type: 'location'
         } as unknown as StixLocation
       ];
-
-      expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
+      const bundleBuilder = new BundleBuilder();
+      bundleBuilder.addObjects(objectsInBundle, 'ville du pont;label2');
+      expect(bundleBuilder.canAddObjects(newObjects)).toBeTruthy();
     });
 
     it('Should not request a new bundle when object are exactly the same', async () => {
@@ -270,7 +273,7 @@ describe('CSV bundler', () => {
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
           spec_version: '2.1',
           type: 'label',
-          value: 'label2'
+          value: 'label2',
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -284,72 +287,9 @@ describe('CSV bundler', () => {
         } as unknown as StixLocation
       ];
 
-      expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
-    });
-
-    // FIXME depends on converter_csv decision.
-    it.skip('Should not request a new bundle when object are exactly the same except for csv line', async () => {
-      const objectsInBundle: StixObject[] = [
-        {
-          color: '#000000',
-          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
-          spec_version: '2.1',
-          type: 'label',
-          value: 'label2',
-          extensions: {
-            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-              converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
-            }
-          }
-        } as unknown as StixLabel,
-        {
-          city: 'ville du pont',
-          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
-          labels: ['label2'],
-          latitude: 46.999873398,
-          longitude: 6.498147193,
-          name: 'ville du pont',
-          spec_version: '2.1',
-          type: 'location',
-          extensions: {
-            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-              converter_csv: 'ville du pont;label;label2;#000000;randomDataOne',
-            }
-          }
-        } as unknown as StixLocation
-      ];
-
-      const newObjects: StixObject[] = [
-        {
-          color: '#000000',
-          id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
-          spec_version: '2.1',
-          type: 'label',
-          value: 'label2',
-          extensions: {
-            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-              converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
-            }
-          }
-        } as unknown as StixLabel,
-        {
-          city: 'ville du pont',
-          id: 'location--542797f4-36b0-5404-8a1b-05da43029f13',
-          labels: ['label2'],
-          latitude: 46.999873398,
-          longitude: 6.498147193,
-          name: 'ville du pont',
-          spec_version: '2.1',
-          type: 'location',
-          extensions: {
-            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-              converter_csv: 'ville du pont;label;label2;#000000;randomDataDifferent',
-            }
-          }
-        } as unknown as StixLocation
-      ];
-
-      expect(canAddObjectToBundle(newObjects, objectsInBundle)).toBeTruthy();
+      const bundleBuilder = new BundleBuilder();
+      bundleBuilder.addObjects(objectsInBundle, 'ville du pont;label2');
+      expect(bundleBuilder.canAddObjects(newObjects)).toBeTruthy();
     });
   });
 });
