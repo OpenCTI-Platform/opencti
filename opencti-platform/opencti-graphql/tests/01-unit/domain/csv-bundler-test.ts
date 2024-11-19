@@ -54,6 +54,7 @@ describe('CSV bundler', () => {
       };
 
       const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
+
       expect(allBundleBuilder.length).toBe(1);
       const indicatorsWithLabelsActualBundle = allBundleBuilder[0].build();
       const { id: _expectedId, ...expectedRest } = indicatorsWithLabelsExpectedBundle;

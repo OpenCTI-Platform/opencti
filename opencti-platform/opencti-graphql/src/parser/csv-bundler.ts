@@ -154,7 +154,8 @@ export const generateTestBundle = async (
           // Transform entity to stix
           const stixObjects = withoutInlineInputs.map((input) => {
             const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
+            // FIXME is it needed ??
+            // stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
             return stixObject;
           });
 

@@ -9,7 +9,6 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
     {
       extensions: {
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-          converter_csv: "[ipv4-addr:value = '198.168.8.3'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
           extension_type: 'new-sdo',
           type: 'Kill-Chain-Phase',
         },
@@ -27,7 +26,6 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
           extension_type: 'property-extension',
         },
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-          converter_csv: "[ipv4-addr:value = '198.168.8.3'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
           extension_type: 'property-extension',
           main_observable_type: 'IPv4-Addr',
           observable_values: [
@@ -58,7 +56,6 @@ export const indicatorsWithKillChainPhasesExpectedBundle: StixBundle = {
           extension_type: 'property-extension',
         },
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-          converter_csv: "[ipv4-addr:value = '198.168.8.4'],IPv4-Addr,kill_chain_name_1,kill_chain_phase_name_1,1",
           extension_type: 'property-extension',
           main_observable_type: 'IPv4-Addr',
           observable_values: [
