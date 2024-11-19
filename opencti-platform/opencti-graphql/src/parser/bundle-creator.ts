@@ -2,9 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
 import type { StixBundle, StixObject } from '../types/stix-common';
 import { STIX_SPEC_VERSION } from '../database/stix';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { logApp } from '../config/conf';
-
 /**
  * Check if bundle object can be added to the current bundle or if a new bundle is required to use upsert feature.
  * If there is the same stix id but with different content => it need to be in another bundle because
