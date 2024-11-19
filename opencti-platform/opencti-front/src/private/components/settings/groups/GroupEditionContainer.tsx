@@ -5,7 +5,7 @@ import Tab from '@mui/material/Tab';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
-import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
+import { UsersLinesSearchQuery, UsersLinesSearchQuery$variables } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { initialStaticPaginationForGroupUsers } from '@components/settings/users/GroupUsers';
 import GroupEditionConfidence from './GroupEditionConfidence';
@@ -20,9 +20,10 @@ import { GroupEditionContainerQuery } from './__generated__/GroupEditionContaine
 import { GroupEditionContainer_group$key } from './__generated__/GroupEditionContainer_group.graphql';
 import GroupEditionMarkings from './GroupEditionMarkings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
+import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -100,7 +101,13 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     },
     true,
   );
-  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery, { search: searchTerm });
+  const LOCAL_STORAGE_KEY = `group-${group.id}-users`;
+  const paginationLocalStorage: PaginationLocalStorage<UsersLinesSearchQuery$variables> = useDataTablePaginationLocalStorage(LOCAL_STORAGE_KEY, {});
+  const { orderMode, orderBy } = paginationLocalStorage.paginationOptions;
+  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(
+    usersLinesSearchQuery,
+    { search: searchTerm, orderBy, orderMode },
+  );
 
   const { editContext } = group;
   return (
@@ -137,7 +144,12 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inline} />}
           >
-            <GroupEditionUsers group={group} queryRef={userQueryRef} paginationOptionsForUpdater={paginationOptionsForUserEdition}>
+            <GroupEditionUsers
+              group={group}
+              queryRef={userQueryRef}
+              paginationOptionsForUpdater={paginationOptionsForUserEdition}
+              storageKey={LOCAL_STORAGE_KEY}
+            >
               <SearchInput
                 variant="thin"
                 onSubmit={helpers.handleSearch}
