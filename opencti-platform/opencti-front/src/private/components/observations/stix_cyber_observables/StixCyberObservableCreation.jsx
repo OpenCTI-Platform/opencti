@@ -1027,10 +1027,13 @@ StixCyberObservableCreation.propTypes = {
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.any,
   controlledDialStyles: PropTypes.object,
-  defaultCreatedBy: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
+  defaultCreatedBy: PropTypes.oneOfType([
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+    PropTypes.oneOf([undefined]),
+  ]),
   defaultMarkingDefinitions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
