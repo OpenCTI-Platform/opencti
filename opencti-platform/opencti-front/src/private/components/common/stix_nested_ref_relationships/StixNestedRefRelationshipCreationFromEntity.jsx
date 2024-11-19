@@ -659,7 +659,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 speeddial={true}
                 open={openCreateObservable}
                 handleClose={handleCloseCreateObservable}
-                type={undefined}
               />
             </>
           )}
