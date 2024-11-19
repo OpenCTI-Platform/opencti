@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
 import { listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
@@ -22,7 +21,10 @@ export const findAll = (context, user, args) => {
 // add the given marking definitions in the allowed markings of the user groups
 export const addAllowedMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
-  const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
+  const markingToCreate = {
+    ...markingDefinition,
+    x_opencti_color: markingColor,
+  };
   const result = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
   const { element } = result;
   // marking creation --> update the markings of the groups with auto_new_marking = true

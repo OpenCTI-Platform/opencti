@@ -250,10 +250,12 @@ describe('Group resolver standard behavior', () => {
             }
         }
     `;
+    const markingDefinitionStixId = 'marking-definition--35ee3df2-dc60-4bf3-9b57-98222b827a85';
     const MARKING_DEFINITION_TO_CREATE = {
       input: {
-        definition_type: 'TLP',
-        definition: 'TLP:TEST_AUTO_MARKING',
+        stix_id: markingDefinitionStixId,
+        definition_type: 'DEF',
+        definition: 'DEF:TEST_AUTO_MARKING',
         x_opencti_order: 0,
       },
     };
@@ -263,7 +265,7 @@ describe('Group resolver standard behavior', () => {
     });
     expect(markingDefinition).not.toBeNull();
     expect(markingDefinition.data.markingDefinitionAdd).not.toBeNull();
-    expect(markingDefinition.data.markingDefinitionAdd.definition).toEqual('TLP:TEST_AUTO_MARKING');
+    expect(markingDefinition.data.markingDefinitionAdd.definition).toEqual('DEF:TEST_AUTO_MARKING');
     const markingDefinitionInternalId = markingDefinition.data.markingDefinitionAdd.id;
     // check the added marking is allowed and shareable for the group
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
@@ -285,7 +287,7 @@ describe('Group resolver standard behavior', () => {
       query: DELETE_QUERY,
       variables: { id: markingDefinitionInternalId },
     });
-    const deleteQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: markingDefinitionInternalId } });
+    const deleteQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: markingDefinitionStixId } });
     expect(deleteQueryResult).not.toBeNull();
     expect(deleteQueryResult.data.markingDefinition).toBeUndefined();
   });
