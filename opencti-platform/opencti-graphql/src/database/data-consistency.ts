@@ -2,11 +2,12 @@ import { getEntityFromCache } from './cache';
 import { FunctionalError } from '../config/errors';
 import { FilterMode } from '../generated/graphql';
 import { countAllThings, listEntitiesThroughRelationsPaginated } from './middleware-loader';
-import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntity } from '../types/store';
+import type { BasicStoreEntity, StoreObject } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
@@ -71,6 +72,16 @@ export const verifyCanDeleteOrganization = async (context: AuthContext, user: Au
     // no information leakage about the organization administrators or members
     if (throwErrors) throw FunctionalError('Cannot delete the organization.');
     return false;
+  }
+  return true;
+};
+
+export const canDeleteElement = async (context: AuthContext, user: AuthUser, element: StoreObject) => {
+  if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL) {
+    return verifyCanDeleteIndividual(context, user, element as BasicStoreEntity, false);
+  }
+  if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
+    return verifyCanDeleteOrganization(context, user, element as unknown as BasicStoreEntityOrganization, false);
   }
   return true;
 };

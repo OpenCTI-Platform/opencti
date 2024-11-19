@@ -14,10 +14,9 @@ import { registerManager } from './managerModule';
 import type { AuthContext } from '../types/user';
 import type { FileEdge, RetentionRule } from '../generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
+import { canDeleteElement } from '../database/data-consistency';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { organizationDelete } from '../modules/organization/organization-domain';
 import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 
@@ -35,12 +34,7 @@ export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
   if (scope === 'knowledge') {
-    if (nodeEntityType === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-      // call organizationDelete which will ensure protections (for platform organization & members)
-      await organizationDelete(context, RETENTION_MANAGER_USER, nodeId);
-    } else {
-      await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
-    }
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
   } else if (scope === 'file' || scope === 'workbench') {
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId);
   } else {
@@ -83,8 +77,14 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
       const { updated_at: up } = node;
       try {
         const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-        await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
-        logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+        const canElementBeDeleted = await canDeleteElement(context, RETENTION_MANAGER_USER, node);
+        if (canElementBeDeleted) { // filter elements that can't be deleted (ex: user individuals)
+          await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
+          logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+        } else {
+          // TODO update counters ?
+          logApp.debug(`[OPENCTI] Retention manager cannot delete ${node.id}.`);
+        }
       } catch (err: any) {
         // Only log the error if not an already deleted message (that can happen though concurrency deletion)
         if (err?.extensions?.code !== ALREADY_DELETED_ERROR) {
