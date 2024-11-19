@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { bundleAllowUpsertProcess } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   indicatorsWithExternalReferencesCsvContent,
@@ -19,6 +18,7 @@ import type { StixBundle, StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
 import type { StixLocation } from '../../../src/types/stix-sdo';
 import { emailWithTwoDescCsvMapper } from '../../data/csv-bundler/email-with-two-descp-constants';
+import { type CsvBundlerTestOpts, generateTestBundle } from '../../../src/parser/csv-bundler';
 
 describe('CSV bundler', () => {
   describe('Embedded properties', () => {
@@ -26,13 +26,11 @@ describe('CSV bundler', () => {
       // because csv has_header=true is managed outside
       const csvLines = indicatorsWithExternalReferencesCsvContent;
       csvLines.shift();
-
-      const allBundleBuilder = await bundleAllowUpsertProcess(
-        testContext,
-        ADMIN_USER,
-        csvLines,
-        indicatorsWithExternalReferencesCsvMapper as CsvMapperParsed
-      );
+      const bundlerOpts : CsvBundlerTestOpts = {
+        applicantUser: ADMIN_USER,
+        csvMapper: indicatorsWithExternalReferencesCsvMapper as CsvMapperParsed
+      };
+      const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
       expect(allBundleBuilder.length).toBe(1);
       const indicatorsWithExternalReferencesActualBundle: StixBundle = allBundleBuilder[0].build();
 
@@ -50,12 +48,12 @@ describe('CSV bundler', () => {
       const csvLines = indicatorsWithLabelsCsvContent;
       csvLines.shift();
 
-      const allBundleBuilder = await bundleAllowUpsertProcess(
-        testContext,
-        ADMIN_USER,
-        csvLines,
-        indicatorsWithLabelsCsvMapper as CsvMapperParsed
-      );
+      const bundlerOpts : CsvBundlerTestOpts = {
+        applicantUser: ADMIN_USER,
+        csvMapper: indicatorsWithLabelsCsvMapper as CsvMapperParsed
+      };
+
+      const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
       expect(allBundleBuilder.length).toBe(1);
       const indicatorsWithLabelsActualBundle = allBundleBuilder[0].build();
       const { id: _expectedId, ...expectedRest } = indicatorsWithLabelsExpectedBundle;
@@ -72,12 +70,12 @@ describe('CSV bundler', () => {
       const csvLines = indicatorsWithKillChainPhasesCsvContent;
       csvLines.shift();
 
-      const allBundleBuilder = await bundleAllowUpsertProcess(
-        testContext,
-        ADMIN_USER,
-        csvLines,
-        indicatorsWithKillChainPhasesCsvMapper as CsvMapperParsed
-      );
+      const bundlerOpts : CsvBundlerTestOpts = {
+        applicantUser: ADMIN_USER,
+        csvMapper: indicatorsWithKillChainPhasesCsvMapper as CsvMapperParsed
+      };
+
+      const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
       const indicatorsWithKillChainPhasesActualBundle = allBundleBuilder[0].build();
       const { id: _expectedId, ...expectedRest } = indicatorsWithKillChainPhasesExpectedBundle;
       const indicatorsWithKillChainPhasesExpectedBundleWithoutId = { ...expectedRest };
@@ -97,13 +95,11 @@ describe('CSV bundler', () => {
         'Grenoble,label2,#000000',
         'Grenoble,label2,#000000',
       ];
-
-      const bundleResult: BundleBuilder[] = await bundleAllowUpsertProcess(
-        testContext,
-        ADMIN_USER,
-        citiesWithTwoLabels,
-        citiesWithTwoLabelsCsvMapper as CsvMapperParsed
-      );
+      const bundlerOpts : CsvBundlerTestOpts = {
+        applicantUser: ADMIN_USER,
+        csvMapper: citiesWithTwoLabelsCsvMapper as CsvMapperParsed
+      };
+      const bundleResult: BundleBuilder[] = await generateTestBundle(testContext, citiesWithTwoLabels, bundlerOpts);
 
       expect(bundleResult.length).toBe(2);
       const firstBundle = bundleResult[0].build();
@@ -118,13 +114,11 @@ describe('CSV bundler', () => {
         'ada.lovelace@opencti.io,First programmer ever',
         'ada.lovelace@opencti.io,First programmer ever on top of Turing work.',
       ];
-
-      const bundleResult: BundleBuilder[] = await bundleAllowUpsertProcess(
-        testContext,
-        ADMIN_USER,
-        emailsWithTwoDescriptions,
-        emailWithTwoDescCsvMapper as CsvMapperParsed
-      );
+      const bundlerOpts : CsvBundlerTestOpts = {
+        applicantUser: ADMIN_USER,
+        csvMapper: emailWithTwoDescCsvMapper as CsvMapperParsed
+      };
+      const bundleResult: BundleBuilder[] = await generateTestBundle(testContext, emailsWithTwoDescriptions, bundlerOpts);
 
       const firstBundle = bundleResult[0].build();
       expect(firstBundle.objects.length).toBe(1);

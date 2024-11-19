@@ -24,7 +24,7 @@ import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestio
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
-import { bundleAllowUpsertProcess, type BundleProcessOpts, removeHeader } from '../parser/csv-bundler';
+import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
@@ -42,7 +42,6 @@ import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-ty
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
-const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('ingestion_manager:csv_max_bundle_generation') || 1000;
 
 let running = false;
 
@@ -84,19 +83,26 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
   await patchAttribute(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR, connectorPatch);
 };
 
-const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
-  // Push the bundle to absorption queue
+const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv) => {
   const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+  return work;
+};
+
+const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
+  // Push the bundle to absorption queue
+  const connectorId = connectorIdFromIngestId(ingestion.id);
+  const work: any = await createWorkForIngestion(context, ingestion);
   const stixBundle = JSON.stringify(bundle);
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
   if (bundle.objects.length === 1) {
     // Only add explicit expectation if the worker will not split anything
     await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
   }
-  await pushToWorkerForConnector(connector.internal_id, {
+  await pushToWorkerForConnector(connectorId, {
     type: 'bundle',
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,
@@ -449,30 +455,28 @@ export const processCsvLines = async (
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);
   const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
-  let objectsInBundleCount = 0;
+  const objectsInBundleCount = 0;
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
     const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
-      removeHeader(csvLines, csvMapperParsed.skipLineChar);
+      removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
     }
     logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
-    const opts : BundleProcessOpts = {
-      maxRecordNumber: CSV_MAX_BUNDLE_SIZE_GENERATION
+    const work = await createWorkForIngestion(context, ingestion);
+    const bundlerOpts : CsvBundlerIngestionOpts = {
+      workId: work.id,
+      applicantUser: ingestionUser,
+      entity: undefined, // TODO is it possible to ingest in entity context ?
+      csvMapper: csvMapperParsed,
+      connectorId: connectorIdFromIngestId(ingestion.id),
     };
-    const allBundles = await bundleAllowUpsertProcess(context, ingestionUser, csvLines, csvMapperParsed, opts);
-    for (let i = 0; i < allBundles.length; i += 1) {
-      const bundle = allBundles[i].build();
-      if (bundle.objects.length > 0) {
-        logApp.debug(`[OPENCTI-MODULE] INGESTION - push bundle with ${bundle.objects.length} objects`, { content: bundle.objects });
-        await pushBundleToConnectorQueue(context, ingestion, bundle);
-        objectsInBundleCount += bundle.objects.length;
-      }
-    }
 
-    logApp.info(`[OPENCTI-MODULE] INGESTION - Sending: ${allBundles.length} bundles for ${objectsInBundleCount} objects.`);
+    const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
+
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectCount} objects.`);
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });

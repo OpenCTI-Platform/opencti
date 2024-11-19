@@ -8,7 +8,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type BasicStoreEntityCsvMapper, type CsvMapperParsed, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
-import { bundleObjects, removeHeader } from '../../parser/csv-bundler';
+import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
@@ -156,9 +156,14 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
   } as BasicStoreEntityIngestionCsv;
   const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
   if (parsedMapper.has_header) {
-    removeHeader(csvLines, parsedMapper.skipLineChar);
+    removeHeaderFromFullFile(csvLines, parsedMapper.skipLineChar);
   }
-  const allObjects = await bundleObjects(context, user, csvLines, parsedMapper); // pass ingestion creator user
+
+  const bundlerOpts : CsvBundlerTestOpts = {
+    applicantUser: user,
+    csvMapper: parsedMapper
+  };
+  const allObjects = await getCsvTestObjects(context, csvLines, bundlerOpts);
 
   return {
     objects: JSON.stringify(allObjects, null, 2),

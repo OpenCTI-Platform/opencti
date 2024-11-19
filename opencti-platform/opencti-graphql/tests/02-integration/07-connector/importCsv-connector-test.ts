@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { type ConsumerOpts, processCSVforWorkers } from '../../../src/connector/importCsv/importCsv-connector';
+import { processCSVforWorkers } from '../../../src/connector/importCsv/importCsv-connector';
 import { csvMapperMockSimpleCities } from './importCsv-connector/csv-mapper-cities';
 import { createWork, findById as findWorkById } from '../../../src/domain/work';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
@@ -10,6 +10,7 @@ import type { AuthUser } from '../../../src/types/user';
 import conf from '../../../src/config/conf';
 import { IMPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
 import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage-helper';
+import type { CsvBundlerIngestionOpts } from '../../../src/parser/csv-bundler';
 
 describe('Verify internal importCsv connector', () => {
   let work: any;
@@ -31,15 +32,14 @@ describe('Verify internal importCsv connector', () => {
   it('should convert csv lines to bundle when line count < bulk_creation_size', async () => {
     const user = await resolveUserByIdFromCache(testContext, ADMIN_USER.id) as AuthUser;
 
-    const mapperOpts: ConsumerOpts = {
-      applicantId: ADMIN_USER.id,
+    const mapperOpts: CsvBundlerIngestionOpts = {
+      connectorId: 'test-connector',
       applicantUser: user,
       csvMapper: csvMapperMockSimpleCities as CsvMapperParsed,
       entity: undefined,
-      fileId: 'import/global/csv-file-cities.csv',
       workId: work.id
     };
-    const totalObjectsCount = await processCSVforWorkers(testContext, mapperOpts);
+    const totalObjectsCount = await processCSVforWorkers(testContext, 'import/global/csv-file-cities.csv', mapperOpts);
 
     // Bulk size = 5
     //

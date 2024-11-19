@@ -4,10 +4,10 @@ import type { SdkStream } from '@smithy/types/dist-types/serde';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { consumeQueue, pushToWorkerForConnector, registerConnectorQueues } from '../../database/rabbitmq';
+import { consumeQueue, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile } from '../../database/file-storage';
 import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
-import { bundleProcess } from '../../parser/csv-bundler';
+import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
@@ -17,16 +17,7 @@ import { uploadToStorage } from '../../database/file-storage-helper';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
 import type { CsvMapperParsed } from '../../modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreBase, StoreCommon } from '../../types/store';
-import { BundleBuilder } from '../../parser/bundle-creator';
-import { convertStoreToStix } from '../../database/stix-converter';
-import { parsingProcess } from '../../parser/csv-parser';
-import { handleRefEntities, mappingProcess } from '../../parser/csv-mapper';
-import { isEmptyField } from '../../database/utils';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
-import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import { objects } from '../../schema/stixRefRelationship';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { BasicStoreBase } from '../../types/store';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
@@ -52,95 +43,10 @@ export interface ConsumerOpts {
   maxRecordNumber?: number,
 }
 
-const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
-
-const sendBundleToWorker = async (bundle: BundleBuilder, opts: ConsumerOpts) => {
-  // Handle container
-  if (opts.entity && isStixDomainObjectContainer(opts.entity.entity_type)) {
-    const refs = bundle.ids();
-    const stixEntity = { ...convertStoreToStix(opts.entity), [objects.stixName]: refs };
-    bundle.addObject(stixEntity);
-  }
-
-  const bundleBuilt = bundle.build();
-  const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
-
-  logApp.info(`${LOG_PREFIX} push bundle to worker with ${bundleBuilt.objects.length} objects`);
-  await pushToWorkerForConnector(connector.internal_id, {
-    type: 'bundle',
-    update: true,
-    applicant_id: opts.applicantId ?? OPENCTI_SYSTEM_UUID,
-    work_id: opts.workId,
-    content: bundleContentAsString,
-  });
-};
-
-/**
- * Generate stix bundles and send them.
- * @param context
- * @param lines
- * @param opts
- */
-export const generateAndSendBundleProcess = async (
-  context: AuthContext,
-  lines: string[],
-  opts: ConsumerOpts
-) => {
-  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
-  let bundleNew = new BundleBuilder();
-  const { csvMapper, applicantUser } = opts;
-  const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
-  const records = opts.maxRecordNumber ? rawRecords.slice(0, opts.maxRecordNumber) : rawRecords;
-  const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
-  let totalBundleSend = 0;
-  let totalObjectSend = 0;
-  if (records) {
-    for (let rec = 0; rec < records.length; rec += 1) {
-      const record = records[rec];
-      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
-      if (!isEmptyLine) {
-        try {
-          // Compute input by representation
-          const inputs = await mappingProcess(context, applicantUser, csvMapper, record, refEntities);
-          // Remove inline elements
-          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
-          // Transform entity to stix
-          const stixObjects = withoutInlineInputs.map((input) => {
-            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            // FIXME do we need that ?
-            // stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
-            return stixObject;
-          });
-
-          // Add to bundle or else send current bundle content and move to next bundle.
-          // TODO is it helping to stop at 500 ?
-          if (bundleNew.canAddObjects(stixObjects) && bundleNew.objects.length < 500) {
-            bundleNew.addObjects(stixObjects);
-          } else {
-            await sendBundleToWorker(bundleNew, opts);
-            totalBundleSend += 1;
-            totalObjectSend += bundleNew.objects.length;
-            bundleNew = new BundleBuilder();
-          }
-        } catch (e) {
-          logApp.error(e);
-        }
-      }
-    }
-    if (bundleNew.objects.length > 0) {
-      await sendBundleToWorker(bundleNew, opts);
-      totalObjectSend += bundleNew.objects.length;
-      totalBundleSend += 1;
-    }
-  }
-  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length} - DONE.`);
-  return { bundleCount: totalBundleSend, objectCount: totalObjectSend };
-};
-
 /** @deprecated Will be removed when workbench are replaced by draft */
-const processCSVforWorkbench = async (context: AuthContext, opts: ConsumerOpts) => {
-  const { workId, fileId, applicantUser, csvMapper, entity } = opts;
-  const stream: SdkStream<Readable> | null | undefined = await downloadFile(opts.fileId) as SdkStream<Readable> | null | undefined;
+const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts: CsvBundlerIngestionOpts) => {
+  const { workId, applicantUser, csvMapper, entity } = opts;
+  const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
   if (stream) {
     const chunks: string[] = [];
     let hasError: boolean = false;
@@ -171,9 +77,9 @@ const processCSVforWorkbench = async (context: AuthContext, opts: ConsumerOpts) 
   await updateProcessedTime(context, applicantUser, workId, '1 generated bundle for workbench validation.');
 };
 
-export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerOpts) => {
-  logApp.info(`${LOG_PREFIX} processing CSV ${opts.fileId} START.`);
-  const { workId, fileId, applicantUser } = opts;
+export const processCSVforWorkers = async (context: AuthContext, fileId: string, opts: CsvBundlerIngestionOpts) => {
+  logApp.info(`${LOG_PREFIX} processing CSV ${fileId} START.`);
+  const { workId, applicantUser } = opts;
 
   await validateCsvMapper(context, applicantUser, opts.csvMapper);
   const sanitizedMapper = sanitized(opts.csvMapper);
@@ -191,7 +97,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
     // - ** close file
     // - process the bulk count lines.
 
-    const stream: SdkStream<Readable> | null | undefined = await downloadFile(opts.fileId) as SdkStream<Readable> | null | undefined;
+    const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
     if (stream) {
       const lines: string[] = [];
       const readStream = readline.createInterface({ input: stream, crlfDelay: Infinity });
@@ -257,7 +163,7 @@ export const processCSVforWorkers = async (context: AuthContext, opts: ConsumerO
       await reportExpectation(context, applicantUser, workId, errorData);
     }
   }
-  logApp.info(`${LOG_PREFIX} processing CSV ${opts.fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
+  logApp.info(`${LOG_PREFIX} processing CSV ${fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
 
   // expectation number is going to be increase when worker split bundle. So it's bundle count that should be reported here.
   // TODO do we keep display of bundle count ? objects count ? none of them ? At the end total is totalObjectsCount + totalBundlesCount
@@ -290,21 +196,20 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
   }
   try {
     const csvMapper = parseCsvMapper(parsedConfiguration);
-    const opts: ConsumerOpts = {
+    const opts: CsvBundlerIngestionOpts = {
       workId,
       applicantUser,
-      applicantId,
       csvMapper,
       entity,
-      fileId
+      connectorId: connector.internal_id
     };
 
     await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
     const validateBeforeImport = connectorConfig.config.validate_before_import;
     if (validateBeforeImport) {
-      await processCSVforWorkbench(context, opts);
+      await processCSVforWorkbench(context, fileId, opts);
     } else {
-      await processCSVforWorkers(context, opts);
+      await processCSVforWorkers(context, fileId, opts);
     }
   } catch (error: any) {
     const errorData = { error: error.stack, source: fileId };

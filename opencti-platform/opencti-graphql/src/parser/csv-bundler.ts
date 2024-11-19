@@ -11,23 +11,239 @@ import { parseReadableToLines, parsingProcess } from './csv-parser';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
-import { logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixBundle, StixObject } from '../types/stix-common';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
+const LOG_PREFIX = '[OPENCTI MODULE] CSV';
+const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('app:csv_ingestion:max_bundle_size') || 500;
 
-export interface BundleProcessOpts {
-  entity?: BasicStoreBase
+// ----------------------------
+// region CSV actual Ingestion
+
+export interface CsvBundlerIngestionOpts {
+  workId: string,
+  applicantUser: AuthUser,
+  entity: BasicStoreBase | undefined,
+  csvMapper: CsvMapperParsed,
+  maxRecordNumber?: number,
+  connectorId: string,
+}
+
+const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
+  // Handle container
+  if (opts.entity && isStixDomainObjectContainer(opts.entity.entity_type)) {
+    const refs = bundle.ids();
+    const stixEntity = { ...convertStoreToStix(opts.entity), [objects.stixName]: refs };
+    bundle.addObject(stixEntity);
+  }
+
+  const bundleBuilt = bundle.build();
+  const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
+
+  logApp.info(`${LOG_PREFIX} push bundle to worker with ${bundleBuilt.objects.length} objects`);
+  await pushToWorkerForConnector(opts.connectorId, {
+    type: 'bundle',
+    update: true,
+    applicant_id: opts.applicantUser.id,
+    work_id: opts.workId,
+    content: bundleContentAsString,
+  });
+};
+
+/**
+ * Generate stix bundles and send them.
+ * @param context
+ * @param lines
+ * @param opts
+ */
+export const generateAndSendBundleProcess = async (
+  context: AuthContext,
+  lines: string[],
+  opts: CsvBundlerIngestionOpts
+) => {
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
+  let bundleNew = new BundleBuilder();
+  const { csvMapper, applicantUser } = opts;
+  const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
+  const records = opts.maxRecordNumber ? rawRecords.slice(0, opts.maxRecordNumber) : rawRecords;
+  const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
+  let totalBundleSend = 0;
+  let totalObjectSend = 0;
+  if (records) {
+    for (let rec = 0; rec < records.length; rec += 1) {
+      const record = records[rec];
+      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
+      if (!isEmptyLine) {
+        try {
+          // Compute input by representation
+          const inputs = await mappingProcess(context, applicantUser, csvMapper, record, refEntities);
+          // Remove inline elements
+          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
+          // Transform entity to stix
+          const stixObjects = withoutInlineInputs.map((input) => {
+            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
+            // FIXME do we need that ?
+            // stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
+            return stixObject;
+          });
+
+          // Add to bundle or else send current bundle content and move to next bundle.
+          if (bundleNew.canAddObjects(stixObjects) && bundleNew.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
+            bundleNew.addObjects(stixObjects);
+          } else {
+            await sendBundleToWorker(bundleNew, opts);
+            totalBundleSend += 1;
+            totalObjectSend += bundleNew.objects.length;
+            bundleNew = new BundleBuilder();
+          }
+        } catch (e) {
+          logApp.error(e);
+        }
+      }
+    }
+    if (bundleNew.objects.length > 0) {
+      await sendBundleToWorker(bundleNew, opts);
+      totalObjectSend += bundleNew.objects.length;
+      totalBundleSend += 1;
+    }
+  }
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length} - DONE.`);
+  return { bundleCount: totalBundleSend, objectCount: totalObjectSend };
+};
+// END region CSV actual Ingestion
+// ----------------------------
+
+// ------------------------
+// region Test CSV Ingestion
+export interface CsvBundlerTestOpts {
+  applicantUser: AuthUser,
+  csvMapper: CsvMapperParsed,
   maxRecordNumber?: number,
 }
 
-export interface BundleProcessAndSendOpts {
+/**
+ * With upsert feature.
+ * @param context
+ * @param lines
+ * @param opts
+ */
+export const generateTestBundle = async (
+  context: AuthContext,
+  lines: string[],
+  opts: CsvBundlerTestOpts
+) => {
+  const { maxRecordNumber, csvMapper, applicantUser } = opts;
+  const allBundles: BundleBuilder[] = [];
+  allBundles.push(new BundleBuilder());
+  const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
+  const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
+  const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
+  if (records) {
+    for (let rec = 0; rec < records.length; rec += 1) {
+      const record = records[rec];
+      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
+      if (!isEmptyLine) {
+        try {
+          // Compute input by representation
+          const inputs = await mappingProcess(context, applicantUser, csvMapper, record, refEntities);
+          // Remove inline elements
+          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
+          // Transform entity to stix
+          const stixObjects = withoutInlineInputs.map((input) => {
+            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
+            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(csvMapper.separator);
+            return stixObject;
+          });
+
+          // Add to bundle
+          let added: boolean = false;
+          let bundleIndex = 0;
+          while (!added && bundleIndex < allBundles.length) {
+            if (allBundles[bundleIndex].canAddObjects(stixObjects)) {
+              allBundles[0].addObjects(stixObjects);
+              added = true;
+            }
+            bundleIndex += 1;
+          }
+
+          if (!added) {
+            const nextBuilder = new BundleBuilder();
+            nextBuilder.addObjects(stixObjects);
+            allBundles.push(nextBuilder);
+          }
+        } catch (e) {
+          logApp.error(e);
+        }
+      }
+    }
+  }
+  // Build and return the result
+  return allBundles;
+};
+
+/**
+ * Helper to remove csv file header,
+ * including when there is some comment before.
+ * Only when the file is in one chunk (no stream).
+ * @param csvLines
+ * @param skipLineChar
+ */
+export const removeHeaderFromFullFile = (csvLines:string[], skipLineChar: string) => {
+  if (skipLineChar && skipLineChar.length === 1) {
+    let isACommentLine: boolean = true;
+    while (isACommentLine) {
+      const theLine = csvLines.shift();
+      if (!theLine?.startsWith(skipLineChar)) {
+        isACommentLine = false;
+      }
+    }
+  } else {
+    csvLines.shift();
+  }
+};
+
+export const getCsvTestObjects = async (
+  context: AuthContext,
+  lines: string[],
+  opts: CsvBundlerTestOpts
+) => {
+  const bundlesBuilder = await generateTestBundle(context, lines, opts);
+  let allObjects: StixObject[] = [];
+  for (let i = 0; i < bundlesBuilder.length; i += 1) {
+    const bundle: StixBundle = bundlesBuilder[i].build();
+    allObjects = allObjects.concat(bundle.objects);
+  }
+  return allObjects;
+};
+
+export const getTestBundleObjectsFromFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  filePath: string,
+  mapper: CsvMapperParsed
+) => {
+  const csvLines = await parseReadableToLines(fs.createReadStream(filePath));
+  if (mapper.has_header) {
+    removeHeaderFromFullFile(csvLines, mapper.skipLineChar);
+  }
+
+  const bundlerTestOptions: CsvBundlerTestOpts = {
+    applicantUser: user,
+    csvMapper: mapper,
+  };
+
+  return getCsvTestObjects(context, csvLines, bundlerTestOptions);
+};
+// End region Test CSV Ingestion
+// -----------------------------
+
+// Deprecated region
+export interface BundleProcessOpts {
   entity?: BasicStoreBase
   maxRecordNumber?: number,
-  connectorId: string,
-  workId: string,
-  applicantId?: string,
 }
 
 /** @deprecated Will be removed when workbench are replaced by draft.
@@ -81,128 +297,4 @@ export const bundleProcess = async (
   }
   // Build and return the result
   return bundleBuilder.build();
-};
-
-/**
- * Generate stix bundles. Try to put as much data as possible in the first bundle.
- * Creates a new bundle when a data already exists with the same stixId but the content is different from previously
- *  to allow upsert inside a same CSV file.
- * @param context
- * @param user
- * @param lines
- * @param mapper
- * @param opts
- */
-export const bundleAllowUpsertProcess = async (
-  context: AuthContext,
-  user: AuthUser,
-  lines: string[],
-  mapper: CsvMapperParsed,
-  opts: BundleProcessOpts = {}
-) => {
-  const { entity, maxRecordNumber } = opts;
-  const allBundles: BundleBuilder[] = [];
-  allBundles.push(new BundleBuilder());
-  const rawRecords = await parsingProcess(lines, mapper.separator, mapper.skipLineChar);
-  const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
-  const refEntities = await handleRefEntities(context, user, mapper);
-  if (records) {
-    for (let rec = 0; rec < records.length; rec += 1) {
-      const record = records[rec];
-      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
-      if (!isEmptyLine) {
-        try {
-          // Compute input by representation
-          const inputs = await mappingProcess(context, user, mapper, record, refEntities);
-          // Remove inline elements
-          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
-          // Transform entity to stix
-          const stixObjects = withoutInlineInputs.map((input) => {
-            const stixObject = convertStoreToStix(input as unknown as StoreCommon);
-            stixObject.extensions[STIX_EXT_OCTI].converter_csv = record.join(mapper.separator);
-            return stixObject;
-          });
-
-          // Add to bundle
-          let added: boolean = false;
-          let bundleIndex = 0;
-          while (!added && bundleIndex < allBundles.length) {
-            if (allBundles[bundleIndex].canAddObjects(stixObjects)) {
-              allBundles[0].addObjects(stixObjects);
-              added = true;
-            }
-            bundleIndex += 1;
-          }
-
-          if (!added) {
-            const nextBuilder = new BundleBuilder();
-            nextBuilder.addObjects(stixObjects);
-            allBundles.push(nextBuilder);
-          }
-        } catch (e) {
-          logApp.error(e);
-        }
-      }
-    }
-  }
-  // Handle container
-  if (entity && isStixDomainObjectContainer(entity.entity_type)) {
-    for (let i = 0; i < allBundles.length; i += 1) {
-      const currentBundle = allBundles[i];
-      const refs = currentBundle.ids();
-      const stixEntity = { ...convertStoreToStix(entity), [objects.stixName]: refs };
-      currentBundle.addObject(stixEntity);
-    }
-  }
-  // Build and return the result
-  return allBundles;
-};
-
-/**
- * Helper to remove csv file header,
- * including when there is some comment before.
- * @param csvLines
- * @param skipLineChar
- */
-export const removeHeader = (csvLines:string[], skipLineChar: string) => {
-  if (skipLineChar && skipLineChar.length === 1) {
-    let isACommentLine: boolean = true;
-    while (isACommentLine) {
-      const theLine = csvLines.shift();
-      if (!theLine?.startsWith(skipLineChar)) {
-        isACommentLine = false;
-      }
-    }
-  } else {
-    csvLines.shift();
-  }
-};
-
-export const bundleObjects = async (
-  context: AuthContext,
-  user: AuthUser,
-  lines: string[],
-  mapper: CsvMapperParsed,
-  opts: BundleProcessOpts = {}
-) => {
-  const bundlesBuilder = await bundleAllowUpsertProcess(context, user, lines, mapper, opts);
-  let allObjects: StixObject[] = [];
-  for (let i = 0; i < bundlesBuilder.length; i += 1) {
-    const bundle: StixBundle = bundlesBuilder[i].build();
-    allObjects = allObjects.concat(bundle.objects);
-  }
-  return allObjects;
-};
-
-export const bundleProcessFromFile = async (
-  context: AuthContext,
-  user: AuthUser,
-  filePath: string,
-  mapper: CsvMapperParsed
-) => {
-  const csvLines = await parseReadableToLines(fs.createReadStream(filePath));
-  if (mapper.has_header) {
-    removeHeader(csvLines, mapper.skipLineChar);
-  }
-  return bundleObjects(context, user, csvLines, mapper, {});
 };

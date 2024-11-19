@@ -3,7 +3,7 @@ import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeL
 import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
-import { bundleObjects, removeHeader } from '../../../parser/csv-bundler';
+import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
 import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
@@ -29,13 +29,17 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   } catch (error) {
     throw FunctionalError('Could not parse CSV mapper configuration', { error });
   }
-  const csvMapper = parseCsvMapper(parsedConfiguration);
+  const csvMapperParsed = parseCsvMapper(parsedConfiguration);
   const { createReadStream } = await fileUpload;
   const csvLines = await parseReadableToLines(createReadStream(), 100);
-  if (csvMapper.has_header) {
-    removeHeader(csvLines, csvMapper.skipLineChar);
+  if (csvMapperParsed.has_header) {
+    removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
   }
-  const allObjects = await bundleObjects(context, user, csvLines, csvMapper);
+  const bundlerOpts : CsvBundlerTestOpts = {
+    applicantUser: user,
+    csvMapper: csvMapperParsed
+  };
+  const allObjects = await getCsvTestObjects(context, csvLines, bundlerOpts);
   return {
     objects: JSON.stringify(allObjects, null, 2),
     nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
