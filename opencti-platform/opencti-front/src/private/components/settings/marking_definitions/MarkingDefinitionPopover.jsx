@@ -32,6 +32,10 @@ const markingDefinitionPopoverDeletionMutation = graphql`
 const markingDefinitionEditionQuery = graphql`
   query MarkingDefinitionPopoverEditionQuery($id: String!) {
     markingDefinition(id: $id) {
+      editContext {
+          name
+          focusOn
+      }
       ...MarkingDefinitionEdition_markingDefinition
     }
   }
