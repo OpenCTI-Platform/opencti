@@ -104,10 +104,10 @@ describe('CSV bundler', () => {
 
       expect(bundleResult.length).toBe(2);
       const firstBundle = bundleResult[0].build();
-      expect(firstBundle.objects.length).toBe(4); // 2 labels + 2 cities
+      expect(firstBundle.objects.length).toBe(2); // Lyon,label1,#ffffff = 1 city (Lyon) + 1 Label (label 1)
 
       const secondBundle = bundleResult[1].build();
-      expect(secondBundle.objects.length).toBe(2); // Only Lyon + label2
+      expect(secondBundle.objects.length).toBe(3); // Only Lyon + Grenoble + label2
     });
     it('Should split same email address with different label in 2 valid bundles (testing SCO)', async () => {
       // duplicate should be removed, unless descriptions are different.

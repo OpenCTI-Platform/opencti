@@ -52,19 +52,17 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
   });
 };
 
-/**
- * Generate stix bundles and send them.
- * @param context
- * @param lines
- * @param opts
- */
-export const generateAndSendBundleProcess = async (
+const internalGenerateBundles = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerIngestionOpts
+  opts: CsvBundlerIngestionOpts,
+  sendBundles: boolean = true, // false for generateTestBundle
 ) => {
-  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
+  const allBundlesToSend: BundleBuilder[] = [];
   let bundleBuilder = new BundleBuilder();
+  if (!sendBundles) {
+    allBundlesToSend.push(bundleBuilder); // used by generateTestBundle
+  }
   const { csvMapper, applicantUser } = opts;
   const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
   const records = opts.maxRecordNumber ? rawRecords.slice(0, opts.maxRecordNumber) : rawRecords;
@@ -91,11 +89,16 @@ export const generateAndSendBundleProcess = async (
           if (bundleBuilder.canAddObjects(stixObjects) && bundleBuilder.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
             bundleBuilder.addObjects(stixObjects, csvData);
           } else {
-            await sendBundleToWorker(bundleBuilder, opts);
+            if (sendBundles) {
+              await sendBundleToWorker(bundleBuilder, opts);
+            }
             totalBundleSend += 1;
             totalObjectSend += bundleBuilder.objects.length;
             bundleBuilder = new BundleBuilder();
             bundleBuilder.addObjects(stixObjects, csvData);
+            if (!sendBundles) {
+              allBundlesToSend.push(bundleBuilder);
+            }
           }
         } catch (e) {
           logApp.error(e);
@@ -103,13 +106,31 @@ export const generateAndSendBundleProcess = async (
       }
     }
     if (bundleBuilder.objects.length > 0) {
-      await sendBundleToWorker(bundleBuilder, opts);
+      if (sendBundles) {
+        await sendBundleToWorker(bundleBuilder, opts);
+      }
       totalObjectSend += bundleBuilder.objects.length;
       totalBundleSend += 1;
     }
   }
+  return { bundleCount: totalBundleSend, objectCount: totalObjectSend, allBundlesToSend };
+};
+
+/**
+ * Generate stix bundles and send them.
+ * @param context
+ * @param lines
+ * @param opts
+ */
+export const generateAndSendBundleProcess = async (
+  context: AuthContext,
+  lines: string[],
+  opts: CsvBundlerIngestionOpts
+) => {
+  logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
+  const { bundleCount, objectCount } = await internalGenerateBundles(context, lines, opts, true);
   logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length} - DONE.`);
-  return { bundleCount: totalBundleSend, objectCount: totalObjectSend };
+  return { bundleCount, objectCount };
 };
 // END region CSV actual Ingestion
 // ----------------------------
@@ -133,52 +154,10 @@ export const generateTestBundle = async (
   lines: string[],
   opts: CsvBundlerTestOpts
 ) => {
-  const { maxRecordNumber, csvMapper, applicantUser } = opts;
-  const allBundles: BundleBuilder[] = [];
-  allBundles.push(new BundleBuilder());
-  const rawRecords = await parsingProcess(lines, csvMapper.separator, csvMapper.skipLineChar);
-  const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
-  const refEntities = await handleRefEntities(context, applicantUser, csvMapper);
-  if (records) {
-    for (let rec = 0; rec < records.length; rec += 1) {
-      const record = records[rec];
-      const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
-      if (!isEmptyLine) {
-        try {
-          // Compute input by representation
-          const inputs = await mappingProcess(context, applicantUser, csvMapper, record, refEntities);
-          // Remove inline elements
-          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
-          // Transform entity to stix
-          const stixObjects = withoutInlineInputs.map((input) => {
-            return convertStoreToStix(input as unknown as StoreCommon);
-          });
-
-          // Add to bundle
-          let added: boolean = false;
-          let bundleIndex = 0;
-          const csvData = record.join(csvMapper.separator);
-          while (!added && bundleIndex < allBundles.length) {
-            if (allBundles[bundleIndex].canAddObjects(stixObjects)) {
-              allBundles[0].addObjects(stixObjects, csvData);
-              added = true;
-            }
-            bundleIndex += 1;
-          }
-
-          if (!added) {
-            const nextBuilder = new BundleBuilder();
-            nextBuilder.addObjects(stixObjects, csvData);
-            allBundles.push(nextBuilder);
-          }
-        } catch (e) {
-          logApp.error(e);
-        }
-      }
-    }
-  }
+  const testOpts = { ...opts, workId: '', connectorId: '', entity: undefined };
+  const { allBundlesToSend } = await internalGenerateBundles(context, lines, testOpts, false);
   // Build and return the result
-  return allBundles;
+  return allBundlesToSend;
 };
 
 /**
@@ -244,7 +223,7 @@ export interface BundleProcessOpts {
 }
 
 /** @deprecated Will be removed when workbench are replaced by draft.
- * To be replaced by bundleAllowUpsertProcess */
+ * To be replaced by generateAndSendBundleProcess */
 export const bundleProcess = async (
   context: AuthContext,
   user: AuthUser,

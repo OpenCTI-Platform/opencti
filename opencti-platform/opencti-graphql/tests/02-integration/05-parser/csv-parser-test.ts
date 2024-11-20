@@ -113,13 +113,13 @@ describe('CSV-PARSER', () => {
     const relations: StixRelation[] = objects as StixRelation[];
     const relationshipTargets = relations.filter((o) => o.relationship_type === 'targets');
     expect(relationshipTargets.length)
-      .toBe(117);
+      .toBe(118);
     const relationshipLocatedAt = relations.filter((o) => o.relationship_type === 'located-at');
     expect(relationshipLocatedAt.length)
-      .toBe(125);
+      .toBe(128);
     const relationshipPartOf = relations.filter((o) => o.relationship_type === 'part-of');
     expect(relationshipPartOf.length)
-      .toBe(159);
+      .toBe(160);
   });
 
   it('Parse CSV - Simple skip line test on Simple entity ', async () => {
