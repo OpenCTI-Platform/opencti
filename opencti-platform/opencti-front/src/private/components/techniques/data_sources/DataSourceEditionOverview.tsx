@@ -18,7 +18,7 @@ import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSo
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -120,6 +120,8 @@ const dataSourceEditionOverviewFragment = graphql`
   }
 `;
 
+const DATA_SOURCE_TYPE = 'Data-Source';
+
 interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key;
   context:
@@ -152,7 +154,8 @@ DataSourceEditionOverviewProps
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const basicShape = {
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -160,9 +163,9 @@ DataSourceEditionOverviewProps
     collection_layers: Yup.array().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const dataSourceValidator = useSchemaEditionValidation(
-    'Data-Source',
+  }, mandatoryAttributes);
+  const dataSourceValidator = useDynamicSchemaEditionValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -179,10 +182,7 @@ DataSourceEditionOverviewProps
     dataSourceValidator,
   );
 
-  const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -249,6 +249,8 @@ DataSourceEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={dataSourceValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -259,12 +261,14 @@ DataSourceEditionOverviewProps
         isValid,
         dirty,
       }) => (
-        <Form>
+        <Form style={{ margin: '20px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={dataSource} />
           <Field
             component={TextField}
+            variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -284,6 +288,7 @@ DataSourceEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -298,6 +303,7 @@ DataSourceEditionOverviewProps
             <StatusField
               name="x_opencti_workflow_id"
               type="Data-Source"
+              required={(mandatoryAttributes.includes('x_opencti_workflow_id'))}
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
@@ -312,6 +318,7 @@ DataSourceEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -321,6 +328,7 @@ DataSourceEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -332,9 +340,10 @@ DataSourceEditionOverviewProps
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
+            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
             variant={'edit'}
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             editContext={context}
@@ -343,9 +352,10 @@ DataSourceEditionOverviewProps
             label={t_i18n('Layers')}
             type="collection_layers_ov"
             name="collection_layers"
+            required={(mandatoryAttributes.includes('collection_layers'))}
             variant={'edit'}
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             editContext={context}
