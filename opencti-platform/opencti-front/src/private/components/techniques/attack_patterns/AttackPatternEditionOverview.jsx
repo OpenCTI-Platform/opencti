@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -16,7 +15,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -83,23 +82,22 @@ export const attackPatternMutationRelationDelete = graphql`
   }
 `;
 
+const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
+
 const AttackPatternEditionOverviewComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ATTACK_PATTERN_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     x_mitre_id: Yup.string().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     confidence: Yup.number().nullable(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const attackPatternValidator = useSchemaEditionValidation(
-    'Attack-Pattern',
-    basicShape,
-  );
+  }, mandatoryAttributes);
+  const attackPatternValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: attackPatternMutationFieldPatch,
@@ -185,6 +183,8 @@ const AttackPatternEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={{ ...initialValues, references: [] }}
       validationSchema={attackPatternValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -195,12 +195,13 @@ const AttackPatternEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ marginTop: theme.spacing(2) }}>
+        <Form style={{ margin: '20px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={attackPattern} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -212,6 +213,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             component={TextField}
             name="x_mitre_id"
             label={t_i18n('External ID')}
+            required={(mandatoryAttributes.includes('x_mitre_id'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -224,6 +226,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -245,6 +248,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           <KillChainPhasesField
             name="killChainPhases"
             style={fieldSpacingContainerStyle}
+            required={(mandatoryAttributes.includes('killChainPhases'))}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus
@@ -272,6 +276,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -281,6 +286,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
