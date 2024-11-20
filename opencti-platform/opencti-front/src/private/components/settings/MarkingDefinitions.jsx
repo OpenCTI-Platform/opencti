@@ -1,5 +1,5 @@
 import React from 'react';
-import { MarkingDefinitionLineDummy } from '@components/settings/marking_definitions/MarkingDefinitionLine';
+import { MarkingDefinitionLineDummy } from './marking_definitions/MarkingDefinitionLine';
 import { useFormatter } from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definitions/MarkingDefinitionsLines';
