@@ -326,10 +326,10 @@ describe('Retention Manager tests ', () => {
       filterGroups: [],
     };
     const elementsToDelete = await getElementsToDelete(context, 'knowledge', before, JSON.stringify(filters));
-    expect(elementsToDelete.edges.length).toEqual(2);
+    expect(elementsToDelete.edges.length).toEqual(3);
     const adminIndividual = elementsToDelete.edges.find((e: any) => e.node.name === 'admin');
     expect(await canDeleteElement(context, ADMIN_USER, adminIndividual.node)).toBeFalsy();
-    const otherIndividual = elementsToDelete.edges.find((e: any) => e.node.name !== 'admin');
+    const otherIndividual = elementsToDelete.edges.find((e: any) => !e.node.contact_information);
     expect(await canDeleteElement(context, ADMIN_USER, otherIndividual.node)).toBeTruthy();
   });
   it('should delete the fetched files and workbenches', async () => {
