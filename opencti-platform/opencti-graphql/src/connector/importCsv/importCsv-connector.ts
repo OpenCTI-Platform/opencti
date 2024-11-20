@@ -48,6 +48,8 @@ const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts
   const { workId, applicantUser, csvMapper, entity } = opts;
   const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
   if (stream) {
+    // Starting to work, importing file = 1 operation
+    await updateExpectationsNumber(context, applicantUser, workId, 1);
     const chunks: string[] = [];
     let hasError: boolean = false;
     stream.on('data', async (chunk) => {
@@ -62,7 +64,6 @@ const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts
         // it's fine to use deprecated bundleProcess since this whole method is also deprecated for drafts.
         const bundle = await bundleProcess(context, applicantUser, chunks, csvMapper, { entity });
 
-        await updateExpectationsNumber(context, applicantUser, workId, 1);
         const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
         const file = {
           createReadStream: () => contentStream,
@@ -99,6 +100,9 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
 
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
     if (stream) {
+      // start UI count, import of file = 1 operation.
+      await updateExpectationsNumber(context, applicantUser, workId, 1);
+
       const lines: string[] = [];
       const readStream = readline.createInterface({ input: stream, crlfDelay: Infinity });
       let lineNumber = 0;
@@ -156,6 +160,7 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
       }
     } else {
       // stream null means error, to change the day downloadFile throw errors.
+      // To change when downloadFile is changed to throw exception.
       // circuit breaker
       hasMoreBulk = false;
       logApp.error(`${LOG_PREFIX} Cannot download file, please check the file storage dependency.`, { fileId, workId });
@@ -165,14 +170,12 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
   }
   logApp.info(`${LOG_PREFIX} processing CSV ${fileId} DONE in ${new Date().getTime() - startDate2} ms for ${totalObjectsCount} objets in ${totalBundlesCount} bundles.`);
 
-  // expectation number is going to be increase when worker split bundle. So it's bundle count that should be reported here.
-  // TODO do we keep display of bundle count ? objects count ? none of them ? At the end total is totalObjectsCount + totalBundlesCount
+  // expectation number is going to be increase when worker split bundle. So it's bundle count that should be reported in updateProcessedTime.
   if (totalBundlesCount > 0) {
-    await updateExpectationsNumber(context, applicantUser, workId, 1); // If zero then job is marked as complete
     await reportExpectation(context, applicantUser, workId);// csv file ends = 1 operation done.
     await updateProcessedTime(context, applicantUser, workId, `${totalBundlesCount} bundle(s) send to worker for import.`);
   } else {
-    await updateExpectationsNumber(context, applicantUser, workId, 0);
+    await reportExpectation(context, applicantUser, workId);// csv file ends = 1 operation done.
     await updateProcessedTime(context, applicantUser, workId, 'No bundle send to worker for import.');
   }
 

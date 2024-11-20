@@ -25,7 +25,7 @@ import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/gra
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
-import { createWork, updateExpectationsNumber } from '../domain/work';
+import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
@@ -474,8 +474,11 @@ export const processCsvLines = async (
       connectorId: connectorIdFromIngestId(ingestion.id),
     };
 
+    // start UI count, import of file = 1 operation.
+    await updateExpectationsNumber(context, ingestionUser, work.id, 1);
     const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
     objectsInBundleCount = objectCount;
+    await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.
 
     logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
