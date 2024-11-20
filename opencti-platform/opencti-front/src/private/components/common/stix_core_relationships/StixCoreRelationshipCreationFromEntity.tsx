@@ -793,6 +793,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       toolbarFilters={contextFilters}
                       preloadedPaginationProps={preloadedPaginationProps}
                       entityTypes={virtualEntityTypes}
+                      availableEntityTypes={virtualEntityTypes}
                       additionalHeaderButtons={[(
                         <BulkRelationDialogContainer
                           targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
