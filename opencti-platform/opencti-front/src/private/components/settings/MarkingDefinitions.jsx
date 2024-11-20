@@ -1,60 +1,37 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
+import React from 'react';
+import { MarkingDefinitionLineDummy } from '@components/settings/marking_definitions/MarkingDefinitionLine';
+import { useFormatter } from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 import AccessesMenu from './AccessesMenu';
-import withRouter from '../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-
-const styles = () => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-});
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
-class MarkingDefinitions extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.navigate,
-      props.location,
-      LOCAL_STORAGE_KEY,
-    );
-    this.state = {
-      sortBy: propOr('definition', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-    };
-  }
+const MarkingDefinitions = () => {
+  const { t_i18n } = useFormatter();
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
+      sortBy: 'definition',
+      orderAsc: true,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    },
+  );
 
-  saveView() {
-    saveViewParameters(
-      this.props.navigate,
-      this.props.location,
-      LOCAL_STORAGE_KEY,
-      this.state,
-    );
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
-
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
-  }
-
-  renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+  const renderLines = () => {
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      numberOfElements,
+    } = viewStorage;
     const dataColumns = {
       definition_type: {
         label: 'Type',
@@ -82,61 +59,56 @@ class MarkingDefinitions extends Component {
         isSortable: true,
       },
     };
+    const queryRef = useQueryLoading(markingDefinitionsLinesQuery, { count: 25, ...paginationOptions });
     return (
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
+        numberOfElements={numberOfElements}
       >
-        <QueryRenderer
-          query={markingDefinitionsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
+        {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <MarkingDefinitionLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
             <MarkingDefinitionsLines
-              data={props}
+              queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
-              initialLoading={props === null}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
             />
-          )}
-        />
+          </React.Suspense>
+        )}
       </ListLines>
     );
-  }
+  };
 
-  render() {
-    const { t, classes } = this.props;
-    const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const paginationOptions = {
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
-    return (
-      <div className={classes.container}>
-        <Breadcrumbs elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Marking definitions'), current: true }]} />
-        <AccessesMenu />
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <MarkingDefinitionCreation paginationOptions={paginationOptions} />
-      </div>
-    );
-  }
-}
-
-MarkingDefinitions.propTypes = {
-  t: PropTypes.func,
-  classes: PropTypes.object,
-  navigate: PropTypes.func,
-  location: PropTypes.object,
+  return (
+    <div style={{
+      margin: 0,
+      padding: '0 200px 0 0',
+    }}
+    >
+      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Marking definitions'), current: true }]} />
+      <AccessesMenu />
+      {renderLines()}
+      <MarkingDefinitionCreation paginationOptions={paginationOptions} />
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(MarkingDefinitions);
+export default MarkingDefinitions;
