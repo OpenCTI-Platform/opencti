@@ -25,6 +25,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import StixCoreObjectFileExportButton from '@components/common/stix_core_objects/StixCoreObjectFileExportButton';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
@@ -574,10 +575,10 @@ const StixDomainObjectHeader = (props) => {
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
-                id={stixDomainObject.id}
-                type={entityType}
-              />
-            </Security>
+                scoId={stixDomainObject.id}
+                scoEntityType={entityType}
+              OpenFormComponent={StixCoreObjectFileExportButton}
+            /></Security>
             {isKnowledgeUpdater && (
               <StixCoreObjectContainer elementId={stixDomainObject.id} />
             )}
