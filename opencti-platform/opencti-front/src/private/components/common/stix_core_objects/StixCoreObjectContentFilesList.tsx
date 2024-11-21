@@ -12,10 +12,12 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
+import StixCoreObjectFileExport, { BUILT_IN_FROM_FILE_TEMPLATE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
+import { htmlToPdf } from '../../../../utils/htmlToPdf';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -49,7 +51,8 @@ export interface ContentFile {
 
 interface StixCoreObjectContentFilesListProps {
   files: ContentFile[],
-  stixCoreObjectName: string,
+  stixCoreObjectId: string,
+  stixCoreObjectType: string,
   currentFileId: string,
   handleSelectFile: (fileId: string) => void,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
@@ -57,8 +60,9 @@ interface StixCoreObjectContentFilesListProps {
 
 const StixCoreObjectContentFilesList = ({
   files,
+  stixCoreObjectId,
+  stixCoreObjectType,
   currentFileId,
-  stixCoreObjectName,
   handleSelectFile,
   onFileChange,
 }: StixCoreObjectContentFilesListProps) => {
@@ -103,17 +107,20 @@ const StixCoreObjectContentFilesList = ({
     try {
       const { data } = await axios.get(url);
       const currentName = (id.split('/').pop() ?? '').split('.')[0];
-
-      if (id.startsWith('fromTemplate')) {
-        const markings = file.objectMarking?.map((m) => m.representative.main) ?? [];
-        htmlToPdfReport(stixCoreObjectName, data, currentName, markings).download(`${currentName}.pdf`);
-      } else {
-        htmlToPdf(id, data).download(`${currentName}.pdf`);
-      }
+      htmlToPdf(id, data).download(`${currentName}.pdf`);
     } catch (e) {
-      MESSAGING$.notifyError('Error trying to download in PDF');
+      MESSAGING$.notifyError(t_i18n('Error trying to download in PDF'));
     }
   };
+
+  const filesFromTemplate = (files ?? []).map((f) => ({
+    label: f.name,
+    value: f.id,
+    fileMarkings: (f.objectMarking ?? []).map((m) => ({
+      id: m.id,
+      name: getMainRepresentative(m),
+    })),
+  }));
 
   const handleClose = () => {
     deletion.handleCloseDelete();
@@ -178,10 +185,30 @@ const StixCoreObjectContentFilesList = ({
             >
               {t_i18n('Download file')}
             </MenuItem>
-            {menuFile.metaData?.mimetype !== 'application/pdf' && (
-              <MenuItem onClick={() => downloadPdf(menuFile)}>
+            {!file.id.startsWith('fromTemplate') && (
+              <MenuItem onClick={() => downloadPdf(file)}>
                 {t_i18n('Download in PDF')}
               </MenuItem>
+            )}
+            {file.id.startsWith('fromTemplate') && (
+              <StixCoreObjectFileExport
+                onClose={() => setAnchorEl(null)}
+                scoId={stixCoreObjectId}
+                scoEntityType={stixCoreObjectType}
+                filesFromTemplate={filesFromTemplate}
+                defaultValues={{
+                  connector: BUILT_IN_FROM_FILE_TEMPLATE.value,
+                  format: 'application/pdf',
+                  templateFile: file.id,
+                }}
+                OpenFormComponent={({ onOpen }) => (
+                  <Tooltip title={t_i18n('Generate a PDF export')}>
+                    <MenuItem onClick={onOpen}>
+                      {t_i18n('Generate a PDF export')}
+                    </MenuItem>
+                  </Tooltip>
+                )}
+              />
             )}
             <MenuItem onClick={handleDelete}>
               {t_i18n('Delete')}

@@ -22,6 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
+import StixCoreObjectFileExportButton from '@components/common/stix_core_objects/StixCoreObjectFileExportButton';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
@@ -778,7 +779,21 @@ const ContainerHeader = (props) => {
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
-  const hasContentsFromTemplate = container.contentsFromTemplate?.edges.length > 0;
+
+  const filesFromTemplate = (container.contentsFromTemplate?.edges ?? []).map((e) => ({
+    label: e.node.name,
+    value: e.node.id,
+    fileMarkings: e.node.objectMarking.map((m) => ({
+      id: m.id,
+      name: getMainRepresentative(m),
+    })),
+  }));
+
+  const templateOptions = (container.templates).map((template) => ({
+    label: template.name,
+    value: template.id,
+  }));
+
   return (
     <div
       style={containerStyle}
@@ -919,10 +934,13 @@ const ContainerHeader = (props) => {
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
-                id={container.id}
-                type={container.entity_type}
-                redirectToContent={!!redirectToContent}
-                hasContentsFromTemplate={hasContentsFromTemplate}
+                scoId={container.id}
+                scoName={container.name}
+                scoEntityType={container.entity_type}
+                redirectToContentTab={!!redirectToContent}
+                filesFromTemplate={filesFromTemplate}
+                templates={templateOptions}
+                OpenFormComponent={StixCoreObjectFileExportButton}
               /></Security>
             )}
             {enableSuggestions && (
@@ -1140,11 +1158,22 @@ export default createFragmentContainer(ContainerHeader, {
         entity_type
       }
       contentsFromTemplate(first: 500) {
-          edges {
-              node {
-                  id
+        edges {
+          node {
+            id
+            name
+            objectMarking {
+              id
+              representative {
+                main
               }
+            }
           }
+        }
+      }
+      templates {
+        id
+        name
       }
       currentUserAccessRight
       authorized_members {
