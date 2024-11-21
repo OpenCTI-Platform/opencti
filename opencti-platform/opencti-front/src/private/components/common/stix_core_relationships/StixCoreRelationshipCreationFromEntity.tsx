@@ -621,13 +621,16 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
               : payload;
             const connKey = connectionKey || 'Pagination_stixCoreRelationships';
-            // When using connectionKey we use less props of PaginationOptions, we need to filter them
             let conn;
+            // When using connectionKey we use less props of PaginationOptions (ex: count),
+            // we need to filter them to prevent getConnection to fail
+            const { count: _, ...options } = paginationOptions;
+
             if (userProxy && paginationOptions) {
               conn = ConnectionHandler.getConnection(
                 userProxy,
                 connKey,
-                paginationOptions,
+                options,
               );
             }
 
