@@ -108,6 +108,9 @@
     },
     "trash": {
       "enabled": true
+    },
+    "csv_ingestion": {
+      "max_bundle_size": 1000
     }
   },
   "demo_mode": false,
@@ -192,7 +195,8 @@
   "import_csv_built_in_connector": {
     "enabled": true,
     "interval": 10000,
-    "validate_before_import": false
+    "validate_before_import": false,
+    "bulk_creation_size": 5000
   },
   "task_scheduler": {
     "enabled": true,

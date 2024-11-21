@@ -3,7 +3,7 @@ import { filterConnectorsForElementEnrichment } from '../../../src/domain/enrich
 import { testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 
-import internalConnectors from '../../data/connectors/internal-connectors.json';
+import internalConnectors from '../../02-integration/07-connector/internal-connectors.json';
 
 describe('Enrichment domain filter connector unit testing', () => {
   const externalReferenceElement = {

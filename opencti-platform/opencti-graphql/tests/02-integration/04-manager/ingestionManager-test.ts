@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { prepareTaxiiGetParam, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
-import { IngestionAuthType, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
+import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-sdo';
 import { now } from '../../../src/utils/format';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import type { BasicStoreEntityIngestionCsv } from '../../../src/modules/ingestion/ingestion-types';
+import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
+import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/modules/ingestion/ingestion-csv-domain';
+import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
+import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
+import { readCsvFromFileStream } from '../../utils/testQueryHelper';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -253,5 +260,61 @@ describe('Verify taxii ingestion - patch part', () => {
 
     // Delete the ingest
     await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+});
+
+describe('Verify csv ingestion', () => {
+  let csvLines: string[];
+  let csvMapperParsed: CsvMapperParsed;
+  let ingestionCsv: BasicStoreEntityIngestionCsv;
+
+  it('should prepare ingestion data', async () => {
+    const mapper = csvMapperMockCities as CsvMapperParsed;
+    const csvMapperInput : CsvMapperAddInput = {
+      has_header: mapper.has_header,
+      name: 'testCsvIngestionMapper',
+      representations: JSON.stringify(mapper.representations),
+      separator: mapper.separator,
+      skipLineChar: mapper.skipLineChar
+    };
+
+    const mapperCreated = await createCsvMapper(testContext, ADMIN_USER, csvMapperInput);
+    const ingestionCsvInput : IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      ingestion_running: true,
+      name: 'csv ingestion',
+      uri: 'http://test.invalid',
+      csv_mapper_id: mapperCreated.id,
+      user_id: USER_EDITOR.id
+    };
+    ingestionCsv = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
+    expect(ingestionCsv.id).toBeDefined();
+    expect(ingestionCsv.internal_id).toBeDefined();
+
+    csvMapperParsed = parseCsvMapper(mapperCreated);
+
+    csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
+  });
+
+  it('should csv ingestion run', async () => {
+    const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
+    expect(isUnchangedData).toBeFalsy();
+
+    // csv-file-cities.csv content:
+    // skip lines and header => 0 object
+    // 1 city +1 label => 2 objects
+    // skip line => 0 object
+    // 1 city +1 label => 2 objects
+    // 1 city (duplicate) +1 label => 2 objects
+    // 1 city +1 label => 2 objects
+    expect(objectsInBundleCount).toBe(8);
+  });
+
+  it('should same csv file ingestion be skipped', async () => {
+    // Second time hash is the same so it should not process any objects
+    const ingestionEntity = await findIngestionCsvById(testContext, ADMIN_USER, ingestionCsv.id);
+    const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionEntity, csvMapperParsed, [...csvLines], null);
+    expect(isUnchangedData).toBeTruthy();
+    expect(objectsInBundleCount).toBe(0);
   });
 });

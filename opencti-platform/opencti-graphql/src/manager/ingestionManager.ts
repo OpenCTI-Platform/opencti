@@ -8,7 +8,7 @@ import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -23,10 +23,9 @@ import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicS
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
-import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
-import { bundleProcess } from '../parser/csv-bundler';
-import { createWork, updateExpectationsNumber } from '../domain/work';
+import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
+import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
@@ -36,6 +35,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
+import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -83,19 +83,26 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
   await patchAttribute(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR, connectorPatch);
 };
 
-const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
-  // Push the bundle to absorption queue
+const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv) => {
   const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+  return work;
+};
+
+const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
+  // Push the bundle to absorption queue
+  const connectorId = connectorIdFromIngestId(ingestion.id);
+  const work: any = await createWorkForIngestion(context, ingestion);
   const stixBundle = JSON.stringify(bundle);
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
   if (bundle.objects.length === 1) {
     // Only add explicit expectation if the worker will not split anything
     await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
   }
-  await pushToWorkerForConnector(connector.internal_id, {
+  await pushToWorkerForConnector(connectorId, {
     type: 'bundle',
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,
@@ -438,17 +445,47 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 // region Csv ingestion
-const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
-  const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
-  const { objects } = await bundleProcess(context, ingestionUser, csvBuffer, csvMapper);
-  if (objects === undefined) {
-    logApp.error(`[OPENCTI-MODULE] INGESTION - Undefined bundle objects for csv ingest: ${ingestion.name}`);
-    const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
-    logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
+export const processCsvLines = async (
+  context: AuthContext,
+  ingestion: BasicStoreEntityIngestionCsv,
+  csvMapperParsed: CsvMapperParsed,
+  csvLines: string[],
+  addedLast: string | undefined | null
+) => {
+  const linesContent = csvLines.join('');
+  const hashedIncomingData = hashSHA256(linesContent);
+  const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
+  let objectsInBundleCount = 0;
+  if (isUnchangedData) {
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
-    logApp.info(`[OPENCTI-MODULE] INGESTION - CSV ingestion execution for: ${ingestion.name} with: ${objects.length} items`);
+    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+    if (csvMapperParsed.has_header) {
+      removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
+    }
+    logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
+    const work = await createWorkForIngestion(context, ingestion);
+    const bundlerOpts : CsvBundlerIngestionOpts = {
+      workId: work.id,
+      applicantUser: ingestionUser,
+      entity: undefined, // TODO is it possible to ingest in entity context ?
+      csvMapper: csvMapperParsed,
+      connectorId: connectorIdFromIngestId(ingestion.id),
+    };
+
+    // start UI count, import of file = 1 operation.
+    await updateExpectationsNumber(context, ingestionUser, work.id, 1);
+    const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
+    objectsInBundleCount = objectCount;
+    await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.
+
+    logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
+    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
+    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   }
-  return objects;
+  return { isUnchangedData, objectsInBundleCount };
 };
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
@@ -457,32 +494,13 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
 
-  let data: Buffer | undefined;
-  let addedLast: string | null | undefined;
   try {
-    const csvResponse = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-    data = csvResponse.data;
-    addedLast = csvResponse.addedLast;
+    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+    await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
   } catch (e: any) {
     logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
     logApp.error(e, { ingestion });
     throw e;
-  }
-
-  const hashedIncomingData = hashSHA256(data.toString());
-  const isUnchangedData = compareHashSHA256(data.toString(), ingestion.current_state_hash ?? '');
-  if (isUnchangedData) {
-    logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
-    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
-  } else {
-    const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
-    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
-    // Push the bundle to absorption queue
-    await pushBundleToConnectorQueue(context, ingestion, bundle);
-    // Update the state
-    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
-    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   }
 };
 

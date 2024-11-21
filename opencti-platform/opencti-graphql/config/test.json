@@ -77,6 +77,12 @@
   "connector_manager": {
     "enabled": true
   },
+  "import_csv_built_in_connector": {
+    "enabled": true,
+    "interval": 10000,
+    "validate_before_import": false,
+    "bulk_creation_size": 5
+  },
   "task_scheduler": {
     "enabled": true
   },

@@ -9,6 +9,7 @@ import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmi
 import { addWorkspace, workspaceEditAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
+import { logApp } from '../../../src/config/conf';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -144,7 +145,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       const adminInvestigationThatStay = await findWorkspaceById(adminContext, ADMIN_USER, adminInvestigationData.id);
       expect(adminInvestigationThatStay, 'User is view only on this investigation owned by admin, it should not be deleted with the user.').toBeDefined();
     } catch (e) {
-      console.log(JSON.stringify(e));
+      logApp.error(JSON.stringify(e));
     }
   });
   it('should data without authorized_member not throw exception during user deletion.', async () => {

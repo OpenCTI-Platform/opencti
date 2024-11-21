@@ -13,6 +13,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
+import { logApp } from '../config/conf';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -220,6 +221,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       sourceScript += 'if (ctx._source.errors.length < 100) { ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); }';
       params.source = source;
       params.error = error;
+      logApp.error(error, { errorData });
     }
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
@@ -228,6 +230,14 @@ export const reportExpectation = async (context, user, workId, errorData) => {
   return workId;
 };
 
+/**
+ * Called by worker to increase expected numbers.
+ * @param context
+ * @param user
+ * @param workId
+ * @param expectations
+ * @returns {Promise<string>}
+ */
 export const updateExpectationsNumber = async (context, user, workId, expectations) => {
   const currentWork = await loadWorkById(context, user, workId);
   const params = { updated_at: now(), import_expected_number: expectations };

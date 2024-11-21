@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import fs from 'node:fs';
-import path from 'node:path';
-import Upload from 'graphql-upload/Upload.mjs';
 import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { toBase64 } from '../../../src/database/utils';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query workspaces(
@@ -201,24 +198,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can not import workspace configuration, given invalid entity type JSON import', async () => {
-    const file = fs.createReadStream(
-      path.resolve(
-        __dirname,
-        '../../data/20233010_octi_dashboard_Custom Dash_invalid_type.json',
-      ),
-    );
-    const upload = new Upload();
-    const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'invalid-type.json',
-      mimetype: 'application/json',
-      createReadStream: () => file,
-    };
-    upload.promise = new Promise((executor) => {
-      executor(fileUpload);
-    });
-    upload.file = fileUpload;
-
+    const upload = await createUploadFromTestDataFile('20233010_octi_dashboard_Custom Dash_invalid_type.json', 'invalid-type.json', 'application/json');
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation importWorkspaceConfiguration($file: Upload!) {
@@ -235,24 +215,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can not import workspace configuration, given invalid dashboard version import', async () => {
-    const file = fs.createReadStream(
-      path.resolve(
-        __dirname,
-        '../../data/20233010_octi_dashboard_Custom Dash_invalid_5.11.0_version.json',
-      ),
-    );
-    const upload = new Upload();
-    const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'invalid-version.json',
-      mimetype: 'application/json',
-      createReadStream: () => file,
-    };
-    upload.promise = new Promise((executor) => {
-      executor(fileUpload);
-    });
-    upload.file = fileUpload;
-
+    const upload = await createUploadFromTestDataFile('20233010_octi_dashboard_Custom Dash_invalid_5.11.0_version.json', 'invalid-type.json', 'application/json');
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation importWorkspaceConfiguration($file: Upload!) {
@@ -270,24 +233,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can import workspace configuration, given valid entity type JSON import', async () => {
-    const file = fs.createReadStream(
-      path.resolve(
-        __dirname,
-        '../../data/20233010_octi_dashboard_Custom Dash_valid.json',
-      ),
-    );
-    const upload = new Upload();
-    const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'valid.json',
-      mimetype: 'application/json',
-      createReadStream: () => file,
-    };
-    upload.promise = new Promise((executor) => {
-      executor(fileUpload);
-    });
-    upload.file = fileUpload;
-
+    const upload = await createUploadFromTestDataFile('20233010_octi_dashboard_Custom Dash_valid.json', 'valid.json', 'application/json');
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation importWorkspaceConfiguration($file: Upload!) {
@@ -361,16 +307,7 @@ describe('Workspace resolver standard behavior', () => {
     expect(workspaceWidget.data.workspaceAdd).not.toBeNull();
     expect(workspaceWidget.data.workspaceAdd.name).toEqual(workspaceWidgetName);
     const workspaceId = workspaceWidget.data.workspaceAdd.id;
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20231123_octi_widget_list.json'));
-    const upload = new Upload();
-    const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'valid.json',
-      mimetype: 'application/json',
-      createReadStream: () => file,
-    };
-    upload.promise = new Promise((executor) => { executor(fileUpload); });
-    upload.file = fileUpload;
+    const upload = await createUploadFromTestDataFile('20231123_octi_widget_list.json', 'valid.json', 'application/json');
     const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
 
     const queryResult = await queryAsAdmin({
@@ -402,16 +339,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can not import widget, given invalid widget type import', async () => {
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20231123_invalid_type_octi_widget_list.json'));
-    const upload = new Upload();
-    const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'invalid-type.json',
-      mimetype: 'application/json',
-      createReadStream: () => file,
-    };
-    upload.promise = new Promise((executor) => { executor(fileUpload); });
-    upload.file = fileUpload;
+    const upload = await createUploadFromTestDataFile('20231123_invalid_type_octi_widget_list.json', 'invalid-type.json', 'application/json');
     const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
 
     const queryResult = await queryAsAdmin({
@@ -438,16 +366,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can not import widget, given invalid widget version import', async () => {
-    const file = fs.createReadStream(path.resolve(__dirname, '../../data/20231123_invalid_version_octi_widget_list.json'));
-    const upload = new Upload();
-    const fileUpload = {
-      fieldName: 'fieldName',
-      filename: 'invalid-version.json',
-      mimetype: 'application/json',
-      createReadStream: () => file,
-    };
-    upload.promise = new Promise((executor) => { executor(fileUpload); });
-    upload.file = fileUpload;
+    const upload = await createUploadFromTestDataFile('20231123_invalid_version_octi_widget_list.json', 'invalid-version.json', 'application/json', 'utf8');
     const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
 
     const queryResult = await queryAsAdmin({

@@ -368,10 +368,10 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
   return files;
 };
 
-export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
+export const uploadJobImport = async (context, user, file, entityId, opts = {}) => {
   const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = 'draft' } = opts;
   const validationModeToUse = isFeatureEnabled('DRAFT_WORKSPACE') ? validationMode : 'workbench';
-  let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
+  let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
   }
@@ -381,7 +381,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
   if (connectors.length > 0) {
     // Create job and send ask to broker
     const createConnectorWork = async (connector) => {
-      const work = await createWork(context, user, connector, 'Manual import', fileId);
+      const work = await createWork(context, user, connector, `Manual import of ${file.name}`, file.id);
       return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector) => createConnectorWork(connector)));
@@ -394,9 +394,9 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
           applicant_id: user.id, // User asking for the import
         },
         event: {
-          file_id: fileId,
-          file_mime: fileMime,
-          file_fetch: `/storage/get/${fileId}`, // Path to get the file
+          file_id: file.id,
+          file_mime: file.metaData.mimetype,
+          file_fetch: `/storage/get/${file.id}`, // Path to get the file
           entity_id: entityId, // Context of the upload*
           validation_mode: validationModeToUse,
           bypass_validation: bypassValidation, // Force no validation
@@ -490,7 +490,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 const triggerJobImport = async (context, user, file, contextEntities = []) => {
   if (contextEntities.length === 0) {
     // global import
-    await uploadJobImport(context, user, file.id, file.metaData.mimetype, null);
+    await uploadJobImport(context, user, file, null);
   }
   // import on entities
   for (let i = 0; i < contextEntities.length; i += 1) {
@@ -502,7 +502,7 @@ const triggerJobImport = async (context, user, file, contextEntities = []) => {
 
     // Trigger an enrich job for import file if needed
     if (isConfidenceMatch) {
-      await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityContext?.internal_id);
+      await uploadJobImport(context, user, file, entityContext?.internal_id);
     }
   }
 };
