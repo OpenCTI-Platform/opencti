@@ -179,7 +179,7 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
     await updateProcessedTime(context, applicantUser, workId, 'No bundle send to worker for import.');
   }
 
-  return totalObjectsCount;
+  return { totalObjectsCount, totalBundlesCount };
 };
 
 const consumeQueueCallback = async (context: AuthContext, message: string) => {

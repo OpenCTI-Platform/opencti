@@ -40,9 +40,10 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
   }
 
   const bundleBuilt = bundle.build();
+  const objectCount = bundleBuilt.objects.length;
   const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
 
-  // logApp.info(`${LOG_PREFIX} push bundle to worker with ${bundleBuilt.objects.length} objects`);
+  logApp.debug(`${LOG_PREFIX} push bundle to worker with ${objectCount} objects`);
   await pushToWorkerForConnector(opts.connectorId, {
     type: 'bundle',
     update: true,
@@ -50,8 +51,18 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
     work_id: opts.workId,
     content: bundleContentAsString,
   });
+  return objectCount;
 };
 
+/**
+ * Generates stix bundle from csv lines, this is used both for csvMapper test and actual send depending on sendBundles value.
+ * Note that if sendBundles is true, allBundlesToSend will be empty.
+ * Csv header and comment before header must be managed (removed) before calling this.
+ * @param context
+ * @param lines
+ * @param opts
+ * @param sendBundles when true bundle are send to worker, when false bundle are accumulated in allBundlesToSend
+ */
 const internalGenerateBundles = async (
   context: AuthContext,
   lines: string[],
@@ -89,11 +100,12 @@ const internalGenerateBundles = async (
           if (bundleBuilder.canAddObjects(stixObjects) && bundleBuilder.objects.length < CSV_MAX_BUNDLE_SIZE_GENERATION) {
             bundleBuilder.addObjects(stixObjects, csvData);
           } else {
+            let objectSentCount = bundleBuilder.objects.length;
             if (sendBundles) {
-              await sendBundleToWorker(bundleBuilder, opts);
+              objectSentCount = await sendBundleToWorker(bundleBuilder, opts);
             }
             totalBundleSend += 1;
-            totalObjectSend += bundleBuilder.objects.length;
+            totalObjectSend += objectSentCount;
             bundleBuilder = new BundleBuilder();
             bundleBuilder.addObjects(stixObjects, csvData);
             if (!sendBundles) {
@@ -106,10 +118,11 @@ const internalGenerateBundles = async (
       }
     }
     if (bundleBuilder.objects.length > 0) {
+      let objectSentCount = bundleBuilder.objects.length;
       if (sendBundles) {
-        await sendBundleToWorker(bundleBuilder, opts);
+        objectSentCount = await sendBundleToWorker(bundleBuilder, opts);
       }
-      totalObjectSend += bundleBuilder.objects.length;
+      totalObjectSend += objectSentCount;
       totalBundleSend += 1;
     }
   }

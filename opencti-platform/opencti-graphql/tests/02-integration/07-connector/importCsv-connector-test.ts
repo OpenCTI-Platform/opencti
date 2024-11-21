@@ -39,16 +39,41 @@ describe('Verify internal importCsv connector', () => {
       entity: undefined,
       workId: work.id
     };
-    const totalObjectsCount = await processCSVforWorkers(testContext, 'import/global/csv-file-cities.csv', mapperOpts);
+    const { totalObjectsCount, totalBundlesCount } = await processCSVforWorkers(testContext, 'import/global/csv-file-cities.csv', mapperOpts);
 
     // Bulk size = 5
     //
-    // 3 first city line => same city on 2 first lines: 2 city + 'label1', 1 city + label2  = 5 objects
-    // next 5 lines => 1 skip line, 4 cities, 1 label = 5 objects
-    // next 5 lines => 5 cities + 1 label = 6 objects
-    // next 5 lines => 3 cities + 1 label ; + same city + 1 label => 6 objects (in 2 bundles)
-    // FIXME expect(totalObjectsCount).toBe(5 + 5 + 6 + 6);
-    expect(totalObjectsCount).toBe(32); // FIXME ??
+    // 3 first city line (not 5 because of comment and header):
+    //  25620,ville du pont,25650,ville du pont,46.999873398,6.498147193,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 2 objects (city+label)
+    //  25620,ville du pont,25650,ville du pont,46.999873398,6.498147193,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv2,#000000 => bundle #2 => 2 objects
+    //  25624,villers grelot,25640,villers grelot,47.361512085,6.235167025,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #2 => 2 objects
+    // => 2 bundles and 6 objects
+    //
+    // next 5 lines:
+    // 25615,villars les blamont,25310,villars les blamont,47.368383721,6.871414913,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 2 objects
+    // 25619,les villedieu,25240,les villedieu,46.713906258,6.26583065,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 2 object
+    // 25622,villers buzon,25170,villers buzon,47.228558434,5.852186748,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 2 object
+    // #25666,skip city,25666,skip city,47.240809828,6.473842387,skip-dept,25,skip-region,skip-region,importcsv1,#ffffff => comment = skip
+    // 25625,villers la combe,25510,villers la combe,47.240809828,6.473842387,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 2 object
+    // => 1 bundles and 5 objects
+    //
+    // next 5 lines:
+    // 25627,villers sous chalamont,25270,villers sous chalamont,46.901588322,6.045328224,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 2 objects
+    // 25632,voujeaucourt,25420,voujeaucourt,47.473552905,6.782505604,doubs,25,bourgogne-franche-comté,Bourgogne-Franche-Comté,importcsv1,#ffffff => bundle #1, 1 object
+    // 02102,bouconville vauclair,02860,bouconville vauclair,49.460193485,3.756684634,aisne,02,hauts-de-france,Hauts-de-France,importcsv1,#ffffff => bundle #1, 1 object
+    // 02105,bouresches,02400,bouresches,49.067056293,3.316703204,aisne,02,hauts-de-france,Hauts-de-France,importcsv1,#ffffff => bundle #1, 1 object
+    // 02124,brissy hamegicourt,02240,brissy hamegicourt,49.742857871,3.399923608,aisne,02,hauts-de-france,Hauts-de-France,importcsv1,#ffffff => bundle #1, 1 object
+    // => 1 bundles and 6 objects
+    //
+    // next 5 lines:
+    // 02125,brumetz,02810,brumetz,49.110351585,3.153350725,aisne,02,hauts-de-france,Hauts-de-France,importcsv1,#ffffff => bundle #1, 2 objects
+    // 02126,brunehamel,02360,brunehamel,49.771382057,4.186261479,aisne,02,hauts-de-france,Hauts-de-France,importcsv1,#ffffff => bundle #1, 1 object
+    // 02131,bucy le long,02880,bucy le long,49.387973822,3.398519722,aisne,02,hauts-de-france,Hauts-de-France,importcsv1,#ffffff => bundle #1, 1 object
+    // 02131,bucy le long,02880,bucy le long,49.387973822,3.398519722,aisne,02,hauts-de-france,Hauts-de-France,importcsv3,#000000 => bundle #2, 2 object (new bundle because same city with different label)
+    // => 2 bundles and 6 objects
+    //
+    expect(totalBundlesCount).toBe(6);
+    expect(totalObjectsCount).toBe(23);
 
     const workUpdated: any = await findWorkById(testContext, ADMIN_USER, work.id);
     expect(workUpdated).toBeDefined();
