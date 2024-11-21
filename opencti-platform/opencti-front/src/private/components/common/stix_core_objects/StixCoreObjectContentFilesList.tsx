@@ -64,15 +64,20 @@ const StixCoreObjectContentFilesList = ({
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const openPopover = (e: MouseEvent<HTMLButtonElement>) => {
+  const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
+  const openPopover = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
     setAnchorEl(e.currentTarget);
+    setMenuFile(file);
+  };
+  const closePopover = () => {
+    setAnchorEl(null);
+    setMenuFile(null);
   };
 
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
-
   const submitDelete = (fileId: string) => {
-    setAnchorEl(null);
+    closePopover();
     setDeleting(fileId);
     commitDelete({
       variables: { fileName: fileId },
@@ -84,7 +89,7 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const downloadPdf = async (file: ContentFile) => {
-    setAnchorEl(null);
+    closePopover();
     const { id } = file;
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(id)}`;
 
@@ -132,7 +137,7 @@ const StixCoreObjectContentFilesList = ({
               />
               <ListItemSecondaryAction>
                 <IconButton
-                  onClick={openPopover}
+                  onClick={(e) => openPopover(e, file)}
                   aria-haspopup="true"
                   color="primary"
                   size="small"
@@ -142,29 +147,36 @@ const StixCoreObjectContentFilesList = ({
               </ListItemSecondaryAction>
             </ListItemButton>
           </Tooltip>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-          >
+        </Fragment>
+      ))}
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={closePopover}
+      >
+        {menuFile && (
+          <>
             <MenuItem
               component={Link}
-              to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
-              onClick={() => setAnchorEl(null)}
+              to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
+              onClick={closePopover}
               target="_blank"
               rel="noopener noreferrer"
             >
               {t_i18n('Download file')}
             </MenuItem>
-            <MenuItem onClick={() => downloadPdf(file)}>
-              {t_i18n('Download in PDF')}
-            </MenuItem>
-            <MenuItem onClick={() => submitDelete(file.id)}>
+            {menuFile.metaData?.mimetype !== 'application/pdf' && (
+              <MenuItem onClick={() => downloadPdf(menuFile)}>
+                {t_i18n('Download in PDF')}
+              </MenuItem>
+            )}
+            <MenuItem onClick={() => submitDelete(menuFile.id)}>
               {t_i18n('Delete')}
             </MenuItem>
-          </Menu>
-        </Fragment>
-      ))}
+          </>
+        )}
+      </Menu>
     </List>
   );
 };

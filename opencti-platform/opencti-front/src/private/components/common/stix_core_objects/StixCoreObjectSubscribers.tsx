@@ -59,7 +59,11 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
         size="small"
         variant="text"
         color={hasSetAccess ? 'primary' : 'inherit'}
-        style={{ cursor: hasSetAccess && triggersKnowledgeCount && triggersKnowledgeCount > 0 ? 'pointer' : 'default', marginRight: 10 }}
+        style={{
+          cursor: hasSetAccess && triggersKnowledgeCount && triggersKnowledgeCount > 0 ? 'pointer' : 'default',
+          marginRight: 10,
+          whiteSpace: 'nowrap',
+        }}
         sx={!hasSetAccess ? {
           '&.MuiButtonBase-root:hover': {
             bgcolor: 'transparent',
