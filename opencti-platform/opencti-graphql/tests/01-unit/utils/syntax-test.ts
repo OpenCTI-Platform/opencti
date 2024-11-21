@@ -12,13 +12,28 @@ describe('Regex Pattern Tests', () => {
     expect('example.com').toMatch(domainChecker);
     expect('sub.example.co.uk').toMatch(domainChecker);
     expect('løveskateboards.com').toMatch(domainChecker);
-    // expect('test._mysubdomain.mydomain.com').toMatch(domainChecker);
-    // expect('test_mysubdomain.domain.io').toMatch(domainChecker);
-    // expect('test-test.com').toMatch(domainChecker);
-    // expect('test-test.mytest.com').toMatch(domainChecker);
-    // expect('invalid_domain.12_3').not.toMatch(domainChecker);
-    // expect('invalid_domain').not.toMatch(domainChecker);
+    expect('test._mysubdomain.mydomain.com').toMatch(domainChecker);
+    expect('test_mysubdomain.domain.io').toMatch(domainChecker);
+    expect('test-test.com').toMatch(domainChecker);
+    expect('test-test.mytest.com').toMatch(domainChecker);
+    expect('observableTestPromote.com').toMatch(domainChecker);
   });
+
+  it('should not match a valid domain pattern', () => {
+    expect('invalid_domain.12_3').not.toMatch(domainChecker);
+    expect('invalid_domain').not.toMatch(domainChecker);
+    expect('').not.toMatch(domainChecker);
+    expect('erijgrjoprgjrejgoejrpojerbjrepobjreobjoperjboprejorpejgorpejeropgjreojgeprogjerpjgreojgoperjgpreojgoperjgorepjgporejgoprejgporejgorepjgoerpjgperjgpoerjgorejgporejoprejgopjergpjerogjrepjgerpgjergojrepgjrvenvrienvrepngvperjgprejgrpegjrepogjrepgjreogjerjgepjgrpejgrpejrgpjerpo.fr').not.toMatch(domainChecker);
+  })
+
+  it('Domain-name regex parsing should be perfomant', async () => {
+    const startDate = Date.now();
+    for (let i = 0; i < 1000; i++) {
+      domainChecker.test('test._mysubdomain.mydomain.com');
+      domainChecker.test('invalid_domain.12_3');
+    }
+    expect(Date.now() - startDate, 'Domain-name regex parsing should be perfomant').toBeLessThanOrEqual(2);
+  })
 
   it('should match a valid hostname pattern', () => {
     expect('my-host').toMatch(hostnameChecker);
