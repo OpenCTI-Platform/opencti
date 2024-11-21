@@ -31,7 +31,7 @@ const ExclusionLists = () => {
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('ExclusionList', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Exclusion-List', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -54,12 +54,6 @@ const ExclusionLists = () => {
         width: '30%',
         isSortable: false,
         render: (node: ExclusionListsLine_node$data) => node.description,
-      },
-      created_at: {
-        label: t_i18n('Creation date'),
-        width: '20%',
-        isSortable: false,
-        render: (node: ExclusionListsLine_node$data) => fd(node.created_at),
       },
       active: {
         label: t_i18n('Active'),
