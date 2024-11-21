@@ -449,6 +449,10 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
   }
 `;
 
+type ExtendedPaginationOptions = PaginationOptions & {
+  [key: string]: string | number;
+};
+
 interface StixCoreRelationshipCreationFromEntityProps {
   entityId: string;
   allowedRelationshipTypes?: string[];
@@ -457,7 +461,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   targetStixCyberObservableTypes?: string[];
   defaultStartTime: string;
   defaultStopTime: string;
-  paginationOptions: unknown;
+  paginationOptions: ExtendedPaginationOptions;
   connectionKey?: string;
   paddingRight: number;
   variant?: string;
