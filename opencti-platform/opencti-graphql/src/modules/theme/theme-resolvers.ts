@@ -1,0 +1,16 @@
+import type { Resolvers } from '../../generated/graphql';
+import { addTheme, deleteTheme, editTheme, findAll, findById } from './theme-domain';
+
+const themeResolvers: Resolvers = {
+  Query: {
+    theme: (_, { id }, context) => findById(context, context.user, id),
+    themes: (_, args, context) => findAll(context, context.user, args),
+  },
+  Mutation: {
+    themeAdd: (_, { input }, context) => addTheme(context, context.user, input),
+    themeDelete: (_, { id }, context) => deleteTheme(context, context.user, id),
+    themeFieldPatch: (_, { id, input }, context) => editTheme(context, context.user, id, input),
+  },
+};
+
+export default themeResolvers;

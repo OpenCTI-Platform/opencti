@@ -1,0 +1,61 @@
+type Theme implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String! @auth
+  entity_type: String! @auth
+  parent_types: [String!]! @auth
+  # Theme
+  name: String!
+  theme_background: String
+  theme_paper: String
+  theme_nav: String
+  theme_primary: String
+  theme_secondary: String
+  theme_accent: String
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+}
+
+type ThemeEdge {
+  cursor: String!
+  node: Theme!
+}
+
+type ThemeConnection {
+  pageInfo: PageInfo!
+  edges: [ThemeEdge]
+}
+
+input ThemeAddInput {
+  name: String!
+  theme_background: String
+  theme_paper: String
+  theme_nav: String
+  theme_primary: String
+  theme_secondary: String
+  theme_accent: String
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+}
+
+type Query {
+  theme(id: String!): Theme @auth(for: [KNOWLEDGE])
+  themes(
+    first: Int
+    after: ID
+    search: String
+    toStix: Boolean
+  ): ThemeConnection @auth(for: [KNOWLEDGE])
+}
+
+type Mutation {
+  themeAdd(input: ThemeAddInput!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
+  themeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  themeFieldPatch(
+    id: ID!,
+    input: [EditInput!]!,
+    commitMessage: String,
+    references: [String],
+  ): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
+}
