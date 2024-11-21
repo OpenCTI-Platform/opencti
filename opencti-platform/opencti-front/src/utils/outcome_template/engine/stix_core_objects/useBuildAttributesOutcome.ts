@@ -29,10 +29,10 @@ const useBuildAttributesOutcome = () => {
       } catch (e) {
         result = '';
       }
-      const attributeData = buildReadableAttribute(result, col);
+      const { readableAttribute } = buildReadableAttribute(result, col);
       return {
         variableName: col.variableName,
-        attributeData,
+        attributeData: readableAttribute,
       };
     });
   };

@@ -1,26 +1,36 @@
 import { renderToString } from 'react-dom/server';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { dateFormat } from '../Time';
 import { useBuildFilterKeysMapFromEntityType } from '../filters/filtersUtils';
 import type { WidgetColumn } from '../widget/widget';
+import MarkdownDisplay from '../../components/MarkdownDisplay';
 
-const buildStringAttribute = (val: unknown, isDateAttribute: boolean) => {
-  let value = typeof val === 'string' ? val : JSON.stringify(val);
-  if (isDateAttribute) value = dateFormat(new Date(value)) ?? '';
+const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab?: boolean) => {
+  let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
+  if (attributeType) {
+    if (attributeType === 'date') value = dateFormat(new Date(value)) ?? '';
+    if (attributeType === 'text') {
+      const valueInMarkdown = (<MarkdownDisplay
+        content={value}
+        remarkGfmPlugin={true}
+        commonmark={true}
+        removeLinks={true}
+                               />);
+      value = inTab ? valueInMarkdown : renderToString(valueInMarkdown);
+    }
+  }
   return value;
 };
 
 const useBuildReadableAttribute = () => {
   const stixCoreObjectsAttributesMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
 
-  const buildReadableAttribute = (attributeData: unknown, displayInfo: WidgetColumn) => {
+  const buildReadableAttribute = (attributeData: unknown, displayInfo: WidgetColumn, inTab = false) => {
     const { attribute, displayStyle } = displayInfo;
-    let isDateAttribute = false;
+    const attributeType = attribute ? stixCoreObjectsAttributesMap.get(attribute)?.type : undefined;
 
-    if (attribute) {
-      const attributeDefinition = stixCoreObjectsAttributesMap.get(attribute);
-      isDateAttribute = attributeDefinition?.type === 'date';
-    }
+    const isElement = inTab && attributeType === 'text'; // whether the returned value readableAttribute is a React Element or not (if not, it's a string)
+    // readableAttribute is a React Element only for text (like description) contained in a tab
 
     let readableAttribute;
     if (Array.isArray(attributeData)) {
@@ -28,17 +38,17 @@ const useBuildReadableAttribute = () => {
         readableAttribute = renderToString(
           <ul>
             {attributeData.map((el) => (
-              <li key={el}>{buildStringAttribute(el, isDateAttribute)}</li>
+              <li key={el}>{buildStringAttribute(el, attributeType)}</li>
             ))}
           </ul>,
         );
       } else {
-        readableAttribute = attributeData.map((r) => buildStringAttribute(r, isDateAttribute)).join(', ');
+        readableAttribute = attributeData.map((r) => buildStringAttribute(r, attributeType)).join(', ');
       }
     } else {
-      readableAttribute = buildStringAttribute(attributeData, isDateAttribute);
+      readableAttribute = buildStringAttribute(attributeData, attributeType, inTab);
     }
-    return readableAttribute;
+    return { readableAttribute, isElement };
   };
 
   return { buildReadableAttribute };
