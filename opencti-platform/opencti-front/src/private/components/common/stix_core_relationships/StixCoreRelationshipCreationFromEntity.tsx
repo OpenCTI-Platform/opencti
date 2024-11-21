@@ -449,10 +449,6 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
   }
 `;
 
-type ExtendedPaginationOptions = PaginationOptions & {
-  [key: string]: string | number;
-};
-
 interface StixCoreRelationshipCreationFromEntityProps {
   entityId: string;
   allowedRelationshipTypes?: string[];
@@ -461,7 +457,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   targetStixCyberObservableTypes?: string[];
   defaultStartTime: string;
   defaultStopTime: string;
-  paginationOptions: ExtendedPaginationOptions;
+  paginationOptions: Record<string, any>;
   connectionKey?: string;
   paddingRight: number;
   variant?: string;
@@ -630,7 +626,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             // we need to filter them to prevent getConnection to fail
             const { count: _, ...options } = paginationOptions;
 
-            if (userProxy && paginationOptions) {
+            if (userProxy && options) {
               conn = ConnectionHandler.getConnection(
                 userProxy,
                 connKey,
@@ -644,6 +640,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             ) {
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
+
+              helpers.handleSetNumberOfElements({ });
             }
           }
         },
