@@ -457,7 +457,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   targetStixCyberObservableTypes?: string[];
   defaultStartTime: string;
   defaultStopTime: string;
-  paginationOptions: Record<string, any>;
+  paginationOptions: Record<string, unknown>;
   connectionKey?: string;
   paddingRight: number;
   variant?: string;
@@ -626,7 +626,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             // we need to filter them to prevent getConnection to fail
             const { count: _, ...options } = paginationOptions;
 
-            if (userProxy && options) {
+            if (userProxy) {
               conn = ConnectionHandler.getConnection(
                 userProxy,
                 connKey,
