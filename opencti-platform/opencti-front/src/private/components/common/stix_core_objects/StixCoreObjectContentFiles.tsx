@@ -3,7 +3,7 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { FileOutline } from 'mdi-material-ui';
+import { FileExportOutline, FileOutline } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { AddOutlined } from '@mui/icons-material';
@@ -13,22 +13,20 @@ import Typography from '@mui/material/Typography';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import ContentTemplateForm, { ContentTemplateFormInputs } from '@components/common/form/ContentTemplateForm';
 import {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
+import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Template } from '../../../../utils/outcome_template/template';
-import { MESSAGING$ } from '../../../../relay/environment';
 
 interface ContentBlocProps {
   title: ReactNode
@@ -85,7 +83,7 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
 interface StixCoreObjectContentFilesProps {
   files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][],
   stixCoreObjectId: string,
-  stixCoreObjectName: string,
+  stixCoreObjectType: string,
   content: string | null,
   handleSelectFile: (fileId: string) => void,
   handleSelectContent: () => void,
@@ -101,7 +99,7 @@ interface StixCoreObjectContentFilesProps {
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
   files,
   stixCoreObjectId,
-  stixCoreObjectName,
+  stixCoreObjectType,
   content,
   handleSelectFile,
   handleSelectContent,
@@ -114,34 +112,16 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   templates,
 }) => {
   const { t_i18n } = useFormatter();
-  const { buildContentFromTemplate } = useContentFromTemplate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { isFeatureEnable } = useHelper();
   const isContentFromTemplateEnabled = isFeatureEnable('CONTENT_FROM_TEMPLATE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
+  const [displayCreate, setDisplayCreate] = useState(false);
+
   const [commitUploadFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
   );
-
-  const [displayCreate, setDisplayCreate] = useState(false);
-  const [displayCreateContentFromTemplate, setDisplayCreateContentFromTemplate] = useState(false);
-
-  const handleOpenCreate = () => {
-    setDisplayCreate(true);
-  };
-
-  const handleOpenCreateContentFromTemplate = () => {
-    setDisplayCreateContentFromTemplate(true);
-  };
-
-  const handleCloseCreate = () => {
-    setDisplayCreate(false);
-  };
-
-  const handleCloseCreateContentFromTemplate = () => {
-    setDisplayCreateContentFromTemplate(false);
-  };
 
   const onSubmit: FormikConfig<CreateFileFormInputs>['onSubmit'] = (
     values,
@@ -166,7 +146,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       onCompleted: (result) => {
         setSubmitting(false);
         resetForm();
-        handleCloseCreate();
+        setDisplayCreate(false);
         if (result.stixCoreObjectEdit?.importPush) {
           onFileChange(result.stixCoreObjectEdit.importPush.id);
         }
@@ -174,49 +154,13 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
     });
   };
 
-  const onSubmitContentFromTemplate: FormikConfig<ContentTemplateFormInputs>['onSubmit'] = async (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
-    const { name, type } = values;
-    let fileName = name;
-    if (type === 'text/html' && !name.endsWith('.html')) {
-      fileName += '.html';
-    }
-
-    const fileMarkings = values.fileMarkings.map(({ value }) => value);
-    const maxContentMarkings = (values.maxMarkings ?? []).map(({ value }) => value);
-    const templateId = values.template?.value;
-
-    if (!templateId) return;
-
-    try {
-      const templateContent = await buildContentFromTemplate(
-        stixCoreObjectId,
-        templateId,
-        maxContentMarkings,
-      );
-      const blob = new Blob([templateContent], { type });
-      const file = new File([blob], fileName, { type });
-
-      commitUploadFile({
-        variables: { file, id: stixCoreObjectId, fileMarkings, fromTemplate: true },
-        onCompleted: (result) => {
-          setSubmitting(false);
-          resetForm();
-          handleCloseCreateContentFromTemplate();
-          if (result.stixCoreObjectEdit?.importPush) {
-            onFileChange(result.stixCoreObjectEdit.importPush.id);
-          }
-        },
-      });
-    } catch (e) {
-      MESSAGING$.notifyError(t_i18n('An error occurred while trying to build content from template.'));
-    }
-  };
-
   const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))]
     .sort((a, b) => b.name.localeCompare(a.name));
+
+  const templateOptions = templates.map((template) => ({
+    label: template.name,
+    value: template.id,
+  }));
 
   return (
     <Drawer
@@ -264,7 +208,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
             nameInCallback={true}
           />
           <IconButton
-            onClick={handleOpenCreate}
+            onClick={() => setDisplayCreate(true)}
             color="primary"
             size="small"
             aria-label={t_i18n('Add a file')}
@@ -275,7 +219,8 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       >
         <StixCoreObjectContentFilesList
           files={filesList}
-          stixCoreObjectName={stixCoreObjectName}
+          stixCoreObjectId={stixCoreObjectId}
+          stixCoreObjectType={stixCoreObjectType}
           currentFileId={currentFileId}
           handleSelectFile={handleSelectFile}
           onFileChange={onFileChange}
@@ -284,24 +229,36 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       {isContentFromTemplateEnabled && hasOutcomesTemplate && (
         <ContentBloc
-          title={<>{t_i18n('Content from template')} {!isEnterpriseEdition && <EEChip />}</>}
+          title={<>{t_i18n('Files from template')} {!isEnterpriseEdition && <EEChip />}</>}
           actions={isEnterpriseEdition && (
-            <Tooltip title={t_i18n('Create an outcome based on a template')}>
-              <IconButton
-                onClick={handleOpenCreateContentFromTemplate}
-                color="primary"
-                size="small"
-                aria-label={t_i18n('Create an outcome based on a template')}
-              >
-                <AddOutlined/>
-              </IconButton>
-            </Tooltip>
+            <StixCoreObjectFileExport
+              scoId={stixCoreObjectId}
+              scoEntityType={stixCoreObjectType}
+              templates={templateOptions}
+              defaultValues={{
+                connector: BUILT_IN_FROM_TEMPLATE.value,
+                format: 'text/html',
+              }}
+              OpenFormComponent={({ onOpen }) => (
+                <Tooltip title={t_i18n('Generate an export based on a template')}>
+                  <IconButton
+                    onClick={onOpen}
+                    color="primary"
+                    size="small"
+                    aria-label={t_i18n('Generate an export based on a template')}
+                  >
+                    <FileExportOutline />
+                  </IconButton>
+                </Tooltip>
+              )}
+            />
           )}
         >
           {isEnterpriseEdition && (
             <StixCoreObjectContentFilesList
               files={contentsFromTemplate}
-              stixCoreObjectName={stixCoreObjectName}
+              stixCoreObjectId={stixCoreObjectId}
+              stixCoreObjectType={stixCoreObjectType}
               currentFileId={currentFileId}
               handleSelectFile={handleSelectFile}
               onFileChange={onFileChange}
@@ -312,20 +269,10 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       <CreateFileForm
         isOpen={displayCreate}
-        onClose={handleCloseCreate}
-        onReset={handleCloseCreate}
+        onClose={() => setDisplayCreate(false)}
+        onReset={() => setDisplayCreate(false)}
         onSubmit={onSubmit}
       />
-
-      {isEnterpriseEdition && isContentFromTemplateEnabled && hasOutcomesTemplate && (
-        <ContentTemplateForm
-          isOpen={displayCreateContentFromTemplate}
-          onClose={handleCloseCreateContentFromTemplate}
-          onReset={handleCloseCreateContentFromTemplate}
-          onSubmit={onSubmitContentFromTemplate}
-          templates={templates}
-        />
-      )}
     </Drawer>
   );
 };
