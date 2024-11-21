@@ -12,13 +12,19 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
+import { Option } from '@components/common/form/ReferenceField';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { ExclusionListEntityTypes } from '@components/settings/exclusion_lists/__generated__/ExclusionListsCreationFileAddMutation.graphql';
 
 const exclusionListCreationMutation = graphql`
-  mutation ExclusionListCreationContentAddMutation($input: ExclusionListContentAddInput!) {
-    exclusionListContentAdd(input: $input) {
+  mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
+    exclusionListFileAdd(input: $input) {
       id
       name
       description
+      enabled
     }
   }
 `;
@@ -26,6 +32,8 @@ const exclusionListCreationMutation = graphql`
 interface ExclusionListCreationFormData {
   name: string;
   description: string;
+  entity_types: Option[];
+  file: File | undefined;
 }
 
 interface ExclusionListCreationFormProps {
@@ -52,6 +60,8 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     const input = {
       name: values.name,
       description: values.description,
+      list_entity_types: values.entity_types,
+      file: values.file,
     };
     commit({
       variables: {
@@ -79,7 +89,15 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   const initialValues: ExclusionListCreationFormData = {
     name: '',
     description: '',
+    entity_types: [],
+    file: undefined,
   };
+
+  const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
+  const entityTypesOptions = (entityTypes ?? []).map((type) => ({
+    value: type,
+    label: type,
+  }));
 
   return (
     <Formik<ExclusionListCreationFormData>
@@ -88,7 +106,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -105,6 +123,20 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             rows={2}
             style={{ marginTop: 20 }}
           />
+          <Field
+            component={AutocompleteField}
+            name="entityTypes"
+            fullWidth={true}
+            multiple
+            style={fieldSpacingContainerStyle}
+            options={entityTypesOptions}
+            renderOption={(
+              props: React.HTMLAttributes<HTMLLIElement>,
+              option: Option,
+            ) => <li {...props}>{option.label}</li>}
+            textfieldprops={{ label: t_i18n('Entity Types') }}
+          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="contained"

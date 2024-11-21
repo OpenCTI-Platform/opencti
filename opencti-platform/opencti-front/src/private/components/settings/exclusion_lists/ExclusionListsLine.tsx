@@ -2,16 +2,15 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Skeleton from '@mui/material/Skeleton';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
-import ListItemButton from '@mui/material/ListItemButton';
-import { Link } from 'react-router-dom';
 import { ExclusionListsLine_node$key } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
+import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
+import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -46,35 +45,31 @@ const exclusionListsLineFragment = graphql`
     id
     name
     description
-    created_at
-    standard_id
-    entity_type
     enabled
-    file_id
   }
 `;
 
 interface ExclusionListsLineProps {
   node: ExclusionListsLine_node$key;
   dataColumns: DataColumns;
+  paginationOptions: ExclusionListsLinesPaginationQuery$variables;
 }
 
 export const ExclusionListsLine: FunctionComponent<ExclusionListsLineProps> = ({
-  node,
   dataColumns,
+  node,
+  paginationOptions,
 }) => {
   const classes = useStyles();
   const exclusionList = useFragment(exclusionListsLineFragment, node);
   return (
-    <ListItemButton
+    <ListItem
       key={exclusionList.id}
       classes={{ root: classes.item }}
       divider={true}
-      component={Link}
-      to={`/dashboard/settings/customization/decay/${exclusionList.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="ExclusionList" />
+        <ItemIcon type="exclusion-list" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -92,17 +87,13 @@ export const ExclusionListsLine: FunctionComponent<ExclusionListsLineProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <ExclusionListPopover data={exclusionList} paginationOptions={paginationOptions} />
       </ListItemIcon>
-    </ListItemButton>
+    </ListItem>
   );
 };
 
-export const ExclusionListsLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const ExclusionListsLineDummy = ({ dataColumns }: { dataColumns: DataColumns; }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -129,9 +120,6 @@ export const ExclusionListsLineDummy = ({
           </div>
         }
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined color="disabled" />
-      </ListItemIcon>
     </ListItem>
   );
 };
