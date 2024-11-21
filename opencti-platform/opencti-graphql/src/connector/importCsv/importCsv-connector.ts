@@ -16,8 +16,6 @@ import { DatabaseError, FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage-helper';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
-import type { CsvMapperParsed } from '../../modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreBase } from '../../types/store';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
@@ -32,16 +30,6 @@ const connectorConfig: ConnectorConfig = {
   }
 };
 const LOG_PREFIX = `[OPENCTI-MODULE][${connectorConfig.id}]`;
-
-export interface ConsumerOpts {
-  workId: string,
-  applicantUser: AuthUser,
-  applicantId: string,
-  entity: BasicStoreBase | undefined,
-  csvMapper: CsvMapperParsed,
-  fileId: string,
-  maxRecordNumber?: number,
-}
 
 /** @deprecated Will be removed when workbench are replaced by draft */
 const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts: CsvBundlerIngestionOpts) => {
@@ -172,11 +160,14 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
 
   // expectation number is going to be increase when worker split bundle. So it's bundle count that should be reported in updateProcessedTime.
   if (totalBundlesCount > 0) {
-    await reportExpectation(context, applicantUser, workId);// csv file ends = 1 operation done.
     await updateProcessedTime(context, applicantUser, workId, `${totalBundlesCount} bundle(s) send to worker for import.`);
+
+    // csv file ends = 1 operation done.
+    // to keep after updateProcessedTime or else work is deleted.
+    await reportExpectation(context, applicantUser, workId);
   } else {
-    await reportExpectation(context, applicantUser, workId);// csv file ends = 1 operation done.
     await updateProcessedTime(context, applicantUser, workId, 'No bundle send to worker for import.');
+    await reportExpectation(context, applicantUser, workId);// csv file ends = 1 operation done.
   }
 
   return { totalObjectsCount, totalBundlesCount };
