@@ -31,11 +31,8 @@ const StixCyberObservables: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const {
-    me: { objectOrganization },
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-
-  const organization = objectOrganization?.edges[0]?.node;
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
@@ -170,7 +167,6 @@ const StixCyberObservables: FunctionComponent = () => {
             contextual={false}
             open={false}
             speeddial={false}
-            defaultCreatedBy={organization}
           />
         </Security>
       )}
