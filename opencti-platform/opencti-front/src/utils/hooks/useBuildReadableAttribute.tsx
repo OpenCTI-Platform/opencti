@@ -15,6 +15,7 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
         remarkGfmPlugin={true}
         commonmark={true}
         removeLinks={true}
+        emptyStringIfUndefined={true}
                                />);
       value = inTab ? valueInMarkdown : renderToString(valueInMarkdown);
     }
