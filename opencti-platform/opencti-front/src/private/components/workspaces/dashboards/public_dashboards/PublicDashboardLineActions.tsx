@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
-import { copyToClipboard } from '../../../../../utils/utils';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
@@ -14,6 +13,7 @@ import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted'
 import Security from '../../../../../utils/Security';
 import { useGetCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
 import { deleteNode } from '../../../../../utils/store';
+import { copyPublicLinkUrl } from '../../../../../utils/dashboard';
 
 interface PublicDashboardLineActionsProps {
   publicDashboard: PublicDashboards_PublicDashboard$data
@@ -47,10 +47,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   const { canManage } = useGetCurrentUserAccessRight(publicDashboard.dashboard.currentUserAccessRight);
 
   const copyLinkUrl = () => {
-    copyToClipboard(
-      t_i18n,
-      `${window.location.origin}/public/dashboard/${publicDashboard.uri_key.toLowerCase()}`,
-    );
+    copyPublicLinkUrl(t_i18n, publicDashboard.uri_key);
     setAnchor(undefined);
   };
 

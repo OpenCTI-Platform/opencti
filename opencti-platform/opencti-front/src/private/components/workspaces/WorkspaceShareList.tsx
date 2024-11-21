@@ -10,10 +10,10 @@ import { ContentCopy, Delete, DoNotDisturbAlt, Done, ReportGmailerrorred } from 
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { copyToClipboard } from '../../../utils/utils';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemBoolean from '../../../components/ItemBoolean';
 import useAuth from '../../../utils/hooks/useAuth';
+import { copyPublicLinkUrl } from '../../../utils/dashboard';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery($filters: FilterGroup) {
@@ -56,13 +56,6 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
   const dashboards = publicDashboards?.edges
     .map((edge) => edge.node)
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
-
-  const copyLinkUrl = (uriKey: string) => {
-    copyToClipboard(
-      t_i18n,
-      `${window.location.origin}/public/dashboard/${uriKey.toLowerCase()}`,
-    );
-  };
 
   if (!dashboards || dashboards.length === 0) {
     return <p>{t_i18n('No public dashboard created yet')}</p>;
@@ -114,7 +107,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       aria-label="Label"
                       size="small"
                       value="copy-link"
-                      onClick={() => copyLinkUrl(dashboard.uri_key)}
+                      onClick={() => copyPublicLinkUrl(t_i18n, dashboard.uri_key)}
                     >
                       <ContentCopy fontSize="small" color="primary" />
                     </ToggleButton>
