@@ -11,7 +11,6 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
 import {
-  computeQueryIndices,
   elAggregationNestedTermsWithFilter,
   elAggregationsList,
   elCount,
@@ -22,6 +21,7 @@ import {
   ES_MINIMUM_FIXED_PAGINATION,
   UNIMPACTED_ENTITIES_ROLE
 } from './engine';
+import { computeQueryIndices } from './engine-query-builder';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
