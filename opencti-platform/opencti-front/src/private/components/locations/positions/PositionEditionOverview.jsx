@@ -15,7 +15,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -83,14 +83,17 @@ const positionMutationRelationDelete = graphql`
   }
 `;
 
+const POSITION_TYPE = 'Position';
+
 const PositionEditionOverviewComponent = (props) => {
   const { position, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(POSITION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -105,8 +108,8 @@ const PositionEditionOverviewComponent = (props) => {
     postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const positionValidator = useSchemaEditionValidation('Position', basicShape);
+  }, mandatoryAttributes);
+  const positionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: positionMutationFieldPatch,
     relationAdd: positionMutationRelationAdd,
@@ -191,6 +194,8 @@ const PositionEditionOverviewComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
+      validateOnChange={true}
+      validateOnBlur={true}
       validationSchema={positionValidator}
       onSubmit={onSubmit}
     >
@@ -209,6 +214,7 @@ const PositionEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -220,6 +226,7 @@ const PositionEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -245,6 +252,7 @@ const PositionEditionOverviewComponent = (props) => {
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
+            required={(mandatoryAttributes.includes('latitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
@@ -259,6 +267,7 @@ const PositionEditionOverviewComponent = (props) => {
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
+            required={(mandatoryAttributes.includes('longitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
@@ -272,6 +281,7 @@ const PositionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             name="street_address"
             label={t_i18n('Street address')}
+            required={(mandatoryAttributes.includes('street_address'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -285,6 +295,7 @@ const PositionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             name="postal_code"
             label={t_i18n('Postal code')}
+            required={(mandatoryAttributes.includes('postal_code'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -310,6 +321,7 @@ const PositionEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -319,6 +331,7 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

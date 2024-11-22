@@ -17,7 +17,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -117,6 +117,8 @@ export const cityEditionOverviewFragment = graphql`
   }
 `;
 
+const CITY_TYPE = 'City';
+
 interface CityEditionOverviewProps {
   cityRef: CityEditionOverview_city$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -140,8 +142,9 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const city = useFragment(cityEditionOverviewFragment, cityRef);
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CITY_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -152,8 +155,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const cityValidator = useSchemaEditionValidation('City', basicShape);
+  }, mandatoryAttributes);
+  const cityValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: cityMutationFieldPatch,
     relationAdd: cityMutationRelationAdd,
@@ -225,6 +228,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={cityValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -242,6 +247,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -253,6 +259,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -278,6 +285,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
+            required={(mandatoryAttributes.includes('latitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
@@ -292,6 +300,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
+            required={(mandatoryAttributes.includes('longitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
@@ -317,6 +326,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -326,6 +336,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
