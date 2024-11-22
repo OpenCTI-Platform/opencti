@@ -6,6 +6,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { ContainerStixObjectsOrStixRelationshipsLines_container$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLines_container.graphql';
 import { ContainerStixObjectsOrStixRelationshipsLinesQuery$variables } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 interface ContainerStixObjectsOrStixRelationshipsLinesProps {
   dataColumns: DataColumns;
@@ -53,7 +54,7 @@ ContainerStixObjectsOrStixRelationshipsLinesProps
               textAlign: 'center',
             }}
           >
-            {t_i18n('No entities of this type has been found.')}
+            {t_i18n(NO_DATA_WIDGET_MESSAGE)}
           </span>
         </div>
       )}

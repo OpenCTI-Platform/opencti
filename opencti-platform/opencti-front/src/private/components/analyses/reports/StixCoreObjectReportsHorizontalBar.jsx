@@ -13,6 +13,7 @@ import inject18n from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { NO_DATA_WIDGET_MESSAGE } from "../../../../components/dashboard/WidgetNoData";
 
 const styles = () => ({
   paper: {
@@ -107,7 +108,7 @@ class StixCoreObjectReportsHorizontalBar extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t(NO_DATA_WIDGET_MESSAGE)}
                 </span>
               </div>
             );
