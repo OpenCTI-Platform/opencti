@@ -91,7 +91,7 @@ interface StixCoreObjectContentFilesProps {
   currentFileId: string,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
   exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
-  contentsFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['contentsFromTemplate']>['edges'][number]['node'][],
+  filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][],
   hasOutcomesTemplate?: boolean,
   templates: Template[],
 }
@@ -107,14 +107,14 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   currentFileId,
   onFileChange,
   exportFiles,
-  contentsFromTemplate,
+  filesFromTemplate,
   hasOutcomesTemplate,
   templates,
 }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { isFeatureEnable } = useHelper();
-  const isContentFromTemplateEnabled = isFeatureEnable('CONTENT_FROM_TEMPLATE');
+  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const [displayCreate, setDisplayCreate] = useState(false);
@@ -227,7 +227,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         />
       </ContentBloc>
 
-      {isContentFromTemplateEnabled && hasOutcomesTemplate && (
+      {isFileFromTemplateEnabled && hasOutcomesTemplate && (
         <ContentBloc
           title={<>{t_i18n('Files from template')} {!isEnterpriseEdition && <EEChip />}</>}
           actions={isEnterpriseEdition && (
@@ -256,7 +256,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         >
           {isEnterpriseEdition && (
             <StixCoreObjectContentFilesList
-              files={contentsFromTemplate}
+              files={filesFromTemplate}
               stixCoreObjectId={stixCoreObjectId}
               stixCoreObjectType={stixCoreObjectType}
               currentFileId={currentFileId}

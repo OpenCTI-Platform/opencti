@@ -7,14 +7,14 @@ import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOut
 import { useFormatter } from '../../../components/i18n';
 import { useBuildFiltersForTemplateWidgets } from '../../filters/filtersUtils';
 
-const useContentFromTemplate = () => {
+const useFileFromTemplate = () => {
   const { t_i18n } = useFormatter();
   const { buildDonutOutcome } = useDonutOutcome();
   const { buildListOutcome } = useBuildListOutcome();
   const { buildAttributesOutcome } = useBuildAttributesOutcome();
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
-  const buildContentFromTemplate = async (
+  const buildFileFromTemplate = async (
     containerId: string,
     templateId: string,
     maxContentMarkings: string[],
@@ -42,7 +42,7 @@ const useContentFromTemplate = () => {
           widget.dataSelection[0],
         );
         for (const outcome of attributesOutcomes) {
-          content = content.replaceAll(`$${outcome.variableName}`, outcome.attributeData);
+          content = content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
         }
       // other widgets
       } else {
@@ -78,7 +78,7 @@ const useContentFromTemplate = () => {
     return content;
   };
 
-  return { buildContentFromTemplate };
+  return { buildFileFromTemplate };
 };
 
-export default useContentFromTemplate;
+export default useFileFromTemplate;
