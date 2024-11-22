@@ -72,15 +72,15 @@ const StixCoreObjectFileExportForm = ({
   const validation = () => Yup.object().shape({
     connector: Yup.object().required(t_i18n('This field is required')),
     format: Yup.string().trim().required(t_i18n('This field is required')),
-    type: Yup.string().when('connector', {
+    type: Yup.string().nullable().when('connector', {
       is: (val: ConnectorOption | null) => !isBuiltInConnector(val?.value),
-      then: (schema) => schema.trim().required(t_i18n('This field is required')),
+      then: (schema) => schema.required(t_i18n('This field is required')),
     }),
-    template: Yup.object().when('connector', {
+    template: Yup.object().nullable().when('connector', {
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_TEMPLATE.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
-    templateFile: Yup.object().when('connector', {
+    templateFile: Yup.object().nullable().when('connector', {
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_FILE_TEMPLATE.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),

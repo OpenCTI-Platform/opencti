@@ -102,6 +102,11 @@ const StixCoreObjectFileExportComponent = ({
     });
   }
 
+  const close = () => {
+    setOpen(false);
+    onClose?.();
+  };
+
   const [commitExport] = useApiMutation<FileManagerExportMutation>(
     fileManagerExportMutation,
   );
@@ -120,13 +125,13 @@ const StixCoreObjectFileExportComponent = ({
       throw Error(t_i18n('Invalid form to export a template'));
     }
 
-    const { setSubmitting, resetForm } = helpers;
+    const { setSubmitting } = helpers;
     const uploadFile = (variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables) => {
       commitUploadFile({
         variables,
         onCompleted: () => {
           setSubmitting(false);
-          resetForm();
+          close();
         },
       });
     };
@@ -146,11 +151,12 @@ const StixCoreObjectFileExportComponent = ({
           // Export template into HTML file.
           const fileName = `${values.template.label}.html`;
           const blob = new Blob([templateContent], { type: 'text/html' });
+          const file = new File([blob], fileName, { type: blob.type });
           uploadFile({
             id: scoId,
             fileMarkings,
             fromTemplate: true,
-            file: new File([blob], fileName, { type: blob.type }),
+            file,
           });
         } else {
           // Export template directly in PDF without HTML step.
@@ -196,7 +202,7 @@ const StixCoreObjectFileExportComponent = ({
    */
   const submitExportConnector: typeof onSubmitExport = async (values, helpers) => {
     if (!values.type) return;
-    const { setSubmitting, resetForm, setErrors } = helpers;
+    const { setSubmitting, setErrors } = helpers;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     commitExport({
@@ -214,7 +220,7 @@ const StixCoreObjectFileExportComponent = ({
         setSubmitting(false);
       },
       onCompleted: (exportData) => {
-        resetForm();
+        close();
         setSubmitting(false);
         const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
         const redirectTab = values.format === 'application/pdf' && redirectToContentTab ? 'content' : 'files';
@@ -231,7 +237,11 @@ const StixCoreObjectFileExportComponent = ({
     values: StixCoreObjectFileExportFormInputs,
     helpers: FormikHelpers<StixCoreObjectFileExportFormInputs>,
   ) => {
-    if (values.connector?.value === BUILT_IN_FROM_FILE_TEMPLATE.value) {
+    const isBuiltInConnector = [
+      BUILT_IN_FROM_TEMPLATE.value,
+      BUILT_IN_FROM_FILE_TEMPLATE.value,
+    ].includes(values.connector?.value ?? '');
+    if (isBuiltInConnector) {
       await submitExportBuiltIn(values, helpers);
     } else {
       await submitExportConnector(values, helpers);
@@ -250,10 +260,7 @@ const StixCoreObjectFileExportComponent = ({
         templates={templates}
         isOpen={isOpen}
         onSubmit={onSubmitExport}
-        onClose={() => {
-          setOpen(false);
-          onClose?.();
-        }}
+        onClose={close}
         defaultValues={defaultValues}
       />
     </>

@@ -52,6 +52,7 @@ export interface ContentFile {
 interface StixCoreObjectContentFilesListProps {
   files: ContentFile[],
   stixCoreObjectId: string,
+  stixCoreObjectName: string,
   stixCoreObjectType: string,
   currentFileId: string,
   handleSelectFile: (fileId: string) => void,
@@ -61,6 +62,7 @@ interface StixCoreObjectContentFilesListProps {
 const StixCoreObjectContentFilesList = ({
   files,
   stixCoreObjectId,
+  stixCoreObjectName,
   stixCoreObjectType,
   currentFileId,
   handleSelectFile,
@@ -83,10 +85,10 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
-  const submitDelete = () => {
-    if (!menuFile?.id) return;
-    deletion.handleCloseDelete();
+  const submitDelete = (fileId?: string) => {
     closePopover();
+    if (!fileId) return;
+    deletion.handleCloseDelete();
     deletion.setDeleting(true);
     commitDelete({
       variables: { fileName: menuFile.id },
@@ -99,8 +101,9 @@ const StixCoreObjectContentFilesList = ({
 
   const handleDelete = () => deletion.handleOpenDelete();
 
-  const downloadPdf = async (file: ContentFile) => {
+  const downloadPdf = async (file: ContentFile | null) => {
     closePopover();
+    if (!file) return;
     const { id } = file;
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(id)}`;
 
@@ -126,6 +129,9 @@ const StixCoreObjectContentFilesList = ({
     deletion.handleCloseDelete();
     closePopover();
   };
+
+  const canDownloadAsPdf = !menuFile?.id.startsWith('fromTemplate')
+    && (menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown');
 
   return (
     <List>
@@ -175,52 +181,51 @@ const StixCoreObjectContentFilesList = ({
         onClose={closePopover}
       >
         {menuFile && (
-          <>
-            <MenuItem
-              component={Link}
-              to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
-              onClick={closePopover}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t_i18n('Download file')}
-            </MenuItem>
-            {!file.id.startsWith('fromTemplate') && (
-              <MenuItem onClick={() => downloadPdf(file)}>
-                {t_i18n('Download in PDF')}
-              </MenuItem>
-            )}
-            {file.id.startsWith('fromTemplate') && (
-              <StixCoreObjectFileExport
-                onClose={() => setAnchorEl(null)}
-                scoId={stixCoreObjectId}
-                scoEntityType={stixCoreObjectType}
-                filesFromTemplate={filesFromTemplate}
-                defaultValues={{
-                  connector: BUILT_IN_FROM_FILE_TEMPLATE.value,
-                  format: 'application/pdf',
-                  templateFile: file.id,
-                }}
-                OpenFormComponent={({ onOpen }) => (
-                  <Tooltip title={t_i18n('Generate a PDF export')}>
-                    <MenuItem onClick={onOpen}>
-                      {t_i18n('Generate a PDF export')}
-                    </MenuItem>
-                  </Tooltip>
-                )}
-              />
-            )}
-            <MenuItem onClick={handleDelete}>
-              {t_i18n('Delete')}
-            </MenuItem>
-            <DeleteDialog
-              title={t_i18n('Are you sure you want to delete this file?')}
-              deletion={deletion}
-              onClose={handleClose}
-              submitDelete={submitDelete}
-            />
-          </>
+          <MenuItem
+            component={Link}
+            to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
+            onClick={closePopover}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t_i18n('Download file')}
+          </MenuItem>
         )}
+        {canDownloadAsPdf && (
+          <MenuItem onClick={() => downloadPdf(menuFile)}>
+            {t_i18n('Download in PDF')}
+          </MenuItem>
+        )}
+        {menuFile?.id.startsWith('fromTemplate') && (
+          <StixCoreObjectFileExport
+            onClose={() => setAnchorEl(null)}
+            scoId={stixCoreObjectId}
+            scoName={stixCoreObjectName}
+            scoEntityType={stixCoreObjectType}
+            filesFromTemplate={filesFromTemplate}
+            defaultValues={{
+              connector: BUILT_IN_FROM_FILE_TEMPLATE.value,
+              format: 'application/pdf',
+              templateFile: menuFile.id,
+            }}
+            OpenFormComponent={({ onOpen }) => (
+              <Tooltip title={t_i18n('Generate a PDF export')}>
+                <MenuItem onClick={onOpen}>
+                  {t_i18n('Generate a PDF export')}
+                </MenuItem>
+              </Tooltip>
+            )}
+          />
+        )}
+        <MenuItem onClick={() => submitDelete(menuFile?.id)}>
+          {t_i18n('Delete')}
+        </MenuItem>
+        <DeleteDialog
+          title={t_i18n('Are you sure you want to delete this file?')}
+          deletion={deletion}
+          onClose={handleClose}
+          submitDelete={submitDelete}
+        />
       </Menu>
     </List>
   );
