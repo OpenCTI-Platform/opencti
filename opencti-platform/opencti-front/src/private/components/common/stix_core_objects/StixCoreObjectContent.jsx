@@ -162,11 +162,11 @@ const getFiles = (stixCoreObject) => {
   );
 };
 
-const getContentsFromTemplate = (stixCoreObject) => {
-  const contentsFromTemplate = stixCoreObject.contentsFromTemplate?.edges
+const getFilesFromTemplate = (stixCoreObject) => {
+  const filesFromTemplate = stixCoreObject.filesFromTemplate?.edges
     ?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
-  return sortByLastModified(contentsFromTemplate);
+  return sortByLastModified(filesFromTemplate);
 };
 
 const getExportFiles = (stixCoreObject) => {
@@ -242,7 +242,7 @@ class StixCoreObjectContentComponent extends Component {
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
-      ...getContentsFromTemplate(stixCoreObject),
+      ...getFilesFromTemplate(stixCoreObject),
     ];
     this.setState({ isLoading: true }, () => {
       const { currentFileId } = this.state;
@@ -281,7 +281,7 @@ class StixCoreObjectContentComponent extends Component {
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
-      ...getContentsFromTemplate(stixCoreObject),
+      ...getFilesFromTemplate(stixCoreObject),
     ];
     const currentFile = files.find((f) => f.id === currentFileId);
 
@@ -370,7 +370,7 @@ class StixCoreObjectContentComponent extends Component {
   prepareSaveFile() {
     const { stixCoreObject } = this.props;
     const { currentFileId } = this.state;
-    const files = [...getFiles(stixCoreObject), ...getContentsFromTemplate(stixCoreObject)];
+    const files = [...getFiles(stixCoreObject), ...getFilesFromTemplate(stixCoreObject)];
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const fragment = currentFileId.split('/');
@@ -449,11 +449,11 @@ class StixCoreObjectContentComponent extends Component {
     } = this.state;
     const files = getFiles(stixCoreObject);
     const exportFiles = getExportFiles(stixCoreObject);
-    const contentsFromTemplate = getContentsFromTemplate(stixCoreObject);
+    const filesFromTemplate = getFilesFromTemplate(stixCoreObject);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentFile = currentFileId
-      && [...files, ...exportFiles, ...contentsFromTemplate].find((n) => n.id === currentFileId);
+      && [...files, ...exportFiles, ...filesFromTemplate].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
     const height = innerHeight - 320;
@@ -471,7 +471,7 @@ class StixCoreObjectContentComponent extends Component {
           handleSelectFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
-          contentsFromTemplate={contentsFromTemplate}
+          filesFromTemplate={filesFromTemplate}
           hasOutcomesTemplate={isContentCompatible}
           fix templates={stixCoreObject.templates ?? []}
         />
@@ -770,7 +770,7 @@ const StixCoreObjectContent = createRefetchContainer(
           }
         }
         ... on Container {
-          contentsFromTemplate(first: 500) @connection(key: "Pagination_contentsFromTemplate") {
+          filesFromTemplate(first: 500) @connection(key: "Pagination_filesFromTemplate") {
             edges {
               node {
                 id

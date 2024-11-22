@@ -247,21 +247,21 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
   return editAuthorizedMembers(context, user, args);
 };
 
-export const getContentsFromTemplate = async (context, user, container, args) => {
+export const getFilesFromTemplate = async (context, user, container, args) => {
   const isEE = await isEnterpriseEdition(context);
-  const isContentFromTemplateEnabled = isFeatureEnabled('CONTENT_FROM_TEMPLATE');
-  if (!isEE || !isContentFromTemplateEnabled) {
+  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
+  if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
   const { first, prefixMimeType } = args;
   const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: container.id, entity_type: container.entity_type };
-  return paginatedForPathWithEnrichment(context, context.user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
+  return paginatedForPathWithEnrichment(context, user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
 };
 
 export const getTemplates = async (context, user, container) => {
   const isEE = await isEnterpriseEdition(context);
-  const isContentFromTemplateEnabled = isFeatureEnabled('CONTENT_FROM_TEMPLATE');
-  if (!isEE || !isContentFromTemplateEnabled) {
+  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
+  if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
   const entityType = container.entity_type;
@@ -271,8 +271,8 @@ export const getTemplates = async (context, user, container) => {
 export const getTemplateAndUtils = async (context, user, container, templateId) => {
   // check feature is enabled
   const isEE = await isEnterpriseEdition(context);
-  const isContentFromTemplateEnabled = isFeatureEnabled('CONTENT_FROM_TEMPLATE');
-  if (!isEE || !isContentFromTemplateEnabled) {
+  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
+  if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
   // fetch template (hardcoded for the moment)

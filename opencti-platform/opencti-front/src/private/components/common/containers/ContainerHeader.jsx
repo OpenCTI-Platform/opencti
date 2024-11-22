@@ -780,7 +780,7 @@ const ContainerHeader = (props) => {
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const filesFromTemplate = (container.contentsFromTemplate?.edges ?? []).map((e) => ({
+  const filesFromTemplate = (container.filesFromTemplate?.edges ?? []).map((e) => ({
     label: e.node.name,
     value: e.node.id,
     fileMarkings: e.node.objectMarking.map((m) => ({
@@ -1157,7 +1157,7 @@ export default createFragmentContainer(ContainerHeader, {
         name
         entity_type
       }
-      contentsFromTemplate(first: 500) {
+      filesFromTemplate(first: 500) {
         edges {
           node {
             id

@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { fetchQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { testRenderHook } from '../../tests/test-render';
-import useContentFromTemplate from './useContentFromTemplate';
+import useFileFromTemplate from './useFileFromTemplate';
 import * as env from '../../../relay/environment';
 import * as useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import * as useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import * as filterUtils from '../../filters/filtersUtils';
 
-describe('Hook: useContentFromTemplate', () => {
+describe('Hook: useFileFromTemplate', () => {
   beforeAll(() => {
     vi.spyOn(useBuildAttributesOutcome, 'default').mockImplementation(() => ({
       buildAttributesOutcome: async () => {
@@ -34,10 +34,10 @@ describe('Hook: useContentFromTemplate', () => {
   });
 
   it('should replace attribute widgets with the associated data', async () => {
-    const { hook, relayEnv } = testRenderHook(() => useContentFromTemplate());
+    const { hook, relayEnv } = testRenderHook(() => useFileFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
     vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
-    const { buildContentFromTemplate } = hook.result.current;
+    const { buildFileFromTemplate } = hook.result.current;
 
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
@@ -60,15 +60,15 @@ describe('Hook: useContentFromTemplate', () => {
       });
     });
 
-    const content = await buildContentFromTemplate('aaaID', 'testTemplate', []);
+    const content = await buildFileFromTemplate('aaaID', 'testTemplate', []);
     expect(content).toEqual('Hello, I am container Super report of type Report');
   });
 
   it('should replace attribute lists with corresponding data', async () => {
-    const { hook, relayEnv } = testRenderHook(() => useContentFromTemplate());
+    const { hook, relayEnv } = testRenderHook(() => useFileFromTemplate());
     // We want fetchQuery function to use the test env of Relay.
     vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
-    const { buildContentFromTemplate } = hook.result.current;
+    const { buildFileFromTemplate } = hook.result.current;
 
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
@@ -93,7 +93,7 @@ describe('Hook: useContentFromTemplate', () => {
       });
     });
 
-    const content = await buildContentFromTemplate('aaaID', 'testTemplate', []);
+    const content = await buildFileFromTemplate('aaaID', 'testTemplate', []);
     expect(content).toEqual('Hello, I have: my super list of elements');
   });
 });
