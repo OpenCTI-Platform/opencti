@@ -155,7 +155,6 @@ const depsToOptimize = [
   "react-rectangle-selection",
   "react-syntax-highlighter",
   "react-syntax-highlighter/dist/esm/styles/prism",
-  "react-timeline-range-slider",
   "react-virtualized",
   "react-wordcloud",
   "reactflow",
