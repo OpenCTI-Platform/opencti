@@ -58,7 +58,7 @@ const attributeMappingGenerator = (engine, entityAttribute) => {
     const properties = {};
     for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
       const mapping = entityAttribute.mappings[i];
-      properties[mapping.name] = attributeMappingGenerator(mapping);
+      properties[mapping.name] = attributeMappingGenerator(engine, mapping);
     }
     const config = { dynamic: 'strict', properties };
     // Add nested option if needed
