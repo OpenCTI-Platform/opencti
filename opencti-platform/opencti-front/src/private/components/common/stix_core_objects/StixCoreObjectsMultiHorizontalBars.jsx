@@ -14,6 +14,7 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { NO_DATA_WIDGET_MESSAGE } from "../../../../components/dashboard/WidgetNoData";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -519,7 +520,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t_i18n('No entities of this type has been found.')}
+                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
                 </span>
               </div>
             );
