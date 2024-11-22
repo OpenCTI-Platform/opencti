@@ -83,6 +83,7 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
 interface StixCoreObjectContentFilesProps {
   files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][],
   stixCoreObjectId: string,
+  stixCoreObjectName: string,
   stixCoreObjectType: string,
   content: string | null,
   handleSelectFile: (fileId: string) => void,
@@ -99,6 +100,7 @@ interface StixCoreObjectContentFilesProps {
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
   files,
   stixCoreObjectId,
+  stixCoreObjectName,
   stixCoreObjectType,
   content,
   handleSelectFile,
@@ -220,6 +222,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         <StixCoreObjectContentFilesList
           files={filesList}
           stixCoreObjectId={stixCoreObjectId}
+          stixCoreObjectName={stixCoreObjectName}
           stixCoreObjectType={stixCoreObjectType}
           currentFileId={currentFileId}
           handleSelectFile={handleSelectFile}
@@ -233,6 +236,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           actions={isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}
+              scoName={stixCoreObjectName}
               scoEntityType={stixCoreObjectType}
               templates={templateOptions}
               defaultValues={{
@@ -258,6 +262,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
             <StixCoreObjectContentFilesList
               files={filesFromTemplate}
               stixCoreObjectId={stixCoreObjectId}
+              stixCoreObjectName={stixCoreObjectName}
               stixCoreObjectType={stixCoreObjectType}
               currentFileId={currentFileId}
               handleSelectFile={handleSelectFile}
