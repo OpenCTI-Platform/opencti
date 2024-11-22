@@ -17,7 +17,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -119,6 +119,8 @@ export const administrativeAreaEditionOverviewFragment = graphql`
   }
 `;
 
+const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
+
 interface AdministrativeAreaEditionOverviewProps {
   administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -148,8 +150,9 @@ AdministrativeAreaEditionOverviewProps
     administrativeAreaEditionOverviewFragment,
     administrativeAreaRef,
   );
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ADMINISTRATIVE_AREA_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -160,11 +163,9 @@ AdministrativeAreaEditionOverviewProps
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const administrativeAreaValidator = useSchemaEditionValidation(
-    'Administrative-Area',
-    basicShape,
-  );
+  }, mandatoryAttributes);
+  const administrativeAreaValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
+
   const queries = {
     fieldPatch: administrativeAreaMutationFieldPatch,
     relationAdd: administrativeAreaMutationRelationAdd,
@@ -239,6 +240,8 @@ AdministrativeAreaEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={administrativeAreaValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -256,6 +259,7 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -267,6 +271,7 @@ AdministrativeAreaEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -292,6 +297,7 @@ AdministrativeAreaEditionOverviewProps
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
+            required={(mandatoryAttributes.includes('latitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
@@ -306,6 +312,7 @@ AdministrativeAreaEditionOverviewProps
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
+            required={(mandatoryAttributes.includes('longitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
@@ -331,6 +338,7 @@ AdministrativeAreaEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -340,6 +348,7 @@ AdministrativeAreaEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

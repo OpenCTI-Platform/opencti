@@ -17,7 +17,7 @@ import { CountryEditionOverview_country$key } from './__generated__/CountryEditi
 import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -116,6 +116,8 @@ const countryEditionOverviewFragment = graphql`
   }
 `;
 
+const COUNTRY_TYPE = 'Country';
+
 interface CountryEditionOverviewProps {
   countryRef: CountryEditionOverview_country$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -139,14 +141,15 @@ CountryEditionOverviewProps
 > = ({ countryRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(COUNTRY_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const countryValidator = useSchemaEditionValidation('Country', basicShape);
+  }, mandatoryAttributes);
+  const countryValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: countryMutationFieldPatch,
     relationAdd: countryMutationRelationAdd,
@@ -221,6 +224,8 @@ CountryEditionOverviewProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
+      validateOnChange={true}
+      validateOnBlur={true}
       validationSchema={countryValidator}
       onSubmit={onSubmit}
     >
@@ -239,6 +244,7 @@ CountryEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -250,6 +256,7 @@ CountryEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -286,6 +293,7 @@ CountryEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -295,6 +303,7 @@ CountryEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
