@@ -789,7 +789,7 @@ const ContainerHeader = (props) => {
     })),
   }));
 
-  const templateOptions = (container.templates).map((template) => ({
+  const templateOptions = (container.templates ?? []).map((template) => ({
     label: template.name,
     value: template.id,
   }));
