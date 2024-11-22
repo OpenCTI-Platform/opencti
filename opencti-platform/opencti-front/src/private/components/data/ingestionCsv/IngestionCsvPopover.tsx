@@ -28,8 +28,10 @@ const ingestionCsvPopoverDeletionMutation = graphql`
 `;
 
 const ingestionCsvPopoverResetStateMutation = graphql`
-    mutation ingestionCsvPopoverResetStateMutation($id: ID!) {
-        ingestionCsvResetState(id: $id)
+    mutation IngestionCsvPopoverResetStateMutation($id: ID!) {
+        ingestionCsvResetState(id: $id) {
+            id
+        }
     }
 `;
 

@@ -94,16 +94,17 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
 };
 
 export const ingestionCsvResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const { element } = await patchCsvIngestion(context, user, ingestionId, { current_state_hash: undefined });
+  await patchCsvIngestion(context, user, ingestionId, { current_state_hash: '' });
+  const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `reset state of csv ingestion \`${element.name}\``,
+    message: `reset state of csv ingestion ${ingestionUpdated.name}`,
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: ingestionId }
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
 };
 
 export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, ingestionId: string) => {

@@ -111,7 +111,8 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
 };
 
 export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const ingestionUpdated = await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
+  await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
+  const ingestionUpdated = await findById(context, user, ingestionId);
 
   await publishUserAction({
     user,
