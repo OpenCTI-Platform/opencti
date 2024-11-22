@@ -79,7 +79,6 @@ import { BackgroundTaskScope } from '../generated/graphql';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
-import { organizationDelete } from '../modules/organization/organization-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 // Task manager responsible to execute long manual tasks
@@ -238,9 +237,6 @@ const executeDelete = async (context, user, element, scope) => {
   }
   if (scope === BackgroundTaskScope.Import) {
     await deleteFile(context, user, element.id);
-  } else if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-    // call organizationDelete which will ensure protections (for platform organization & members)
-    await organizationDelete(context, user, element.internal_id);
   } else {
     await deleteElementById(context, user, element.internal_id, element.entity_type);
   }
