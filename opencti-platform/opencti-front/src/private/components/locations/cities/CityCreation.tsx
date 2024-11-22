@@ -17,7 +17,7 @@ import { insertNode } from '../../../../utils/store';
 import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
 import { CityCreationMutation, CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -88,8 +88,9 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CITY_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -98,8 +99,8 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     longitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
-  };
-  const cityValidator = useSchemaCreationValidation(CITY_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const cityValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<CityCreationMutation>(
     cityMutation,
@@ -179,6 +180,8 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     <Formik<CityAddInput>
       initialValues={initialValues}
       validationSchema={cityValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -214,6 +217,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['City']}
             />
@@ -221,6 +225,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -234,6 +239,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={TextField}
               name="latitude"
               label={t_i18n('Latitude')}
+              required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -241,27 +247,32 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               component={TextField}
               name="longitude"
               label={t_i18n('Longitude')}
+              required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
