@@ -120,7 +120,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
       variables: { id: createdTaxiiIngesterId }
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiResetState.id).toBeDefined();
-    expect(ingesterQueryResult.data?.ingestionTaxiiResetState.current_state_cursor).toBeUndefined();
+    expect(ingesterQueryResult.data?.ingestionTaxiiResetState.current_state_cursor).toBeNull();
   });
 
   it('should delete a TAXII ingester', async () => {

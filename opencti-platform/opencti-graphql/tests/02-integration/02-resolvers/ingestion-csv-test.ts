@@ -1,7 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { ADMIN_USER, queryAsAdmin, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
+import type { EditInput } from '../../../src/generated/graphql';
+import { utcDate } from '../../../src/utils/format';
+import { SYSTEM_USER } from '../../../src/utils/access';
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -149,6 +153,29 @@ describe('CSV ingestion resolver standard behavior', () => {
       variables: CSV_FEED_INGESTER_TO_UPDATE
     });
     expect(stopSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvFieldPatch?.name).toBe('Single column CSV feed ingester');
+  });
+
+  it('should reset state of CSV feeds ingester', async () => {
+    // shortcut to set a hash that is defined
+    const patch = { current_state_hash: 'bbbbbbbbbbbbbbbbbb', added_after_start: utcDate() };
+    const result = await patchCsvIngestion(testContext, SYSTEM_USER, singleColumnCsvFeedIngesterId, patch);
+    expect(result.current_state_hash).toBe('bbbbbbbbbbbbbbbbbb');
+
+    const CSV_FEED_INGESTER_RESET = {
+      id: singleColumnCsvFeedIngesterId,
+    };
+    const resetStateQueryResult = await queryAsAdminWithSuccess({
+      query: gql`
+          mutation ingestionCsvResetState($id: ID!) {
+              ingestionCsvResetState(id: $id){
+                  id
+                  current_state_hash
+              }
+          }
+      `,
+      variables: CSV_FEED_INGESTER_RESET
+    });
+    expect(resetStateQueryResult?.data?.ingestionCsvFieldPatch?.current_state_hash).toBeUndefined();
   });
 
   it('should fail to delete the mapper used by the ingester', async () => {
