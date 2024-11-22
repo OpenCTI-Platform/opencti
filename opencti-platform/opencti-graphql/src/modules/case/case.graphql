@@ -140,7 +140,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID

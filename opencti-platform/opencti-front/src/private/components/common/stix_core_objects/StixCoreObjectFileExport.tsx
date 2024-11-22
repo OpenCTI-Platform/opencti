@@ -22,7 +22,7 @@ import { APP_BASE_PATH, handleErrorInForm, MESSAGING$ } from '../../../../relay/
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf';
-import useContentFromTemplate from '../../../../utils/outcome_template/engine/useContentFromTemplate';
+import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 
 export const BUILT_IN_FROM_FILE_TEMPLATE = {
   value: 'fromFileTemplate',
@@ -75,7 +75,7 @@ const StixCoreObjectFileExportComponent = ({
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [isOpen, setOpen] = useState(false);
-  const { buildContentFromTemplate } = useContentFromTemplate();
+  const { buildFileFromTemplate } = useFileFromTemplate();
 
   const { connectorsForExport } = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
@@ -136,7 +136,7 @@ const StixCoreObjectFileExportComponent = ({
         const templateId = values.template.value;
         const fileMarkings = values.fileMarkings.map(({ value }) => value);
         const maxContentMarkings = values.contentMaxMarkings.map(({ value }) => value);
-        const templateContent = await buildContentFromTemplate(
+        const templateContent = await buildFileFromTemplate(
           scoId,
           templateId,
           maxContentMarkings,
