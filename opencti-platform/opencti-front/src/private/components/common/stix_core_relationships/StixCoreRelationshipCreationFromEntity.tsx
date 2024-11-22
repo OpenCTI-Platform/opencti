@@ -457,7 +457,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   targetStixCyberObservableTypes?: string[];
   defaultStartTime: string;
   defaultStopTime: string;
-  paginationOptions: unknown;
+  paginationOptions: Record<string, unknown>;
   connectionKey?: string;
   paddingRight: number;
   variant?: string;
@@ -621,13 +621,16 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
               : payload;
             const connKey = connectionKey || 'Pagination_stixCoreRelationships';
-            // When using connectionKey we use less props of PaginationOptions, we need to filter them
             let conn;
-            if (userProxy && paginationOptions) {
+            // When using connectionKey we use less props of PaginationOptions (ex: count),
+            // we need to filter them to prevent getConnection to fail
+            const { count: _, ...options } = paginationOptions;
+
+            if (userProxy) {
               conn = ConnectionHandler.getConnection(
                 userProxy,
                 connKey,
-                paginationOptions,
+                options,
               );
             }
 
@@ -637,6 +640,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             ) {
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
+
+              helpers.handleSetNumberOfElements({ });
             }
           }
         },
