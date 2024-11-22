@@ -24,7 +24,7 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   to.target_ref = `${convertTypeToStixType(to.toType)}--temporary`;
   return R.mergeAll([concept, from, to]);
 };
-const elRebuildRelation = (concept) => {
+export const elRebuildRelation = (concept) => {
   if (concept.base_type === BASE_TYPE_RELATION) {
     const { connections } = concept;
     const entityType = concept.entity_type;
