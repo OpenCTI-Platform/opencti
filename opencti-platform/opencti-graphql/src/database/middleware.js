@@ -521,18 +521,18 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
+  // filter out unresolved data (like the SYSTEM user for instance)
+  const filteredData = data.filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds = [];
-  for (let i = 0; i < data.length; i += 1) {
-    const resolved = allResolveLabels[data[i].label.toLowerCase()];
+  for (let i = 0; i < filteredData.length; i += 1) {
+    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
     const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
     if (canAccess) {
-      grantedIds.push(data[i].label.toLowerCase());
+      grantedIds.push(filteredData[i].label.toLowerCase());
     }
   }
-  return data
-    // filter out unresolved data (like the SYSTEM user for instance)
-    .filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]))
+  return filteredData
     .map((n) => {
       const element = allResolveLabels[n.label.toLowerCase()];
       if (grantedIds.includes(n.label.toLowerCase())) {
