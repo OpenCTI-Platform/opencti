@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import TextField from '../../../../components/TextField';
 
 export type FilesTemplateOption = Pick<Option, 'label' | 'value'> & {
   fileMarkings: {
@@ -35,6 +36,7 @@ export interface StixCoreObjectFileExportFormInputs {
   type: string | null;
   templateFile: FilesTemplateOption | null;
   template: Option | null;
+  exportFileName: string | null;
   contentMaxMarkings: Option[];
   fileMarkings: Option[];
 }
@@ -84,16 +86,28 @@ const StixCoreObjectFileExportForm = ({
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_FILE_TEMPLATE.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
+    exportFileName: Yup.string().nullable().when('connector', {
+      is: (val: ConnectorOption | null) => isBuiltInConnector(val?.value),
+      then: (schema) => schema.required(t_i18n('This field is required')),
+    }),
   });
 
   const connectorScopes = Array.from(new Set(connectors.flatMap((c) => c.connectorScope ?? [])));
+
+  const defaultTemplate = templates?.find((t) => t.value === defaultValues?.template);
+  const defaultTemplateFile = filesFromTemplate?.find((f) => f.value === defaultValues?.templateFile);
+
+  let defaultExportFileName = null;
+  if (defaultTemplate) defaultExportFileName = defaultTemplate.label;
+  if (defaultTemplateFile) [defaultExportFileName] = defaultTemplateFile.label.split('.');
 
   const initialValues: StixCoreObjectFileExportFormInputs = {
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
     format: defaultValues?.format ?? '',
     type: null,
-    template: templates?.find((t) => t.value === defaultValues?.template) ?? null,
-    templateFile: filesFromTemplate?.find((f) => f.value === defaultValues?.templateFile) ?? null,
+    template: defaultTemplate ?? null,
+    templateFile: defaultTemplateFile ?? null,
+    exportFileName: defaultExportFileName,
     contentMaxMarkings: [],
     fileMarkings: [],
   };
@@ -185,6 +199,11 @@ const StixCoreObjectFileExportForm = ({
                       fullWidth={true}
                       style={fieldSpacingContainerStyle}
                       options={templates}
+                      onChange={(_: string, o: Option | null) => {
+                        if (!values.exportFileName && o) {
+                          setFieldValue('exportFileName', o.label);
+                        }
+                      }}
                       renderOption={(
                         props: React.HTMLAttributes<HTMLLIElement>,
                         option: Option,
@@ -201,6 +220,11 @@ const StixCoreObjectFileExportForm = ({
                       fullWidth={true}
                       style={fieldSpacingContainerStyle}
                       options={filesFromTemplate}
+                      onChange={(_: string, o: Option | null) => {
+                        if (!values.exportFileName && o) {
+                          setFieldValue('exportFileName', o.label.split('.')[0]);
+                        }
+                      }}
                       renderOption={(
                         props: React.HTMLAttributes<HTMLLIElement>,
                         option: Option,
@@ -227,6 +251,16 @@ const StixCoreObjectFileExportForm = ({
                         {t_i18n('Full export (entity and first neighbours)')}
                       </MenuItem>
                     </Field>
+                  )}
+
+                  {isBuiltInConnector(values.connector.value) && (
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="exportFileName"
+                      label={t_i18n('Export file name')}
+                      style={fieldSpacingContainerStyle}
+                    />
                   )}
 
                   {values.connector.value !== BUILT_IN_FROM_FILE_TEMPLATE.value && (
