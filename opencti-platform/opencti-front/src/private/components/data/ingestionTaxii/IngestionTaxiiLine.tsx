@@ -1,25 +1,24 @@
-import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import Skeleton from '@mui/material/Skeleton';
 import { MoreVert } from '@mui/icons-material';
-import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopover';
-import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
-import { IngestionCsvLine_node$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvLine_node.graphql';
-import TableViewIcon from '@mui/icons-material/TableView';
-import ItemBoolean from '../../../../components/ItemBoolean';
+import { AccessPoint } from 'mdi-material-ui';
+import Skeleton from '@mui/material/Skeleton';
+import makeStyles from '@mui/styles/makeStyles';
+import { IngestionTaxiiLine_node$key } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLine_node.graphql';
+import { IngestionTaxiiLinesPaginationQuery$variables } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
+import IngestionTaxiiPopover from './IngestionTaxiiPopover';
 import { useFormatter } from '../../../../components/i18n';
-import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
-import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
+import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import ItemCopy from '../../../../components/ItemCopy';
+import type { Theme } from '../../../../components/Theme';
+import { DataColumns } from '../../../../components/list_lines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
@@ -42,8 +41,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IngestionCsvLineProps {
-  node: IngestionCsvLine_node$key;
+interface IngestionTaxiiLineProps {
+  node: IngestionTaxiiLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: (
     k: string,
@@ -51,32 +50,37 @@ interface IngestionCsvLineProps {
     value: Record<string, unknown>,
     event: React.KeyboardEvent,
   ) => void;
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
+  paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables;
 }
 
-const ingestionCsvLineFragment = graphql`
-  fragment IngestionCsvLine_node on IngestionCsv {
-    id
-    name
-    uri
-    ingestion_running
-    current_state_hash
-  }
+const ingestionTaxiiLineFragment = graphql`
+    fragment IngestionTaxiiLine_node on IngestionTaxii {
+        id
+        name
+        description
+        uri
+        version
+        ingestion_running
+        added_after_start
+        current_state_cursor
+        last_execution_date
+        confidence_to_score
+    }
 `;
 
-export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps> = ({
+export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
 }) => {
+  const { t_i18n, fldt } = useFormatter();
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
-  const data = useFragment(ingestionCsvLineFragment, node);
-  const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
+  const data = useFragment(ingestionTaxiiLineFragment, node);
+  const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : '-');
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <TableViewIcon />
+        <AccessPoint />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -105,20 +109,32 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_date.width }}
+              style={{ width: dataColumns.last_execution_date.width }}
             >
-              {stateHash}
+              {fldt(data.last_execution_date) || '-'}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.added_after_start.width }}
+            >
+              <ItemCopy content={data.added_after_start || '-'} variant="inLine" />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.current_state_cursor.width }}
+            >
+              <ItemCopy content={stateValue} variant="inLine" />
             </div>
           </div>
-        }
+          }
       />
       <ListItemSecondaryAction>
         <Security needs={[INGESTION_SETINGESTIONS]}>
-          <IngestionCsvPopover
-            ingestionCsvId={data.id}
+          <IngestionTaxiiPopover
+            ingestionTaxiiId={data.id}
             paginationOptions={paginationOptions}
             running={data.ingestion_running}
-            setStateHash={setStateHash}
+            setStateValue={setStateValue}
           />
         </Security>
       </ListItemSecondaryAction>
@@ -126,7 +142,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   );
 };
 
-export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -176,7 +192,29 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_date.width }}
+              style={{ width: dataColumns.last_execution_date.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.added_after_start.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.current_state_cursor.width }}
             >
               <Skeleton
                 animation="wave"
@@ -186,7 +224,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
               />
             </div>
           </div>
-        }
+          }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
         <MoreVert />

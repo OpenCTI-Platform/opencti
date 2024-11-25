@@ -30,7 +30,7 @@ const ingestionCsvPopoverDeletionMutation = graphql`
 const ingestionCsvPopoverResetStateMutation = graphql`
     mutation IngestionCsvPopoverResetStateMutation($id: ID!) {
         ingestionCsvResetState(id: $id) {
-            id
+            ...IngestionCsvLine_node
         }
     }
 `;
@@ -130,6 +130,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
 
   const handleCloseResetState = () => {
     setDisplayResetState(false);
+    setResetting(false);
   };
   const submitResetState = () => {
     setResetting(true);
@@ -139,10 +140,11 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
       },
       onCompleted: () => {
         setResetting(false);
-        setStateHash('-');
+        setStateHash('-'); // would be great to update relay store instead, I haven't find how.
         handleCloseResetState();
       },
     });
+    handleCloseResetState();
   };
 
   // -- Running --

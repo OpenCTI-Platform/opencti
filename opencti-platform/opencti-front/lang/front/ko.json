@@ -859,6 +859,7 @@
   "Do you want to reset the state and purge messages queue of this connector?": "이 커넥터의 상태 및 퍼지 메시지 큐를 초기화하시겠습니까?",
   "Do you want to reset the state of this connector?": "이 커넥터의 상태를 재설정하시겠습니까?",
   "Do you want to reset the state of this CSV ingester?": "이 CSV 수집기의 상태를 재설정하시겠습니까?",
+  "Do you want to reset the state of this TAXII ingester? It will restart ingestion from the beginning.": "이 TAXII 인제스터의 상태를 초기화하시겠습니까? 그러면 수집이 처음부터 다시 시작됩니다.",
   "Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.": "이 사용자 토큰을 해지하시겠습니까? 토큰이 해지되면 모든 액세스가 금지되므로 해지하기 전에 커넥터나 기타 API 호출에서 토큰이 사용되지 않는지 확인하세요.",
   "Do you want to start this CSV ingester?": "이 CSV 인제스터를 시작하시겠습니까?",
   "Do you want to start this playbook?": "이 플레이북을 시작하시겠습니까?",

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { Dispatch, FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,7 +28,7 @@ const ingestionTaxiiPopoverDeletionMutation = graphql`
 const ingestionTaxiiPopoverResetStateMutation = graphql`
     mutation IngestionTaxiiPopoverResetStateMutation($id: ID!) {
         ingestionTaxiiResetState(id: $id) {
-            id
+            ...IngestionTaxiiLine_node
         }
     }
 `;
@@ -51,12 +51,14 @@ interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables | null | undefined;
+  setStateValue: Dispatch<string>;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   ingestionTaxiiId,
   running,
   paginationOptions,
+  setStateValue,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -68,98 +70,57 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   const [displayStop, setDisplayStop] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
-  const [resetingState, setResetingState] = useState(false);
+  const [resettingState, setResettingState] = useState(false);
 
-  /* handleClose() {
-    this.setState({ anchorEl: null });
-  } */
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  /* handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  } */
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
 
-  /* handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  } */
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
     handleClose();
   };
 
-  /* handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  } */
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
   };
 
-  /* handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  } */
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
   };
 
-  /* handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  } */
   const handleCloseDelete = () => {
     setDisplayDelete(false);
   };
 
-  /* handleOpenResetState() {
-    this.setState({ displayResetState: true });
-    this.handleClose();
-  } */
   const handleOpenResetState = () => {
     setDisplayResetState(true);
     handleClose();
   };
 
-  /* handleCloseResetState() {
-    this.setState({ displayResetState: false });
-  } */
   const handleCloseResetState = () => {
     setDisplayResetState(false);
   };
 
-  /* handleOpenStart() {
-    this.setState({ displayStart: true });
-    this.handleClose();
-  } */
   const handleOpenStart = () => {
     setDisplayStart(true);
     handleClose();
   };
 
-  /* handleCloseStart() {
-    this.setState({ displayStart: false });
-  } */
   const handleCloseStart = () => {
     setDisplayStart(false);
   };
 
-  /* handleOpenStop() {
-    this.setState({ displayStop: true });
-    this.handleClose();
-  } */
   const handleOpenStop = () => {
     setDisplayStop(true);
     handleClose();
   };
 
-  /* handleCloseStop() {
-    this.setState({ displayStop: false });
-  } */
   const handleCloseStop = () => {
     setDisplayStop(false);
   };
@@ -188,14 +149,14 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
 
   const [commitResetState] = useApiMutation(ingestionTaxiiPopoverResetStateMutation);
   const submitResetState = () => {
-    setResetingState(true);
+    setResettingState(true);
     commitResetState({
       variables: {
         id: ingestionTaxiiId,
       },
       onCompleted: () => {
-        setResetingState(false);
-        // setStateValue('-');
+        setResettingState(false);
+        setStateValue('-');
         handleCloseResetState();
       },
     });
@@ -326,14 +287,14 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <DialogActions>
           <Button
             onClick={handleCloseResetState}
-            disabled={resetingState}
+            disabled={resettingState}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
             color="secondary"
             onClick={submitResetState}
-            disabled={resetingState}
+            disabled={resettingState}
           >
             {t_i18n('Reset state')}
           </Button>
