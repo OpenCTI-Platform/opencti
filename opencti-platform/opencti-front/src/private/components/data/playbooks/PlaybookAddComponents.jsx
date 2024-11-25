@@ -193,7 +193,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
-        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: false },
+        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
