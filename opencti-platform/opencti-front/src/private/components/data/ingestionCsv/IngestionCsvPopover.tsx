@@ -1,5 +1,5 @@
 import { graphql, useQueryLoader } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import React, { Dispatch, FunctionComponent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
@@ -39,12 +39,14 @@ interface IngestionCsvPopoverProps {
   ingestionCsvId: string;
   running?: boolean | null;
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  setStateHash: Dispatch<string>;
 }
 
 const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   ingestionCsvId,
   paginationOptions,
   running,
+  setStateHash,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -137,6 +139,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
       },
       onCompleted: () => {
         setResetting(false);
+        setStateHash('-');
         handleCloseResetState();
       },
     });

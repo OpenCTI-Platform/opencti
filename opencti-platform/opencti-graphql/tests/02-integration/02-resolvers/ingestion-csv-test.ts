@@ -3,7 +3,6 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import type { EditInput } from '../../../src/generated/graphql';
 import { utcDate } from '../../../src/utils/format';
 import { SYSTEM_USER } from '../../../src/utils/access';
 

@@ -1,6 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -71,8 +71,9 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
+  const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -107,7 +108,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
               className={classes.bodyItem}
               style={{ width: dataColumns.current_state_date.width }}
             >
-              {data.current_state_date ? nsdt(data.current_state_date) : data.current_state_hash}
+              {stateHash}
             </div>
           </div>
         }
@@ -118,6 +119,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             ingestionCsvId={data.id}
             paginationOptions={paginationOptions}
             running={data.ingestion_running}
+            setStateHash={setStateHash}
           />
         </Security>
       </ListItemSecondaryAction>
