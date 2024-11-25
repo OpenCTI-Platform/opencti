@@ -57,6 +57,7 @@ interface MarkdownWithRedirectionWarningProps {
   removeLineBreaks?: boolean;
   remarkPlugins?: PluggableList;
   emptyStringIfUndefined?: boolean;
+  disableWarningAtLinkClick?: boolean;
 }
 
 const MarkdownDisplay: FunctionComponent<
@@ -72,6 +73,7 @@ MarkdownWithRedirectionWarningProps
   removeLineBreaks,
   remarkPlugins,
   emptyStringIfUndefined,
+  disableWarningAtLinkClick,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -161,7 +163,7 @@ MarkdownWithRedirectionWarningProps
     }
   };
   let markdownDisplayContent;
-  if (removeLinks || removeLineBreaks) {
+  if (disableWarningAtLinkClick || removeLinks || removeLineBreaks) {
     markdownDisplayContent = remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement();
   } else {
     markdownDisplayContent = <>

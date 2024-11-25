@@ -12,10 +12,10 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
     if (attributeType === 'text') {
       const valueInMarkdown = (<MarkdownDisplay
         content={value}
-        remarkGfmPlugin={true}
-        commonmark={true}
-        removeLinks={true}
-        emptyStringIfUndefined={true}
+        remarkGfmPlugin
+        commonmark
+        disableWarningAtLinkClick
+        emptyStringIfUndefined
                                />);
       value = inTab ? valueInMarkdown : renderToString(valueInMarkdown);
     }
