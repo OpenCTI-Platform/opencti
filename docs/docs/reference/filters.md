@@ -54,16 +54,16 @@ The new format used internally by OpenCTI and exposed through its API, can be de
 // filter formats in OpenCTI >= 5.12
 
 type FilterGroup = {
-  mode: 'and' | 'or'
+  mode: FilterMode // 'and' | 'or'
   filters: Filter[]
   filterGroups: FilterGroup[] // recursive definition
 }
 
 type Filter  = {
   key: string[] // or single string (input coercion)
-  values: string[]
-  operator: 'eq' | 'not_eq' | 'gt' // ... and more
-  mode: 'and' | 'or',
+  values: any[] // string[] except for the key 'regardingOf'
+  operator: FilterOperator // 'eq' | 'not_eq' | 'gt' ... and more
+  mode: FilterMode // 'and' | 'or',
 }
 ```
 
@@ -82,23 +82,27 @@ The `Filter` has 4 properties:
 
 The available operators are:
 
-| Value   | Meaning               | Additional information                                    |
-|---------|-----------------------|-----------------------------------------------------------|
-| eq      | equal                 |                                                           |
-| not_eq  | different             |                                                           |
-| gt      | greater than          | against textual values, the alphabetical ordering is used |
-| gte     | greater than or equal | against textual values, the alphabetical ordering is used |
-| lt      | lower than            | against textual values, the alphabetical ordering is used |
-| lte     | lower than or equal   | against textual values, the alphabetical ordering is used |
-| nil     | empty / no value      | `nil` do not require anything inside `values`             |
-| not_nil | non-empty / any value | `not_nil` do not require anything inside `values`         |
+| Value           | Meaning               | Limited to            |
+|-----------------|-----------------------|-----------------------|
+| eq              | equal                 |                       |
+| not_eq          | different             |                       |
+| gt              | greater than          | numbers               |
+| gte             | greater than or equal | numbers               |
+| lt              | lower than            | numbers               |
+| lte             | lower than or equal   | numbers               |
+| nil             | empty / no value      |                       |
+| not_nil         | non-empty / any value |                       |
+| starts_with     | starts with           | short string          |
+| not_starts_with | doesn't start with    | short string          |
+| ends_with       | ends with             | short string          |
+| not_ends_with   | doesn't end with      | short string          |
+| contains        | contains              | short string          |
+| not_contains    | doesn't contain       | short string          |
+| search          | have occurences       | short and long string |
 
-In addition, there are operators:
-
-- `starts_with` / `not_starts_with` / `ends_with` / `not_ends_with` / `contains` / `not contains`, available for searching in short string fields (name, value, title, etc.),
-- `search`, available in short string and text fields.
-
-There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words, regardless of order, while "contains" specifically looks for the exact sequence of words you provide.
+Precisions:
+- The operators `nil` and `not_nil` don't require anything inside `values` (you should provide an empty array).
+- There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words, regardless of order, while "contains" specifically looks for the exact sequence of words you provide.
 
 !!! note "Always use single-key filters"
 
@@ -116,7 +120,7 @@ filters = {
         key: 'entity_type',
         values: ['Report'],
         operator: 'eq',
-        mode: 'or', // useless here because values contains only one value
+        mode: 'or', // useless here because 'values' contains only one value
     }],
     filterGroups: [],
 };
@@ -189,9 +193,16 @@ Only a specific set of key can be used in the filters.
 
 Automatic key checking prevents typing error when constructing filters via the API. If a user write an unhandled key (`object-label` instead of `objectLabel` for instance), the API will return an error instead of an empty list. Doing so, we make sure the platform do not provide misleading results.
 
-#### Regular filter keys
+#### Allowed filter keys for elastic filters
 
-For an extensive list of available filter keys, refer to the attributes and relations schema definitions.
+Query filters are used in a query fetching objects in the database. It concerns:
+- dynamic filters (filtering a list of entities),
+- some stored filters: filters of feeds, taxi collections and dashboard widgets.
+
+The available filter keys for query filters are:
+- the attributes registered in the schema definition (like 'published', 'name', 'confidence'...),
+- the relations input name (like 'objectLabel', 'externalReferences'...),
+- some special filter keys allowed in addition and that have a special behavior.
 
 Here are some of the most useful keys as example. NB: X refers here to the filtered entities.
 
@@ -203,25 +214,30 @@ Here are some of the most useful keys as example. NB: X refers here to the filte
 * ``confidence``: confidence of X,
 * ``entity_type``: entity type of X ('Report', 'Stix-Cyber-Observable', ...),
 
-#### Special filter keys
+Here are some of the most useful special filter keys:
 
-Some keys do not exist in the schema definition, but are allowed in addition. They describe a special behavior.
-
-It is the case for:
-
-- ``sightedBy``: entities to which X is linked via a STIX sighting relationship,
-- ``workflow_id``: status id of the entities, or status template id of the status of the entities,
-- ``representative``: entities whose representative (name for reports, value for some observables, composition of the source and target names for a relationship...) matches the filter,
+* ``sightedBy``: entities to which X is linked via a STIX sighting relationship,
+* ``workflow_id``: status id of the entities, or status template id of the status of the entities,
+* ``representative``: representation of an entity (name for reports, value for some observables, composition of the source and target names for a relationship...),
 * ``connectedToId``: the listened instances for an instance trigger.
+* ``ids``: match any of the entity id, internal_id, standard_id or stix_ids
+* ``computed_reliability``: reliability, or reliability of the author if no reliability
+* ``source_reliability``: reliability of the author
+* ``alias``: target both 'aliases' and 'x_opencti_aliases' attributes
+* ``regardingOf``: exist relationship of the given relationship types for the given entities, see section below about this key
 
 For some keys, negative equality filtering is not supported yet (`not_eq` operator). For instance, it is the case for:
 
-- ``fromId``
-- ``fromTypes``
-- ``toId``
-- ``toTypes``
+- ``fromId`` (the instance in the "from" of a relationship)
+- ``fromTypes`` (the entity type in the "from" of a relationship)
+- ``toId`` (the instance in the "to" of a relationship)
+- ``toTypes`` (the entity type in the "to" of a relationship)
 
-The ``regardingOf`` filter key has a special format and enables to target the entities having a relationship of a certain type with certain entities. Here is an example of filter to fetch the entities related to the entity X:
+#### The `regardingOf` filter key
+
+The ``regardingOf`` filter key has a special format and enables to target the entities having a relationship of a certain type with certain entities.
+
+Here is an example of filter to fetch the entities related to the entity X:
 
 ```ts
 filters = {
@@ -246,32 +262,37 @@ Filters that are run against the event stream are not using the complete schema 
 This concerns:
 
 - Live streams,
-- CSV feeds,
-- TAXII collection,
 - Triggers,
 - Playbooks.
 
 For filters used in this context, only some keys are supported for the moment:
 
+- ``entity_type``
+- ``workflow_id``
 - ``confidence``
 - ``objectAssignee``
-- ``createdBy``
-- ``creator``
-- ``x_opencti_detection``
-- ``indicator_types``
-- ``objectLabel``
-- ``x_opencti_main_observable_type``
-- ``objectMarking``
 - ``objects``
+- ``objectLabel``
+- ``objectMarking``
+- ``creator_id``
+- ``createdBy``
+- ``indicator_types``
 - ``pattern_type``
-- ``priority``
-- ``revoked``
-- ``severity``
+- ``report_types``
 - ``x_opencti_score``
-- ``entity_type``
-- ``x_opencti_workflow_id``
+- ``x_opencti_detection``
+- ``x_opencti_main_observable_type``
+- ``priority``
+- ``severity``
+- ``revoked``
 - ``connectedToId`` (for the instance triggers)
 - ``fromId`` (the instance in the "from" of a relationship)
 - ``fromTypes`` (the entity type in the "from" of a relationship)
 - ``toId`` (the instance in the "to" of a relationship)
 - ``toTypes`` (the entity type in the "to" of a relationship)
+- ``representative``
+- ``x_opencti_cisa_kev``
+- ``x_opencti_epss_score``
+- ``x_opencti_epss_percentile``
+- ``x_opencti_cvss_base_score``
+- ``x_opencti_cvss_base_severity``
