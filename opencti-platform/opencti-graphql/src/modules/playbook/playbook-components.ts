@@ -576,8 +576,6 @@ const attributePathMapping: any = {
   },
   [INPUT_ASSIGNEE]: {
     [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/assignee_ids`,
-    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/assignee_ids`,
-    [ABSTRACT_STIX_RELATIONSHIP]: `/extensions/${STIX_EXT_OCTI}/assignee_ids`,
   },
   confidence: {
     [ABSTRACT_STIX_DOMAIN_OBJECT]: '/confidence',
