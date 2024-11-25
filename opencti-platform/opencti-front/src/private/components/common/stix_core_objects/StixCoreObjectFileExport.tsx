@@ -121,7 +121,7 @@ const StixCoreObjectFileExportComponent = ({
    * @param helpers Formik helpers to manage form.
    */
   const submitExportBuiltIn: typeof onSubmitExport = async (values, helpers) => {
-    if (!values.templateFile && !values.template) {
+    if ((!values.templateFile && !values.template) || !values.exportFileName) {
       throw Error(t_i18n('Invalid form to export a template'));
     }
 
@@ -150,7 +150,7 @@ const StixCoreObjectFileExportComponent = ({
 
         if (values.format === 'text/html') {
           // Export template into HTML file.
-          const fileName = `${values.template.label}.html`;
+          const fileName = `${values.exportFileName}.html`;
           const blob = new Blob([templateContent], { type: 'text/html' });
           const file = new File([blob], fileName, { type: blob.type });
           uploadFile({
@@ -162,7 +162,7 @@ const StixCoreObjectFileExportComponent = ({
         } else {
           // Export template directly in PDF without HTML step.
           const templateName = values.template.label;
-          const fileName = `${templateName}_${new Date().toISOString()}.pdf`;
+          const fileName = `${values.exportFileName}.pdf`;
           const PDF = htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkings);
           PDF.getBlob((blob) => {
             uploadFile({
@@ -179,7 +179,7 @@ const StixCoreObjectFileExportComponent = ({
         const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(templateId)}`;
         const templateFile = await axios.get(url);
         const templateName = (templateId.split('/').pop() ?? '').split('.')[0];
-        const fileName = `${templateName}_${new Date().toISOString()}.pdf`;
+        const fileName = `${values.exportFileName}.pdf`;
         const PDF = htmlToPdfReport(scoName ?? '', templateFile.data, templateName, templateMarkings);
         PDF.getBlob((blob) => {
           uploadFile({
