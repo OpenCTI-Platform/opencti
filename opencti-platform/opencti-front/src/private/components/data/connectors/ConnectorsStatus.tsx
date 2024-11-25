@@ -349,22 +349,22 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     width: '100%',
                   }}
                   >
-                    <div style={{ flexBasis: '25%' }}>
+                    <div style={{ width: '24%' }}>
                       <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '10%' }}>
+                    <div style={{ width: '10%' }}>
                       <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '15%' }}>
+                    <div style={{ width: '14%' }}>
                       <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '10%' }}>
+                    <div style={{ width: '10%' }}>
                       <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '15%' }}>
+                    <div style={{ width: '15%' }}>
                       <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ flexBasis: '20%' }}>
+                    <div style={{ width: '15%' }}>
                       <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                   </div>
@@ -378,6 +378,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                 key={connector.id}
                 classes={{ root: classes.item }}
                 divider={true}
+                button={true}
                 component={Link}
                 to={`/dashboard/data/ingestion/connectors/${connector.id}`}
               >
