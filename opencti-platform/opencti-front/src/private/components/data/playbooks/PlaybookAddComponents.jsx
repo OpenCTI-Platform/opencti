@@ -18,6 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
@@ -192,6 +193,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
+        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: false },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -286,6 +288,24 @@ const PlaybookAddComponentsContent = ({
                 patch_value: value.value,
               },
             ])}
+          />
+        );
+      case 'objectAssignee':
+        return (
+          <ObjectAssigneeField
+            name={`actions-${i}-value`}
+            disabled={disabled}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n.label,
+                  value: n.value,
+                  patch_value: n.value,
+                })),
+              );
+            }}
           />
         );
       case 'x_opencti_workflow_id':

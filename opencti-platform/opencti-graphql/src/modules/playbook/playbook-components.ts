@@ -26,6 +26,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_THREAT_ACTOR,
+  INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -572,6 +573,11 @@ const attributePathMapping: any = {
   [INPUT_CREATED_BY]: {
     [ABSTRACT_STIX_CORE_OBJECT]: `/${createdBy.stixName}`,
     [ABSTRACT_STIX_RELATIONSHIP]: `/${createdBy.stixName}`,
+  },
+  [INPUT_ASSIGNEE]: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/assignee_ids`,
+    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/assignee_ids`,
+    [ABSTRACT_STIX_RELATIONSHIP]: `/extensions/${STIX_EXT_OCTI}/assignee_ids`,
   },
   confidence: {
     [ABSTRACT_STIX_DOMAIN_OBJECT]: '/confidence',
