@@ -6,11 +6,11 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { ExclusionListsLine_node$key } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
+import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
+import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
-import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
-import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

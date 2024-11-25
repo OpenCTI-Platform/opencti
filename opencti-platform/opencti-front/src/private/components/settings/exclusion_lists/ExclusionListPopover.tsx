@@ -3,16 +3,15 @@ import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import DeleteDialog from '../../../../components/DeleteDialog';
 import Drawer from '@components/common/drawer/Drawer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { useFormatter } from '../../../../components/i18n';
 import { graphql } from 'react-relay';
+import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
+import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
-import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
-import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 
 export const exclusionListPopoverDeletionMutation = graphql`
   mutation ExclusionListPopoverDeletionMutation($id: ID!) {
@@ -60,7 +59,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
 
   // Enable - Disable
   const handleEnable = () => {
-    // TODO : update the status
+    // TODO : update
     handleClose();
   };
   return (
@@ -76,8 +75,8 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEnable} disabled>{t_i18n('Enable')}</MenuItem>
-        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete} disabled>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleDisplayEdit} disabled>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
         title={t_i18n('Do you want to delete this exclusion list?')}
@@ -90,11 +89,11 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
         onClose={() => setDisplayEdit(false)}
       >
         <div>TODO</div>
-        {/*{queryRef && (*/}
-        {/*  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>*/}
-        {/*    <ExclusionListEdition queryRef={queryRef} onClose={() => setDisplayEdit(false)} />*/}
-        {/*  </React.Suspense>*/}
-        {/*/!*)}*!/*/}
+        {/* {queryRef && ( */}
+        {/*  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}> */}
+        {/*    <ExclusionListEdition queryRef={queryRef} onClose={() => setDisplayEdit(false)} /> */}
+        {/*  </React.Suspense> */}
+        {/* /!*)}*!/ */}
       </Drawer>
     </>
   );

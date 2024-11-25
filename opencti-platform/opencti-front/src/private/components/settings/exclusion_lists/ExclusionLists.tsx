@@ -19,7 +19,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 const LOCAL_STORAGE_KEY = 'view-exclusion-lists';
 
 const ExclusionLists = () => {
-  const { fd, t_i18n } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ExclusionListsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -81,6 +81,9 @@ const ExclusionLists = () => {
         secondaryAction={false}
         keyword={searchTerm}
         numberOfElements={numberOfElements}
+        message={t_i18n(
+          'TODO : explain this page',
+        )}
       >
         {queryRef && (
           <React.Suspense
