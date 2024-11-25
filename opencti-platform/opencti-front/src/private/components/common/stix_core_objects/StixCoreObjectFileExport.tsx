@@ -125,12 +125,13 @@ const StixCoreObjectFileExportComponent = ({
       throw Error(t_i18n('Invalid form to export a template'));
     }
 
-    const { setSubmitting } = helpers;
+    const { setSubmitting, resetForm } = helpers;
     const uploadFile = (variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables) => {
       commitUploadFile({
         variables,
         onCompleted: () => {
           setSubmitting(false);
+          resetForm();
           close();
         },
       });
@@ -202,7 +203,7 @@ const StixCoreObjectFileExportComponent = ({
    */
   const submitExportConnector: typeof onSubmitExport = async (values, helpers) => {
     if (!values.type) return;
-    const { setSubmitting, setErrors } = helpers;
+    const { setSubmitting, setErrors, resetForm } = helpers;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     commitExport({
@@ -220,6 +221,7 @@ const StixCoreObjectFileExportComponent = ({
         setSubmitting(false);
       },
       onCompleted: (exportData) => {
+        resetForm();
         close();
         setSubmitting(false);
         const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
