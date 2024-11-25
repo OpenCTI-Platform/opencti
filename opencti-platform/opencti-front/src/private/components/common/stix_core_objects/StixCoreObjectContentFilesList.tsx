@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
 import StixCoreObjectFileExport, { BUILT_IN_FROM_FILE_TEMPLATE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { htmlToPdf } from '../../../../utils/htmlToPdf';
@@ -135,6 +136,12 @@ const StixCoreObjectContentFilesList = ({
 
   return (
     <List>
+      {files.length === 0
+        && <ListItem
+          dense={true}
+          divider={true}
+           ></ListItem>
+      }
       {files.map((file) => (
         <Fragment key={file.id}>
           <Tooltip title={`${file.name} (${file.metaData?.mimetype ?? ''})`}>
