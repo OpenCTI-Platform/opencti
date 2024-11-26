@@ -61,7 +61,7 @@ interface ExclusionListCreationContentFormData {
 type ExclusionListCreationTabValue = 'File' | 'Content';
 
 interface ExclusionListCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy) => void;
+  updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   isCreationWithFile: boolean;
@@ -95,7 +95,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       },
       updater: (store) => {
         if (updater) {
-          updater(store);
+          updater(store, 'exclusionListFileAdd');
         }
       },
       onCompleted: () => {
@@ -129,7 +129,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       },
       updater: (store) => {
         if (updater) {
-          updater(store);
+          updater(store, 'exclusionListContentAdd');
         }
       },
       onCompleted: () => {
@@ -249,12 +249,12 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [tabValue, setTabValue] = useState<ExclusionListCreationTabValue>('File');
-  const updater = (store: RecordSourceSelectorProxy) => {
+  const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
     insertNode(
       store,
-      'Pagination_exclusionList',
+      'Pagination_exclusionLists',
       paginationOptions,
-      'exclusionListAdd',
+      rootField,
     );
   };
 
