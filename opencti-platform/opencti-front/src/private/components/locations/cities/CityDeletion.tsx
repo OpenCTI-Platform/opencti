@@ -12,6 +12,7 @@ import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 const CityDeletionDeleteMutation = graphql`
   mutation CityDeletionDeleteMutation($id: ID!) {
@@ -34,22 +35,16 @@ const CityDeletion = ({ id }: { id: string }) => {
     { successMessage: deleteSuccessMessage },
   );
   const handleClose = () => { };
-  const {
-    deleting,
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-    setDeleting,
-  } = useDeletion({ handleClose });
+  const deletion = useDeletion({ handleClose });
 
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commit({
       variables: {
         id,
       },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
         navigate('/dashboard/locations/cities');
       },
@@ -61,34 +56,17 @@ const CityDeletion = ({ id }: { id: string }) => {
         <Button
           color="error"
           variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
+          onClick={deletion.handleOpenDelete}
+          disabled={deletion.deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}
         </Button>
       </Security>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this city?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+      />
     </div>
   );
 };

@@ -7,19 +7,24 @@ import React from 'react';
 import Transition from './Transition';
 import { useFormatter } from './i18n';
 import { Deletion } from '../utils/hooks/useDeletion';
+import DialogTitle from '@mui/material/DialogTitle';
+import Alert from '@mui/material/Alert';
+import { AlertTitle } from '@mui/material';
 
 type DeleteDialogProps = {
-  title: React.ReactNode
+  message?: React.ReactNode
   deletion: Deletion
   submitDelete: () => void
   onClose?: () => void
+  alertTitle?: React.ReactNode
 };
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
-  title,
+  message,
   deletion,
   submitDelete,
   onClose,
+  alertTitle,
 }) => {
   const { t_i18n } = useFormatter();
   return (
@@ -30,17 +35,25 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
       TransitionComponent={Transition}
       onClose={onClose ?? deletion.handleCloseDelete}
     >
+      <DialogTitle>
+        {t_i18n('Are you sure?')}
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {title}
-        </DialogContentText>
+        {alertTitle ? (
+          <Alert severity="warning" variant="outlined">
+            <AlertTitle>{alertTitle}</AlertTitle>
+            {message}
+          </Alert>
+        ) : (
+          <DialogContentText>{message}</DialogContentText>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose ?? deletion.handleCloseDelete} disabled={deletion.deleting}>
           {t_i18n('Cancel')}
         </Button>
         <Button color="secondary" onClick={submitDelete} disabled={deletion.deleting}>
-          {t_i18n('Delete')}
+          {t_i18n('Confirm')}
         </Button>
       </DialogActions>
     </Dialog>
