@@ -256,6 +256,10 @@ const StixCoreObjectFileExportComponent = ({
           resetForm();
           close();
         },
+        onError: () => {
+          resetForm();
+          close();
+        },
       });
     };
 
