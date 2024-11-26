@@ -92,7 +92,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
         if (relationsRefDefinition) {
-          message = values.map((val) => truncate(extractEntityRepresentativeName(val))).join(', ');
+          message = values.map((val) => truncate(extractEntityRepresentativeName(val), 250)).join(', ');
         } else if (key === creators.name) {
           message = 'itself'; // Creator special case
         } else if (key === 'authorized_members') {
@@ -101,7 +101,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
             return `${member?.name ?? id} (${access_right})`;
           }).join(', ');
         } else if (attributeDefinition.type === 'string' && attributeDefinition.format === 'json') {
-          message = values.map((v) => truncate(JSON.stringify(v)));
+          message = values.map((v) => truncate(JSON.stringify(v), 250));
         } else if (attributeDefinition.type === 'date') {
           message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
         } else if (attributeDefinition.type === 'object') {
