@@ -50,7 +50,6 @@ CsvMapperConditionalEntityMappingProps
     if (val === 'false') {
       await setFieldValue(`${representationName}.column_based.column_reference`, null);
       await setFieldValue(`${representationName}.column_based.operator`, null);
-      await setFieldValue(`${representationName}.column_based.value`, null);
     } else {
       await setFieldValue(`${representationName}.column_based.column_reference`, dynamicMappingColumn ?? null);
       await setFieldValue(`${representationName}.column_based.operator`, 'eq');
@@ -156,6 +155,7 @@ CsvMapperConditionalEntityMappingProps
           component={TextField}
           label={t_i18n('Value')}
           name={`${representationName}.column_based.value`}
+          value={columnBased?.enabled ? columnBased.value : ''}
           variant='standard'
           style={{ width: '100%' }}
           disabled={!representation.column_based?.enabled}
