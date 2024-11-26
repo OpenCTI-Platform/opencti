@@ -843,12 +843,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               inputValue={searchTerm}
               paginationKey="Pagination_stixCoreObjects"
               paginationOptions={searchPaginationOptions}
-              open={undefined}
-              handleClose={undefined}
-              type={undefined}
-              speeddial={undefined}
-              onCompleted={undefined}
-              isFromBulkRelation={undefined}
             />
           )}
           {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
@@ -908,9 +902,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 speeddial={true}
                 open={openCreateObservable}
                 handleClose={handleCloseCreateObservable}
-                type={undefined}
-                onCompleted={undefined}
-                isFromBulkRelation={undefined}
               />
             </>
           )}

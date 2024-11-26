@@ -450,7 +450,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           paginationKey={paginationKey}
           handleClose={handleCloseObjectCreateEntityForm}
           type={missingEntity.key}
-          contextual
+          contextual={true}
           isFromBulkRelation
         />
       );

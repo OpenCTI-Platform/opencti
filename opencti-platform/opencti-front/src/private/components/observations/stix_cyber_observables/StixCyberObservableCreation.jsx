@@ -17,6 +17,7 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
+import PropTypes from 'prop-types';
 import { useTheme } from '@mui/styles';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
@@ -195,6 +196,10 @@ const stixCyberObservableMutation = graphql`
           entity_type
         }
       }
+      creators {
+        id,
+        name,
+      }
       objectMarking {
         id
         definition_type
@@ -271,9 +276,9 @@ const StixCyberObservableCreation = ({
   inputValue,
   paginationKey,
   paginationOptions,
-  controlledDialStyles = {},
-  defaultCreatedBy = null,
-  defaultMarkingDefinitions = null,
+  controlledDialStyles,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
   isFromBulkRelation,
   onCompleted,
 }) => {
@@ -493,9 +498,7 @@ const StixCyberObservableCreation = ({
             const baseCreatedBy = defaultCreatedBy
               ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
               : undefined;
-            const baseMarkingDefinitions = (
-              defaultMarkingDefinitions ?? []
-            ).map((n) => convertMarking(n));
+            const baseMarkingDefinitions = defaultMarkingDefinitions.map((n) => convertMarking(n));
             const initialValues = {
               x_opencti_description: '',
               x_opencti_score: 50,
@@ -1009,6 +1012,44 @@ const StixCyberObservableCreation = ({
     return renderContextual();
   }
   return renderClassic();
+};
+
+StixCyberObservableCreation.propTypes = {
+  contextual: PropTypes.bool.isRequired,
+  open: PropTypes.bool,
+  handleClose: PropTypes.func,
+  type: PropTypes.string,
+  display: PropTypes.bool,
+  speeddial: PropTypes.bool,
+  inputValue: PropTypes.string,
+  paginationKey: PropTypes.string,
+  paginationOptions: PropTypes.any,
+  controlledDialStyles: PropTypes.object,
+  defaultCreatedBy: PropTypes.oneOfType([
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+    PropTypes.oneOf([undefined]),
+  ]),
+  defaultMarkingDefinitions: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ),
+  isFromBulkRelation: PropTypes.bool,
+  onCompleted: PropTypes.func,
+};
+
+StixCyberObservableCreation.defaultProps = {
+  open: false,
+  display: false,
+  speeddial: false,
+  isFromBulkRelation: false,
+  defaultMarkingDefinitions: [],
+  paginationOptions: [],
+  controlledDialStyles: {},
 };
 
 export default StixCyberObservableCreation;
