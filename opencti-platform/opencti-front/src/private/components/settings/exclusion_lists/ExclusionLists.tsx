@@ -102,7 +102,7 @@ const ExclusionLists = () => {
           >
             <ExclusionListsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
             />
           </React.Suspense>
