@@ -62,8 +62,7 @@ CsvMapperConditionalEntityMappingProps
       display: 'grid',
       gridTemplateColumns: '1.3fr 1fr 1fr 1fr',
       alignItems: 'center',
-      marginTop: theme.spacing(3),
-      marginBottom: theme.spacing(3),
+      marginTop: `${theme.spacing(3)} 0 `,
       gap: theme.spacing(1),
     }}
     >
