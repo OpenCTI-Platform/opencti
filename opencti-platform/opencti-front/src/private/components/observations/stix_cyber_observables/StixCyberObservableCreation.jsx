@@ -197,10 +197,8 @@ const stixCyberObservableMutation = graphql`
         }
       }
       creators {
-        ... on Creator {
-          id,
-          name,
-        }
+        id,
+        name,
       }
       objectMarking {
         id
