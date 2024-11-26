@@ -934,6 +934,10 @@ const ContainerHeader = (props) => {
                 filesFromTemplate={filesFromTemplate}
                 templates={templateOptions}
                 OpenFormComponent={StixCoreObjectFileExportButton}
+                onExportCompleted={(fileName) => {
+                  // TODO try to navigate with fileName in query params too see how it goes
+                  console.log(fileName);
+                }}
               />
             )}
             {enableSuggestions && (
