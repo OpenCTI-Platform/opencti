@@ -215,6 +215,7 @@ const StixCoreObjectContentFilesList = ({
               format: 'application/pdf',
               templateFile: menuFile.id,
             }}
+            onFileChange={onFileChange}
             OpenFormComponent={({ onOpen }) => (
               <Tooltip title={t_i18n('Generate a PDF export')}>
                 <MenuItem onClick={onOpen}>
