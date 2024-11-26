@@ -6,7 +6,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { groupAddRelation, groupEditField } from './group';
+import { groupAddRelation, groupEditField, groupMaxShareableMarkings } from './group';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -17,7 +17,6 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
-// add the given marking definitions in the allowed markings of the user groups
 export const addAllowedMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
   const markingToCreate = {
@@ -48,8 +47,18 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
         })
       );
       // add marking in max shareable markings
-      const groupsWithShareableMarkingToUpdate = groupsWithAutoNewMarking
-        .filter((g) => !(g.max_shareable_markings ?? []).find((m) => m.definition_type === markingType && m.x_opencti_order > element.x_opencti_order));
+      const completeGroupsWithAutoNewMarking = await Promise.all(groupsWithAutoNewMarking
+        .map(async (g) => ({
+          ...g,
+          max_shareable_marking: await groupMaxShareableMarkings(context, g),
+        })));
+      const groupsWithShareableMarkingToUpdate = completeGroupsWithAutoNewMarking
+        .filter((g) => {
+          const shareableMarkingOfTypeWithGreaterOrder = (g.max_shareable_marking ?? [])
+            .find((m) => m.definition_type === markingType && m.x_opencti_order > element.x_opencti_order);
+          // we need to update the group max shareable markings if it has no shareable marking of the same definition type with a greater order
+          return shareableMarkingOfTypeWithGreaterOrder === undefined;
+        });
       await Promise.all(
         groupsWithShareableMarkingToUpdate.map((group) => {
           const finalMarkings = [
