@@ -36,13 +36,13 @@ CsvMapperConditionalEntityMappingProps
   };
 
   useEffect(() => {
-    if (!columnBased?.column_reference && dynamicMappingColumn) {
+    if (!columnBased?.column_reference && dynamicMappingColumn && columnBased?.enabled) {
       handleColumnSelect(dynamicMappingColumn);
     }
     if (!columnBased?.operator && columnBased?.enabled) {
       setFieldValue(`${representationName}.column_based.operator`, 'eq');
     }
-  }, [columnBased?.operator, columnBased?.column_reference]);
+  }, [dynamicMappingColumn, columnBased?.enabled]);
 
   const handleOperatorSelect = async (operator: { label: string, value: string } | null) => {
     await setFieldValue(`${representationName}.column_based.operator`, operator?.value);
@@ -90,7 +90,7 @@ CsvMapperConditionalEntityMappingProps
         disabled={!columnBased?.enabled}
         value={
           columnBased?.enabled
-            ? columnBased?.column_reference
+            ? columnBased.column_reference
             : null
           }
         onChange={(_, val) => handleColumnSelect(val)}
@@ -117,13 +117,14 @@ CsvMapperConditionalEntityMappingProps
       <MUIAutocomplete<{ label: string, value: string }>
         selectOnFocus
         openOnFocus
+        autoComplete
         autoSelect={false}
         autoHighlight
         options={operatorOptions}
         disabled={!columnBased?.enabled}
         value={
           columnBased?.enabled
-            ? operatorOptions.find((opt) => opt.value === (columnBased?.operator || 'eq'))
+            ? operatorOptions.find((opt) => opt.value === (columnBased?.operator))
             : null
           }
         onChange={(_, val) => handleOperatorSelect(val)}
@@ -134,6 +135,16 @@ CsvMapperConditionalEntityMappingProps
             label={t_i18n('Operator')}
             variant="outlined"
             size="small"
+            InputProps={{
+              ...params.InputProps,
+              sx: {
+                '& fieldset': {
+                  borderColor: (!columnBased?.operator)
+                    ? 'rgb(244, 67, 54)'
+                    : '',
+                },
+              },
+            }}
           />
         )}
       />
