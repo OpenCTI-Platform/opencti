@@ -243,7 +243,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 connector: BUILT_IN_FROM_TEMPLATE.value,
                 format: 'text/html',
               }}
-              onFileChange={onFileChange}
+              onExportCompleted={onFileChange}
               OpenFormComponent={({ onOpen }) => (
                 <Tooltip title={t_i18n('Generate an export based on a template')}>
                   <IconButton

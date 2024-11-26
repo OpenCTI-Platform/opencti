@@ -136,12 +136,7 @@ const StixCoreObjectContentFilesList = ({
 
   return (
     <List>
-      {files.length === 0
-        && <ListItem
-          dense={true}
-          divider={true}
-           ></ListItem>
-      }
+      {files.length === 0 && <ListItem dense={true} divider={true} />}
       {files.map((file) => (
         <Fragment key={file.id}>
           <Tooltip title={`${file.name} (${file.metaData?.mimetype ?? ''})`}>
@@ -215,13 +210,11 @@ const StixCoreObjectContentFilesList = ({
               format: 'application/pdf',
               templateFile: menuFile.id,
             }}
-            onFileChange={onFileChange}
+            onExportCompleted={onFileChange}
             OpenFormComponent={({ onOpen }) => (
-              <Tooltip title={t_i18n('Generate a PDF export')}>
-                <MenuItem onClick={onOpen}>
-                  {t_i18n('Generate a PDF export')}
-                </MenuItem>
-              </Tooltip>
+              <MenuItem onClick={onOpen}>
+                {t_i18n('Generate a PDF export')}
+              </MenuItem>
             )}
           />
         )}
