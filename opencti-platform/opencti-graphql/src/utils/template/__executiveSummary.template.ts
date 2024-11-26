@@ -59,7 +59,7 @@ const executiveSummaryContent = (containerType: string) => {
       </div>
       
       <h3>2. Executive Summary</h3>
-      <p>$containerDescription</p>
+      <div>$containerDescription</div>
       
       <h3>3. Key points</h3>
       <blockquote>
