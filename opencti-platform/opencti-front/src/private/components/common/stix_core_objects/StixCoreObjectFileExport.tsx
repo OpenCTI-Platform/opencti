@@ -58,7 +58,7 @@ type StixCoreObjectFileExportComponentProps = {
   scoName?: string;
   redirectToContentTab?: boolean;
   onClose?: () => void
-  onFileChange?: (fileName?: string, isDeleted?: boolean) => void
+  onExportCompleted?: (fileName?: string, isDeleted?: boolean) => void
 } & Pick<StixCoreObjectFileExportFormProps, 'templates' | 'filesFromTemplate' | 'defaultValues'>;
 
 const StixCoreObjectFileExportComponent = ({
@@ -72,7 +72,7 @@ const StixCoreObjectFileExportComponent = ({
   templates,
   defaultValues,
   onClose,
-  onFileChange,
+  onExportCompleted,
 }: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -94,13 +94,13 @@ const StixCoreObjectFileExportComponent = ({
   if (filesFromTemplate && filesFromTemplate.length > 0) {
     activeConnectors.push({
       ...BUILT_IN_FROM_FILE_TEMPLATE,
-      label: t_i18n('Built-in: HTML template to PDF'),
+      label: t_i18n('HTML content files to PDF'),
     });
   }
   if (templates && templates.length > 0) {
     activeConnectors.push({
       ...BUILT_IN_FROM_TEMPLATE,
-      label: t_i18n('Built-in: template to HTML/PDF'),
+      label: t_i18n('Generate Fintel from template'),
     });
   }
 
@@ -134,8 +134,12 @@ const StixCoreObjectFileExportComponent = ({
         onCompleted: (result) => {
           setSubmitting(false);
           if (result.stixCoreObjectEdit?.importPush) {
-            onFileChange?.(result.stixCoreObjectEdit.importPush.id);
+            onExportCompleted?.(result.stixCoreObjectEdit.importPush.id);
           }
+          resetForm();
+          close();
+        },
+        onError: () => {
           resetForm();
           close();
         },
@@ -277,12 +281,16 @@ const StixCoreObjectFileExportComponent = ({
 export type StixCoreObjectFileExportProps = Omit<StixCoreObjectFileExportComponentProps, 'connectorsQueryRef'>;
 
 const StixCoreObjectFileExport = (props: StixCoreObjectFileExportProps) => {
+  const { OpenFormComponent } = props;
   const connectorsQueryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
   );
 
   return (
     <>
+      {!connectorsQueryRef && (
+        <OpenFormComponent onOpen={() => {}} isExportPossible={false} />
+      )}
       {connectorsQueryRef && (
         <React.Suspense>
           <StixCoreObjectFileExportComponent
