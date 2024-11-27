@@ -183,6 +183,7 @@ nav:
     - Data management:
       - Merging and de-duplication: administration/merging.md
       - CSV Mappers: administration/csv-mappers.md
+      - CSV Feeds: usage/feeds.md
     - Platform settings:
       - Parameters: administration/parameters.md
       - Security:

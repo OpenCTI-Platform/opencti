@@ -69,10 +69,20 @@ As when using the GraphQL API, TAXII 2.1 collections have a classic pagination s
 <a id="csv-feeds-section"></a>
 ## CSV feeds
 
+### Introduction
+
 The CSV feed facilitates the automatic generation of a CSV file, accessible via a URL. The CSV file is regenerated and updated at user-defined intervals, providing flexibility. The entries in the file correspond to the information that matches the filters applied and that were created or modified in the platform during the time interval (between the last generation of the CSV and the new one).
 
 ![CSV feed](assets/csv-feed.png)
-
 !!! note "CSV size limit"
 
     The CSV file generated has a limit of 5 000 entries. If more than 5 000 entities are retrieved by the platform, only the most recent 5 000 will be shared in the file.
+
+### Duplication
+If you need to modify your previous configuration, we recommend to duplicate the CSV feed using the duplicate option in the burger button.
+
+![CSV feed duplication button](assets/feeds-duplicate.png)
+
+As you see, when you duplicate the CSV feed, the fields are pre-filled but you can change any of them. We advice you to keep the name with '-copy' to signify the origin of the duplicate feed.  
+
+![CSV feed duplication form](assets/feeds-duplication-form.png)

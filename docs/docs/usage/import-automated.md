@@ -141,6 +141,19 @@ CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you 
 
 ![CSV feeds creation: tracking](assets/csv-feeds-importCSV-connector-tracking.png)
 
+### Duplicate a CSV feed ingester
+
+If you need to modify your previous configuration which is already activated, we recommend to duplicate the CSV feed using the duplicate option in the burger button.
+
+![CSV feeds duplicate: duplicate](assets/csv-feeds-burger-button.png)
+
+As you see, when you duplicate the CSV feed, the fields are pre-filled but you can change any of them. We advice you to keep the name with '-copy' to signify the origin of the duplicate feed.  
+
+![CSV feeds duplication form: duplicate](assets/csv-feeds-duplicate.png)
+
+As you see previously, you need to verify your CSV configuration before validating your form. Finally, you need to click on start to launch your new ingester. 
+
+![CSV feeds duplication form: duplicate](assets/feeds-start-duplicate.png)
 
 <a id="best-practices-section"></a>
 ### Best practices for feed import

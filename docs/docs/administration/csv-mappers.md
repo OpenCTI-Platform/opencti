@@ -16,6 +16,7 @@ Enter a name for your mapper and some basic information about your CSV files:
 
 - The line separator used (defaults to the standard comma character)
 - The presence of a header on the first line
+- The char to escape the lines
 
 !!! info "Header management"
 
@@ -34,6 +35,32 @@ References to other entities should be picked from the list of all the other rep
 You can do the same for all the relationships between entities that might be defined in this particular CSV file structure.
 
 ![New representation](assets/csv-mappers-rep-1.png)
+
+### Entity dynamic mapping
+
+If your CSV file contains multiple entities in separate rows but in the same columns, you can enable "Entity dynamic mapping". 
+Click the toggle button to activate it. You must then specify the following:
+
+- the column that contains the differentiator
+- the operator ("Equal" or "Not equal")
+- the value in this column that we compare with
+
+For instance, if the column A contains the observable type (such as `Ipv4`, `URL`), and the column B the observable value (`1.2.3.4`, `www.example.com`) you can
+set 2 representatives for IPv4 and URL entities, with dynamic mapping depending on the content of column A ; column B being used in both representatives as the observable value. 
+
+| Type                                                                         | Value                                                          | 
+|:-----------------------------------------------------------------------------|:---------------------------------------------------------------|
+| IPv4                                                    | 1.2.3.4                                     |
+| IPv4                                                    | 1.2.3.5                                     |
+| URL                                                    | www.example.com                                     |
+| IPv4                                                    | 1.2.3.6                                     |
+
+
+![Dynamic mapping (1)](assets/csv-mappers-dynamic-1.png)
+
+![Dynamic mapping (2)](assets/csv-mappers-dynamic-2.png)
+
+### Field options
 
 Fields might have options besides the mandatory column index, to help extract relevant data:
 
@@ -71,7 +98,7 @@ You can then check if the extracted values match the expected entities and relat
 
 !!! warning "Test with a small file"
 
-    We strongly recommend limiting test files to 100 lines and 1MB. Otherwise, the browser may crash.
+    The test is a blocking process for the platform. We strongly recommend limiting test files to 100 lines and 1MB, to prevent performance issues.
 
 
 ## Use a mapper for importing a CSV file
@@ -140,6 +167,19 @@ For marking definitions, setting a default value is different from other attribu
 - Let the user choose marking definitions. Here the user importing the CSV file will choose marking definitions (among the ones they can see) when selecting the CSV mapper.
 
 ![mapper-attribute](assets/csv-mappers-default-markings.png)
+
+### Duplicate the configuration of the CSV mappers
+
+If you need to modify your previous configuration, we recommend to duplicate the CSV mapper using the duplicate option in the burger button.
+
+![mapper-duplicate-button](assets/csv-mapper-duplicate-button.png)
+
+As you see, when you duplicate your CSV mapper, the fields are pre-filled but you can change any of them. We advice you to keep the name with '-copy' to signify the origin of the duplicate CSV.
+
+![mapper-duplicate-form](assets/csv-mapper-duplicate-form.png)
+
+You can always verify your configuration before validating the form (with a file containing 100 lines max).
+
 
 ## Additional resources
 
