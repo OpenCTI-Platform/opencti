@@ -101,9 +101,15 @@ const StixCoreObjectFileExportForm = ({
   if (defaultTemplate) defaultExportFileName = defaultTemplate.label;
   if (defaultTemplateFile) [defaultExportFileName] = defaultTemplateFile.label.split('.');
 
+  let initialFormat = '';
+  if (defaultValues?.format) {
+    initialFormat = defaultValues.format;
+  } else if (connectorScopes.length > 0) {
+    initialFormat = connectorScopes.includes('application/pdf') ? 'application/pdf' : connectorScopes[0];
+  }
   const initialValues: StixCoreObjectFileExportFormInputs = {
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
-    format: defaultValues?.format ?? '',
+    format: initialFormat,
     type: null,
     template: defaultTemplate ?? null,
     templateFile: defaultTemplateFile ?? null,
