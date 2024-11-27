@@ -1,11 +1,10 @@
 import React from 'react';
 import { graphql, createPaginationContainer, RelayPaginationProp } from 'react-relay';
 import { pathOr } from 'ramda';
-import { GroupsLinesPaginationQuery$variables } from '@components/settings/groups/__generated__/GroupsLinesPaginationQuery.graphql';
 import { GroupsLines_data$data } from '@components/settings/groups/__generated__/GroupsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupLine, GroupLineDummy } from './GroupLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../components/list_lines';
 
 const nbOfRowsToLoad = 50;
 
@@ -13,7 +12,7 @@ interface GroupsLinesProps {
   initialLoading: boolean
   dataColumns: DataColumns
   relay: RelayPaginationProp,
-  paginationOptions: GroupsLinesPaginationQuery$variables
+  paginationOptions: PaginationOptions,
   data: GroupsLines_data$data
 }
 
