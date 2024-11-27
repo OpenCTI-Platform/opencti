@@ -14,6 +14,7 @@ import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
+import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -160,7 +161,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
     setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
   return (
-    <>
+    <CsvMapperProvider>
       <Formik<CsvMapperFormData>
         enableReinitialize
         initialValues={csvMapper}
@@ -351,7 +352,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
           );
         }}
       </Formik>
-    </>
+    </CsvMapperProvider>
   );
 };
 
