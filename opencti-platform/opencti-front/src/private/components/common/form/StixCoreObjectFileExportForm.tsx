@@ -116,7 +116,7 @@ const StixCoreObjectFileExportForm = ({
     templateFile: defaultTemplateFile ?? null,
     exportFileName: defaultExportFileName,
     contentMaxMarkings: [],
-    fileMarkings: [],
+    fileMarkings: defaultTemplateFile?.fileMarkings.map(({ id, name }) => ({ label: name, value: id })) ?? [],
   };
 
   const isFormatValid = (format: string, selectedConnector: ConnectorOption | null) => {
@@ -271,23 +271,21 @@ const StixCoreObjectFileExportForm = ({
                   )}
 
                   {values.connector.value !== BUILT_IN_FROM_FILE_TEMPLATE.value && (
-                    <>
-                      <ObjectMarkingField
-                        name="contentMaxMarkings"
-                        label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                        limitToMaxSharing
-                        helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
-                      />
-                      <ObjectMarkingField
-                        name="fileMarkings"
-                        label={t_i18n('File marking definition levels')}
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </>
-                  )}
+                    <ObjectMarkingField
+                      name="contentMaxMarkings"
+                      label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                      limitToMaxSharing
+                      helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
+                    />)
+                  }
+                  <ObjectMarkingField
+                    name="fileMarkings"
+                    label={t_i18n('File marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
                 </>
               )}
             </DialogContent>
