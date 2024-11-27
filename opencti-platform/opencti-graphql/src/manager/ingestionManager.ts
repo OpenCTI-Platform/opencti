@@ -146,7 +146,7 @@ interface DataItem {
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
   return {
-    title: turndownService.turndown(entry.title._),
+    title: entry.title._,
     description: turndownService.turndown(entry.summary?._ ?? ''),
     link: isNotEmptyField(entry.link) ? (entry.link as { href: string }).href?.trim() : '',
     content: turndownService.turndown(entry.content?._ ?? ''),
@@ -158,7 +158,7 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
 const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
   const { pubDate } = channel;
   return {
-    title: turndownService.turndown(item.title._ ?? ''),
+    title: item.title._ ?? '',
     description: turndownService.turndown(item.description?._ ?? ''),
     link: isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '',
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
