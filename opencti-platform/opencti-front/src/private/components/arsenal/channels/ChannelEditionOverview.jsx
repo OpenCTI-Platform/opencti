@@ -16,7 +16,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -60,6 +60,8 @@ const channelMutationRelationAdd = graphql`
   }
 `;
 
+const CHANNEL_TYPE = 'Channel';
+
 const channelMutationRelationDelete = graphql`
   mutation ChannelEditionOverviewRelationDeleteMutation(
     $id: ID!
@@ -80,15 +82,19 @@ const ChannelEditionOverviewComponent = (props) => {
   const { channel, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CHANNEL_TYPE,
+  );
+
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const channelValidator = useSchemaEditionValidation('Channel', basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: channelMutationFieldPatch,
@@ -96,7 +102,7 @@ const ChannelEditionOverviewComponent = (props) => {
     relationDelete: channelMutationRelationDelete,
     editionFocus: channelEditionOverviewFocus,
   };
-  const editor = useFormEditor(channel, enableReferences, queries, channelValidator);
+  const editor = useFormEditor(channel, enableReferences, queries, validator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -135,7 +141,7 @@ const ChannelEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      channelValidator
+      validator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -169,7 +175,7 @@ const ChannelEditionOverviewComponent = (props) => {
   return (
     <Formik enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={channelValidator}
+      validationSchema={validator}
       onSubmit={onSubmit}
     >
       {({
@@ -186,6 +192,7 @@ const ChannelEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -197,6 +204,7 @@ const ChannelEditionOverviewComponent = (props) => {
             type="channel_types_ov"
             name="channel_types"
             label={t_i18n('Channel types')}
+            required={(mandatoryAttributes.includes('channel_types'))}
             variant="edit"
             multiple={true}
             containerStyle={fieldSpacingContainerStyle}
@@ -207,6 +215,7 @@ const ChannelEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -240,6 +249,7 @@ const ChannelEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -249,6 +259,7 @@ const ChannelEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking"/>
