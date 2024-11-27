@@ -125,6 +125,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           </Security>
         )}
         enableQuickSubscription={true}
+        enableEnrollPlaybook={true}
         enableAskAi={true}
         redirectToContent={true}
         enableEnricher={true}

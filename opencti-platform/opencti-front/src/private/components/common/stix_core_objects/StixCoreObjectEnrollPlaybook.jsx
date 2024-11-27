@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
 import { PrecisionManufacturingOutlined } from '@mui/icons-material';
+import EETooltip from '../entreprise_edition/EETooltip';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -20,16 +20,16 @@ const StixCoreObjectEnrollPlaybook = (props) => {
   return (
     <>
       {!handleClose && (
-        <Tooltip title={t('Enroll in playbook')}>
+        <EETooltip title={t('Enroll in playbook')}>
           <ToggleButton
             onClick={handleOpenEnrollPlaybook}
-            value="enrich"
+            value="enroll"
             size="small"
             style={{ marginRight: 3 }}
           >
-            <PrecisionManufacturingOutlined fontSize="small" color="primary" />
+            <PrecisionManufacturingOutlined fontSize="small" color="secondary" />
           </ToggleButton>
-        </Tooltip>
+        </EETooltip>
       )}
       <Drawer
         open={open || openDrawer}
