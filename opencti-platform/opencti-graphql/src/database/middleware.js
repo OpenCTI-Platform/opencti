@@ -390,7 +390,7 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
         }
       });
     }
-    const deps = depsElementsMap.get(element.id);
+    const deps = depsElementsMap.get(element.id) ?? {};
     if (isNotEmptyField(files)) {
       deps.x_opencti_files = files;
     }
