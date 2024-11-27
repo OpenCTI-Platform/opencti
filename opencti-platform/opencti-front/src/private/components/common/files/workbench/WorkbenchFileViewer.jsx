@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -136,6 +136,7 @@ const WorkbenchFileViewer = createRefetchContainer(
               id
               ...ImportWorkbenchesContentFileLine_file
               metaData {
+                  labels
                 mimetype
               }
             }

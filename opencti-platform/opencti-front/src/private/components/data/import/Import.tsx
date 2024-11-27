@@ -12,6 +12,7 @@ interface ImportContentContainerProps {
 
 const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = ({ queryRef }) => {
   const data = usePreloadedQuery(importContentQuery, queryRef);
+  console.log('data', data);
   const { isFeatureEnable } = useHelper();
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   return (
@@ -26,6 +27,7 @@ const ImportContentContainer: FunctionComponent<ImportContentContainerProps> = (
 
 const Import = () => {
   const queryRef = useQueryLoading<ImportContentQuery>(importContentQuery, {});
+  console.log('queryRef', queryRef);
   return (
     <>
       {queryRef && (
