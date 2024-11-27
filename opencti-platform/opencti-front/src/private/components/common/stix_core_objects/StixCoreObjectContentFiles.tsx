@@ -3,7 +3,7 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { FileExportOutline, FileOutline } from 'mdi-material-ui';
+import { FileExportOutline, FileOutline, InformationOutline } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { AddOutlined } from '@mui/icons-material';
@@ -232,7 +232,21 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       {isFileFromTemplateEnabled && hasOutcomesTemplate && (
         <ContentBloc
-          title={<>{t_i18n('Files from template')} {!isEnterpriseEdition && <EEChip />}</>}
+          title={
+            <>
+              {t_i18n('Finished intelligence')} {!isEnterpriseEdition && <EEChip />}
+              {isEnterpriseEdition
+                && <Tooltip
+                  title={t_i18n('Files generated from a template')}
+                   >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ marginLeft: 5 }}
+                  />
+                </Tooltip>}
+            </>
+        }
           actions={isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}
