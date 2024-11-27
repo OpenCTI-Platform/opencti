@@ -142,7 +142,7 @@ describe('history manager test buildHistoryElementsFromEvents', () => {
     expect(historyElement.user_id).toEqual(eventWithGrantedRefIds.data.origin.user_id);
     expect(historyElement.group_ids).toEqual(eventWithGrantedRefIds.data.origin.group_ids);
     expect(historyElement.organization_ids).toEqual(eventWithGrantedRefIds.data.origin.organization_ids);
-    expect(historyElement['rel_granted.internal_id'].length).toEqual(['c080a677-f640-4643-9d2a-75929ac07b1c', '0c897410-3579-4770-b26e-1fce2e441204']);
+    expect(historyElement['rel_granted.internal_id']).toEqual(['c080a677-f640-4643-9d2a-75929ac07b1c', '0c897410-3579-4770-b26e-1fce2e441204']);
   });
   it('should build history with granted_refs ids resolved', async () => {
     const historyElements = await buildHistoryElementsFromEvents(testContext, [eventWithGrantedRefsOnly]);
