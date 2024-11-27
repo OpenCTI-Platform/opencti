@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { resolveGrantedRefsIds } from '../../../src/manager/historyManager';
+import { INDEX_HISTORY } from '../../../src/database/utils';
+import { buildHistoryElementsFromEvents, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
+import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { testContext } from '../../utils/testQuery';
 
 const eventWithGrantedRefIds = {
@@ -123,6 +125,37 @@ describe('History manager test resolveGrantedRefsIds', () => {
   it('should return organization if granted refs are present and not granted refs ids', async () => {
     const organizationByIdsMap = await resolveGrantedRefsIds(testContext, [eventWithGrantedRefsOnly]);
     expect(organizationByIdsMap.size).toEqual(1);
-    expect(organizationByIdsMap.has('identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727'));
+    expect(organizationByIdsMap.has('identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727')).toBeTruthy();
+  });
+});
+
+describe('history manager test buildHistoryElementsFromEvents', () => {
+  it('should build history with granted_refs_ids', async () => {
+    const historyElements = await buildHistoryElementsFromEvents(testContext, [eventWithGrantedRefIds]);
+    expect(historyElements.length).toEqual(1);
+    const historyElement = historyElements[0];
+    expect(historyElement.internal_id).toEqual(eventWithGrantedRefIds.id);
+    expect(historyElement._index).toEqual(INDEX_HISTORY);
+    expect(historyElement.entity_type).toEqual(ENTITY_TYPE_HISTORY);
+    expect(historyElement.event_type).toEqual('mutation');
+    expect(historyElement.event_scope).toEqual(eventWithGrantedRefIds.event);
+    expect(historyElement.user_id).toEqual(eventWithGrantedRefIds.data.origin.user_id);
+    expect(historyElement.group_ids).toEqual(eventWithGrantedRefIds.data.origin.group_ids);
+    expect(historyElement.organization_ids).toEqual(eventWithGrantedRefIds.data.origin.organization_ids);
+    expect(historyElement['rel_granted.internal_id'].length).toEqual(['c080a677-f640-4643-9d2a-75929ac07b1c', '0c897410-3579-4770-b26e-1fce2e441204']);
+  });
+  it('should build history with granted_refs ids resolved', async () => {
+    const historyElements = await buildHistoryElementsFromEvents(testContext, [eventWithGrantedRefsOnly]);
+    expect(historyElements.length).toEqual(1);
+    const historyElement = historyElements[0];
+    expect(historyElement.internal_id).toEqual(eventWithGrantedRefsOnly.id);
+    expect(historyElement._index).toEqual(INDEX_HISTORY);
+    expect(historyElement.entity_type).toEqual(ENTITY_TYPE_HISTORY);
+    expect(historyElement.event_type).toEqual('mutation');
+    expect(historyElement.event_scope).toEqual(eventWithGrantedRefsOnly.event);
+    expect(historyElement.user_id).toEqual(eventWithGrantedRefsOnly.data.origin.user_id);
+    expect(historyElement.group_ids).toEqual(eventWithGrantedRefsOnly.data.origin.group_ids);
+    expect(historyElement.organization_ids).toEqual(eventWithGrantedRefsOnly.data.origin.organization_ids);
+    expect(historyElement['rel_granted.internal_id'].length).toEqual(1);
   });
 });

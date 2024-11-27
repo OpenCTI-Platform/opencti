@@ -68,14 +68,14 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
       grantedRefsToResolve.push(...eventGrantedRefsStandardIds);
     }
   });
-  const organizationByIdsMap = new Map<StixId, string>();
+  const organizationByIdsMap = new Map<string, string>();
   if (grantedRefsToResolve.length === 0) {
     return organizationByIdsMap; // nothing to resolve
   }
   const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, R.uniq(grantedRefsToResolve), {
     type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     baseData: true,
-    baseFields: ['internal_id'],
+    baseFields: ['standard_id', 'internal_id'],
   });
   organizationsByIds.forEach((o) => {
     organizationByIdsMap.set(o.standard_id, o.internal_id);
@@ -83,13 +83,12 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   return organizationByIdsMap;
 };
 
-const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
-  if (isEmptyField(events) || events.length === 0) {
-    return;
-  }
+export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+  // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  // Build the history data
+  // resolve granted_refs
   const grantedRefsResolved = await resolveGrantedRefsIds(context, events);
+  // Build the history data
   const historyElements = events.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
@@ -166,6 +165,15 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       'rel_granted.internal_id': R.uniq(eventGrantedRefsIds),
     };
   });
+  return historyElements;
+};
+
+const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+  if (isEmptyField(events) || events.length === 0) {
+    return;
+  }
+  // Build the history data
+  const historyElements = await buildHistoryElementsFromEvents(context, events);
   // Bulk the history data insertions
   await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, historyElements);
 };
