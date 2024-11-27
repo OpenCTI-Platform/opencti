@@ -1,9 +1,9 @@
-import { v4 as uuidv4 } from 'uuid';
 import convertExclusionListToStix from './exclusionList-converter';
 import { ENTITY_TYPE_EXCLUSION_LIST, type StixExclusionList, type StoreEntityExclusionList } from './exclusionList-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { isFeatureEnabled } from '../../config/conf';
+import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 
 const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, StixExclusionList> = {
   type: {
@@ -14,7 +14,12 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_EXCLUSION_LIST]: () => uuidv4()
+      [ENTITY_TYPE_EXCLUSION_LIST]: [{ src: NAME_FIELD }]
+    },
+    resolvers: {
+      name(data: object) {
+        return normalizeName(data);
+      }
     },
   },
   attributes: [
@@ -59,7 +64,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: true,
       upsert: false,
-      isFilterable: false
+      isFilterable: true
     },
     {
       name: 'file_id',

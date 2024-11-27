@@ -50,6 +50,7 @@ export const entityTypesFilters = [
   'type', // regardingOf subfilter
   'x_opencti_main_observable_type',
   'main_entity_type', // for DeleteOperation
+  'exclusion_list_entity_types',
 ];
 
 // context filters for audits (filters on the entity involved in an activity/knowledge event)

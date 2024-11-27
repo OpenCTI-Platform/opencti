@@ -8,7 +8,7 @@ const convertExclusionListToStix = (instance: StoreEntityExclusionList): StixExc
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    list_entity_types: instance.list_entity_types,
+    exclusion_list_entity_types: instance.exclusion_list_entity_types,
     file_id: instance.file_id,
     enabled: instance.enabled,
     extensions: {

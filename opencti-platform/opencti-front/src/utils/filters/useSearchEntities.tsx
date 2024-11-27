@@ -892,6 +892,7 @@ const useSearchEntities = ({
           break;
         }
         case 'x_opencti_main_observable_type':
+        case 'exclusion_list_entity_types':
           fetchQuery(filtersSchemaSCOSearchQuery)
             .toPromise()
             .then((data) => {
