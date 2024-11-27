@@ -44,6 +44,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on AttackPattern {
             name
             description
+            x_mitre_id
           }
           ... on Campaign {
             name

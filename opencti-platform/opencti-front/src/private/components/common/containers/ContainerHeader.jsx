@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import { AddTaskOutlined, AssistantOutlined, ViewColumnOutlined } from '@mui/icons-material';
@@ -51,6 +51,7 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import { resolveLink } from '../../../../utils/Entity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -473,6 +474,7 @@ const ContainerHeader = (props) => {
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const navigate = useNavigate();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
@@ -531,6 +533,16 @@ const ContainerHeader = (props) => {
   };
   const handleOpenEnrichment = () => {
     setDisplayEnrichment(true);
+  };
+  const handleExportCompleted = (fileName) => {
+    // navigate with fileName in query params to select the created file
+    const fileParams = { currentFileId: fileName, contentSelected: false };
+    const urlParams = new URLSearchParams(fileParams).toString();
+    const entityLink = `${resolveLink(container.entity_type)}/${container.id}`;
+    console.log('link', `${entityLink}/content?${urlParams}`);
+    // navigate('dashboard');
+    navigate(`${entityLink}/content?${urlParams}`);
+    // navigate(`content?${urlParams}`);
   };
   const generateSuggestions = (objects) => {
     const suggestions = [];
@@ -941,10 +953,7 @@ const ContainerHeader = (props) => {
                 filesFromTemplate={filesFromTemplate}
                 templates={templateOptions}
                 OpenFormComponent={StixCoreObjectFileExportButton}
-                onExportCompleted={(fileName) => {
-                  // TODO try to navigate with fileName in query params too see how it goes
-                  console.log(fileName);
-                }}
+                onExportCompleted={handleExportCompleted}
               /></Security>
             )}
             {enableSuggestions && (

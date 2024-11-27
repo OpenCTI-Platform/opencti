@@ -66,9 +66,9 @@ const executiveSummaryContent = (containerType: string) => {
         <p>To be completed by the analyst. The key points section details:</p>
         <ul>
           <li>The timeline of the incident/risk </li>
-          <li>The attribution of the incident/risk: pick the main threats from this list. <strong>REMOVE THE TABLE ONCE DONE</strong></li>
+          <li>The attribution of the incident/risk: pick the main threats from this list.</li>
           <div>$threatsId</div>
-          <li>The main victims of the incident/risk: pick the main form the list.  <strong>REMOVE THE TABLE ONCE DONE</strong></li>
+          <li>The main victims of the incident/risk: pick the main form the list.</li>
           <div>$victimsId</div>
         </ul>
       </blockquote>
@@ -94,7 +94,7 @@ const executiveSummaryContent = (containerType: string) => {
       
       <h3>5. All entities & observables</h3>
       <blockquote>
-        <p>This section is meant to help you draft your final outcome. It gathers all entities & observables in your container. <strong>REMOVE THE TABLE ONCE DONE</strong></p>
+        <p>This section is meant to help you draft your final outcome. It gathers all entities & observables in your container.</p>
       </blockquote>
       <div>$allEntitiesAndObservablesId</div>
       
@@ -104,7 +104,7 @@ const executiveSummaryContent = (containerType: string) => {
       
       <h3>6. IoCs</h3>
       <blockquote>
-        <p>This section is meant to help you draft your final outcome. It gathers all indicators in your container. <strong>REMOVE THE TABLE ONCE DONE</strong></p>
+        <p>This section is meant to help you draft your final outcome. It gathers all indicators in your container.</p>
       </blockquote>
       <div>$indicatorsId</div>
       
