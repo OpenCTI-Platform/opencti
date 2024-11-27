@@ -183,14 +183,13 @@ const StixCoreObjectFileExportComponent = ({
           });
         }
       } else if (values.templateFile !== null) {
-        const templateMarkings = values.templateFile.fileMarkings.map((m) => m.name);
-        const fileMarkings = values.templateFile.fileMarkings.map((m) => m.id);
+        const fileMarkings = values.fileMarkings.map(({ value }) => value);
         const templateId = values.templateFile.value;
         const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(templateId)}`;
         const templateFile = await axios.get(url);
         const templateName = (templateId.split('/').pop() ?? '').split('.')[0];
         const fileName = `${values.exportFileName}.pdf`;
-        const PDF = htmlToPdfReport(scoName ?? '', templateFile.data, templateName, templateMarkings);
+        const PDF = htmlToPdfReport(scoName ?? '', templateFile.data, templateName, fileMarkings);
         PDF.getBlob((blob) => {
           uploadFile({
             id: scoId,
