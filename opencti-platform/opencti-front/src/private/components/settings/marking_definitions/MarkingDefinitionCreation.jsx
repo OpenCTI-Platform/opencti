@@ -6,12 +6,12 @@ import Button from '@mui/material/Button';
 import { assoc, compose, pipe } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -76,16 +76,6 @@ const markingDefinitionValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_markingDefinitions',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class MarkingDefinitionCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
@@ -97,15 +87,7 @@ class MarkingDefinitionCreation extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('markingDefinitionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_markingDefinitions', this.props.paginationOptions, 'markingDefinitionAdd');
       },
       setSubmitting,
       onCompleted: () => {

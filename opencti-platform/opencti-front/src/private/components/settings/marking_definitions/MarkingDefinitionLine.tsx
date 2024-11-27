@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -8,7 +8,7 @@ import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import makeStyles from '@mui/styles/makeStyles';
-import { MarkingDefinitionLine_node$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionLine_node.graphql';
+import { MarkingDefinitionLine_node$key } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -40,15 +40,30 @@ const useStyles = makeStyles < Theme >((theme) => ({
 
 interface MarkingDefinitionLineProps {
   dataColumns: DataColumns
-  node: MarkingDefinitionLine_node$data
+  node: MarkingDefinitionLine_node$key
+  paginationOptions: unknown
 }
 
-const MarkingDefinitionLineComponent: React.FC<MarkingDefinitionLineProps> = (props) => {
+const markingDefinitionFragment = graphql`
+    fragment MarkingDefinitionLine_node on MarkingDefinition {
+        id
+        standard_id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+        created
+        modified
+    }
+`;
+
+export const MarkingDefinitionLine: React.FC<MarkingDefinitionLineProps> = (props) => {
   const classes = useStyles();
 
   const { fd } = useFormatter();
-  const { dataColumns, node } = props;
-  const { isSensitive, isAllowed } = useSensitiveModifications('markings', node.standard_id);
+  const { dataColumns, node, paginationOptions } = props;
+  const data = useFragment(markingDefinitionFragment, node);
+  const { isSensitive, isAllowed } = useSensitiveModifications('markings', data.standard_id);
 
   return (
     <ListItem
@@ -56,7 +71,7 @@ const MarkingDefinitionLineComponent: React.FC<MarkingDefinitionLineProps> = (pr
       divider={true}
     >
       <ListItemIcon>
-        <ItemIcon type="Marking-Definition" color={node.x_opencti_color} />
+        <ItemIcon type="Marking-Definition" color={data.x_opencti_color} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -65,59 +80,45 @@ const MarkingDefinitionLineComponent: React.FC<MarkingDefinitionLineProps> = (pr
               className={classes.bodyItem}
               style={{ width: dataColumns.definition_type.width, display: 'flex', alignItems: 'center' }}
             >
-              {node.definition_type}{isSensitive && <DangerZoneChip />}
+              {data.definition_type}{isSensitive && <DangerZoneChip />}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.definition.width }}
             >
-              {node.definition}
+              {data.definition}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.x_opencti_color.width }}
             >
-              {node.x_opencti_color}
+              {data.x_opencti_color}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.x_opencti_order.width }}
             >
-              {node.x_opencti_order}
+              {data.x_opencti_order}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
             >
-              {fd(node.created)}
+              {fd(data.created)}
             </div>
           </>
           }
       />
       <ListItemSecondaryAction>
         <MarkingDefinitionPopover
-          markingDefinitionId={node.id}
+          markingDefinitionId={data.id}
           disabled={!isAllowed && isSensitive}
+          paginationOptions={paginationOptions}
         />
       </ListItemSecondaryAction>
     </ListItem>
   );
 };
-
-export const MarkingDefinitionLine = createFragmentContainer(MarkingDefinitionLineComponent, {
-  node: graphql`
-    fragment MarkingDefinitionLine_node on MarkingDefinition {
-      id
-      standard_id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-      created
-      modified
-    }
-  `,
-});
 
 export const MarkingDefinitionLineDummy: React.FC<Pick<MarkingDefinitionLineProps, 'dataColumns'>> = ({ dataColumns }) => {
   const classes = useStyles();
