@@ -20,6 +20,13 @@ import type { StixDomainName, StixEmailAddress, StixFile, StixIPv4Address, StixI
 import { csvMapperMockFileHashHack } from './dynamic-file-hash/csv-mapper-mock-file-hash-hack';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-extensions';
 import { csvMapperDynamicChar } from './dynamic-url-ip-character/csv-mapper-mock-url-ip-char';
+import { csvMapperDynamicIpAndThreatActor } from '../../01-unit/domain/csv-bundler-data/mapper-threatactor-ip';
+import { ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../../src/schema/general';
+import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import StixMetaObject from '../../../src/resolvers/stixMetaObject';
+import type { StixLabel } from '../../../src/types/stix-smo';
 
 describe('CSV-PARSER', () => {
   it('Parse CSV - Simple entity', async () => {
@@ -221,5 +228,23 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
     expect(ipv6.value).toBe('2606:4700:3033::6815:1eb7');
     expect(domainName.value).toBe('ad59t82g.com');
     expect(objects.length).toBe(8);
+  });
+
+  it.skip('Parse CSV - dynamic entity with threatActor group and confidence', async () => {
+    const filePath = './tests/02-integration/05-parser/dynamic-threatactor-ip-confidence/threatactor-ip.csv';
+    const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filePath, csvMapperDynamicIpAndThreatActor as CsvMapperParsed);
+
+    console.log('All bundle objects', objects);
+
+    const allIPs = objects.filter((o) => o.type === ENTITY_IPV4_ADDR.toLowerCase()) as StixIPv4Address[];
+    expect(allIPs.length).toBe(3);
+
+    const allLabels = objects.filter((o) => o.type === ENTITY_TYPE_LABEL.toLowerCase()) as StixLabel[];
+    // We need to deduplicate because objects end in different bundles even with test method
+    const uniqueLabels: string[] = [...new Set(allLabels.map((label: StixLabel) => label.value))];
+    expect(uniqueLabels.length).toBe(3);
+
+    const allThreatActorGroup = objects.filter((o) => o.type === ENTITY_TYPE_THREAT_ACTOR.toLowerCase()) as StixThreatActor[];
+    expect(allThreatActorGroup.length).toBe(3);
   });
 });

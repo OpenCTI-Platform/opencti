@@ -903,6 +903,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware['object-marking'].length).toEqual(2);
+
     // Upsert with new name but lower confidence
     upMalware = {
       name: 'MALWARE_TEST OTHER NAME',
@@ -915,9 +916,10 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.standard_id).toEqual(createdMalware.standard_id);
     expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
-    expect(upsertedMalware.name).toEqual('MALWARE_TEST');
+    expect(upsertedMalware.name).toEqual('MALWARE_TEST'); // FIXME it seems intentionnel
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware['object-marking'].length).toEqual(2);
+
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',

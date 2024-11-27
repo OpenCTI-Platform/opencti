@@ -1,6 +1,6 @@
-import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import { ENTITY_TYPE_LOCATION_CITY } from '../../../src/schema/stixDomainObject';
-import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { ENTITY_TYPE_LOCATION_CITY } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
 
 export const citiesWithTwoLabelsCsvMapper: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-cities',

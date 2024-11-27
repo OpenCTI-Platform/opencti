@@ -1,0 +1,7 @@
+value,label value,label colour,description,condition,score or confidence
+13.24.35.46,Incredible,#ff5733,a description,ipv,100
+13.24.35.46,WowDedup,#acff33,a great description,ipv,89
+13.24.35.46,Magic,#33ff42,This is a description that should stay,ipv,65
+myNewThreatActorNino,Incredible,#ff5733,a description,threat,70
+myNewThreatActorNino,WowDedup,#acff33,a great description,threat,100
+myNewThreatActorNino,Magic,#33ff42,This is a description that should stay,threat,65

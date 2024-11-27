@@ -4,21 +4,25 @@ import {
   indicatorsWithExternalReferencesCsvContent,
   indicatorsWithExternalReferencesCsvMapper,
   indicatorsWithExternalReferencesExpectedBundle
-} from '../../data/csv-bundler/external-references-constants';
+} from './csv-bundler-data/external-references-constants';
 import { type CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import { indicatorsWithLabelsCsvContent, indicatorsWithLabelsCsvMapper, indicatorsWithLabelsExpectedBundle } from '../../data/csv-bundler/labels-constants';
+import { indicatorsWithLabelsCsvContent, indicatorsWithLabelsCsvMapper, indicatorsWithLabelsExpectedBundle } from './csv-bundler-data/labels-constants';
 import {
   indicatorsWithKillChainPhasesCsvContent,
   indicatorsWithKillChainPhasesCsvMapper,
   indicatorsWithKillChainPhasesExpectedBundle
-} from '../../data/csv-bundler/kill-chains-constants';
-import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
+} from './csv-bundler-data/kill-chains-constants';
+import { citiesWithTwoLabelsCsvMapper } from './csv-bundler-data/cities-with-two-labels-constants';
 import { BundleBuilder } from '../../../src/parser/bundle-creator';
 import type { StixBundle, StixObject } from '../../../src/types/stix-common';
 import type { StixLabel } from '../../../src/types/stix-smo';
-import type { StixLocation } from '../../../src/types/stix-sdo';
-import { emailWithTwoDescCsvMapper } from '../../data/csv-bundler/email-with-two-descp-constants';
+import type { StixLocation, StixThreatActor } from '../../../src/types/stix-sdo';
+import { emailWithTwoDescCsvMapper } from './csv-bundler-data/email-with-two-descp-constants';
 import { type CsvBundlerTestOpts, generateTestBundle } from '../../../src/parser/csv-bundler';
+import { csvMapperDynamicIpAndThreatActor } from './csv-bundler-data/mapper-threatactor-ip';
+import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../../src/schema/general';
+import { logApp } from '../../../src/config/conf';
 
 describe('CSV bundler', () => {
   describe('Embedded properties', () => {
@@ -126,6 +130,37 @@ describe('CSV bundler', () => {
 
       const secondBundle = bundleResult[1].build();
       expect(secondBundle.objects.length).toBe(1);
+    });
+
+    it('Should confidence level not prevent upsert of last data', async () => {
+      // In mapper last column is mapped as confidence.
+      const threatActorAndIpWithConfidence:string[] = [
+        'myNewThreatActor,WowDedup,#acff33,a great description,threat,100',
+        'myNewThreatActor,Magic,#33ff42,This is a description that should stay,threat,65',
+      ];
+
+      const bundlerOpts : CsvBundlerTestOpts = {
+        applicantUser: ADMIN_USER,
+        csvMapper: csvMapperDynamicIpAndThreatActor as CsvMapperParsed
+      };
+
+      const bundleResult: BundleBuilder[] = await generateTestBundle(testContext, threatActorAndIpWithConfidence, bundlerOpts);
+      expect(bundleResult.length).toBe(2); // one bundler per line since it's same theat actor name.
+
+      const firstBundle = bundleResult[0].build();
+      logApp.info('firstBundle:', firstBundle);
+      // 'myNewThreatActor,WowDedup,#acff33,a great description,threat,100',
+      const firstBundleThreatActor = firstBundle.objects.find((object) => object.type === ENTITY_TYPE_THREAT_ACTOR.toLowerCase()) as StixThreatActor;
+      expect(firstBundleThreatActor.name).toBe('myNewThreatActor');
+      const firstBundleLabel = firstBundle.objects.find((object) => object.type === ENTITY_TYPE_LABEL.toLowerCase()) as StixLabel;
+      expect(firstBundleLabel.value).toBe('WowDedup');
+
+      const secondBundle = bundleResult[1].build();
+      // 'myNewThreatActor,Magic,#33ff42,This is a description that should stay,threat,65',
+      const secondBundleIP = secondBundle.objects.find((object) => object.type === ENTITY_TYPE_THREAT_ACTOR.toLowerCase()) as StixThreatActor;
+      expect(secondBundleIP.name).toBe('myNewThreatActor');
+      const secondBundleLabel = secondBundle.objects.find((object) => object.type === ENTITY_TYPE_LABEL.toLowerCase()) as StixLabel;
+      expect(secondBundleLabel.value).toBe('Magic');
     });
   });
 

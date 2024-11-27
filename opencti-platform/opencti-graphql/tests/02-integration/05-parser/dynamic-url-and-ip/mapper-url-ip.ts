@@ -41,7 +41,7 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'Url'
+          value: 'threat'
         }
       },
       attributes: [

@@ -2946,6 +2946,7 @@ export const getExistingEntities = async (context, user, input, type) => {
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region confidence control
   const input = { ...rawInput };
+
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion

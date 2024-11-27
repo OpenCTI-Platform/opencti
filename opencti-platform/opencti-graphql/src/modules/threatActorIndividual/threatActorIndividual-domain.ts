@@ -4,7 +4,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../../schema/general';
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
@@ -22,6 +22,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 };
 
 export const addThreatActorIndividual = async (context: AuthContext, user: AuthUser, input: ThreatActorIndividualAddInput) => {
+  logApp.info('ANGIE - create threat actor individual', { input });
   const threatActor = pipe(
     assoc('first_seen', isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen),
     assoc('last_seen', isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen)

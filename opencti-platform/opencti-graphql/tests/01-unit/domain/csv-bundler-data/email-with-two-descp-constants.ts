@@ -1,5 +1,5 @@
-import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import { ENTITY_EMAIL_ADDR } from '../../../src/schema/stixCyberObservable';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { ENTITY_EMAIL_ADDR } from '../../../../src/schema/stixCyberObservable';
 
 export const emailWithTwoDescCsvMapper: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-email-and-desc',
