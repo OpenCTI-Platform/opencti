@@ -24,6 +24,10 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryExclusi
   return listEntitiesPaginated<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], args);
 };
 
+const refreshExclusionListStatus = async () => {
+  await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+};
+
 const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput | ExclusionListFileAddInput, file: FileUploadData) => {
   const fullFile = await file;
   const exclusionFile = { ...fullFile, filename: `${input.name}.txt` };
@@ -38,7 +42,7 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
   };
 
   const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
-  await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+  await refreshExclusionListStatus();
   return createdExclusionList;
 };
 
@@ -64,7 +68,7 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   }
 
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, input);
-  await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+  await refreshExclusionListStatus();
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -81,6 +85,6 @@ export const deleteExclusionList = async (context: AuthContext, user: AuthUser, 
   const exclusionList = await findById(context, user, exclusionListId);
   await deleteFile(context, user, exclusionList.file_id);
   const deletedExclusionList = deleteInternalObject(context, user, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST);
-  await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+  await refreshExclusionListStatus();
   return deletedExclusionList;
 };

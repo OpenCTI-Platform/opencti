@@ -78,7 +78,7 @@ export const syncExclusionListCache = async (cacheDate: string) => {
   await redisUpdateExclusionListStatus({ [NODE_INSTANCE_ID]: cacheDate });
 };
 
-export const checkObservableVlue = async (observableValue: any) => {
+export const checkObservableValue = async (observableValue: any) => {
   const { type, value } = observableValue;
   const relatedLists = getCache(type);
   if (!relatedLists) {

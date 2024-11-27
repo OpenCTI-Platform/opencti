@@ -52,7 +52,7 @@ import {
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
-import { checkObservableVlue } from '../../database/exclusionListCache';
+import { checkObservableValue } from '../../database/exclusionListCache';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -234,7 +234,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   if (isFeatureEnabled('EXCLUSION_LIST')) {
     const observableValues = getObservableValuesFromPattern(formattedPattern);
     for (let i = 0; i < observableValues.length; i += 1) {
-      const exclusionListCheck = await checkObservableVlue(observableValues[i]);
+      const exclusionListCheck = await checkObservableValue(observableValues[i]);
       if (exclusionListCheck) {
         throw FunctionalError(`Indicator of type ${indicator.pattern_type} is contained in exclusion list.`, {
           excludedValue: exclusionListCheck.value,
