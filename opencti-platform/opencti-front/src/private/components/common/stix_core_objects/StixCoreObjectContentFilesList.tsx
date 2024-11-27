@@ -198,7 +198,7 @@ const StixCoreObjectContentFilesList = ({
             {t_i18n('Download in PDF')}
           </MenuItem>
         )}
-        {menuFile?.id.startsWith('fromTemplate') && (
+        {menuFile?.id.startsWith('fromTemplate') && menuFile?.metaData?.mimetype === 'text/html' && (
           <StixCoreObjectFileExport
             onClose={() => setAnchorEl(null)}
             scoId={stixCoreObjectId}

@@ -178,6 +178,7 @@ const StixCoreObjectFileExportComponent = ({
               id: scoId,
               fileMarkings,
               file: new File([blob], fileName, { type: blob.type }),
+              fromTemplate: true,
             });
           });
         }
@@ -195,6 +196,7 @@ const StixCoreObjectFileExportComponent = ({
             id: scoId,
             fileMarkings,
             file: new File([blob], fileName, { type: blob.type }),
+            fromTemplate: true,
           });
         });
       }
