@@ -21,6 +21,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from "@components/common/files/FileManager";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -195,11 +196,12 @@ const StixCoreObjectsExportCreationComponent = ({
                               </Field>
                               <ObjectMarkingField
                                 name="contentMaxMarkings"
-                                label={t_i18n('Content max marking definition levels')}
+                                label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                                 onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                                 style={fieldSpacingContainerStyle}
                                 setFieldValue={setFieldValue}
                                 limitToMaxSharing
+                                helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                               />
                               <ObjectMarkingField
                                 name="fileMarkings"

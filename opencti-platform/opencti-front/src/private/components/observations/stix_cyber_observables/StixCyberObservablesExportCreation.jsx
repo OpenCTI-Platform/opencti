@@ -23,6 +23,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from "@components/common/files/FileManager";
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -233,10 +234,11 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                 </Field>
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
-                                  label={t('Content max marking definition levels')}
+                                  label={t(CONTENT_MAX_MARKINGS_TITLE)}
                                   onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                   style={fieldSpacingContainerStyle}
                                   limitToMaxSharing
+                                  helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                                 />
                                 <ObjectMarkingField
                                   name="fileMarkings"
