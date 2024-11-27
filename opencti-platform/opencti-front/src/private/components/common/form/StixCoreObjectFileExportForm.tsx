@@ -13,6 +13,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { BUILT_IN_FROM_FILE_TEMPLATE, BUILT_IN_FROM_TEMPLATE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@components/common/files/FileManager';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
@@ -273,10 +274,11 @@ const StixCoreObjectFileExportForm = ({
                     <>
                       <ObjectMarkingField
                         name="contentMaxMarkings"
-                        label={t_i18n('Content max marking definition levels')}
+                        label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                         limitToMaxSharing
+                        helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                       />
                       <ObjectMarkingField
                         name="fileMarkings"
