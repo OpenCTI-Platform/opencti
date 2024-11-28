@@ -4,7 +4,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Drawer from '@components/common/drawer/Drawer';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -12,6 +12,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import ExclusionListEdition, { exclusionListEditionQuery } from '@components/settings/exclusion_lists/ExclusionListEdition';
+import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
 
 export const exclusionListPopoverDeletionMutation = graphql`
   mutation ExclusionListPopoverDeletionMutation($id: ID!) {
@@ -21,7 +24,7 @@ export const exclusionListPopoverDeletionMutation = graphql`
 
 const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionListsLine_node$data, paginationOptions?: ExclusionListsLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
-  // const [queryRef, loadQuery] = useQueryLoader<ExclusionListEditionQuery>(exclusionListEditionQuery);
+  const [queryRef, loadQuery] = useQueryLoader<ExclusionListEditionQuery>(exclusionListEditionQuery);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(exclusionListPopoverDeletionMutation);
@@ -52,7 +55,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
 
   // edition
   const handleDisplayEdit = () => {
-    // loadQuery({ id: data.id }, { fetchPolicy: 'store-and-network' });
+    loadQuery({ id: data.id }, { fetchPolicy: 'store-and-network' });
     setDisplayEdit(true);
     handleClose();
   };
@@ -88,12 +91,11 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
         open={displayEdit}
         onClose={() => setDisplayEdit(false)}
       >
-        <div>TODO</div>
-        {/* {queryRef && ( */}
-        {/*  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}> */}
-        {/*    <ExclusionListEdition queryRef={queryRef} onClose={() => setDisplayEdit(false)} /> */}
-        {/*  </React.Suspense> */}
-        {/* /!*)}*!/ */}
+        {queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <ExclusionListEdition queryRef={queryRef} onClose={() => setDisplayEdit(false)} />
+          </React.Suspense>
+        )}
       </Drawer>
     </>
   );
