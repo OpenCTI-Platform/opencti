@@ -6,7 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileExportOutline, FileOutline, InformationOutline } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { AddOutlined } from '@mui/icons-material';
+import { AddOutlined, MoreVert } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
@@ -19,14 +19,16 @@ import {
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import { ListItemSecondaryAction } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
 import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import type { Template } from '../../../../utils/outcome_template/template';
 
 interface ContentBlocProps {
   title: ReactNode
@@ -94,7 +96,6 @@ interface StixCoreObjectContentFilesProps {
   exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
   filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][],
   hasOutcomesTemplate?: boolean,
-  templates: Template[],
 }
 
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
@@ -111,7 +112,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   exportFiles,
   filesFromTemplate,
   hasOutcomesTemplate,
-  templates,
 }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -119,6 +119,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayCreate, setDisplayCreate] = useState(false);
 
   const [commitUploadFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
@@ -159,11 +160,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))]
     .sort((a, b) => b.name.localeCompare(a.name));
 
-  const templateOptions = templates.map((template) => ({
-    label: template.name,
-    value: template.id,
-  }));
-
   return (
     <Drawer
       variant="permanent"
@@ -195,8 +191,45 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 primary={t_i18n('Description & Main content')}
                 secondary={t_i18n('Description and content of the entity')}
               />
+              <ListItemSecondaryAction>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setAnchorEl(e.currentTarget);
+                  }}
+                  aria-haspopup="true"
+                  color="primary"
+                  size="small"
+                >
+                  <MoreVert />
+                </IconButton>
+              </ListItemSecondaryAction>
             </ListItemButton>
           </List>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+          >
+            <StixCoreObjectFileExport
+              onClose={() => setAnchorEl(null)}
+              scoId={stixCoreObjectId}
+              scoName={stixCoreObjectName}
+              scoEntityType={stixCoreObjectType}
+              defaultValues={{
+                connector: BUILT_IN_HTML_TO_PDF.value,
+                format: 'application/pdf',
+                fileToExport: 'mappableContent',
+              }}
+              onExportCompleted={onFileChange}
+              OpenFormComponent={({ onOpen }) => (
+                <MenuItem onClick={onOpen}>
+                  {t_i18n('Generate a PDF export')}
+                </MenuItem>
+              )}
+            />
+          </Menu>
         </ContentBloc>
       )}
 
@@ -252,7 +285,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               scoId={stixCoreObjectId}
               scoName={stixCoreObjectName}
               scoEntityType={stixCoreObjectType}
-              templates={templateOptions}
               defaultValues={{
                 connector: BUILT_IN_FROM_TEMPLATE.value,
                 format: 'text/html',
