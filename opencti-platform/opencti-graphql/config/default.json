@@ -90,6 +90,9 @@
       "cache_max_size": 5000,
       "cache_max_time": 2
     },
+    "exclusion_list": {
+      "file_max_size": 10000000
+    },
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png",

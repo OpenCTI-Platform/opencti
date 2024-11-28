@@ -229,6 +229,7 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
       const exclusionListCheck = await checkObservableValue(observableValues[i]);
       if (exclusionListCheck) {
         throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
+          doc_code: 'INDICATOR_PATTERN_EXCLUDED',
           excludedValue: exclusionListCheck.value,
           exclusionList: exclusionListCheck.listId
         });
@@ -364,7 +365,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   // check indicator pattern syntax
   const patternEditInput = input.find((e) => e.key === 'pattern');
   if (patternEditInput) {
-    await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
+    await validateIndicatorPattern(context, user, indicator.pattern_type, patternEditInput.value[0]);
   }
 
   logApp.info('indicatorEditField finalInput', { finalInput });

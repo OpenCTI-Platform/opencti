@@ -8957,7 +8957,7 @@ type Mutation {
   supportPackageDelete(id: ID!): ID
   exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
-  exclusionListFieldPatch(id: ID!, input: [EditInput!]!): ExclusionList
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work

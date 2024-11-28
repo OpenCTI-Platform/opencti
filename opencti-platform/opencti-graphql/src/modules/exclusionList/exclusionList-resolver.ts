@@ -13,8 +13,8 @@ const exclusionListResolver: Resolvers = {
     exclusionListFileAdd: (_, { input }, context) => {
       return addExclusionListFile(context, context.user, input);
     },
-    exclusionListFieldPatch: (_, { id, input }, context) => {
-      return fieldPatchExclusionList(context, context.user, id, input);
+    exclusionListFieldPatch: (_, args, context) => {
+      return fieldPatchExclusionList(context, context.user, args);
     },
     exclusionListDelete: (_, { id }, context) => {
       return deleteExclusionList(context, context.user, id);

@@ -14349,8 +14349,9 @@ export type MutationExclusionListDeleteArgs = {
 
 
 export type MutationExclusionListFieldPatchArgs = {
+  file?: InputMaybe<Scalars['Upload']['input']>;
   id: Scalars['ID']['input'];
-  input: Array<EditInput>;
+  input?: InputMaybe<Array<EditInput>>;
 };
 
 
@@ -36925,7 +36926,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   exclusionListContentAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListContentAddArgs, 'input'>>;
   exclusionListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationExclusionListDeleteArgs, 'id'>>;
-  exclusionListFieldPatch?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFieldPatchArgs, 'id' | 'input'>>;
+  exclusionListFieldPatch?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFieldPatchArgs, 'id'>>;
   exclusionListFileAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFileAddArgs, 'input'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<MutationExternalReferenceAddArgs, 'input'>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
