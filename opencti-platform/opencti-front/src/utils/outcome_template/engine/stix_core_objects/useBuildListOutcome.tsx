@@ -56,9 +56,8 @@ const useBuildListOutcome = () => {
                 // Add line return to avoid bad pdf generation
                 // The trick here is to add a zero-width space every 10 chars to be able to make a
                 // multiline text even for values like long IDs without spaces.
-                const wrappableAttribute = isHtmlElement
-                  ? readableAttribute
-                  : ((readableAttribute as string).match(/.{1,10}/g) ?? []).join('\u{200B}');
+                const readableStringAttribute = isHtmlElement ? readableAttribute.props.content : readableAttribute;
+                const wrappableAttribute = ((readableStringAttribute as string).match(/.{1,10}/g) ?? []).join('\u{200B}');
                 return <td key={`${n.id}-${col.attribute}`}>{wrappableAttribute}</td>;
               })}
             </tr>
