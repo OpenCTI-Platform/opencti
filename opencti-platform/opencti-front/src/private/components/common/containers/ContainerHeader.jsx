@@ -22,7 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
-import StixCoreObjectFileExportButton from '@components/common/stix_core_objects/StixCoreObjectFileExportButton';
+import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
@@ -792,20 +792,6 @@ const ContainerHeader = (props) => {
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const filesFromTemplate = (container.filesFromTemplate?.edges ?? []).flatMap((e) => (!e.node ? [] : {
-    label: e.node.name,
-    value: e.node.id,
-    fileMarkings: e.node.objectMarking.map((m) => ({
-      id: m.id,
-      name: getMainRepresentative(m),
-    })),
-  }));
-
-  const templateOptions = (container.templates ?? []).map((template) => ({
-    label: template.name,
-    value: template.id,
-  }));
-
   return (
     <div
       style={containerStyle}
@@ -950,8 +936,6 @@ const ContainerHeader = (props) => {
                 scoName={container.name}
                 scoEntityType={container.entity_type}
                 redirectToContentTab={!!redirectToContent}
-                filesFromTemplate={filesFromTemplate}
-                templates={templateOptions}
                 OpenFormComponent={StixCoreObjectFileExportButton}
                 onExportCompleted={handleExportCompleted}
               /></Security>

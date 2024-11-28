@@ -8,17 +8,14 @@ import { FileLineDeleteMutation as deleteMutation } from '@components/common/fil
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
-import StixCoreObjectFileExport, { BUILT_IN_FROM_FILE_TEMPLATE } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { htmlToPdf } from '../../../../utils/htmlToPdf';
-import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -102,37 +99,12 @@ const StixCoreObjectContentFilesList = ({
 
   const handleDelete = () => deletion.handleOpenDelete();
 
-  const downloadPdf = async (file: ContentFile | null) => {
-    closePopover();
-    if (!file) return;
-    const { id } = file;
-    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(id)}`;
-
-    try {
-      const { data } = await axios.get(url);
-      const currentName = (id.split('/').pop() ?? '').split('.')[0];
-      htmlToPdf(id, data).download(`${currentName}.pdf`);
-    } catch (e) {
-      MESSAGING$.notifyError(t_i18n('Error trying to download in PDF'));
-    }
-  };
-
-  const filesFromTemplate = (files ?? []).map((f) => ({
-    label: f.name,
-    value: f.id,
-    fileMarkings: (f.objectMarking ?? []).map((m) => ({
-      id: m.id,
-      name: getMainRepresentative(m),
-    })),
-  }));
-
   const handleClose = () => {
     deletion.handleCloseDelete();
     closePopover();
   };
 
-  const canDownloadAsPdf = !menuFile?.id.startsWith('fromTemplate')
-    && (menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown');
+  const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
 
   return (
     <List>
@@ -194,21 +166,15 @@ const StixCoreObjectContentFilesList = ({
           </MenuItem>
         )}
         {canDownloadAsPdf && (
-          <MenuItem onClick={() => downloadPdf(menuFile)}>
-            {t_i18n('Download in PDF')}
-          </MenuItem>
-        )}
-        {menuFile?.id.startsWith('fromTemplate') && menuFile?.metaData?.mimetype === 'text/html' && (
           <StixCoreObjectFileExport
             onClose={() => setAnchorEl(null)}
             scoId={stixCoreObjectId}
             scoName={stixCoreObjectName}
             scoEntityType={stixCoreObjectType}
-            filesFromTemplate={filesFromTemplate}
             defaultValues={{
-              connector: BUILT_IN_FROM_FILE_TEMPLATE.value,
+              connector: BUILT_IN_HTML_TO_PDF.value,
               format: 'application/pdf',
-              templateFile: menuFile.id,
+              fileToExport: menuFile.id,
             }}
             onExportCompleted={onFileChange}
             OpenFormComponent={({ onOpen }) => (

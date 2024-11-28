@@ -6,6 +6,7 @@ import { FileManagerExportMutation } from '@components/common/files/__generated_
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
 import StixCoreObjectFileExportForm, {
   ConnectorOption,
+  FileOption,
   StixCoreObjectFileExportFormInputs,
   StixCoreObjectFileExportFormProps,
 } from '@components/common/form/StixCoreObjectFileExportForm';
@@ -15,17 +16,19 @@ import {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from '@components/common/stix_core_objects/StixCoreObjectContentFiles';
 import axios from 'axios';
+import { Option } from '@components/common/form/ReferenceField';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { htmlToPdfReport } from '../../../../utils/htmlToPdf';
+import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
-export const BUILT_IN_FROM_FILE_TEMPLATE = {
-  value: 'fromFileTemplate',
+export const BUILT_IN_HTML_TO_PDF = {
+  value: 'builtInHtmlToPdf',
   connectorScope: ['application/pdf'],
 };
 export const BUILT_IN_FROM_TEMPLATE = {
@@ -34,7 +37,75 @@ export const BUILT_IN_FROM_TEMPLATE = {
 };
 
 const stixCoreObjectFileExportQuery = graphql`
-  query StixCoreObjectFileExportQuery {
+  query StixCoreObjectFileExportQuery($id: String!) {
+    stixCoreObject(id: $id) {
+      importFiles {
+        edges {
+          node {
+            id
+            name
+            metaData {
+              mimetype
+            }
+            objectMarking {
+              id
+              representative {
+                main
+              }
+            }
+          }
+        }
+      }
+      exportFiles {
+        edges {
+          node {
+            id
+            name
+            metaData {
+              mimetype
+            }
+            objectMarking {
+              id
+              representative {
+                main
+              }
+            }
+          }
+        }
+      }
+      ... on Container {
+        templates {
+          id
+          name
+        }
+        filesFromTemplate(first: 500) {
+          edges {
+            node {
+              id
+              name
+              metaData {
+                mimetype
+              }
+              objectMarking {
+                id
+                representative {
+                  main
+                }
+              }
+            }
+          }
+        }
+      }
+      ... on Report {
+        content
+      }
+      ... on Case {
+        content
+      }
+      ... on Grouping {
+        content
+      }
+    }
     connectorsForExport {
       id
       name
@@ -59,7 +130,7 @@ type StixCoreObjectFileExportComponentProps = {
   redirectToContentTab?: boolean;
   onClose?: () => void
   onExportCompleted?: (fileName?: string, isDeleted?: boolean) => void
-} & Pick<StixCoreObjectFileExportFormProps, 'templates' | 'filesFromTemplate' | 'defaultValues'>;
+} & Pick<StixCoreObjectFileExportFormProps, 'defaultValues'>;
 
 const StixCoreObjectFileExportComponent = ({
   connectorsQueryRef,
@@ -68,8 +139,6 @@ const StixCoreObjectFileExportComponent = ({
   scoEntityType,
   scoName,
   redirectToContentTab,
-  filesFromTemplate,
-  templates,
   defaultValues,
   onClose,
   onExportCompleted,
@@ -79,10 +148,47 @@ const StixCoreObjectFileExportComponent = ({
   const [isOpen, setOpen] = useState(false);
   const { buildFileFromTemplate } = useFileFromTemplate();
 
-  const { connectorsForExport } = usePreloadedQuery<StixCoreObjectFileExportQuery>(
+  const {
+    connectorsForExport,
+    stixCoreObject,
+  } = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
     connectorsQueryRef,
   );
+
+  // Keep only markdown and html files
+  const files = [
+    ...(stixCoreObject?.importFiles?.edges ?? []),
+    ...(stixCoreObject?.exportFiles?.edges ?? []),
+    ...(stixCoreObject?.filesFromTemplate?.edges ?? []),
+  ];
+  const fileOptions: FileOption[] = files.flatMap((e) => {
+    if (!e.node || !['text/html', 'text/markdown'].includes(e.node.metaData?.mimetype ?? '')) {
+      return [];
+    }
+    return {
+      value: e.node.id,
+      label: getMainRepresentative(e.node),
+      fileMarkings: e.node.objectMarking.map((o) => ({
+        id: o.id,
+        name: getMainRepresentative(o),
+      })),
+    };
+  });
+  // Artificially add mappable content in possible exports
+  if (stixCoreObject?.content) {
+    fileOptions.push({
+      value: 'mappableContent',
+      label: t_i18n('Mappable main content'),
+      fileMarkings: [],
+    });
+  }
+
+  const templateOptions: Option[] = (stixCoreObject?.templates ?? []).map((t) => ({
+    value: t.id,
+    label: t.name,
+  }));
+
   // Keep only active connectors.
   const activeConnectors: ConnectorOption[] = (connectorsForExport ?? [])
     .flatMap((c) => (c?.active ? {
@@ -91,13 +197,13 @@ const StixCoreObjectFileExportComponent = ({
       connectorScope: c.connector_scope ?? [],
     } : []));
   // Add "built-in" connectors to the list.
-  if (filesFromTemplate && filesFromTemplate.length > 0) {
+  if (fileOptions && fileOptions.length > 0) {
     activeConnectors.push({
-      ...BUILT_IN_FROM_FILE_TEMPLATE,
+      ...BUILT_IN_HTML_TO_PDF,
       label: t_i18n('HTML content files to PDF'),
     });
   }
-  if (templates && templates.length > 0) {
+  if (templateOptions && templateOptions.length > 0) {
     activeConnectors.push({
       ...BUILT_IN_FROM_TEMPLATE,
       label: t_i18n('Generate Fintel from template'),
@@ -123,7 +229,7 @@ const StixCoreObjectFileExportComponent = ({
    * @param helpers Formik helpers to manage form.
    */
   const submitExportBuiltIn: typeof onSubmitExport = async (values, helpers) => {
-    if ((!values.templateFile && !values.template) || !values.exportFileName) {
+    if ((!values.fileToExport && !values.template) || !values.exportFileName) {
       throw Error(t_i18n('Invalid form to export a template'));
     }
 
@@ -182,20 +288,29 @@ const StixCoreObjectFileExportComponent = ({
             });
           });
         }
-      } else if (values.templateFile !== null) {
-        const fileMarkings = values.fileMarkings.map(({ value }) => value);
-        const templateId = values.templateFile.value;
-        const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(templateId)}`;
-        const templateFile = await axios.get(url);
-        const templateName = (templateId.split('/').pop() ?? '').split('.')[0];
+      } else if (values.fileToExport !== null) {
+        const fileMarkings = values.fileToExport.fileMarkings.map((m) => m.id);
+        const fileId = values.fileToExport.value;
+        let fileData = '';
+        if (fileId === 'mappableContent') {
+          fileData = stixCoreObject?.content ?? '';
+        } else {
+          const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(fileId)}`;
+          const fileResponse = await axios.get(url);
+          fileData = fileResponse.data;
+        }
+        const name = (fileId.split('/').pop() ?? '').split('.')[0];
         const fileName = `${values.exportFileName}.pdf`;
-        const PDF = htmlToPdfReport(scoName ?? '', templateFile.data, templateName, fileMarkings);
+        const isFromTemplate = fileId.startsWith('fromTemplate');
+        const PDF = isFromTemplate
+          ? htmlToPdfReport(scoName ?? '', fileData, name, fileMarkings)
+          : htmlToPdf(fileId, fileData);
         PDF.getBlob((blob) => {
           uploadFile({
             id: scoId,
             fileMarkings,
             file: new File([blob], fileName, { type: blob.type }),
-            fromTemplate: true,
+            fromTemplate: isFromTemplate,
           });
         });
       }
@@ -251,7 +366,7 @@ const StixCoreObjectFileExportComponent = ({
   ) => {
     const isBuiltInConnector = [
       BUILT_IN_FROM_TEMPLATE.value,
-      BUILT_IN_FROM_FILE_TEMPLATE.value,
+      BUILT_IN_HTML_TO_PDF.value,
     ].includes(values.connector?.value ?? '');
     if (isBuiltInConnector) {
       await submitExportBuiltIn(values, helpers);
@@ -266,15 +381,17 @@ const StixCoreObjectFileExportComponent = ({
         onOpen={() => setOpen(true)}
         isExportPossible={activeConnectors.length > 0}
       />
-      <StixCoreObjectFileExportForm
-        connectors={activeConnectors}
-        filesFromTemplate={filesFromTemplate}
-        templates={templates}
-        isOpen={isOpen}
-        onSubmit={onSubmitExport}
-        onClose={close}
-        defaultValues={defaultValues}
-      />
+      {isOpen && (
+        <StixCoreObjectFileExportForm
+          connectors={activeConnectors}
+          fileOptions={fileOptions}
+          templates={templateOptions}
+          isOpen={isOpen}
+          onSubmit={onSubmitExport}
+          onClose={close}
+          defaultValues={defaultValues}
+        />
+      )}
     </>
   );
 };
@@ -282,9 +399,10 @@ const StixCoreObjectFileExportComponent = ({
 export type StixCoreObjectFileExportProps = Omit<StixCoreObjectFileExportComponentProps, 'connectorsQueryRef'>;
 
 const StixCoreObjectFileExport = (props: StixCoreObjectFileExportProps) => {
-  const { OpenFormComponent } = props;
+  const { OpenFormComponent, scoId } = props;
   const connectorsQueryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
+    { id: scoId },
   );
 
   return (

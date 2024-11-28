@@ -474,7 +474,6 @@ class StixCoreObjectContentComponent extends Component {
           onFileChange={this.handleFileChange.bind(this)}
           filesFromTemplate={filesFromTemplate}
           hasOutcomesTemplate={isContentCompatible}
-          fix templates={stixCoreObject.templates ?? []}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
@@ -735,6 +734,12 @@ const StixCoreObjectContent = createRefetchContainer(
               uploadStatus
               lastModified
               lastModifiedSinceMin
+              objectMarking {
+                id
+                representative {
+                  main
+                }
+              }
               metaData {
                 mimetype
                 list_filters
@@ -762,6 +767,12 @@ const StixCoreObjectContent = createRefetchContainer(
               uploadStatus
               lastModified
               lastModifiedSinceMin
+              objectMarking {
+                id
+                representative {
+                  main
+                }
+              }
               metaData {
                 mimetype
                 file_markings
