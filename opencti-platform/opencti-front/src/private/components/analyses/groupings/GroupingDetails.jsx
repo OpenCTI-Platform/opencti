@@ -204,7 +204,7 @@ const GroupingDetailsComponent = (props) => {
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`${resolveLink(relatedContainer?.entity_type)}/${relatedContainer?.id}`}
+                  to={`${resolveLink(relatedContainer.entity_type)}/${relatedContainer.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer.entity_type} />
@@ -217,10 +217,10 @@ const GroupingDetailsComponent = (props) => {
                   }
                   />
                   <div style={inlineStyles.itemAuthor}>
-                    {relatedContainer?.createdBy?.name ?? '-'}
+                    {relatedContainer.createdBy?.name ?? '-'}
                   </div>
                   <div style={inlineStyles.itemDate}>
-                    {fsd(relatedContainer?.created ?? relatedContainer?.published)}
+                    {fsd(relatedContainer.created ?? relatedContainer.published)}
                   </div>
                   <div style={{ width: 110, paddingRight: 20 }}>
                     <ItemMarkings
