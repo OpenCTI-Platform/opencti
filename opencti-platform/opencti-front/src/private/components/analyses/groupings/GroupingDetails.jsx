@@ -113,11 +113,9 @@ const GroupingDetailsComponent = (props) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = grouping.relatedContainers.edges.length > 5;
-  const relatedContainers = R.take(
-    expanded ? 200 : 5,
-    // exclude itself
-    (grouping.relatedContainers?.edges ?? []).filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== grouping.id),
-  );
+  const relatedContainers = grouping.relatedContainers.edges
+    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== grouping.id)
+    .slice(0, expanded ? 200 : 5);
 
   const entitiesDistributionDataSelection = [
     {

@@ -256,11 +256,10 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
   const data = useFragment(CaseRfiDetailsFragment, caseRfiData);
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
   const informationTypes = data.information_types ?? [];
-  const relatedContainers = R.take(
-    expanded ? 200 : 5,
-    // exclude itself
-    (data.relatedContainers?.edges ?? []).filter((relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id),
-  );
+
+  const relatedContainers = (data?.relatedContainers?.edges ?? [])
+    .filter((relatedContainerEdge) => relatedContainerEdge?.node.id !== data.id)
+    .slice(0, expanded ? 200 : 5);
 
   return (
     <div style={{ height: '100%' }}>
