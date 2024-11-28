@@ -47,14 +47,14 @@ const exclusionListCreationContentMutation = graphql`
 interface ExclusionListCreationFileFormData {
   name: string;
   description: string;
-  entity_types: Option[];
+  exclusion_list_entity_types: Option[];
   file: File | undefined;
 }
 
 interface ExclusionListCreationContentFormData {
   name: string;
   description: string;
-  entity_types: Option[];
+  exclusion_list_entity_types: Option[];
   content: string;
 }
 
@@ -86,7 +86,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     const input = {
       name: values.name,
       description: values.description,
-      exclusion_list_entity_types: values.entity_types.map(type => type.value),
+      exclusion_list_entity_types: values.exclusion_list_entity_types.map(type => type.value),
       file: values.file,
     };
     commitFile({
@@ -120,7 +120,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     const input = {
       name: values.name,
       description: values.description,
-      exclusion_list_entity_types: values.entity_types,
+      exclusion_list_entity_types: values.exclusion_list_entity_types.map(type => type.value),
       content: values.content,
     };
     commitContent({
@@ -149,14 +149,14 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   const initialValuesFile: ExclusionListCreationFileFormData = {
     name: '',
     description: '',
-    entity_types: [],
+    exclusion_list_entity_types: [],
     file: undefined,
   };
 
   const initialValuesContent: ExclusionListCreationContentFormData = {
     name: '',
     description: '',
-    entity_types: [],
+    exclusion_list_entity_types: [],
     content: '',
   };
 
@@ -192,7 +192,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
           />
           <Field
             component={AutocompleteField}
-            name="entity_types"
+            name="exclusion_list_entity_types"
             fullWidth={true}
             multiple
             style={fieldSpacingContainerStyle}

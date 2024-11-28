@@ -31,7 +31,7 @@ const ExclusionLists = () => {
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Exclusion-List', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('ExclusionList', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
