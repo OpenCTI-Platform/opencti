@@ -206,12 +206,16 @@ class WorkbenchFileLineComponent extends Component {
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   {file.metaData.labels_text
-                    ? <Chip
+                    ? file.metaData.labels_text.split(';').map((label, index) => (
+                      <Chip
+                        key={index}
                         classes={{ root: classes.chipInList }}
                         color="primary"
                         variant="outlined"
-                        label={file.metaData.labels_text}
-                      /> : []}
+                        label={label.trim()} // Pour supprimer les espaces autour
+                      />
+                    ))
+                    : null}
                 </div>
                 <div
                   className={classes.bodyItem}
