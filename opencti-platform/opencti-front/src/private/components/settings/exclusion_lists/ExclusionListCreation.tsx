@@ -86,7 +86,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     const input = {
       name: values.name,
       description: values.description,
-      list_entity_types: values.entity_types,
+      exclusion_list_entity_types: values.entity_types.map(type => type.value),
       file: values.file,
     };
     commitFile({
@@ -120,7 +120,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     const input = {
       name: values.name,
       description: values.description,
-      list_entity_types: values.entity_types,
+      exclusion_list_entity_types: values.entity_types,
       content: values.content,
     };
     commitContent({
@@ -192,7 +192,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
           />
           <Field
             component={AutocompleteField}
-            name="entityTypes"
+            name="entity_types"
             fullWidth={true}
             multiple
             style={fieldSpacingContainerStyle}
