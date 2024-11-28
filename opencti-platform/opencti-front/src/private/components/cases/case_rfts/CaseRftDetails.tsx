@@ -9,7 +9,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link, useNavigate } from 'react-router-dom';
@@ -257,7 +256,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
   const takedownTypes = data.takedown_types ?? [];
 
-  const relatedContainers = (data?.relatedContainers?.edges ?? [])
+  const relatedContainers = (data.relatedContainers?.edges ?? [])
     .filter((relatedContainerEdge) => relatedContainerEdge?.node.id !== data.id)
     .slice(0, expanded ? 200 : 5);
 

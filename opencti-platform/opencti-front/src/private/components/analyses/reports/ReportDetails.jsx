@@ -340,7 +340,7 @@ const ReportDetails = ({ report }) => {
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`${resolveLink(relatedContainer?.entity_type)}/${relatedContainer?.id}`}
+                  to={`${resolveLink(relatedContainer.entity_type)}/${relatedContainer.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer.entity_type} />
@@ -365,7 +365,7 @@ const ReportDetails = ({ report }) => {
                     className={classes.itemDate}
                     primary={
                       <div>
-                        {fsd(relatedContainer?.created ?? relatedContainer?.published)}
+                        {fsd(relatedContainer.created ?? relatedContainer.published)}
                       </div>
                     }
                   />
