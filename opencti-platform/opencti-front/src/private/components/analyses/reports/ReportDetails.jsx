@@ -20,6 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { resolveLink } from '../../../../utils/Entity';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -106,7 +107,7 @@ const ReportDetailsFragment = graphql`
             first: 10
             orderBy: published
             orderMode: desc
-            types: ["Report"]
+            types: ["Case", "Report", "Grouping"]
             viaTypes: ["Indicator", "Stix-Cyber-Observable"]
         ) {
             edges {
@@ -117,6 +118,84 @@ const ReportDetailsFragment = graphql`
                         name
                         description
                         published
+                        createdBy {
+                            ... on Identity {
+                                id
+                                name
+                                entity_type
+                            }
+                        }
+                        objectMarking {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                    ... on Grouping {
+                        name
+                        context
+                        description
+                        created
+                        createdBy {
+                            ... on Identity {
+                                id
+                                name
+                                entity_type
+                            }
+                        }
+                        objectMarking {
+                            id
+                            definition
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                    ... on CaseIncident {
+                        name
+                        description
+                        created
+                        createdBy {
+                            ... on Identity {
+                                id
+                                name
+                                entity_type
+                            }
+                        }
+                        objectMarking {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                    ... on CaseRfi {
+                        name
+                        description
+                        created
+                        createdBy {
+                            ... on Identity {
+                                id
+                                name
+                                entity_type
+                            }
+                        }
+                        objectMarking {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                    ... on CaseRft {
+                        name
+                        description
+                        created
                         createdBy {
                             ... on Identity {
                                 id
@@ -237,7 +316,7 @@ const ReportDetails = ({ report }) => {
         </Grid>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Typography variant="h3" gutterBottom={true}>
-            {t_i18n('Correlated reports')}
+            {t_i18n('Correlated containers')}
           </Typography>
           <IconButton
             color="primary"
@@ -261,7 +340,7 @@ const ReportDetails = ({ report }) => {
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`/dashboard/analyses/reports/${relatedContainer.id}`}
+                  to={`${resolveLink(relatedContainer?.entity_type)}/${relatedContainer?.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={relatedContainer.entity_type} />
@@ -286,7 +365,7 @@ const ReportDetails = ({ report }) => {
                     className={classes.itemDate}
                     primary={
                       <div>
-                        {fsd(relatedContainer.published)}
+                        {fsd(relatedContainer?.created ?? relatedContainer?.published)}
                       </div>
                     }
                   />
