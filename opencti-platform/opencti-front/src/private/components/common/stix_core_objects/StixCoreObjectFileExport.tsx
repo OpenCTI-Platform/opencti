@@ -39,6 +39,12 @@ export const BUILT_IN_FROM_TEMPLATE = {
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery($id: String!) {
     stixCoreObject(id: $id) {
+      objectMarking {
+        id
+        representative {
+          main
+        }
+      }
       importFiles {
         edges {
           node {
@@ -180,7 +186,10 @@ const StixCoreObjectFileExportComponent = ({
     fileOptions.push({
       value: 'mappableContent',
       label: t_i18n('Mappable main content'),
-      fileMarkings: [],
+      fileMarkings: (stixCoreObject.objectMarking ?? []).map((o) => ({
+        id: o.id,
+        name: getMainRepresentative(o),
+      })),
     });
   }
 
@@ -278,7 +287,8 @@ const StixCoreObjectFileExportComponent = ({
           // Export template directly in PDF without HTML step.
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
-          const PDF = htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkings);
+          const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
+          const PDF = htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames);
           PDF.getBlob((blob) => {
             uploadFile({
               id: scoId,
@@ -289,7 +299,8 @@ const StixCoreObjectFileExportComponent = ({
           });
         }
       } else if (values.fileToExport !== null) {
-        const fileMarkings = values.fileToExport.fileMarkings.map((m) => m.id);
+        const fileMarkings = values.fileMarkings.map((m) => m.value);
+        const fileMarkingNames = values.fileMarkings.map((m) => m.label);
         const fileId = values.fileToExport.value;
         let fileData = '';
         if (fileId === 'mappableContent') {
@@ -303,7 +314,7 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? htmlToPdfReport(scoName ?? '', fileData, name, fileMarkings)
+          ? htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames)
           : htmlToPdf(fileId, fileData);
         PDF.getBlob((blob) => {
           uploadFile({

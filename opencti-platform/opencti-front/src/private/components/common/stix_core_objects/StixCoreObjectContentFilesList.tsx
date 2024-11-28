@@ -13,9 +13,12 @@ import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
 import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import ListItem from '@mui/material/ListItem';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import type { Theme } from '../../../../components/Theme';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -66,6 +69,7 @@ const StixCoreObjectContentFilesList = ({
   handleSelectFile,
   onFileChange,
 }: StixCoreObjectContentFilesListProps) => {
+  const theme = useTheme<Theme>();
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
 
@@ -132,7 +136,14 @@ const StixCoreObjectContentFilesList = ({
                   },
                 }}
                 primary={file.name}
-                secondary={fld(file.lastModified ?? moment())}
+                secondary={(
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ paddingBottom: theme.spacing(0.5) }}>
+                      {fld(file.lastModified ?? moment())}
+                    </span>
+                    <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
+                  </div>
+                )}
               />
               <ListItemSecondaryAction>
                 <IconButton

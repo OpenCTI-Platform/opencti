@@ -736,9 +736,8 @@ const StixCoreObjectContent = createRefetchContainer(
               lastModifiedSinceMin
               objectMarking {
                 id
-                representative {
-                  main
-                }
+                x_opencti_color
+                definition
               }
               metaData {
                 mimetype
@@ -769,9 +768,8 @@ const StixCoreObjectContent = createRefetchContainer(
               lastModifiedSinceMin
               objectMarking {
                 id
-                representative {
-                  main
-                }
+                x_opencti_color
+                definition
               }
               metaData {
                 mimetype
@@ -792,9 +790,8 @@ const StixCoreObjectContent = createRefetchContainer(
                 lastModifiedSinceMin
                 objectMarking {
                   id
-                  representative {
-                    main
-                  }
+                  x_opencti_color
+                  definition
                 }
                   metaData {
                     mimetype
