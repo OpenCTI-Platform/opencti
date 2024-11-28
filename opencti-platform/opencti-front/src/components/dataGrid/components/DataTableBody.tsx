@@ -133,12 +133,12 @@ const DataTableBody = ({
         ? Math.round(tableWidth * (col.percentWidth / 100))
         : SELECT_COLUMN_SIZE;
       return acc + width;
-    }, actions ? SELECT_COLUMN_SIZE + 9 : 9)
+    }, actions ? SELECT_COLUMN_SIZE + 9 : 9) // 9 is for scrollbar.
   ), [columns, tableWidth]);
 
   const containerLinesStyle: CSSProperties = {
     overflow: 'hidden auto',
-    maxHeight: `calc(${tableHeight}px - ${hideHeaders ? 0 : 42}px)`,
+    maxHeight: `calc(${tableHeight}px - ${hideHeaders ? 0 : SELECT_COLUMN_SIZE}px)`,
     width: rowWidth,
   };
 

@@ -21,6 +21,7 @@ const cellContainerStyle = (theme: Theme) => ({
 });
 
 const DataTableLineDummy = () => {
+  const theme = useTheme<Theme>();
   const { columns, tableWidthState: [tableWidth] } = useDataTableContext();
   return (
     <div style={{ display: 'flex' }}>
@@ -28,8 +29,8 @@ const DataTableLineDummy = () => {
         <div
           key={column.id}
           style={{
-            paddingLeft: '4px',
-            paddingRight: '8px',
+            paddingLeft: theme.spacing(0.5),
+            paddingRight: theme.spacing(1),
             flex: '0 0 auto',
             width: column.percentWidth
               ? Math.round(tableWidth * (column.percentWidth / 100))
@@ -59,11 +60,11 @@ const DataTableCell = ({
 
   const cellStyle: CSSProperties = {
     display: 'flex',
-    paddingLeft: '8px',
-    paddingRight: '8px',
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
     width: '100%',
     alignItems: 'center',
-    gap: '3px',
+    gap: theme.spacing(0.5),
     fontSize: '13px',
   };
 
