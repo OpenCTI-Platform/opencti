@@ -36,7 +36,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import ExternalReferencePopover from './ExternalReferencePopover';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
-import { NO_DATA_WIDGET_MESSAGE } from "../../../../components/dashboard/WidgetNoData";
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 const interval$ = interval(FIVE_SECONDS);
 

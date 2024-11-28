@@ -16,7 +16,7 @@ import TableRow from '@mui/material/TableRow';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import { NO_DATA_WIDGET_MESSAGE } from "../../../../components/dashboard/WidgetNoData";
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 const styles = (theme) => ({
   container: {

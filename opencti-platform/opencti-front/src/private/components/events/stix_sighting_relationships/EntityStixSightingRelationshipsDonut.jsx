@@ -13,7 +13,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { NO_DATA_WIDGET_MESSAGE } from "../../../../components/dashboard/WidgetNoData";
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 const styles = (theme) => ({
   paper: {

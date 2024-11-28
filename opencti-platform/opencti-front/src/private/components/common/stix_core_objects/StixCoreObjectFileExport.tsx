@@ -206,13 +206,13 @@ const StixCoreObjectFileExportComponent = ({
       connectorScope: c.connector_scope ?? [],
     } : []));
   // Add "built-in" connectors to the list.
-  if (fileOptions && fileOptions.length > 0) {
+  if (fileOptions.length > 0) {
     activeConnectors.push({
       ...BUILT_IN_HTML_TO_PDF,
       label: t_i18n('HTML content files to PDF'),
     });
   }
-  if (templateOptions && templateOptions.length > 0) {
+  if (templateOptions.length > 0) {
     activeConnectors.push({
       ...BUILT_IN_FROM_TEMPLATE,
       label: t_i18n('Generate Fintel from template'),
@@ -302,7 +302,7 @@ const StixCoreObjectFileExportComponent = ({
         const fileMarkings = values.fileMarkings.map((m) => m.value);
         const fileMarkingNames = values.fileMarkings.map((m) => m.label);
         const fileId = values.fileToExport.value;
-        let fileData = '';
+        let fileData: string;
         if (fileId === 'mappableContent') {
           fileData = stixCoreObject?.content ?? '';
         } else {

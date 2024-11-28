@@ -29,7 +29,7 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
-import { NO_DATA_WIDGET_MESSAGE } from "../../../../components/dashboard/WidgetNoData";
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

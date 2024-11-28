@@ -52,7 +52,7 @@ const useBuildListOutcome = () => {
                   property = '';
                 }
                 const readableAttribute = buildReadableAttribute(property, col, true);
-                const isHtmlElement = !(typeof readableAttribute === 'string');
+                const isHtmlElement = typeof readableAttribute !== 'string';
                 // Add line return to avoid bad pdf generation
                 // The trick here is to add a zero-width space every 10 chars to be able to make a
                 // multiline text even for values like long IDs without spaces.
