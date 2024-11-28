@@ -310,6 +310,7 @@ const IngestionTaxiiEditionContainer = ({
             />
             <Field
               component={SwitchField}
+              onChange={handleSubmitField}
               type="checkbox"
               name="confidence_to_score"
               label={t('Copy confidence level to OpenCTI scores for indicators')}
@@ -350,6 +351,7 @@ const IngestionTaxiiEditionFragment = createFragmentContainer(
           entity_type
           name
         }
+        confidence_to_score
       }
     `,
   },
