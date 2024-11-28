@@ -212,7 +212,7 @@ class WorkbenchFileLineComponent extends Component {
                         classes={{ root: classes.chipInList }}
                         color="primary"
                         variant="outlined"
-                        label={label.trim()} // Pour supprimer les espaces autour
+                        label={label.trim()}
                       />
                     ))
                     : null}

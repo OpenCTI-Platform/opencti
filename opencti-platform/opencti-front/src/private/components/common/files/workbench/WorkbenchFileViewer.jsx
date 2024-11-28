@@ -136,7 +136,6 @@ const WorkbenchFileViewer = createRefetchContainer(
               id
               ...ImportWorkbenchesContentFileLine_file
               metaData {
-                  labels
                 mimetype
               }
             }

@@ -516,7 +516,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   );
 };
 
-export const FileLine = createFragmentContainer(FileLineComponent, {
+const FileLine = createFragmentContainer(FileLineComponent, {
   file: graphql`
     fragment FileLine_file on File {
       id

@@ -163,8 +163,6 @@ export const importContentQuery = graphql`
           ...ImportWorkbenchesContentFileLine_file
           metaData {
             mimetype
-              labels_text
-              labels
           }
         }
       }
@@ -344,7 +342,6 @@ class ImportContentComponent extends Component {
     };
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
       && this.state.selectedConnector?.configurations?.length === 0;
-    console.log('pendingFilesEdges', pendingFiles);
     return (
       <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
         <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
