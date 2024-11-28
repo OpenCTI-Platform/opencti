@@ -124,11 +124,13 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   handleSubmitRemove() {
-    const { enableReferences } = this.props;
+    const { enableReferences, handleDeleteSelected } = this.props;
+    const { deleteObject } = this.state;
     if (enableReferences) {
       this.setState({ referenceDialogOpened: true });
     } else {
       this.submitRemove();
+      handleDeleteSelected(deleteObject);
     }
   }
 
