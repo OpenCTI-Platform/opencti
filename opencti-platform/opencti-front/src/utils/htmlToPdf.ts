@@ -198,10 +198,10 @@ export const htmlToPdf = (fileName: string, content: string) => {
  * @param reportName Name the report outcome should have.
  * @param content HTML content.
  * @param templateName Name of the template used for PDF generation.
- * @param markings Markings of the outcome report.
+ * @param markingNames Markings of the outcome report.
  * @returns PDF object ready to be downloaded.
  */
-export const htmlToPdfReport = (reportName: string, content: string, templateName: string, markings: string[]) => {
+export const htmlToPdfReport = (reportName: string, content: string, templateName: string, markingNames: string[]) => {
   let htmlData = removeUselessContent(content);
   htmlData = setImagesWidth(htmlData);
   htmlData = setTableFullWidth(htmlData);
@@ -286,7 +286,7 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
             alignment: 'left',
           },
           {
-            text: markings.join(', '),
+            text: markingNames.join(', '),
             alignment: 'center',
           },
           {
@@ -306,7 +306,7 @@ export const htmlToPdfReport = (reportName: string, content: string, templateNam
             alignment: 'left',
           },
           {
-            text: markings.join(', '),
+            text: markingNames.join(', '),
             alignment: 'center',
           },
           {
