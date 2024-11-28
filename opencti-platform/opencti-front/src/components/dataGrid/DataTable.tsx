@@ -206,6 +206,9 @@ const DataTable = (props: OCTIDataTableProps) => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
+  const computedSearchContextFinal = searchContextFinal?.entityTypes
+    ? searchContextFinal
+    : { ...searchContextFinal, entityTypes: computedEntityTypes };
   let availableFilterKeys = defaultAvailableFilterKeys ?? [];
   if (availableFilterKeys.length === 0 && isNotEmptyField(computedEntityTypes)) {
     const filterKeysMap = new Map();
@@ -239,7 +242,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           availableRelationshipTypes={availableRelationshipTypes}
           currentView={currentView}
           exportContext={exportContext}
-          searchContextFinal={searchContextFinal}
+          searchContextFinal={computedSearchContextFinal}
         />
       )}
       dataTableToolBarComponent={(
