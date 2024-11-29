@@ -46,6 +46,8 @@ const exclusionListsLineFragment = graphql`
     name
     description
     enabled
+    created_at
+    exclusion_list_entity_types
   }
 `;
 
