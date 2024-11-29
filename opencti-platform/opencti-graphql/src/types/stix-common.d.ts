@@ -41,6 +41,7 @@ interface StixOpenctiExtension {
   files: Array<StixFileExtension>
   aliases: Array<string>
   granted_refs: Array<StixId>
+  granted_refs_ids: string[]
   stix_ids: Array<StixId>
   type: string
   created_at: StixDate
