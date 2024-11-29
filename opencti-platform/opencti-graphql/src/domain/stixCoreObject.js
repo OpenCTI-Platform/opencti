@@ -676,7 +676,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       x_opencti_files: nonResolvedFiles
     });
     // Stream event generation
-    const fileMarkings = R.uniq(R.flatten(files.map((f) => f.file_markings)));
+    const fileMarkings = R.uniq(R.flatten(files.filter((f) => f.file_markings).map((f) => f.file_markings)));
     let fileMarkingsPromise = Promise.resolve();
     if (fileMarkings.length > 0) {
       const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, connectionFormat: false, baseData: true };
