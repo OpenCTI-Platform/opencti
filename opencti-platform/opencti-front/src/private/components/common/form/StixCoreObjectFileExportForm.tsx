@@ -55,6 +55,7 @@ export interface StixCoreObjectFileExportFormProps {
     template?: string
     fileToExport?: string
   }
+  scoName?: string
 }
 
 const StixCoreObjectFileExportForm = ({
@@ -65,6 +66,7 @@ const StixCoreObjectFileExportForm = ({
   templates,
   fileOptions,
   defaultValues,
+  scoName,
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -103,7 +105,11 @@ const StixCoreObjectFileExportForm = ({
 
   let defaultExportFileName = null;
   if (defaultTemplate) defaultExportFileName = defaultTemplate.label;
-  if (defaultFileToExport) [defaultExportFileName] = defaultFileToExport.label.split('.');
+  if (defaultFileToExport) {
+    defaultExportFileName = defaultFileToExport.value === 'mappableContent' && scoName
+      ? scoName
+      : defaultFileToExport.label.split('.')[0];
+  }
 
   let defaultFormat = '';
   if (defaultValues?.format) {
@@ -166,7 +172,7 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.fileToExport) {
-            setFieldValue('exportFileName', values.fileToExport.label.split('.')[0]);
+            setFieldValue('exportFileName', values.fileToExport.value === 'mappableContent' && scoName ? scoName : values.fileToExport.label.split('.')[0]);
           }
         }, [values.fileToExport]);
 
