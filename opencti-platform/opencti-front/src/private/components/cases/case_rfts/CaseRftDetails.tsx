@@ -138,102 +138,39 @@ const CaseRftDetailsFragment = graphql`
         node {
           id
           entity_type
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
           ... on Report {
             name
-            description
             published
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
           }
           ... on Grouping {
             name
-            context
-            description
             created
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
-              id
-              definition
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
           }
           ... on CaseIncident {
             name
-            description
             created
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
           }
           ... on CaseRfi {
             name
-            description
             created
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
           }
           ... on CaseRft {
             name
-            description
             created
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
           }
         }
       }
