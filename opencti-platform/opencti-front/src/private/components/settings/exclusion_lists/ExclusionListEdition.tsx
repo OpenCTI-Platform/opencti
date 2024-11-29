@@ -1,17 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import { useFormatter } from '../../../../components/i18n';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import TextField from '../../../../components/TextField';
 import { Field, Form, Formik } from 'formik';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import * as Yup from 'yup';
 import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
 import { ExclusionListEdition_edition$key } from '@components/settings/exclusion_lists/__generated__/ExclusionListEdition_edition.graphql';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '@components/common/form/ReferenceField';
 import { ExclusionListEntityTypes } from '@components/settings/exclusion_lists/__generated__/ExclusionListsCreationFileAddMutation.graphql';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import TextField from '../../../../components/TextField';
+import { useFormatter } from '../../../../components/i18n';
 
 export const exclusionListMutationFieldPatch = graphql`
   mutation ExclusionListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -68,7 +68,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     commitFieldPatch({
       variables: {
         id: data?.id,
-        input: [{ key: name, value: value }],
+        input: [{ key: name, value }],
       },
     });
   };

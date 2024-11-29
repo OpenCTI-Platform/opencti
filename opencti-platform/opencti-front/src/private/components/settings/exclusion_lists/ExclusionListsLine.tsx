@@ -8,8 +8,8 @@ import { graphql, useFragment } from 'react-relay';
 import { ExclusionListsLine_node$key } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
+import { Theme } from '@mui/material/styles/createTheme';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 
 // Deprecated - https://mui.com/system/styles/basics/
