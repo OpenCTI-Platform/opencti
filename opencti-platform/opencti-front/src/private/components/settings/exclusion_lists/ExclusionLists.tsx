@@ -15,11 +15,12 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Chip from '@mui/material/Chip';
 
 const LOCAL_STORAGE_KEY = 'view-exclusion-lists';
 
 const ExclusionLists = () => {
-  const { t_i18n } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ExclusionListsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -45,7 +46,7 @@ const ExclusionLists = () => {
     const dataColumns = {
       name: {
         label: t_i18n('Name'),
-        width: '30%',
+        width: '20%',
         isSortable: true,
         render: (node: ExclusionListsLine_node$data) => node.name,
       },
@@ -55,16 +56,44 @@ const ExclusionLists = () => {
         isSortable: false,
         render: (node: ExclusionListsLine_node$data) => node.description,
       },
-      active: {
+      created_at: {
+        label: t_i18n('Creation date'),
+        width: '10%',
+        isSortable: true,
+        render: (node: ExclusionListsLine_node$data) => fd(node.created_at),
+      },
+      enabled: {
         label: t_i18n('Active'),
-        width: '15%',
-        isSortable: false,
+        width: '10%',
+        isSortable: true,
         render: (node: ExclusionListsLine_node$data) => (
           <ItemBoolean
             variant="inList"
             label={node.enabled ? t_i18n('Yes') : t_i18n('No')}
             status={node.enabled}
           />
+        ),
+      },
+      exclusion_list_entity_types: {
+        label: t_i18n('Entity type'),
+        width: '30%',
+        isSortable: false,
+        render: (node: ExclusionListsLine_node$data) => (
+          <>
+            {node.exclusion_list_entity_types.map((type) => (
+              <Chip
+                key={type}
+                variant="outlined"
+                label={t_i18n(type)}
+                color="primary"
+                style={{
+                  fontSize: 12,
+                  height: 20,
+                  marginRight: 7,
+                }}
+              />
+            ))}
+          </>
         ),
       },
     };
