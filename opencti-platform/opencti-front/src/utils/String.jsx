@@ -137,3 +137,15 @@ export const splitMultilines = (str) => (str ?? '')
   .map((s) => s.trim());
 
 export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
+
+/**
+ * Add zero-width spaces every 10 characters in a string.
+ * It allows PDF generation to automatically go to new line instead
+ * of going outside of the file when facing every long names, ids, etc.
+ *
+ * @param value String to make wrappable.
+ * @returns {string} Same string but wrappable.
+ */
+export const toWrappableString = (value) => {
+  return (value.match(/.{1,10}/g) ?? []).join('\u{200B}');
+};

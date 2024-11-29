@@ -1,3 +1,4 @@
+import { renderToString } from 'react-dom/server';
 import { fetchQuery } from '../../../../relay/environment';
 import { StixCoreObjectsAttributesQuery$data } from './__generated__/StixCoreObjectsAttributesQuery.graphql';
 import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
@@ -32,7 +33,9 @@ const useBuildAttributesOutcome = () => {
       const readableAttribute = buildReadableAttribute(result, col);
       return {
         variableName: col.variableName,
-        attributeData: readableAttribute,
+        attributeData: typeof readableAttribute === 'string'
+          ? readableAttribute
+          : renderToString(readableAttribute),
       };
     });
   };
