@@ -788,8 +788,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               style={{ marginRight: 20 }}
               variant="contained"
               disabled={getCurrentDataSelectionLimit() === dataSelection.length}
-              size="small"
               color="secondary"
+              size="small"
               onClick={() => handleAddDataSelection('entities')}
               classes={{ root: classes.buttonAdd }}
             >
