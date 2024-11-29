@@ -401,6 +401,7 @@ const StixCoreObjectFileExportComponent = ({
           onSubmit={onSubmitExport}
           onClose={close}
           defaultValues={defaultValues}
+          scoName={scoName}
         />
       )}
     </>
