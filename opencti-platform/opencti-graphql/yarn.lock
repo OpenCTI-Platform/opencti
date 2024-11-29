@@ -5726,15 +5726,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-cookiejar-support@npm:5.0.2":
-  version: 5.0.2
-  resolution: "axios-cookiejar-support@npm:5.0.2"
+"axios-cookiejar-support@npm:5.0.3":
+  version: 5.0.3
+  resolution: "axios-cookiejar-support@npm:5.0.3"
   dependencies:
-    http-cookie-agent: "npm:^6.0.5"
+    http-cookie-agent: "npm:^6.0.6"
   peerDependencies:
     axios: ">=0.20.0"
     tough-cookie: ">=4.0.0"
-  checksum: 10/8278e37a366d906318b542316e64edc5548bc8dd6c4fff590f762d48d2b4eeed01d032123e163708f824ee2c2d4d8b5ac833827fce7ab3ad7af017d4fb038537
+  checksum: 10/5e926b9b8909f92e8588f8d0a2aff858ea918300e9405b6d59f90967e0c5ea0ff50169bd415771c8af04e13ecabaec23a12f0c4ae7c3bd15f94c241d24cf4c37
   languageName: node
   linkType: hard
 
@@ -8898,7 +8898,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-cookie-agent@npm:^6.0.5":
+"http-cookie-agent@npm:^6.0.6":
   version: 6.0.6
   resolution: "http-cookie-agent@npm:6.0.6"
   dependencies:
@@ -10995,7 +10995,7 @@ __metadata:
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
     axios: "npm:1.7.8"
-    axios-cookiejar-support: "npm:5.0.2"
+    axios-cookiejar-support: "npm:5.0.3"
     bcryptjs: "npm:2.4.3"
     blocked-at: "npm:1.2.0"
     bluebird: "npm:3.7.2"

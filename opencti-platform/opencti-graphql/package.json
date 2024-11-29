@@ -80,7 +80,7 @@
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
     "axios": "1.7.8",
-    "axios-cookiejar-support": "5.0.2",
+    "axios-cookiejar-support": "5.0.3",
     "bcryptjs": "2.4.3",
     "blocked-at": "1.2.0",
     "bluebird": "3.7.2",
