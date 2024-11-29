@@ -9,18 +9,14 @@ import { ExclusionListsLinesPaginationQuery$variables } from '@components/settin
 import { Option } from '@components/common/form/ReferenceField';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { ExclusionListEntityTypes } from '@components/settings/exclusion_lists/__generated__/ExclusionListsCreationFileAddMutation.graphql';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Box from '@mui/material/Box';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import RichTextField from '../../../../components/fields/RichTextField';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -60,7 +56,6 @@ interface ExclusionListCreationFormProps {
   updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  isCreationWithFile: boolean;
 }
 
 interface ExclusionListCreationProps {
@@ -71,7 +66,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   updater,
   onReset,
   onCompleted,
-  isCreationWithFile = true,
 }) => {
   const { t_i18n } = useFormatter();
   const [commitFile] = useApiMutation(exclusionListCreationFileMutation);
@@ -150,14 +144,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     action: { label: 'Exclusion', value: 'Exclusion' },
   };
 
-  const initialValuesContent: ExclusionListCreationContentFormData = {
-    name: '',
-    description: '',
-    exclusion_list_entity_types: [],
-    content: '',
-    action: { label: 'Exclusion', value: 'Exclusion' },
-  };
-
   const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
   const entityTypesOptions = (entityTypes ?? []).map((type) => ({
     value: type,
@@ -171,10 +157,10 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   }));
 
   return (
-    <Formik<ExclusionListCreationFileFormData | ExclusionListCreationContentFormData>
-      initialValues={isCreationWithFile ? initialValuesFile : initialValuesContent}
+    <Formik<ExclusionListCreationFileFormData>
+      initialValues={initialValuesFile}
       validationSchema={exclusionListValidator(t_i18n)}
-      onSubmit={isCreationWithFile ? onSubmitFile : onSubmitContent}
+      onSubmit={onSubmitFile}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
@@ -207,21 +193,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             ) => <li key={option.value} {...props}>{option.label}</li>}
             textfieldprops={{ label: t_i18n('Entity Types') }}
           />
-          {isCreationWithFile ? (
-            <CustomFileUploader setFieldValue={setFieldValue} />
-          ) : (
-            <Field
-              component={RichTextField}
-              name="content"
-              label={t_i18n('Content')}
-              fullWidth={true}
-              style={{
-                ...fieldSpacingContainerStyle,
-                minHeight: 200,
-                height: 200,
-              }}
-            />
-          )}
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <Field
             component={AutocompleteField}
             name="action"
@@ -282,17 +254,10 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
     >
       {({ onClose }) => (
         <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-              <Tab label={t_i18n('File')} value="File" />
-              <Tab label={t_i18n('Content')} value="Content" />
-            </Tabs>
-          </Box>
           <ExclusionListCreationForm
             updater={updater}
             onCompleted={onClose}
             onReset={onClose}
-            isCreationWithFile={tabValue === 'File'}
           />
         </>
       )}
