@@ -189,7 +189,7 @@
     "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html"
   },
   "resolutions": {
-    "cookie": "0.7.0",
+    "cookie": "0.7.2",
     "cross-spawn": "7.0.5",
     "eslint-plugin-custom-rules": "0.0.1",
     "json5": "2.2.3",
