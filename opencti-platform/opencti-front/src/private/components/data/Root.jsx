@@ -1,7 +1,17 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import useGranted, { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS_SETACCESSES, INGESTION, CSVMAPPERS } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  MODULES,
+  SETTINGS_SETACCESSES,
+  INGESTION,
+  CSVMAPPERS,
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
+  TAXIIAPI,
+  INGESTION_SETINGESTIONS,
+} from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -23,6 +33,25 @@ const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 
 const Root = () => {
+  const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
+  const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
+  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
+  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
+  const isGrantedToSharing = useGranted([TAXIIAPI]);
+
+  let redirect = null;
+  if (isGrantedToKnowledge) {
+    redirect = 'entities';
+  } else if (isGrantedToIngestion) {
+    redirect = 'ingestion';
+  } else if (isGrantedToImport) {
+    redirect = 'import';
+  } else if (isGrantedToProcessing) {
+    redirect = 'processing';
+  } else if (isGrantedToSharing) {
+    redirect = 'sharing';
+  }
+
   const isConnectorReader = useGranted([MODULES]);
 
   return (
@@ -30,7 +59,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to="/dashboard/data/entities" replace={true} />}
+          element={<Navigate to={`/dashboard/data/${redirect}`} replace={true} />}
         />
         <Route
           path="/entities"
