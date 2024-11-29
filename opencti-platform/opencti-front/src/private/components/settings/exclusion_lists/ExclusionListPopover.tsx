@@ -13,7 +13,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import ExclusionListEdition, { exclusionListEditionQuery } from '@components/settings/exclusion_lists/ExclusionListEdition';
+import ExclusionListEdition, { exclusionListEditionQuery, exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
 import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
 
 export const exclusionListPopoverDeletionMutation = graphql`
@@ -28,6 +28,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(exclusionListPopoverDeletionMutation);
+  const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
 
   //  popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -62,7 +63,12 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
 
   // Enable - Disable
   const handleEnable = () => {
-    // TODO : update
+    commitFieldPatch({
+      variables: {
+        id: data.id,
+        input: [{ key: 'enabled', value: !data.enabled }],
+      },
+    });
     handleClose();
   };
   return (
@@ -77,7 +83,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleEnable} disabled>{t_i18n('Enable')}</MenuItem>
+        <MenuItem onClick={handleEnable}>{data.enabled ? t_i18n('Disable') : t_i18n('Enable')}</MenuItem>
         <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
