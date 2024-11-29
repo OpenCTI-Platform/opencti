@@ -6,6 +6,7 @@ import { compareUnsorted } from 'js-deep-equals';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
+  AccessRequiredError,
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
   DatabaseError,
@@ -145,7 +146,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp, ORGA_SHARING_REQUEST_FF } from '../config/conf';
 import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -161,7 +162,8 @@ import {
   SYSTEM_USER,
   userFilterStoreElements,
   validateUserAccessOperation,
-  controlUserRestrictDeleteAgainstElement
+  controlUserRestrictDeleteAgainstElement,
+  canRequestAccess
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
@@ -2991,7 +2993,15 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
+        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF)) {
+          const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
+          if (entitiesThatRequiresAccess.length > 0) {
+            throw AccessRequiredError('Restricted entity already exists, user can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
+          }
+          throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
+        } else {
+          throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
+        }
       }
       // If inferred entity
       if (fromRule) {
