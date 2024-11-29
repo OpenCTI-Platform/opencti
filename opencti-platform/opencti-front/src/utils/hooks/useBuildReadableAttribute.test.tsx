@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, it, vi, expect } from 'vitest';
+import React from 'react';
 import * as filterUtils from '../filters/filtersUtils';
 import { testRenderHook } from '../tests/test-render';
 import useBuildReadableAttribute from './useBuildReadableAttribute';
@@ -39,10 +40,19 @@ describe('Hook: useBuildReadableAttribute', () => {
     expect(nullAttribute).toEqual('null');
     const booleanAttribute = buildReadableAttribute(true, { attribute: 'revoked' });
     expect(booleanAttribute).toEqual('true');
-    const textAttribute = buildReadableAttribute('My description', { attribute: 'description' });
-    expect(textAttribute).toEqual('<div class="markdown"><p>My description</p></div>');
-    expect(typeof textAttribute).toEqual('string');
-    const textAttribute2 = buildReadableAttribute('My description', { attribute: 'description' }, true);
+  });
+  it('should remove code bringing security issues like xss', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    const result = (<div dangerouslySetInnerHTML={{ __html: '<img src="x">' }} />);
+
+    const textAttribute1 = buildReadableAttribute('<img src="x" onerror="alert(\'not happening\')">', { attribute: 'description' });
+    expect(typeof textAttribute1).toEqual('object');
+    expect(textAttribute1).toEqual(result);
+
+    const textAttribute2 = buildReadableAttribute('<img src="x">', { attribute: 'description' });
     expect(typeof textAttribute2).toEqual('object');
+    expect(textAttribute2).toEqual(result);
   });
 });
