@@ -98,123 +98,60 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ReportDetailsFragment = graphql`
-    fragment ReportDetails_report on Report {
-        id
-        published
-        report_types
-        description
-        relatedContainers(
-            first: 10
-            orderBy: published
-            orderMode: desc
-            types: ["Case", "Report", "Grouping"]
-            viaTypes: ["Indicator", "Stix-Cyber-Observable"]
-        ) {
-            edges {
-                node {
-                    id
-                    entity_type
-                    ... on Report {
-                        name
-                        description
-                        published
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        objectMarking {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                    ... on Grouping {
-                        name
-                        context
-                        description
-                        created
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        objectMarking {
-                            id
-                            definition
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                    ... on CaseIncident {
-                        name
-                        description
-                        created
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        objectMarking {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                    ... on CaseRfi {
-                        name
-                        description
-                        created
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        objectMarking {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                    ... on CaseRft {
-                        name
-                        description
-                        created
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        objectMarking {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                }
+  fragment ReportDetails_report on Report {
+    id
+    published
+    report_types
+    description
+    relatedContainers(
+      first: 10
+      orderBy: published
+      orderMode: desc
+      types: ["Case", "Report", "Grouping"]
+      viaTypes: ["Indicator", "Stix-Cyber-Observable"]
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
             }
+          }
+          ... on Report {
+            name
+            published
+          }
+          ... on Grouping {
+            name
+            created
+          }
+          ... on CaseIncident {
+            name
+            created
+          }
+          ... on CaseRfi {
+            name
+            created
+          }
+          ... on CaseRft {
+            name
+            created
+          }
         }
+      }
     }
+  }
 `;
 
 const ReportDetails = ({ report }) => {
