@@ -84,7 +84,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEnable}>{data.enabled ? t_i18n('Disable') : t_i18n('Enable')}</MenuItem>
-        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleDisplayEdit} disabled>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
