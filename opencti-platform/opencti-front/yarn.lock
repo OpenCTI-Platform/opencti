@@ -7258,6 +7258,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:1.7.8":
+  version: 1.7.8
+  resolution: "axios@npm:1.7.8"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/7ddcde188041ac55090186254b4025eb2af842be3cf615ce45393fd7f543c1eab0ad2fdd2017a5f6190695e3ecea73ee5e9c37f204854aec2698f9579046efdf
+  languageName: node
+  linkType: hard
+
 "axobject-query@npm:~3.1.1":
   version: 3.1.1
   resolution: "axobject-query@npm:3.1.1"
@@ -14708,7 +14719,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:4.3.1"
     analytics: "npm:0.8.14"
     apexcharts: "npm:3.54.0"
-    axios: "npm:1.7.7"
+    axios: "npm:1.7.8"
     babel-plugin-relay: "npm:17.0.0"
     buffer: "npm:6.0.3"
     chokidar: "npm:3.6.0"
