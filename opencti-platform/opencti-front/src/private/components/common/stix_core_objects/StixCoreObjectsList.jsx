@@ -30,6 +30,7 @@ export const stixCoreObjectsListQuery = graphql`
           created_at
           representative {
             main
+            secondary
           }
           opinions_metrics {
             mean
@@ -186,6 +187,7 @@ export const stixCoreObjectsListQuery = graphql`
           }
           ... on StixCyberObservable {
             observable_value
+            x_opencti_description
           }
           createdBy {
             ... on Identity {

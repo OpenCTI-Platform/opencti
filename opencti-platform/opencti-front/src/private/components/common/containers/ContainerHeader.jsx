@@ -539,10 +539,7 @@ const ContainerHeader = (props) => {
     const fileParams = { currentFileId: fileName, contentSelected: false };
     const urlParams = new URLSearchParams(fileParams).toString();
     const entityLink = `${resolveLink(container.entity_type)}/${container.id}`;
-    console.log('link', `${entityLink}/content?${urlParams}`);
-    // navigate('dashboard');
     navigate(`${entityLink}/content?${urlParams}`);
-    // navigate(`content?${urlParams}`);
   };
   const generateSuggestions = (objects) => {
     const suggestions = [];

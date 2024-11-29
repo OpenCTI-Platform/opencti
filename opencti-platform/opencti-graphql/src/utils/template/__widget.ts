@@ -121,7 +121,7 @@ const widgetContainerObservables: Widget = {
       columns: [
         { label: 'Observable type', attribute: 'entity_type' },
         { label: 'Value', attribute: 'representative.main' },
-        { label: 'Description', attribute: 'description' }
+        { label: 'Description', attribute: 'x_opencti_description' }
       ],
     },
   ],
@@ -343,7 +343,7 @@ const widgetAllEntitiesAndObservables: Widget = {
       columns: [
         { label: 'Type', attribute: 'entity_type' },
         { label: 'Representative', attribute: 'representative.main' },
-        { label: 'Description', attribute: 'description' },
+        { label: 'Description', attribute: 'representative.secondary' },
       ],
     },
   ],
