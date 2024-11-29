@@ -414,14 +414,31 @@ class DataTableToolBar extends Component {
     // Get enrich type
     let enrichType;
     if (this.props.selectAll) {
-      enrichType = this.props.type
-        ?? R.head(
+      enrichType = this.props.type;
+      if (!enrichType) {
+        const filterType = R.head(
           findFilterFromKey(
             this.props.filters?.filters ?? [],
             'entity_type',
             'eq',
           )?.values ?? [],
         );
+        if (filterType === 'Stix-Cyber-Observable' || filterType === 'Stix-Domain-Object') {
+          const allFilters = this.props.filters?.filterGroups ?? [];
+          allFilters.forEach((group) => {
+            const entityTypeFilter = findFilterFromKey(
+              group.filters ?? [],
+              'entity_type',
+              'eq',
+            );
+            if (entityTypeFilter) {
+              enrichType = R.head(entityTypeFilter.values);
+            }
+          });
+        } else {
+          enrichType = filterType;
+        }
+      }
     } else {
       const selectedElementsList = Object.values(this.props.selectedElements || {});
       const selectedTypes = R.uniq(selectedElementsList
