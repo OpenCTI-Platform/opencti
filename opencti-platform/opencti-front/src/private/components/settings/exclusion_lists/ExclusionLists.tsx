@@ -8,6 +8,7 @@ import {
 import ExclusionListsLines, { exclusionListsLinesQuery } from '@components/settings/exclusion_lists/ExclusionListsLines';
 import { ExclusionListsLineDummy } from '@components/settings/exclusion_lists/ExclusionListsLine';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
+import Chip from '@mui/material/Chip';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -15,7 +16,6 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Chip from '@mui/material/Chip';
 
 const LOCAL_STORAGE_KEY = 'view-exclusion-lists';
 

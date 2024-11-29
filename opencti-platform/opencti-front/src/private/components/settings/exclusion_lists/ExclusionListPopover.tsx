@@ -7,14 +7,14 @@ import Drawer from '@components/common/drawer/Drawer';
 import { graphql, useQueryLoader } from 'react-relay';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
+import ExclusionListEdition, { exclusionListEditionQuery, exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
+import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import ExclusionListEdition, { exclusionListEditionQuery, exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
-import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
 
 export const exclusionListPopoverDeletionMutation = graphql`
   mutation ExclusionListPopoverDeletionMutation($id: ID!) {

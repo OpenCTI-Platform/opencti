@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
@@ -11,7 +11,7 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { ExclusionListEntityTypes } from '@components/settings/exclusion_lists/__generated__/ExclusionListsCreationFileAddMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
@@ -26,14 +26,6 @@ const exclusionListCreationFileMutation = graphql`
   }
 `;
 
-const exclusionListCreationContentMutation = graphql`
-  mutation ExclusionListCreationContentAddMutation($input: ExclusionListContentAddInput!) {
-    exclusionListContentAdd(input: $input) {
-      ...ExclusionListsLine_node
-    }
-  }
-`;
-
 interface ExclusionListCreationFileFormData {
   name: string;
   description: string;
@@ -41,16 +33,6 @@ interface ExclusionListCreationFileFormData {
   file: File | undefined;
   action: Option;
 }
-
-interface ExclusionListCreationContentFormData {
-  name: string;
-  description: string;
-  exclusion_list_entity_types: Option[];
-  content: string;
-  action: Option;
-}
-
-type ExclusionListCreationTabValue = 'File' | 'Content';
 
 interface ExclusionListCreationFormProps {
   updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
@@ -76,7 +58,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     const input = {
       name: values.name,
       description: values.description,
-      exclusion_list_entity_types: values.exclusion_list_entity_types.map(type => type.value),
+      exclusion_list_entity_types: values.exclusion_list_entity_types.map((type) => type.value),
       file: values.file,
     };
     commitFile({
@@ -86,40 +68,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       updater: (store) => {
         if (updater) {
           updater(store, 'exclusionListFileAdd');
-        }
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
-      },
-      onError: (error: Error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
-    });
-  };
-
-  const [commitContent] = useApiMutation(exclusionListCreationContentMutation);
-  const onSubmitContent: FormikConfig<ExclusionListCreationContentFormData>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm, setErrors },
-  ) => {
-    const input = {
-      name: values.name,
-      description: values.description,
-      exclusion_list_entity_types: values.exclusion_list_entity_types.map(type => type.value),
-      content: values.content,
-    };
-    commitContent({
-      variables: {
-        input,
-      },
-      updater: (store) => {
-        if (updater) {
-          updater(store, 'exclusionListContentAdd');
         }
       },
       onCompleted: () => {
@@ -237,7 +185,6 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const [tabValue, setTabValue] = useState<ExclusionListCreationTabValue>('File');
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
     insertNode(
       store,
