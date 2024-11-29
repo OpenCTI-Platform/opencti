@@ -23,7 +23,7 @@
     "@rjsf/mui": "5.18.1",
     "@rjsf/utils": "5.18.1",
     "analytics": "0.8.14",
-    "apexcharts": "3.54.0",
+    "apexcharts": "3.54.1",
     "axios": "1.7.8",
     "buffer": "6.0.3",
     "ckeditor5": "43.3.1",
