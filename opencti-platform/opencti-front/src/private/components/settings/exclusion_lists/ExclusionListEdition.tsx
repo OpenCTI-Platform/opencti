@@ -13,7 +13,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '@components/common/form/ReferenceField';
 import { ExclusionListEntityTypes } from '@components/settings/exclusion_lists/__generated__/ExclusionListsCreationFileAddMutation.graphql';
 
-const exclusionListMutationFieldPatch = graphql`
+export const exclusionListMutationFieldPatch = graphql`
   mutation ExclusionListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     exclusionListFieldPatch(id: $id, input: $input) {
       ...ExclusionListsLine_node
