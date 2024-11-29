@@ -7,7 +7,7 @@ import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import { type ExclusionListContentAddInput, type ExclusionListFileAddInput, type MutationExclusionListFieldPatchArgs, type QueryExclusionListsArgs } from '../../generated/graphql';
-import { notify, redisUpdateExclusionListStatus } from '../../database/redis';
+import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
 import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -23,6 +23,21 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryExclusionListsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], args);
+};
+
+export const getCacheStatus = async () => {
+  const redisCacheStatus = await redisGetExclusionListStatus();
+  const lastVersion = redisCacheStatus.last_refresh_ask_date ?? '';
+  const cacheVersion = redisCacheStatus.last_cache_date ?? '';
+  const clusterConfig = await getClusterInstances();
+  const allNodeIds = clusterConfig.map((c) => c.platform_id.split(':')[2]);
+  let isCacheRebuildInProgress = lastVersion !== cacheVersion;
+  for (let i = 0; i < allNodeIds.length; i += 1) {
+    const nodeId = allNodeIds[i];
+    isCacheRebuildInProgress = isCacheRebuildInProgress || lastVersion !== redisCacheStatus[nodeId];
+  }
+
+  return { lastVersion, cacheVersion, isCacheRebuildInProgress };
 };
 
 const refreshExclusionListStatus = async () => {

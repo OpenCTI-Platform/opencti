@@ -21,6 +21,12 @@ type ExclusionListEdge {
   node: ExclusionList!
 }
 
+type ExclusionListCacheStatus {
+  lastVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
+}
+
 enum ExclusionListOrdering {
   name
   created_at
@@ -52,6 +58,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): ExclusionListConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListCacheStatus: ExclusionListCacheStatus @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 type Mutation {
