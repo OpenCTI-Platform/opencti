@@ -25,10 +25,7 @@ import RichTextField from '../../../../components/fields/RichTextField';
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
     exclusionListFileAdd(input: $input) {
-      id
-      name
-      description
-      enabled
+      ...ExclusionListsLine_node
     }
   }
 `;
@@ -36,10 +33,7 @@ const exclusionListCreationFileMutation = graphql`
 const exclusionListCreationContentMutation = graphql`
   mutation ExclusionListCreationContentAddMutation($input: ExclusionListContentAddInput!) {
     exclusionListContentAdd(input: $input) {
-      id
-      name
-      description
-      enabled
+      ...ExclusionListsLine_node
     }
   }
 `;
@@ -49,6 +43,7 @@ interface ExclusionListCreationFileFormData {
   description: string;
   exclusion_list_entity_types: Option[];
   file: File | undefined;
+  action: Option;
 }
 
 interface ExclusionListCreationContentFormData {
@@ -56,6 +51,7 @@ interface ExclusionListCreationContentFormData {
   description: string;
   exclusion_list_entity_types: Option[];
   content: string;
+  action: Option;
 }
 
 type ExclusionListCreationTabValue = 'File' | 'Content';
@@ -151,6 +147,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     description: '',
     exclusion_list_entity_types: [],
     file: undefined,
+    action: { label: 'Exclusion', value: 'Exclusion' },
   };
 
   const initialValuesContent: ExclusionListCreationContentFormData = {
@@ -158,10 +155,17 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     description: '',
     exclusion_list_entity_types: [],
     content: '',
+    action: { label: 'Exclusion', value: 'Exclusion' },
   };
 
   const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
   const entityTypesOptions = (entityTypes ?? []).map((type) => ({
+    value: type,
+    label: type,
+  }));
+
+  const actions: string[] = ['Exclusion'];
+  const actionsOptions = (actions ?? []).map((type) => ({
     value: type,
     label: type,
   }));
@@ -200,7 +204,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             renderOption={(
               props: React.HTMLAttributes<HTMLLIElement>,
               option: Option,
-            ) => <li {...props}>{option.label}</li>}
+            ) => <li key={option.value} {...props}>{option.label}</li>}
             textfieldprops={{ label: t_i18n('Entity Types') }}
           />
           {isCreationWithFile ? (
@@ -218,6 +222,19 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               }}
             />
           )}
+          <Field
+            component={AutocompleteField}
+            name="action"
+            fullWidth={true}
+            style={fieldSpacingContainerStyle}
+            options={actionsOptions}
+            renderOption={(
+              props: React.HTMLAttributes<HTMLLIElement>,
+              option: Option,
+            ) => <li key={option.value} {...props}>{option.label}</li>}
+            textfieldprops={{ label: t_i18n('Action') }}
+            disabled
+          />
 
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
