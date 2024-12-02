@@ -7,21 +7,11 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import ListItem from '@mui/material/ListItem';
-import { Link, useNavigate } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import { ExpandLessOutlined, ExpandMoreOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import RelatedContainers from '../../common/containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemIcon from '../../../../components/ItemIcon';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
-import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   paper: {
@@ -81,41 +71,13 @@ const styles = (theme) => ({
   },
 });
 
-const inlineStyles = {
-  itemAuthor: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    marginLeft: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemDate: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 const GroupingDetailsComponent = (props) => {
-  const { t, fsd, classes, grouping } = props;
-  const navigate = useNavigate();
-  const [expanded, setExpanded] = useState(false);
+  const { t, classes, grouping } = props;
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
   useEffect(() => {
     setHeight(ref.current.clientHeight);
   });
-  const expandable = grouping.relatedContainers.edges.length > 5;
-  const relatedContainers = grouping.relatedContainers.edges
-    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== grouping.id)
-    .slice(0, expanded ? 200 : 5);
 
   const entitiesDistributionDataSelection = [
     {
@@ -178,76 +140,11 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Correlated containers')}
-          </Typography>
-          <IconButton
-            color="primary"
-            aria-label="Go to correlation graph view"
-            onClick={() => navigate(`/dashboard/analyses/groupings/${grouping.id}/knowledge/correlation`)}
-            size="medium"
-            style={{ marginBottom: 4 }}
-          >
-            <OpenInNewOutlined fontSize="small"/>
-          </IconButton>
-        </div>
-        <List>
-          {relatedContainers.length > 0
-            ? relatedContainers.map((relatedContainerEdge) => {
-              const relatedContainer = relatedContainerEdge.node;
-              return (
-                <ListItem
-                  key={grouping.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`${resolveLink(relatedContainer.entity_type)}/${relatedContainer.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div className={classes.itemText}>
-                        {relatedContainer.name}
-                      </div>
-                  }
-                  />
-                  <div style={inlineStyles.itemAuthor}>
-                    {relatedContainer.createdBy?.name ?? '-'}
-                  </div>
-                  <div style={inlineStyles.itemDate}>
-                    {fsd(relatedContainer.created ?? relatedContainer.published)}
-                  </div>
-                  <div style={{ width: 110, paddingRight: 20 }}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitions={relatedContainer.objectMarking}
-                      limit={1}
-                    />
-                  </div>
-                </ListItem>
-              );
-            }) : '-'
-          }
-        </List>
-        {expandable && (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => setExpanded(!expanded)}
-            classes={{ root: classes.buttonExpand }}
-          >
-            {expanded ? (
-              <ExpandLessOutlined fontSize="small" />
-            ) : (
-              <ExpandMoreOutlined fontSize="small" />
-            )}
-          </Button>
-        )}
+        <RelatedContainers
+          relatedContainers={grouping.relatedContainers}
+          containerId={grouping.id}
+          entityType={grouping.entity_type}
+        />
       </Paper>
     </div>
   );
@@ -264,6 +161,7 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
   grouping: graphql`
     fragment GroupingDetails_grouping on Grouping {
       id
+      entity_type
       context
       description
       relatedContainers(
