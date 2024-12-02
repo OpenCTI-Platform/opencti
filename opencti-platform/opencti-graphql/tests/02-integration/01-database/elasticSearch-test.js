@@ -17,6 +17,7 @@ import {
   elLoadById,
   elPaginate,
   elRebuildRelation,
+  elReindexElements,
   ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
   searchEngineInit
@@ -988,5 +989,53 @@ describe('Elasticsearch reindex', () => {
     const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
     // noinspection ES6MissingAwait
     expect(indexPromise).rejects.toThrow();
+  });
+  it('try to reindex element with unmapped fields', async () => {
+    // dummy object with old fields that are not part of the strict mapping
+    const jsonObject = `{
+      "standard_id": "sighting--9f9dd79c-bdff-4c0f-be14-ff11d773d445",
+      "rel_has-reference.internal_id": [
+        "5524eb65-1a55-43b2-ac22-81efe3faf21a"
+      ],
+      "attribute_count": 1,
+      "first_seen": "2023-08-20T22:00:00.000Z",
+      "last_seen": "2023-08-20T22:00:00.000Z",
+      "parent_types": [
+        "basic-relationship",
+        "stix-relationship"
+      ],
+      "created_at": "2023-08-21T09:04:31.986Z",
+      "description": "",
+      "revoked": false,
+      "base_type": "RELATION",
+      "relationship_type": "stix-sighting-relationship",
+      "updated_at": "2023-08-21T09:04:31.986Z",
+      "fromType": "Indicator",
+      "x_opencti_negative": false,
+      "modified": "2023-08-21T09:04:31.986Z",
+      "id": "de618300-4673-4719-9b53-bdf29ad1b440",
+      "lang": "en",
+      "toType": "Sector",
+      "internal_id": "de618300-4673-4719-9b53-bdf29ad1b440",
+      "created": "2023-08-21T09:04:31.986Z",
+      "confidence": 75,
+      "entity_type": "stix-sighting-relationship",
+      "creator_id": [
+        "57881196-4a57-4e61-b373-a971f2f3ce1f"
+      ],
+      "i_stop_time_year": "2023",
+      "i_created_at_day": "2023-05-04",
+      "i_start_time_year": "2023",
+      "i_start_time_month": "2023-05",
+      "i_created_at_month": "2023-05",
+      "i_created_at_year": "2023",
+      "i_stop_time_month": "2023-05",
+      "i_start_time_day": "2023-05-04",
+      "i_stop_time_day": "2023-05-04",
+      "x_opencti_stix_ids": []
+    }`;
+    const documentBody = JSON.parse(jsonObject);
+    await elIndex('test_reindex', documentBody);
+    await elReindexElements(testContext, ADMIN_USER, ['de618300-4673-4719-9b53-bdf29ad1b440'], 'test_reindex', 'test_deleted_objects');
   });
 });
