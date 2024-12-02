@@ -10,7 +10,7 @@ import Alert from '@mui/lab/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
+import MaxShareableMarkingsSelectField from '@components/common/form/MaxShareableMarkingsSelectField';
 import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -344,7 +344,7 @@ const GroupEditionMarkingsComponent = ({
                         )}
                       </Alert>
                       <Field
-                        component={MarkingsSelectField}
+                        component={MaxShareableMarkingsSelectField}
                         markingDefinitions={proposedShareableMarkings}
                         name="shareableMarkings"
                         onChange={(type: string, markingId: string) => handleToggleMaxShareableMarkings(type, markingId)}
