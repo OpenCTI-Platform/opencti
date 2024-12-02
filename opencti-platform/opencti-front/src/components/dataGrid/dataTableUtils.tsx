@@ -25,7 +25,7 @@ import ItemSeverity from '../ItemSeverity';
 import { APP_BASE_PATH } from '../../relay/environment';
 import ItemOperations from '../ItemOperations';
 
-const MAGICAL_SIZE = 0.113;
+export const MAGICAL_SIZE = 0.113;
 
 const chipStyle = {
   fontSize: '12px',

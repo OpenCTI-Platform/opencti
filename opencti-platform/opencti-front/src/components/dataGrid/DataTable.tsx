@@ -169,6 +169,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
 | 'entityTypes'> & {

@@ -22,6 +22,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
+import { markingDefinitionsLinesSearchQuery } from '../MarkingDefinitionsQuery';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
