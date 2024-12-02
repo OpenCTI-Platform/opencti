@@ -15,10 +15,10 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import { RelatedContainersFragment$key } from './__generated__/RelatedContainersFragment.graphql';
+import { RelatedContainersFragment_container_connection$key } from './__generated__/RelatedContainersFragment_container_connection.graphql';
 
 export const RelatedContainersFragment = graphql`
-  fragment RelatedContainersFragment_containers_connection on ContainerConnection {
+  fragment RelatedContainersFragment_container_connection on ContainerConnection {
     edges {
       node {
         id
@@ -63,7 +63,7 @@ export const RelatedContainersFragment = graphql`
 `;
 
 interface RelatedContainersProps {
-  relatedContainers: RelatedContainersFragment$key | null | undefined;
+  relatedContainers: RelatedContainersFragment_container_connection$key | null | undefined;
   containerId: string;
   entityType: string;
 }
