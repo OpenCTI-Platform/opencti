@@ -94,14 +94,8 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     action: { label: 'Exclusion', value: 'Exclusion' },
   };
 
-  // const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
-  // const entityTypesOptions = (entityTypes ?? []).map((type) => ({
-  //   value: type,
-  //   label: type,
-  // }));
-
   const actions: string[] = ['Exclusion'];
-  const actionsOptions = (actions ?? []).map((type) => ({
+  const actionsOptions = actions.map((type) => ({
     value: type,
     label: type,
   }));

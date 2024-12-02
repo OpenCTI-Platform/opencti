@@ -83,7 +83,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   };
 
   const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
-  const entityTypesOptions = (entityTypes ?? []).map((type) => ({
+  const entityTypesOptions = entityTypes.map((type) => ({
     value: type,
     label: type,
   }));
