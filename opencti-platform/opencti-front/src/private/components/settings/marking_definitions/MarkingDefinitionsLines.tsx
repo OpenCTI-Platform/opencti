@@ -1,8 +1,12 @@
-import React from 'react';
-import { graphql } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery } from 'react-relay';
+import { MarkingDefinitionsLinesPaginationQuery, MarkingDefinitionsLinesPaginationQuery$variables } from '../__generated__/MarkingDefinitionsLinesPaginationQuery.graphql';
+import { MarkingDefinitionsLines_data$key } from '../__generated__/MarkingDefinitionsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { MarkingDefinitionLine, MarkingDefinitionLineDummy } from './MarkingDefinitionLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { DataColumns } from '../../../../components/list_lines';
 
 const nbOfRowsToLoad = 50;
 
@@ -75,13 +79,20 @@ export const markingDefinitionsLinesSearchQuery = graphql`
   }
 `;
 
-const MarkingDefinitionsLines = ({
+interface MarkingDefinitionsLinesProps {
+  dataColumns: DataColumns,
+  queryRef: PreloadedQuery<MarkingDefinitionsLinesPaginationQuery>,
+  paginationOptions: MarkingDefinitionsLinesPaginationQuery$variables,
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+}
+
+const MarkingDefinitionsLines: FunctionComponent<MarkingDefinitionsLinesProps> = ({
   dataColumns,
   queryRef,
   paginationOptions,
   setNumberOfElements,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<MarkingDefinitionsLinesPaginationQuery, MarkingDefinitionsLines_data$key>({
     linesQuery: markingDefinitionsLinesQuery,
     linesFragment: markingDefinitionsLinesFragment,
     queryRef,
