@@ -51,10 +51,11 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
 export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
   .map(({ type }) => type) ?? [];
 
-export const groupMaxShareableMarkings = async (context, user, group) => {
+export const groupMaxShareableMarkings = async (context, group) => {
   const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   return group.max_shareable_markings?.filter(({ value }) => value !== 'none')
-    .map(({ value }) => markings.get(value)) ?? [];
+    .map(({ value }) => markings.get(value))
+    ?? [];
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {
@@ -139,7 +140,7 @@ export const groupEditField = async (context, user, groupId, input) => {
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
-  // on editing the group confidence level, all memebers might have changed their effective level
+  // on editing the group confidence level, all members might have changed their effective level
   if (input.find((i) => ['group_confidence_level', 'max_shareable_markings'].includes(i.key))) {
     await groupSessionRefresh(context, user, groupId);
   }
