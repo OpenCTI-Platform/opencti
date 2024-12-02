@@ -180,7 +180,8 @@ const MarkingDefinitions = () => {
               paginationOptions={queryPaginationOptions}
             />
           )}
-          searchContextFinal={{ entityTypes: ['MarkingDefinition'] }}
+          entityTypes={['Marking-Definition']}
+          searchContextFinal={{ entityTypes: ['Marking-Definition'] }}
           disableNavigation
           disableToolBar
           disableSelectAll
