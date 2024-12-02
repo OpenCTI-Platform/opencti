@@ -11,6 +11,7 @@ import {
   DateRangeOutlined,
   DeleteOutlined,
   EditOutlined,
+  FilterAlt,
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
@@ -336,6 +337,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
     const {
       t,
       classes,
+      currentQueryMode,
       currentMode3D,
       currentModeTree,
       currentModeFixed,
@@ -345,6 +347,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
       currentSelectRectangleModeFree,
       currentSelectModeFree,
       selectModeFreeReady,
+      handleToggleQueryMode,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -498,6 +501,23 @@ class CaseRfiKnowledgeGraphBar extends Component {
                     display: 'flex',
                   }}
                 >
+                  {handleToggleQueryMode && (
+                  <Tooltip
+                    title={
+                            currentQueryMode === 'all-entities' ? t('Query only observables and indicators') : t('Query all entity types')
+                          }
+                  >
+                    <span>
+                      <IconButton
+                        color={currentMode3D ? 'secondary' : 'primary'}
+                        onClick={handleToggleQueryMode.bind(this)}
+                        size="large"
+                      >
+                        <FilterAlt />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  )}
                   <Tooltip
                     title={
                       currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -1240,6 +1260,8 @@ CaseRfiKnowledgeGraphBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   caseData: PropTypes.object,
+  handleToggleQueryMode: PropTypes.func,
+  currentQueryMode: PropTypes.string,
   handleToggle3DMode: PropTypes.func,
   handleToggleRectangleSelectModeFree: PropTypes.func,
   handleToggleSelectModeFree: PropTypes.func,
