@@ -22,7 +22,7 @@ import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectF
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { Option } from '@components/common/form/ReferenceField';
 import { InfoOutlined } from '@mui/icons-material';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
