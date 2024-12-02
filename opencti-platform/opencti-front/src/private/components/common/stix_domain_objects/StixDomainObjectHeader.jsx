@@ -573,11 +573,11 @@ const StixDomainObjectHeader = (props) => {
               />
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-            <StixCoreObjectFileExport
-              id={stixDomainObject.id}
-              type={entityType}
-            />
-          </Security>
+              <StixCoreObjectFileExport
+                id={stixDomainObject.id}
+                type={entityType}
+              />
+            </Security>
             {isKnowledgeUpdater && (
               <StixCoreObjectContainer elementId={stixDomainObject.id} />
             )}
