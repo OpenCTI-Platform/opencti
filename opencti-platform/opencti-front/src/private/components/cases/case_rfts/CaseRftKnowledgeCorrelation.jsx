@@ -297,7 +297,6 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
       decodeGraphData(props.caseData.x_opencti_graph_data),
       props.t,
       filterAdjust,
-      'cases',
     );
     this.state.graphData = { ...this.graphData };
     this.canvas = null;
