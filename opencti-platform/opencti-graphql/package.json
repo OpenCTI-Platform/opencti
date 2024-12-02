@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.4.1",
+  "version": "6.4.2",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -79,14 +79,14 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
-    "axios": "1.7.7",
-    "axios-cookiejar-support": "5.0.2",
+    "axios": "1.7.8",
+    "axios-cookiejar-support": "5.0.3",
     "bcryptjs": "2.4.3",
     "blocked-at": "1.2.0",
     "bluebird": "3.7.2",
     "body-parser": "1.20.3",
     "canonicalize": "2.0.0",
-    "compression": "1.7.4",
+    "compression": "1.7.5",
     "content-disposition": "0.5.4",
     "cors": "2.8.5",
     "csv-parse": "5.5.6",
@@ -206,10 +206,10 @@
     "vitest": "2.0.5"
   },
   "resolutions": {
-    "axios": "1.7.7",
+    "axios": "1.7.8",
     "cross-spawn": "7.0.5",
     "body-parser": "1.20.3",
-    "cookie": "0.7.0",
+    "cookie": "0.7.2",
     "cross-fetch": "4.0.0",
     "jose": "5.9.6",
     "json5": "2.2.3",
