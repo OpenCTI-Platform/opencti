@@ -1504,7 +1504,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                           entity_type
                         }
                       }
-                                            objectMarking {
+                      objectMarking {
                         id
                         definition_type
                         definition

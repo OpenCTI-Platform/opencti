@@ -11,6 +11,7 @@ import {
   DateRangeOutlined,
   DeleteOutlined,
   EditOutlined,
+  FilterAlt,
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
@@ -509,7 +510,7 @@ class GroupingKnowledgeGraphBar extends Component {
                           onClick={handleToggleQueryMode.bind(this)}
                           size="large"
                         >
-                          <Video3d />
+                          <FilterAlt />
                         </IconButton>
                       </span>
                     </Tooltip>
