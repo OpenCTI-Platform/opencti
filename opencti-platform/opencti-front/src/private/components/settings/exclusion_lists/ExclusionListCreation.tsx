@@ -8,15 +8,17 @@ import Button from '@mui/material/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import { ExclusionListEntityTypes } from '@components/settings/exclusion_lists/__generated__/ExclusionListsCreationFileAddMutation.graphql';
+import { stixCyberObservablesLinesSubTypesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
+import { StixCyberObservablesLinesSubTypesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -92,11 +94,11 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     action: { label: 'Exclusion', value: 'Exclusion' },
   };
 
-  const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
-  const entityTypesOptions = (entityTypes ?? []).map((type) => ({
-    value: type,
-    label: type,
-  }));
+  // const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
+  // const entityTypesOptions = (entityTypes ?? []).map((type) => ({
+  //   value: type,
+  //   label: type,
+  // }));
 
   const actions: string[] = ['Exclusion'];
   const actionsOptions = (actions ?? []).map((type) => ({
@@ -128,18 +130,34 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             rows={2}
             style={{ marginTop: 20 }}
           />
-          <Field
-            component={AutocompleteField}
-            name="exclusion_list_entity_types"
-            fullWidth={true}
-            multiple
-            style={fieldSpacingContainerStyle}
-            options={entityTypesOptions}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: Option,
-            ) => <li key={option.value} {...props}>{option.label}</li>}
-            textfieldprops={{ label: t_i18n('Entity Types') }}
+          <QueryRenderer
+            query={stixCyberObservablesLinesSubTypesQuery}
+            variables={{ type: 'Stix-Cyber-Observable' }}
+            render={({ props }: { props: StixCyberObservablesLinesSubTypesQuery$data }) => {
+              if (props && props.subTypes) {
+                const subTypesEdges = props.subTypes.edges;
+                const entityTypesOptions = (subTypesEdges ?? []).map((edge) => ({
+                  value: edge.node.id,
+                  label: t_i18n(`entity_${edge.node.label}`),
+                }));
+                return (
+                  <Field
+                    component={AutocompleteField}
+                    name="exclusion_list_entity_types"
+                    fullWidth={true}
+                    multiple
+                    style={fieldSpacingContainerStyle}
+                    options={entityTypesOptions}
+                    renderOption={(
+                      optionProps: React.HTMLAttributes<HTMLLIElement>,
+                      option: Option,
+                    ) => <li key={option.value} {...optionProps}>{option.label}</li>}
+                    textfieldprops={{ label: t_i18n('Entity Types') }}
+                  />
+                );
+              }
+              return <Loader variant={LoaderVariant.inElement} />;
+            }}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <Field
