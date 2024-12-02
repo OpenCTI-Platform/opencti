@@ -67,7 +67,7 @@ const CaseRftDetailsFragment = graphql`
       types: ["Case", "Report", "Grouping"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
-      ...RelatedContainersFragment_containers_connection
+      ...RelatedContainersFragment_container_connection
     }
   }
 `;
