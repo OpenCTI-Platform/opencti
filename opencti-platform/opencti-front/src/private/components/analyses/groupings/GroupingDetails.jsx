@@ -171,46 +171,7 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
         types: ["Case", "Report", "Grouping"]
         viaTypes: ["Indicator", "Stix-Cyber-Observable"]
       ) {
-        edges {
-          node {
-            id
-            entity_type
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            ... on Report {
-              name
-              published
-            }
-            ... on Grouping {
-              name
-              created
-            }
-            ... on CaseIncident {
-              name
-              created
-            }
-            ... on CaseRfi {
-              name
-              created
-            }
-            ... on CaseRft {
-              name
-              created
-            }
-          }
-        }
+        ...RelatedContainersFragment_containers_connection
       }
     }
 `,

@@ -9,29 +9,67 @@ import { Link, useNavigate } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import { CaseRfiDetails_case$data } from '@components/cases/case_rfis/__generated__/CaseRfiDetails_case.graphql';
-import { CaseRftDetails_case$data } from '@components/cases/case_rfts/__generated__/CaseRftDetails_case.graphql';
-import { CaseIncidentDetails_case$data } from '@components/cases/case_incidents/__generated__/CaseIncidentDetails_case.graphql';
-import { ReportDetails_report$data } from '@components/analyses/reports/__generated__/ReportDetails_report.graphql';
-import { GroupingDetails_grouping$data } from '@components/analyses/groupings/__generated__/GroupingDetails_grouping.graphql';
+import { graphql, useFragment } from 'react-relay';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import { RelatedContainersFragment$key } from './__generated__/RelatedContainersFragment.graphql';
+
+export const RelatedContainersFragment = graphql`
+  fragment RelatedContainersFragment_containers_connection on ContainerConnection {
+    edges {
+      node {
+        id
+        entity_type
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        ... on Report {
+          name
+          published
+        }
+        ... on Grouping {
+          name
+          created
+        }
+        ... on CaseIncident {
+          name
+          created
+        }
+        ... on CaseRfi {
+          name
+          created
+        }
+        ... on CaseRft {
+          name
+          created
+        }
+      }
+    }
+  }
+`;
 
 interface RelatedContainersProps {
-  relatedContainers: ReportDetails_report$data['relatedContainers']
-  | GroupingDetails_grouping$data['relatedContainers']
-  | CaseIncidentDetails_case$data['relatedContainers']
-  | CaseRftDetails_case$data['relatedContainers']
-  | CaseRfiDetails_case$data['relatedContainers']
+  relatedContainers: RelatedContainersFragment$key | null | undefined;
   containerId: string;
   entityType: string;
 }
 
 const RelatedContainers: React.FC<RelatedContainersProps> = ({
-  relatedContainers,
+  relatedContainers: relatedContainersKey,
   containerId,
   entityType,
 }) => {
@@ -39,6 +77,10 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const relatedContainers = useFragment(
+    RelatedContainersFragment,
+    relatedContainersKey,
+  );
 
   const containersEdges = relatedContainers?.edges ?? [];
   const expandable = containersEdges.length > 5;
@@ -62,7 +104,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
           <OpenInNewOutlined fontSize="small"/>
         </IconButton>
       </div>
-      <List>
+      <List sx={{ marginBottom: 1 }}>
         {containers.length > 0 ? (
           containers.map((edge) => {
             const relatedContainer = edge?.node;
