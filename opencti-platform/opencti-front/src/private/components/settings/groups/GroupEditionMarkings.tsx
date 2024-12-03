@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { MarkingDefinitionsLinesSearchQuery$data } from '../marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import { MarkingDefinitionsLinesSearchQuery$data } from '../__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
