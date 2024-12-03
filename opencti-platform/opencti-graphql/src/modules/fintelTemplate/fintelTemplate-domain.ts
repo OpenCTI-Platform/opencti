@@ -71,12 +71,11 @@ export const fintelTemplateEditField = async (
   // add id to fintel template widgets
   const formattedInput = input.map((i) => {
     // TODO implement case with object_path
-    if (i.key === 'fintel_template_widgets') {
+    if (i.key === 'fintel_template_widgets' && !i.object_path) {
       const values = i.value as FintelTemplateWidgetAddInput[];
       const formattedValues = values.map((v) => ({
         ...v,
-        id: uuidv4(), // add id to fintel template widgets
-        widget: { ...v.widget, id: uuidv4() }, // widget with id
+        widget: { ...v.widget, id: v.widget.id ?? uuidv4() }, // ensure widget has an id
       }));
       return { ...i, value: formattedValues };
     }

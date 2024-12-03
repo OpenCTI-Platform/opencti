@@ -22,7 +22,6 @@ export interface WidgetDataSelection {
   dynamicFrom?: FilterGroup | null
   dynamicTo?: FilterGroup | null
   columns?: readonly WidgetColumn[] | null
-  instance_id?: string | null
   sort_by?: string | null
   sort_mode?: string | null
 }

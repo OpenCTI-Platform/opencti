@@ -47,6 +47,7 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [commitWidgetImportMutation] = useApiMutation(workspaceImportWidgetMutation);
+
   const handleWidgetImport = async (event) => {
     const importedWidgetConfiguration = event.target.files[0];
     const emptyDashboardManifest = toB64(JSON.stringify({ widgets: {}, config: {} }));
@@ -137,6 +138,7 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
         inputRef={inputRef}
         setOpen={setOpen}
         open={open}
+        context={'workspace'}
       />
     </>);
 };

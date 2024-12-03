@@ -23,6 +23,7 @@ export const fintelTemplateQuery = graphql`
       ...FintelTemplateTabs_template
       ...FintelTemplateHeader_template
       ...FintelTemplateContentEditor_template
+      ...FintelTemplateWidgetsSidebar_template
     }
   }
 `;
@@ -65,7 +66,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
         </FintelTemplateTabs>
       </div>
 
-      <FintelTemplateSidebar />
+      <FintelTemplateWidgetsSidebar data={fintelTemplate} />
     </>
   );
 };

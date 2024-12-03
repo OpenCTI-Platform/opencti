@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, WidgetContext, WidgetPerspective } from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -28,6 +28,9 @@ interface WidgetCreationParametersProps {
   parameters: WidgetParameters,
   setParameters: (p: WidgetParameters) => void,
   type: string,
+  context: WidgetContext,
+  variableName?: string | null,
+  handleChangeVariableName?: (n: string) => void,
 }
 
 const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps> = ({
@@ -36,6 +39,9 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   parameters,
   setParameters,
   type,
+  context,
+  variableName,
+  handleChangeVariableName,
 }) => {
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInDashboards } = useAttributes();
@@ -97,31 +103,42 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
         onChange={(event) => handleChangeParameter('title', event.target.value)
         }
       />
-      {getCurrentCategory(type) === 'text' && (
-        <div style={{ marginTop: 20 }}>
-          <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
-          <ReactMde
-            value={parameters.content ?? undefined}
-            onChange={(value) => handleChangeParameter('content', value)}
-            selectedTab={selectedTab}
-            onTabChange={(tab) => setSelectedTab(tab)}
-            generateMarkdownPreview={(markdown) => Promise.resolve(
-              <MarkdownDisplay
-                content={markdown}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />,
-            )}
-            l18n={{
-              write: t_i18n('Write'),
-              preview: t_i18n('Preview'),
-              uploadingImage: t_i18n('Uploading image'),
-              pasteDropSelect: t_i18n('Paste'),
-            }}
-            minEditorHeight={100}
-            maxEditorHeight={100}
+      {context === 'fintelTemplate' && handleChangeVariableName
+        && <div style={{ marginTop: 20 }}>
+          <TextField
+            label={t_i18n('Variable name')}
+            fullWidth={true}
+            value={variableName}
+            onChange={(event) => handleChangeVariableName(event.target.value)
+          }
           />
         </div>
+      }
+      {getCurrentCategory(type) === 'text' && (
+      <div style={{ marginTop: 20 }}>
+        <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
+        <ReactMde
+          value={parameters.content ?? undefined}
+          onChange={(value) => handleChangeParameter('content', value)}
+          selectedTab={selectedTab}
+          onTabChange={(tab) => setSelectedTab(tab)}
+          generateMarkdownPreview={(markdown) => Promise.resolve(
+            <MarkdownDisplay
+              content={markdown}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />,
+          )}
+          l18n={{
+            write: t_i18n('Write'),
+            preview: t_i18n('Preview'),
+            uploadingImage: t_i18n('Uploading image'),
+            pasteDropSelect: t_i18n('Paste'),
+          }}
+          minEditorHeight={100}
+          maxEditorHeight={100}
+        />
+      </div>
       )}
       {getCurrentCategory(type) === 'timeseries' && (
         <FormControl fullWidth={true} style={{ marginTop: 20 }}>
