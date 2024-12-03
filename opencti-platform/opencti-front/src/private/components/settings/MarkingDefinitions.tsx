@@ -16,9 +16,8 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { truncate } from '../../../utils/String';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
-import { MAGICAL_SIZE } from '../../../components/dataGrid/dataTableUtils';
+import { Truncate } from '../../../components/dataGrid/dataTableUtils';
 import type { DataTableColumn } from '../../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
@@ -118,14 +117,13 @@ const MarkingDefinitions = () => {
 
   const definitionTypeRender: DataTableColumn['render'] = (
     data: MarkingDefinitionsLine_node$data,
-    { column: { size } },
   ) => {
     const { standard_id, definition_type } = data;
     const { isSensitive } = useSensitiveModifications('markings', standard_id);
     return (
       <Tooltip title={definition_type}>
-        <div>
-          {truncate(definition_type, size * MAGICAL_SIZE)}
+        <div style={{ display: 'flex' }}>
+          <Truncate>{definition_type}</Truncate>
           {isSensitive && <DangerZoneChip />}
         </div>
       </Tooltip>

@@ -11,7 +11,6 @@ import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
 import { useDataTable, useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
-import { SELECT_COLUMN_SIZE } from './components/DataTableHeader';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
@@ -95,7 +94,6 @@ const DataTableInternalFilters = ({
           availableEntityTypes={availableEntityTypes}
           additionalFilterKeys={additionalFilterKeys}
           entityTypes={computedEntityTypes}
-          paginationOptions={paginationOptions}
         />
       )}
     </>
@@ -135,7 +133,7 @@ const DataTableInternalToolbar = ({
     <div
       style={{
         background: theme.palette.background.accent,
-        width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
+        flex: 1,
       }}
     >
       <DataTableToolBar

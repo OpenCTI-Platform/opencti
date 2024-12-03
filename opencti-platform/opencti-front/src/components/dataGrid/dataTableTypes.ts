@@ -7,9 +7,7 @@ import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
-export type ColumnSizeVars = Record<string, number>;
-
-export type LocalStorageColumn = { size: number, visible?: boolean, index?: number };
+export type LocalStorageColumn = { percentWidth: number, visible?: boolean, index?: number };
 export type LocalStorageColumns = Record<string, LocalStorageColumn>;
 
 export enum DataTableVariant {
@@ -30,7 +28,6 @@ export interface DataTableColumn {
   id: string
   isSortable?: boolean
   label?: string
-  size?: number
   percentWidth: number
   render?: (v: any, helpers?: any, draftVersion?: boolean) => React.ReactNode
   visible?: boolean
@@ -44,7 +41,6 @@ export interface DataTableContextProps {
   storageKey: string
   columns: DataTableColumns
   availableFilterKeys?: string[] | undefined;
-  effectiveColumns: DataTableColumns
   initialValues: DataTableProps['initialValues']
   setColumns: Dispatch<SetStateAction<DataTableColumns>>
   resolvePath: (data: any) => any
@@ -71,6 +67,10 @@ export interface DataTableContextProps {
   onLineClick: DataTableProps['onLineClick']
   page: number
   setPage:Dispatch<SetStateAction<number>>
+  tableWidthState: [number, Dispatch<SetStateAction<number>>]
+  startsWithAction: boolean
+  endsWithAction: boolean
+  endsWithNavigate: boolean
 }
 
 export interface DataTableProps {
@@ -138,15 +138,13 @@ export interface DataTableProps {
 }
 
 export interface DataTableBodyProps {
-  columns: DataTableColumns
   hasFilterComponent: boolean
   dataTableToolBarComponent?: ReactNode
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight']
   pageSize: number
   pageStart: number
-  reset: boolean,
-  setReset: Dispatch<SetStateAction<boolean>>
   hideHeaders: DataTableProps['hideHeaders']
+  tableRef: MutableRefObject<HTMLDivElement | null>
 }
 
 export interface DataTableDisplayFiltersProps {
@@ -155,7 +153,6 @@ export interface DataTableDisplayFiltersProps {
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableFilterKeys?: string[] | undefined;
   availableEntityTypes?: string[]
-  paginationOptions: any
 }
 
 export interface DataTableFiltersProps {
@@ -171,8 +168,6 @@ export interface DataTableFiltersProps {
 }
 
 export interface DataTableHeadersProps {
-  containerRef?: MutableRefObject<HTMLDivElement | null>
-  effectiveColumns: DataTableColumns
   dataTableToolBarComponent: ReactNode
 }
 
@@ -180,7 +175,6 @@ export interface DataTableHeaderProps {
   column: DataTableColumn
   setAnchorEl: Dispatch<SetStateAction<PopoverProps['anchorEl']>>
   setActiveColumn: Dispatch<SetStateAction<DataTableColumn | undefined>>
-  setLocalStorageColumns: Dispatch<SetStateAction<LocalStorageColumns>>
   containerRef?: MutableRefObject<HTMLDivElement | null>
   sortBy: boolean
   orderAsc: boolean
@@ -189,7 +183,6 @@ export interface DataTableHeaderProps {
 
 export interface DataTableLineProps {
   row: any
-  effectiveColumns: DataTableColumns
   index: number
   onToggleShiftEntity: (currentIndex: number, currentEntity: { id: string }, event?: React.MouseEvent) => void
 }
