@@ -93,7 +93,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
         submitDelete={submitDelete}
       />
       <Drawer
-        title={t_i18n('Exclusion list edition')}
+        title={t_i18n('Update an exclusion list')}
         open={displayEdit}
         onClose={() => setDisplayEdit(false)}
       >

@@ -12,6 +12,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
+import useSchema from '../../../../utils/hooks/useSchema';
 
 export const exclusionListMutationFieldPatch = graphql`
   mutation ExclusionListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -60,6 +61,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { schema: { scos: entityTypes } } = useSchema();
   const { exclusionList } = usePreloadedQuery<ExclusionListEditionQuery>(exclusionListEditionQuery, queryRef);
   const data = useFragment<ExclusionListEdition_edition$key>(exclusionListEditionFragment, exclusionList);
   const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
@@ -82,10 +84,9 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     })),
   };
 
-  const entityTypes: ExclusionListEntityTypes[] = ['IPV4_ADDR', 'IPV6_ADDR', 'DOMAIN_NAME', 'URL'];
-  const entityTypesOptions = entityTypes.map((type) => ({
-    value: type,
-    label: type,
+  const entityTypesOptions: Option[] = entityTypes.map((type) => ({
+    value: type.id,
+    label: type.label,
   }));
 
   return (
@@ -126,7 +127,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
             props: React.HTMLAttributes<HTMLLIElement>,
             option: Option,
           ) => <li key={option.value} {...props}>{option.label}</li>}
-          textfieldprops={{ label: t_i18n('Entity Types') }}
+          textfieldprops={{ label: t_i18n('Entity types') }}
           onChange={(name: string, value: { value: string; label: string }[]) => {
             onSubmit(
               name,
