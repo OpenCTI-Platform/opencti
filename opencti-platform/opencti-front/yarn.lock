@@ -2119,12 +2119,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-integrations-common@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@ckeditor/ckeditor5-integrations-common@npm:2.1.0"
+"@ckeditor/ckeditor5-integrations-common@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "@ckeditor/ckeditor5-integrations-common@npm:2.2.2"
   peerDependencies:
     ckeditor5: ">=42.0.0 || ^0.0.0-nightly"
-  checksum: 10/486597e70572c49a95ac0cd9abbf01310f04bade95d47f09885c0caa2161c3c48d1e854a1c9ed70e84468d574702c929cbfd91cec8795f7ec33c03565ba95492
+  checksum: 10/0ca98f663be44ee672fa24f97116d8655caf3b434f611cbbbb026850fdd7ae2f28139a2fa32d36275aa471e68aca9a6e912c461d6bf110ecfaa1bb35a674a021
   languageName: node
   linkType: hard
 
@@ -2267,16 +2267,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:9.3.0":
-  version: 9.3.0
-  resolution: "@ckeditor/ckeditor5-react@npm:9.3.0"
+"@ckeditor/ckeditor5-react@npm:9.4.0":
+  version: 9.4.0
+  resolution: "@ckeditor/ckeditor5-react@npm:9.4.0"
   dependencies:
-    "@ckeditor/ckeditor5-integrations-common": "npm:^2.1.0"
+    "@ckeditor/ckeditor5-integrations-common": "npm:^2.2.2"
     prop-types: "npm:^15.7.2"
   peerDependencies:
     ckeditor5: ">=42.0.0 || ^0.0.0-nightly"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/4e5715a6827277f3d9a2546dfcfb31626df5bfb0df54719f101424044d31b59e565fcb4fa2eb150a68c86850663c8b516c9c98f75d7cb3365a1e401952a9920a
+  checksum: 10/426aaa435e4c550cc4ba08c9eb961e110a1e9f843e175a4f26a93976b1ff64bb8bee9c997822b520ebda6a84959a457db5156bf32ec3753a4e5673731cfa17cf
   languageName: node
   linkType: hard
 
@@ -14677,7 +14677,7 @@ __metadata:
   resolution: "opencti-front@workspace:."
   dependencies:
     "@analytics/google-analytics": "npm:1.0.7"
-    "@ckeditor/ckeditor5-react": "npm:9.3.0"
+    "@ckeditor/ckeditor5-react": "npm:9.4.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.0.0"
     "@emotion/react": "npm:11.13.0"
