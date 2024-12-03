@@ -39,6 +39,7 @@ import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -210,6 +211,8 @@ const Settings = () => {
   const [openEEChanges, setOpenEEChanges] = useState(false);
 
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Parameters | Settings'));
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,

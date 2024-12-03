@@ -24,11 +24,14 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import useCopy from '../../../utils/hooks/useCopy';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Observables | Observations'));
   const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
