@@ -2728,6 +2728,7 @@
   "This item is built-in": "Dieser Artikel ist eingebaut",
   "This malware has been used": "Diese Malware wurde verwendet",
   "This operation cannot be undone.": "Dieser Vorgang kann nicht rückgängig gemacht werden.",
+  "This operations will only apply on assignees and participants added in the context of this playbook such as enrichment or other knowledge manipulations but not if the assignees or participants are already written in the platform.": "Diese Operationen gelten nur für Beauftragte und Teilnehmer, die im Rahmen dieses Handbuchs hinzugefügt werden, wie z. B. Anreicherung oder andere Wissensmanipulationen, nicht aber, wenn die Beauftragten oder Teilnehmer bereits in der Plattform eingetragen sind.",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Diese Operationen gelten nur für Labels oder Markierungen, die im Kontext dieses Playbooks hinzugefügt werden, wie z. B. Anreicherung oder andere Wissensmanipulationen, nicht aber, wenn die Labels oder Markierungen bereits in der Plattform geschrieben sind.",
   "This page is not found on this OpenCTI application.": "Diese Seite wird in dieser OpenCTI-Anwendung nicht gefunden.",
   "This page lists only the first 100 errors returned by the connector": "Diese Seite listet nur die ersten 100 vom Connector zurückgegebenen Fehler auf",

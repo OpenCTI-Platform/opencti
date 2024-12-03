@@ -2728,6 +2728,7 @@
   "This item is built-in": "이 항목은 내장되어 있습니다",
   "This malware has been used": "이 악성코드가 사용되었습니다",
   "This operation cannot be undone.": "이 작업은 되돌릴 수 없습니다.",
+  "This operations will only apply on assignees and participants added in the context of this playbook such as enrichment or other knowledge manipulations but not if the assignees or participants are already written in the platform.": "이 작업은 심화 또는 기타 지식 조작과 같이 이 플레이북의 맥락에서 추가된 과제자 및 참가자에게만 적용되며, 과제자 또는 참가자가 이미 플랫폼에 작성되어 있는 경우에는 적용되지 않습니다.",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "이 작업은 강화 또는 기타 지식 조작과 같은 플레이북 맥락에서 추가된 레이블 또는 마킹에만 적용되며, 레이블 또는 마킹이 이미 플랫폼에 작성된 경우에는 적용되지 않습니다.",
   "This page is not found on this OpenCTI application.": "이 페이지는 이 OpenCTI 애플리케이션에서 찾을 수 없습니다.",
   "This page lists only the first 100 errors returned by the connector": "이 페이지에는 커넥터에서 반환된 처음 100개의 오류만 나열됩니다",

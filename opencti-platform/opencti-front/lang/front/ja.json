@@ -2728,6 +2728,7 @@
   "This item is built-in": "このアイテムは内蔵されています",
   "This malware has been used": "このマルウェアが使用された",
   "This operation cannot be undone.": "この操作は元に戻せません。",
+  "This operations will only apply on assignees and participants added in the context of this playbook such as enrichment or other knowledge manipulations but not if the assignees or participants are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたアサイニーとパーティシパントに対してのみ適用されますが、アサイニーやパーティシパントがすでにプラットフォームに記述されている場合は適用されません。",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。",
   "This page is not found on this OpenCTI application.": "このページは、OpenCTIアプリケーション上で見つかりませんでした。",
   "This page lists only the first 100 errors returned by the connector": "このページには、コネクタから返された最初の100件のエラーのみが表示されます",

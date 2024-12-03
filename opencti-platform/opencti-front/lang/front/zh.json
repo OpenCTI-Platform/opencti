@@ -2728,6 +2728,7 @@
   "This item is built-in": "该项目是内置的",
   "This malware has been used": "该恶意软件已经被使用",
   "This operation cannot be undone.": "此操作不可撤销。",
+  "This operations will only apply on assignees and participants added in the context of this playbook such as enrichment or other knowledge manipulations but not if the assignees or participants are already written in the platform.": "此操作仅适用于在本操作手册中添加的受让人和参与者，如充实或其他知识操作，但不适用于已在平台中编写的受让人或参与者。",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。",
   "This page is not found on this OpenCTI application.": "在平台上找不到此页面。",
   "This page lists only the first 100 errors returned by the connector": "此页面仅列出了连接器返回的前100个错误",
