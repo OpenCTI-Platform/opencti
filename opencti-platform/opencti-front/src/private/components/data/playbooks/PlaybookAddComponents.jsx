@@ -18,6 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -131,6 +132,7 @@ const PlaybookAddComponentsContent = ({
   };
   const handleChangeActionInput = (i, key, value) => {
     // extract currentValue value
+    console.log('value', value);
     const currentValue = R.head(actionsInputs.map((v, k) => (k === i && v[key] ? v[key] : null)).filter((n) => n !== null));
     // Change operation
     if (key === 'op' && currentValue !== value) {
@@ -181,6 +183,8 @@ const PlaybookAddComponentsContent = ({
           isMultiple: true,
         },
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
+        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
+        { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
@@ -194,6 +198,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
+        { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -293,6 +298,24 @@ const PlaybookAddComponentsContent = ({
       case 'objectAssignee':
         return (
           <ObjectAssigneeField
+            name={`actions-${i}-value`}
+            disabled={disabled}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n.label,
+                  value: n.value,
+                  patch_value: n.value,
+                })),
+              );
+            }}
+          />
+        );
+      case 'objectParticipant':
+        return (
+          <ObjectParticipantField
             name={`actions-${i}-value`}
             disabled={disabled}
             onChange={(_, value) => {
@@ -602,7 +625,7 @@ const PlaybookAddComponentsContent = ({
                           .fill(0)
                           .map((_, i) => (
                             <React.Fragment key={i}>
-                              {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel'].includes(actionsInputs[i]?.attribute))) && (
+                              {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel', 'objectAssignee', 'objectParticipant'].includes(actionsInputs[i]?.attribute))) && (
                                 <Alert severity="warning" style={{ marginBottom: 20 }}>
                                   {t_i18n('This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.')}
                                 </Alert>
