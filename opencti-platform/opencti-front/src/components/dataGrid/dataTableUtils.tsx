@@ -82,7 +82,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const Truncate = ({ children }: { children: ReactNode }) => (
+export const Truncate = ({ children }: { children: ReactNode }) => (
   <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
     {children}
   </div>
@@ -862,7 +862,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               marginRight: 5,
             }}
           />
-          {truncate(x_opencti_color, size * MAGICAL_SIZE)}
+          <Truncate>{x_opencti_color}</Truncate>
         </>
       </Tooltip>
     ),
