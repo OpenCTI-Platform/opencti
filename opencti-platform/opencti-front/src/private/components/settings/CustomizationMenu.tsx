@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const CustomizationMenu: FunctionComponent = () => {
+  const { isFeatureEnable } = useHelper();
+  const exclusionListEnabled = isFeatureEnable('EXCLUSION_LIST');
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/customization/entity_types',
@@ -23,11 +26,13 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/decay',
       label: 'Decay rules',
     },
-    {
+  ];
+  if (exclusionListEnabled) {
+    entries.push({
       path: '/dashboard/settings/customization/exclusion_lists',
       label: 'Exclusion lists',
-    },
-  ];
+    });
+  }
   return <NavToolbarMenu entries={entries} />;
 };
 
