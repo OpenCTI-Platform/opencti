@@ -101,6 +101,8 @@ export const resolveContent = async (context, user, stixCoreObject) => {
 };
 
 export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
+  logApp.info('[XTM] Starting to generate OBAS scenario', { useAI, simulationType });
+  console.time('[XTM]generateOpenBasScenario ALL');
   const startingDate = new Date().getTime();
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
@@ -111,6 +113,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
 
   // call to obas
+  console.time('[XTM]obasCreateScenario1');
   const obasScenario = await obasCreateScenario(
     name,
     subtitle,
@@ -120,23 +123,23 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
     stixCoreObject.entity_type,
     simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario'
   );
-
-  const obasCreateScenarioEnd = new Date().getTime();
-  logApp.info(`OBAS created scenario in ${obasCreateScenarioEnd - startingDate} ms.`);
+  console.timeEnd('[XTM]obasCreateScenario1');
 
   // Get kill chain phases
   const sortByPhaseOrder = R.sortBy(R.prop('phase_order'));
-  const obasKillChainPhases = await obasGetKillChainPhases();
+  console.time('[XTM]obasGetKillChainPhases1');
+  const obasKillChainPhases = await obasGetKillChainPhases(); // Why it's not called only inside  if (attackPatterns.length === 0)  ??
+  console.timeEnd('[XTM]obasGetKillChainPhases1');
   const sortedObasKillChainPhases = sortByPhaseOrder(obasKillChainPhases);
   const killChainPhasesListOfNames = sortedObasKillChainPhases.map((n) => n.phase_name).join(', ');
   const indexedSortedObasKillChainPhase = R.indexBy(R.prop('phase_id'), sortedObasKillChainPhases);
 
-  const aiKillChainEmailStart = new Date().getTime();
   let dependsOnDuration = 0;
   if (attackPatterns.length === 0) {
     if (!useAI) {
       throw UnsupportedError('No attack pattern associated to this entity. Please use AI to generate the scenario. This feature will be enhanced in the future to cover more types of entities.');
     }
+    console.time('[XTM]obasKillChainPhase loop');
     // eslint-disable-next-line no-restricted-syntax
     for (const obasKillChainPhase of sortedObasKillChainPhases) {
       const killChainPhaseName = obasKillChainPhase.phase_name;
@@ -157,8 +160,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Context about the attack
             ${content}
             `;
-      logApp.info('ANGIE - promptIncidentResponse', { promptIncidentResponse });
+      console.time('[XTM]queryAi-obasKillChainPhase-email');
       const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
+      console.timeEnd('[XTM]queryAi-obasKillChainPhase-email');
       const promptIncidentResponseSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -169,9 +173,12 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseIncidentResponse}
             `;
+      console.time('[XTM]queryAi-obasKillChainPhase-subject');
       const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
+      console.timeEnd('[XTM]queryAi-obasKillChainPhase-subject');
       const titleIncidentResponse = `[${killChainPhaseName}] ${responseIncidentResponseSubject} - Email to the incident response team`;
-      await createInjectInScenario(
+      console.time('[XTM]obasCreateInjectInScenario-obasKillChainPhase');
+      await obasCreateInjectInScenario(
         obasScenario.scenario_id,
         'openbas_email',
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
@@ -184,6 +191,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         },
         [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
       );
+      console.timeEnd('[XTM]obasCreateInjectInScenario-obasKillChainPhase');
       dependsOnDuration += (interval * 60);
       // Mail to CISO
       const promptCiso = `
@@ -202,7 +210,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Context about the attack
             ${content}
             `;
+      console.time('[XTM]queryAi-obasKillChainPhase-email-ciso');
       const responseCiso = await queryAi(null, promptCiso, user);
+      console.timeEnd('[XTM]queryAi-obasKillChainPhase-email-ciso');
       const promptCisoSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -213,9 +223,12 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseCiso}
             `;
+      console.time('[XTM]queryAi-obasKillChainPhase-subject-ciso');
       const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
+      console.timeEnd('[XTM]queryAi-obasKillChainPhase-subject-ciso');
       const titleCiso = `[${killChainPhaseName}] ${responseCisoSubject} - Email to the CISO`;
-      await createInjectInScenario(
+      console.time('[XTM]queryAi-obasKillChainPhase-obasCreateInjectInScenario-ciso');
+      await obasCreateInjectInScenario(
         obasScenario.scenario_id,
         'openbas_email',
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
@@ -228,16 +241,19 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         },
         [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
       );
+      console.timeEnd('[XTM]queryAi-obasKillChainPhase-obasCreateInjectInScenario-ciso');
       dependsOnDuration += (interval * 60);
     } // end for loop
+    console.timeEnd('[XTM]obasKillChainPhase loop');
+  } else {
+    logApp.info('[XTM] attack pattern found, no generation of kill chain phase email');
   }
-  const aiKillChainEmailEnd = new Date().getTime();
-  logApp.info(`AI generated kill chain email in ${aiKillChainEmailEnd - aiKillChainEmailStart} ms.`);
-
   // Get contracts from OpenBAS related to found attack patterns
 
   // Get attack patterns
+  console.time('[XTM]obasGetAttackPatterns');
   const obasAttackPatterns = await obasGetAttackPatterns();
+  console.timeEnd('[XTM]obasGetAttackPatterns');
 
   // Extract attack patterns
   const attackPatternsMitreIds = finalAttackPatterns.filter((n) => isNotEmptyField(n.x_mitre_id)).map((n) => n.x_mitre_id);
@@ -254,6 +270,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const sortByKillChainPhase = R.sortBy(R.path(['attack_pattern_kill_chain_phase', 'phase_order']));
   const sortedEnrichedFilteredObasAttackPatterns = sortByKillChainPhase(enrichedFilteredObasAttackPatterns);
 
+  console.time('[XTM]obasAttackPattern loop');
   const aiAttackPatterEmailStart = new Date().getTime();
   // Get the injector contracts
   // eslint-disable-next-line no-restricted-syntax
@@ -281,7 +298,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Content
             ${obasAttackPattern.attack_pattern_description}
             `;
+      console.time('[XTM]queryAi-obasAttackPattern-email');
       const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
+      console.timeEnd('[XTM]queryAi-obasAttackPattern-email');
       const promptIncidentResponseSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -292,9 +311,12 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseIncidentResponse}
             `;
+      console.time('[XTM]queryAi-obasAttackPattern-subject');
       const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
+      console.timeEnd('[XTM]queryAi-obasAttackPattern-subject');
       const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
-      await createInjectInScenario(
+      console.time('[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario');
+      await obasCreateInjectInScenario(
         obasScenario.scenario_id,
         'openbas_email',
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
@@ -303,6 +325,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         { expectations: [], subject: responseIncidentResponseSubject.replace('Subject: ', '').replace('"', ''), body: responseIncidentResponse },
         [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
       );
+      console.timeEnd('[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario');
       dependsOnDuration += (interval * 60);
       const promptCiso = `
             # Instructions
@@ -324,7 +347,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Content
             ${obasAttackPattern.attack_pattern_description}
         `;
+      console.time('[XTM]queryAi-obasAttackPattern-email-ciso');
       const responseCiso = await queryAi(null, promptCiso, user);
+      console.timeEnd('[XTM]queryAi-obasAttackPattern-email-ciso');
       const promptCisoSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -335,8 +360,12 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseCiso}
             `;
+      console.time('[XTM]queryAi-obasAttackPattern-subject-ciso');
       const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
+      console.timeEnd('[XTM]queryAi-obasAttackPattern-subject-ciso');
       const titleCiso = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the CISO`;
+
+      console.time('[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario-ciso');
       await obasCreateInjectInScenario(
         obasScenario.scenario_id,
         'openbas_email',
@@ -346,9 +375,12 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         { expectations: [], subject: responseCisoSubject.replace('Subject: ', '').replace('"', ''), body: responseCiso },
         [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
       );
+      console.timeEnd('[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario-ciso');
       dependsOnDuration += (interval * 60);
     } else {
+      console.time('[XTM]obasGetInjectorContracts');
       const obasInjectorContracts = await obasGetInjectorContracts(obasAttackPattern.attack_pattern_id);
+      console.timeEnd('[XTM]obasGetInjectorContracts');
       let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
       if (selection === 'random') {
         finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
@@ -358,7 +390,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         for (const finalObasInjectorContract of finalObasInjectorContracts) {
           const obasInjectorContractContent = JSON.parse(finalObasInjectorContract.injector_contract_content);
           const title = `[${obasAttackPattern.attack_pattern_external_id}] ${obasAttackPattern.attack_pattern_name} - ${finalObasInjectorContract.injector_contract_labels.en}`;
-          await createInjectInScenario(
+          console.time('[XTM]obasCreateInjectInScenario-tech');
+          await obasCreateInjectInScenario(
             obasScenario.scenario_id,
             obasInjectorContractContent.config.type,
             finalObasInjectorContract.injector_contract_id,
@@ -367,15 +400,20 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             null,
             [{ value: 'opencti', color: '#001bda' }, { value: 'technical', color: '#b9461a' }]
           );
+          console.timeEnd('[XTM]obasCreateInjectInScenario-tech');
           dependsOnDuration += (interval * 60);
         }
       } else {
         // TODO
+        logApp.info(`[XTM] simulationType ${simulationType} not implemented yet.`);
       }
     }
   } // end loop for
   const aiAttackPatterEmailEnd = new Date().getTime();
-  logApp.info(`AI generated attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
+  console.timeEnd('[XTM]obasAttackPattern loop');
+  logApp.info(`[XTM][TIME] AI generated ${sortedEnrichedFilteredObasAttackPatterns} attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
+  logApp.info(`[XTM][TIME] TOTAL everything processed and send to obas in ${aiAttackPatterEmailEnd - startingDate} ms`);
+  console.timeEnd('[XTM]generateOpenBasScenario ALL');
   return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
 };
 
