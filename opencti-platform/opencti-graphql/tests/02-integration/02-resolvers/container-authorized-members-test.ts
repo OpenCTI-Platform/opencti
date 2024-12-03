@@ -12,7 +12,7 @@ import {
   TEST_ORGANIZATION,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 
 const CREATE_QUERY = gql`
@@ -27,6 +27,16 @@ const CREATE_QUERY = gql`
         access_right
       }
       currentUserAccessRight
+    }
+  }
+`;
+
+const CREATE_REPORT_QUERY = gql`
+  mutation ReportAdd($input: ReportAddInput!) {
+    reportAdd(input: $input) {
+      id
+      name
+      standard_id
     }
   }
 `;
@@ -46,9 +56,32 @@ const READ_QUERY = gql`
   }
 `;
 
+const READ_REPORT_QUERY = gql`
+  query report($id: String!) {
+    report(id: $id) {
+      id
+      standard_id
+      name
+      authorized_members {
+        id
+        access_right
+      }
+      currentUserAccessRight
+    }
+  }
+`;
+
 const DELETE_QUERY = gql`
   mutation CaseIncidentDelete($id: ID!) {
     caseIncidentDelete(id: $id)
+  }
+`;
+
+const DELETE_REPORT_QUERY = gql`
+  mutation reportDelete($id: ID!) {
+    reportEdit(id: $id) {
+      delete
+    }
   }
 `;
 
@@ -110,6 +143,19 @@ const ORGANIZATION_SHARING_QUERY = gql`
         objectOrganization {
           id
           name
+        }
+      }
+    }
+  }
+`;
+
+const LIST_RESTRICTED_ENTITIES = gql`
+  query stixCoreObjectsRestricted {
+    stixCoreObjectsRestricted {
+      edges {
+        node {
+          id
+          entity_type
         }
       }
     }
@@ -603,6 +649,16 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
     expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
   });
+  it('should not list all restricted entities', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: LIST_RESTRICTED_ENTITIES,
+      variables: { first: 10 }
+    });
+  });
+  it('should BYPASS user list all restricted entities', async () => {
+    const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
+    expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(1);
+  });
   it('should Admin user deactivate authorized members', async () => {
     await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
@@ -658,4 +714,135 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
+});
+
+describe('Restricted entities listing', () => {
+  let caseIrId: string;
+  let userEditorId: string;
+  let reportId: string;
+  it('should plateform organization sharing and EE activated', async () => {
+    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+  });
+  it('should Case Incident Response created', async () => {
+    // Create Case Incident Response
+    const caseIRCreateQueryResult = await adminQueryWithSuccess({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Case IR with platform orga'
+        }
+      }
+    });
+    expect(caseIRCreateQueryResult?.data?.caseIncidentAdd).not.toBeUndefined();
+    caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
+  }); // +1 create
+  it('should Admin user activate Authorized Members for Case IR', async () => { // +1 update
+    userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    const caseIRUpdatedQueryResult = await adminQuery({
+      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
+      variables: {
+        id: caseIrId,
+        input: [
+          {
+            id: ADMIN_USER.id,
+            access_right: 'admin'
+          },
+          {
+            id: userEditorId,
+            access_right: 'view'
+          }
+        ]
+      }
+    });
+    expect(caseIRUpdatedQueryResult).not.toBeNull();
+    expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
+    expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
+      {
+        id: ADMIN_USER.id,
+        access_right: 'admin'
+      },
+      {
+        id: userEditorId,
+        access_right: 'view'
+      }
+    ]);
+  });
+  it('should Report created', async () => { // +1 create
+    // Create Case Incident Response
+    const reportCreateQueryResult = await adminQueryWithSuccess({
+      query: CREATE_REPORT_QUERY,
+      variables: {
+        input: {
+          name: 'Report name',
+          published: '2023-06-01T22:00:00.000Z',
+        }
+      }
+    });
+    expect(reportCreateQueryResult?.data?.reportAdd).not.toBeUndefined();
+    reportId = reportCreateQueryResult?.data?.reportAdd.id;
+  });
+  it('should Admin user activate Authorized Members for Report', async () => {
+    userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    const reportUpdatedQueryResult = await adminQueryWithSuccess({
+      query: EDIT_AUTHORIZED_MEMBERS_QUERY,
+      variables: {
+        id: reportId,
+        input: [
+          {
+            id: ADMIN_USER.id,
+            access_right: 'admin'
+          },
+          {
+            id: userEditorId,
+            access_right: 'view'
+          }
+        ]
+      }
+    });
+    expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
+    expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
+      {
+        id: ADMIN_USER.id,
+        access_right: 'admin'
+      },
+      {
+        id: userEditorId,
+        access_right: 'view'
+      }
+    ]);
+  }); // +1 update
+  it('should not list all restricted entities', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: LIST_RESTRICTED_ENTITIES,
+      variables: { first: 10 }
+    });
+  });
+  it('should BYPASS user list all restricted entities', async () => {
+    const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
+    expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
+  });
+  it('should plateform organization sharing and EE deactivated', async () => {
+    await enableCEAndUnSetOrganization();
+  });
+  it('should Case Incident Response deleted', async () => {
+    // Delete the case
+    await adminQuery({
+      query: DELETE_QUERY,
+      variables: { id: caseIrId },
+    });
+    // Verify is no longer found
+    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult?.data?.caseIncident).toBeNull();
+  }); // +1 delete
+  it('should Report deleted', async () => {
+    // Delete the case
+    await adminQuery({
+      query: DELETE_REPORT_QUERY,
+      variables: { id: reportId },
+    });
+    // Verify is no longer found
+    const queryResult = await adminQueryWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportId } });
+    expect(queryResult?.data?.report).toBeNull();
+  }); // +1 delete
 });

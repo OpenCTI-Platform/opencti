@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -34,6 +34,7 @@ import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreEntityExclusionList } from '../modules/exclusionList/exclusionList-types';
+
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -1852,6 +1853,7 @@ export enum CampaignsOrdering {
 }
 
 export enum Capabilities {
+  Bypass = 'BYPASS',
   Connectorapi = 'CONNECTORAPI',
   Csvmappers = 'CSVMAPPERS',
   Explore = 'EXPLORE',
@@ -19514,6 +19516,7 @@ export type Query = {
   stixCoreObjectsMultiNumber?: Maybe<Array<Maybe<Number>>>;
   stixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   stixCoreObjectsNumber?: Maybe<Number>;
+  stixCoreObjectsRestricted?: Maybe<StixCoreObjectConnection>;
   stixCoreObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixCoreRelationship?: Maybe<StixCoreRelationship>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
@@ -21271,6 +21274,17 @@ export type QueryStixCoreObjectsNumberArgs = {
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixCoreObjectsRestrictedArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -38586,6 +38600,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectsMultiNumber?: Resolver<Maybe<Array<Maybe<ResolversTypes['Number']>>>, ParentType, ContextType, Partial<QueryStixCoreObjectsMultiNumberArgs>>;
   stixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsMultiTimeSeriesArgs, 'interval' | 'startDate'>>;
   stixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCoreObjectsNumberArgs>>;
+  stixCoreObjectsRestricted?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsRestrictedArgs>>;
   stixCoreObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipArgs>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsArgs>>;

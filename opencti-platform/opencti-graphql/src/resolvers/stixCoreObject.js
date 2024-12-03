@@ -35,7 +35,8 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationships
+  stixCoreRelationships,
+  findAllRestricted
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -59,6 +60,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjectsRestricted: (_, args, context) => findAllRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);

@@ -1,16 +1,18 @@
-import React, { Suspense, lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import useHelper from '../../../utils/hooks/useHelper';
 import { boundaryWrapper } from '../Error';
 import useGranted, {
+  BYPASS,
+  CSVMAPPERS,
+  INGESTION,
+  INGESTION_SETINGESTIONS,
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
   MODULES,
   SETTINGS_SETACCESSES,
-  INGESTION,
-  CSVMAPPERS,
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
   TAXIIAPI,
-  INGESTION_SETINGESTIONS,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -31,13 +33,18 @@ const IngestionTaxiis = lazy(() => import('./IngestionTaxiis'));
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
+const Management = lazy(() => import('./Management'));
 
 const Root = () => {
+  const { isFeatureEnable } = useHelper();
+  const isNewManagementScreensEnables = isFeatureEnable('NEW_MANAGEMENT_SCREENS');
+
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
+  const isGrantedToManage = useGranted([BYPASS]);
 
   let redirect = null;
   if (isGrantedToKnowledge) {
@@ -50,6 +57,8 @@ const Root = () => {
     redirect = 'processing';
   } else if (isGrantedToSharing) {
     redirect = 'sharing';
+  } else if (isGrantedToManage) {
+    redirect = 'management';
   }
 
   const isConnectorReader = useGranted([MODULES]);
@@ -180,6 +189,16 @@ const Root = () => {
               <Tasks />
             </Security>
           }
+        />
+        {isNewManagementScreensEnables && (
+        <Route
+          path="/management"
+          element={<Navigate to="/dashboard/data/management/restricted" replace={true} />}
+        />
+        )}
+        <Route
+          path="/management/*"
+          element={boundaryWrapper(Management)}
         />
       </Routes>
     </Suspense>

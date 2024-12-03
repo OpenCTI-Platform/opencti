@@ -46,12 +46,13 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
+import { FilterOperator } from '../generated/graphql';
 
-export const findAll = async (context, user, args) => {
+const extractStixCoreObjectTypesFromArgs = (args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
     types = args.types.filter((type) => isStixCoreObject(type));
@@ -59,6 +60,11 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
+  return types;
+};
+
+export const findAll = async (context, user, args) => {
+  const types = extractStixCoreObjectTypesFromArgs(args);
   if (args.globalSearch) {
     const contextData = {
       input: R.omit(['search'], args)
@@ -75,6 +81,21 @@ export const findAll = async (context, user, args) => {
     });
   }
   return listEntitiesPaginated(context, user, types, args);
+};
+
+export const findAllRestricted = async (context, user, args) => {
+  if (!isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
+  const types = extractStixCoreObjectTypesFromArgs(args);
+  const filters = addFilter(args.filters, 'authorized_members.id', [], FilterOperator.NotNil);
+  const finalArgs = {
+    ...args,
+    includeAuthorities: true,
+    filters
+  };
+
+  return listEntitiesPaginated(context, user, types, finalArgs);
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {
@@ -252,13 +273,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
 
 // region stats
 export const stixCoreObjectsTimeSeries = (context, user, args) => {
-  let types = [];
-  if (isNotEmptyField(args.types)) {
-    types = R.filter((type) => isStixCoreObject(type), args.types);
-  }
-  if (isEmptyField(types)) {
-    types.push(ABSTRACT_STIX_CORE_OBJECT);
-  }
+  const types = extractStixCoreObjectTypesFromArgs(args);
   return timeSeriesEntities(context, user, types, args);
 };
 
@@ -270,45 +285,27 @@ export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
 
 export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
-    let types = [];
-    if (isNotEmptyField(timeSeriesParameter.types)) {
-      types = R.filter((type) => isStixCoreObject(type), timeSeriesParameter.types);
-    }
-    if (isEmptyField(types)) {
-      types.push(ABSTRACT_STIX_CORE_OBJECT);
-    }
+    const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
     return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
   }));
 };
 
 export const stixCoreObjectsNumber = (context, user, args) => {
-  let types = [];
-  if (isNotEmptyField(args.types)) {
-    types = args.types.filter((type) => isStixCoreObject(type));
-  }
-  if (types.length === 0) {
-    types.push(ABSTRACT_STIX_CORE_OBJECT);
-  }
+  const types = extractStixCoreObjectTypesFromArgs(args);
   return {
-    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
-    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', args)),
+    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, types }),
+    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.dissoc('endDate', args), types }),
   };
 };
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {
   return Promise.all(args.numberParameters.map((numberParameter) => {
-    let types = [];
-    if (isNotEmptyField(numberParameter.types)) {
-      types = args.types.filter((type) => isStixCoreObject(type));
-    }
-    if (types.length === 0) {
-      types.push(ABSTRACT_STIX_CORE_OBJECT);
-    }
+    const types = extractStixCoreObjectTypesFromArgs(numberParameter);
     return {
       count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, { ...args, ...numberParameter }),
+        : READ_ENTITIES_INDICES, { ...args, ...numberParameter, types }),
       total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter }))
+        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter, types }))
     };
   }));
 };

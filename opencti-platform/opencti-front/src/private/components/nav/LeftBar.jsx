@@ -77,6 +77,7 @@ import Collapse from '@mui/material/Collapse';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
+  BYPASS,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
@@ -229,6 +230,7 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
+  const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
@@ -912,6 +914,7 @@ const LeftBar = () => {
                   { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
                   { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },
+                  { granted: isGrantedToManage, link: '/dashboard/data/management', label: 'Management' },
                 ],
               )}
             </Security>
