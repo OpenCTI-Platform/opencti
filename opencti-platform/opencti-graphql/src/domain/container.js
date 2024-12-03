@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listAllEntities, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -24,8 +24,7 @@ import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
-import { usedTemplatesByEntityType } from '../utils/template/__template';
-import { hardcodedTemplateWidgets } from '../utils/template/__widget';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -272,29 +271,28 @@ export const getFilesFromTemplate = async (context, user, container, args) => {
   return paginatedForPathWithEnrichment(context, user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
 };
 
-export const getTemplates = async (context, user, container) => {
+export const getFintelTemplates = async (context, user, container) => {
   const isEE = await isEnterpriseEdition(context);
   const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
   if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
-  const entityType = container.entity_type;
-  return usedTemplatesByEntityType[entityType] ?? [];
-};
-
-export const getTemplateAndUtils = async (context, user, container, templateId) => {
-  // check feature is enabled
-  const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  if (!isEE || !isFileFromTemplateEnabled) {
-    return null;
-  }
-  // fetch template (hardcoded for the moment)
-  const template = (usedTemplatesByEntityType[container.entity_type] ?? []).find((t) => t.id === templateId);
-  const { template_widgets_ids } = template;
-  // fetch the widgets used in the template (hardcoded for the moment)
-  const template_widgets = hardcodedTemplateWidgets
-    .filter((w) => template_widgets_ids.includes(w.id));
-  // return template and the associated utils
-  return { template, template_widgets };
+  const nowDate = new Date().getTime();
+  const filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'settings_types',
+        values: [container.entity_type],
+        operator: 'eq',
+      },
+      {
+        key: 'start_date',
+        values: [nowDate],
+        operator: 'lte',
+      }
+    ],
+    filterGroups: [],
+  };
+  return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };

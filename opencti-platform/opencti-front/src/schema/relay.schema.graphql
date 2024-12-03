@@ -971,20 +971,6 @@ type Widget {
   layout: WidgetLayout
 }
 
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-
-type TemplateAndUtils {
-  template: Template!
-  template_widgets: [Widget!]!
-}
-
 type IndexedFile {
   id: ID!
   name: String!
@@ -2870,8 +2856,7 @@ interface Container {
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
@@ -2955,8 +2940,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3089,8 +3073,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3198,8 +3181,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3332,8 +3314,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -8147,6 +8128,7 @@ type Query {
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
+  fintelTemplate(id: ID!): FintelTemplate
 }
 
 type Subscription {
@@ -8974,6 +8956,9 @@ type Mutation {
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
+  fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
+  fintelTemplateDelete(id: ID!): ID
+  fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9338,8 +9323,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -10139,8 +10123,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10282,8 +10265,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -10406,8 +10388,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10532,8 +10513,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10656,8 +10636,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10781,8 +10760,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10901,6 +10879,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
 }
 
 enum EntitySettingsOrdering {
@@ -12401,4 +12380,54 @@ type DraftWorkspaceEdge {
 input DraftWorkspaceAddInput {
   name: String!
   entity_id: String
+}
+
+type FintelTemplateWidget {
+  id: ID!
+  variable_name: String!
+  widget: Widget!
+}
+
+type FintelTemplate implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  settings_types: [String!]!
+  description: String
+  instance_filters: String
+  content: String!
+  start_date: DateTime
+  fintel_template_widgets: [FintelTemplateWidget!]!
+}
+
+input FintelTemplateWidgetAddInput {
+  variable_name: String!
+  widget: Any!
+}
+
+input FintelTemplateAddInput {
+  name: String!
+  description: String
+  settings_types: [String!]!
+  instance_filters: String
+  content: String
+  start_date: DateTime
+  fintel_template_widgets: [FintelTemplateWidgetAddInput]
+}
+
+type FintelTemplateEdge {
+  cursor: String!
+  node: FintelTemplate!
+}
+
+type FintelTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [FintelTemplateEdge!]!
+}
+
+enum FintelTemplateOrdering {
+  name
+  start_date
 }
