@@ -116,6 +116,19 @@ const ORGANIZATION_SHARING_QUERY = gql`
   }
 `;
 
+const LIST_RESTRICTED_ENTITIES = gql`
+  query stixCoreObjectsRestricted {
+    stixCoreObjectsRestricted {
+      edges {
+        node {
+          id
+          entity_type
+        }
+      }
+    }
+  }
+`;
+
 describe('Case Incident Response standard behavior with authorized_members activation from entity', () => {
   let caseIncident: CaseIncident;
   let userEditorId: string;
@@ -602,6 +615,16 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
     expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
+  });
+  it('should not list all restricted entities', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: LIST_RESTRICTED_ENTITIES,
+      variables: { first: 10 }
+    });
+  });
+  it('should BYPASS user list all restricted entities', async () => {
+    const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
+    expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(1);
   });
   it('should Admin user deactivate authorized members', async () => {
     await adminQuery({
