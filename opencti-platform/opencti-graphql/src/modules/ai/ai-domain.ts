@@ -24,7 +24,7 @@ import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiSumma
 import { Format, Tone } from '../../generated/graphql';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
-import { compute } from '../../database/ai-llm';
+import { queryAi } from '../../database/ai-llm';
 import {
   RELATION_AMPLIFIES,
   RELATION_ATTRIBUTED_TO,
@@ -60,7 +60,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   # Content
   ${content}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -80,7 +80,7 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   # Content
   ${content}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -101,7 +101,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   # Content
   ${content}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -122,7 +122,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   # Content
   ${content}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -141,7 +141,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
   # Content
   ${content}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -160,7 +160,7 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
   # Content
   ${content}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -243,7 +243,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     # Contextual information about the above facts
     ${entitiesInvolved.join('')}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -301,7 +301,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   # Content
   ${filesContent.join('')}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
 
@@ -344,6 +344,6 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   # Content
   ${filesContent.join('')}
   `;
-  const response = await compute(id, prompt, user);
+  const response = await queryAi(id, prompt, user);
   return response;
 };
