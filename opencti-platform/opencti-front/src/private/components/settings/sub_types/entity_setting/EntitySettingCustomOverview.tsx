@@ -9,6 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
 import { SubType_subType$data } from '@components/settings/sub_types/__generated__/SubType_subType.graphql';
 import { useTheme } from '@mui/styles';
+import { PAPER_STYLE } from '@components/settings/sub_types/SubType';
 import EntitySettingsOverviewLayoutCustomization, {
   EntitySettingsOverviewLayoutCustomizationData,
   entitySettingsOverviewLayoutCustomizationEdit,
@@ -74,12 +75,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
         <Paper
           variant="outlined"
           className={'paper-for-grid'}
-          style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 4,
-            position: 'relative',
-          }}
+          style={PAPER_STYLE(theme)}
         >
           <EntitySettingsOverviewLayoutCustomization
             entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
@@ -93,12 +89,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
         <Paper
           variant="outlined"
           className={'paper-for-grid'}
-          style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 4,
-            position: 'relative',
-          }}
+          style={PAPER_STYLE(theme)}
         >
           <Grid container>
             {layout.map(({ key, width, label }) => (
