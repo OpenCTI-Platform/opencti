@@ -2661,7 +2661,7 @@
   "The min value cannot be greater than max value": "La valeur min ne peut pas être supérieure à la valeur max",
   "The operators and modes are restricted for these filters.": "Les opérateurs et les modes sont restreints pour ces filtres.",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "Les opinions n'ont pas de valeur définie dans votre vocabulaire. Veuillez d'abord les ajouter pour pouvoir ajouter des opinions.",
-  "The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions": "Les avis n'ont pas de valeur définie dans votre vocabulaire. Veuillez d'abord les ajouter pour pouvoir ajouter des opinions",
+  "The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions.": "Les avis n'ont pas de valeur définie dans votre vocabulaire. Veuillez d'abord les ajouter pour pouvoir ajouter des opinions.",
   "The password has been updated": "Le mot de passe a été modifié",
   "The public dashboard is disabled": "Le tableau de bord public est désactivé",
   "The relations attached to selected entities will be copied to the merged entity.": "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",

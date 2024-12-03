@@ -2661,7 +2661,7 @@
   "The min value cannot be greater than max value": "最小値を最大値より大きくすることはできません",
   "The operators and modes are restricted for these filters.": "これらのフィルタには演算子とモードの制限があります。",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意見には、あなたの語彙で定義された価値はありません。意見を追加できるようにするには、まずそれらを追加してください。",
-  "The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions": "意見には、あなたの語彙で定義された価値はありません。意見を追加できるようにするには、まずそれらを追加してください。",
+  "The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions.": "意見には、あなたの語彙で定義された価値はありません。意見を追加できるようにするには、まずそれらを追加してください。",
   "The password has been updated": "パスワードを変更しました",
   "The public dashboard is disabled": "公開ダッシュボードは無効",
   "The relations attached to selected entities will be copied to the merged entity.": "選択されたエンティティに付属するリレーションは、マージされたエンティティにコピーされます。",

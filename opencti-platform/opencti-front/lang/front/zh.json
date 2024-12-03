@@ -2661,7 +2661,7 @@
   "The min value cannot be greater than max value": "最小值不能大于最大值",
   "The operators and modes are restricted for these filters.": "这些过滤器的运算符和模式受到限制。",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意见在您的词汇中没有定义值。请先添加意见，才能添加观点。",
-  "The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions": "意见在您的词汇中没有定义价值。请先添加，才能添加意见",
+  "The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions.": "意见在您的词汇中没有定义价值。请先添加意见，才能添加观点。",
   "The password has been updated": "密码已更新",
   "The public dashboard is disabled": "公共仪表板已禁用",
   "The relations attached to selected entities will be copied to the merged entity.": "附加到选定实体的关系将复制到归并的实体中。",
