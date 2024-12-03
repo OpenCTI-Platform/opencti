@@ -1,12 +1,13 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
-import FintelTemplatePreview from '@components/settings/sub_types/fintel_templates/FintelTemplatePreview';
+import FintelTemplatePreview from './FintelTemplatePreview';
+import { FintelTemplateProvider } from './FintelTemplateContext';
 import FintelTemplateContentEditor from './FintelTemplateContentEditor';
 import FintelTemplateTabs from './FintelTemplateTabs';
 import FintelTemplateHeader from './FintelTemplateHeader';
 import { FintelTemplateQuery } from './__generated__/FintelTemplateQuery.graphql';
-import FintelTemplateSidebar, { FINTEL_TEMPLATE_SIDEBAR_WIDTH } from './FintelTemplateSidebar';
+import FintelTemplateWidgetsSidebar, { FINTEL_TEMPLATE_SIDEBAR_WIDTH } from './FintelTemplateWidgetsSidebar';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
@@ -23,6 +24,8 @@ export const fintelTemplateQuery = graphql`
       ...FintelTemplateTabs_template
       ...FintelTemplateHeader_template
       ...FintelTemplateContentEditor_template
+      ...FintelTemplateWidgetsSidebar_template
+      ...FintelTemplatePreview_template
     }
   }
 `;
@@ -36,7 +39,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
   if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound/>;
 
   return (
-    <>
+    <FintelTemplateProvider>
       <div style={{ marginRight: FINTEL_TEMPLATE_SIDEBAR_WIDTH }}>
         <FintelTemplateHeader
           entitySettingId={entitySettingByType.id}
@@ -44,19 +47,16 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
         />
 
         <FintelTemplateTabs data={fintelTemplate}>
-          {({ index, setEditorValue, editorValue }) => (
+          {({ index }) => (
             <>
               <div role="tabpanel" hidden={index !== 0}>
-                <FintelTemplateContentEditor
-                  data={fintelTemplate}
-                  onChange={setEditorValue}
-                />
+                <FintelTemplateContentEditor data={fintelTemplate} />
               </div>
               <Security needs={[KNOWLEDGE]}>
                 <div role="tabpanel" hidden={index !== 1}>
                   <FintelTemplatePreview
-                    template_content={editorValue}
                     isTabActive={index === 1}
+                    data={fintelTemplate}
                   />
                 </div>
               </Security>
@@ -65,8 +65,8 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
         </FintelTemplateTabs>
       </div>
 
-      <FintelTemplateSidebar />
-    </>
+      <FintelTemplateWidgetsSidebar data={fintelTemplate} />
+    </FintelTemplateProvider>
   );
 };
 

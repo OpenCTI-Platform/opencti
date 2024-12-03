@@ -34,6 +34,8 @@ export const emptyFilterGroup = {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+export const SELF_ID = 'SELF_ID';
+
 export const FiltersVariant = {
   list: 'list',
   dialog: 'dialog',
@@ -302,7 +304,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
     maxContentMarkingsIds: string[],
   ) => {
     // replace SELF_ID
-    let filters = inputFilters ? JSON.parse(inputFilters.replace('SELF_ID', containerId)) : undefined;
+    let filters = inputFilters ? JSON.parse(inputFilters.replace(SELF_ID, containerId)) : undefined;
     // restrict markings
     const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
     const notAllowedMarkingIds = allowedMarkings

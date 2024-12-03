@@ -5,6 +5,7 @@ import stixCoreObjectsAttributesQuery from './StixCoreObjectsAttributesQuery';
 import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
+import { SELF_ID } from '../../../filters/filtersUtils';
 
 const useBuildAttributesOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -17,7 +18,7 @@ const useBuildAttributesOutcome = () => {
     if (!instance_id) {
       throw Error('The attribute widget should refers to an instance');
     }
-    const queryVariables = { id: instance_id === 'SELF_ID' ? containerId : instance_id };
+    const queryVariables = { id: instance_id === SELF_ID ? containerId : instance_id };
     const data = await fetchQuery(
       stixCoreObjectsAttributesQuery,
       queryVariables,

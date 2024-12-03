@@ -1,8 +1,9 @@
 import { Box, Button, Tab, Tabs, Tooltip } from '@mui/material';
-import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { Save } from '@mui/icons-material';
+import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplateTabs_template$key } from './__generated__/FintelTemplateTabs_template.graphql';
@@ -19,8 +20,6 @@ const tabsFragment = graphql`
 
 interface ChildrenProps {
   index: number
-  editorValue: string
-  setEditorValue: Dispatch<SetStateAction<string>>
 }
 
 interface FintelTemplateTabsProps {
@@ -33,8 +32,12 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
   const { t_i18n } = useFormatter();
   const [index, setIndex] = useState(0);
 
+  const { editorValue, setEditorValue } = useFintelTemplateContext();
   const { template_content, id } = useFragment(tabsFragment, data);
-  const [editorValue, setEditorValue] = useState(template_content);
+
+  useEffect(() => {
+    setEditorValue(template_content);
+  }, [template_content]);
 
   const [commitEditMutation, editOnGoing] = useFintelTemplateEdit();
 
@@ -89,7 +92,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         </div>
       </Box>
 
-      {children({ index, setEditorValue, editorValue })}
+      {children({ index })}
     </>
   );
 };

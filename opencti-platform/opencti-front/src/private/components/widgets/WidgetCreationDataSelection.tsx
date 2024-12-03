@@ -5,21 +5,14 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import WidgetFilters from '@components/widgets/WidgetFilters';
 import Button from '@mui/material/Button';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import type { WidgetDataSelection } from '../../../utils/widget/widget';
-import { getCurrentCategory, getCurrentDataSelectionLimit, WidgetPerspective } from './widgetUtils';
-
-interface WidgetCreationDataSelectionProps {
-  dataSelection: WidgetDataSelection[],
-  setDataSelection: (selection: WidgetDataSelection[]) => void,
-  perspective: WidgetPerspective,
-  type: string,
-  setStepIndex: (i: number) => void,
-}
+import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
+import { getCurrentCategory, getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
+import { useWidgetConfigContext } from './WidgetConfigContext';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   step_entity: {
@@ -51,15 +44,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelectionProps> = ({
-  dataSelection,
-  setDataSelection,
-  perspective,
-  type,
-  setStepIndex,
-}) => {
+const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const { config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { type, dataSelection, perspective } = config.widget;
+
+  const setDataSelection = (selection: WidgetDataSelection[]) => {
+    setConfigWidget({ ...config.widget, dataSelection: selection });
+  };
 
   const isDataSelectionFiltersValid = () => {
     return dataSelection.length > 0;
@@ -240,7 +233,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             marginTop: 20,
             textAlign: 'center',
           }}
-          onClick={() => setStepIndex(3)}
+          onClick={() => setStep(3)}
         >
           {t_i18n('Validate')}
         </Button>

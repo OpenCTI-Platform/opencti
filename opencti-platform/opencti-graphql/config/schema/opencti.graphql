@@ -907,6 +907,8 @@ type WidgetDataSelection {
   dynamicTo: String
   columns: [WidgetColumn!]
   instance_id: String
+  sort_by: String
+  sort_mode: String
 }
 type WidgetParameters {
   title: String

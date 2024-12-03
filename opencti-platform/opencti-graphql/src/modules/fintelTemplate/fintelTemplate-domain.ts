@@ -41,14 +41,38 @@ export const addFintelTemplate = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
+
   // add id to fintel template widgets
+  const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
+    ...templateWidget,
+    widget: { ...templateWidget.widget, id: uuidv4() },
+  }));
+  // add built-in attributes widget for self instance
+  widgetsWithIds.push({
+    variable_name: 'widgetSelfAttributes',
+    widget: {
+      id: uuidv4(),
+      type: 'attribute',
+      perspective: null,
+      dataSelection: [{
+        columns: [{
+          label: 'Representative',
+          attribute: 'representative.main',
+          variableName: 'containerRepresentative'
+        }],
+        instance_id: 'SELF_ID',
+      }],
+      parameters: {
+        title: 'Attributes of the instance',
+        description: 'Multi attributes widget for the instance which the template is applied to.',
+      }
+    },
+  });
+
   const finalInput: FintelTemplateAddInput = {
     ...input,
     template_content: input.template_content ?? '',
-    fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
-      ...templateWidget,
-      widget: { ...templateWidget.widget, id: uuidv4() },
-    })),
+    fintel_template_widgets: widgetsWithIds,
   };
   // create the fintel template
   const created = await createEntity(
@@ -71,12 +95,11 @@ export const fintelTemplateEditField = async (
   // add id to fintel template widgets
   const formattedInput = input.map((i) => {
     // TODO implement case with object_path
-    if (i.key === 'fintel_template_widgets') {
+    if (i.key === 'fintel_template_widgets' && !i.object_path) {
       const values = i.value as FintelTemplateWidgetAddInput[];
       const formattedValues = values.map((v) => ({
         ...v,
-        id: uuidv4(), // add id to fintel template widgets
-        widget: { ...v.widget, id: uuidv4() }, // widget with id
+        widget: { ...v.widget, id: v.widget.id ?? uuidv4() }, // ensure widget has an id
       }));
       return { ...i, value: formattedValues };
     }

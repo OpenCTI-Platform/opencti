@@ -6,8 +6,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -87,7 +87,7 @@ const stixCoreObjectsPolarAreaDistributionQuery = graphql`
 `;
 
 interface StixCoreObjectsPolarAreaComponentProps {
-  dataSelection: DashboardWidgetDataSelection[]
+  dataSelection: WidgetDataSelection[]
   queryRef: PreloadedQuery<StixCoreObjectsPolarAreaDistributionQuery>
   withExportPopover: boolean
   isReadOnly: boolean
@@ -124,8 +124,8 @@ const StixCoreObjectsPolarAreaComponent = ({
 interface StixCoreObjectsPolarAreaProps {
   startDate: string
   endDate: string
-  dataSelection: DashboardWidgetDataSelection[]
-  parameters: DashboardWidgetParameters
+  dataSelection: WidgetDataSelection[]
+  parameters: WidgetParameters
   variant?: string
   height?: CSSProperties['height']
   withExportPopover?: boolean

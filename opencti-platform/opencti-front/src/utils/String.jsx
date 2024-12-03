@@ -95,6 +95,12 @@ export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.
 
 export const capitalizeWords = (str) => str.split(' ').map(capitalizeFirstLetter).join(' ');
 
+export const toCamelCase = (str) => {
+  return str.replace(/[^a-zA-Z0-9 ]/g, '').replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
+    return i === 0 ? word.toLowerCase() : word.toUpperCase();
+  }).replace(/\s+/g, '');
+};
+
 export const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':

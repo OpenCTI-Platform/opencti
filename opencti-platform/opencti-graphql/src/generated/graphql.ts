@@ -30104,6 +30104,8 @@ export type WidgetDataSelection = {
   label?: Maybe<Scalars['String']['output']>;
   number?: Maybe<Scalars['Int']['output']>;
   perspective?: Maybe<WidgetPerspective>;
+  sort_by?: Maybe<Scalars['String']['output']>;
+  sort_mode?: Maybe<Scalars['String']['output']>;
   zoom?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -41809,6 +41811,8 @@ export type WidgetDataSelectionResolvers<ContextType = any, ParentType extends R
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   perspective?: Resolver<Maybe<ResolversTypes['WidgetPerspective']>, ParentType, ContextType>;
+  sort_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sort_mode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   zoom?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

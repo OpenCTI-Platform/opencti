@@ -2,6 +2,7 @@ import React from 'react';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useFragment } from 'react-relay';
+import { useFintelTemplateContext } from './FintelTemplateContext';
 import { FintelTemplateContentEditor_template$key } from './__generated__/FintelTemplateContentEditor_template.graphql';
 import RichTextField from '../../../../../components/fields/RichTextField';
 
@@ -13,14 +14,13 @@ const editorFragment = graphql`
 
 interface FintelTemplateContentEditorProps {
   data: FintelTemplateContentEditor_template$key
-  onChange: (value: string) => void
 }
 
 const FintelTemplateContentEditor = ({
   data,
-  onChange,
 }: FintelTemplateContentEditorProps) => {
   const template = useFragment(editorFragment, data);
+  const { setEditorValue } = useFintelTemplateContext();
 
   const validation = Yup.object().shape({
     template_content: Yup.string().trim(),
@@ -39,7 +39,7 @@ const FintelTemplateContentEditor = ({
           style={{ height: 'calc(100vh - 280px)' }}
           fullWidth
           hasFullScreen={false}
-          onChange={(_:string, val:string) => onChange(val)}
+          onChange={(_:string, val:string) => setEditorValue(val)}
         />
       )}
     </Formik>

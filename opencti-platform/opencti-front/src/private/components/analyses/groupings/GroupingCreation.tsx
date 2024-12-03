@@ -211,7 +211,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       onSubmit={onSubmit}
       onReset={onClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form>
           <Field
             component={TextField}
@@ -251,7 +251,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             name="content"
             label={t_i18n('Content')}
             required={mandatoryAttributes.includes('content')}
-            meta={{ error: errors.content }}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,

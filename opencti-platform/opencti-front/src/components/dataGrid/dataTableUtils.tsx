@@ -24,6 +24,7 @@ import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
 import { APP_BASE_PATH } from '../../relay/environment';
 import ItemOperations from '../ItemOperations';
+import FieldOrEmpty from '../FieldOrEmpty';
 
 const chipStyle = {
   fontSize: '12px',
@@ -90,12 +91,14 @@ export const Truncate = ({ children }: { children: ReactNode }) => (
 
 export const defaultRender: NonNullable<DataTableColumn['render']> = (data, displayDraftChip = false) => {
   return (
-    <Tooltip title={data}>
-      <div style={{ maxWidth: '100%', display: 'flex' }}>
-        <Truncate>{data}</Truncate>
-        {displayDraftChip && (<DraftChip/>)}
-      </div>
-    </Tooltip>
+    <FieldOrEmpty source={data}>
+      <Tooltip title={data}>
+        <div style={{ maxWidth: '100%', display: 'flex' }}>
+          <Truncate>{data}</Truncate>
+          {displayDraftChip && (<DraftChip/>)}
+        </div>
+      </Tooltip>
+    </FieldOrEmpty>
   );
 };
 

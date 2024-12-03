@@ -175,6 +175,14 @@ export const containerTypes = [
   'Observed-Data',
 ];
 
+export const typesWithFintelTemplates = [
+  'Report',
+  'Grouping',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+];
+
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
   const { sdos, scos } = useAuth().schema;
@@ -199,6 +207,7 @@ const useAttributes = () => {
     typesContainers,
     vocabularyAttributes: vocabularies.fields,
     containerTypes,
+    typesWithFintelTemplates,
   };
 };
 

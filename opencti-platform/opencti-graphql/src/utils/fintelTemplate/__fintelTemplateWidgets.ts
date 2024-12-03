@@ -44,7 +44,7 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Grouping types', attribute: 'context', variableName: 'context' },
+        { label: 'Context', attribute: 'context', variableName: 'context' },
       ],
       instance_id: 'SELF_ID',
     }],

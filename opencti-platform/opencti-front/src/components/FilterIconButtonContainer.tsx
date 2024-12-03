@@ -125,6 +125,7 @@ interface FilterIconButtonContainerProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  fintelTemplatesContext?: boolean;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -148,6 +149,7 @@ FilterIconButtonContainerProps
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
+  fintelTemplatesContext,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -384,6 +386,7 @@ FilterIconButtonContainerProps
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
+            fintelTemplatesContext={fintelTemplatesContext}
           />
         </Box>
       )}
