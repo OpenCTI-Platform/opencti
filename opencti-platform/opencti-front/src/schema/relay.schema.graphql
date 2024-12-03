@@ -12329,9 +12329,9 @@ type ExclusionListEdge {
 }
 
 type ExclusionListCacheStatus {
-  refreshAskDate: String!
-  cacheDate: String!
-  allNodeCacheUpdated: Boolean!
+  refreshVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
 }
 
 enum ExclusionListOrdering {

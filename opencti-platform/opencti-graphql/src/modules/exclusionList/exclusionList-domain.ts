@@ -28,17 +28,17 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryExclusi
 
 export const getCacheStatus = async () => {
   const redisCacheStatus = await redisGetExclusionListStatus();
-  const lastVersion = redisCacheStatus.last_refresh_ask_date ?? '';
+  const refreshVersion = redisCacheStatus.last_refresh_ask_date ?? '';
   const cacheVersion = redisCacheStatus.last_cache_date ?? '';
   const clusterConfig = await getClusterInstances();
-  const allNodeIds = clusterConfig.map((c) => c.platform_id.split(':')[2]);
+  const allNodeIds = clusterConfig.map((c) => c.platform_id);
   let isCacheRebuildInProgress = lastVersion !== cacheVersion;
-  for (let i = 0; i < allNodeIds.length; i += 1) {
-    const nodeId = allNodeIds[i];
-    isCacheRebuildInProgress = isCacheRebuildInProgress || lastVersion !== redisCacheStatus[nodeId];
+  for (let i = 0; i < clusterConfig.length; i += 1) {
+    const platformInstanceId = allNodeIds[i];
+    isCacheRebuildInProgress = isCacheRebuildInProgress || lastVersion !== redisCacheStatus[platformInstanceId];
   }
 
-  return { lastVersion, cacheVersion, isCacheRebuildInProgress };
+  return { refreshVersion, cacheVersion, isCacheRebuildInProgress };
 };
 
 const refreshExclusionListStatus = async () => {

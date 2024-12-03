@@ -22,7 +22,7 @@ type ExclusionListEdge {
 }
 
 type ExclusionListCacheStatus {
-  lastVersion: String!
+  refreshVersion: String!
   cacheVersion: String!
   isCacheRebuildInProgress: Boolean!
 }

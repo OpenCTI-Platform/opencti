@@ -7504,9 +7504,9 @@ export type ExclusionList = BasicObject & InternalObject & {
 
 export type ExclusionListCacheStatus = {
   __typename?: 'ExclusionListCacheStatus';
-  allNodeCacheUpdated: Scalars['Boolean']['output'];
-  cacheDate: Scalars['String']['output'];
-  refreshAskDate: Scalars['String']['output'];
+  cacheVersion: Scalars['String']['output'];
+  isCacheRebuildInProgress: Scalars['Boolean']['output'];
+  refreshVersion: Scalars['String']['output'];
 };
 
 export type ExclusionListConnection = {
@@ -34794,9 +34794,9 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type ExclusionListCacheStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListCacheStatus'] = ResolversParentTypes['ExclusionListCacheStatus']> = ResolversObject<{
-  allNodeCacheUpdated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  cacheDate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  refreshAskDate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  cacheVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isCacheRebuildInProgress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  refreshVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
