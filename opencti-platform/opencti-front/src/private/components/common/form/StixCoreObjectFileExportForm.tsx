@@ -172,7 +172,11 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.fileToExport) {
-            setFieldValue('exportFileName', values.fileToExport.value === 'mappableContent' && scoName ? scoName : values.fileToExport.label.split('.')[0]);
+            setFieldValue(
+              'exportFileName',
+              values.fileToExport.value === 'mappableContent' && scoName
+                ? scoName
+                : values.fileToExport.label.split('.')[0]);
           }
         }, [values.fileToExport]);
 
