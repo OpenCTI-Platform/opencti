@@ -218,6 +218,8 @@ const PlaybookAddComponentsContent = ({
           isMultiple: true,
         },
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
+        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
+        { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
       ];
     }
     return (
@@ -625,9 +627,14 @@ const PlaybookAddComponentsContent = ({
                           .fill(0)
                           .map((_, i) => (
                             <React.Fragment key={i}>
-                              {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel', 'objectAssignee', 'objectParticipant'].includes(actionsInputs[i]?.attribute))) && (
+                              {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel'].includes(actionsInputs[i]?.attribute))) && (
                                 <Alert severity="warning" style={{ marginBottom: 20 }}>
                                   {t_i18n('This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.')}
+                                </Alert>
+                              )}
+                              {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectAssignee', 'objectParticipant'].includes(actionsInputs[i]?.attribute))) && (
+                                <Alert severity="warning" style={{ marginBottom: 20 }}>
+                                  {t_i18n('This operations will only apply on assignees and participants added in the context of this playbook such as enrichment or other knowledge manipulations but not if the assignees or participants are already written in the platform.')}
                                 </Alert>
                               )}
                               <div key={i} className={classes.step}>
