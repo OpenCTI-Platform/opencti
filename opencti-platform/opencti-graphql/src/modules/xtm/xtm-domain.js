@@ -411,7 +411,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   } // end loop for
   const aiAttackPatterEmailEnd = new Date().getTime();
   console.timeEnd('[XTM]obasAttackPattern loop');
-  logApp.info(`[XTM][TIME] AI generated ${sortedEnrichedFilteredObasAttackPatterns} attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
+  logApp.info(`[XTM][TIME] AI generated ${sortedEnrichedFilteredObasAttackPatterns.length} attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
   logApp.info(`[XTM][TIME] TOTAL everything processed and send to obas in ${aiAttackPatterEmailEnd - startingDate} ms`);
   console.timeEnd('[XTM]generateOpenBasScenario ALL');
   return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
