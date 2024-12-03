@@ -9,6 +9,7 @@ import { radarChartOptions } from '../../../../utils/Charts';
 import { generateGreenToRedColors } from '../../../../utils/Colors';
 import { StixCoreObjectOpinionsRadarDistributionQuery } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 export const stixCoreObjectOpinionsRadarDistributionQuery = graphql`
   query StixCoreObjectOpinionsRadarDistributionQuery(
@@ -63,12 +64,25 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
   ];
   const labels = opinionOptions.map((m) => m.label);
   const colors = generateGreenToRedColors(opinionOptions.length);
+
+  const handleRadarOpen = () => {
+    if (opinionsDistribution && opinionsDistribution.length > 0) {
+      handleOpen();
+    } else {
+      MESSAGING$.notifyError(
+        <span>
+          {t_i18n('The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions.')}
+        </span>,
+      );
+    }
+  };
+
   return (
     <Chart
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // Need to migrate Chart Charts.js file to TSX
-      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, 'transparent', (height / 2) - 20, handleOpen)}
+      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, 'transparent', (height / 2) - 20, handleRadarOpen)}
       series={chartData}
       type="radar"
       width="100%"

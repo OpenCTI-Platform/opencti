@@ -11,6 +11,7 @@ import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Tooltip from '@mui/material/Tooltip';
 import OpinionPopover from './OpinionPopover';
 import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -38,6 +39,7 @@ export const stixCoreObjectOpinionsListQuery = graphql`
           explanation
           createdBy {
             name
+            id
           }
           objectMarking {
             definition_type
@@ -53,15 +55,16 @@ interface StixCoreObjectOpinionsListProps {
   queryRef: PreloadedQuery<StixCoreObjectOpinionsListQuery>
   open: boolean,
   handleClose: () => void,
+  onDelete: () => void
 }
 
-const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListProps> = ({ queryRef, open, handleClose }) => {
+const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListProps> = ({ queryRef, open, handleClose, onDelete }) => {
   const { t_i18n } = useFormatter();
   const { opinions } = usePreloadedQuery<StixCoreObjectOpinionsListQuery>(stixCoreObjectOpinionsListQuery, queryRef);
   return (
     <Dialog
       PaperProps={{ elevation: 1 }}
-      open={opinions && (opinions.edges ?? []).length > 0 ? open : false}
+      open={open}
       onClose={handleClose}
       fullWidth={true}
       maxWidth="md"
@@ -86,9 +89,20 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                 </ListItemIcon>
                 <ListItemText
                   primary={opinion?.opinion}
-                  secondary={truncate(opinion?.explanation, 120)}
+                  secondary={
+                    <Tooltip title={opinion?.explanation}>
+                      <span>{truncate(opinion?.explanation, 80)}</span>
+                    </Tooltip>
+                  }
+                  sx={{
+                    flex: 'none',
+                    width: '400px',
+                    marginRight: '50px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
                 />
-                <div style={{ marginRight: 50 }}>
+                <div style={{ marginRight: 50, width: '100px' }}>
                   {R.pathOr('', ['createdBy', 'name'], opinion)}
                 </div>
                 <div style={{ marginRight: 50 }}>
@@ -99,7 +113,16 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                   />
                 </div>
                 <ListItemSecondaryAction>
-                  {opinion && <OpinionPopover opinion={opinion} variant='inList' />}
+                  {opinion
+                    && <OpinionPopover
+                      opinion={opinion}
+                      variant='inList'
+                      onDelete={() => {
+                        onDelete();
+                        handleClose();
+                      }}
+                       />
+                  }
                 </ListItemSecondaryAction>
               </ListItem>
             );
