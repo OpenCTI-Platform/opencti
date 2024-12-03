@@ -110,9 +110,6 @@ const ExclusionLists = () => {
         secondaryAction={false}
         keyword={searchTerm}
         numberOfElements={numberOfElements}
-        message={t_i18n(
-          'TODO : explain this page',
-        )}
       >
         {queryRef && (
           <React.Suspense
