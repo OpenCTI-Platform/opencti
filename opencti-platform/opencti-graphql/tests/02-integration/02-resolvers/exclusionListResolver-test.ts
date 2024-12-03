@@ -112,7 +112,7 @@ describe('Exclusion list resolver', () => {
 
       it('should create an exclusion list', async () => {
         expect(exclusionListResponse.id).toBeDefined();
-        expect(exclusionListResponse.file_id).toBe('exclusionLists/test_name.txt');
+        expect(exclusionListResponse.file_id).toBe(`exclusionLists/${exclusionListResponse.id}.txt`);
       });
 
       it('should create a file', async () => {
@@ -145,7 +145,7 @@ describe('Exclusion list resolver', () => {
 
       it('should create an exclusion list', async () => {
         expect(exclusionListFileResponse.id).toBeDefined();
-        expect(exclusionListFileResponse.file_id).toBe('exclusionLists/test_name_file.txt');
+        expect(exclusionListFileResponse.file_id).toBe(`exclusionLists/${exclusionListFileResponse.id}.txt`);
       });
 
       it('should create a file', async () => {

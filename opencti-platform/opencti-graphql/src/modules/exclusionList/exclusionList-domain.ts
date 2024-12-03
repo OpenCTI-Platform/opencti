@@ -11,6 +11,7 @@ import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateEx
 import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { generateInternalId } from '../../schema/identifier';
 
 const filePath = 'exclusionLists';
 
@@ -64,22 +65,24 @@ export const checkFileSize = async (createReadStream: () => Readable) => {
   }
 };
 
-const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exclusionListName: string, file: FileUploadData) => {
+const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exclusionListId: string, file: FileUploadData) => {
   const fullFile = await file;
   await checkFileSize(fullFile.createReadStream);
-  const exclusionFile = { ...fullFile, filename: `${exclusionListName}.txt` };
+  const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
   return upload;
 };
 
 const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput | ExclusionListFileAddInput, file: FileUploadData) => {
-  const upload = await uploadExclusionListFile(context, user, input.name, file);
+  const exclusionListInternalId = generateInternalId();
+  const upload = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
   const exclusionListToCreate = {
     name: input.name,
     description: input.description,
     enabled: true,
     exclusion_list_entity_types: input.exclusion_list_entity_types,
-    file_id: upload.id
+    file_id: upload.id,
+    internal_id: exclusionListInternalId
   };
   const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
   await refreshExclusionListStatus();
@@ -109,7 +112,7 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   }
 
   if (file) {
-    await uploadExclusionListFile(context, user, exclusionList.name, file);
+    await uploadExclusionListFile(context, user, exclusionList.internal_id, file);
   }
   let element;
   if (input) {
