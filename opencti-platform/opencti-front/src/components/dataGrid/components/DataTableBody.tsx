@@ -128,12 +128,12 @@ const DataTableBody = ({
   }, [setTableHeight, settingsMessagesBannerHeight, rootRef, filters]);
 
   const rowWidth = useMemo(() => (
-    columns.reduce((acc, col) => {
+    Math.floor(columns.reduce((acc, col) => {
       const width = col.percentWidth
-        ? Math.round(tableWidth * (col.percentWidth / 100))
+        ? tableWidth * (col.percentWidth / 100)
         : SELECT_COLUMN_SIZE;
       return acc + width;
-    }, actions ? SELECT_COLUMN_SIZE + 9 : 9) // 9 is for scrollbar.
+    }, actions ? SELECT_COLUMN_SIZE + 9 : 9)) // 9 is for scrollbar.
   ), [columns, tableWidth]);
 
   const containerLinesStyle: CSSProperties = {
@@ -148,9 +148,11 @@ const DataTableBody = ({
 
   return (
     <>
-      {!hideHeaders && (
-        <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
-      )}
+      <div style={{ width: rowWidth }}>
+        {!hideHeaders && (
+          <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
+        )}
+      </div>
 
       <div style={containerLinesStyle}>
         {/* If we have perf issues we should find a way to memoize this */}
