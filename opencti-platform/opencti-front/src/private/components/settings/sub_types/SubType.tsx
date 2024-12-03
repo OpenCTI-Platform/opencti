@@ -1,11 +1,12 @@
 import Typography from '@mui/material/Typography';
-import React, { useMemo } from 'react';
+import React, { CSSProperties, useMemo } from 'react';
 import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { RootSubTypeQuery$variables } from '@components/settings/sub_types/__generated__/RootSubTypeQuery.graphql';
+import TemplatesGrid from '@components/settings/sub_types/templates/TemplatesGrid';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -17,20 +18,12 @@ import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import type { Theme } from '../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-  },
-}));
+export const PAPER_STYLE: (t: Theme) => CSSProperties = (theme) => ({
+  marginTop: theme.spacing(1),
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(0.5),
+  position: 'relative',
+});
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -70,14 +63,15 @@ interface SubTypeProps {
 }
 
 const SubType: React.FC<SubTypeProps> = ({ data }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const subType = useFragment<SubType_subType$key>(subTypeFragment, data);
 
   const subTypeSettingsId = subType.settings?.id;
   if (!subTypeSettingsId) {
     return null;
   }
+
   const config = useMemo(
     () => ({
       subscription: entitySettingSubscription,
@@ -94,24 +88,26 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
   );
   const { searchTerm } = viewStorage;
 
+  // const hasTemplates = subType.settings?.availableSettings.includes('templates')
+  const hasTemplates = true;
+
   return (
-    <div className={classes.container}>
+    <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
       <CustomizationMenu />
+
       <div style={{ marginBottom: 23 }}>
         <Typography variant="h1" gutterBottom={true}>
           {t_i18n(`entity_${subType.label}`)}
         </Typography>
       </div>
-      <Grid
-        container
-        spacing={3}
-      >
-        <Grid item xs={12}>
+
+      <Grid container spacing={3}>
+        <Grid item xs={hasTemplates ? 6 : 12}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
           </Typography>
           <Paper
-            classes={{ root: classes.paper }}
+            style={PAPER_STYLE(theme)}
             variant="outlined"
             className={'paper-for-grid'}
           >
@@ -132,6 +128,9 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             }
           </Paper>
         </Grid>
+
+        {hasTemplates && <TemplatesGrid />}
+
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
           <Grid item xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -145,7 +144,11 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
               />
             </div>
             <div className="clearfix" />
-            <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
+            <Paper
+              style={PAPER_STYLE(theme)}
+              variant="outlined"
+              className={'paper-for-grid'}
+            >
               <EntitySettingAttributes
                 entitySettingsData={subType.settings}
                 searchTerm={searchTerm}
@@ -153,6 +156,7 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             </Paper>
           </Grid>
         )}
+
         <EntitySettingCustomOverview
           entitySettingsData={subType.settings}
         />
