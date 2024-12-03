@@ -271,14 +271,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Definition',
     percentWidth: 25,
     isSortable: true,
-    render: ({ definition }, helpers) => defaultRender(definition, helpers),
+    render: ({ definition }) => defaultRender(definition),
   },
   definition_type: {
     id: 'definition_type',
     label: 'Type',
     percentWidth: 25,
     isSortable: true,
-    render: ({ definition_type }, helpers) => defaultRender(definition_type, helpers),
+    render: ({ definition_type }) => defaultRender(definition_type),
+  },
+  description: {
+    id: 'description',
+    label: 'Description',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ description }) => defaultRender(description),
   },
   event_types: {
     id: 'event_types',
@@ -746,6 +753,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: true,
     render: ({ source_name, draftVersion }) => defaultRender(source_name, draftVersion),
+  },
+  start_date: {
+    id: 'start_date',
+    label: 'Start date',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ start_date }, { fd }) => fd(start_date),
   },
   start_time: {
     id: 'start_time',

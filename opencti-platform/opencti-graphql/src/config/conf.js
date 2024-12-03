@@ -35,6 +35,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -626,6 +627,11 @@ export const BUS_TOPICS = {
   },
   [SUPPORT_BUS]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`,
+  },
+  [ENTITY_TYPE_FINTEL_TEMPLATE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}TEMPLATE_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}TEMPLATE_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}TEMPLATE_DELETE_TOPIC`,
   },
 };
 

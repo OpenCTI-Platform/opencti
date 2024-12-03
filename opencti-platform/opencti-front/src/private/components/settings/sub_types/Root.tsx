@@ -1,42 +1,35 @@
 import React, { Suspense } from 'react';
-import { useParams } from 'react-router-dom';
-import { graphql, useLazyLoadQuery } from 'react-relay';
-import { RootSubTypeQuery } from '@components/settings/sub_types/__generated__/RootSubTypeQuery.graphql';
+import { Route, Routes, useParams } from 'react-router-dom';
+import { useLazyLoadQuery } from 'react-relay';
+import EEGuard from '@components/common/entreprise_edition/EEGuard';
+import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import SubType from './SubType';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { useFormatter } from '../../../../components/i18n';
-
-export const subTypeQuery = graphql`
-  query RootSubTypeQuery($id: String!) {
-    subType(id: $id) {
-      ...SubType_subType
-    }
-  }
-`;
+import SubType, { subTypeQuery } from './SubType';
+import FintelTemplate from './fintel_templates/FintelTemplate';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const RootSubType = () => {
-  const { subTypeId } = useParams() as { subTypeId: string };
-  const { t_i18n } = useFormatter();
-  const data = useLazyLoadQuery<RootSubTypeQuery>(subTypeQuery, { id: subTypeId });
+  const { subTypeId } = useParams<{ subTypeId?: string }>();
+  if (!subTypeId) return <ErrorNotFound/>;
+
+  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, { id: subTypeId });
 
   return (
     <Suspense fallback={<Loader />}>
-      {
-        data.subType ? (
-          <>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Settings') },
-              { label: t_i18n('Customization') },
-              { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
-            ]}
-            />
-            <SubType data={data.subType}/>
-          </>
-        ) : (
-          <ErrorNotFound/>
-        )}
+      {subTypeRef && (
+        <Routes>
+          <Route path="/" element={<SubType queryRef={subTypeRef} />} />
+          <Route
+            path="/templates/:templateId"
+            element={(
+              <EEGuard redirect={`/dashboard/settings/customization/entity_types/${subTypeId}`}>
+                <FintelTemplate />
+              </EEGuard>
+            )}
+          />
+        </Routes>
+      )}
     </Suspense>
   );
 };

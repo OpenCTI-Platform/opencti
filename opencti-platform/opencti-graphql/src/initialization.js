@@ -20,6 +20,7 @@ import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
+import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -109,6 +110,9 @@ const platformInit = async (withMarkings = true) => {
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
+      if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
+        await initFintelTemplates(context, SYSTEM_USER);
+      }
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_INIT_RETRO_MAPPING_MIGRATION) {

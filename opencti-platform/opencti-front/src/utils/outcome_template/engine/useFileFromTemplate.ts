@@ -1,11 +1,11 @@
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
-import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
-import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
+import engineFintelTemplateQuery from './EngineFintelTemplateQuery';
 import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import { useFormatter } from '../../../components/i18n';
 import { useBuildFiltersForTemplateWidgets } from '../../filters/filtersUtils';
+import { EngineFintelTemplateQuery$data } from './__generated__/EngineFintelTemplateQuery.graphql';
 
 const useFileFromTemplate = () => {
   const { t_i18n } = useFormatter();
@@ -20,20 +20,21 @@ const useFileFromTemplate = () => {
     maxContentMarkings: string[],
   ) => {
     // fetch template and useful widgets
-    const variables = { id: containerId, templateId };
-    const { container } = await fetchQuery(
-      templateAndUtilsContainerQuery,
+    const variables = { id: templateId };
+    const { fintelTemplate } = await fetchQuery(
+      engineFintelTemplateQuery,
       variables,
-    ).toPromise() as TemplateAndUtilsContainerQuery$data;
+    ).toPromise() as EngineFintelTemplateQuery$data;
 
-    if (!container || !container.templateAndUtils) {
-      throw Error('No template found');
+    if (!fintelTemplate) {
+      throw Error('No fintel template found');
     }
 
-    const { template, template_widgets } = container.templateAndUtils;
-    let { content } = template;
+    let { content } = fintelTemplate;
+    const { fintel_template_widgets } = fintelTemplate;
 
-    for (const widget of template_widgets) {
+    for (const templateWidget of fintel_template_widgets) {
+      const { widget } = templateWidget;
       // attribute widgets
       if (widget.type === 'attribute') {
         // eslint-disable-next-line no-await-in-loop
@@ -71,7 +72,7 @@ const useFileFromTemplate = () => {
           outcome = `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`;
           MESSAGING$.notifyError('One of the widgets has not been resolved.');
         }
-        content = content.replace(`$${widget.id}`, outcome);
+        content = content.replace(`$${templateWidget.variable_name}`, outcome);
       }
     }
 

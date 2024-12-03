@@ -5,7 +5,7 @@ import DOMPurify from 'dompurify';
 import { dateFormat } from '../Time';
 import { useBuildFilterKeysMapFromEntityType } from '../filters/filtersUtils';
 import type { WidgetColumn } from '../widget/widget';
-import { toWrappableString } from '../String';
+import { stringWithZeroWidthSpace } from '../String';
 
 const MARKDOWN_ATTRIBUTES = [
   'description',
@@ -30,7 +30,7 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
       walkTokens: (token) => {
         if (token.type === 'text' && inTable) {
           // eslint-disable-next-line no-param-reassign
-          token.text = toWrappableString(token.text);
+          token.text = stringWithZeroWidthSpace(token.text);
         }
       },
     });
@@ -39,7 +39,7 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
     const stringHtml = DOMPurify.sanitize(mark);
     value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
   } else if (inTable) {
-    value = toWrappableString(value);
+    value = stringWithZeroWidthSpace(value);
   }
   return value;
 };
