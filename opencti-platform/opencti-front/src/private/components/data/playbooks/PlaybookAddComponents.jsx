@@ -18,7 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
-import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -132,7 +132,6 @@ const PlaybookAddComponentsContent = ({
   };
   const handleChangeActionInput = (i, key, value) => {
     // extract currentValue value
-    console.log('value', value);
     const currentValue = R.head(actionsInputs.map((v, k) => (k === i && v[key] ? v[key] : null)).filter((n) => n !== null));
     // Change operation
     if (key === 'op' && currentValue !== value) {
