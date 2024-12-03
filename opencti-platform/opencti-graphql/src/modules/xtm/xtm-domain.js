@@ -13,8 +13,15 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP
 } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
-import conf from '../../config/conf';
-import { createInjectInScenario, createScenario, getAttackPatterns, getInjectorContracts, getKillChainPhases, getScenarioResult } from '../../database/xtm-obas';
+import conf, { logApp } from '../../config/conf';
+import {
+  createInjectInScenario as obasCreateInjectInScenario,
+  createScenario as obasCreateScenario,
+  getAttackPatterns as obasGetAttackPatterns,
+  getInjectorContracts as obasGetInjectorContracts,
+  getKillChainPhases as obasGetKillChainPhases,
+  getScenarioResult as obasGetScenarioResult,
+} from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../utils/ee';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
@@ -23,7 +30,7 @@ import { extractEntityRepresentativeName, extractRepresentativeDescription } fro
 import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
-import { compute } from '../../database/ai-llm';
+import { queryAi } from '../../database/ai-llm';
 import { getDraftContext } from '../../utils/draftContext';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
@@ -41,7 +48,7 @@ const getShuffledArr = (arr) => {
 
 export const stixCoreObjectSimulationsResult = async (_, __, args) => {
   const { id } = args;
-  return getScenarioResult(id);
+  return obasGetScenarioResult(id);
 };
 
 export const scenarioElementsDistribution = async (context, user, args) => {
@@ -87,10 +94,14 @@ export const resolveContent = async (context, user, stixCoreObject) => {
     names = containers.map((n) => n.name);
     descriptions = containers.map((n) => n.description);
   }
-  return [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
+
+  const result = [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
+  logApp.info('ANGIE - resolveContent', { result: result.toString() });
+  return result;
 };
 
 export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
+  const startingDate = new Date().getTime();
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
@@ -98,7 +109,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
   const description = extractRepresentativeDescription(stixCoreObject);
   const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
-  const obasScenario = await createScenario(
+
+  // call to obas
+  const obasScenario = await obasCreateScenario(
     name,
     subtitle,
     description,
@@ -108,13 +121,17 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
     simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario'
   );
 
-  // Get kill chin phases
+  const obasCreateScenarioEnd = new Date().getTime();
+  logApp.info(`OBAS created scenario in ${obasCreateScenarioEnd - startingDate} ms.`);
+
+  // Get kill chain phases
   const sortByPhaseOrder = R.sortBy(R.prop('phase_order'));
-  const obasKillChainPhases = await getKillChainPhases();
+  const obasKillChainPhases = await obasGetKillChainPhases();
   const sortedObasKillChainPhases = sortByPhaseOrder(obasKillChainPhases);
   const killChainPhasesListOfNames = sortedObasKillChainPhases.map((n) => n.phase_name).join(', ');
   const indexedSortedObasKillChainPhase = R.indexBy(R.prop('phase_id'), sortedObasKillChainPhases);
 
+  const aiKillChainEmailStart = new Date().getTime();
   let dependsOnDuration = 0;
   if (attackPatterns.length === 0) {
     if (!useAI) {
@@ -140,7 +157,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Context about the attack
             ${content}
             `;
-      const responseIncidentResponse = await compute(null, promptIncidentResponse, user);
+      logApp.info('ANGIE - promptIncidentResponse', { promptIncidentResponse });
+      const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
       const promptIncidentResponseSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -151,7 +169,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseIncidentResponse}
             `;
-      const responseIncidentResponseSubject = await compute(null, promptIncidentResponseSubject, user);
+      const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
       const titleIncidentResponse = `[${killChainPhaseName}] ${responseIncidentResponseSubject} - Email to the incident response team`;
       await createInjectInScenario(
         obasScenario.scenario_id,
@@ -184,7 +202,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Context about the attack
             ${content}
             `;
-      const responseCiso = await compute(null, promptCiso, user);
+      const responseCiso = await queryAi(null, promptCiso, user);
       const promptCisoSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -195,7 +213,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseCiso}
             `;
-      const responseCisoSubject = await compute(null, promptCisoSubject, user);
+      const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
       const titleCiso = `[${killChainPhaseName}] ${responseCisoSubject} - Email to the CISO`;
       await createInjectInScenario(
         obasScenario.scenario_id,
@@ -211,13 +229,15 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
       );
       dependsOnDuration += (interval * 60);
-    }
+    } // end for loop
   }
+  const aiKillChainEmailEnd = new Date().getTime();
+  logApp.info(`AI generated kill chain email in ${aiKillChainEmailEnd - aiKillChainEmailStart} ms.`);
 
   // Get contracts from OpenBAS related to found attack patterns
 
   // Get attack patterns
-  const obasAttackPatterns = await getAttackPatterns();
+  const obasAttackPatterns = await obasGetAttackPatterns();
 
   // Extract attack patterns
   const attackPatternsMitreIds = finalAttackPatterns.filter((n) => isNotEmptyField(n.x_mitre_id)).map((n) => n.x_mitre_id);
@@ -234,6 +254,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const sortByKillChainPhase = R.sortBy(R.path(['attack_pattern_kill_chain_phase', 'phase_order']));
   const sortedEnrichedFilteredObasAttackPatterns = sortByKillChainPhase(enrichedFilteredObasAttackPatterns);
 
+  const aiAttackPatterEmailStart = new Date().getTime();
   // Get the injector contracts
   // eslint-disable-next-line no-restricted-syntax
   for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
@@ -260,7 +281,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Content
             ${obasAttackPattern.attack_pattern_description}
             `;
-      const responseIncidentResponse = await compute(null, promptIncidentResponse, user);
+      const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
       const promptIncidentResponseSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -271,7 +292,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseIncidentResponse}
             `;
-      const responseIncidentResponseSubject = await compute(null, promptIncidentResponseSubject, user);
+      const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
       const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
       await createInjectInScenario(
         obasScenario.scenario_id,
@@ -303,7 +324,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Content
             ${obasAttackPattern.attack_pattern_description}
         `;
-      const responseCiso = await compute(null, promptCiso, user);
+      const responseCiso = await queryAi(null, promptCiso, user);
       const promptCisoSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -314,9 +335,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Email content
             ${responseCiso}
             `;
-      const responseCisoSubject = await compute(null, promptCisoSubject, user);
+      const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
       const titleCiso = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the CISO`;
-      await createInjectInScenario(
+      await obasCreateInjectInScenario(
         obasScenario.scenario_id,
         'openbas_email',
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
@@ -327,7 +348,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
       );
       dependsOnDuration += (interval * 60);
     } else {
-      const obasInjectorContracts = await getInjectorContracts(obasAttackPattern.attack_pattern_id);
+      const obasInjectorContracts = await obasGetInjectorContracts(obasAttackPattern.attack_pattern_id);
       let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
       if (selection === 'random') {
         finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
@@ -352,11 +373,14 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         // TODO
       }
     }
-  }
+  } // end loop for
+  const aiAttackPatterEmailEnd = new Date().getTime();
+  logApp.info(`AI generated attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
   return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
 };
 
 export const generateContainerScenario = async (context, user, args) => {
+  // ici
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
