@@ -11,7 +11,6 @@ import { IdentitySearchIdentitiesSearchQuery$data } from '@components/common/ide
 import { IdentitySearchCreatorsSearchQuery$data } from '@components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
 import { StixDomainObjectsLinesSearchQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
-import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { LabelsQuerySearchQuery$data } from '@components/settings/__generated__/LabelsQuerySearchQuery.graphql';
 import { VocabularyQuery$data } from '@components/settings/__generated__/VocabularyQuery.graphql';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
@@ -26,6 +25,7 @@ import { NotifierFieldQuery } from '@components/common/form/NotifierField';
 import { NotifierFieldSearchQuery$data } from '@components/common/form/__generated__/NotifierFieldSearchQuery.graphql';
 import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases';
 import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
+import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
 import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/MarkingDefinitionsQuery';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -365,7 +365,7 @@ const useSearchEntities = ({
         .toPromise()
         .then((data) => {
           const markedByEntities = (
-            (data as MarkingDefinitionsLinesSearchQuery$data)?.markingDefinitions?.edges ?? []
+            (data as MarkingDefinitionsQuerySearchQuery$data)?.markingDefinitions?.edges ?? []
           ).map((n) => ({
             label: n?.node.definition,
             value: n?.node.id,

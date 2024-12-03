@@ -11,9 +11,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
+import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { MarkingDefinitionsLinesSearchQuery$data } from '../__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -211,7 +211,7 @@ const GroupEditionMarkingsComponent = ({
         render={({
           props,
         }: {
-          props: MarkingDefinitionsLinesSearchQuery$data;
+          props: MarkingDefinitionsQuerySearchQuery$data;
         }) => {
           if (props) {
             const markingDefinitions = (

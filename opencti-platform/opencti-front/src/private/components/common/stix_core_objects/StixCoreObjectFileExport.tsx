@@ -21,6 +21,7 @@ import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectF
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { Option } from '@components/common/form/ReferenceField';
 import { InfoOutlined } from '@mui/icons-material';
+import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -31,7 +32,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { MarkingDefinitionsLinesSearchQuery$data } from '../../settings/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -197,7 +197,7 @@ const StixCoreObjectFileExportComponent = ({
                 render={({
                   props,
                 }: {
-                  props: MarkingDefinitionsLinesSearchQuery$data;
+                  props: MarkingDefinitionsQuerySearchQuery$data;
                 }) => {
                   if (props && props.markingDefinitions) {
                     return (
