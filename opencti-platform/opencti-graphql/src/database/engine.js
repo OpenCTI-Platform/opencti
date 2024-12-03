@@ -2848,10 +2848,13 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
-  const { includeAuthorities = false } = options;
+  const { includeAuthorities = false, restrictedEntitiesOnly = false } = options;
   // Handle marking restrictions
   const markingRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
   const accessMust = markingRestrictions.must;
+  if (restrictedEntitiesOnly) {
+    accessMust.push({ exists: { field: 'authorized_members' } });
+  }
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
   // Add special keys to filters
