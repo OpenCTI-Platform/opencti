@@ -91,7 +91,7 @@ export const Truncate = ({ children }: { children: ReactNode }) => (
 export const defaultRender: NonNullable<DataTableColumn['render']> = (data, displayDraftChip = false) => {
   return (
     <Tooltip title={data}>
-      <div style={{ maxWidth: '100%' }}>
+      <div style={{ maxWidth: '100%', display: 'flex' }}>
         <Truncate>{data}</Truncate>
         {displayDraftChip && (<DraftChip/>)}
       </div>
@@ -849,7 +849,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Color',
     percentWidth: 15,
     isSortable: true,
-    render: ({ x_opencti_color }, { column: { size } }) => (
+    render: ({ x_opencti_color }) => (
       <Tooltip title={x_opencti_color}>
         <>
           <div

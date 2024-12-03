@@ -122,7 +122,7 @@ const MarkingDefinitions = () => {
     const { isSensitive } = useSensitiveModifications('markings', standard_id);
     return (
       <Tooltip title={definition_type}>
-        <div>
+        <div style={{ display: 'flex' }}>
           <Truncate>{definition_type}</Truncate>
           {isSensitive && <DangerZoneChip />}
         </div>
