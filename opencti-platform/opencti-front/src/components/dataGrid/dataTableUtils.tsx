@@ -25,7 +25,7 @@ import ItemSeverity from '../ItemSeverity';
 import { APP_BASE_PATH } from '../../relay/environment';
 import ItemOperations from '../ItemOperations';
 
-const MAGICAL_SIZE = 0.113;
+export const MAGICAL_SIZE = 0.113;
 
 const chipStyle = {
   fontSize: '12px',
@@ -264,6 +264,20 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
+  },
+  definition: {
+    id: 'definition',
+    label: 'Definition',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ definition }, helpers) => defaultRender(definition, helpers),
+  },
+  definition_type: {
+    id: 'definition_type',
+    label: 'Type',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ definition_type }, helpers) => defaultRender(definition_type, helpers),
   },
   event_types: {
     id: 'event_types',
@@ -839,6 +853,29 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ x_mitre_id }) => <code>{emptyFilled(x_mitre_id)}</code>,
+  },
+  x_opencti_color: {
+    id: 'x_opencti_color',
+    label: 'Color',
+    percentWidth: 15,
+    isSortable: true,
+    render: ({ x_opencti_color }, { column: { size } }) => (
+      <Tooltip title={x_opencti_color}>
+        <>
+          <div
+            style={{
+              backgroundColor: x_opencti_color,
+              height: 20,
+              width: 20,
+              display: 'inline-flex',
+              borderRadius: 20,
+              marginRight: 5,
+            }}
+          />
+          {truncate(x_opencti_color, size * MAGICAL_SIZE)}
+        </>
+      </Tooltip>
+    ),
   },
   x_opencti_order: {
     id: 'x_opencti_order',

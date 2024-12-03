@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { markingDefinitionsLinesSearchQuery } from '@components/settings/marking_definitions/MarkingDefinitionsLines';
 import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '@components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domain_objects/StixDomainObjectsLines';
 import { labelsSearchQuery } from '@components/settings/LabelsQuery';
@@ -12,7 +11,6 @@ import { IdentitySearchIdentitiesSearchQuery$data } from '@components/common/ide
 import { IdentitySearchCreatorsSearchQuery$data } from '@components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
 import { StixDomainObjectsLinesSearchQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
-import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { LabelsQuerySearchQuery$data } from '@components/settings/__generated__/LabelsQuerySearchQuery.graphql';
 import { VocabularyQuery$data } from '@components/settings/__generated__/VocabularyQuery.graphql';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
@@ -27,6 +25,8 @@ import { NotifierFieldQuery } from '@components/common/form/NotifierField';
 import { NotifierFieldSearchQuery$data } from '@components/common/form/__generated__/NotifierFieldSearchQuery.graphql';
 import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases';
 import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
+import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
+import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/MarkingDefinitionsQuery';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -365,7 +365,7 @@ const useSearchEntities = ({
         .toPromise()
         .then((data) => {
           const markedByEntities = (
-            (data as MarkingDefinitionsLinesSearchQuery$data)?.markingDefinitions?.edges ?? []
+            (data as MarkingDefinitionsQuerySearchQuery$data)?.markingDefinitions?.edges ?? []
           ).map((n) => ({
             label: n?.node.definition,
             value: n?.node.id,
