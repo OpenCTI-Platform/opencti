@@ -279,7 +279,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                   />
                 </Tooltip>}
             </>
-        }
+          }
           actions={isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}

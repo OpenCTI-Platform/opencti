@@ -6,7 +6,14 @@ import { defaultColumnsMap } from '../dataTableUtils';
 import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
-import { useComputeLink, useDataCellHelpers, useDataTableFormatter, useDataTableLocalStorage, useDataTablePaginationLocalStorage, useDataTableToggle } from '../dataTableHooks';
+import {
+  useComputeLink as defaultComputeLink,
+  useDataCellHelpers,
+  useDataTableFormatter,
+  useDataTableLocalStorage,
+  useDataTablePaginationLocalStorage,
+  useDataTableToggle,
+} from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 
 type DataTableComponentProps = Pick<DataTableProps,
@@ -30,6 +37,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'createButton'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'canToggleLine'
@@ -45,6 +53,7 @@ const DataTableComponent = ({
   redirectionModeEnabled = false,
   useLineData,
   useDataTable,
+  useComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
   hideHeaders,
@@ -138,7 +147,7 @@ const DataTableComponent = ({
         useDataTable: useDataTable(dataQueryArgs),
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink,
+        useComputeLink: useComputeLink ?? defaultComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),
