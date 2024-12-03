@@ -188,6 +188,10 @@ const Root = () => {
         />
         <Route
           path="/management"
+          element={<Navigate to="/dashboard/data/management/restricted" replace={true} />}
+        />
+        <Route
+          path="/management/restricted"
           element={boundaryWrapper(Management)}
         />
       </Routes>
