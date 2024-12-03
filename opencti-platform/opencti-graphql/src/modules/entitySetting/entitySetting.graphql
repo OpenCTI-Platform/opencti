@@ -53,6 +53,13 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   overview_layout_customization: [OverviewWidgetCustomization!] @auth
+  fintelTemplates(
+    first: Int
+    after: ID
+    orderBy: FintelTemplateOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FintelTemplateConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 # Ordering

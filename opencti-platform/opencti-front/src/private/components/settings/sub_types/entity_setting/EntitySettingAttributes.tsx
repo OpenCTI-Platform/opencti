@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { CheckCircleOutlined, DoNotDisturbOnOutlined } from '@mui/icons-material';
 import ListLines from '../../../../../components/list_lines/ListLines';
-import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$key } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
@@ -26,21 +25,24 @@ const entitySettingAttributesFragment = graphql`
   }
 `;
 
+interface EntitySettingAttributesProps {
+  entitySettingsData: EntitySettingAttributes_entitySetting$key;
+  searchTerm?: string;
+}
+
 const EntitySettingAttributes = ({
   entitySettingsData,
   searchTerm,
-}: {
-  entitySettingsData: SubType_subType$data['settings'];
-  searchTerm: string | undefined;
-}) => {
+}: EntitySettingAttributesProps) => {
   const { t_i18n } = useFormatter();
-  const entitySetting = useFragment<EntitySettingAttributes_entitySetting$key>(
+  const entitySetting = useFragment(
     entitySettingAttributesFragment,
     entitySettingsData,
   );
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
+
   const attributesMandatory = entitySetting.attributesDefinitions
     .filter((attr: { mandatory: boolean; name: string }) => attr.mandatory)
     .map((attr: { mandatory: boolean; name: string }) => attr.name);

@@ -1,5 +1,5 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
-import { WidgetPerspective } from '../outcome_template/engine/__generated__/TemplateAndUtilsContainerQuery.graphql';
+import { WidgetPerspective } from '../outcome_template/engine/__generated__/FintelTemplateAndUtilsContainerQuery.graphql';
 
 interface WidgetColumn {
   attribute: string | null

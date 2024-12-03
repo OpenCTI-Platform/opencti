@@ -1,3 +1,17 @@
+import {
+  widgetAllEntitiesAndObservables,
+  widgetAttackPatterns,
+  widgetGroupingMultiAttributes,
+  widgetIncidentResponseMultiAttributes,
+  widgetIndicators,
+  widgetReportMultiAttributes,
+  widgetRFIMultiAttributes,
+  widgetRFTMultiAttributes,
+  widgetThreats,
+  widgetVictims
+} from './__fintelTemplateWidgets';
+import type { FintelTemplateAddInput } from '../../generated/graphql';
+
 const executiveSummaryContent = (containerType: string) => {
   let typeLabel = 'Types';
   let typeWidget = '$types';
@@ -126,33 +140,34 @@ const executiveSummaryContent = (containerType: string) => {
 const getMultiAttributesWidget = (containerType: string) => {
   switch (containerType) {
     case 'Report':
-      return 'widgetReportMultiAttributesId';
+      return widgetReportMultiAttributes;
     case 'Grouping':
-      return 'widgetGroupingMultiAttributesId';
+      return widgetGroupingMultiAttributes;
     case 'Case-Incident':
-      return 'widgetIncidentResponseMultiAttributesId';
+      return widgetIncidentResponseMultiAttributes;
     case 'Case-Rfi':
-      return 'widgetRFIMultiAttributesId';
+      return widgetRFIMultiAttributes;
     case 'Case-Rft':
-      return 'widgetRFTMultiAttributesId';
+      return widgetRFTMultiAttributes;
     default:
-      return 'widgetReportMultiAttributesId';
+      return widgetReportMultiAttributes;
   }
 };
 
-export const generateTemplateExecutiveSummary = (containerType: string) => {
+export const generateFintelTemplateExecutiveSummary = (containerType: string): FintelTemplateAddInput => {
   const multiAttributesWidget = getMultiAttributesWidget(containerType);
   return {
     name: 'Executive Summary',
-    id: 'executiveSummary-id',
     content: executiveSummaryContent(containerType),
-    template_widgets_ids: [
+    settings_types: [containerType],
+    start_date: '1970-01-01T00:00:00Z',
+    fintel_template_widgets: [
       multiAttributesWidget,
-      'indicatorsId',
-      'attackPatternsId',
-      'threatsId',
-      'victimsId',
-      'allEntitiesAndObservablesId',
+      widgetIndicators,
+      widgetAttackPatterns,
+      widgetThreats,
+      widgetVictims,
+      widgetAllEntitiesAndObservables,
     ],
   };
 };
