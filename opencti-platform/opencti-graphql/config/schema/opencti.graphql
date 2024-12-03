@@ -912,14 +912,6 @@ type Widget {
   parameters: WidgetParameters
   layout: WidgetLayout
 }
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
 type TemplateAndUtils {
   template: Template!,
   template_widgets: [Widget!]!,

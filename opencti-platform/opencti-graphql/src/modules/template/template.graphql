@@ -1,0 +1,25 @@
+type Template {
+    id: ID!
+    name: String!
+    entityType: String!
+    description: String
+    filters: String
+    content: String!
+    template_widgets_ids: [String!]!
+}
+
+# Mutation
+input TemplateAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    entityType: String!
+    filters: String
+    content: String!
+    template_widgets_ids: [String!]!
+}
+
+type Mutation {
+    templateAdd(input: TemplateAddInput!): Template @auth(for: [])
+    templateDelete(id: ID!): ID @auth(for: [])
+    templateFieldPatch(id: ID!, input: [EditInput!]!): Template @auth(for: [])
+}
