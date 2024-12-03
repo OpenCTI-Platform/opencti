@@ -32,10 +32,10 @@ export const getCacheStatus = async () => {
   const cacheVersion = redisCacheStatus.last_cache_date ?? '';
   const clusterConfig = await getClusterInstances();
   const allNodeIds = clusterConfig.map((c) => c.platform_id);
-  let isCacheRebuildInProgress = lastVersion !== cacheVersion;
+  let isCacheRebuildInProgress = refreshVersion !== cacheVersion;
   for (let i = 0; i < clusterConfig.length; i += 1) {
     const platformInstanceId = allNodeIds[i];
-    isCacheRebuildInProgress = isCacheRebuildInProgress || lastVersion !== redisCacheStatus[platformInstanceId];
+    isCacheRebuildInProgress = isCacheRebuildInProgress || refreshVersion !== redisCacheStatus[platformInstanceId];
   }
 
   return { refreshVersion, cacheVersion, isCacheRebuildInProgress };
