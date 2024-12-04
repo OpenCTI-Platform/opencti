@@ -7502,6 +7502,13 @@ export type ExclusionList = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
 };
 
+export type ExclusionListCacheStatus = {
+  __typename?: 'ExclusionListCacheStatus';
+  cacheVersion: Scalars['String']['output'];
+  isCacheRebuildInProgress: Scalars['Boolean']['output'];
+  refreshVersion: Scalars['String']['output'];
+};
+
 export type ExclusionListConnection = {
   __typename?: 'ExclusionListConnection';
   edges?: Maybe<Array<ExclusionListEdge>>;
@@ -14349,8 +14356,9 @@ export type MutationExclusionListDeleteArgs = {
 
 
 export type MutationExclusionListFieldPatchArgs = {
+  file?: InputMaybe<Scalars['Upload']['input']>;
   id: Scalars['ID']['input'];
-  input: Array<EditInput>;
+  input?: InputMaybe<Array<EditInput>>;
 };
 
 
@@ -19332,6 +19340,7 @@ export type Query = {
   event?: Maybe<Event>;
   events?: Maybe<EventConnection>;
   exclusionList?: Maybe<ExclusionList>;
+  exclusionListCacheStatus?: Maybe<ExclusionListCacheStatus>;
   exclusionLists?: Maybe<ExclusionListConnection>;
   externalReference?: Maybe<ExternalReference>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
@@ -30960,6 +30969,7 @@ export type ResolversTypes = ResolversObject<{
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   EventsOrdering: EventsOrdering;
   ExclusionList: ResolverTypeWrapper<BasicStoreEntityExclusionList>;
+  ExclusionListCacheStatus: ResolverTypeWrapper<ExclusionListCacheStatus>;
   ExclusionListConnection: ResolverTypeWrapper<Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['ExclusionListEdge']>> }>;
   ExclusionListContentAddInput: ExclusionListContentAddInput;
   ExclusionListEdge: ResolverTypeWrapper<Omit<ExclusionListEdge, 'node'> & { node: ResolversTypes['ExclusionList'] }>;
@@ -31778,6 +31788,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
   ExclusionList: BasicStoreEntityExclusionList;
+  ExclusionListCacheStatus: ExclusionListCacheStatus;
   ExclusionListConnection: Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['ExclusionListEdge']>> };
   ExclusionListContentAddInput: ExclusionListContentAddInput;
   ExclusionListEdge: Omit<ExclusionListEdge, 'node'> & { node: ResolversParentTypes['ExclusionList'] };
@@ -34782,6 +34793,13 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ExclusionListCacheStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListCacheStatus'] = ResolversParentTypes['ExclusionListCacheStatus']> = ResolversObject<{
+  cacheVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isCacheRebuildInProgress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  refreshVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ExclusionListConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListConnection'] = ResolversParentTypes['ExclusionListConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<ResolversTypes['ExclusionListEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
@@ -36925,7 +36943,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   exclusionListContentAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListContentAddArgs, 'input'>>;
   exclusionListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationExclusionListDeleteArgs, 'id'>>;
-  exclusionListFieldPatch?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFieldPatchArgs, 'id' | 'input'>>;
+  exclusionListFieldPatch?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFieldPatchArgs, 'id'>>;
   exclusionListFileAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFileAddArgs, 'input'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<MutationExternalReferenceAddArgs, 'input'>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
@@ -38392,6 +38410,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<ResolversTypes['EventConnection']>, ParentType, ContextType, Partial<QueryEventsArgs>>;
   exclusionList?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<QueryExclusionListArgs, 'id'>>;
+  exclusionListCacheStatus?: Resolver<Maybe<ResolversTypes['ExclusionListCacheStatus']>, ParentType, ContextType>;
   exclusionLists?: Resolver<Maybe<ResolversTypes['ExclusionListConnection']>, ParentType, ContextType, Partial<QueryExclusionListsArgs>>;
   externalReference?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<QueryExternalReferenceArgs, 'id'>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<QueryExternalReferencesArgs>>;
@@ -41734,6 +41753,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   EventConnection?: EventConnectionResolvers<ContextType>;
   EventEdge?: EventEdgeResolvers<ContextType>;
   ExclusionList?: ExclusionListResolvers<ContextType>;
+  ExclusionListCacheStatus?: ExclusionListCacheStatusResolvers<ContextType>;
   ExclusionListConnection?: ExclusionListConnectionResolvers<ContextType>;
   ExclusionListEdge?: ExclusionListEdgeResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;

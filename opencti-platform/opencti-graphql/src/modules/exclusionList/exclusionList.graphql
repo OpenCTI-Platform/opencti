@@ -21,6 +21,12 @@ type ExclusionListEdge {
   node: ExclusionList!
 }
 
+type ExclusionListCacheStatus {
+  refreshVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
+}
+
 enum ExclusionListOrdering {
   name
   created_at
@@ -52,11 +58,12 @@ type Query {
     filters: FilterGroup
     search: String
   ): ExclusionListConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListCacheStatus: ExclusionListCacheStatus @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 type Mutation {
   exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  exclusionListFieldPatch(id: ID!, input: [EditInput!]!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

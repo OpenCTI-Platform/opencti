@@ -1,5 +1,5 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { isFeatureEnabled, logApp, NODE_INSTANCE_ID } from '../config/conf';
+import conf, { isFeatureEnabled, logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListStatus } from '../database/redis';
 import { getIsCacheInitialized, syncExclusionListCache } from '../database/exclusionListCache';
 
@@ -12,7 +12,7 @@ const exclusionListCacheSyncHandler = async () => {
 
   if (!exclusionListStatus?.last_cache_date) return;
 
-  if (exclusionListStatus.last_cache_date !== exclusionListStatus[NODE_INSTANCE_ID] || !isLocalCacheInitialized) {
+  if (exclusionListStatus.last_cache_date !== exclusionListStatus[PLATFORM_INSTANCE_ID] || !isLocalCacheInitialized) {
     logApp.info('[OPENCTI-MODULE][EXCLUSION-SYNC-MANAGER] local cache needs to be updated');
     await syncExclusionListCache(exclusionListStatus.last_cache_date);
     logApp.info('[OPENCTI-MODULE][EXCLUSION-SYNC-MANAGER] local cache has been updated');

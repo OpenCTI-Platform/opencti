@@ -213,6 +213,33 @@ export const promoteIndicatorToObservables = async (context: AuthContext, user: 
 
 export const getObservableValuesFromPattern = (pattern: string) => extractObservablesFromIndicatorPattern(pattern);
 
+const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, patternType: string, patternValue: string) => {
+  // check indicator syntax
+  const loweredPatternType = patternType.toLowerCase();
+  const formattedPattern = cleanupIndicatorPattern(loweredPatternType, patternValue);
+  const check = await checkIndicatorSyntax(context, user, loweredPatternType, formattedPattern);
+  if (check === false) {
+    throw FunctionalError(`Indicator of type ${patternType} is not correctly formatted.`, { doc_code: 'INCORRECT_INDICATOR_FORMAT' });
+  }
+
+  // Check that indicator is not excluded from an exclusion list
+  if (isFeatureEnabled('EXCLUSION_LIST')) {
+    const observableValues = getObservableValuesFromPattern(formattedPattern);
+    for (let i = 0; i < observableValues.length; i += 1) {
+      const exclusionListCheck = await checkObservableValue(observableValues[i]);
+      if (exclusionListCheck) {
+        throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
+          doc_code: 'INDICATOR_PATTERN_EXCLUDED',
+          excludedValue: exclusionListCheck.value,
+          exclusionList: exclusionListCheck.listId
+        });
+      }
+    }
+  }
+
+  return { formattedPattern };
+};
+
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
@@ -222,27 +249,8 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   if (isKnownObservable && !isStixCyberObservable(observableType)) {
     throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
-  // check indicator syntax
-  const patternType = indicator.pattern_type.toLowerCase();
-  const formattedPattern = cleanupIndicatorPattern(patternType, indicator.pattern);
-  const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
-  if (check === false) {
-    throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`, { doc_code: 'INCORRECT_INDICATOR_FORMAT' });
-  }
 
-  // Check that indicator is not excluded from an exclusion list
-  if (isFeatureEnabled('EXCLUSION_LIST')) {
-    const observableValues = getObservableValuesFromPattern(formattedPattern);
-    for (let i = 0; i < observableValues.length; i += 1) {
-      const exclusionListCheck = await checkObservableValue(observableValues[i]);
-      if (exclusionListCheck) {
-        throw FunctionalError(`Indicator of type ${indicator.pattern_type} is contained in exclusion list.`, {
-          excludedValue: exclusionListCheck.value,
-          exclusionList: exclusionListCheck.listId
-        });
-      }
-    }
-  }
+  const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
@@ -357,13 +365,9 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   // check indicator pattern syntax
   const patternEditInput = input.find((e) => e.key === 'pattern');
   if (patternEditInput) {
-    const patternType = indicator.pattern_type.toLowerCase();
-    const formattedPattern = cleanupIndicatorPattern(patternType, patternEditInput.value[0]);
-    const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
-    if (check === false) {
-      throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
-    }
+    await validateIndicatorPattern(context, user, indicator.pattern_type, patternEditInput.value[0]);
   }
+
   logApp.info('indicatorEditField finalInput', { finalInput });
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };

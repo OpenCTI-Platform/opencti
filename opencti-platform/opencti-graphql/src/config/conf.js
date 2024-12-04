@@ -82,6 +82,7 @@ const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerC
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
+export const PLATFORM_INSTANCE_ID = `platform:instance:${NODE_INSTANCE_ID}`;
 
 let configurationFile;
 if (externalConfigurationFile) {
