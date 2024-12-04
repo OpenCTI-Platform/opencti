@@ -8,6 +8,9 @@ import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { isEnterpriseEdition } from '../../utils/ee';
 import { ForbiddenAccess } from '../../config/errors';
 
+// to customize a template we need : EE, FF enabled
+// but also to have the SETTINGS_SETCUSTOMIZATION capability !!
+// (don't forget to check the capa if it's not done via a @auth in graphql of your function)
 export const canCustomizeTemplate = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
   const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
