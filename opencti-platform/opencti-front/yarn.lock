@@ -6317,13 +6317,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@types/uuid@npm:10.0.0"
-  checksum: 10/e3958f8b0fe551c86c14431f5940c3470127293280830684154b91dc7eb3514aeb79fe3216968833cf79d4d1c67f580f054b5be2cd562bebf4f728913e73e944
-  languageName: node
-  linkType: hard
-
 "@types/yargs-parser@npm:*":
   version: 21.0.3
   resolution: "@types/yargs-parser@npm:21.0.3"
@@ -14715,7 +14708,6 @@ __metadata:
     "@types/react-test-renderer": "npm:18.3.0"
     "@types/relay-runtime": "npm:17.0.4"
     "@types/relay-test-utils": "npm:17.0.0"
-    "@types/uuid": "npm:10.0.0"
     "@vitejs/plugin-react": "npm:4.3.1"
     analytics: "npm:0.8.14"
     apexcharts: "npm:3.54.1"
@@ -14813,7 +14805,7 @@ __metadata:
     typescript: "npm:5.5.4"
     unified: "npm:11.0.4"
     use-analytics: "npm:1.1.0"
-    uuid: "npm:10.0.0"
+    uuid: "npm:11.0.3"
     vite: "npm:5.4.8"
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:2.2.0"
@@ -18511,12 +18503,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:10.0.0":
-  version: 10.0.0
-  resolution: "uuid@npm:10.0.0"
+"uuid@npm:11.0.3":
+  version: 11.0.3
+  resolution: "uuid@npm:11.0.3"
   bin:
-    uuid: dist/bin/uuid
-  checksum: 10/35aa60614811a201ff90f8ca5e9ecb7076a75c3821e17f0f5ff72d44e36c2d35fcbc2ceee9c4ac7317f4cc41895da30e74f3885e30313bee48fda6338f250538
+    uuid: dist/esm/bin/uuid
+  checksum: 10/251385563195709eb0697c74a834764eef28e1656d61174e35edbd129288acb4d95a43f4ce8a77b8c2fc128e2b55924296a0945f964b05b9173469d045625ff2
   languageName: node
   linkType: hard
 
