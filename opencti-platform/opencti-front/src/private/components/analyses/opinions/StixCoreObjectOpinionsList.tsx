@@ -102,9 +102,18 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                     textOverflow: 'ellipsis',
                   }}
                 />
-                <div style={{ marginRight: 50, width: '100px' }}>
-                  {R.pathOr('', ['createdBy', 'name'], opinion)}
-                </div>
+                <Tooltip title={R.pathOr('', ['createdBy', 'name'], opinion)}>
+                  <div style={{
+                    marginRight: 50,
+                    width: '200px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                  >
+                    {R.pathOr('', ['createdBy', 'name'], opinion)}
+                  </div>
+                </Tooltip>
                 <div style={{ marginRight: 50 }}>
                   <ItemMarkings
                     variant="inList"

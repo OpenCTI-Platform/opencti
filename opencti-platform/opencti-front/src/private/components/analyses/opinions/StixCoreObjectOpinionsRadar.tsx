@@ -71,7 +71,7 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
     } else {
       MESSAGING$.notifyError(
         <span>
-          {t_i18n('The opinions have no value defined in your vocabulary. Please add them first to be able to add opinions.')}
+          {t_i18n('No opinions have been added for this entity.')}
         </span>,
       );
     }
