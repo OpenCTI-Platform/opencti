@@ -99,6 +99,354 @@ export const resolveContent = async (context, user, stixCoreObject) => {
   logApp.info('ANGIE - resolveContent', { result: result.toString() });
   return result;
 };
+const generateTechnicalAttackPattern = async (obasAttackPattern, selection, simulationType, obasScenario, dependsOnDuration, interval) => {
+  let dependsOnDurationLocal = dependsOnDuration;
+  console.time(`${obasAttackPattern.attack_pattern_id}:[XTM]obasGetInjectorContracts`);
+  const obasInjectorContracts = await obasGetInjectorContracts(obasAttackPattern.attack_pattern_id);
+  console.timeEnd(`${obasAttackPattern.attack_pattern_id}:[XTM]obasGetInjectorContracts`);
+  let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
+  if (selection === 'random') {
+    finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
+  }
+  if (simulationType === 'technical') {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const finalObasInjectorContract of finalObasInjectorContracts) {
+      const obasInjectorContractContent = JSON.parse(finalObasInjectorContract.injector_contract_content);
+      const title = `[${obasAttackPattern.attack_pattern_external_id}] ${obasAttackPattern.attack_pattern_name} - ${finalObasInjectorContract.injector_contract_labels.en}`;
+      console.time(`${obasAttackPattern.attack_pattern_id}-${obasAttackPattern.attack_pattern_name}:[XTM]obasCreateInjectInScenario-tech`);
+      await obasCreateInjectInScenario(
+        obasScenario.scenario_id,
+        obasInjectorContractContent.config.type,
+        finalObasInjectorContract.injector_contract_id,
+        title,
+        dependsOnDurationLocal,
+        null,
+        [{ value: 'opencti', color: '#001bda' }, { value: 'technical', color: '#b9461a' }]
+      );
+      console.timeEnd(`${obasAttackPattern.attack_pattern_id}-${obasAttackPattern.attack_pattern_name}:[XTM]obasCreateInjectInScenario-tech`);
+      dependsOnDurationLocal += (interval * 60);
+    }
+  } else {
+    // TODO
+    logApp.info(`[XTM] simulationType ${simulationType} not implemented yet.`);
+  }
+};
+
+const generateAttackPatternEmail = async (obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration) => {
+// Mail to incident response
+  const promptIncidentResponse = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}.
+            - You should take into account the context about the attack.
+            - You should write an email message (only the content, NOT the subject) representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack.
+            - The incident response team is under attack.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
+            
+            # Context about the attack
+            ${content}
+            
+            # Content
+            ${obasAttackPattern.attack_pattern_description}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-email`);
+  const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-email`);
+  const promptIncidentResponseSubject = `
+            # Instructions
+            - Generate a subject for the following email.
+            - The subject should be short and comprehensible.
+            - Just output the subject and nothing else.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseIncidentResponse}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-subject`);
+  const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-subject`);
+  const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario`);
+  await obasCreateInjectInScenario(
+    obasScenario.scenario_id,
+    'openbas_email',
+    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    titleIncidentResponse,
+    dependsOnDuration,
+    { expectations: [], subject: responseIncidentResponseSubject.replace('Subject: ', '').replace('"', ''), body: responseIncidentResponse },
+    [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
+  );
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario`);
+};
+
+const generateAttackPatternEmailCiso = async (obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration) => {
+  const promptCiso = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}.
+            - You should write an email message (only the content, NOT the subject) representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - You should take into account the context about the attack.
+            - The email message should be addressed from the security operation center team to the chief information security officer.
+            - The CISO is under attack.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
+          
+            # Context about the attack
+            ${content}
+            
+            # Content
+            ${obasAttackPattern.attack_pattern_description}
+        `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-email-ciso`);
+  const responseCiso = await queryAi(null, promptCiso, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-email-ciso`);
+  const promptCisoSubject = `
+            # Instructions
+            - Generate a subject for the following email.
+            - The subject should be short and comprehensible.
+            - Just output the subject and nothing else.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseCiso}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-subject-ciso`);
+  const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-subject-ciso`);
+  const titleCiso = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the CISO`;
+
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario-ciso`);
+  await obasCreateInjectInScenario(
+    obasScenario.scenario_id,
+    'openbas_email',
+    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    titleCiso,
+    dependsOnDuration,
+    { expectations: [], subject: responseCisoSubject.replace('Subject: ', '').replace('"', ''), body: responseCiso },
+    [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
+  );
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasAttackPattern-obasCreateInjectInScenario-ciso`);
+};
+
+const generateKillChainEmailCiso = async (killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration) => {
+// Mail to CISO
+  const promptCiso = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - We are in the kill chain phase ${killChainPhaseName}.
+            - You should write an email message (only the content, NOT the subject) representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - The email message should be addressed from the security operation center team to the chief security officer, talking about the phase of the attack.
+            - The incident response team is under attack.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
+            
+            # Context about the attack
+            ${content}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-email-ciso`);
+  const responseCiso = await queryAi(null, promptCiso, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-email-ciso`);
+  const promptCisoSubject = `
+            # Instructions
+            - Generate a subject for the following email.
+            - The subject should be short and comprehensible.
+            - Just output the subject and nothing else.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseCiso}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-subject-ciso`);
+  const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-subject-ciso`);
+  const titleCiso = `[${killChainPhaseName}] ${responseCisoSubject} - Email to the CISO`;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-obasCreateInjectInScenario-ciso`);
+  await obasCreateInjectInScenario(
+    obasScenario.scenario_id,
+    'openbas_email',
+    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    titleCiso,
+    dependsOnDuration,
+    {
+      expectations: [],
+      subject: responseCisoSubject.replace('Subject: ', '').replace('"', ''),
+      body: responseCiso
+    },
+    [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
+  );
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-obasCreateInjectInScenario-ciso`);
+};
+
+// FIXME manage dependsOnDuration
+const generateKillChainEmail = async (killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration) => {
+  // Mail to incident response
+  const promptIncidentResponse = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - We are in the kill chain phase ${killChainPhaseName}.
+            - You should write an email message (only the content, NOT the subject) representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack.
+            - The incident response team is under attack.
+            - Ensure that all words are accurately spelled and that the grammar is correct and the output format is in HTML.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
+            
+            # Context about the attack
+            ${content}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-email`);
+  const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-email`);
+  const promptIncidentResponseSubject = `
+            # Instructions
+            - Generate a subject for the following email.
+            - The subject should be short and comprehensible.
+            - Just output the subject and nothing else.
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseIncidentResponse}
+            `;
+  console.time(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-subject`);
+  const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
+  console.timeEnd(`${killChainPhaseName}:[XTM]queryAi-obasKillChainPhase-subject`);
+  const titleIncidentResponse = `[${killChainPhaseName}] ${responseIncidentResponseSubject} - Email to the incident response team`;
+  console.time(`${killChainPhaseName}:[XTM]obasCreateInjectInScenario-obasKillChainPhase`);
+  await obasCreateInjectInScenario(
+    obasScenario.scenario_id,
+    'openbas_email',
+    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    titleIncidentResponse,
+    dependsOnDuration,
+    {
+      expectations: [],
+      subject: responseIncidentResponseSubject.replace('Subject: ', '').replace('"', ''),
+      body: responseIncidentResponse
+    },
+    [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
+  );
+  console.timeEnd(`${killChainPhaseName}:[XTM]obasCreateInjectInScenario-obasKillChainPhase`);
+};
+
+export const generateOpenBasScenarioV2 = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
+  logApp.info('[XTM] Starting to generate OBAS scenario', { useAI, simulationType });
+  console.time('[XTM]generateOpenBasScenario ALL');
+  const startingDate = new Date().getTime();
+  const content = await resolveContent(context, user, stixCoreObject);
+  const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
+
+  // Create the scenario
+  const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
+  const description = extractRepresentativeDescription(stixCoreObject);
+  const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
+
+  // call to obas
+  console.time('[XTM]obasCreateScenario1');
+  const obasScenario = await obasCreateScenario(
+    name,
+    subtitle,
+    description,
+    [...labels, { value: 'opencti', color: '#001bda' }],
+    stixCoreObject.id,
+    stixCoreObject.entity_type,
+    simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario'
+  );
+  console.timeEnd('[XTM]obasCreateScenario1');
+
+  // Get kill chain phases
+  const sortByPhaseOrder = R.sortBy(R.prop('phase_order'));
+  console.time('[XTM]obasGetKillChainPhases1');
+  const obasKillChainPhases = await obasGetKillChainPhases(); // Why it's not called only inside  if (attackPatterns.length === 0)  ??
+  console.timeEnd('[XTM]obasGetKillChainPhases1');
+  const sortedObasKillChainPhases = sortByPhaseOrder(obasKillChainPhases);
+  const killChainPhasesListOfNames = sortedObasKillChainPhases.map((n) => n.phase_name).join(', ');
+  const indexedSortedObasKillChainPhase = R.indexBy(R.prop('phase_id'), sortedObasKillChainPhases);
+
+  const createAndInjectScenarioPromises = [];
+
+  let dependsOnDuration = 0;
+  if (attackPatterns.length === 0) {
+    if (!useAI) {
+      throw UnsupportedError('No attack pattern associated to this entity. Please use AI to generate the scenario. This feature will be enhanced in the future to cover more types of entities.');
+    }
+    console.time('[XTM]obasKillChainPhase loop');
+    // eslint-disable-next-line no-restricted-syntax
+    for (const obasKillChainPhase of sortedObasKillChainPhases) {
+      const killChainPhaseName = obasKillChainPhase.phase_name;
+      createAndInjectScenarioPromises.push(generateKillChainEmail(killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration));
+      dependsOnDuration += (interval * 60);
+      createAndInjectScenarioPromises.push(generateKillChainEmailCiso(killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration));
+      dependsOnDuration += (interval * 60);
+    }
+    console.timeEnd('[XTM]obasKillChainPhase loop');
+  } else {
+    logApp.info('[XTM] attack pattern found, no generation of kill chain phase email');
+  }
+  // Get contracts from OpenBAS related to found attack patterns
+
+  // Get attack patterns
+  console.time('[XTM]obasGetAttackPatterns');
+  const obasAttackPatterns = await obasGetAttackPatterns();
+  console.timeEnd('[XTM]obasGetAttackPatterns');
+
+  // Extract attack patterns
+  const attackPatternsMitreIds = finalAttackPatterns.filter((n) => isNotEmptyField(n.x_mitre_id)).map((n) => n.x_mitre_id);
+
+  // Keep only attack patterns matching the container ones
+  const filteredObasAttackPatterns = obasAttackPatterns.filter((n) => attackPatternsMitreIds.includes(n.attack_pattern_external_id));
+
+  // Enrich with the earliest kill chain phase
+  const enrichedFilteredObasAttackPatterns = filteredObasAttackPatterns.map(
+    (n) => R.assoc('attack_pattern_kill_chain_phase', sortByPhaseOrder(n.attack_pattern_kill_chain_phases.map((o) => indexedSortedObasKillChainPhase[o])).at(0), n)
+  );
+
+  // Sort attack pattern by kill chain phase
+  const sortByKillChainPhase = R.sortBy(R.path(['attack_pattern_kill_chain_phase', 'phase_order']));
+  const sortedEnrichedFilteredObasAttackPatterns = sortByKillChainPhase(enrichedFilteredObasAttackPatterns);
+
+  console.time('[XTM]obasAttackPattern loop');
+  const aiAttackPatterEmailStart = new Date().getTime();
+  // Get the injector contracts
+  // eslint-disable-next-line no-restricted-syntax
+  for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
+    const killChainPhaseName = obasAttackPattern.attack_pattern_kill_chain_phase.phase_name;
+    if (simulationType === 'simulated') {
+      createAndInjectScenarioPromises.push(
+        generateAttackPatternEmail(obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration)
+      );
+      dependsOnDuration += (interval * 60);
+      createAndInjectScenarioPromises.push(
+        generateAttackPatternEmailCiso(obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration)
+      );
+      dependsOnDuration += (interval * 60);
+    } else {
+      createAndInjectScenarioPromises.push(generateTechnicalAttackPattern(obasAttackPattern, selection, simulationType, obasScenario, dependsOnDuration, interval));
+      dependsOnDuration += (interval * 60);
+    }
+  } // end loop for
+  const aiAttackPatterEmailEnd = new Date().getTime();
+  console.timeEnd('[XTM]obasAttackPattern loop');
+
+  await Promise.all(createAndInjectScenarioPromises);
+
+  logApp.info(`[XTM][TIME] AI generated ${sortedEnrichedFilteredObasAttackPatterns.length} attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
+  logApp.info(`[XTM][TIME] TOTAL everything processed and send to obas in ${aiAttackPatterEmailEnd - startingDate} ms`);
+  console.timeEnd('[XTM]generateOpenBasScenario ALL');
+  return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
+};
 
 export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
   logApp.info('[XTM] Starting to generate OBAS scenario', { useAI, simulationType });
