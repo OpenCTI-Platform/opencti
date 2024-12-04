@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
@@ -17,6 +17,9 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { now } from '../../../../utils/Time';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -52,16 +55,26 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
   const actions: string[] = ['Exclusion'];
+  const [isCreatedWithFile, setIsCreatedWithFile] = useState<boolean>(true);
   const [commitFile] = useApiMutation(exclusionListCreationFileMutation);
-  const onSubmitFile: FormikConfig<ExclusionListCreationFileFormData>['onSubmit'] = (
+  const onSubmit: FormikConfig<ExclusionListCreationFileFormData>['onSubmit'] = (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
+    let file = values.file;
+    if (!file) {
+      const blob = new Blob([values.content], { type: 'text/plain' });
+      file = new File(
+        [blob],
+        `${now()}_${values.name}.txt`,
+        { type: 'text/plain', },
+      );
+    }
     const input = {
       name: values.name,
       description: values.description,
       exclusion_list_entity_types: values.exclusion_list_entity_types.map((type) => type.value),
-      file: values.file,
+      file: file,
     };
     commitFile({
       variables: {
@@ -103,7 +116,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     <Formik<ExclusionListCreationFileFormData>
       initialValues={initialValuesFile}
       validationSchema={exclusionListValidator(t_i18n)}
-      onSubmit={onSubmitFile}
+      onSubmit={onSubmit}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
@@ -136,7 +149,25 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             ) => <li key={option.value} {...props}>{option.label}</li>}
             textfieldprops={{ label: t_i18n('Entity types') }}
           />
-          <CustomFileUploader setFieldValue={setFieldValue} />
+          <FormControlLabel
+            style={fieldSpacingContainerStyle}
+            control={<Switch defaultChecked onChange={(_, isChecked) => {
+              setIsCreatedWithFile(isChecked);
+            }} />}
+            label={t_i18n('Create with file')}
+          />
+          {isCreatedWithFile ? (
+            <CustomFileUploader setFieldValue={setFieldValue} />
+          ) : (
+            <Field
+              style={fieldSpacingContainerStyle}
+              component={TextField}
+              name="content"
+              label={t_i18n('Content (1 / line)')}
+              multiline
+              rows="4"
+            />
+          )}
           <Field
             component={AutocompleteField}
             name="action"
