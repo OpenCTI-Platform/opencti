@@ -35,7 +35,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
-import { ENTITY_TYPE_TEMPLATE } from "../modules/template/template-types";
+import { ENTITY_TYPE_TEMPLATE } from '../modules/template/template-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
