@@ -26922,8 +26922,8 @@ export type TemplateAddInput = {
   content: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
+  finished: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
-  published: Scalars['Boolean']['input'];
   template_widgets_ids: Array<Scalars['String']['input']>;
 };
 
