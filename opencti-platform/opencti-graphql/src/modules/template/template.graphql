@@ -17,7 +17,7 @@ input TemplateAddInput {
     filters: String
     content: String!
     template_widgets_ids: [String!]!
-    published: Boolean!
+    finished: Boolean!
 }
 
 
