@@ -20,6 +20,19 @@ input TemplateAddInput {
     published: Boolean!
 }
 
+
+# Relay connections
+type TemplateEdge {
+    cursor: String!
+    node: Template!
+}
+
+type TemplateConnection {
+    pageInfo: PageInfo!
+    edges: [TemplateEdge!]!
+}
+
+# Mutations
 type Mutation {
     templateAdd(input: TemplateAddInput!): Template @auth(for: [SETTINGS_SETCUSTOMIZATION])
     templateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])

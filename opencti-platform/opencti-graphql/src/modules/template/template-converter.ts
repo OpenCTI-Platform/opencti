@@ -11,7 +11,7 @@ export const convertTemplateToStix = (instance: StoreEntityTemplate): StixTempla
     availableForType: instance.availableForType,
     filters: instance.filters,
     content: instance.content,
-    template_widget_ids: instance.template_widget_ids ?? [],
+    template_widgets_ids: instance.template_widgets_ids ?? [],
     finished: instance.finished,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
