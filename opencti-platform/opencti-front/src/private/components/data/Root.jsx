@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import useHelper from '../../../utils/hooks/useHelper';
 import { boundaryWrapper } from '../Error';
 import useGranted, {
   BYPASS,
@@ -35,6 +36,9 @@ const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./Management'));
 
 const Root = () => {
+  const { isFeatureEnable } = useHelper();
+  const isNewManagementScreensEnables = isFeatureEnable('NEW_MANAGEMENT_SCREENS');
+
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -186,12 +190,14 @@ const Root = () => {
             </Security>
           }
         />
+        {isNewManagementScreensEnables && (
         <Route
           path="/management"
           element={<Navigate to="/dashboard/data/management/restricted" replace={true} />}
         />
+        )}
         <Route
-          path="/management/restricted"
+          path="/management/*"
           element={boundaryWrapper(Management)}
         />
       </Routes>
