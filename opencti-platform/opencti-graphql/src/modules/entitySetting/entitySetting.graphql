@@ -53,7 +53,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   overview_layout_customization: [OverviewWidgetCustomization!] @auth
-  templates: [Template!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  templates: [Template!] @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 # Ordering

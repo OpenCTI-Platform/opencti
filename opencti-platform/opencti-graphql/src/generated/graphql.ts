@@ -7218,7 +7218,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String']['output'];
   target_type: Scalars['String']['output'];
-  templates: Array<Template>;
+  templates?: Maybe<Array<Template>>;
   updated_at: Scalars['DateTime']['output'];
 };
 
@@ -34742,7 +34742,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  templates?: Resolver<Array<ResolversTypes['Template']>, ParentType, ContextType>;
+  templates?: Resolver<Maybe<Array<ResolversTypes['Template']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

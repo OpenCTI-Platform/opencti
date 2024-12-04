@@ -28,6 +28,16 @@ export interface Tick {
   label: string;
 }
 
+interface Template {
+  name: string;
+  description: string;
+  availableForType: string;
+  filters: string;
+  content: string;
+  template_widgets_ids: [string];
+  finished: boolean;
+}
+
 export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   target_type: string;
   platform_entity_files_ref: boolean;
@@ -37,6 +47,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   workflow_configuration: boolean;
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
+  templates?: Array<Template>;
 }
 
 export interface OverviewLayoutCustomization {
@@ -54,6 +65,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   workflow_configuration: boolean;
   availableSettings?: string[];
   overviewLayoutCustomization?: Array<string>;
+  templates?: Array<Template>;
 }
 
 export interface StixEntitySetting extends StixObject {
@@ -64,6 +76,7 @@ export interface StixEntitySetting extends StixObject {
   attributes_configuration?: string;
   workflow_configuration: boolean;
   available_settings?: string[];
+  templates?: Array<Template>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }

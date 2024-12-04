@@ -10884,7 +10884,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
-  templates: [Template!]!
+  templates: [Template!]
 }
 
 enum EntitySettingsOrdering {
