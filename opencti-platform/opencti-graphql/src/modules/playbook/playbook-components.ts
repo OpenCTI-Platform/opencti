@@ -29,7 +29,8 @@ import {
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_LABELS,
-  INPUT_MARKINGS, INPUT_PARTICIPANT,
+  INPUT_MARKINGS,
+  INPUT_PARTICIPANT
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
