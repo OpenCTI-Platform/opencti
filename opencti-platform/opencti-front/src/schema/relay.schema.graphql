@@ -10884,6 +10884,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
+  templates: [Template!]!
 }
 
 enum EntitySettingsOrdering {
@@ -12400,4 +12401,14 @@ input TemplateAddInput {
   content: String!
   template_widgets_ids: [String!]!
   published: Boolean!
+}
+
+type TemplateEdge {
+  cursor: String!
+  node: Template!
+}
+
+type TemplateConnection {
+  pageInfo: PageInfo!
+  edges: [TemplateEdge!]!
 }

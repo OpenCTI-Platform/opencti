@@ -8,7 +8,7 @@ import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { isEnterpriseEdition } from '../../utils/ee';
 import { ForbiddenAccess } from '../../config/errors';
 
-const canCustomizeTemplate = async (context: AuthContext) => {
+export const canCustomizeTemplate = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
   const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
   if (!isEE || !isFileFromTemplateEnabled) {

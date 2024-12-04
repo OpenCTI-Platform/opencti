@@ -11,7 +11,7 @@ export interface BasicStoreEntityTemplate extends BasicStoreEntity {
   availableForType: string;
   filters: string;
   content: string;
-  template_widget_ids: [string];
+  template_widgets_ids: [string];
   finished: boolean;
 }
 
@@ -21,7 +21,7 @@ export interface StoreEntityTemplate extends StoreEntity {
   availableForType: string;
   filters: string;
   content: string;
-  template_widget_ids: [string];
+  template_widgets_ids: [string];
   finished: boolean;
 }
 // endregion
@@ -33,7 +33,7 @@ export interface StixTemplate extends StixObject {
   availableForType: string;
   filters: string;
   content: string;
-  template_widget_ids: [string];
+  template_widgets_ids: [string];
   finished: boolean;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

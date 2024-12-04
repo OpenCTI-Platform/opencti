@@ -7218,6 +7218,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String']['output'];
   target_type: Scalars['String']['output'];
+  templates: Array<Template>;
   updated_at: Scalars['DateTime']['output'];
 };
 
@@ -26932,6 +26933,18 @@ export type TemplateAndUtils = {
   template_widgets: Array<Widget>;
 };
 
+export type TemplateConnection = {
+  __typename?: 'TemplateConnection';
+  edges: Array<TemplateEdge>;
+  pageInfo: PageInfo;
+};
+
+export type TemplateEdge = {
+  __typename?: 'TemplateEdge';
+  cursor: Scalars['String']['output'];
+  node: Template;
+};
+
 export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Text';
   cases?: Maybe<CaseConnection>;
@@ -31512,6 +31525,8 @@ export type ResolversTypes = ResolversObject<{
   Template: ResolverTypeWrapper<Template>;
   TemplateAddInput: TemplateAddInput;
   TemplateAndUtils: ResolverTypeWrapper<TemplateAndUtils>;
+  TemplateConnection: ResolverTypeWrapper<TemplateConnection>;
+  TemplateEdge: ResolverTypeWrapper<TemplateEdge>;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   TextAddInput: TextAddInput;
   ThreatActor: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ThreatActor']>;
@@ -32256,6 +32271,8 @@ export type ResolversParentTypes = ResolversObject<{
   Template: Template;
   TemplateAddInput: TemplateAddInput;
   TemplateAndUtils: TemplateAndUtils;
+  TemplateConnection: TemplateConnection;
+  TemplateEdge: TemplateEdge;
   Text: Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   TextAddInput: TextAddInput;
   ThreatActor: ResolversInterfaceTypes<ResolversParentTypes>['ThreatActor'];
@@ -34725,6 +34742,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  templates?: Resolver<Array<ResolversTypes['Template']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -40436,6 +40454,18 @@ export type TemplateAndUtilsResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type TemplateConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateConnection'] = ResolversParentTypes['TemplateConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['TemplateEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type TemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TemplateEdge'] = ResolversParentTypes['TemplateEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Template'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type TextResolvers<ContextType = any, ParentType extends ResolversParentTypes['Text'] = ResolversParentTypes['Text']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<TextCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TextConnectorsArgs>>;
@@ -42122,6 +42152,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TaxiiCollectionEditMutations?: TaxiiCollectionEditMutationsResolvers<ContextType>;
   Template?: TemplateResolvers<ContextType>;
   TemplateAndUtils?: TemplateAndUtilsResolvers<ContextType>;
+  TemplateConnection?: TemplateConnectionResolvers<ContextType>;
+  TemplateEdge?: TemplateEdgeResolvers<ContextType>;
   Text?: TextResolvers<ContextType>;
   ThreatActor?: ThreatActorResolvers<ContextType>;
   ThreatActorConnection?: ThreatActorConnectionResolvers<ContextType>;
