@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { OpenInNewOutlined } from '@mui/icons-material';
+import { NorthEastOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
+import RelatedContainersDetails from '@components/common/containers/RelatedContainersDetails';
+import Drawer from '@components/common/drawer/Drawer';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -35,22 +37,27 @@ export const RelatedContainersFragment = graphql`
         ... on Report {
           name
           modified
+          description
         }
         ... on Grouping {
           name
           modified
+          description
         }
         ... on CaseIncident {
           name
           modified
+          description
         }
         ... on CaseRfi {
           name
           modified
+          description
         }
         ... on CaseRft {
           name
           modified
+          description
         }
       }
     }
@@ -75,6 +82,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const [selectedContainer, setSelectedContainer] = useState<RelatedContainerNode | undefined>();
   const relatedContainers = useFragment(
     RelatedContainersFragment,
     relatedContainersKey,
@@ -83,6 +91,13 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 
   const containers = (relatedContainers?.edges ?? []).filter((edge) => edge?.node.id !== containerId).map((edge) => edge?.node);
   const containersGlobalCount = relatedContainers?.pageInfo?.globalCount ?? 0;
+
+  const handleOpenDetails = (container?: RelatedContainerNode) => {
+    if (!container) {
+      return;
+    }
+    setSelectedContainer(container);
+  };
 
   return (
     <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
@@ -113,8 +128,31 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         disableNavigation={true}
         storageKey={`related-containers-${entityType}-${containerId}`}
         hideHeaders={true}
-        onLineClick={(row: RelatedContainerNode) => navigate(`${resolveLink(row?.entity_type)}/${row?.id}`)}
+        onLineClick={(row: RelatedContainerNode) => handleOpenDetails(row)}
       />
+      <Drawer
+        title={selectedContainer?.name ?? '-'}
+        open={!!selectedContainer}
+        onClose={() => setSelectedContainer(undefined)}
+        header={
+          <IconButton
+            color="primary"
+            aria-label="Go to container"
+            onClick={() => navigate(`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`)}
+            size="medium"
+            style={{ position: 'absolute', right: 12 }}
+          >
+            <NorthEastOutlined/>
+          </IconButton>
+        }
+      >
+        {selectedContainer && (
+          <RelatedContainersDetails
+            containerId={containerId}
+            relatedContainer={selectedContainer}
+          />
+        )}
+      </Drawer>
     </div>
   );
 };
