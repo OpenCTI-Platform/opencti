@@ -736,7 +736,7 @@ describe('Restricted entities listing', () => {
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd).not.toBeUndefined();
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   }); // +1 create
-  it('should Admin user activate Authorized Members for Case IR', async () => {
+  it('should Admin user activate Authorized Members for Case IR', async () => { // +1 update
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
     const caseIRUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
@@ -810,7 +810,7 @@ describe('Restricted entities listing', () => {
         access_right: 'view'
       }
     ]);
-  });
+  }); // +1 update
   it('should not list all restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: LIST_RESTRICTED_ENTITIES,
