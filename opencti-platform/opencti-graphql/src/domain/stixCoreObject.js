@@ -50,6 +50,7 @@ import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAcc
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
+import { FilterOperator } from '../generated/graphql';
 
 const extractStixCoreObjectTypesFromArgs = (args) => {
   let types = [];
@@ -87,10 +88,11 @@ export const findAllRestricted = async (context, user, args) => {
     throw ForbiddenAccess();
   }
   const types = extractStixCoreObjectTypesFromArgs(args);
+  const filters = addFilter(args.filters, 'authorized_members.id', [], FilterOperator.NotNil);
   const finalArgs = {
     ...args,
     includeAuthorities: true,
-    restrictedEntitiesOnly: true,
+    filters
   };
 
   return listEntitiesPaginated(context, user, types, finalArgs);
