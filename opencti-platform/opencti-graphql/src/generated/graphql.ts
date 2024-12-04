@@ -26906,9 +26906,9 @@ export enum TaxiiVersion {
 
 export type Template = {
   __typename?: 'Template';
+  availableForType: Scalars['String']['output'];
   content: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
-  entityType: Scalars['String']['output'];
   filters?: Maybe<Scalars['String']['output']>;
   finished: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
@@ -26917,9 +26917,9 @@ export type Template = {
 };
 
 export type TemplateAddInput = {
+  availableForType: Scalars['String']['input'];
   content: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
-  entityType: Scalars['String']['input'];
   filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   published: Scalars['Boolean']['input'];
@@ -40419,9 +40419,9 @@ export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType 
 }>;
 
 export type TemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['Template'] = ResolversParentTypes['Template']> = ResolversObject<{
+  availableForType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   finished?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

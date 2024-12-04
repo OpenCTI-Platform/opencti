@@ -969,15 +969,6 @@ type Widget {
   layout: WidgetLayout
 }
 
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-
 type TemplateAndUtils {
   template: Template!
   template_widgets: [Widget!]!
@@ -8963,6 +8954,9 @@ type Mutation {
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
+  templateAdd(input: TemplateAddInput!): Template
+  templateDelete(id: ID!): ID
+  templateFieldPatch(id: ID!, input: [EditInput!]!): Template
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12385,4 +12379,25 @@ type DraftWorkspaceEdge {
 input DraftWorkspaceAddInput {
   name: String!
   entity_id: String
+}
+
+type Template {
+  id: ID!
+  name: String!
+  availableForType: String!
+  description: String
+  filters: String
+  content: String!
+  template_widgets_ids: [String!]!
+  finished: Boolean!
+}
+
+input TemplateAddInput {
+  name: String!
+  description: String
+  availableForType: String!
+  filters: String
+  content: String!
+  template_widgets_ids: [String!]!
+  published: Boolean!
 }

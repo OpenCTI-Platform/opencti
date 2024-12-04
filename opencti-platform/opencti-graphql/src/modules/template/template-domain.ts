@@ -4,13 +4,24 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { ENTITY_TYPE_TEMPLATE } from './template-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { isEnterpriseEdition } from '../../utils/ee';
+import { ForbiddenAccess } from '../../config/errors';
+
+const canCustomizeTemplate = async (context: AuthContext) => {
+  const isEE = await isEnterpriseEdition(context);
+  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
+  if (!isEE || !isFileFromTemplateEnabled) {
+    throw ForbiddenAccess();
+  }
+};
 
 export const addTemplate = async (
   context: AuthContext,
   user: AuthUser,
   input: TemplateAddInput,
 ) => {
+  await canCustomizeTemplate(context);
   const created = await createEntity(
     context,
     user,
@@ -40,6 +51,7 @@ export const templateEditField = async (
   templateId: string,
   input: EditInput[],
 ) => {
+  await canCustomizeTemplate(context);
   const { element } = await updateAttribute(
     context,
     user,
@@ -61,6 +73,7 @@ export const templateEditField = async (
 };
 
 export const templateDelete = async (context: AuthContext, user: AuthUser, templateId: string) => {
+  await canCustomizeTemplate(context);
   const deleted = await deleteElementById(
     context,
     user,

@@ -8,7 +8,7 @@ export const ENTITY_TYPE_TEMPLATE = 'Template';
 export interface BasicStoreEntityTemplate extends BasicStoreEntity {
   name: string;
   description: string;
-  entityType: string;
+  availableForType: string;
   filters: string;
   content: string;
   template_widget_ids: [string];
@@ -18,7 +18,7 @@ export interface BasicStoreEntityTemplate extends BasicStoreEntity {
 export interface StoreEntityTemplate extends StoreEntity {
   name: string;
   description: string;
-  entityType: string;
+  availableForType: string;
   filters: string;
   content: string;
   template_widget_ids: [string];
@@ -30,7 +30,7 @@ export interface StoreEntityTemplate extends StoreEntity {
 export interface StixTemplate extends StixObject {
   name: string;
   description: string;
-  entityType: string;
+  availableForType: string;
   filters: string;
   content: string;
   template_widget_ids: [string];

@@ -1,7 +1,7 @@
 type Template {
     id: ID!
     name: String!
-    entityType: String!
+    availableForType: String!
     description: String
     filters: String
     content: String!
@@ -13,7 +13,7 @@ type Template {
 input TemplateAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
-    entityType: String!
+    availableForType: String!
     filters: String
     content: String!
     template_widgets_ids: [String!]!
@@ -21,7 +21,7 @@ input TemplateAddInput {
 }
 
 type Mutation {
-    templateAdd(input: TemplateAddInput!): Template @auth(for: [])
-    templateDelete(id: ID!): ID @auth(for: [])
-    templateFieldPatch(id: ID!, input: [EditInput!]!): Template @auth(for: [])
+    templateAdd(input: TemplateAddInput!): Template @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    templateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    templateFieldPatch(id: ID!, input: [EditInput!]!): Template @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

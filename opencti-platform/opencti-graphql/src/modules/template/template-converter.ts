@@ -8,10 +8,11 @@ export const convertTemplateToStix = (instance: StoreEntityTemplate): StixTempla
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    entityType: instance.entityType,
+    availableForType: instance.availableForType,
     filters: instance.filters,
     content: instance.content,
     template_widget_ids: instance.template_widget_ids ?? [],
+    finished: instance.finished,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
