@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import { map, pathOr, pipe } from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
@@ -59,7 +60,6 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import { map, pathOr, pipe } from 'ramda';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
@@ -90,12 +90,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import {
-  findFilterFromKey,
-  getEntityTypeTwoFirstLevelsFilterValues,
-  removeIdAndIncorrectKeysFromFilterGroupObject,
-  serializeFilterGroupForBackend,
-} from '../../../utils/filters/filtersUtils';
+import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -410,18 +405,12 @@ class DataTableToolBar extends Component {
     this.setState({ displayPromote: false });
   }
 
-  handleOpenEnrichment() {
+  handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
     // Get enrich type
     let enrichType;
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
     if (this.props.selectAll) {
-      enrichType = this.props.type
-        ?? R.head(
-          findFilterFromKey(
-            this.props.filters?.filters ?? [],
-            'entity_type',
-            'eq',
-          )?.values ?? [],
-        );
+      enrichType = this.props.type ?? R.head(entityTypeFilterValues);
     } else {
       const selectedElementsList = Object.values(this.props.selectedElements || {});
       const selectedTypes = R.uniq(selectedElementsList
@@ -1809,7 +1798,7 @@ class DataTableToolBar extends Component {
                           <IconButton
                             aria-label="enrichment"
                             disabled={this.state.processing}
-                            onClick={this.handleOpenEnrichment.bind(this)}
+                            onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
                             color="primary"
                             size="small"
                           >
