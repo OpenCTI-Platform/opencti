@@ -43,6 +43,7 @@ import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { isNodeInConnection } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
+import Loader from '../../../../components/Loader';
 
 /**
  * The first page of the create relationship drawer: selecting the entity/entites
@@ -145,6 +146,7 @@ const SelectEntity = ({
         width: '100%',
       }}
     >
+      {!queryRef && (<Loader />)}
       {queryRef && (
         <div style={{ height: '100%' }} ref={setTableRootRef}>
           <DataTable
@@ -153,7 +155,7 @@ const SelectEntity = ({
             disableToolBar
             disableSelectAll
             rootRef={tableRootRef ?? undefined}
-            variant={DataTableVariant.inline}
+            variant={DataTableVariant.default}
             dataColumns={buildColumns}
             resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
             storageKey={localStorageKey}
@@ -161,6 +163,7 @@ const SelectEntity = ({
             initialValues={initialValues}
             toolbarFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
+            availableEntityTypes={virtualEntityTypes}
             entityTypes={virtualEntityTypes}
           />
         </div>
