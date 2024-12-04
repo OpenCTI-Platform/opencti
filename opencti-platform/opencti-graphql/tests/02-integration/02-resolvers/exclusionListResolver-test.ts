@@ -28,6 +28,16 @@ const CREATE_FILE_MUTATION = gql`
   }
 `;
 
+const FIELD_PATCH_MUTATION = gql`
+  mutation exclusionListFileUpdate($id: ID!, $input: [EditInput!], $file: Upload) {
+    exclusionListFieldPatch(id: $id, input: $input, file: $file) {
+      id
+      file_id
+      exclusion_list_entity_types
+    }
+  }
+`;
+
 const DELETE_MUTATION = gql`
   mutation exclusionListDelete($id: ID!) {
     exclusionListDelete(id: $id)
@@ -67,6 +77,18 @@ type ExclusionListResponse = {
   file_id: string | null;
 };
 
+const createUploadFile = (filePath: string, fileName: string) => {
+  const readStream = fileToReadStream(filePath, fileName, fileName, 'text/plain');
+  const fileUpload = { ...readStream, encoding: 'utf8' };
+  const upload = new Upload();
+  upload.promise = new Promise((executor) => {
+    executor(fileUpload);
+  });
+  upload.file = fileUpload;
+
+  return upload;
+};
+
 describe('Exclusion list resolver', () => {
   let exclusionListResponse: ExclusionListResponse = { id: null, file_id: null };
   let exclusionListFileResponse: ExclusionListResponse = { id: null, file_id: null };
@@ -90,7 +112,7 @@ describe('Exclusion list resolver', () => {
 
       it('should create an exclusion list', async () => {
         expect(exclusionListResponse.id).toBeDefined();
-        expect(exclusionListResponse.file_id).toBe('exclusionLists/test_name.txt');
+        expect(exclusionListResponse.file_id).toBe(`exclusionLists/${exclusionListResponse.id}.txt`);
       });
 
       it('should create a file', async () => {
@@ -105,13 +127,7 @@ describe('Exclusion list resolver', () => {
   describe('addExclusionListFile', () => {
     describe('If I create an exclusion with a file', () => {
       beforeAll(async () => {
-        const readStream = fileToReadStream('./tests/data/exclusionLists/', 'testFileExclusionList.txt', 'testFileExclusionList.txt', 'text/plain');
-        const fileUpload = { ...readStream, encoding: 'utf8' };
-        const upload = new Upload();
-        upload.promise = new Promise((executor) => {
-          executor(fileUpload);
-        });
-        upload.file = fileUpload;
+        const upload = createUploadFile('./tests/data/exclusionLists/', 'testFileExclusionList.txt');
 
         const result = await queryAsAdminWithSuccess({
           query: CREATE_FILE_MUTATION,
@@ -129,7 +145,7 @@ describe('Exclusion list resolver', () => {
 
       it('should create an exclusion list', async () => {
         expect(exclusionListFileResponse.id).toBeDefined();
-        expect(exclusionListFileResponse.file_id).toBe('exclusionLists/test_name_file.txt');
+        expect(exclusionListFileResponse.file_id).toBe(`exclusionLists/${exclusionListFileResponse.id}.txt`);
       });
 
       it('should create a file', async () => {
@@ -137,6 +153,23 @@ describe('Exclusion list resolver', () => {
         expect(fileStream).not.toBeNull();
         const data = await streamConverter(fileStream);
         expect(data).toEqual('127.0.0.1\n10.10.0.0\n2.2.2.2');
+      });
+
+      it('should update exclusion list file', async () => {
+        // Update file of exclusion list
+        const upload = createUploadFile('./tests/data/exclusionLists/', 'testFileExclusionListUpdate.txt');
+        await queryAsAdminWithSuccess({
+          query: FIELD_PATCH_MUTATION,
+          variables: {
+            id: exclusionListFileResponse.id,
+            file: upload
+          }
+        });
+        // verify that file was modified
+        const fileStream = await downloadFile(exclusionListFileResponse.file_id);
+        expect(fileStream).not.toBeNull();
+        const data = await streamConverter(fileStream);
+        expect(data).toEqual('127.0.0.1\n10.10.0.0\n12.10.0.0\n2.2.2.2');
       });
 
       it('should list exclusion lists', async () => {

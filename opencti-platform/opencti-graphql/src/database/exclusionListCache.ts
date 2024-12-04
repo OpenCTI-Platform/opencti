@@ -5,7 +5,7 @@ import type { AuthContext } from '../types/user';
 import { listAllEntities } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { getFileContent } from './file-storage';
-import { logApp, NODE_INSTANCE_ID } from '../config/conf';
+import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListCache, redisSetExclusionListCache, redisUpdateExclusionListStatus } from './redis';
 import { FunctionalError } from '../config/errors';
 
@@ -68,14 +68,14 @@ export const rebuildExclusionListCache = async (context: AuthContext, cacheDate:
   const newCache = await buildCacheFromAllExclusionLists(context);
   setCache(newCache);
   await redisSetExclusionListCache(newCache);
-  const exclusionListStatus = { last_cache_date: cacheDate, [NODE_INSTANCE_ID]: cacheDate };
+  const exclusionListStatus = { last_cache_date: cacheDate, [PLATFORM_INSTANCE_ID]: cacheDate };
   await redisUpdateExclusionListStatus(exclusionListStatus);
 };
 
 export const syncExclusionListCache = async (cacheDate: string) => {
   const currentCache = await redisGetExclusionListCache();
   setCache(currentCache);
-  await redisUpdateExclusionListStatus({ [NODE_INSTANCE_ID]: cacheDate });
+  await redisUpdateExclusionListStatus({ [PLATFORM_INSTANCE_ID]: cacheDate });
 };
 
 export const checkObservableValue = async (observableValue: any) => {

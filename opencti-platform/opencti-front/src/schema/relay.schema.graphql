@@ -8138,6 +8138,7 @@ type Query {
   supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
   exclusionList(id: String!): ExclusionList
   exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
+  exclusionListCacheStatus: ExclusionListCacheStatus
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
@@ -8957,7 +8958,7 @@ type Mutation {
   supportPackageDelete(id: ID!): ID
   exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
-  exclusionListFieldPatch(id: ID!, input: [EditInput!]!): ExclusionList
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
@@ -12325,6 +12326,12 @@ type ExclusionListConnection {
 type ExclusionListEdge {
   cursor: String!
   node: ExclusionList!
+}
+
+type ExclusionListCacheStatus {
+  refreshVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
 }
 
 enum ExclusionListOrdering {
