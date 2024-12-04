@@ -13731,6 +13731,9 @@ export type Mutation = {
   taskTemplateFieldPatch?: Maybe<TaskTemplate>;
   taxiiCollectionAdd?: Maybe<TaxiiCollection>;
   taxiiCollectionEdit?: Maybe<TaxiiCollectionEditMutations>;
+  templateAdd?: Maybe<Template>;
+  templateDelete?: Maybe<Scalars['ID']['output']>;
+  templateFieldPatch?: Maybe<Template>;
   threatActorGroupAdd?: Maybe<ThreatActorGroup>;
   threatActorGroupEdit?: Maybe<ThreatActorGroupEditMutations>;
   threatActorIndividualAdd?: Maybe<ThreatActorIndividual>;
@@ -15518,6 +15521,22 @@ export type MutationTaxiiCollectionAddArgs = {
 
 export type MutationTaxiiCollectionEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationTemplateAddArgs = {
+  input: TemplateAddInput;
+};
+
+
+export type MutationTemplateDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationTemplateFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -26889,10 +26908,22 @@ export type Template = {
   __typename?: 'Template';
   content: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
+  entityType: Scalars['String']['output'];
   filters?: Maybe<Scalars['String']['output']>;
+  finished: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   template_widgets_ids: Array<Scalars['String']['output']>;
+};
+
+export type TemplateAddInput = {
+  content: Scalars['String']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  entityType: Scalars['String']['input'];
+  filters?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  published: Scalars['Boolean']['input'];
+  template_widgets_ids: Array<Scalars['String']['input']>;
 };
 
 export type TemplateAndUtils = {
@@ -31479,6 +31510,7 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
   TaxiiVersion: TaxiiVersion;
   Template: ResolverTypeWrapper<Template>;
+  TemplateAddInput: TemplateAddInput;
   TemplateAndUtils: ResolverTypeWrapper<TemplateAndUtils>;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   TextAddInput: TextAddInput;
@@ -32222,6 +32254,7 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionEdge: Omit<TaxiiCollectionEdge, 'node'> & { node: ResolversParentTypes['TaxiiCollection'] };
   TaxiiCollectionEditMutations: Omit<TaxiiCollectionEditMutations, 'fieldPatch'> & { fieldPatch?: Maybe<ResolversParentTypes['TaxiiCollection']> };
   Template: Template;
+  TemplateAddInput: TemplateAddInput;
   TemplateAndUtils: TemplateAndUtils;
   Text: Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   TextAddInput: TextAddInput;
@@ -37143,6 +37176,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   taskTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['TaskTemplate']>, ParentType, ContextType, RequireFields<MutationTaskTemplateFieldPatchArgs, 'id' | 'input'>>;
   taxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<MutationTaxiiCollectionAddArgs, 'input'>>;
   taxiiCollectionEdit?: Resolver<Maybe<ResolversTypes['TaxiiCollectionEditMutations']>, ParentType, ContextType, RequireFields<MutationTaxiiCollectionEditArgs, 'id'>>;
+  templateAdd?: Resolver<Maybe<ResolversTypes['Template']>, ParentType, ContextType, RequireFields<MutationTemplateAddArgs, 'input'>>;
+  templateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTemplateDeleteArgs, 'id'>>;
+  templateFieldPatch?: Resolver<Maybe<ResolversTypes['Template']>, ParentType, ContextType, RequireFields<MutationTemplateFieldPatchArgs, 'id' | 'input'>>;
   threatActorGroupAdd?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupAddArgs, 'input'>>;
   threatActorGroupEdit?: Resolver<Maybe<ResolversTypes['ThreatActorGroupEditMutations']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupEditArgs, 'id'>>;
   threatActorIndividualAdd?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualAddArgs, 'input'>>;
@@ -40385,7 +40421,9 @@ export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType 
 export type TemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['Template'] = ResolversParentTypes['Template']> = ResolversObject<{
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  finished?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   template_widgets_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

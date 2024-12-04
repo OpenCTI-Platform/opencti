@@ -6,6 +6,7 @@ type Template {
     filters: String
     content: String!
     template_widgets_ids: [String!]!
+    finished: Boolean!
 }
 
 # Mutation
@@ -16,6 +17,7 @@ input TemplateAddInput {
     filters: String
     content: String!
     template_widgets_ids: [String!]!
+    published: Boolean!
 }
 
 type Mutation {
