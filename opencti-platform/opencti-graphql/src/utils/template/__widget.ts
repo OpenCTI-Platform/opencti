@@ -210,7 +210,6 @@ const widgetIndicators: Widget = {
       columns: [
         { label: 'Indicator types', attribute: 'indicator_types' },
         { label: 'Indicator pattern', attribute: 'pattern' },
-        { label: 'Description', attribute: 'description' },
       ],
     },
   ],
@@ -341,7 +340,6 @@ const widgetAllEntitiesAndObservables: Widget = {
       columns: [
         { label: 'Type', attribute: 'entity_type' },
         { label: 'Representative', attribute: 'representative.main' },
-        { label: 'Description', attribute: 'representative.secondary' },
       ],
     },
   ],

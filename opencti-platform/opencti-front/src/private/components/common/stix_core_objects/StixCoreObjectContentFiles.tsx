@@ -267,7 +267,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         <ContentBloc
           title={
             <>
-              {t_i18n('Finished intelligence')} {!isEnterpriseEdition && <EEChip />}
+              {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
               {isEnterpriseEdition
                 && <Tooltip
                   title={t_i18n('Files generated from a template')}

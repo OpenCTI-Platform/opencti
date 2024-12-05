@@ -9370,7 +9370,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:^3.2.1":
+"dompurify@npm:3.2.1":
   version: 3.2.1
   resolution: "dompurify@npm:3.2.1"
   dependencies:
@@ -14860,7 +14860,7 @@ __metadata:
     d3-timer: "npm:3.0.1"
     dagre: "npm:0.8.5"
     date-fns: "npm:3.6.0"
-    dompurify: "npm:^3.2.1"
+    dompurify: "npm:3.2.1"
     esbuild: "npm:0.24.0"
     esbuild-jest: "npm:0.5.0"
     eslint: "npm:8.57.0"
