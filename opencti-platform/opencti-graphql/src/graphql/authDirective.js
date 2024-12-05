@@ -74,7 +74,7 @@ export const authDirectiveBuilder = (directiveName) => {
               let numberOfAvailableCapabilities = 0;
               for (let index = 0; index < requiredCapabilities.length; index += 1) {
                 const checkCapability = requiredCapabilities[index];
-                const matchingCapabilities = filter((r) => includes(checkCapability, r), userCapabilities);
+                const matchingCapabilities = filter((r) => checkCapability !== BYPASS && includes(checkCapability, r), userCapabilities);
                 if (matchingCapabilities.length > 0) {
                   numberOfAvailableCapabilities += 1;
                 }
