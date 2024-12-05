@@ -115,7 +115,6 @@ export const draftContext: AttributeDefinition = {
   label: 'Current draft context',
   type: 'string',
   format: 'short',
-  update: false,
   mandatoryType: 'no',
   multiple: false,
   editDefault: false,
