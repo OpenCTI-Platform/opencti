@@ -213,7 +213,6 @@ const RenderForm = ({
   defaultStopTime?: string,
 }) => {
   const { state: {
-    relationshipTypes: initialRelationshipTypes,
     reversed: initiallyReversed,
     onCreate,
     connectionKey,
@@ -221,22 +220,30 @@ const RenderForm = ({
   } } = useContext(CreateRelationshipContext);
   const { schema } = useContext(UserContext);
   const [reversed, setReversed] = useState<boolean>(initiallyReversed ?? false);
-
-  const handleReverse = () => setReversed(!reversed);
-
+  
   let fromEntities = [sourceEntity];
   let toEntities = targetEntities;
   if (reversed) {
     fromEntities = targetEntities;
     toEntities = [sourceEntity];
   }
-  const resolvedRelationshipTypes = (initialRelationshipTypes ?? []).length > 0
-    ? initialRelationshipTypes ?? []
-    : resolveRelationsTypes(
+  let resolvedRelationshipTypes = resolveRelationsTypes(
       fromEntities[0].entity_type,
       toEntities[0].entity_type,
       schema?.schemaRelationsTypesMapping ?? new Map(),
     );
+
+  const handleReverse = () => {
+    setReversed(!reversed);
+    const tempEntities = fromEntities;
+    fromEntities = toEntities;
+    toEntities = tempEntities;
+    resolvedRelationshipTypes = resolveRelationsTypes(
+        fromEntities[0].entity_type,
+        toEntities[0].entity_type,
+        schema?.schemaRelationsTypesMapping ?? new Map(),
+      );
+  }
 
   const relationshipTypes = resolvedRelationshipTypes;
   const startTime = defaultStartTime ?? (new Date()).toISOString();
