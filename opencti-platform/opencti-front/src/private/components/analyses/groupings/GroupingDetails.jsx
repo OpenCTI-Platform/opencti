@@ -7,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Divider from '@mui/material/Divider';
 import RelatedContainers from '../../common/containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
@@ -140,6 +141,7 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
+        <Divider />
         <RelatedContainers
           relatedContainers={grouping.relatedContainers}
           containerId={grouping.id}
