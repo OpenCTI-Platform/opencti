@@ -1287,7 +1287,7 @@ const CaseRftKnowledgeCorrelation = createFragmentContainer(
                   x_opencti_order
                   x_opencti_color
                 }
-                cases(first: 20) {
+                cases(first: 500000) {
                   edges {
                     node {
                       id
@@ -1391,7 +1391,7 @@ const CaseRftKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                cases(first: 20) {
+                cases(first: 500000) {
                   edges {
                     node {
                       id
