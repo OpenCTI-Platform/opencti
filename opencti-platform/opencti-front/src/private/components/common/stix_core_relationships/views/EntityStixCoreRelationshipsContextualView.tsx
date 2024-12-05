@@ -208,11 +208,14 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
 
   // Filters due to screen context
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
+  // if no containers, the query should return nothing but the filter should be valid (empty array not authorized with the 'eq' operator)
+  // so we artificially add a non-existing id value
+  const containerFilterValues = containers.length > 0 ? containers.map((r) => r.id) : ['NO_CONTAINER'];
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
       { key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes },
-      { key: 'objects', operator: 'eq', mode: 'or', values: containers.map((r) => r.id) },
+      { key: 'objects', operator: 'eq', mode: 'or', values: containerFilterValues },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
