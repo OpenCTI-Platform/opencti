@@ -5,6 +5,7 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
 import RelatedContainers from '../../common/containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import { useFormatter } from '../../../../components/i18n';
@@ -140,6 +141,7 @@ const ReportDetails = ({ report }) => {
             />
           </Grid>
         </Grid>
+        <Divider />
         <RelatedContainers
           relatedContainers={reportData.relatedContainers}
           containerId={reportData.id}
