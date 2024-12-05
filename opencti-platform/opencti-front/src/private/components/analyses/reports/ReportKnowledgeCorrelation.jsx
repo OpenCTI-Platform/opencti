@@ -1250,7 +1250,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
           x_opencti_order
           x_opencti_color
         }
-        objects(first: 500) {
+        objects(first: 500000) {
           edges {
             node {
               ... on BasicObject {
@@ -1274,7 +1274,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                   x_opencti_order
                   x_opencti_color
                 }
-                reports(first: 20) {
+                reports(first: 500000) {
                   edges {
                     node {
                       id
@@ -1379,7 +1379,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                reports(first: 20) {
+                reports(first: 500000) {
                   edges {
                     node {
                       id
