@@ -8,6 +8,8 @@ import Button from '@mui/material/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -17,9 +19,8 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { now } from '../../../../utils/Time';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -29,11 +30,12 @@ const exclusionListCreationFileMutation = graphql`
   }
 `;
 
-interface ExclusionListCreationFileFormData {
+interface ExclusionListCreationFormData {
   name: string;
   description: string;
   exclusion_list_entity_types: Option[];
   file: File | undefined;
+  content: string | undefined;
   action: string;
 }
 
@@ -56,27 +58,27 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   const { schema: { scos: entityTypes } } = useSchema();
   const actions: string[] = ['Exclusion'];
   const [isCreatedWithFile, setIsCreatedWithFile] = useState<boolean>(true);
-  const [commitFile] = useApiMutation(exclusionListCreationFileMutation);
-  const onSubmit: FormikConfig<ExclusionListCreationFileFormData>['onSubmit'] = (
+  const [commit] = useApiMutation(exclusionListCreationFileMutation);
+  const onSubmit: FormikConfig<ExclusionListCreationFormData>['onSubmit'] = (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
-    let file = values.file;
-    if (!file) {
+    let { file } = values;
+    if (!file && values.content) {
       const blob = new Blob([values.content], { type: 'text/plain' });
       file = new File(
         [blob],
         `${now()}_${values.name}.txt`,
-        { type: 'text/plain', },
+        { type: 'text/plain' },
       );
     }
     const input = {
       name: values.name,
       description: values.description,
       exclusion_list_entity_types: values.exclusion_list_entity_types.map((type) => type.value),
-      file: file,
+      file,
     };
-    commitFile({
+    commit({
       variables: {
         input,
       },
@@ -99,23 +101,25 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     });
   };
 
-  const initialValuesFile: ExclusionListCreationFileFormData = {
+  const initialValues: ExclusionListCreationFormData = {
     name: '',
     description: '',
     exclusion_list_entity_types: [],
     file: undefined,
+    content: undefined,
     action: 'Exclusion',
   };
 
   const entityTypesOptions: Option[] = entityTypes.map((type) => ({
     value: type.id,
     label: type.label,
+    type: type.id,
   }));
 
   return (
-    <Formik<ExclusionListCreationFileFormData>
-      initialValues={initialValuesFile}
-      validationSchema={exclusionListValidator(t_i18n)}
+    <Formik<ExclusionListCreationFormData>
+      initialValues={initialValues}
+      validationSchema={exclusionListValidator(t_i18n, isCreatedWithFile)}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -146,7 +150,10 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             renderOption={(
               props: React.HTMLAttributes<HTMLLIElement>,
               option: Option,
-            ) => <li key={option.value} {...props}>{option.label}</li>}
+            ) => <li key={option.value} {...props}>
+              <ItemIcon type={option.type} />
+              <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
+            </li>}
             textfieldprops={{ label: t_i18n('Entity types') }}
           />
           <FormControlLabel
