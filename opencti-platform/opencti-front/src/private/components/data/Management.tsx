@@ -142,12 +142,13 @@ const Management = () => {
       <DataTable
         dataColumns={{
           entity_type: {
-            percentWidth: 20,
-            isSortable: false,
+            percentWidth: 33,
           },
-          name: { percentWidth: 50 },
+          name: {
+            percentWidth: 33,
+          },
           objectMarking: {
-            percentWidth: 15,
+            percentWidth: 33,
           },
         }}
         resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
