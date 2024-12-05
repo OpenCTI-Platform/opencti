@@ -63,7 +63,7 @@ const IngestionCsv = () => {
         width: '20%',
         isSortable: false,
       },
-      current_state_date: {
+      current_state_hash: {
         label: 'Current state',
         isSortable: false,
         width: '15%',

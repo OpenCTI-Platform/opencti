@@ -64,7 +64,6 @@ export const ingestionCsvEditionFragment = graphql`
     authentication_type
     authentication_value
     ingestion_running
-    current_state_date
     csvMapper {
       id
       name
@@ -100,7 +99,6 @@ interface IngestionCsvEditionForm {
   uri: string,
   authentication_type: string,
   authentication_value?: string | null,
-  current_state_date: Date | null
   ingestion_running?: boolean | null,
   csv_mapper_id: string | Option,
   user_id: string | Option,
@@ -145,9 +143,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     uri: Yup.string().required(t_i18n('This field is required')),
     authentication_type: Yup.string().required(t_i18n('This field is required')),
     authentication_value: Yup.string().nullable(),
-    current_state_date: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
     user_id: Yup.mixed().nullable(),
     username: Yup.string().nullable(),
     password: Yup.string().nullable(),
@@ -252,7 +247,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     cert: ingestionCsvData.authentication_type === CERT_AUTH ? extractCert(ingestionCsvData.authentication_value) : undefined,
     key: ingestionCsvData.authentication_type === CERT_AUTH ? extractKey(ingestionCsvData.authentication_value) : undefined,
     ca: ingestionCsvData.authentication_type === CERT_AUTH ? extractCA(ingestionCsvData.authentication_value) : undefined,
-    current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
@@ -324,18 +318,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             fullWidth={true}
             onSubmit={handleSubmitField}
             style={fieldSpacingContainerStyle}
-          />
-          <Field
-            component={DateTimePickerField}
-            name="current_state_date"
-            textFieldProps={{
-              label: t_i18n(
-                'Import from date (empty = all CSV feed possible items)',
-              ),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
           />
           <CreatorField
             name="user_id"

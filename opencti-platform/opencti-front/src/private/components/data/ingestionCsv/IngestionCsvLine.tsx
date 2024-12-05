@@ -105,7 +105,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_date.width }}
+              style={{ width: dataColumns.current_state_hash.width }}
             >
               {stateHash}
             </div>
@@ -176,7 +176,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_date.width }}
+              style={{ width: dataColumns.current_state_hash.width }}
             >
               <Skeleton
                 animation="wave"

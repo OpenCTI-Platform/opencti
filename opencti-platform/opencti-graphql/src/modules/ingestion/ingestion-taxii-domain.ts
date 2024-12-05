@@ -72,7 +72,16 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     }
   }
 
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII, input);
+  const patchInput = input;
+  if (input.some(((editInput) => editInput.key === 'added_after_start'))) {
+    const cursorEditInput: EditInput = {
+      key: 'current_state_cursor',
+      value: [undefined],
+    };
+    patchInput.push(cursorEditInput);
+  }
+
+  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII, patchInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'TAXII',
@@ -80,10 +89,6 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     is_running: element.ingestion_running ?? false,
     connector_user_id: element.user_id
   });
-
-  if (input.some(((editInput) => editInput.key === 'added_after_start'))) {
-    await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
-  }
 
   await publishUserAction({
     user,
