@@ -349,7 +349,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
           dependsOnDuration += (interval * 60);
         }
       } else {
-        // TODO
+        // TODO MIXED Case
       }
     }
   }
