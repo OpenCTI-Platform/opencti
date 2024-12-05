@@ -19,6 +19,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useHelper from '../../../../utils/hooks/useHelper';
+import IntrusionSetDeletion from './IntrusionSetDeletion';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionOverviewFieldPatchMutation(
@@ -85,6 +87,8 @@ export const intrusionSetMutationRelationDelete = graphql`
 const IntrusionSetEditionOverviewComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme();
 
   const basicShape = {
@@ -263,16 +267,24 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={intrusionSet.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <IntrusionSetDeletion
+                  id={intrusionSet.id}
+                />
+              : <div />
+            }
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={intrusionSet.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

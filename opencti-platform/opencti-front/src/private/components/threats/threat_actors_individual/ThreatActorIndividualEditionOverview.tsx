@@ -23,6 +23,8 @@ import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useHelper from '../../../../utils/hooks/useHelper';
+import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import type { Theme } from '../../../../components/Theme';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
@@ -142,6 +144,8 @@ ThreatActorIndividualEditionOverviewProps
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionOverviewFragment,
     threatActorIndividualRef,
@@ -189,7 +193,7 @@ ThreatActorIndividualEditionOverviewProps
         id: threatActorIndividual.id,
         input: inputValues,
         commitMessage:
-            commitMessage && commitMessage.length > 0 ? commitMessage : null,
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -333,16 +337,24 @@ ThreatActorIndividualEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={threatActorIndividual.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <ThreatActorIndividualDeletion
+                  id={threatActorIndividual.id}
+                />
+              : <div />
+            }
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={threatActorIndividual.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>
