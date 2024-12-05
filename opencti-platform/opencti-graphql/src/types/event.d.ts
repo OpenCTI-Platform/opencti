@@ -19,6 +19,7 @@ interface CreateEventOpts extends EventOpts {
 
 interface UpdateEventOpts extends EventOpts {
   commit?: CommitContext | undefined;
+  relatedRestrictions?: { markings: string[] };
 }
 
 interface RelationCreation {
@@ -44,6 +45,7 @@ interface StreamDataEvent extends BaseEvent {
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject
+  relatedRestrictions?: { markings: string[] };
 }
 
 interface UpdateEvent extends StreamDataEvent {
