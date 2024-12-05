@@ -182,16 +182,14 @@ const StixCoreObjectFileExportComponent = ({
     };
   });
   // Artificially add mappable content in possible exports
-  if (stixCoreObject?.content) {
-    fileOptions.push({
-      value: 'mappableContent',
-      label: t_i18n('Mappable main content'),
-      fileMarkings: (stixCoreObject.objectMarking ?? []).map((o) => ({
-        id: o.id,
-        name: getMainRepresentative(o),
-      })),
-    });
-  }
+  fileOptions.push({
+    value: 'mappableContent',
+    label: t_i18n('Mappable main content'),
+    fileMarkings: (stixCoreObject?.objectMarking ?? []).map((o) => ({
+      id: o.id,
+      name: getMainRepresentative(o),
+    })),
+  });
 
   const templateOptions: Option[] = (stixCoreObject?.templates ?? []).map((t) => ({
     value: t.id,
