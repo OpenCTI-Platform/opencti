@@ -24,7 +24,6 @@ import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
