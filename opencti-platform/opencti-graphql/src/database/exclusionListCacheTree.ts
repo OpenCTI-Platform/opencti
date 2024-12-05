@@ -6,8 +6,13 @@ import { SYSTEM_USER } from '../utils/access';
 import { getFileContent } from './file-storage';
 import { logApp, NODE_INSTANCE_ID } from '../config/conf';
 import { redisUpdateExclusionListStatus } from './redis';
+import { checkExclusionListCacheSlow } from './exclusionListCacheSlow';
 
 let exclusionListCacheTree: ExclusionListNode | null = null;
+
+export const isCacheTreeInitialized = () => {
+  return exclusionListCacheTree;
+};
 
 const buildTreeFromAllExclusionLists = async (context: AuthContext) => {
   const exclusionLists: BasicStoreEntityExclusionList[] = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_EXCLUSION_LIST]);
@@ -30,16 +35,16 @@ const buildTreeFromAllExclusionLists = async (context: AuthContext) => {
   return builtTree;
 };
 
-export const initExclusionListCache = async (context: AuthContext | null) => {
-  exclusionListCacheTree = context ? await buildTreeFromAllExclusionLists(context) : { matchedLists: [], nextNodes: new Map() };
-};
-
-export const rebuildExclusionListCache = async (context: AuthContext, cacheDate: string) => {
+export const rebuildExclusionListCacheTree = async (context: AuthContext, cacheDate: string) => {
   exclusionListCacheTree = await buildTreeFromAllExclusionLists(context);
   const exclusionListStatus = { [NODE_INSTANCE_ID]: cacheDate };
   await redisUpdateExclusionListStatus(exclusionListStatus);
 };
 
-export const checkExclusionListCacheTree = (valueToCheck: string, valueToCheckType: string) => {
-  return checkExclusionListTree(exclusionListCacheTree, valueToCheck, valueToCheckType);
+export const checkExclusionListCacheTree = async (valueToCheck: string, valueToCheckType: string) => {
+  if (!isCacheTreeInitialized()) {
+    return checkExclusionListCacheSlow(valueToCheck, valueToCheckType);
+  }
+  const checkTree = await checkExclusionListTree(exclusionListCacheTree, valueToCheck, valueToCheckType);
+  return checkTree;
 };

@@ -1,5 +1,6 @@
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../schema/stixCyberObservable';
 import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
+import type { ExclusionListSlowCacheItem } from '../database/exclusionListCacheSlow';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
 
@@ -54,6 +55,53 @@ export const convertIpAddr = (ipValue: string) => {
   return convertIpv4ToBinary(ipAddress, isRange, parseInt(ipAddressRangeValue, 10));
 };
 
+export const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListSlowCacheItem[]) => {
+  const { isIpv4 } = checkIpAddrType(ipToTest);
+  const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
+
+  let startProcessingTime = new Date().getTime();
+  for (let i = 0; i < exclusionList.length; i += 1) {
+    const { id, values } = exclusionList[i];
+
+    for (let j = 0; j < values.length; j += 1) {
+      if (binary.startsWith(values[j])) {
+        return [id];
+      }
+    }
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
+
+  return [];
+};
+
+export const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListSlowCacheItem[]) => {
+  let startProcessingTime = new Date().getTime();
+
+  for (let i = 0; i < exclusionList.length; i += 1) {
+    const { id, values } = exclusionList[i];
+
+    for (let j = 0; j < values.length; j += 1) {
+      const isWildCard = values[j].startsWith('.');
+      if ((isWildCard && valueToTest.endsWith(values[j])) || valueToTest === values[j]) {
+        return [id];
+      }
+
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      }
+    }
+  }
+  return [];
+};
+
 export interface MatchedExclusionList {
   matchedId: string
   matchedTypes: string[]
@@ -91,7 +139,7 @@ export const addExclusionListToTree = async (currentTree: ExclusionListNode, exc
   };
 
   if (!exclusionListFileContent) return;
-  const exclusionListFileValues = exclusionListFileContent?.split('\n');
+  const exclusionListFileValues = exclusionListFileContent?.split(/\r\n|\n/).map((l) => l.trim()).filter((l) => l);
   const isIpList = exclusionListTypes.some((t) => ENTITY_IPV4_ADDR === t || ENTITY_IPV6_ADDR === t);
   let startProcessingTime = new Date().getTime();
   for (let i = 0; i < exclusionListFileValues.length; i += 1) {

@@ -14,7 +14,7 @@
     "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
     "build": "yarn install:python && yarn build:prod",
-    "start": "NODE_ENV=dev yarn build:dev && node build/back.js",
+    "start": "NODE_ENV=dev yarn build:dev && node --max-old-space-size=8000 build/back.js",
     "start:e2e": "NODE_ENV=dev yarn build:dev && APP__DISABLED_DEV_FEATURES='[]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.js",
     "start:light": "NODE_ENV=dev node build/back.js",
     "start:cluster": "NODE_ENV=cluster node build/back.js",

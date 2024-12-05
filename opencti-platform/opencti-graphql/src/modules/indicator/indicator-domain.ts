@@ -227,10 +227,11 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
     const observableValues = getObservableValuesFromPattern(formattedPattern);
     for (let i = 0; i < observableValues.length; i += 1) {
       const { type, value } = observableValues[i];
-      const exclusionListCheck = checkExclusionListCacheTree(value, type);
+      const exclusionListCheck = await checkExclusionListCacheTree(value, type);
       if (exclusionListCheck && exclusionListCheck.length > 0) {
-        throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {doc_code: 'INDICATOR_PATTERN_EXCLUDED',
-          excludedValue: value, exclusionLists: exclusionListCheck });
+        throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, { doc_code: 'INDICATOR_PATTERN_EXCLUDED',
+          excludedValue: value,
+          exclusionLists: exclusionListCheck });
       }
     }
   }
