@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
-import RelatedContainersDetails from '@components/common/containers/RelatedContainersDetails';
+import { RelatedContainersDetails } from '@components/common/containers/RelatedContainersDetails';
 import Drawer from '@components/common/drawer/Drawer';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
