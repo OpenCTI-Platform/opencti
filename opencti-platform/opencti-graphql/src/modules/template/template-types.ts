@@ -4,25 +4,35 @@ import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-commo
 
 export const ENTITY_TYPE_TEMPLATE = 'Template';
 
+export interface Template {
+  name: string;
+  description: string;
+  availableForTypes: string;
+  filters: string;
+  content: string;
+  template_widgets_ids: [string];
+  enabled: boolean;
+}
+
 // region Database types
 export interface BasicStoreEntityTemplate extends BasicStoreEntity {
   name: string;
   description: string;
-  availableForType: string;
+  availableForTypes: string;
   filters: string;
   content: string;
   template_widgets_ids: [string];
-  finished: boolean;
+  enabled: boolean;
 }
 
 export interface StoreEntityTemplate extends StoreEntity {
   name: string;
   description: string;
-  availableForType: string;
+  availableForTypes: string;
   filters: string;
   content: string;
   template_widgets_ids: [string];
-  finished: boolean;
+  enabled: boolean;
 }
 // endregion
 
@@ -30,11 +40,11 @@ export interface StoreEntityTemplate extends StoreEntity {
 export interface StixTemplate extends StixObject {
   name: string;
   description: string;
-  availableForType: string;
+  availableForTypes: string;
   filters: string;
   content: string;
   template_widgets_ids: [string];
-  finished: boolean;
+  enabled: boolean;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };
