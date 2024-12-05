@@ -1279,7 +1279,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                   x_opencti_order
                   x_opencti_color
                 }
-                groupings(first: 20) {
+                groupings(first: 500000) {
                   edges {
                     node {
                       id
@@ -1387,7 +1387,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                groupings(first: 20) {
+                groupings(first: 500000) {
                   edges {
                     node {
                       id
