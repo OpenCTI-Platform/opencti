@@ -22,7 +22,6 @@ const CreateRelationshipButtonComponent: FunctionComponent<CreateRelationshipBut
         entityId={id}
         defaultStartTime={startTime}
         defaultStopTime={stopTime}
-        isReversable={true}
       />
     </Security>
   );
