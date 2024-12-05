@@ -422,11 +422,11 @@ const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<S
   if (!data.stixCoreObject) {
     throw Error('Can\'t resolve this entity');
   }
-  const { name, entity_type } = data.stixCoreObject;
+  const { name, observable_value, entity_type } = data.stixCoreObject;
 
   const headerOpts: HeaderOpts = {
     stixDomainObjectId: entityId,
-    stixDomainObjectName: name ?? '',
+    stixDomainObjectName: name ?? observable_value ?? '',
     stixDomainObjectType: entity_type,
     selectedEntities: targetEntities,
   };
