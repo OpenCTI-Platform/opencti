@@ -37,7 +37,15 @@ const buildExclusionListCacheItem = (exclusionList: BasicStoreEntityExclusionLis
     const ipv6ConvertedValues = ipv6Values.map((i) => convertIpAddr(i));
     const ipv6List = { id: exclusionList.id, types: [ENTITY_IPV6_ADDR], values: ipv6ConvertedValues };
 
-    return [ipv4List, ipv6List];
+    const ipLists = [];
+
+    if (ipv4Values.length > 0) {
+      ipLists.push(ipv4List);
+    }
+    if (ipv6Values.length > 0) {
+      ipLists.push(ipv6List);
+    }
+    return ipLists;
   }
   return [{ id: exclusionList.id, types: exclusionList.exclusion_list_entity_types, values: exclusionListFileValues ?? [] }];
 };
