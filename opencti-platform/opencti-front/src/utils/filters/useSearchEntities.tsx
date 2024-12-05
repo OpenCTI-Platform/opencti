@@ -26,6 +26,8 @@ import { NotifierFieldSearchQuery$data } from '@components/common/form/__generat
 import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases';
 import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
 import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
+import { triggersQueriesKnowledgeSearchQuery } from '@components/profile/triggers/TriggersQueries';
+import { TriggersQueriesSearchKnowledgeQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchKnowledgeQuery.graphql';
 import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/MarkingDefinitionsQuery';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -956,6 +958,24 @@ const useSearchEntities = ({
                   unionSetEntities(
                     filterKey,
                     notifiers,
+                  );
+                });
+            } else if (idEntityTypes.includes('Trigger')) {
+              fetchQuery(triggersQueriesKnowledgeSearchQuery, {
+                search: event.target.value !== 0 ? event.target.value : '',
+              })
+                .toPromise()
+                .then((data) => {
+                  const triggers = (
+                    (data as TriggersQueriesSearchKnowledgeQuery$data).triggersKnowledge?.edges ?? []
+                  ).map((n) => ({
+                    label: n.node.name,
+                    value: n.node.id,
+                    type: 'Trigger',
+                  }));
+                  unionSetEntities(
+                    filterKey,
+                    triggers,
                   );
                 });
             } else if (idEntityTypes.includes('StatusTemplate')) {

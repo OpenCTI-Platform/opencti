@@ -46,7 +46,7 @@ export const internalProcessNotification = async (
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
-    const { name: notification_name, trigger_type } = notification;
+    const { name: notification_name, id: trigger_id, trigger_type } = notification;
     const { notifier_connector_id, notifier_configuration: configuration } = notifier;
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
@@ -72,6 +72,7 @@ export const internalProcessNotification = async (
     if (notifier_connector_id === NOTIFIER_CONNECTOR_UI) {
       const createNotification = {
         name: notification_name,
+        trigger_id,
         notification_type: trigger_type,
         user_id: user.user_id,
         notification_content: content,
