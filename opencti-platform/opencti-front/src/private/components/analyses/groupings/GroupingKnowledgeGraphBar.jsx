@@ -11,11 +11,12 @@ import {
   DateRangeOutlined,
   DeleteOutlined,
   EditOutlined,
-  FilterAlt,
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
+  HubOutlined,
   LinkOutlined,
+  PolylineOutlined,
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
@@ -501,16 +502,18 @@ class GroupingKnowledgeGraphBar extends Component {
                   {handleToggleQueryMode && (
                     <Tooltip
                       title={
-                        currentQueryMode === 'all-entities' ? t('Query only observables and indicators') : t('Query all entity types')
+                        currentQueryMode === 'all-entities'
+                          ? t('Show only correlated observables and indicators')
+                          : t('Show all correlated entities')
                       }
                     >
                       <span>
                         <IconButton
-                          color={currentMode3D ? 'secondary' : 'primary'}
+                          color={'secondary'}
                           onClick={handleToggleQueryMode.bind(this)}
                           size="large"
                         >
-                          <FilterAlt />
+                          {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
                         </IconButton>
                       </span>
                     </Tooltip>

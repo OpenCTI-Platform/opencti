@@ -14,14 +14,15 @@ import {
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
+  HubOutlined,
   LinkOutlined,
+  PolylineOutlined,
   ScatterPlotOutlined,
-  VisibilityOutlined,
-  SwipeVertical,
   SwipeDown,
   SwipeUp,
+  SwipeVertical,
   TouchApp,
-  FilterAlt,
+  VisibilityOutlined,
 } from '@mui/icons-material';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -530,16 +531,18 @@ class ReportKnowledgeGraphBar extends Component {
                   {handleToggleQueryMode && (
                   <Tooltip
                     title={
-                      currentQueryMode === 'all-entities' ? t('Query only observables and indicators') : t('Query all entity types')
+                      currentQueryMode === 'all-entities'
+                        ? t('Show only correlated observables and indicators')
+                        : t('Show all correlated entities')
                     }
                   >
                     <span>
                       <IconButton
-                        color={currentMode3D ? 'secondary' : 'primary'}
+                        color={'secondary'}
                         onClick={handleToggleQueryMode.bind(this)}
                         size="large"
                       >
-                        <FilterAlt />
+                        {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
                       </IconButton>
                     </span>
                   </Tooltip>
