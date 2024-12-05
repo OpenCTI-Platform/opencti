@@ -326,6 +326,19 @@ export const extractIdsFromStoreObject = (instance) => {
   return ids;
 };
 
+export const extractObjectsRestrictionsFromInputs = (inputs) => {
+  const markings = [];
+  inputs.forEach((input) => {
+    if (input && input.key === 'objects' && input.value?.length > 0) {
+      const objectMarking = input.value.flatMap((value) => value['object-marking'] ?? []);
+      markings.push(...objectMarking);
+    }
+  });
+  return {
+    markings
+  };
+};
+
 export const isObjectPathTargetMultipleAttribute = (instance, object_path) => {
   const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
   const pathArray = preparedPath.split('/').filter((p) => isNotEmptyField(p));
