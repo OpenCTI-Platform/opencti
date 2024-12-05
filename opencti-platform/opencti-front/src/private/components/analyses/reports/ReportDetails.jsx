@@ -39,7 +39,7 @@ const ReportDetailsFragment = graphql`
     description
     relatedContainers(
       first: 10
-      orderBy: published
+      orderBy: modified
       orderMode: desc
       types: ["Case", "Report", "Grouping"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
