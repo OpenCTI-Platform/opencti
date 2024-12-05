@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { Template } from '../template/template-types';
 
 export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
 
@@ -26,16 +27,6 @@ export interface Tick {
   value: number;
   color: string;
   label: string;
-}
-
-interface Template {
-  name: string;
-  description: string;
-  availableForType: string;
-  filters: string;
-  content: string;
-  template_widgets_ids: [string];
-  finished: boolean;
 }
 
 export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {

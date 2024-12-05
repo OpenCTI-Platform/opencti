@@ -26907,22 +26907,22 @@ export enum TaxiiVersion {
 
 export type Template = {
   __typename?: 'Template';
-  availableForType: Scalars['String']['output'];
+  availableForTypes: Array<Scalars['String']['output']>;
   content: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
   filters?: Maybe<Scalars['String']['output']>;
-  finished: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   template_widgets_ids: Array<Scalars['String']['output']>;
 };
 
 export type TemplateAddInput = {
-  availableForType: Scalars['String']['input'];
+  availableForTypess: Array<Scalars['String']['input']>;
   content: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
+  enabled: Scalars['Boolean']['input'];
   filters?: InputMaybe<Scalars['String']['input']>;
-  finished: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   template_widgets_ids: Array<Scalars['String']['input']>;
 };
@@ -40437,11 +40437,11 @@ export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType 
 }>;
 
 export type TemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['Template'] = ResolversParentTypes['Template']> = ResolversObject<{
-  availableForType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  availableForTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  finished?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   template_widgets_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

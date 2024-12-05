@@ -104,8 +104,8 @@ export const getTemplatesForSetting = async (
   targetType: string,
 ): Promise<BasicStoreEntityTemplate[]> => {
   await canCustomizeTemplate(context);
-  const filters = addFilter(undefined, 'availableForType', [targetType]);
-  return listEntities(context, user, [ENTITY_TYPE_TEMPLATE], { filters });
+  const filters = addFilter(undefined, 'availableForTypes', [targetType]);
+  return listAllEntities(context, user, [ENTITY_TYPE_TEMPLATE], { filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {

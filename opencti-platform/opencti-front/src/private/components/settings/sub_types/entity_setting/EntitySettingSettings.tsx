@@ -43,6 +43,16 @@ export const entitySettingFragment = graphql`
         width
         label
     }
+    templates {
+        id
+        name
+        description
+        filters
+        content
+        availableForTypes
+        template_widgets_ids
+        enabled        
+    }
   }
 `;
 
