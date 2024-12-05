@@ -2350,7 +2350,7 @@ enum StixCoreObjectsOrdering {
   name
   entity_type
   created
-  modified
+  lastModified
   created_at
   updated_at
   start_time
