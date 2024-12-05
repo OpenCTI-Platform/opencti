@@ -62,7 +62,7 @@ const CaseIncidentDetailsFragment = graphql`
     workflowEnabled
     relatedContainers(
       first: 10
-      orderBy: created
+      orderBy: modified
       orderMode: desc
       types: ["Case", "Report", "Grouping"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]

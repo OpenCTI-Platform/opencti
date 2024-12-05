@@ -166,7 +166,7 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
       description
       relatedContainers(
         first: 10
-        orderBy: published
+        orderBy: modified
         orderMode: desc
         types: ["Case", "Report", "Grouping"]
         viaTypes: ["Indicator", "Stix-Cyber-Observable"]

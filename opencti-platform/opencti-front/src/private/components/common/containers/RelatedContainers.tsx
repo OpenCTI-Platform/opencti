@@ -39,23 +39,23 @@ export const RelatedContainersFragment = graphql`
         }
         ... on Report {
           name
-          published
+          modified
         }
         ... on Grouping {
           name
-          created
+          modified
         }
         ... on CaseIncident {
           name
-          created
+          modified
         }
         ... on CaseRfi {
           name
-          created
+          modified
         }
         ... on CaseRft {
           name
-          created
+          modified
         }
       }
     }
@@ -159,7 +159,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}
-                >{fsd(relatedContainer?.created ?? relatedContainer?.published)}</div>
+                >{fsd(relatedContainer?.modified)}</div>
                 <div style={{
                   width: 110,
                   paddingRight: 20,
