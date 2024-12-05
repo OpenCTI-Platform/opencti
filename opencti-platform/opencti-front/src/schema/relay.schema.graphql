@@ -8026,6 +8026,7 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+  csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   language(id: String!): Language
@@ -8116,7 +8117,6 @@ type Query {
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: String!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
-  csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
@@ -8138,6 +8138,7 @@ type Query {
   supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
   exclusionList(id: String!): ExclusionList
   exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
+  exclusionListCacheStatus: ExclusionListCacheStatus
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
@@ -8928,6 +8929,7 @@ type Mutation {
   organizationAdminAdd(id: ID!, memberId: String!): Organization
   organizationAdminRemove(id: ID!, memberId: String!): Organization
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
+  csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
@@ -8956,6 +8958,7 @@ type Mutation {
   supportPackageDelete(id: ID!): ID
   exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
@@ -12311,7 +12314,7 @@ type ExclusionList implements InternalObject & BasicObject {
   parent_types: [String]!
   created_at: DateTime!
   enabled: Boolean!
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
   file_id: String!
 }
 
@@ -12325,29 +12328,30 @@ type ExclusionListEdge {
   node: ExclusionList!
 }
 
+type ExclusionListCacheStatus {
+  refreshVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
+}
+
 enum ExclusionListOrdering {
   name
   created_at
-}
-
-enum ExclusionListEntityTypes {
-  IPV4_ADDR
-  IPV6_ADDR
-  DOMAIN_NAME
-  URL
+  enabled
+  _score
 }
 
 input ExclusionListContentAddInput {
   name: String!
   description: String
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
   content: String!
 }
 
 input ExclusionListFileAddInput {
   name: String!
   description: String
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
   file: Upload!
 }
 

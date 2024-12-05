@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { AttackPatternsLinesPaginationQuery, AttackPatternsLinesPaginationQuery$variables } from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
-import Tooltip from '@mui/material/Tooltip';
 import { AttackPatternsLines_data$data } from '@components/techniques/__generated__/AttackPatternsLines_data.graphql';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
 import Security from '../../../utils/Security';
@@ -13,9 +12,9 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { truncate } from '../../../utils/String';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useHelper from '../../../utils/hooks/useHelper';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 
@@ -129,7 +128,7 @@ const AttackPatterns = () => {
     x_mitre_id: {},
     name: {
       percentWidth: 30,
-      render: ({ name }, { column: { size } }) => (<Tooltip title={name}>{truncate(name, size * 0.113)}</Tooltip>),
+      render: ({ name }) => defaultRender(name),
     },
     objectLabel: {},
     created: {},

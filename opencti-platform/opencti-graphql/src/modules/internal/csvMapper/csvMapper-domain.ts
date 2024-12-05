@@ -3,7 +3,7 @@ import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeL
 import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
-import { bundleProcess } from '../../../parser/csv-bundler';
+import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
 import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
@@ -17,22 +17,33 @@ import { schemaTypesDefinition } from '../../../schema/schema-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
+import { parseReadableToLines } from '../../../parser/csv-parser';
+import type { FileUploadData } from '../../../database/file-storage-helper';
 
 // -- UTILS --
 
-export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
+export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
   let parsedConfiguration;
   try {
     parsedConfiguration = JSON.parse(configuration);
   } catch (error) {
     throw FunctionalError('Could not parse CSV mapper configuration', { error });
   }
-  const csvMapper = parseCsvMapper(parsedConfiguration);
-  const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper, { maxRecordNumber: 100 });
+  const csvMapperParsed = parseCsvMapper(parsedConfiguration);
+  const { createReadStream } = await fileUpload;
+  const csvLines = await parseReadableToLines(createReadStream(), 100);
+  if (csvMapperParsed.has_header) {
+    removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
+  }
+  const bundlerOpts : CsvBundlerTestOpts = {
+    applicantUser: user,
+    csvMapper: csvMapperParsed
+  };
+  const allObjects = await getCsvTestObjects(context, csvLines, bundlerOpts);
   return {
-    objects: JSON.stringify(bundle.objects, null, 2),
-    nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
-    nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
+    objects: JSON.stringify(allObjects, null, 2),
+    nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
+    nbEntities: allObjects.filter((object) => object.type !== 'relationship').length,
   };
 };
 

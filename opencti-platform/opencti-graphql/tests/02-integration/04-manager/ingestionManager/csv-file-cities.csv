@@ -1,0 +1,17 @@
+# THIS CSV FILE HAS COMMENTS and header too
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#############
+insee_code,city_code,zip_code,label,latitude,longitude,department_name,department_number,region_name,region_geojson_name,label,color
+2815,villers st christophe,2590,villers st christophe,49.779716306,3.09133152,aisne,2,hauts-de-france,Hauts-de-France,ingestionManager1,#fff
+# 2833,wimy,2500,wimy,49.948014627,3.997490476,aisne,2,hauts-de-france,Hauts-de-France,ingestionManagerSkip,#000
+5142,st firmin,5800,st firmin en valgodemard,44.793514305,6.025693765,hautes-alpes,5,provence-alpes-côte d'azur,Provence-Alpes-Côte d'Azur,ingestionManager2,#fff
+5142,st firmin,5800,st firmin en valgodemard,44.793514305,6.025693765,hautes-alpes,5,provence-alpes-côte d'azur,Provence-Alpes-Côte d'Azur,ingestionManager3,#fff
+2101,bosmont sur serre,2250,bosmont sur serre,49.739164547,3.866951038,aisne,2,hauts-de-france,Hauts-de-France,ingestionManager4,#fff

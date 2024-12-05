@@ -11,7 +11,6 @@ import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
 import { useDataTable, useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
-import { SELECT_COLUMN_SIZE } from './components/DataTableHeader';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
@@ -95,7 +94,6 @@ const DataTableInternalFilters = ({
           availableEntityTypes={availableEntityTypes}
           additionalFilterKeys={additionalFilterKeys}
           entityTypes={computedEntityTypes}
-          paginationOptions={paginationOptions}
         />
       )}
     </>
@@ -135,7 +133,7 @@ const DataTableInternalToolbar = ({
     <div
       style={{
         background: theme.palette.background.accent,
-        width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
+        flex: 1,
       }}
     >
       <DataTableToolBar
@@ -169,6 +167,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
 | 'entityTypes'> & {
@@ -206,6 +205,9 @@ const DataTable = (props: OCTIDataTableProps) => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
+  const computedSearchContextFinal = searchContextFinal?.entityTypes
+    ? searchContextFinal
+    : { ...searchContextFinal, entityTypes: computedEntityTypes };
   let availableFilterKeys = defaultAvailableFilterKeys ?? [];
   if (availableFilterKeys.length === 0 && isNotEmptyField(computedEntityTypes)) {
     const filterKeysMap = new Map();
@@ -239,7 +241,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           availableRelationshipTypes={availableRelationshipTypes}
           currentView={currentView}
           exportContext={exportContext}
-          searchContextFinal={searchContextFinal}
+          searchContextFinal={computedSearchContextFinal}
         />
       )}
       dataTableToolBarComponent={(

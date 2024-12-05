@@ -205,15 +205,17 @@ class WorkbenchFileLineComponent extends Component {
                   {file.metaData.creator?.name || t('Unknown')}
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
-                  {(file.metaData.labels || []).map((n) => (
-                    <Chip
-                      key={n}
-                      classes={{ root: classes.chipInList }}
-                      color="primary"
-                      variant="outlined"
-                      label={n}
-                    />
-                  ))}
+                  {file.metaData.labels_text
+                    ? file.metaData.labels_text.split(';').map((label, index) => (
+                      <Chip
+                        key={index}
+                        classes={{ root: classes.chipInList }}
+                        color="primary"
+                        variant="outlined"
+                        label={label.trim()}
+                      />
+                    ))
+                    : null}
                 </div>
                 <div
                   className={classes.bodyItem}

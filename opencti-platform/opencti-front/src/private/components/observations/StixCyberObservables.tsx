@@ -152,13 +152,7 @@ const StixCyberObservables: FunctionComponent = () => {
                 paginationOptions={queryPaginationOptions}
                 contextual={false}
                 open={false}
-                handleClose={undefined}
-                onCompleted={undefined}
-                isFromBulkRelation={undefined}
-                type={undefined}
-                display={undefined}
                 speeddial={false}
-                inputValue={undefined}
                 controlledDialStyles={{ marginLeft: 1 }}
               />
             </Security>
@@ -172,13 +166,7 @@ const StixCyberObservables: FunctionComponent = () => {
             paginationOptions={queryPaginationOptions}
             contextual={false}
             open={false}
-            handleClose={undefined}
-            onCompleted={undefined}
-            isFromBulkRelation={undefined}
-            type={undefined}
-            display={undefined}
             speeddial={false}
-            inputValue={undefined}
           />
         </Security>
       )}

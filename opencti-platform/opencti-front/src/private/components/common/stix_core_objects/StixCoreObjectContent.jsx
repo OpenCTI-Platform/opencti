@@ -456,7 +456,7 @@ class StixCoreObjectContentComponent extends Component {
       && [...files, ...exportFiles, ...contentsFromTemplate].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
-    const height = innerHeight - 300;
+    const height = innerHeight - 320;
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
     return (
       <div className={classes.container} data-testid='sco-content-page'>

@@ -641,6 +641,14 @@ jobs:
       - kubernetes/install-kubectl
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_PRE_RELEASE -n customer-prerelease rollout restart deployment -l app=opencti
 
+  deploy_dev:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_DEV -n customer-dev rollout restart deployment -l app=opencti
+
   notify_rolling:
     docker:
       - image: "cimg/base:stable"
@@ -795,10 +803,15 @@ workflows:
           requires:
             - docker_build_platform_prerelease
             - docker_build_worker_prerelease
+      - deploy_dev:
+          requires:
+            - docker_build_platform_prerelease
+            - docker_build_worker_prerelease
       - notify_rolling:
           requires:
             - deploy_testing
             - deploy_prerelease
+            - deploy_dev
             - docker_build_platform_fips_rolling
             - docker_build_worker_fips_rolling              
             - package_rolling

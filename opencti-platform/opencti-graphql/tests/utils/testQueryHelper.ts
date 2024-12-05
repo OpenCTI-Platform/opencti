@@ -1,11 +1,16 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
+import readline from 'node:readline';
+import fs from 'node:fs';
+import path from 'node:path';
+import Upload from 'graphql-upload/Upload.mjs';
 import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, type Organization, queryAsAdmin, testContext } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
+import { fileToReadStream } from '../../src/database/file-storage-helper';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -130,9 +135,22 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
   return streamConverter(stream);
 };
 
+export const readCsvFromFileStream = async (filePath: string, fileName: string) => {
+  const file = fileToReadStream(filePath, fileName, fileName, 'text/csv');
+  const rl = readline.createInterface({ input: file.createReadStream(), crlfDelay: Infinity });
+
+  const csvLines: string[] = [];
+  // Need an async interator to prevent blocking
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const line of rl) {
+    csvLines.push(line);
+  }
+  return csvLines;
+};
+
 /**
  * Enable Enterprise edition and set the platform organisation.
- * @param organization: organization to use as platform organization.
+ * @param organization organization to use as platform organization.
  */
 export const enableEEAndSetOrganization = async (organization: Organization) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
@@ -150,7 +168,7 @@ export const enableEEAndSetOrganization = async (organization: Organization) => 
 };
 
 /**
- * Remove any platform organization and go back to comunity edition.
+ * Remove any platform organization and go back to community edition.
  */
 export const enableCEAndUnSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
@@ -163,4 +181,23 @@ export const enableCEAndUnSetOrganization = async () => {
 
   expect(settingsResult.platform_organization).toBeUndefined();
   expect(settingsResult.enterprise_edition).toBeUndefined();
+};
+
+export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
+  const file = fs.createReadStream(
+    path.resolve(__dirname, `../data/${filePathRelativeFromData}`),
+  );
+  const upload = new Upload();
+  const fileUpload = {
+    fieldName: 'fieldName',
+    filename: fileName,
+    mimetype,
+    encoding: encoding || 'utf-8',
+    createReadStream: () => file,
+  };
+  upload.promise = new Promise((executor) => {
+    executor(fileUpload);
+  });
+  upload.file = fileUpload;
+  return upload;
 };

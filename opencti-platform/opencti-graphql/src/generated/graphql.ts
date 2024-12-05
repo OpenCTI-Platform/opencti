@@ -7494,12 +7494,19 @@ export type ExclusionList = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
+  exclusion_list_entity_types: Array<Scalars['String']['output']>;
   file_id: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  list_entity_types: Array<ExclusionListEntityTypes>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
+};
+
+export type ExclusionListCacheStatus = {
+  __typename?: 'ExclusionListCacheStatus';
+  cacheVersion: Scalars['String']['output'];
+  isCacheRebuildInProgress: Scalars['Boolean']['output'];
+  refreshVersion: Scalars['String']['output'];
 };
 
 export type ExclusionListConnection = {
@@ -7511,7 +7518,7 @@ export type ExclusionListConnection = {
 export type ExclusionListContentAddInput = {
   content: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
-  list_entity_types: Array<ExclusionListEntityTypes>;
+  exclusion_list_entity_types: Array<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
 
@@ -7521,22 +7528,17 @@ export type ExclusionListEdge = {
   node: ExclusionList;
 };
 
-export enum ExclusionListEntityTypes {
-  DomainName = 'DOMAIN_NAME',
-  Ipv4Addr = 'IPV4_ADDR',
-  Ipv6Addr = 'IPV6_ADDR',
-  Url = 'URL'
-}
-
 export type ExclusionListFileAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
+  exclusion_list_entity_types: Array<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
-  list_entity_types: Array<ExclusionListEntityTypes>;
   name: Scalars['String']['input'];
 };
 
 export enum ExclusionListOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
+  Enabled = 'enabled',
   Name = 'name'
 }
 
@@ -13491,6 +13493,7 @@ export type Mutation = {
   csvMapperAdd?: Maybe<CsvMapper>;
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
+  csvMapperTest?: Maybe<CsvMapperTestResult>;
   dataComponentAdd?: Maybe<DataComponent>;
   dataComponentContextClean?: Maybe<DataComponent>;
   dataComponentContextPatch?: Maybe<DataComponent>;
@@ -13528,6 +13531,7 @@ export type Mutation = {
   eventRelationDelete?: Maybe<Event>;
   exclusionListContentAdd?: Maybe<ExclusionList>;
   exclusionListDelete?: Maybe<Scalars['ID']['output']>;
+  exclusionListFieldPatch?: Maybe<ExclusionList>;
   exclusionListFileAdd?: Maybe<ExclusionList>;
   externalReferenceAdd?: Maybe<ExternalReference>;
   externalReferenceEdit?: Maybe<ExternalReferenceEditMutations>;
@@ -14133,6 +14137,12 @@ export type MutationCsvMapperFieldPatchArgs = {
 };
 
 
+export type MutationCsvMapperTestArgs = {
+  configuration: Scalars['String']['input'];
+  file: Scalars['Upload']['input'];
+};
+
+
 export type MutationDataComponentAddArgs = {
   input: DataComponentAddInput;
 };
@@ -14342,6 +14352,13 @@ export type MutationExclusionListContentAddArgs = {
 
 export type MutationExclusionListDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationExclusionListFieldPatchArgs = {
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<EditInput>>;
 };
 
 
@@ -19300,6 +19317,7 @@ export type Query = {
   creators?: Maybe<CreatorConnection>;
   csvMapper?: Maybe<CsvMapper>;
   csvMapperSchemaAttributes: Array<CsvMapperSchemaAttributes>;
+  /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
   dataComponent?: Maybe<DataComponent>;
@@ -19322,6 +19340,7 @@ export type Query = {
   event?: Maybe<Event>;
   events?: Maybe<EventConnection>;
   exclusionList?: Maybe<ExclusionList>;
+  exclusionListCacheStatus?: Maybe<ExclusionListCacheStatus>;
   exclusionLists?: Maybe<ExclusionListConnection>;
   externalReference?: Maybe<ExternalReference>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
@@ -30950,10 +30969,10 @@ export type ResolversTypes = ResolversObject<{
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   EventsOrdering: EventsOrdering;
   ExclusionList: ResolverTypeWrapper<BasicStoreEntityExclusionList>;
+  ExclusionListCacheStatus: ResolverTypeWrapper<ExclusionListCacheStatus>;
   ExclusionListConnection: ResolverTypeWrapper<Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['ExclusionListEdge']>> }>;
   ExclusionListContentAddInput: ExclusionListContentAddInput;
   ExclusionListEdge: ResolverTypeWrapper<Omit<ExclusionListEdge, 'node'> & { node: ResolversTypes['ExclusionList'] }>;
-  ExclusionListEntityTypes: ExclusionListEntityTypes;
   ExclusionListFileAddInput: ExclusionListFileAddInput;
   ExclusionListOrdering: ExclusionListOrdering;
   ExportAskInput: ExportAskInput;
@@ -31769,6 +31788,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
   ExclusionList: BasicStoreEntityExclusionList;
+  ExclusionListCacheStatus: ExclusionListCacheStatus;
   ExclusionListConnection: Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['ExclusionListEdge']>> };
   ExclusionListContentAddInput: ExclusionListContentAddInput;
   ExclusionListEdge: Omit<ExclusionListEdge, 'node'> & { node: ResolversParentTypes['ExclusionList'] };
@@ -34764,12 +34784,19 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exclusion_list_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   file_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  list_entity_types?: Resolver<Array<ResolversTypes['ExclusionListEntityTypes']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ExclusionListCacheStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListCacheStatus'] = ResolversParentTypes['ExclusionListCacheStatus']> = ResolversObject<{
+  cacheVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isCacheRebuildInProgress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  refreshVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -36878,6 +36905,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperAdd?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperAddArgs, 'input'>>;
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
+  csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
   dataComponentAdd?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentAddArgs, 'input'>>;
   dataComponentContextClean?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextCleanArgs, 'id'>>;
   dataComponentContextPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextPatchArgs, 'id' | 'input'>>;
@@ -36915,6 +36943,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   exclusionListContentAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListContentAddArgs, 'input'>>;
   exclusionListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationExclusionListDeleteArgs, 'id'>>;
+  exclusionListFieldPatch?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFieldPatchArgs, 'id'>>;
   exclusionListFileAdd?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<MutationExclusionListFileAddArgs, 'input'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<MutationExternalReferenceAddArgs, 'input'>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
@@ -38381,6 +38410,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<ResolversTypes['EventConnection']>, ParentType, ContextType, Partial<QueryEventsArgs>>;
   exclusionList?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<QueryExclusionListArgs, 'id'>>;
+  exclusionListCacheStatus?: Resolver<Maybe<ResolversTypes['ExclusionListCacheStatus']>, ParentType, ContextType>;
   exclusionLists?: Resolver<Maybe<ResolversTypes['ExclusionListConnection']>, ParentType, ContextType, Partial<QueryExclusionListsArgs>>;
   externalReference?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<QueryExternalReferenceArgs, 'id'>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<QueryExternalReferencesArgs>>;
@@ -41723,6 +41753,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   EventConnection?: EventConnectionResolvers<ContextType>;
   EventEdge?: EventEdgeResolvers<ContextType>;
   ExclusionList?: ExclusionListResolvers<ContextType>;
+  ExclusionListCacheStatus?: ExclusionListCacheStatusResolvers<ContextType>;
   ExclusionListConnection?: ExclusionListConnectionResolvers<ContextType>;
   ExclusionListEdge?: ExclusionListEdgeResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;

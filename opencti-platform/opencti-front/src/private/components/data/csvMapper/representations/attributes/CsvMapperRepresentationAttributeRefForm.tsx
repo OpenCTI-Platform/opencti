@@ -232,7 +232,7 @@ CsvMapperRepresentationAttributeRefFormProps
       </div>
       <div>
         {schemaAttribute.editDefault && (
-          <CsvMapperRepresentationDialogOption>
+          <CsvMapperRepresentationDialogOption configuration={value}>
             <CsvMapperRepresentationAttributeOptions
               schemaAttribute={schemaAttribute}
               attributeName={name}

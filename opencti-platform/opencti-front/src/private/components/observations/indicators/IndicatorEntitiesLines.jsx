@@ -24,9 +24,21 @@ class IndicatorEntitiesLines extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    // Compute the new count based on the current data
+    const globalCount = (this.props.data.stixCoreRelationships?.edges || []).length;
+
+    const updatedProps = {
+      data: {
+        stixCoreRelationships: {
+          pageInfo: {
+            globalCount,
+          },
+        },
+      },
+    };
     setNumberOfElements(
       prevProps,
-      this.props,
+      updatedProps,
       'stixCoreRelationships',
       this.props.setNumberOfElements.bind(this),
     );

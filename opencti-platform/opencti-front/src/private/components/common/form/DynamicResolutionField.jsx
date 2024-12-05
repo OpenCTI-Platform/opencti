@@ -186,7 +186,7 @@ const DynamicResolutionField = ({
               {(field.value || []).map((item) => (
                 <ListItem key={item.id} dense={true} divider={true}>
                   <ListItemIcon>
-                    <ItemIcon type={item.type} />
+                    <ItemIcon type={convertFromStixType(item.type)} />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -198,7 +198,7 @@ const DynamicResolutionField = ({
                             <Select
                               variant="standard"
                               labelId="type"
-                              value={item.type}
+                              value={convertFromStixType(item.type)}
                               onChange={(event) => handleChangeType(item.id, event)
                               }
                               style={{

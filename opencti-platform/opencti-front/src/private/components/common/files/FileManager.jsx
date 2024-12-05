@@ -20,7 +20,7 @@ import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/fields/SelectField';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';

@@ -56,6 +56,7 @@ import {
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PAYMENT_CARD,
+  ENTITY_PERSONA,
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
@@ -144,6 +145,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_MAC_ADDR, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_MEDIA_CONTENT, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_MUTEX, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PAYMENT_CARD, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PERSONA, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PHONE_NUMBER, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_SOFTWARE, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TEXT, []);

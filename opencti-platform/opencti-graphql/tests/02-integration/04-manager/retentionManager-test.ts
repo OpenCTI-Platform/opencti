@@ -12,7 +12,8 @@ import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { canDeleteElement } from '../../../src/database/data-consistency';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -303,11 +304,33 @@ describe('Retention Manager tests ', () => {
     expect(workbenchesToDelete.edges[0].node.id).toEqual(workbench1Id);
   });
   it('should fetch the correct report to be deleted by a retention rule on knowledge', async () => {
-    // retention rule on workbenches not modified since 2023-07-01
+    // retention rule on knowledge not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
     const reportsToDelete = await getElementsToDelete(context, 'knowledge', before);
-    expect(reportsToDelete.edges.length).toEqual(1); // workbench1 is the only workbench that has not been modified since 'before'
+    expect(reportsToDelete.edges.length).toEqual(1);
     expect(reportsToDelete.edges[0].node.id).toEqual(report1Id);
+    const canDeleteReport = await canDeleteElement(context, ADMIN_USER, reportsToDelete.edges[0].node);
+    expect(canDeleteReport).toBeTruthy();
+  });
+  it('should fetch individuals to delete', async () => {
+    // retention rule on workbenches not modified since 2023-07-01
+    const before = utcDate();
+    const filters = {
+      mode: 'and',
+      filters: [{
+        key: ['entity_type'],
+        values: [ENTITY_TYPE_IDENTITY_INDIVIDUAL],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const elementsToDelete = await getElementsToDelete(context, 'knowledge', before, JSON.stringify(filters));
+    expect(elementsToDelete.edges.length).toEqual(3);
+    const adminIndividual = elementsToDelete.edges.find((e: any) => e.node.name === 'admin');
+    expect(await canDeleteElement(context, ADMIN_USER, adminIndividual.node)).toBeFalsy();
+    const otherIndividual = elementsToDelete.edges.find((e: any) => !e.node.contact_information);
+    expect(await canDeleteElement(context, ADMIN_USER, otherIndividual.node)).toBeTruthy();
   });
   it('should delete the fetched files and workbenches', async () => {
     // delete file
@@ -326,5 +349,10 @@ describe('Retention Manager tests ', () => {
   it('should not delete organization with members', async () => {
     await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
       .rejects.toThrowError('Cannot delete an organization that has members.');
+  });
+  it('should not delete individual associated to user', async () => {
+    const individualUserId = 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91'; // admin individual
+    await expect(() => deleteElement(context, 'knowledge', individualUserId, ENTITY_TYPE_IDENTITY_INDIVIDUAL))
+      .rejects.toThrowError('Cannot delete an individual corresponding to a user');
   });
 });

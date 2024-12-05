@@ -195,6 +195,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import {
   adaptUpdateInputsConfidence,
   controlCreateInputWithUserConfidence,
@@ -202,6 +203,7 @@ import {
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
+import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
@@ -388,7 +390,7 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
         }
       });
     }
-    const deps = depsElementsMap.get(element.id);
+    const deps = depsElementsMap.get(element.id) ?? {};
     if (isNotEmptyField(files)) {
       deps.x_opencti_files = files;
     }
@@ -519,18 +521,18 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
+  // filter out unresolved data (like the SYSTEM user for instance)
+  const filteredData = data.filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds = [];
-  for (let i = 0; i < data.length; i += 1) {
-    const resolved = allResolveLabels[data[i].label.toLowerCase()];
+  for (let i = 0; i < filteredData.length; i += 1) {
+    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
     const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
     if (canAccess) {
-      grantedIds.push(data[i].label.toLowerCase());
+      grantedIds.push(filteredData[i].label.toLowerCase());
     }
   }
-  return data
-    // filter out unresolved data (like the SYSTEM user for instance)
-    .filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]))
+  return filteredData
     .map((n) => {
       const element = allResolveLabels[n.label.toLowerCase()];
       if (grantedIds.includes(n.label.toLowerCase())) {
@@ -1883,17 +1885,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   // Individual check
   const { bypassIndividualUpdate } = opts;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: 'user_email', values: [initial.contact_information] }],
-        filterGroups: [],
-      },
-      noFiltersChecking: true,
-      connectionFormat: false
-    };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
-    if (users.length > 0) {
+    const isIndividualUser = await isIndividualAssociatedToUser(context, initial);
+    if (isIndividualUser) {
       throw FunctionalError('Cannot update an individual corresponding to a user');
     }
   }
@@ -3188,20 +3181,12 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   }
   // endregion
   // Prevent individual deletion if linked to a user
-  if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: 'user_email', values: [element.contact_information] }],
-        filterGroups: [],
-      },
-      noFiltersChecking: true,
-      connectionFormat: false
-    };
-    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
-    if (users.length > 0) {
-      throw FunctionalError('Cannot delete an individual corresponding to a user');
-    }
+  if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL) {
+    await verifyCanDeleteIndividual(context, user, element);
+  }
+  // Prevent organization deletion if platform orga or has members
+  if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
+    await verifyCanDeleteOrganization(context, user, element);
   }
   if (!validateUserAccessOperation(user, element, 'delete')) {
     throw ForbiddenAccess();

@@ -1,6 +1,6 @@
 export const promoteIndicatorInput = {
   name: 'indicatorTestPromote',
-  pattern: "[domain-name:value = 'indicatorTestPromote']",
+  pattern: "[domain-name:value = 'indicatorTestPromote.com']",
   pattern_type: 'stix',
   x_opencti_main_observable_type: 'Domain-Name',
 };
@@ -8,7 +8,7 @@ export const promoteIndicatorInput = {
 export const promoteObservableInput = {
   type: 'Domain-Name',
   DomainName: {
-    value: 'observableTestPromote'
+    value: 'observableTestPromote.com'
   },
 };
 

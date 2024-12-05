@@ -48,9 +48,10 @@ interface GroupEditionUsersProps {
   queryRef: PreloadedQuery<UsersLinesSearchQuery>,
   paginationOptionsForUpdater: GroupUsersLinesQuery$variables,
   children: ReactNode,
+  storageKey: string,
 }
 
-const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater, children }) => {
+const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater, children, storageKey }) => {
   const groupId = group.id;
   const groupUsers = group.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
   const usersData = usePreloadedQuery<UsersLinesSearchQuery>(usersLinesSearchQuery, queryRef);
@@ -99,10 +100,10 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
   return (
     <DataTableWithoutFragment
       dataColumns={{
-        name: { percentWidth: 50, isSortable: false },
-        user_email: {},
+        name: { percentWidth: 50, isSortable: true },
+        user_email: { isSortable: true },
       }}
-      storageKey={`group-${group.id}-users`}
+      storageKey={storageKey}
       data={users}
       globalCount={users.length}
       filtersComponent={children}

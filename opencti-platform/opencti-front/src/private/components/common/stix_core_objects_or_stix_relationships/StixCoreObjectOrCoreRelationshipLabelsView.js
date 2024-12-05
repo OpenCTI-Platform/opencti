@@ -252,7 +252,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                     />
                   </Tooltip>
                 ),
-                (labels ?? []),
+                labels,
               )}
             </DialogContent>
             <DialogActions>

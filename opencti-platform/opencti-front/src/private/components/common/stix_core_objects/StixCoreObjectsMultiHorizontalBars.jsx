@@ -479,7 +479,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
             });
             const chartData = [
               {
-                name: selection.label || t_i18n('Number of relationships'),
+                name: selection.label || t_i18n('Number of entities'),
                 data,
               },
             ];

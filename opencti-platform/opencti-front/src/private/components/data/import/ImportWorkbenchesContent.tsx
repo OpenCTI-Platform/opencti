@@ -43,6 +43,7 @@ export const workbenchLineFragment = graphql`
       mimetype
       list_filters
       labels
+      labels_text
       messages {
         timestamp
         message

@@ -12,10 +12,10 @@ export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
       type: 'indicator',
       extensions: {
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+          converter_csv: '[ipv4-addr:value = \'198.168.8.1\'],IPv4-Addr,http://twitter.com/filigraner',
           extension_type: 'property-extension',
           type: 'Indicator',
           main_observable_type: 'IPv4-Addr',
-          converter_csv: "[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner",
           observable_values: [
             {
               type: 'IPv4-Addr',
@@ -43,10 +43,10 @@ export const indicatorsWithExternalReferencesExpectedBundle: StixBundle = {
       type: 'indicator',
       extensions: {
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+          converter_csv: '[ipv4-addr:value = \'198.168.8.2\'],IPv4-Addr,http://twitter.com/filigraner',
           extension_type: 'property-extension',
           type: 'Indicator',
           main_observable_type: 'IPv4-Addr',
-          converter_csv: "[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner",
           observable_values: [
             {
               type: 'IPv4-Addr',
@@ -179,6 +179,8 @@ export const indicatorsWithExternalReferencesCsvMapper: Partial<CsvMapperParsed>
     '446c6e54-0f9b-442e-abe9-81508bd54b4a'
   ]
 };
-export const indicatorsWithExternalReferencesCsvContent = `pattern,main_obs_type,reference
-[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner
-[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner`;
+export const indicatorsWithExternalReferencesCsvContent = [
+  'pattern,main_obs_type,reference',
+  "[ipv4-addr:value = '198.168.8.1'],IPv4-Addr,http://twitter.com/filigraner",
+  "[ipv4-addr:value = '198.168.8.2'],IPv4-Addr,http://twitter.com/filigraner"
+];

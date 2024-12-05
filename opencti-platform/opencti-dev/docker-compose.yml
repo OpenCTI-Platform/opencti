@@ -106,7 +106,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:3.13-management
+    image: rabbitmq:4.0-management
     restart: unless-stopped
     ports:
       - 5672:5672
@@ -137,7 +137,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
       profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:25.0.6
+      image: quay.io/keycloak/keycloak:26.0.6
       volumes:
         - keycloakdata:/opt/keycloak/data
       container_name: opencti-dev-keycloak

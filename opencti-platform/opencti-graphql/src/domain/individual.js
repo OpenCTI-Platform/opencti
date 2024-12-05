@@ -2,13 +2,11 @@ import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
 import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
+import { isIndividualAssociatedToUser } from '../database/data-consistency';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
-import { SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isEmptyField } from '../database/utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 export const findById = (context, user, individualId) => {
@@ -29,18 +27,6 @@ export const partOfOrganizationsPaginated = async (context, user, individualId, 
   return listEntitiesThroughRelationsPaginated(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
-export const isUser = async (context, individualContactInformation) => {
-  if (isEmptyField(individualContactInformation)) {
-    return false;
-  }
-  const args = {
-    filters: {
-      mode: 'and',
-      filters: [{ key: 'user_email', values: [individualContactInformation] }],
-      filterGroups: [],
-    },
-    connectionFormat: false
-  };
-  const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
-  return users.length > 0;
+export const isUser = async (context, individual) => {
+  return isIndividualAssociatedToUser(context, individual);
 };

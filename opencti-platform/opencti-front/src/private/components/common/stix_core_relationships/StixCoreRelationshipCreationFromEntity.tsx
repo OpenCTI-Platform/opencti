@@ -60,9 +60,8 @@ const useStyles = makeStyles<Theme>(() => ({
     zIndex: 1001,
   },
   container: {
-    width: '100%',
-    height: '100%',
-    maxHeight: '100%',
+    flex: '1 0 0',
+    overflow: 'hidden',
   },
 }));
 
@@ -457,7 +456,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   targetStixCyberObservableTypes?: string[];
   defaultStartTime: string;
   defaultStopTime: string;
-  paginationOptions: unknown;
+  paginationOptions: Record<string, unknown>;
   connectionKey?: string;
   paddingRight: number;
   variant?: string;
@@ -621,13 +620,16 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
               : payload;
             const connKey = connectionKey || 'Pagination_stixCoreRelationships';
-            // When using connectionKey we use less props of PaginationOptions, we need to filter them
             let conn;
-            if (userProxy && paginationOptions) {
+            // When using connectionKey we use less props of PaginationOptions (ex: count),
+            // we need to filter them to prevent getConnection to fail
+            const { count: _, ...options } = paginationOptions;
+
+            if (userProxy) {
               conn = ConnectionHandler.getConnection(
                 userProxy,
                 connKey,
-                paginationOptions,
+                options,
               );
             }
 
@@ -637,6 +639,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             ) {
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
+
+              helpers.handleSetNumberOfElements({ });
             }
           }
         },
@@ -778,7 +782,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             {({ platformModuleHelpers }) => (
               <>
                 {queryRef && (
-                  <div style={{ height: '98%' }} ref={setTableRootRef}>
+                  <div style={{ height: '100%' }} ref={setTableRootRef}>
                     <DataTable
                       disableToolBar
                       disableSelectAll
@@ -793,6 +797,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       toolbarFilters={contextFilters}
                       preloadedPaginationProps={preloadedPaginationProps}
                       entityTypes={virtualEntityTypes}
+                      availableEntityTypes={virtualEntityTypes}
                       additionalHeaderButtons={[(
                         <BulkRelationDialogContainer
                           targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
@@ -837,12 +842,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               inputValue={searchTerm}
               paginationKey="Pagination_stixCoreObjects"
               paginationOptions={searchPaginationOptions}
-              open={undefined}
-              handleClose={undefined}
-              type={undefined}
-              speeddial={undefined}
-              onCompleted={undefined}
-              isFromBulkRelation={undefined}
             />
           )}
           {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
@@ -902,9 +901,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 speeddial={true}
                 open={openCreateObservable}
                 handleClose={handleCloseCreateObservable}
-                type={undefined}
-                onCompleted={undefined}
-                isFromBulkRelation={undefined}
               />
             </>
           )}

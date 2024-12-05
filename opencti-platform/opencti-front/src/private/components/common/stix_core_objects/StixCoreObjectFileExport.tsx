@@ -17,12 +17,12 @@ import { createSearchParams, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
-import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { Option } from '@components/common/form/ReferenceField';
 import { InfoOutlined } from '@mui/icons-material';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -197,7 +197,7 @@ const StixCoreObjectFileExportComponent = ({
                 render={({
                   props,
                 }: {
-                  props: MarkingDefinitionsLinesSearchQuery$data;
+                  props: MarkingDefinitionsQuerySearchQuery$data;
                 }) => {
                   if (props && props.markingDefinitions) {
                     return (

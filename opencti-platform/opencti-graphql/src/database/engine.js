@@ -1664,6 +1664,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
+  'persona_name',
   'roles',
   'objective',
   'content',

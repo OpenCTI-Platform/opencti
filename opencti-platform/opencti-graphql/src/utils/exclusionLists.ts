@@ -1,5 +1,5 @@
 import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
-import { type ExclusionListProperties } from './exclusionListsTypes';
+import { type ExclusionListCacheItem } from '../database/exclusionListCache';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
 
@@ -56,17 +56,17 @@ export const convertIpAddr = (list: string[]) => {
   });
 };
 
-export const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListProperties[]) => {
+export const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListCacheItem[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
 
   let startProcessingTime = new Date().getTime();
   for (let i = 0; i < exclusionList.length; i += 1) {
-    const { list, name } = exclusionList[i];
+    const { id, values } = exclusionList[i];
 
-    for (let j = 0; j < list.length; j += 1) {
-      if (binary.startsWith(list[j])) {
-        return { value: ipToTest, listName: name };
+    for (let j = 0; j < values.length; j += 1) {
+      if (binary.startsWith(values[j])) {
+        return { value: ipToTest, listId: id };
       }
 
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -80,16 +80,16 @@ export const checkIpAddressLists = async (ipToTest: string, exclusionList: Exclu
   return null;
 };
 
-export const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListProperties[]) => {
+export const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListCacheItem[]) => {
   let startProcessingTime = new Date().getTime();
 
   for (let i = 0; i < exclusionList.length; i += 1) {
-    const { list, name } = exclusionList[i];
+    const { id, values } = exclusionList[i];
 
-    for (let j = 0; j < list.length; j += 1) {
-      const isWildCard = list[j].startsWith('.');
-      if ((isWildCard && valueToTest.endsWith(list[j])) || valueToTest === list[j]) {
-        return { value: valueToTest, listName: name };
+    for (let j = 0; j < values.length; j += 1) {
+      const isWildCard = values[j].startsWith('.');
+      if ((isWildCard && valueToTest.endsWith(values[j])) || valueToTest === values[j]) {
+        return { value: valueToTest, listId: id };
       }
 
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {

@@ -23,46 +23,49 @@ const IndicatorObservablesComponent = ({ indicator }) => {
   const observablesGlobalCount = indicator.observables.pageInfo.globalCount;
 
   return (
-    <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r)}>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Based on')}
-      </Typography>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IndicatorAddObservables
-          indicator={indicator}
-          indicatorObservables={indicator.observables.edges}
-        />
-      </Security>
-      <div className="clearfix" />
-      <DataTableWithoutFragment
-        dataColumns={{
-          entity_type: {
-            percentWidth: 20,
-            isSortable: false,
-          },
-          observable_value: {
-            percentWidth: 55,
-            isSortable: false,
-          },
-          created_at: {
-            percentWidth: 25,
-            isSortable: false,
-          },
-        }}
-        data={observables}
-        globalCount={observablesGlobalCount}
-        rootRef={ref}
-        storageKey={`indicator-observables-${indicator.id}`}
-        variant={DataTableVariant.inline}
-        hideHeaders
-        actions={(observable) => (
-          <IndicatorObservablePopover
-            indicatorId={indicator.id}
-            observableId={observable.id}
-            onDelete={() => onDelete(observable.id)}
+    <div style={{ marginTop: 20, height: 300, display: 'flex', flexFlow: 'column' }} >
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Typography variant="h3" style={{ marginBottom: 0 }}>
+          {t_i18n('Based on')}
+        </Typography>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndicatorAddObservables
+            indicator={indicator}
+            indicatorObservables={indicator.observables.edges}
           />
-        )}
-      />
+        </Security>
+      </div>
+      <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r)}>
+        <DataTableWithoutFragment
+          dataColumns={{
+            entity_type: {
+              percentWidth: 20,
+              isSortable: false,
+            },
+            observable_value: {
+              percentWidth: 55,
+              isSortable: false,
+            },
+            created_at: {
+              percentWidth: 25,
+              isSortable: false,
+            },
+          }}
+          data={observables}
+          globalCount={observablesGlobalCount}
+          rootRef={ref}
+          storageKey={`indicator-observables-${indicator.id}`}
+          variant={DataTableVariant.inline}
+          hideHeaders
+          actions={(observable) => (
+            <IndicatorObservablePopover
+              indicatorId={indicator.id}
+              observableId={observable.id}
+              onDelete={() => onDelete(observable.id)}
+            />
+          )}
+        />
+      </div>
     </div>
   );
 };

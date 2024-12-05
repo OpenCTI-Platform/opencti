@@ -24,6 +24,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import IndicatorDeletion from './IndicatorDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -82,7 +84,8 @@ const IndicatorEditionOverviewComponent = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     indicator_types: Yup.array(),
@@ -284,7 +287,7 @@ const IndicatorEditionOverviewComponent = ({
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="valid_from"/>
+                <SubscriptionFocus context={context} fieldName="valid_from" />
               ),
             }}
           />
@@ -299,7 +302,7 @@ const IndicatorEditionOverviewComponent = ({
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="valid_until"/>
+                <SubscriptionFocus context={context} fieldName="valid_until" />
               ),
             }}
           />
@@ -405,16 +408,22 @@ const IndicatorEditionOverviewComponent = ({
               />
             }
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={indicator.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <IndicatorDeletion id={indicator.id} />
+              : <div />
+            }
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={indicator.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

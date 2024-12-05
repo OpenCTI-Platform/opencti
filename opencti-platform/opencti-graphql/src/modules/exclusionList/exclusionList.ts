@@ -59,7 +59,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: true,
       upsert: false,
-      isFilterable: false
+      isFilterable: true
     },
     {
       name: 'file_id',
