@@ -3850,6 +3850,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sesamecare-oss/redlock@npm:1.3.1":
+  version: 1.3.1
+  resolution: "@sesamecare-oss/redlock@npm:1.3.1"
+  peerDependencies:
+    ioredis: ">=5"
+  checksum: 10/db6f0a2a6b571687229fc0261459f74529de412b3b14d80c048df7323e20da94885680b0678a5e819a7750de3d9e63e9863874a2b54e3ec4c6f8c5d71dcf8651
+  languageName: node
+  linkType: hard
+
 "@smithy/abort-controller@npm:^3.1.5, @smithy/abort-controller@npm:^3.1.6":
   version: 3.1.6
   resolution: "@smithy/abort-controller@npm:3.1.6"
@@ -10572,7 +10581,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-abort-controller@npm:^3.0.1, node-abort-controller@npm:^3.1.1":
+"node-abort-controller@npm:^3.1.1":
   version: 3.1.1
   resolution: "node-abort-controller@npm:3.1.1"
   checksum: 10/0a2cdb7ec0aeaf3cb31e1ca0e192f5add48f1c5c9c9ed822129f9dddbd9432f69b7425982f94ce803c56a2104884530aa67cd57696e5774b2e5b8ec2f58de042
@@ -10963,6 +10972,7 @@ __metadata:
     "@opentelemetry/sdk-trace-node": "npm:1.25.1"
     "@opentelemetry/semantic-conventions": "npm:1.25.1"
     "@rollup/plugin-graphql": "npm:2.0.4"
+    "@sesamecare-oss/redlock": "npm:1.3.1"
     "@types/archiver": "npm:6.0.2"
     "@types/bcryptjs": "npm:2.4.6"
     "@types/bluebird": "npm:3.5.42"
@@ -11066,7 +11076,6 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.30.1"
     rate-limiter-flexible: "npm:4.0.1"
-    redlock: "npm:5.0.0-beta.2"
     sanitize-filename: "npm:1.6.3"
     semver: "npm:7.6.3"
     set-interval-async: "npm:3.0.3"
@@ -11881,15 +11890,6 @@ __metadata:
   dependencies:
     redis-errors: "npm:^1.0.0"
   checksum: 10/b10846844b4267f19ce1a6529465819c3d78c3e89db7eb0c3bb4eb19f83784797ec411274d15a77dbe08038b48f95f76014b83ca366dc955a016a3a0a0234650
-  languageName: node
-  linkType: hard
-
-"redlock@npm:5.0.0-beta.2":
-  version: 5.0.0-beta.2
-  resolution: "redlock@npm:5.0.0-beta.2"
-  dependencies:
-    node-abort-controller: "npm:^3.0.1"
-  checksum: 10/c1df94fb229182ccf59b744f600b45f2cda1d9c7e5b87b9bbf5c3ef92eb47339af7b33b80dc71e97c08c1f476443be68987dad6c49cfc1a89e9a647127884963
   languageName: node
   linkType: hard
 
