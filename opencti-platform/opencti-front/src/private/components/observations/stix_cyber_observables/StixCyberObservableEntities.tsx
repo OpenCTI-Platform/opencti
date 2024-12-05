@@ -108,7 +108,6 @@ const StixCyberObservableEntities: FunctionComponent<StixCyberObservableEntities
               entityId={entityId}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
-              isReversable={true}
               controlledDial={({ onOpen }) => {
                 return (
                   <IconButton

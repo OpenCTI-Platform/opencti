@@ -192,7 +192,6 @@ const SelectEntity = ({
  * @param props.sourceEntity The source entity
  * @param props.targetEntities The target entities
  * @param props.handleClose Function called on close
- * @param props.isReversable Whether this relationship can be reversed
  * @param props.defaultStartTime The default start time
  * @param props.defaultStopTime The default stop time
  * @returns JSX.Element
@@ -201,14 +200,12 @@ const RenderForm = ({
   sourceEntity,
   targetEntities,
   handleClose,
-  isReversable,
   defaultStartTime,
   defaultStopTime,
 }: {
   sourceEntity: TargetEntity,
   targetEntities: TargetEntity[],
   handleClose: () => void,
-  isReversable?: boolean
   defaultStartTime?: string,
   defaultStopTime?: string,
 }) => {
@@ -220,7 +217,7 @@ const RenderForm = ({
   } } = useContext(CreateRelationshipContext);
   const { schema } = useContext(UserContext);
   const [reversed, setReversed] = useState<boolean>(initiallyReversed ?? false);
-  
+
   let fromEntities = [sourceEntity];
   let toEntities = targetEntities;
   if (reversed) {
@@ -228,10 +225,18 @@ const RenderForm = ({
     toEntities = [sourceEntity];
   }
   let resolvedRelationshipTypes = resolveRelationsTypes(
-      fromEntities[0].entity_type,
-      toEntities[0].entity_type,
-      schema?.schemaRelationsTypesMapping ?? new Map(),
-    );
+    fromEntities[0].entity_type,
+    toEntities[0].entity_type,
+    schema?.schemaRelationsTypesMapping ?? new Map(),
+  );
+
+  // Check if the inverse relation has any unique relationship types
+  // If not, this creation form is not reversable
+  let isReversable = resolveRelationsTypes(
+    toEntities[0].entity_type,
+    fromEntities[0].entity_type,
+    schema?.schemaRelationsTypesMapping ?? new Map(),
+  ).filter((relType) => relType !== 'related-to').length > 0;
 
   const handleReverse = () => {
     setReversed(!reversed);
@@ -239,10 +244,17 @@ const RenderForm = ({
     fromEntities = toEntities;
     toEntities = tempEntities;
     resolvedRelationshipTypes = resolveRelationsTypes(
-        fromEntities[0].entity_type,
-        toEntities[0].entity_type,
-        schema?.schemaRelationsTypesMapping ?? new Map(),
-      );
+      fromEntities[0].entity_type,
+      toEntities[0].entity_type,
+      schema?.schemaRelationsTypesMapping ?? new Map(),
+    );
+  };
+
+  // If the initially resolved relationship types doesn't contain anything
+  // beyond 'related-to', we should invert the relation
+  if (resolvedRelationshipTypes.filter((relType) => relType !== 'related-to').length < 1) {
+    handleReverse();
+    isReversable = false;
   }
 
   const relationshipTypes = resolvedRelationshipTypes;
@@ -353,7 +365,6 @@ const RenderForm = ({
 interface StixCoreRelationshipCreationFromControlledDialContentProps {
   queryRef: PreloadedQuery<StixCoreRelationshipCreationFromEntityQuery>,
   entityId: string,
-  isReversable?: boolean,
   defaultStartTime?: string,
   defaultStopTime?: string,
   controlledDial?: ({ onOpen }: { onOpen: () => void }) => React.ReactElement,
@@ -362,7 +373,6 @@ interface StixCoreRelationshipCreationFromControlledDialContentProps {
 const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<StixCoreRelationshipCreationFromControlledDialContentProps> = ({
   queryRef,
   entityId,
-  isReversable = false,
   defaultStartTime,
   defaultStopTime,
   controlledDial,
@@ -474,7 +484,6 @@ const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<S
                 reset();
                 onClose();
               }}
-              isReversable={isReversable}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
             />
