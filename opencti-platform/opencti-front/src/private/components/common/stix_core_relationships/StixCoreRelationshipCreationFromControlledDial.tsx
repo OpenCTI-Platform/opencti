@@ -28,7 +28,6 @@ export const renderLoader = () => {
 
 interface StixCoreRelationshipCreationFromControlledDialProps {
   entityId: string,
-  isReversable?: boolean,
   defaultStartTime?: string,
   defaultStopTime?: string,
   controlledDial?: ({ onOpen }: { onOpen: () => void }) => React.ReactElement,
@@ -36,7 +35,6 @@ interface StixCoreRelationshipCreationFromControlledDialProps {
 
 const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCoreRelationshipCreationFromControlledDialProps> = ({
   entityId,
-  isReversable = false,
   defaultStartTime,
   defaultStopTime,
   controlledDial,
@@ -48,7 +46,6 @@ const StixCoreRelationshipCreationFromControlledDial: FunctionComponent<StixCore
         <StixCoreRelationshipCreationFromControlledDialContent
           queryRef={queryRef}
           entityId={entityId}
-          isReversable={isReversable}
           defaultStartTime={defaultStartTime}
           defaultStopTime={defaultStopTime}
           controlledDial={controlledDial}
