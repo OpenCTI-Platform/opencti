@@ -202,7 +202,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       onSubmit={onSubmit}
       onReset={onClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
         <Form>
           <Field
             component={TextField}
@@ -272,6 +272,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             name="content"
             label={t_i18n('Content')}
             required={(mandatoryAttributes.includes('content'))}
+            meta={{ error: errors.content }}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
