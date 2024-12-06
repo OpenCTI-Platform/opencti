@@ -2736,6 +2736,7 @@
   "This individual is now a user": "Este individuo es ahora un usuario",
   "This individual is part of": "Este individuo es parte de",
   "This item is built-in": "Este artículo está integrado",
+  "This list display all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "Esta lista muestra todas las entidades que tienen alguna restricción de acceso habilitada, lo que significa que sólo son accesibles para algunos usuarios específicos. Puede eliminar esta restricción de acceso en esta pantalla.",
   "This malware has been used": "Se ha utilizado este malware",
   "This operation cannot be undone.": "Esta operación no puede deshacerse.",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Estas operaciones sólo se aplicarán a las etiquetas o marcas añadidas en el contexto de este libro de jugadas, como el enriquecimiento u otras manipulaciones del conocimiento, pero no si las etiquetas o marcas ya están escritas en la plataforma.",
