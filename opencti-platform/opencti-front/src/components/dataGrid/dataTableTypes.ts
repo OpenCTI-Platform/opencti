@@ -135,6 +135,7 @@ export interface DataTableProps {
   onLineClick?: (line: any) => void
   hideHeaders?: boolean
   canToggleLine?: boolean
+  message?: string
 }
 
 export interface DataTableBodyProps {

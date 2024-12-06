@@ -76,8 +76,6 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
         color="primary"
       >
         <MoreVert />
