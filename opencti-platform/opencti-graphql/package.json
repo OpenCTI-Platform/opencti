@@ -40,7 +40,7 @@
     "node": ">= 17.*"
   },
   "dependencies": {
-    "@apollo/server": "4.11.0",
+    "@apollo/server": "4.11.2",
     "@apollo/server-plugin-landing-page-graphql-playground": "4.0.1",
     "@aws-sdk/client-s3": "3.679.0",
     "@aws-sdk/client-sts": "3.679.0",
@@ -184,7 +184,7 @@
     "@typescript-eslint/eslint-plugin": "7.3.1",
     "@typescript-eslint/parser": "7.3.1",
     "@vitest/coverage-v8": "2.0.5",
-    "apollo-server-errors": "3.3.1",
+    "@apollo/server": "4.0.0",
     "cross-env": "7.0.3",
     "esbuild": "0.24.0",
     "esbuild-plugin-import-glob": "0.1.1",
