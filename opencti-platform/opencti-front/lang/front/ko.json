@@ -2736,7 +2736,7 @@
   "This individual is now a user": "이 개인은 이제 사용자입니다",
   "This individual is part of": "이 개인은 일부분입니다",
   "This item is built-in": "이 항목은 내장되어 있습니다",
-  "This list display all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "이 목록에는 일부 액세스 제한이 설정된 모든 엔터티가 표시되며, 이는 일부 특정 사용자만 액세스할 수 있음을 의미합니다. 이 화면에서 이 액세스 제한을 제거할 수 있습니다.",
+  "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "이 목록에는 일부 액세스 제한이 설정된 모든 엔터티가 표시되며, 이는 일부 특정 사용자만 액세스할 수 있음을 의미합니다. 이 화면에서 이 액세스 제한을 제거할 수 있습니다.",
   "This malware has been used": "이 악성코드가 사용되었습니다",
   "This operation cannot be undone.": "이 작업은 되돌릴 수 없습니다.",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "이 작업은 강화 또는 기타 지식 조작과 같은 플레이북 맥락에서 추가된 레이블 또는 마킹에만 적용되며, 레이블 또는 마킹이 이미 플랫폼에 작성된 경우에는 적용되지 않습니다.",

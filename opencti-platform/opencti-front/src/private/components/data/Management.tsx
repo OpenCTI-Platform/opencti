@@ -147,7 +147,7 @@ const Management = () => {
           variant="outlined"
           style={{ padding: '0px 10px 0px 10px' }}
         >
-          {t_i18n('This list display all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+          {t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
         </Alert>
       </div>
       {isNewManagementScreensEnables && (
