@@ -85,7 +85,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   const containersGlobalCount = relatedContainers?.pageInfo?.globalCount ?? 0;
 
   return (
-    <div style={{ marginTop: 20, height: 400 }} ref={(r) => setRef(r ?? undefined)}>
+    <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
       <Typography variant="h3" gutterBottom={true} style={{ }}>
         {t_i18n('Correlated containers')}
         <IconButton
