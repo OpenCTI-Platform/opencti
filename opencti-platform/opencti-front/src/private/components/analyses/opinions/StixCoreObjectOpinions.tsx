@@ -41,8 +41,12 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
+  const [deleteActionTrigger, setDeleteActionTrigger] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const handleDelete = () => {
+    setDeleteActionTrigger((prev) => !prev);
+  };
   const { vocabularies } = usePreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>(
     stixCoreObjectOpinionsOpenVocabQuery,
     queryVocabulariesRef,
@@ -97,7 +101,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
       fetchLoadDistributionQuery(variablesDistribution, { fetchPolicy: 'store-and-network' });
       fetchLoadListQuery(variablesList, { fetchPolicy: 'store-and-network' });
     },
-    [],
+    [deleteActionTrigger],
   );
   const height = 240;
   return (
@@ -120,6 +124,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
             queryRef={listQueryRef}
             handleClose={handleClose}
             open={open}
+            onDelete={handleDelete}
           />
         </React.Suspense>
       )}
