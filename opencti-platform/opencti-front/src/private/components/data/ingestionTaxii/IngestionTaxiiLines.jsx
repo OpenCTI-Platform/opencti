@@ -4,7 +4,7 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import { interval } from 'rxjs';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { IngestionTaxiiLine, IngestionTaxiiLineDummy } from './IngestionTaxiiLine';
+import { IngestionTaxiiLineLineComponent, IngestionTaxiiLineDummy } from './IngestionTaxiiLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
 const nbOfRowsToLoad = 50;
@@ -36,7 +36,7 @@ class IngestionTaxiiLines extends Component {
           ['ingestionTaxiis', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<IngestionTaxiiLine />}
+        LineComponent={<IngestionTaxiiLineLineComponent />}
         DummyLineComponent={<IngestionTaxiiLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}

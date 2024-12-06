@@ -82,5 +82,6 @@ input IngestionTaxiiAddInput {
 type Mutation {
     ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
     ingestionTaxiiDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionTaxiiResetState(id: ID!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
     ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii @auth(for: [INGESTION_SETINGESTIONS])
 }
