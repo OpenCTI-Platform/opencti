@@ -84,7 +84,10 @@ const ChannelEditionOverviewComponent = (props) => {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
