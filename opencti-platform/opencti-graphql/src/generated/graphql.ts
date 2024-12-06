@@ -8214,26 +8214,26 @@ export enum FilterOperator {
 
 export type FintelTemplate = BasicObject & InternalObject & {
   __typename?: 'FintelTemplate';
-  availableForTypes: Array<Scalars['String']['output']>;
   content: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
-  enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
-  filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  instance_filters?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  settings_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  start_date?: Maybe<Scalars['DateTime']['output']>;
   template_widgets_ids: Array<Scalars['String']['output']>;
 };
 
 export type FintelTemplateAddInput = {
-  availableForTypess: Array<Scalars['String']['input']>;
   content: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
-  enabled: Scalars['Boolean']['input'];
-  filters?: InputMaybe<Scalars['String']['input']>;
+  instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  settings_typess: Array<Scalars['String']['input']>;
+  start_date?: InputMaybe<Scalars['DateTime']['input']>;
   template_widgets_ids: Array<Scalars['String']['input']>;
 };
 
@@ -35122,16 +35122,16 @@ export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type FintelTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplate'] = ResolversParentTypes['FintelTemplate']> = ResolversObject<{
-  availableForTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  instance_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  settings_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   template_widgets_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -98,7 +98,8 @@ export const fintelTemplateIncidentResponse: FintelTemplate = {
   name: 'Incident Response Report',
   id: 'templateIncidentCase-id',
   content,
-  availableForTypes: ['Incident-Response'],
+  start_date: '1970-01-01T00:00:00Z',
+  settings_types: ['Incident-Response'],
   template_widgets_ids: [
     'containerObservablesId',
     'incidentIOCId',

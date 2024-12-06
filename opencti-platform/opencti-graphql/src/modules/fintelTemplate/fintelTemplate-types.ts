@@ -7,32 +7,32 @@ export const ENTITY_TYPE_FINTEL_TEMPLATE = 'FintelTemplate';
 export interface FintelTemplate {
   name: string;
   description: string;
-  availableForTypes: string;
-  filters: string;
+  settings_types: string;
+  instance_filters: string;
   content: string;
   template_widgets_ids: [string];
-  enabled: boolean;
+  start_date: string;
 }
 
 // region Database types
 export interface BasicStoreEntityFintelTemplate extends BasicStoreEntity {
   name: string;
   description: string;
-  availableForTypes: string;
-  filters: string;
+  settings_types: string;
+  instance_filters: string;
   content: string;
   template_widgets_ids: [string];
-  enabled: boolean;
+  start_date: string;
 }
 
 export interface StoreEntityFintelTemplate extends StoreEntity {
   name: string;
   description: string;
-  availableForTypes: string;
-  filters: string;
+  settings_types: string;
+  instance_filters: string;
   content: string;
   template_widgets_ids: [string];
-  enabled: boolean;
+  start_date: string;
 }
 // endregion
 
@@ -40,11 +40,11 @@ export interface StoreEntityFintelTemplate extends StoreEntity {
 export interface StixFintelTemplate extends StixObject {
   name: string;
   description: string;
-  availableForTypes: string;
-  filters: string;
+  settings_types: string;
+  instance_filters: string;
   content: string;
   template_widgets_ids: [string];
-  enabled: boolean;
+  start_date: string;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };

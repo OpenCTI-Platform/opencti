@@ -104,7 +104,7 @@ export const getTemplatesForSetting = async (
   targetType: string,
 ): Promise<BasicStoreEntityFintelTemplate[]> => {
   await canCustomizeTemplate(context);
-  const filters = addFilter(undefined, 'availableForTypes', [targetType]);
+  const filters = addFilter(undefined, 'settings_types', [targetType]);
   return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
