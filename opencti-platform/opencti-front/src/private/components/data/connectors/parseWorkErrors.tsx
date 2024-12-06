@@ -139,7 +139,7 @@ export const getLevel = (code: string): ErrorLevel => {
 export const parseError = (error: NonNullable<NonNullable<WorkMessages>[number]>): ParsedWorkMessage => {
   // Try/Catch to prevent JSON.parse Exception
   try {
-    const parsedSource = JSON5.parse(error.source ?? '');
+    const parsedSource = JSON5.parse(error.source ?? '{}');
     const source = parsedSource.type === 'bundle' ? parsedSource.objects[0] : parsedSource;
     const message = JSON5.parse((error.message ?? ''));
     const entityId = source.id;
