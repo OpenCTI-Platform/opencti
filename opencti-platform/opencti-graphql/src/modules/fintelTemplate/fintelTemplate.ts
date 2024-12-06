@@ -2,20 +2,20 @@ import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_TEMPLATE, type StixTemplate, type StoreEntityTemplate } from './template-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE, type StixFintelTemplate, type StoreEntityFintelTemplate } from './fintelTemplate-types';
 import { ENTITY_TYPE_WIDGET } from '../widget/widget';
-import { convertTemplateToStix } from './template-converter';
+import { convertFintelTemplateToStix } from './fintelTemplate-converter';
 
-export const TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTemplate, StixTemplate> = {
+export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTemplate, StixFintelTemplate> = {
   type: {
-    id: 'templates',
-    name: ENTITY_TYPE_TEMPLATE,
+    id: 'fintelTemplates',
+    name: ENTITY_TYPE_FINTEL_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_TEMPLATE]: () => uuidv4(),
+      [ENTITY_TYPE_FINTEL_TEMPLATE]: () => uuidv4(),
     },
   },
   attributes: [
@@ -28,10 +28,10 @@ export const TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTemplate, StixTemp
     { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
-  representative: (stix: StixTemplate) => {
+  representative: (stix: StixFintelTemplate) => {
     return stix.name;
   },
-  converter: convertTemplateToStix
+  converter: convertFintelTemplateToStix
 };
 
-registerDefinition(TEMPLATE_DEFINITION);
+registerDefinition(FINTEL_TEMPLATE_DEFINITION);

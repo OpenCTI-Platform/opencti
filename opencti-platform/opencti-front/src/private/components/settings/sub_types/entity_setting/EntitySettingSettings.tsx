@@ -43,7 +43,7 @@ export const entitySettingFragment = graphql`
         width
         label
     }
-    templates {
+    fintelTemplates {
         id
         name
         description

@@ -1158,7 +1158,7 @@ export default createFragmentContainer(ContainerHeader, {
           }
         }
       }
-      templates {
+      fintelTemplates {
         id
         name
       }

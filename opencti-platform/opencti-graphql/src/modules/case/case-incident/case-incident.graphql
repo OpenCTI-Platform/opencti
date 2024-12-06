@@ -148,10 +148,10 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
+  fintelTemplates: [FintelTemplate!]
+  fintelTemplateAndUtils(
     templateId: String!
-  ): TemplateAndUtils
+  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

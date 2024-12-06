@@ -10,8 +10,8 @@ import {
   containersNumberByEntity,
   containerEditAuthorizedMembers,
   getFilesFromTemplate,
-  getTemplateAndUtils,
-  getTemplates
+  getFintelTemplateAndUtils,
+  getFintelTemplates
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
@@ -52,8 +52,8 @@ const containerResolvers = {
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
     filesFromTemplate: (container, { first, prefixMimeType }, context) => getFilesFromTemplate(context, context.user, container, { first, prefixMimeType }),
-    templates: (container, _, context) => getTemplates(context, context.user, container),
-    templateAndUtils: (container, args, context) => getTemplateAndUtils(context, context.user, container, args.templateId),
+    fintelTemplates: (container, _, context) => getFintelTemplates(context, context.user, container),
+    fintelTemplateAndUtils: (container, args, context) => getFintelTemplateAndUtils(context, context.user, container, args.templateId),
   },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {

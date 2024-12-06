@@ -1,4 +1,4 @@
-import type { Template } from '../../generated/graphql';
+import type { FintelTemplate } from '../../generated/graphql';
 
 const content = `
 <div>
@@ -94,10 +94,11 @@ const content = `
 </div>
 `;
 
-export const templateIncidentResponse: Template = {
+export const fintelTemplateIncidentResponse: FintelTemplate = {
   name: 'Incident Response Report',
   id: 'templateIncidentCase-id',
   content,
+  availableForTypes: ['Incident-Response'],
   template_widgets_ids: [
     'containerObservablesId',
     'incidentIOCId',

@@ -80,7 +80,7 @@ const stixCoreObjectFileExportQuery = graphql`
         }
       }
       ... on Container {
-        templates {
+        fintelTemplates {
           id
           name
         }
@@ -191,7 +191,7 @@ const StixCoreObjectFileExportComponent = ({
     })),
   });
 
-  const templateOptions: Option[] = (stixCoreObject?.templates ?? []).map((t) => ({
+  const templateOptions: Option[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
   }));
@@ -256,10 +256,6 @@ const StixCoreObjectFileExportComponent = ({
           resetForm();
           close();
         },
-        onError: () => {
-          resetForm();
-          close();
-        },
       });
     };
 
@@ -275,7 +271,7 @@ const StixCoreObjectFileExportComponent = ({
         );
 
         if (values.format === 'text/html') {
-          // Export template into HTML file.
+          // Export fintel template into HTML file.
           const fileName = `${values.exportFileName}.html`;
           const blob = new Blob([templateContent], { type: 'text/html' });
           const file = new File([blob], fileName, { type: blob.type });
@@ -286,7 +282,7 @@ const StixCoreObjectFileExportComponent = ({
             file,
           });
         } else {
-          // Export template directly in PDF without HTML step.
+          // Export fintel template directly in PDF without HTML step.
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
