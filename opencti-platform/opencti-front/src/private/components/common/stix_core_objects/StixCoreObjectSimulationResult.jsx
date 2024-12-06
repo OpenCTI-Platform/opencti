@@ -146,6 +146,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       (
         (simulationType === 'technical' && hasAttackPatterns)
         || (simulationType === 'simulated' && configured && isEnterpriseEdition)
+        || (simulationType === 'mixed' && ((configured && isEnterpriseEdition) || hasAttackPatterns))
       )
       && simulationPlatforms.length > 0
       && simulationArchitecture
