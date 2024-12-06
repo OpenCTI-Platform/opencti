@@ -147,5 +147,5 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
  * @returns {string} Same string but wrappable.
  */
 export const toWrappableString = (value) => {
-  return (value.match(/.{1,10}/g) ?? []).join('\u{200B}');
+  return (value.match(/.{1,10}/g) ?? []).join('​');
 };
