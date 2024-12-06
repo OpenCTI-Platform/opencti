@@ -3,7 +3,6 @@ import { graphql } from 'react-relay';
 import ManagementMenu from '@components/data/ManagementMenu';
 import { ManagementDefinitionsLinesPaginationQuery } from '@components/data/__generated__/ManagementDefinitionsLinesPaginationQuery.graphql';
 import { ManagementDefinitionsLines_data$data } from '@components/data/__generated__/ManagementDefinitionsLines_data.graphql';
-import Alert from '@mui/material/Alert';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -11,6 +10,8 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useAuth from '../../../utils/hooks/useAuth';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -108,33 +109,43 @@ const managementDefinitionsLinesFragment = graphql`
 
 const Management = () => {
   const { t_i18n } = useFormatter();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isNewManagementScreensEnables = isFeatureEnable('NEW_MANAGEMENT_SCREENS');
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const initialValues = {
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
+    },
     searchTerm: '',
     sortBy: 'entity_type',
     orderAsc: false,
   };
-  const { paginationOptions, helpers } = usePaginationLocalStorage<ManagementDefinitionsLinesPaginationQuery>(
+  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ManagementDefinitionsLinesPaginationQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', viewStorage.filters);
+
   const queryPaginationOptions = {
     ...paginationOptions,
+    filters: contextFilters,
   };
   const queryRef = useQueryLoading(
     managementDefinitionsLinesPaginationQuery,
     queryPaginationOptions,
   );
-  console.log('QUERY', queryRef);
 
   const preloadedPaginationProps = {
     linesQuery: managementDefinitionsLinesPaginationQuery,
     linesFragment: managementDefinitionsLinesFragment,
     queryRef,
     nodePath: ['stixCoreObjects'],
-    setNumberOfElements: helpers.handleSetNumberOfElements,
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
   return (
     <div data-testid='data-management-page'>
@@ -144,44 +155,45 @@ const Management = () => {
         { label: t_i18n('Restricted entities'), current: true },
       ]}
       />
-      <div style={{ width: '100%', marginTop: 10, marginBottom: 16, display: 'flex' }}>
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ padding: '0px 10px 0px 10px' }}
-        >
-          {t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
-        </Alert>
-      </div>
       {isNewManagementScreensEnables && (
         <ManagementMenu/>
       )}
       {queryRef && (
         <DataTable
-          dataColumns={{
-            entity_type: {
-              percentWidth: 25,
-              isSortable: true,
-            },
-            name: {
-              percentWidth: 25,
-            },
-            creator: {
-              label: 'Creator',
-              isSortable: true,
-              percentWidth: 25,
-            },
-            objectMarking: {
-              percentWidth: 25,
-            },
-          }}
+          dataColumns={{ entity_type: {
+            percentWidth: 20,
+            isSortable: true,
+          },
+          name: {
+            percentWidth: 20,
+          },
+          createdBy: {
+            isSortable: isRuntimeSort,
+            percentWidth: 10,
+          },
+          creator: {
+            isSortable: isRuntimeSort,
+            percentWidth: 10,
+          },
+          objectLabel: {
+            isSortable: true,
+            percentWidth: 10,
+          },
+          created_at: {
+            percentWidth: 20,
+          },
+          objectMarking: {
+            percentWidth: 10,
+            isSortable: isRuntimeSort,
+          } }}
           resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           lineFragment={managementDefinitionLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
+          toolbarFilters={contextFilters}
           // entityTypes={['Stix-Core-Object']}
-          // searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
+          searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
         />
       )}
     </div>
