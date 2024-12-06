@@ -1130,6 +1130,7 @@
   "Evolution": "Entwicklung",
   "Example": "Beispiel",
   "Exclusion Lists": "Ausschluss-Listen",
+  "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "Ausschlusslisten können verwendet werden, um den Import von Indikatoren zu verhindern, die als gutartig und rechtmäßig angesehen werden. Ausschlusslisten gelten nur für Indikatoren mit einem STIX-Muster.",
   "Execution at": "Ausführung bei",
   "Execution ended at": "Ausführung beendet um",
   "Existing public dashboards": "Vorhandene öffentliche Dashboards",

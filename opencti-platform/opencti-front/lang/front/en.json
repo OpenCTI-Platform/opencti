@@ -1130,6 +1130,7 @@
   "Evolution": "Evolution",
   "Example": "Example",
   "Exclusion Lists": "Exclusion Lists",
+  "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.",
   "Execution at": "Execution at",
   "Execution ended at": "Execution ended at",
   "Existing public dashboards": "Existing public dashboards",

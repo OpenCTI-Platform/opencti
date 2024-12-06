@@ -200,7 +200,6 @@ const ExclusionLists = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ExclusionListsLinesPaginationQuery>;
 
-  // TODO : add "message" props, waiting for Romain to complete this section
   return (
     <div style={{ margin: 0, padding: '0 200px 0 0' }}>
       <CustomizationMenu />
@@ -217,6 +216,7 @@ const ExclusionLists = () => {
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} />}
+          message={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
         />
       )}
       <ExclusionListCreation paginationOptions={queryPaginationOptions} />
