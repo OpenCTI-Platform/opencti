@@ -14852,6 +14852,8 @@ export type MutationObasContainerGenerateScenarioArgs = {
   id: Scalars['ID']['input'];
   interval?: InputMaybe<Scalars['Int']['input']>;
   selection?: InputMaybe<Selection>;
+  simulationArchitecture?: InputMaybe<SimulationArchitecture>;
+  simulationPlatforms?: InputMaybe<Array<InputMaybe<SimulationPlatform>>>;
   simulationType?: InputMaybe<SimulationType>;
   useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -14862,6 +14864,8 @@ export type MutationObasThreatGenerateScenarioArgs = {
   id: Scalars['ID']['input'];
   interval?: InputMaybe<Scalars['Int']['input']>;
   selection?: InputMaybe<Selection>;
+  simulationArchitecture?: InputMaybe<SimulationArchitecture>;
+  simulationPlatforms?: InputMaybe<Array<InputMaybe<SimulationPlatform>>>;
   simulationType?: InputMaybe<SimulationType>;
   useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -14872,6 +14876,8 @@ export type MutationObasVictimGenerateScenarioArgs = {
   id: Scalars['ID']['input'];
   interval?: InputMaybe<Scalars['Int']['input']>;
   selection?: InputMaybe<Selection>;
+  simulationArchitecture?: InputMaybe<SimulationArchitecture>;
+  simulationPlatforms?: InputMaybe<Array<InputMaybe<SimulationPlatform>>>;
   simulationType?: InputMaybe<SimulationType>;
   useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -23487,6 +23493,17 @@ export type SettingsMessageInput = {
   recipients?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
+export enum SimulationArchitecture {
+  Amd64 = 'AMD64',
+  Arm64 = 'ARM64'
+}
+
+export enum SimulationPlatform {
+  Linux = 'Linux',
+  MacOs = 'MacOS',
+  Windows = 'Windows'
+}
+
 export enum SimulationType {
   Mixed = 'mixed',
   Simulated = 'simulated',
@@ -31338,6 +31355,8 @@ export type ResolversTypes = ResolversObject<{
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
+  SimulationArchitecture: SimulationArchitecture;
+  SimulationPlatform: SimulationPlatform;
   SimulationType: SimulationType;
   SimulationsResult: ResolverTypeWrapper<SimulationsResult>;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
