@@ -121,32 +121,28 @@ const ExclusionLists = () => {
     queryPaginationOptions,
   );
 
-  const renderEntityTypeChip = (type: string) => <ItemEntityType entityType={type} />;
+  const renderEnrichedTooltip = (exclusionListEntityTypes, firstEntityType) => (
+    <EnrichedTooltip title={
+      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 7 }}>
+        {exclusionListEntityTypes.map((type) => (<ItemEntityType key={type} entityType={type} />))}
+      </div>
+    }
+    >
+      <div style={{ display: 'flex' }}>
+        <Badge variant="dot" color="primary">
+          <ItemEntityType entityType={firstEntityType} />
+        </Badge>
+      </div>
+    </EnrichedTooltip>
+  );
 
   const renderExclusionListEntityTypes = (exclusion_list_entity_types: readonly string[]) => {
     const hasMultiple = exclusion_list_entity_types.length > 1;
     const firstEntityType = exclusion_list_entity_types[0];
-    return (
-      <>
-        <EnrichedTooltip title={
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 7 }}>
-            {exclusion_list_entity_types.map((type) => renderEntityTypeChip(type))}
-          </div>
-        }
-        >
-          <div style={{ display: 'flex' }}>
-            {hasMultiple
-              ? (
-                <Badge variant="dot" color="primary">
-                  {renderEntityTypeChip(firstEntityType)}
-                </Badge>
-              )
-              : renderEntityTypeChip(firstEntityType)
-            }
-          </div>
-        </EnrichedTooltip>
-      </>
-    );
+
+    return hasMultiple
+      ? renderEnrichedTooltip(exclusion_list_entity_types, firstEntityType)
+      : <ItemEntityType entityType={firstEntityType} />;
   };
 
   const dataColumns: DataTableProps['dataColumns'] = {
