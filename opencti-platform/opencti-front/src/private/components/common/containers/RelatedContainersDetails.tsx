@@ -51,13 +51,14 @@ export const relatedContainersDetailsQuery = graphql`
 const RelatedContainersDetailsDistribution: React.FC<{
   queryRef: PreloadedQuery<RelatedContainersDetailsQuery>;
 }> = ({ queryRef }) => {
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<RelatedContainersDetailsQuery>(
     relatedContainersDetailsQuery,
     queryRef,
   );
 
   const series = data?.stixCoreObjectsDistribution?.map((objectDistribution) => ({
-    name: objectDistribution?.label,
+    name: t_i18n(`entity_${objectDistribution?.label}`),
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 
