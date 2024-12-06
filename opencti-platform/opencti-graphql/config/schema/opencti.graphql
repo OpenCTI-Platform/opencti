@@ -912,16 +912,8 @@ type Widget {
   parameters: WidgetParameters
   layout: WidgetLayout
 }
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-type TemplateAndUtils {
-  template: Template!,
+type FintelTemplateAndUtils {
+  fintelTemplate: FintelTemplate!,
   template_widgets: [Widget!]!,
 }
 
@@ -3189,7 +3181,7 @@ interface Container {
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3198,10 +3190,10 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
+  fintelTemplates: [FintelTemplate!]
+  fintelTemplateAndUtils(
     templateId: String!
-  ): TemplateAndUtils
+  ): FintelTemplateAndUtils
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3377,7 +3369,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3386,10 +3378,10 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
+  fintelTemplates: [FintelTemplate!]
+  fintelTemplateAndUtils(
     templateId: String!
-  ): TemplateAndUtils
+  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3611,7 +3603,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3620,10 +3612,10 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
+  fintelTemplates: [FintelTemplate!]
+  fintelTemplateAndUtils(
     templateId: String!
-  ): TemplateAndUtils
+  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3821,7 +3813,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3830,10 +3822,10 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
+  fintelTemplates: [FintelTemplate!]
+  fintelTemplateAndUtils(
     templateId: String!
-  ): TemplateAndUtils
+  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4055,7 +4047,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -4064,10 +4056,10 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
+  fintelTemplates: [FintelTemplate!]
+  fintelTemplateAndUtils(
     templateId: String!
-  ): TemplateAndUtils
+  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

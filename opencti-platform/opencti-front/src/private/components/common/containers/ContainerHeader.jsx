@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import { AddTaskOutlined, AssistantOutlined, ViewColumnOutlined } from '@mui/icons-material';
@@ -22,6 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
+import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
@@ -45,6 +46,7 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import { resolveLink } from '../../../../utils/Entity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -466,6 +468,7 @@ const ContainerHeader = (props) => {
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const navigate = useNavigate();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
@@ -524,6 +527,13 @@ const ContainerHeader = (props) => {
   };
   const handleOpenEnrichment = () => {
     setDisplayEnrichment(true);
+  };
+  const handleExportCompleted = (fileName) => {
+    // navigate with fileName in query params to select the created file
+    const fileParams = { currentFileId: fileName, contentSelected: false };
+    const urlParams = new URLSearchParams(fileParams).toString();
+    const entityLink = `${resolveLink(container.entity_type)}/${container.id}`;
+    navigate(`${entityLink}/content?${urlParams}`);
   };
   const generateSuggestions = (objects) => {
     const suggestions = [];
@@ -772,6 +782,7 @@ const ContainerHeader = (props) => {
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+
   return (
     <div
       style={containerStyle}
@@ -911,9 +922,12 @@ const ContainerHeader = (props) => {
             </Security>
             {!knowledge && (
               <StixCoreObjectFileExport
-                id={container.id}
-                type={container.entity_type}
-                redirectToContent={!!redirectToContent}
+                scoId={container.id}
+                scoName={container.name}
+                scoEntityType={container.entity_type}
+                redirectToContentTab={!!redirectToContent}
+                OpenFormComponent={StixCoreObjectFileExportButton}
+                onExportCompleted={handleExportCompleted}
               />
             )}
             {enableSuggestions && (
@@ -1129,6 +1143,24 @@ export default createFragmentContainer(ContainerHeader, {
         id
         name
         entity_type
+      }
+      filesFromTemplate(first: 500) {
+        edges {
+          node {
+            id
+            name
+            objectMarking {
+              id
+              representative {
+                main
+              }
+            }
+          }
+        }
+      }
+      fintelTemplates {
+        id
+        name
       }
       currentUserAccessRight
       authorized_members {

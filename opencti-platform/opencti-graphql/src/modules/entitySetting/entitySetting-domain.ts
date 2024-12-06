@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listAllEntities, listEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
@@ -18,6 +18,9 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
+import { canCustomizeTemplate } from '../fintelTemplate/fintelTemplate-domain';
+import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 // -- LOADING --
 
@@ -93,6 +96,16 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
 
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
   return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+};
+
+export const getTemplatesForSetting = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetType: string,
+): Promise<BasicStoreEntityFintelTemplate[]> => {
+  await canCustomizeTemplate(context);
+  const filters = addFilter(undefined, 'settings_types', [targetType]);
+  return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
