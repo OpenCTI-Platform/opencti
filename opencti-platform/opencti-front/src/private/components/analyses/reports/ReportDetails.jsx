@@ -141,7 +141,7 @@ const ReportDetails = ({ report }) => {
             />
           </Grid>
         </Grid>
-        <Divider />
+        <Divider style={{ marginTop: 30 }} />
         <RelatedContainers
           relatedContainers={reportData.relatedContainers}
           containerId={reportData.id}

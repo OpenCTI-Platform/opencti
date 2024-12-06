@@ -141,7 +141,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             )}
           </Grid>
         </Grid>
-        <Divider />
+        <Divider style={{ marginTop: 30 }} />
         <RelatedContainers
           relatedContainers={data.relatedContainers}
           containerId={data.id}

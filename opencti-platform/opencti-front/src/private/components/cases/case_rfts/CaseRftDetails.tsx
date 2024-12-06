@@ -141,7 +141,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             )}
           </Grid>
         </Grid>
-        <Divider />
+        <Divider style={{ marginTop: 30 }} />
         <RelatedContainers
           relatedContainers={data.relatedContainers}
           containerId={data.id}
