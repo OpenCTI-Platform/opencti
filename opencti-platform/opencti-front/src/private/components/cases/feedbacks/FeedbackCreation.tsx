@@ -15,7 +15,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -70,12 +70,15 @@ const FeedbackCreation: FunctionComponent<{
   );
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
-  const basicShape = {
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    FEEDBACK_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
     description: Yup.string().nullable(),
     confidence: Yup.number(),
     rating: Yup.number(),
-  };
-  const feedbackValidator = useSchemaCreationValidation(FEEDBACK_TYPE, basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const onSubmit: FormikConfig<FormikFeedbackAddInput>['onSubmit'] = (
     values,
@@ -125,7 +128,7 @@ const FeedbackCreation: FunctionComponent<{
     >
       <Formik<FormikFeedbackAddInput>
         initialValues={initialValues}
-        validationSchema={feedbackValidator}
+        validationSchema={validator}
         onSubmit={onSubmit}
         onReset={handleCloseDrawer}
       >
@@ -141,6 +144,7 @@ const FeedbackCreation: FunctionComponent<{
               component={SimpleMarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -151,6 +155,7 @@ const FeedbackCreation: FunctionComponent<{
             />
             <RatingField
               label={t_i18n('Rating')}
+              required={(mandatoryAttributes.includes('rating'))}
               rating={values.rating}
               size="small"
               handleOnChange={(newValue) => {
@@ -160,6 +165,7 @@ const FeedbackCreation: FunctionComponent<{
             />
             <StixCoreObjectsField
               name="objects"
+              required={(mandatoryAttributes.includes('objects'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objects}
@@ -167,6 +173,7 @@ const FeedbackCreation: FunctionComponent<{
             <CustomFileUploader setFieldValue={setFieldValue} />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
