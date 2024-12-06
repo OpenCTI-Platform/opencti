@@ -141,7 +141,7 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
-        <Divider />
+        <Divider style={{ marginTop: 30 }} />
         <RelatedContainers
           relatedContainers={grouping.relatedContainers}
           containerId={grouping.id}
