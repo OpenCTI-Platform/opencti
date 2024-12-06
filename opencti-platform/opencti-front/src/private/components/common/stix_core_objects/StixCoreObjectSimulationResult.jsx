@@ -128,7 +128,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const { configured } = useAI();
   const { oBasConfigured, oBasDisableDisplay } = useXTM();
   const [simulationType, setSimulationType] = useState('technical');
-  const [simulationPlatforms, setSimulationPlatforms] = useState(['windows']);
+  const [simulationPlatforms, setSimulationPlatforms] = useState(['Windows']);
   const [simulationArchitecture, setSimulationArchitecture] = useState('AMD64');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(2);
@@ -139,7 +139,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const hasAttackPatterns = true;
+  const hasAttackPatterns = false;
 
   const isFormValid = () => {
     return (
