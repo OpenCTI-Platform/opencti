@@ -96,27 +96,27 @@ const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = g
 `;
 
 const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-    obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $simulationPlatforms: [SimulationPlatform], $simulationArchitecture: SimulationArchitecture, $useAI: Boolean, $filters: FilterGroup) {
+    obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, simulationPlatforms: $simulationPlatforms, simulationArchitecture: $simulationArchitecture, useAI: $useAI, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-    obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $simulationPlatforms: [SimulationPlatform], $simulationArchitecture: SimulationArchitecture, $useAI: Boolean, $filters: FilterGroup) {
+    obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, simulationPlatforms: $simulationPlatforms, simulationArchitecture: $simulationArchitecture, useAI: $useAI, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-    obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $simulationPlatforms: [SimulationPlatform], $simulationArchitecture: SimulationArchitecture, $useAI: Boolean, $filters: FilterGroup) {
+    obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, simulationPlatforms: $simulationPlatforms, simulationArchitecture: $simulationArchitecture, useAI: $useAI, filters: $filters)
   }
 `;
 
 const platforms = [
-  { label: 'Windows', value: 'windows' },
-  { label: 'Linux', value: 'linux' },
-  { label: 'MacOS', value: 'macos' },
+  { label: 'Windows', value: 'Windows' },
+  { label: 'Linux', value: 'Linux' },
+  { label: 'MacOS', value: 'MacOS' },
 ];
 
 const StixCoreObjectSimulationResult = ({ id, type }) => {
@@ -182,6 +182,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             interval,
             selection,
             simulationType,
+            simulationPlatforms,
+            simulationArchitecture,
             useAI: useGenAI,
             filters,
           },
@@ -204,6 +206,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             interval,
             selection,
             simulationType,
+            simulationPlatforms,
+            simulationArchitecture,
             useAI: useGenAI,
             filters,
           },
@@ -226,6 +230,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             interval,
             selection,
             simulationType,
+            simulationPlatforms,
+            simulationArchitecture,
             useAI: useGenAI,
             filters,
           },
