@@ -67,7 +67,7 @@ export const RelatedContainersFragment = graphql`
   }
 `;
 
-type RelatedContainerNode = NonNullable<NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]>['node'];
+export type RelatedContainerNode = NonNullable<NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]>['node'];
 
 interface RelatedContainersProps {
   relatedContainers: RelatedContainersFragment_container_connection$key | null | undefined;
