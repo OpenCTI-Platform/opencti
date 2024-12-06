@@ -3,18 +3,14 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { RelatedContainerNode } from '@components/common/containers/RelatedContainers';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import {
-  RelatedContainersDetailsDistributionQuery,
-  RelatedContainersDetailsDistributionQuery$variables,
-} from '@components/common/containers/__generated__/RelatedContainersDetailsDistributionQuery.graphql';
-
+import { RelatedContainersDetailsQuery, RelatedContainersDetailsQuery$variables } from './__generated__/RelatedContainersDetailsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 
-export const relatedContainersDetailsDistributionQuery = graphql`
-  query RelatedContainersDetailsDistributionQuery(
+export const relatedContainersDetailsQuery = graphql`
+  query RelatedContainersDetailsQuery(
     $field: String!
     $operation: StatsOperation!
     $filters: FilterGroup!
@@ -27,14 +23,36 @@ export const relatedContainersDetailsDistributionQuery = graphql`
       label
       value
     }
+    stixCoreObjects(
+      first: 10
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          ... on StixCyberObservable {
+            observable_value
+          }
+          ... on Indicator {
+            name
+          }
+          entity_type
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
   }
 `;
 
 const RelatedContainersDetailsDistribution: React.FC<{
-  queryRef: PreloadedQuery<RelatedContainersDetailsDistributionQuery>;
+  queryRef: PreloadedQuery<RelatedContainersDetailsQuery>;
 }> = ({ queryRef }) => {
-  const data = usePreloadedQuery<RelatedContainersDetailsDistributionQuery>(
-    relatedContainersDetailsDistributionQuery,
+  const data = usePreloadedQuery<RelatedContainersDetailsQuery>(
+    relatedContainersDetailsQuery,
     queryRef,
   );
 
@@ -60,11 +78,10 @@ interface RelatedContainersDetailsProps {
 export const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ containerId, relatedContainer }) => {
   const { t_i18n, fldt } = useFormatter();
 
-  const [queryRef, loadQuery] = useQueryLoader<RelatedContainersDetailsDistributionQuery>(
-    relatedContainersDetailsDistributionQuery,
+  const [queryRef, loadQuery] = useQueryLoader<RelatedContainersDetailsQuery>(
+    relatedContainersDetailsQuery,
   );
 
-  // TODO can be reused for other queries
   const queryFilters = {
     mode: 'and',
     filters: [
@@ -109,7 +126,7 @@ export const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> =
         field: 'entity_type',
         operation: 'count',
         filters: queryFilters,
-      } as unknown as RelatedContainersDetailsDistributionQuery$variables);
+      } as unknown as RelatedContainersDetailsQuery$variables);
     }
   }, [loadQuery]);
 
@@ -139,7 +156,7 @@ export const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> =
         >
           {t_i18n('Original creation date')}
         </Typography>
-        {fldt(relatedContainer.created ?? relatedContainer.published)}
+        {fldt(relatedContainer.modified)}
       </Grid>
       <Grid item xs={6}>
         <Typography
