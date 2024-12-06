@@ -146,7 +146,8 @@ export const generateFintelTemplateExecutiveSummary = (containerType: string) =>
     name: 'Executive Summary',
     id: 'executiveSummary-id',
     content: executiveSummaryContent(containerType),
-    availableForTypes: [containerType],
+    settings_types: [containerType],
+    start_date: '1970-01-01T00:00:00Z',
     template_widgets_ids: [
       multiAttributesWidget,
       'indicatorsId',

@@ -5,23 +5,23 @@ type FintelTemplate implements BasicObject & InternalObject {
     parent_types: [String]!
     ## Fintel
     name: String!
-    availableForTypes: [String!]!
+    settings_types: [String!]!
     description: String
-    filters: String
+    instance_filters: String
     content: String!
     template_widgets_ids: [String!]!
-    enabled: Boolean!
+    start_date: DateTime
 }
 
 # Mutation
 input FintelTemplateAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
-    availableForTypess: [String!]!
-    filters: String
+    settings_typess: [String!]!
+    instance_filters: String
     content: String!
     template_widgets_ids: [String!]!
-    enabled: Boolean!
+    start_date: DateTime
 }
 
 

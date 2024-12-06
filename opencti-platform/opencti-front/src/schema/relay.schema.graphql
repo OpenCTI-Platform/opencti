@@ -12388,22 +12388,22 @@ type FintelTemplate implements BasicObject & InternalObject {
   entity_type: String!
   parent_types: [String]!
   name: String!
-  availableForTypes: [String!]!
+  settings_types: [String!]!
   description: String
-  filters: String
+  instance_filters: String
   content: String!
   template_widgets_ids: [String!]!
-  enabled: Boolean!
+  start_date: DateTime
 }
 
 input FintelTemplateAddInput {
   name: String!
   description: String
-  availableForTypess: [String!]!
-  filters: String
+  settings_typess: [String!]!
+  instance_filters: String
   content: String!
   template_widgets_ids: [String!]!
-  enabled: Boolean!
+  start_date: DateTime
 }
 
 type FintelTemplateEdge {

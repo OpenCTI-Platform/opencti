@@ -47,11 +47,11 @@ export const entitySettingFragment = graphql`
         id
         name
         description
-        filters
+        instance_filters
         content
-        availableForTypes
+        settings_types
         template_widgets_ids
-        enabled        
+        start_date        
     }
   }
 `;

@@ -8,11 +8,11 @@ export const convertFintelTemplateToStix = (instance: StoreEntityFintelTemplate)
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    availableForTypes: instance.availableForTypes,
-    filters: instance.filters,
+    settings_types: instance.settings_types,
+    instance_filters: instance.instance_filters,
     content: instance.content,
     template_widgets_ids: instance.template_widgets_ids ?? [],
-    enabled: instance.enabled,
+    start_date: instance.start_date,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

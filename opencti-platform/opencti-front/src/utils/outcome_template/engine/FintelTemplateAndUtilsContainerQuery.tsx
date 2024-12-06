@@ -10,7 +10,7 @@ const fintelTemplateAndUtilsContainerQuery = graphql`
           name
           template_widgets_ids
           content
-          filters
+          instance_filters
         }
         template_widgets {
           id

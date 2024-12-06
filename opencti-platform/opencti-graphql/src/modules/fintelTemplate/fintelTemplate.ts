@@ -21,11 +21,11 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'availableForTypes', label: 'Available for types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'settings_types', label: 'Available for types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'instance_filters', label: 'Instance filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
     { name: 'template_widgets_ids', label: 'Widget ids', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_WIDGET], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
-    { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'start_date', label: 'Available since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixFintelTemplate) => {
