@@ -1,8 +1,8 @@
 import { buildStixObject, cleanObject } from '../../database/stix-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { StixTemplate, StoreEntityTemplate } from './template-types';
+import type { StixFintelTemplate, StoreEntityFintelTemplate } from './fintelTemplate-types';
 
-export const convertTemplateToStix = (instance: StoreEntityTemplate): StixTemplate => {
+export const convertFintelTemplateToStix = (instance: StoreEntityFintelTemplate): StixFintelTemplate => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,

@@ -1,8 +1,8 @@
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
-import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
-import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
+import { FintelTemplateAndUtilsContainerQuery$data } from './__generated__/FintelTemplateAndUtilsContainerQuery.graphql';
+import fintelTemplateAndUtilsContainerQuery from './FintelTemplateAndUtilsContainerQuery';
 import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import { useFormatter } from '../../../components/i18n';
 import { useBuildFiltersForTemplateWidgets } from '../../filters/filtersUtils';
@@ -22,16 +22,16 @@ const useFileFromTemplate = () => {
     // fetch template and useful widgets
     const variables = { id: containerId, templateId };
     const { container } = await fetchQuery(
-      templateAndUtilsContainerQuery,
+      fintelTemplateAndUtilsContainerQuery,
       variables,
-    ).toPromise() as TemplateAndUtilsContainerQuery$data;
+    ).toPromise() as FintelTemplateAndUtilsContainerQuery$data;
 
-    if (!container || !container.templateAndUtils) {
+    if (!container || !container.fintelTemplateAndUtils) {
       throw Error('No template found');
     }
 
-    const { template, template_widgets } = container.templateAndUtils;
-    let { content } = template;
+    const { fintelTemplate, template_widgets } = container.fintelTemplateAndUtils;
+    let { content } = fintelTemplate;
 
     for (const widget of template_widgets) {
       // attribute widgets

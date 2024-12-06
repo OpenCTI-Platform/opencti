@@ -24,8 +24,8 @@ import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
-import { usedTemplatesByEntityType } from '../utils/template/__template';
-import { hardcodedTemplateWidgets } from '../utils/template/__widget';
+import { usedFintelTemplatesByEntityType } from '../utils/fintelTemplate/__fintelTemplates';
+import { hardcodedTemplateWidgets } from '../utils/fintelTemplate/__widget';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -258,17 +258,17 @@ export const getFilesFromTemplate = async (context, user, container, args) => {
   return paginatedForPathWithEnrichment(context, user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
 };
 
-export const getTemplates = async (context, user, container) => {
+export const getFintelTemplates = async (context, user, container) => {
   const isEE = await isEnterpriseEdition(context);
   const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
   if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
   const entityType = container.entity_type;
-  return usedTemplatesByEntityType[entityType] ?? [];
+  return usedFintelTemplatesByEntityType[entityType] ?? [];
 };
 
-export const getTemplateAndUtils = async (context, user, container, templateId) => {
+export const getFintelTemplateAndUtils = async (context, user, container, templateId) => {
   // check feature is enabled
   const isEE = await isEnterpriseEdition(context);
   const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
@@ -276,11 +276,11 @@ export const getTemplateAndUtils = async (context, user, container, templateId) 
     return null;
   }
   // fetch template (hardcoded for the moment)
-  const template = (usedTemplatesByEntityType[container.entity_type] ?? []).find((t) => t.id === templateId);
-  const { template_widgets_ids } = template;
+  const fintelTemplate = (usedFintelTemplatesByEntityType[container.entity_type] ?? []).find((t) => t.id === templateId);
+  const { template_widgets_ids } = fintelTemplate;
   // fetch the widgets used in the template (hardcoded for the moment)
   const template_widgets = hardcodedTemplateWidgets
     .filter((w) => template_widgets_ids.includes(w.id));
   // return template and the associated utils
-  return { template, template_widgets };
+  return { fintelTemplate, template_widgets };
 };

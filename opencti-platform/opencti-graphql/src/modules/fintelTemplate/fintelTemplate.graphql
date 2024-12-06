@@ -1,0 +1,44 @@
+type FintelTemplate implements BasicObject & InternalObject {
+    id: ID!
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    ## Fintel
+    name: String!
+    availableForTypes: [String!]!
+    description: String
+    filters: String
+    content: String!
+    template_widgets_ids: [String!]!
+    enabled: Boolean!
+}
+
+# Mutation
+input FintelTemplateAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    availableForTypess: [String!]!
+    filters: String
+    content: String!
+    template_widgets_ids: [String!]!
+    enabled: Boolean!
+}
+
+
+# Relay connections
+type FintelTemplateEdge {
+    cursor: String!
+    node: FintelTemplate!
+}
+
+type FintelTemplateConnection {
+    pageInfo: PageInfo!
+    edges: [FintelTemplateEdge!]!
+}
+
+# Mutations
+type Mutation {
+    fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    fintelTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

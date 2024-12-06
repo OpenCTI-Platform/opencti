@@ -140,12 +140,13 @@ const getMultiAttributesWidget = (containerType: string) => {
   }
 };
 
-export const generateTemplateExecutiveSummary = (containerType: string) => {
+export const generateFintelTemplateExecutiveSummary = (containerType: string) => {
   const multiAttributesWidget = getMultiAttributesWidget(containerType);
   return {
     name: 'Executive Summary',
     id: 'executiveSummary-id',
     content: executiveSummaryContent(containerType),
+    availableForTypes: [containerType],
     template_widgets_ids: [
       multiAttributesWidget,
       'indicatorsId',

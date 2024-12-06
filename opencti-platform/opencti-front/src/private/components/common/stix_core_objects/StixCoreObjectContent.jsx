@@ -812,7 +812,7 @@ const StixCoreObjectContent = createRefetchContainer(
               }
             }
           }
-          templates {
+          fintelTemplates {
             id
             name
             content

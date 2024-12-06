@@ -2,9 +2,9 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 
-export const ENTITY_TYPE_TEMPLATE = 'Template';
+export const ENTITY_TYPE_FINTEL_TEMPLATE = 'FintelTemplate';
 
-export interface Template {
+export interface FintelTemplate {
   name: string;
   description: string;
   availableForTypes: string;
@@ -15,7 +15,7 @@ export interface Template {
 }
 
 // region Database types
-export interface BasicStoreEntityTemplate extends BasicStoreEntity {
+export interface BasicStoreEntityFintelTemplate extends BasicStoreEntity {
   name: string;
   description: string;
   availableForTypes: string;
@@ -25,7 +25,7 @@ export interface BasicStoreEntityTemplate extends BasicStoreEntity {
   enabled: boolean;
 }
 
-export interface StoreEntityTemplate extends StoreEntity {
+export interface StoreEntityFintelTemplate extends StoreEntity {
   name: string;
   description: string;
   availableForTypes: string;
@@ -37,7 +37,7 @@ export interface StoreEntityTemplate extends StoreEntity {
 // endregion
 
 // region Stix type
-export interface StixTemplate extends StixObject {
+export interface StixFintelTemplate extends StixObject {
   name: string;
   description: string;
   availableForTypes: string;

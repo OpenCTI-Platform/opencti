@@ -18,8 +18,8 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
-import { canCustomizeTemplate } from '../template/template-domain';
-import { type BasicStoreEntityTemplate, ENTITY_TYPE_TEMPLATE } from '../template/template-types';
+import { canCustomizeTemplate } from '../fintelTemplate/fintelTemplate-domain';
+import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 
 // -- LOADING --
@@ -102,10 +102,10 @@ export const getTemplatesForSetting = async (
   context: AuthContext,
   user: AuthUser,
   targetType: string,
-): Promise<BasicStoreEntityTemplate[]> => {
+): Promise<BasicStoreEntityFintelTemplate[]> => {
   await canCustomizeTemplate(context);
   const filters = addFilter(undefined, 'availableForTypes', [targetType]);
-  return listAllEntities(context, user, [ENTITY_TYPE_TEMPLATE], { filters });
+  return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {

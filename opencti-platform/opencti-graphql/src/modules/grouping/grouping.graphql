@@ -156,10 +156,10 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         search: String
         filters: FilterGroup
     ): FileConnection
-    templates: [Template!]
-    templateAndUtils(
+    fintelTemplates: [FintelTemplate!]
+    fintelTemplateAndUtils(
         templateId: String!
-    ): TemplateAndUtils
+    ): FintelTemplateAndUtils
     editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]

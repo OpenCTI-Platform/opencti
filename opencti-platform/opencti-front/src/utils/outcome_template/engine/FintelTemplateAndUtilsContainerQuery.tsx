@@ -1,11 +1,11 @@
 import { graphql } from 'react-relay';
 
-const templateAndUtilsContainerQuery = graphql`
-  query TemplateAndUtilsContainerQuery($id: String!, $templateId: String!) {
+const fintelTemplateAndUtilsContainerQuery = graphql`
+  query FintelTemplateAndUtilsContainerQuery($id: String!, $templateId: String!) {
     container(id: $id) {
       id
-      templateAndUtils(templateId: $templateId) {
-        template {
+      fintelTemplateAndUtils(templateId: $templateId) {
+        fintelTemplate {
           id
           name
           template_widgets_ids
@@ -46,4 +46,4 @@ const templateAndUtilsContainerQuery = graphql`
     }
   }
 `;
-export default templateAndUtilsContainerQuery;
+export default fintelTemplateAndUtilsContainerQuery;
