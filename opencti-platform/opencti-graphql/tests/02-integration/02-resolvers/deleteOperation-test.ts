@@ -130,7 +130,7 @@ describe('Delete operation resolver testing', () => {
         published: '2020-02-26T00:51:35.000Z',
         confidence: 90,
         objectMarking: [MARKING_TLP_RED],
-        objectOrganization: [TEST_ORGANIZATION.id],
+        objectOrganization: [TEST_ORGANIZATION.standard_id],
       },
     };
     const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });

@@ -347,7 +347,7 @@ describe('Retention Manager tests ', () => {
     expect(report1deleted).toBeUndefined();
   });
   it('should not delete organization with members', async () => {
-    await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
+    await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
       .rejects.toThrowError('Cannot delete an organization that has members.');
   });
   it('should not delete individual associated to user', async () => {
