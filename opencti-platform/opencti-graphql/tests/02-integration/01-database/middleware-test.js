@@ -50,6 +50,7 @@ import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { generateInternalId } from '../../../src/schema/identifier';
+import { logApp } from '../../../src/config/conf';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -184,6 +185,7 @@ describe('Entities listing', () => {
   it('should list multiple entities', async () => {
     const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
+    logApp.warn('DEBUG COUNTERS entities', { entities });
     expect(entities.edges.length).toEqual(10); // 2 malwares + 8 organizations
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
     expect(aggregationMap.get('Paradise Ransomware')).not.toBeUndefined();
@@ -1426,7 +1428,7 @@ describe('Elements deduplication behaviors', () => {
 
 describe('Delete functional errors behaviors', () => {
   it('should not be able to delete organization that has members', async () => {
-    await expect(() => deleteElementById(testContext, ADMIN_USER, TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
+    await expect(() => deleteElementById(testContext, ADMIN_USER, TEST_ORGANIZATION.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
       .rejects.toThrowError('Cannot delete an organization that has members.');
   });
   it.skip('should not be able to delete individual associated to user', async () => {

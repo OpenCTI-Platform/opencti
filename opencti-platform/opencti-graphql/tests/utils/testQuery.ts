@@ -3,6 +3,7 @@ import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
+import { v4 as uuid } from 'uuid';
 import createSchema from '../../src/graphql/schema';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
@@ -277,17 +278,20 @@ TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 // Organization
 export interface Organization {
   name: string,
-  id: string
+  id: string,
+  standard_id: string,
 }
 
 export const TEST_ORGANIZATION: Organization = {
   name: 'TestOrganization',
-  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
+  standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
+  id: uuid()
 };
 
 export const PLATFORM_ORGANIZATION: Organization = {
   name: 'PlatformOrganization',
-  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'PlatformOrganization', identity_class: 'organization' }),
+  standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'PlatformOrganization', identity_class: 'organization' }),
+  id: uuid()
 };
 
 // Users
@@ -499,8 +503,8 @@ const createOrganization = async (input: { name: string }): Promise<string> => {
   return organization.data.organizationAdd.id;
 };
 
-const assignOrganizationToUser = async (organization: Organization, user: User) => {
-  await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
+const assignOrganizationToUser = async (organizationId: string, userId: string) => {
+  await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId, toId: organizationId });
 };
 // endregion
 
@@ -590,8 +594,8 @@ const createUser = async (user: User) => {
   if (user.organizations && user.organizations.length > 0) {
     for (let indexOrganization = 0; indexOrganization < user.organizations.length; indexOrganization += 1) {
       const organization = user.organizations[indexOrganization];
-      await createOrganization(organization);
-      await assignOrganizationToUser(organization, user);
+      const createdOrgId = await createOrganization(organization);
+      await assignOrganizationToUser(createdOrgId, user.id);
     }
   }
 };

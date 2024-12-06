@@ -840,12 +840,12 @@ describe('User has no settings capability and is organization admin query behavi
     const organizationAdminAddQueryResult = await adminQueryWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
-        id: TEST_ORGANIZATION.id,
+        id: TEST_ORGANIZATION.standard_id,
         memberId: userEditorId,
       },
     });
     expect(organizationAdminAddQueryResult.data.organizationAdminAdd).not.toBeNull();
-    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.id);
+    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.standard_id);
 
     // Check that USER_EDITOR is Organization administrator
     const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });

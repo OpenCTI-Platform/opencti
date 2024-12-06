@@ -128,7 +128,7 @@ describe('TaskManager executeReplace tests ', () => {
       const reportInput = {
         name: 'test replace report author with different author',
         published: '2022-10-06T22:00:00.000Z',
-        createdBy: TEST_ORGANIZATION.id,
+        createdBy: TEST_ORGANIZATION.standard_id,
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
       expect(report.id).toBeDefined();
@@ -152,14 +152,14 @@ describe('TaskManager executeReplace tests ', () => {
       const reportInput = {
         name: 'test replace report author with same author',
         published: '2022-10-06T22:00:00.000Z',
-        createdBy: TEST_ORGANIZATION.id,
+        createdBy: TEST_ORGANIZATION.standard_id,
       };
       const report = await addReport(adminContext, adminContext.user, reportInput);
       expect(report.id).toBeDefined();
       reportsId.push(report.id);
       const reportId = report.id;
 
-      const organization = await findOrganizationById(adminContext, ADMIN_USER, TEST_ORGANIZATION.id);
+      const organization = await findOrganizationById(adminContext, ADMIN_USER, TEST_ORGANIZATION.standard_id);
 
       const actionContext = {
         field: 'created-by',
@@ -185,7 +185,7 @@ describe('TaskManager executeReplace tests ', () => {
       reportsId.push(report.id);
       const reportId = report.id;
 
-      const organization = await findOrganizationById(adminContext, ADMIN_USER, TEST_ORGANIZATION.id);
+      const organization = await findOrganizationById(adminContext, ADMIN_USER, TEST_ORGANIZATION.standard_id);
 
       const actionContext = {
         field: 'created-by',

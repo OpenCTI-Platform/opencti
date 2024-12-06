@@ -679,10 +679,16 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { includeAuthorities: true });
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(106);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length).toEqual(24);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(129);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(2);
+    /*
+    for (let i = 0; i < groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length; i += 1) {
+      const { fromId, toId, fromName, toName, toRole, fromRole, relationship_type } = groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`][i].node;
+      logApp.debug(`${fromId}:${fromName}:${fromRole} =${relationship_type}=> ${toId}:${toName}:${toRole}`);
+    }
+    */
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length, `Issue with ${ES_INDEX_PREFIX}_internal_relationships-000001`).toEqual(106);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length, `Issue with ${ES_INDEX_PREFIX}_stix_core_relationships-000001`).toEqual(24);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length, `Issue with ${ES_INDEX_PREFIX}_stix_meta_relationships-000001`).toEqual(129);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length, `Issue with ${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`).toEqual(2);
     const metas = groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].map((m) => m.node);
     const metaByEntityType = R.groupBy((m) => m.entity_type, metas);
     expect(metaByEntityType.object.length).toEqual(38);
