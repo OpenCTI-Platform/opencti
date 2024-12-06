@@ -90,7 +90,20 @@ export const resolveContent = async (context, user, stixCoreObject) => {
   return [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
 };
 
-export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI) => {
+export const generateOpenBasScenario = async (
+  context,
+  user,
+  stixCoreObject,
+  attackPatterns,
+  labels,
+  author,
+  simulationType,
+  simulationPlatforms,
+  simulationArchitecture,
+  interval,
+  selection,
+  useAI
+) => {
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
