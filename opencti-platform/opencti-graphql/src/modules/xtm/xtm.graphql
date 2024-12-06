@@ -20,7 +20,7 @@ enum SimulationPlatform {
     MacOS
 }
 enum SimulationArchitecture {
-    AMD64,
+    AMD64
     ARM64
 }
 
