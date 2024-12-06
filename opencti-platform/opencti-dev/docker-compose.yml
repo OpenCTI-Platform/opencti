@@ -77,7 +77,7 @@ services:
       - 9600:9600
   opencti-dev-opensearch-dashboards:
     profiles: [ opensearch ]
-    image: opensearchproject/opensearch-dashboards:2.17.0
+    image: opensearchproject/opensearch-dashboards:2.18.0
     container_name: opencti-dev-opensearch-dashboards
     ports:
       - 5602:5601 # Map host port 5601 to container port 5601
