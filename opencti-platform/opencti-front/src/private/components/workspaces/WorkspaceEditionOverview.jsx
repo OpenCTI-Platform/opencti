@@ -1,39 +1,12 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import { compose, pick } from 'ramda';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import inject18n from '../../../components/i18n';
+import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
 import MarkdownField from '../../../components/fields/MarkdownField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 export const workspaceMutationFieldPatch = graphql`
   mutation WorkspaceEditionOverviewFieldPatchMutation(
@@ -59,105 +32,98 @@ export const workspaceEditionOverviewFocus = graphql`
   }
 `;
 
-const workspaceValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const WorkspaceEditionOverviewComponent = (props) => {
+  const { workspace, context } = props;
+  const { t_i18n } = useFormatter();
 
-class WorkspaceEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
+  const workspaceValidation = () => Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+  });
+
+  const handleChangeFocus = (name) => {
     commitMutation({
       mutation: workspaceEditionOverviewFocus,
       variables: {
-        id: this.props.workspace.id,
+        id: workspace.id,
         input: {
           focusOn: name,
         },
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    workspaceValidation(this.props.t)
+  const handleSubmitField = (name, value) => {
+    workspaceValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: workspaceMutationFieldPatch,
           variables: {
-            id: this.props.workspace.id,
+            id: workspace.id,
             input: { key: name, value: value || '' },
           },
         });
       })
       .catch(() => false);
-  }
+  };
 
-  render() {
-    const { t, workspace, context } = this.props;
-    const initialValues = pick(['name', 'description'], workspace);
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={workspaceValidation(t)}
-        onSubmit={() => true}
-      >
-        {() => (
-          <Form>
-            <Field
-              component={TextField}
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
+  const initialValues = {
+    name: workspace.name || '',
+    description: workspace.description || '',
+  };
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={workspaceValidation}
+      onSubmit={(values) => {
+        handleSubmitField('name', values.name);
+        handleSubmitField('description', values.description);
+      }}
+    >
+      {() => (
+        <Form>
+          <Field
+            component={TextField}
+            name="name"
+            label={t_i18n('Name')}
+            fullWidth={true}
+            onFocus={() => handleChangeFocus('name')}
+            onBlur={() => handleSubmitField('name')}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={() => handleChangeFocus('description')}
+            onBlur={() => handleSubmitField('description')}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
               }
-            />
-          </Form>
-        )}
-      </Formik>
-    );
-  }
-}
-
-WorkspaceEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  workspace: PropTypes.object,
-  context: PropTypes.array,
+          />
+        </Form>
+      )}
+    </Formik>
+  );
 };
 
-const WorkspaceEditionOverview = createFragmentContainer(
+export default createFragmentContainer(
   WorkspaceEditionOverviewComponent,
   {
     workspace: graphql`
-      fragment WorkspaceEditionOverview_workspace on Workspace {
-        id
-        name
-        description
-      }
+        fragment WorkspaceEditionOverview_workspace on Workspace {
+            id
+            name
+            description
+        }
     `,
   },
 );
-
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(WorkspaceEditionOverview);
