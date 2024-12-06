@@ -18,7 +18,7 @@ import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
-import { initExclusionListCache } from '../../src/database/exclusionListCache';
+import { initExclusionListCacheSlow } from '../../src/database/exclusionListCacheSlow';
 /**
  * Vitest setup is configurable with environment variables, as you can see in our package.json scripts
  *   INIT_TEST_PLATFORM=1 > cleanup the test platform, removing elastic indices, and setup it again
@@ -52,7 +52,7 @@ const testPlatformStart = async () => {
     await cacheManager.start();
     // Init the exclusion list cache
     if (isFeatureEnabled('EXCLUSION_LIST')) {
-      await initExclusionListCache();
+      await initExclusionListCacheSlow();
     }
     // Init the platform default if it was cleaned up
     if (!SKIP_CLEANUP_PLATFORM) {

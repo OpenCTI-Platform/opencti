@@ -27,7 +27,7 @@ import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, gen
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
-import type { ExclusionListCacheItem } from './exclusionListCache';
+import type { ExclusionListSlowCacheItem } from './exclusionListCacheSlow';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -904,7 +904,7 @@ export const redisGetExclusionListCache = async () => {
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
   return JSON.parse(fromBase64(rawCache) ?? '[]');
 };
-export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]) => {
+export const redisSetExclusionListCache = async (cache: ExclusionListSlowCacheItem[]) => {
   const stringifiedCache = toBase64(JSON.stringify(cache)) as string;
   await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
 };

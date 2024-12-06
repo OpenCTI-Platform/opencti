@@ -1,38 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { checkExclusionList, checkIpAddressLists, checkIpAddrType, convertIpAddr, convertIpv4ToBinary, convertIpv6ToBinary } from '../../../src/utils/exclusionLists';
+import {
+  addExclusionListToTree,
+  checkExclusionList,
+  checkExclusionListTree,
+  checkIpAddressLists,
+  checkIpAddrType,
+  convertIpAddr,
+  convertIpv4ToBinary,
+  convertIpv6ToBinary
+} from '../../../src/utils/exclusionLists';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL } from '../../../src/schema/stixCyberObservable';
 
-const ipv4ListToTest = [
-  '99.93.60.129',
-  '99.95.233.129',
-  '99.99.99.193',
-  '99.86.96.0/20',
-  '99.87.0.0/19',
-  '99.87.32.0/22'
-];
 const ipv4ListResult = [
-  '01100011010111010011110010000001',
-  '01100011010111111110100110000001',
-  '01100011011000110110001111000001',
-  '01100011010101100110',
-  '0110001101010111000',
-  '0110001101010111001000'
-];
-const ipv6ListToTest = [
-  '2a12:e342:200::2:1819',
-  '2c0f:e8f8:2000:233::a39b:7123',
-  '2c0f:f530::d00:188',
-  '2c0f:fa18::/32',
-  '2c0f:fce8::/33',
-  '2c0f:fe08:10::/48'
+  '01100011010111010011110010000001', // 99.93.60.129
+  '01100011010111111110100110000001', // 99.95.233.129
+  '01100011011000110110001111000001', // 99.99.99.193
+  '01100011010101100110', // 99.86.96.0/20
+  '0110001101010111000', // 99.87.0.0/19
+  '0110001101010111001000' // 99.87.32.0/22
 ];
 const ipv6ListResult = [
-  '00101010000100101110001101000010000000100000000000000000000000000000000000000000000000000000000000000000000000100001100000011001',
-  '00101100000011111110100011111000001000000000000000000010001100110000000000000000000000000000000010100011100110110111000100100011',
-  '00101100000011111111010100110000000000000000000000000000000000000000000000000000000000000000000000001101000000000000000110001000',
-  '00101100000011111111101000011000',
-  '001011000000111111111100111010000',
-  '001011000000111111111110000010000000000000010000',
+  '00101010000100101110001101000010000000100000000000000000000000000000000000000000000000000000000000000000000000100001100000011001', // 2a12:e342:200::2:1819
+  '00101100000011111110100011111000001000000000000000000010001100110000000000000000000000000000000010100011100110110111000100100011', // 2c0f:e8f8:2000:233::a39b:7123
+  '00101100000011111111010100110000000000000000000000000000000000000000000000000000000000000000000000001101000000000000000110001000', // 2c0f:f530::d00:188
+  '00101100000011111111101000011000', // 2c0f:fa18::/32
+  '001011000000111111111100111010000', // 2c0f:fce8::/33
+  '001011000000111111111110000010000000000000010000', // 2c0f:fe08:10::/48
 ];
 const ipListToTest = [
   '195.250.75.178',
@@ -47,20 +40,6 @@ const ipListToTest = [
   '2001:1424::/48',
   '2600:9000:1036::/47',
   '2a02:e8::/32',
-];
-const ipListResult = [
-  '11000011111110100100101110110010',
-  '01001000000100110001010000001100',
-  '01010101000011111011000011110011',
-  '000000010111010',
-  '011001010100111111100001',
-  '110101011010011001010010',
-  '00100000000000010001010010001111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000001',
-  '00100110000000101111101110100001000010100000000000000000000000000000000000000000000000000000000000000001000000000000000000000001',
-  '00101010000011001000111111000001011001000100000100000000000000000000000000000000000000000000000000000100000100101010101100110100',
-  '001000000000000100010100001001000000000000000000',
-  '00100110000000001001000000000000000100000011011',
-  '00101010000000100000000011101000',
 ];
 const domainNameList = [
   '.amanath-bank.com',
@@ -80,26 +59,17 @@ const ipv4ExclusionList = [{
   id: 'ipv4ListResult',
   types: [ENTITY_IPV4_ADDR],
   values: ipv4ListResult
-}, {
-  id: 'ipListResult',
-  types: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR],
-  values: ipListResult
 }];
 const ipv6ExclusionList = [{
   id: 'ipv6ListResult',
   types: [ENTITY_IPV6_ADDR],
   values: ipv6ListResult
-}, {
-  id: 'ipListResult',
-  types: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR],
-  values: ipListResult
 }];
 const domainExclusionList = [{
   id: 'domainExclusionList',
   types: [ENTITY_DOMAIN_NAME, ENTITY_URL],
   values: domainNameList
 }];
-
 describe('Exclusion Lists', () => {
   describe('checkIpAddrType', () => {
     describe('When I check an ipv4 : 75.126.95.138', () => {
@@ -161,52 +131,42 @@ describe('Exclusion Lists', () => {
   });
 
   describe('convertIpAddr', () => {
-    describe('When I have a list of Ipv4', () => {
-      it('should return a converted array of binary', () => {
-        const result = convertIpAddr(ipv4ListToTest);
-        expect(JSON.stringify(result)).toBe(JSON.stringify(ipv4ListResult));
-      });
-    });
+    it('should convert IP correctly to binary', () => {
+      const result = convertIpAddr('75.126.95.138');
+      expect(result.toString()).toBe('01001011011111100101111110001010');
 
-    describe('When I have a list of Ipv6', () => {
-      it('should return a converted array of binary', () => {
-        const result = convertIpAddr(ipv6ListToTest);
-        expect(JSON.stringify(result)).toBe(JSON.stringify(ipv6ListResult));
-      });
-    });
+      const rangeResult = convertIpAddr('99.87.0.0/19');
+      expect(rangeResult.toString()).toBe('0110001101010111000');
 
-    describe('When I have a list of Ipv4 and IPV6', () => {
-      it('should return a converted array of binary', () => {
-        const result = convertIpAddr(ipListToTest);
-        expect(JSON.stringify(result)).toBe(JSON.stringify(ipListResult));
-      });
+      const ipV6Result = convertIpAddr('2001:1a68::d911:224');
+      expect(ipV6Result.toString()).toBe('00100000000000010001101001101000000000000000000000000000000000000000000000000000000000000000000011011001000100010000001000100100');
+
+      const ipV6RangeResult = convertIpAddr('2c0f:fce8::/33');
+      expect(ipV6RangeResult.toString()).toBe('001011000000111111111100111010000');
     });
   });
-
   describe('checkIpAddressLists', () => {
     describe('When I check if an IPV4 is contained on lists', () => {
       describe('99.99.99.193', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('99.99.99.193', ipv4ExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('99.99.99.193');
-          expect(result?.listId).toBe('ipv4ListResult');
+          expect(result.length).toBe(1);
+          expect(result[0]).toBe('ipv4ListResult');
         });
       });
 
       describe('99.87.23.11', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('99.87.23.11', ipv4ExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('99.87.23.11');
-          expect(result?.listId).toBe('ipv4ListResult');
+          expect(result.length).toBe(1);
+          expect(result[0]).toBe('ipv4ListResult');
         });
       });
 
       describe('22.22.22.22', () => {
         it('should do nothing', async () => {
           const result = await checkIpAddressLists('22.22.22.22', ipv4ExclusionList);
-          expect(result).toBe(null);
+          expect(result.length).toBe(0);
         });
       });
     });
@@ -215,25 +175,15 @@ describe('Exclusion Lists', () => {
       describe('2a12:e342:200::2:1819', () => {
         it('should throw an error', async () => {
           const result = await checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('2a12:e342:200::2:1819');
-          expect(result?.listId).toBe('ipv6ListResult');
-        });
-      });
-
-      describe('2001:1424:0:1234::', () => {
-        it('should throw an error', async () => {
-          const result = await checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('2001:1424:0:1234::');
-          expect(result?.listId).toBe('ipListResult');
+          expect(result.length).toBe(1);
+          expect(result[0]).toBe('ipv6ListResult');
         });
       });
 
       describe('2602:fba1:a00::100:19', () => {
         it('should do nothing', async () => {
           const result = await checkExclusionList('2602:fba1:a00::100:19', ipv6ExclusionList);
-          expect(result).toBe(null);
+          expect(result.length).toBe(0);
         });
       });
     });
@@ -244,26 +194,63 @@ describe('Exclusion Lists', () => {
       describe('ns4.epidc.co.kr', () => {
         it('should throw an error', async () => {
           const result = await checkExclusionList('ns4.epidc.co.kr', domainExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('ns4.epidc.co.kr');
-          expect(result?.listId).toBe('domainExclusionList');
+          expect(result.length).toBe(1);
+          expect(result[0]).toBe('domainExclusionList');
         });
       });
 
       describe('www.test.ambfinancial.com', () => {
         it('should throw an error', async () => {
           const result = await checkExclusionList('www.test.ambfinancial.com', domainExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('www.test.ambfinancial.com');
-          expect(result?.listId).toBe('domainExclusionList');
+          expect(result.length).toBe(1);
+          expect(result[0]).toBe('domainExclusionList');
         });
       });
 
       describe('test.domain.name.fr', () => {
         it('should do nothing', async () => {
           const result = await checkExclusionList('test.domain.name.fr', domainExclusionList);
-          expect(result).toBe(null);
+          expect(result.length).toBe(0);
         });
+      });
+    });
+  });
+
+  describe('checkTree', () => {
+    describe('When I check if an IPV4 is contained on tree', () => {
+      it('should find if value is in tree', async () => {
+        const exclusionListIP = { id: 'ipList', types: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR], values: ipListToTest.join('\n') };
+        const exclusionListDomain = { id: 'domainList', types: [ENTITY_DOMAIN_NAME], values: domainNameList.join('\n') };
+        const exclusionListTree = { matchedLists: [], nextNodes: new Map() };
+        await addExclusionListToTree(exclusionListTree, exclusionListIP.id, exclusionListIP.types, exclusionListIP.values);
+        await addExclusionListToTree(exclusionListTree, exclusionListDomain.id, exclusionListDomain.types, exclusionListDomain.values);
+
+        const ipInListCheckResult = checkExclusionListTree(exclusionListTree, '72.19.20.12', ENTITY_IPV4_ADDR);
+        expect(ipInListCheckResult.length).toBe(1);
+        expect(ipInListCheckResult[0].matchedId).toBe(exclusionListIP.id);
+        expect(ipInListCheckResult[0].matchedTypes.length).toBe(1);
+        expect(ipInListCheckResult[0].matchedTypes[0]).toBe(ENTITY_IPV4_ADDR);
+
+        const ipNotInListCheckResult = checkExclusionListTree(exclusionListTree, '72.19.20.14', ENTITY_IPV4_ADDR);
+        expect(ipNotInListCheckResult.length).toBe(0);
+
+        // should be in range 2001:1424::/48
+        const ipInRangeCheckResult = checkExclusionListTree(exclusionListTree, '2001:1424:0000:0000:0000:0000:0010:0000', ENTITY_IPV6_ADDR);
+        expect(ipInRangeCheckResult.length).toBe(1);
+        expect(ipInRangeCheckResult[0].matchedId).toBe(exclusionListIP.id);
+        expect(ipInRangeCheckResult[0].matchedTypes.length).toBe(1);
+        expect(ipInRangeCheckResult[0].matchedTypes[0]).toBe(ENTITY_IPV6_ADDR);
+
+        const domainInListCheckResult = checkExclusionListTree(exclusionListTree, 'fudmiks.cust.smartspb.net', ENTITY_DOMAIN_NAME);
+        expect(domainInListCheckResult.length).toBe(1);
+        expect(domainInListCheckResult[0].matchedId).toBe(exclusionListDomain.id);
+
+        const domainWildcardInListCheckResult = checkExclusionListTree(exclusionListTree, 'www.google.com', ENTITY_DOMAIN_NAME);
+        expect(domainWildcardInListCheckResult.length).toBe(1);
+        expect(domainInListCheckResult[0].matchedId).toBe(exclusionListDomain.id);
+
+        const domainNotInListCheckResult = checkExclusionListTree(exclusionListTree, 'www.googl.com', ENTITY_DOMAIN_NAME);
+        expect(domainNotInListCheckResult.length).toBe(0);
       });
     });
   });

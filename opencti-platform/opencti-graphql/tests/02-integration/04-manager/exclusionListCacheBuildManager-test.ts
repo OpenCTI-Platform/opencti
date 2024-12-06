@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
-import { buildCacheFromAllExclusionLists } from '../../../src/database/exclusionListCache';
+import { buildSlowCacheFromAllExclusionLists } from '../../../src/database/exclusionListCacheSlow';
 
 describe('Exclusion list cache build manager tests ', () => {
   const context = testContext;
@@ -67,7 +67,7 @@ describe('Exclusion list cache build manager tests ', () => {
     });
   });
   it('should build cache from current exclusion lists', async () => {
-    const builtCache = await buildCacheFromAllExclusionLists(context);
+    const builtCache = await buildSlowCacheFromAllExclusionLists(context);
     expect(builtCache).toBeDefined();
     expect(builtCache.length).toEqual(2);
     const ipCache = builtCache.find((c) => c.id === exclusionListIPId);

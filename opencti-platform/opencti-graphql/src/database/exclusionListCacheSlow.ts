@@ -1,30 +1,24 @@
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../schema/stixCyberObservable';
-import { checkExclusionList, checkIpAddressLists, convertIpAddr } from '../utils/exclusionLists';
+import { checkExclusionList, checkIpAddressLists, checkIpAddrType, convertIpAddr } from '../utils/exclusionLists';
 import type { AuthContext } from '../types/user';
 import { listAllEntities } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { getFileContent } from './file-storage';
-import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
+import { logApp } from '../config/conf';
 import { redisGetExclusionListCache, redisSetExclusionListCache, redisUpdateExclusionListStatus } from './redis';
 import { FunctionalError } from '../config/errors';
 
-export interface ExclusionListCacheItem {
+export interface ExclusionListSlowCacheItem {
   id: string
   types: string[]
   values: string[]
 }
 
-let exclusionListCache: ExclusionListCacheItem[] | null = null;
+let exclusionListCache: ExclusionListSlowCacheItem[] | null = null;
 
-export const getIsCacheInitialized = (): boolean => exclusionListCache !== null;
-
-export const getCache = (entityType: string = ''): ExclusionListCacheItem[] | null => {
+const getSlowCache = (entityType: string = ''): ExclusionListSlowCacheItem[] | null => {
   return entityType && exclusionListCache ? exclusionListCache.filter((e) => e.types.includes(entityType)) : exclusionListCache;
-};
-
-const setCache = (newCache: ExclusionListCacheItem[]): void => {
-  exclusionListCache = [...newCache];
 };
 
 const isIPExclusionList = (exclusionList: BasicStoreEntityExclusionList) => {
@@ -33,24 +27,40 @@ const isIPExclusionList = (exclusionList: BasicStoreEntityExclusionList) => {
 };
 
 const buildExclusionListCacheItem = (exclusionList: BasicStoreEntityExclusionList, exclusionListFileContent: string | undefined) => {
-  let exclusionListFileValues = exclusionListFileContent?.split('\n');
+  const exclusionListFileValues = exclusionListFileContent?.split(/\r\n|\n/).map((l) => l.trim()).filter((l) => l);
   if (exclusionListFileValues && isIPExclusionList(exclusionList)) {
-    exclusionListFileValues = convertIpAddr(exclusionListFileValues);
+    const ipv4Values = exclusionListFileValues.filter((i) => checkIpAddrType(i).isIpv4);
+    const ipv4ConvertedValues = ipv4Values.map((i) => convertIpAddr(i));
+    const ipv4List = { id: exclusionList.id, types: [ENTITY_IPV4_ADDR], values: ipv4ConvertedValues };
+
+    const ipv6Values = exclusionListFileValues.filter((i) => checkIpAddrType(i).isIpv6);
+    const ipv6ConvertedValues = ipv6Values.map((i) => convertIpAddr(i));
+    const ipv6List = { id: exclusionList.id, types: [ENTITY_IPV6_ADDR], values: ipv6ConvertedValues };
+
+    const ipLists = [];
+
+    if (ipv4Values.length > 0) {
+      ipLists.push(ipv4List);
+    }
+    if (ipv6Values.length > 0) {
+      ipLists.push(ipv6List);
+    }
+    return ipLists;
   }
-  return { id: exclusionList.id, types: exclusionList.exclusion_list_entity_types, values: exclusionListFileValues ?? [] };
+  return [{ id: exclusionList.id, types: exclusionList.exclusion_list_entity_types, values: exclusionListFileValues ?? [] }];
 };
 
-export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
+export const buildSlowCacheFromAllExclusionLists = async (context: AuthContext) => {
   const exclusionLists: BasicStoreEntityExclusionList[] = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_EXCLUSION_LIST]);
   const enabledExclusionLists = exclusionLists.filter((l) => l.enabled);
   const exclusionListsCount = enabledExclusionLists.length;
-  const builtCache: ExclusionListCacheItem[] = [];
+  const builtCache: ExclusionListSlowCacheItem[] = [];
   for (let i = 0; i < exclusionListsCount; i += 1) {
     const currentExclusionList = enabledExclusionLists[i];
     try {
       const currentExclusionFileContent = await getFileContent(currentExclusionList.file_id);
       const currentExclusionListCacheItem = buildExclusionListCacheItem(currentExclusionList, currentExclusionFileContent);
-      builtCache.push(currentExclusionListCacheItem);
+      builtCache.push(...currentExclusionListCacheItem);
     } catch (e) {
       logApp.error('[OPENCTI-MODULE][EXCLUSION-BUILD-MANAGER] Exclusion list could not be built properly.', { cause: e, exclusionList: currentExclusionList });
     }
@@ -59,32 +69,24 @@ export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
 };
 
 // cache is always initialized as an empty array if there is no redis data: we might want to change it to rebuild cache locally as a failsafe is there is no redis data
-export const initExclusionListCache = async () => {
-  const currentCache = await redisGetExclusionListCache();
-  setCache(currentCache);
+export const initExclusionListCacheSlow = async () => {
+  exclusionListCache = await redisGetExclusionListCache();
 };
 
-export const rebuildExclusionListCache = async (context: AuthContext, cacheDate: string) => {
-  const newCache = await buildCacheFromAllExclusionLists(context);
-  setCache(newCache);
+export const rebuildExclusionListCacheSlow = async (context: AuthContext, cacheDate: string) => {
+  const newCache = await buildSlowCacheFromAllExclusionLists(context);
+  exclusionListCache = newCache;
   await redisSetExclusionListCache(newCache);
-  const exclusionListStatus = { last_cache_date: cacheDate, [PLATFORM_INSTANCE_ID]: cacheDate };
+  const exclusionListStatus = { last_cache_date: cacheDate };
   await redisUpdateExclusionListStatus(exclusionListStatus);
 };
 
-export const syncExclusionListCache = async (cacheDate: string) => {
-  const currentCache = await redisGetExclusionListCache();
-  setCache(currentCache);
-  await redisUpdateExclusionListStatus({ [PLATFORM_INSTANCE_ID]: cacheDate });
-};
-
-export const checkObservableValue = async (observableValue: any) => {
-  const { type, value } = observableValue;
-  const relatedLists = getCache(type);
+export const checkExclusionListCacheSlow = async (valueToCheck: string, valueToCheckType: string) => {
+  const relatedLists = getSlowCache(valueToCheckType);
   if (!relatedLists) {
-    throw FunctionalError('Failed to load exclusion list cache.', { relatedLists, type });
+    throw FunctionalError('Failed to load exclusion list cache.', { relatedLists, valueToCheckType });
   }
-  const isIpType = type === ENTITY_IPV4_ADDR || type === ENTITY_IPV6_ADDR;
-  const listCheck = await (isIpType ? checkIpAddressLists(value, relatedLists) : checkExclusionList(value, relatedLists));
+  const isIpType = valueToCheckType === ENTITY_IPV4_ADDR || valueToCheckType === ENTITY_IPV6_ADDR;
+  const listCheck = await (isIpType ? checkIpAddressLists(valueToCheck, relatedLists) : checkExclusionList(valueToCheck, relatedLists));
   return listCheck;
 };
