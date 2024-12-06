@@ -121,7 +121,7 @@ const ExclusionLists = () => {
     queryPaginationOptions,
   );
 
-  const renderEnrichedTooltip = (exclusionListEntityTypes, firstEntityType) => (
+  const renderEnrichedTooltip = (exclusionListEntityTypes: readonly string[], firstEntityType: string) => (
     <EnrichedTooltip title={
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 7 }}>
         {exclusionListEntityTypes.map((type) => (<ItemEntityType key={type} entityType={type} />))}
