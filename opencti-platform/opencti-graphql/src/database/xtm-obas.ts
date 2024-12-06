@@ -126,6 +126,7 @@ export const createInjectInScenario = async (
   content: string | null,
   tags: Label[]
 ) => {
+  console.time(`${title}:[OBAS]CreateInjectInScenario`);
   const httpClient = buildXTmOpenBasHttpClient();
   try {
     const obasTagsIds = [];
@@ -145,6 +146,7 @@ export const createInjectInScenario = async (
         inject_tags: obasTagsIds,
       }
     );
+    console.timeEnd(`${title}:[OBAS]CreateInjectInScenario`);
     return inject;
   } catch (err) {
     throw DatabaseError('Error querying OpenBAS', { cause: err });

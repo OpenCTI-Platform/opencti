@@ -31,11 +31,12 @@ if (AI_ENABLED && AI_TOKEN) {
 }
 
 export const queryMistralAi = async (busId: string | null, question: string, user: AuthUser) => {
+  // const startingTime = new Date().getTime();
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.info('[AI] Querying MistralAI with prompt');
+    // logApp.info('[AI] Querying MistralAI with prompt', { questionStart: question.substring(0, 100) });
     const response = (client as MistralClient)?.chatStream({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],
@@ -52,6 +53,8 @@ export const queryMistralAi = async (busId: string | null, question: string, use
           }
         }
       }
+      // const endingTime = new Date().getTime();
+      // logApp.info(`[AI][TIME] Mistral AI response in ${endingTime - startingTime} ms.`, { question: question.substring(0, 100) });
       return content;
     }
     logApp.error('[AI] No response from MistralAI', { busId, question });
@@ -99,7 +102,7 @@ export const queryChatGpt = async (busId: string | null, question: string, user:
   }
 };
 
-export const compute = async (busId: string | null, question: string, user: AuthUser) => {
+export const queryAi = async (busId: string | null, question: string, user: AuthUser) => {
   switch (AI_TYPE) {
     case 'mistralai':
       return queryMistralAi(busId, question, user);
