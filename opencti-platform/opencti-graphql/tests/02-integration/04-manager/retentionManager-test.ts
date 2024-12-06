@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { Readable } from 'stream';
-import { ADMIN_USER, queryAsAdmin, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, EXTERNAL_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { utcDate } from '../../../src/utils/format';
 import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
@@ -347,7 +347,7 @@ describe('Retention Manager tests ', () => {
     expect(report1deleted).toBeUndefined();
   });
   it('should not delete organization with members', async () => {
-    await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
+    await expect(() => deleteElement(context, 'knowledge', EXTERNAL_ORGANIZATION.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
       .rejects.toThrowError('Cannot delete an organization that has members.');
   });
   it('should not delete individual associated to user', async () => {

@@ -8,7 +8,7 @@ import {
   getOrganizationIdByName,
   PLATFORM_ORGANIZATION,
   PYTHON_PATH,
-  TEST_ORGANIZATION,
+  EXTERNAL_ORGANIZATION,
   testContext,
   USER_EDITOR
 } from '../../utils/testQuery';
@@ -94,7 +94,7 @@ describe('Organization sharing standard behavior for container', () => {
     // Delete the organization should fail with error
     await queryAsUserIsExpectedError(USER_EDITOR.client, {
       query: DELETE_QUERY,
-      variables: { id: PLATFORM_ORGANIZATION.id },
+      variables: { id: PLATFORM_ORGANIZATION.standard_id },
     }, 'Cannot delete the platform organization.', 'FUNCTIONAL_ERROR');
   });
   it('should user from different organization not access the report', async () => {
@@ -106,13 +106,13 @@ describe('Organization sharing standard behavior for container', () => {
   });
   it('should share Report with Organization', async () => {
     // Get organization id
-    organizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+    organizationId = await getOrganizationIdByName(EXTERNAL_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQueryWithSuccess({
       query: ORGANIZATION_SHARING_QUERY,
       variables: { id: reportInternalId, organizationId }
     });
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
+    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(EXTERNAL_ORGANIZATION.name);
 
     // Need background task magic to happens for sharing
     await taskHandler();

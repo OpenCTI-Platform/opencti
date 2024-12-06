@@ -3,7 +3,6 @@ import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
-import { v4 as uuid } from 'uuid';
 import createSchema from '../../src/graphql/schema';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
@@ -276,31 +275,28 @@ export const PLATFORM_ADMIN_GROUP: Group = {
 TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 
 // Organization
-export interface Organization {
+export interface OrganizationTestData {
   name: string,
-  id: string,
-  standard_id: string,
+  standard_id: string
 }
 
-export const TEST_ORGANIZATION: Organization = {
-  name: 'TestOrganization',
+export const EXTERNAL_ORGANIZATION: OrganizationTestData = {
+  name: 'ExternalOrganization',
   standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
-  id: uuid()
 };
 
-export const PLATFORM_ORGANIZATION: Organization = {
+export const PLATFORM_ORGANIZATION: OrganizationTestData = {
   name: 'PlatformOrganization',
   standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'PlatformOrganization', identity_class: 'organization' }),
-  id: uuid()
 };
 
 // Users
-interface User {
+export interface UserTestData {
   id: string,
   email: string,
   password: string,
   roles?: Role[],
-  organizations?: Organization[],
+  organizations?: OrganizationTestData[],
   groups: Group[],
   client: AxiosInstance,
 }
@@ -338,26 +334,27 @@ export const ADMIN_USER: AuthUser = {
   restrict_delete: false,
   no_creators: false,
 };
-export const TESTING_USERS: User[] = [];
-export const USER_PARTICIPATE: User = {
+export const TESTING_USERS: UserTestData[] = [];
+export const USER_PARTICIPATE: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
   password: 'participate',
   groups: [GREEN_GROUP],
-  client: createHttpClient('participate@opencti.io', 'participate')
+  client: createHttpClient('participate@opencti.io', 'participate'),
+  organizations: [PLATFORM_ORGANIZATION]
 };
 TESTING_USERS.push(USER_PARTICIPATE);
-export const USER_EDITOR: User = {
+export const USER_EDITOR: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'editor@opencti.io' }),
   email: 'editor@opencti.io',
   password: 'editor',
-  organizations: [TEST_ORGANIZATION],
+  organizations: [PLATFORM_ORGANIZATION],
   groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
 TESTING_USERS.push(USER_EDITOR);
 
-export const USER_SECURITY: User = {
+export const USER_SECURITY: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'security@opencti.io' }),
   email: 'security@opencti.io',
   password: 'security',
@@ -367,32 +364,46 @@ export const USER_SECURITY: User = {
 };
 TESTING_USERS.push(USER_SECURITY);
 
-export const USER_CONNECTOR: User = {
+export const USER_CONNECTOR: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'connector@opencti.io' }),
   email: 'connector@opencti.io',
   password: 'connector',
   groups: [CONNECTOR_GROUP],
-  client: createHttpClient('connector@opencti.io', 'connector')
+  client: createHttpClient('connector@opencti.io', 'connector'),
+  organizations: [PLATFORM_ORGANIZATION]
 };
 TESTING_USERS.push(USER_CONNECTOR);
 
-export const USER_DISINFORMATION_ANALYST: User = {
+export const USER_DISINFORMATION_ANALYST: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
   email: 'anais@opencti.io',
   password: 'disinformation',
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
-  client: createHttpClient('anais@opencti.io', 'disinformation')
+  client: createHttpClient('anais@opencti.io', 'disinformation'),
+  organizations: [PLATFORM_ORGANIZATION]
 };
 TESTING_USERS.push(USER_DISINFORMATION_ANALYST);
 
-export const USER_PLATFORM_ADMIN: User = {
+export const USER_PLATFORM_ADMIN: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'platform@opencti.io' }),
   email: 'platform@opencti.io',
   password: 'platformadmin',
   groups: [PLATFORM_ADMIN_GROUP],
-  client: createHttpClient('platform@opencti.io', 'platformadmin')
+  client: createHttpClient('platform@opencti.io', 'platformadmin'),
+  organizations: [PLATFORM_ORGANIZATION]
 };
 TESTING_USERS.push(USER_PLATFORM_ADMIN);
+
+export const EXTERNAL_USER_ANALYST: UserTestData = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'analyst@external.io' }),
+  email: 'analyst@external.io',
+  password: 'analystext',
+  groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
+  client: createHttpClient('analyst@external.io', 'analystext'),
+  organizations: [EXTERNAL_ORGANIZATION]
+};
+
+TESTING_USERS.push(EXTERNAL_USER_ANALYST);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
@@ -469,7 +480,7 @@ const createGroup = async (input: Group): Promise<string> => {
   }
   return data.groupAdd.id;
 };
-const assignGroupToUser = async (group: Group, user: User) => {
+const assignGroupToUser = async (group: Group, user: UserTestData) => {
   await internalAdminQuery(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
 };
 // endregion
@@ -503,8 +514,8 @@ const createOrganization = async (input: { name: string }): Promise<string> => {
   return organization.data.organizationAdd.id;
 };
 
-const assignOrganizationToUser = async (organizationId: string, userId: string) => {
-  await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId, toId: organizationId });
+const assignOrganizationToUser = async (organizationId: string, user: UserTestData) => {
+  await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organizationId });
 };
 // endregion
 
@@ -570,7 +581,7 @@ const USER_CREATION_MUTATION = `
     }
   }
 `;
-const createUser = async (user: User) => {
+const createUser = async (user: UserTestData) => {
   // Assign user to groups
   for (let indexGroup = 0; indexGroup < user.groups.length; indexGroup += 1) {
     const group = user.groups[indexGroup];
@@ -594,8 +605,8 @@ const createUser = async (user: User) => {
   if (user.organizations && user.organizations.length > 0) {
     for (let indexOrganization = 0; indexOrganization < user.organizations.length; indexOrganization += 1) {
       const organization = user.organizations[indexOrganization];
-      const createdOrgId = await createOrganization(organization);
-      await assignOrganizationToUser(createdOrgId, user.id);
+      const organizationId = await createOrganization(organization);
+      await assignOrganizationToUser(organizationId, user);
     }
   }
 };
@@ -683,7 +694,7 @@ export const buildStandardUser = (
 ): AuthUser => {
   return {
     administrated_organizations: [],
-    entity_type: 'User',
+    entity_type: 'UserTestData',
     id: '88ec0c6a-12ce-5e39-b486-354fe4a7084f',
     internal_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f',
     individual_id: undefined,

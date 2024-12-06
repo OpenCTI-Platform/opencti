@@ -1,7 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin, USER_EDITOR, TEST_ORGANIZATION, USER_SECURITY } from '../../utils/testQuery';
-import { queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, queryAsAdmin, USER_EDITOR, EXTERNAL_ORGANIZATION, USER_SECURITY } from '../../utils/testQuery';
+import { getOrganizationEntity, queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -244,14 +244,16 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization).toBeNull();
   });
   it('should not delete organization if it has members', async () => {
+    const organization = await getOrganizationEntity(EXTERNAL_ORGANIZATION);
+
     await queryAsUserIsExpectedError(USER_EDITOR.client, {
       query: DELETE_QUERY,
-      variables: { id: TEST_ORGANIZATION.id },
+      variables: { id: organization.id },
     }, 'Cannot delete the organization.', 'FUNCTIONAL_ERROR');
 
     await queryAsUserIsExpectedError(USER_SECURITY.client, {
       query: DELETE_QUERY,
-      variables: { id: TEST_ORGANIZATION.id },
+      variables: { id: organization.id },
     }, 'Cannot delete an organization that has members.', 'FUNCTIONAL_ERROR');
   });
 });

@@ -13,7 +13,7 @@ import {
   getUserIdByEmail,
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
-  TEST_ORGANIZATION,
+  EXTERNAL_ORGANIZATION,
   testContext,
   TESTING_GROUPS,
   TESTING_USERS,
@@ -840,12 +840,12 @@ describe('User has no settings capability and is organization admin query behavi
     const organizationAdminAddQueryResult = await adminQueryWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
-        id: TEST_ORGANIZATION.id,
+        id: EXTERNAL_ORGANIZATION.standard_id,
         memberId: userEditorId,
       },
     });
     expect(organizationAdminAddQueryResult.data.organizationAdminAdd).not.toBeNull();
-    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.id);
+    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(EXTERNAL_ORGANIZATION.standard_id);
 
     // Check that USER_EDITOR is Organization administrator
     const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
@@ -856,7 +856,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
   it('should user created', async () => {
-    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+    testOrganizationId = await getOrganizationIdByName(EXTERNAL_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
     amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
 
@@ -963,12 +963,12 @@ describe('User has no settings capability and is organization admin query behavi
     const queryResult = await adminQueryWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
-        id: PLATFORM_ORGANIZATION.id,
+        id: PLATFORM_ORGANIZATION.standard_id,
         memberId: userEditorId,
       },
     });
     expect(queryResult.data.organizationAdminAdd).not.toBeNull();
-    expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.id);
+    expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.standard_id);
   });
   it('should add 2nd organization to user if admin', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {

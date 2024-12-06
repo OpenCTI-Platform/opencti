@@ -5,12 +5,27 @@ import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, type Organization, queryAsAdmin, testContext } from './testQuery';
+import {
+  ADMIN_USER,
+  adminQuery,
+  createUnauthenticatedClient,
+  executeInternalQuery,
+  getOrganizationIdByName,
+  type OrganizationTestData,
+  PLATFORM_ORGANIZATION,
+  queryAsAdmin,
+  testContext,
+} from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage-helper';
+import type { StoreEntityConnection } from '../../src/types/store';
+import type { BasicStoreEntityOrganization } from '../../src/modules/organization/organization-types';
+import { findAll as findAllOrganization } from '../../src/modules/organization/organization-domain';
+import { resetCacheForEntity } from '../../src/database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -152,7 +167,7 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
  * Enable Enterprise edition and set the platform organisation.
  * @param organization organization to use as platform organization.
  */
-export const enableEEAndSetOrganization = async (organization: Organization) => {
+export const enableEEAndSetOrganization = async (organization: OrganizationTestData) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
   const platformSettings: any = await getSettings(testContext);
 
@@ -165,6 +180,11 @@ export const enableEEAndSetOrganization = async (organization: Organization) => 
   expect(settingsResult.platform_organization).not.toBeUndefined();
   expect(settingsResult.enterprise_edition).not.toBeUndefined();
   expect(settingsResult.platform_organization).toEqual(platformOrganizationId);
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+};
+
+export const enableEEAndSetPlatformOrganization = async () => {
+  await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
 };
 
 /**
@@ -181,6 +201,12 @@ export const enableCEAndUnSetOrganization = async () => {
 
   expect(settingsResult.platform_organization).toBeUndefined();
   expect(settingsResult.enterprise_edition).toBeUndefined();
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+};
+
+export const getOrganizationEntity = async (testOrg: OrganizationTestData) => {
+  const allOrgs: StoreEntityConnection<BasicStoreEntityOrganization> = await findAllOrganization(testContext, ADMIN_USER, { search: `"${testOrg.name}"` });
+  return allOrgs.edges.find((currentOrg) => currentOrg.node.name === testOrg.name)?.node as BasicStoreEntityOrganization;
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
@@ -200,4 +226,36 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
   });
   upload.file = fileUpload;
   return upload;
+};
+
+/**
+ * Helper for counter debug
+ * @param data
+ */
+export const mapEdgesCountPerEntityType = (data: any) => {
+  const map = new Map();
+  for (let i = 0; i < data.edges.length; i += 1) {
+    const entityType = data.edges[i].node.entity_type;
+    if (map.has(entityType)) {
+      const count = map.get(entityType);
+      map.set(entityType, count + 1);
+    } else {
+      map.set(entityType, 1);
+    }
+  }
+  return map;
+};
+
+export const mapCountPerEntityType = (data: any) => {
+  const map = new Map();
+  for (let i = 0; i < data.length; i += 1) {
+    const entityType = data[i].entity_type;
+    if (map.has(entityType)) {
+      const count = map.get(entityType);
+      map.set(entityType, count + 1);
+    } else {
+      map.set(entityType, 1);
+    }
+  }
+  return map;
 };

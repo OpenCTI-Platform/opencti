@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, queryAsAdmin, TEST_ORGANIZATION, USER_PARTICIPATE } from '../../utils/testQuery';
+import { editorQuery, queryAsAdmin, EXTERNAL_ORGANIZATION, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -130,7 +130,7 @@ describe('Delete operation resolver testing', () => {
         published: '2020-02-26T00:51:35.000Z',
         confidence: 90,
         objectMarking: [MARKING_TLP_RED],
-        objectOrganization: [TEST_ORGANIZATION.id],
+        objectOrganization: [EXTERNAL_ORGANIZATION.standard_id],
       },
     };
     const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });

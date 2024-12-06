@@ -9,7 +9,7 @@ import {
   getUserIdByEmail,
   PLATFORM_ORGANIZATION,
   securityQuery,
-  TEST_ORGANIZATION,
+  EXTERNAL_ORGANIZATION,
   USER_EDITOR
 } from '../../utils/testQuery';
 import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
@@ -618,14 +618,14 @@ describe('Case Incident Response and organization sharing standard behavior with
   });
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
-    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+    testOrganizationId = await getOrganizationIdByName(EXTERNAL_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
       variables: { id: caseIrId, organizationId: testOrganizationId }
     });
     expect(organizationSharingQueryResult).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
+    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(EXTERNAL_ORGANIZATION.name);
 
     // Verify Editor user has access to Case incident
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });

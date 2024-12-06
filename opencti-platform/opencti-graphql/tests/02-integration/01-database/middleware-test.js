@@ -16,7 +16,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, buildStandardUser, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, EXTERNAL_ORGANIZATION, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -50,6 +50,7 @@ import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { generateInternalId } from '../../../src/schema/identifier';
+import { getOrganizationEntity, mapEdgesCountPerEntityType } from '../../utils/testQueryHelper';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -255,7 +256,15 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
-    expect(stixRefRelationships.edges.length).toEqual(129);
+    const entityTypeMap = mapEdgesCountPerEntityType(stixRefRelationships);
+    expect(entityTypeMap.get('created-by')).toBe(22);
+    expect(entityTypeMap.get('kill-chain-phase')).toBe(3);
+    expect(entityTypeMap.get('object-label')).toBe(30);
+    expect(entityTypeMap.get('object')).toBe(38);
+    expect(entityTypeMap.get('external-reference')).toBe(7);
+    expect(entityTypeMap.get('object-marking')).toBe(29);
+    expect(entityTypeMap.get('operating-system')).toBe(1);
+    expect(stixRefRelationships.edges.length).toEqual(130);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
@@ -1426,7 +1435,8 @@ describe('Elements deduplication behaviors', () => {
 
 describe('Delete functional errors behaviors', () => {
   it('should not be able to delete organization that has members', async () => {
-    await expect(() => deleteElementById(testContext, ADMIN_USER, TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
+    const externalOrgEntity = await getOrganizationEntity(EXTERNAL_ORGANIZATION);
+    await expect(() => deleteElementById(testContext, ADMIN_USER, externalOrgEntity.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
       .rejects.toThrowError('Cannot delete an organization that has members.');
   });
   it.skip('should not be able to delete individual associated to user', async () => {

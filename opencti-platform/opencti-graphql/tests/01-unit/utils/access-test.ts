@@ -5,7 +5,7 @@ import type { BasicStoreCommon } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
-import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
+import { PLATFORM_ORGANIZATION, EXTERNAL_ORGANIZATION } from '../../utils/testQuery';
 import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 
@@ -75,7 +75,7 @@ describe('Check organization access for element.', () => {
     };
 
     const org : Partial<BasicStoreEntityOrganization> = {
-      internal_id: PLATFORM_ORGANIZATION.id,
+      internal_id: PLATFORM_ORGANIZATION.standard_id,
     };
     const allOrgs: BasicStoreEntityOrganization[] = [];
     allOrgs.push(org as BasicStoreEntityOrganization);
@@ -99,7 +99,7 @@ describe('Check organization access for element.', () => {
     };
 
     const org : Partial<BasicStoreEntityOrganization> = {
-      internal_id: TEST_ORGANIZATION.id,
+      internal_id: EXTERNAL_ORGANIZATION.standard_id,
     };
     const allOrgs: BasicStoreEntityOrganization[] = [];
     allOrgs.push(org as BasicStoreEntityOrganization);
@@ -121,11 +121,11 @@ describe('Check organization access for element.', () => {
     const element: Partial<BasicStoreCommon> = {
       internal_id: uuid()
     };
-    element[RELATION_GRANTED_TO] = [TEST_ORGANIZATION.id];
+    element[RELATION_GRANTED_TO] = [EXTERNAL_ORGANIZATION.standard_id];
 
     const org : Partial<BasicStoreEntityOrganization> = {
-      internal_id: TEST_ORGANIZATION.id,
-      id: TEST_ORGANIZATION.id,
+      internal_id: EXTERNAL_ORGANIZATION.standard_id,
+      id: EXTERNAL_ORGANIZATION.standard_id,
     };
     const allOrgs: BasicStoreEntityOrganization[] = [];
     allOrgs.push(org as BasicStoreEntityOrganization);
