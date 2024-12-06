@@ -90,7 +90,7 @@ export const resolveContent = async (context, user, stixCoreObject) => {
   return [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
 };
 
-export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
+export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI) => {
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
@@ -358,7 +358,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
 
 export const generateContainerScenario = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
-  const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
+  const { id, interval, selection, simulationType = 'technical', simulationPlatforms = ['Windows'], simulationArchitecture = 'AMD64', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
   }
@@ -366,12 +366,12 @@ export const generateContainerScenario = async (context, user, args) => {
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection, useAI);
+  return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI);
 };
 
 export const generateThreatScenario = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
-  const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
+  const { id, interval, selection, simulationType = 'technical', simulationPlatforms = ['Windows'], simulationArchitecture = 'AMD64', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
   }
@@ -379,12 +379,12 @@ export const generateThreatScenario = async (context, user, args) => {
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection, useAI);
+  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI);
 };
 
 export const generateVictimScenario = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
-  const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
+  const { id, interval, selection, simulationType = 'technical', simulationPlatforms = ['Windows'], simulationArchitecture = 'AMD64', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
   }
@@ -406,5 +406,5 @@ export const generateVictimScenario = async (context, user, args) => {
   );
   const threatsIds = threats.map((n) => n.id);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection, useAI);
+  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI);
 };
