@@ -23,7 +23,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
+import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
@@ -286,7 +286,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames);
           PDF.getBlob((blob) => {
             uploadFile({
               id: scoId,
@@ -312,7 +312,7 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames)
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames)
           : htmlToPdf(fileId, fileData);
         PDF.getBlob((blob) => {
           uploadFile({
