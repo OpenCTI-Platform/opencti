@@ -566,13 +566,11 @@ const attributePathMapping: any = {
     [ABSTRACT_STIX_RELATIONSHIP]: `/${objectMarking.stixName}`,
   },
   [INPUT_LABELS]: {
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/${objectLabel.stixName}`,
-    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/${objectLabel.stixName}`,
+    [ABSTRACT_STIX_CORE_OBJECT]: `/${objectLabel.stixName}`,
     [ABSTRACT_STIX_RELATIONSHIP]: `/${objectLabel.stixName}`,
   },
   [INPUT_CREATED_BY]: {
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/${createdBy.stixName}`,
-    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/${createdBy.stixName}`,
+    [ABSTRACT_STIX_CORE_OBJECT]: `/${createdBy.stixName}`,
     [ABSTRACT_STIX_RELATIONSHIP]: `/${createdBy.stixName}`,
   },
   confidence: {
