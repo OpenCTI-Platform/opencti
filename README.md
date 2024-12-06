@@ -10,6 +10,7 @@
   <a href="https://deepscan.io/dashboard#view=project&tid=4926&pid=6716&bid=57311"><img src="https://deepscan.io/api/teams/4926/projects/6716/branches/57311/badge/grade.svg" alt="DeepScan grade"></a>
   <a href="https://renovatebot.com"><img src="https://img.shields.io/badge/renovate-enabled-brightgreen.svg" alt="DeepScan grade"></a>
   <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>
+  <a href="https://gurubase.io/g/opencti"><img src="https://img.shields.io/badge/Gurubase-Ask%20OpenCTI%20Guru-006BFF" alt="Gurubase"></a>
 </p>
 
 ## Introduction
