@@ -469,6 +469,9 @@ const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<S
       )}
       containerStyle={{
         minHeight: '100vh',
+        position: 'fixed',
+        top: '60px',
+        width: '50%',
       }}
     >
       {({ onClose }) => (
@@ -491,16 +494,18 @@ const StixCoreRelationshipCreationFromControlledDialContent: FunctionComponent<S
             />
           )}
           {step === 1 && (
-            <RenderForm
-              sourceEntity={data.stixCoreObject as TargetEntity}
-              targetEntities={targetEntities}
-              handleClose={() => {
-                reset();
-                onClose();
-              }}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-            />
+            <div style={{ paddingBottom: '75px' }}>
+              <RenderForm
+                sourceEntity={data.stixCoreObject as TargetEntity}
+                targetEntities={targetEntities}
+                handleClose={() => {
+                  reset();
+                  onClose();
+                }}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
+              />
+            </div>
           )}
         </div>
       )}
