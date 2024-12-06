@@ -11,7 +11,6 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { INDICATOR_DECAY_MANAGER } from '../../../utils/platformModulesHelper';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -124,7 +123,10 @@ const Management = () => {
   const queryPaginationOptions = {
     ...paginationOptions,
   };
-  const queryRef = useQueryLoading(managementDefinitionsLinesPaginationQuery, queryPaginationOptions);
+  const queryRef = useQueryLoading(
+    managementDefinitionsLinesPaginationQuery,
+    queryPaginationOptions,
+  );
   console.log('QUERY', queryRef);
 
   const preloadedPaginationProps = {
@@ -136,10 +138,11 @@ const Management = () => {
   } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
   return (
     <div data-testid='data-management-page'>
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Management') }, {
-        label: t_i18n('Restricted entities'),
-        current: true,
-      }]}
+      <Breadcrumbs elements={[
+        { label: t_i18n('Data') },
+        { label: t_i18n('Management') },
+        { label: t_i18n('Restricted entities'), current: true },
+      ]}
       />
       <div style={{ width: '100%', marginTop: 10, marginBottom: 16, display: 'flex' }}>
         <Alert
@@ -157,13 +160,19 @@ const Management = () => {
         <DataTable
           dataColumns={{
             entity_type: {
-              percentWidth: 33,
+              percentWidth: 25,
+              isSortable: true,
             },
             name: {
-              percentWidth: 33,
+              percentWidth: 25,
+            },
+            creator: {
+              label: 'Creator',
+              isSortable: true,
+              percentWidth: 25,
             },
             objectMarking: {
-              percentWidth: 33,
+              percentWidth: 25,
             },
           }}
           resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
