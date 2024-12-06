@@ -19,7 +19,7 @@ import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeCo
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
-import SimpleMarkdownField from '../../../../components/SimpleMarkdownField';
+import MarkdownField from '../../../../components//fields/MarkdownField';
 import Drawer from '../../common/drawer/Drawer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -141,7 +141,8 @@ const FeedbackCreation: FunctionComponent<{
         }) => (
           <Form>
             <Field
-              component={SimpleMarkdownField}
+              component={MarkdownField}
+              askAI={false}
               name="description"
               label={t_i18n('Description')}
               required={(mandatoryAttributes.includes('description'))}

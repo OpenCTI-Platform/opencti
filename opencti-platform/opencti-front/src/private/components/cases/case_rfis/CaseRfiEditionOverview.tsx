@@ -165,7 +165,7 @@ interface CaseRfiEditionFormValues {
   references: ExternalReferencesValues | undefined
 }
 
-const CASE_RFT_TYPE = 'Case-Rft';
+const CASE_RFI_TYPE = 'Case-Rfi';
 
 const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = ({
   caseRef,
@@ -177,7 +177,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   const caseData = useFragment(caseRfiEditionOverviewFragment, caseRef);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
-    CASE_RFT_TYPE,
+    CASE_RFI_TYPE,
   );
 
   const basicShape = yupShapeConditionalRequired({
