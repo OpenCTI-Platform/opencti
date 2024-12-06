@@ -96,24 +96,24 @@ const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = g
 `;
 
 const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $simulationPlatforms: [SimulationPlatform], $simulationArchitecture: SimulationArchitecture, $useAI: Boolean, $filters: FilterGroup) {
-    obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, simulationPlatforms: $simulationPlatforms, simulationArchitecture: $simulationArchitecture, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasContainerGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $simulationPlatforms: [SimulationPlatform], $simulationArchitecture: SimulationArchitecture, $useAI: Boolean, $filters: FilterGroup) {
-    obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, simulationPlatforms: $simulationPlatforms, simulationArchitecture: $simulationArchitecture, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasThreatGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $simulationPlatforms: [SimulationPlatform], $simulationArchitecture: SimulationArchitecture, $useAI: Boolean, $filters: FilterGroup) {
-    obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, simulationPlatforms: $simulationPlatforms, simulationArchitecture: $simulationArchitecture, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasVictimGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
-const platforms = [
+const platformOptions = [
   { label: 'Windows', value: 'Windows' },
   { label: 'Linux', value: 'Linux' },
   { label: 'MacOS', value: 'MacOS' },
@@ -128,8 +128,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const { configured } = useAI();
   const { oBasConfigured, oBasDisableDisplay } = useXTM();
   const [simulationType, setSimulationType] = useState('technical');
-  const [simulationPlatforms, setSimulationPlatforms] = useState(['Windows']);
-  const [simulationArchitecture, setSimulationArchitecture] = useState('AMD64');
+  const [platforms, setPlatforms] = useState(['Windows']);
+  const [architecture, setArchitecture] = useState('AMD64');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(2);
   const [useGenAI, setUseGenAI] = useState(false);
@@ -148,8 +148,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         || (simulationType === 'simulated' && configured && isEnterpriseEdition)
         || (simulationType === 'mixed' && ((configured && isEnterpriseEdition) || hasAttackPatterns))
       )
-      && simulationPlatforms.length > 0
-      && simulationArchitecture
+      && platforms.length > 0
+      && architecture
     );
   };
 
@@ -180,11 +180,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           variables: {
             id,
             interval,
-            selection,
-            simulationType,
-            simulationPlatforms,
-            simulationArchitecture,
-            useAI: useGenAI,
+            simulationConfig: {
+              selection,
+              simulationType,
+              platforms,
+              architecture,
+              useAI: useGenAI,
+            },
             filters,
           },
           onCompleted: (response) => {
@@ -204,11 +206,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           variables: {
             id,
             interval,
-            selection,
-            simulationType,
-            simulationPlatforms,
-            simulationArchitecture,
-            useAI: useGenAI,
+            simulationConfig: {
+              selection,
+              simulationType,
+              platforms,
+              architecture,
+              useAI: useGenAI,
+            },
             filters,
           },
           onCompleted: (response) => {
@@ -228,11 +232,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           variables: {
             id,
             interval,
-            selection,
-            simulationType,
-            simulationPlatforms,
-            simulationArchitecture,
-            useAI: useGenAI,
+            simulationConfig: {
+              selection,
+              simulationType,
+              platforms,
+              architecture,
+              useAI: useGenAI,
+            },
             filters,
           },
           onCompleted: (response) => {
@@ -403,11 +409,11 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               <Autocomplete
                 id="simulationPlatforms"
                 multiple
-                options={platforms}
-                value={platforms.filter((platform) => simulationPlatforms.includes(platform.value))}
+                options={platformOptions}
+                value={platformOptions.filter((platform) => platforms.includes(platform.value))}
                 onChange={(_event, newValue) => {
                   const newSelectedValues = newValue.map((platform) => platform.value);
-                  setSimulationPlatforms(newSelectedValues);
+                  setPlatforms(newSelectedValues);
                 }}
                 getOptionLabel={(option) => option.label}
                 renderInput={(params) => (
@@ -429,8 +435,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               <InputLabel id="simulationArchitecture">{t_i18n('Targeted architecture')}</InputLabel>
               <Select
                 labelId="simulationArchitecture"
-                value={simulationArchitecture}
-                onChange={(event) => setSimulationArchitecture(event.target.value)}
+                value={architecture}
+                onChange={(event) => setArchitecture(event.target.value)}
                 fullWidth
                 required
               >
