@@ -15,6 +15,25 @@ enum SimulationType {
     mixed
 }
 
+enum Platform {
+    Windows
+    Linux
+    MacOS
+}
+
+enum Architecture {
+    AMD64
+    ARM64
+}
+
+input SimulationConfig {
+    selection: Selection
+    type: SimulationType
+    platforms: [Platform]
+    architecture: Architecture
+    useAI: Boolean
+}
+
 type SimulationsResult {
     unknown: Int
     success: Int
@@ -33,7 +52,7 @@ type Query {
 }
 
 type Mutation {
-    obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasContainerGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasThreatGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasVictimGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
 }

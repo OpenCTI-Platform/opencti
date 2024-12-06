@@ -8,8 +8,6 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Box from '@mui/material/Box';
 import { graphql } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
@@ -20,6 +18,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
+import EEChip from '@components/common/entreprise_edition/EEChip';
+import { Autocomplete } from '@mui/material';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
@@ -96,22 +96,28 @@ const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = g
 `;
 
 const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-    obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasContainerGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-    obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasThreatGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
-    obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasVictimGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
+
+const platformOptions = [
+  { label: 'Windows', value: 'Windows' },
+  { label: 'Linux', value: 'Linux' },
+  { label: 'MacOS', value: 'MacOS' },
+];
 
 const StixCoreObjectSimulationResult = ({ id, type }) => {
   const theme = useTheme();
@@ -119,9 +125,11 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [open, setOpen] = useState(false);
   const [openCallToAction, setOpenCallToAction] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
+  const { configured } = useAI();
   const { oBasConfigured, oBasDisableDisplay } = useXTM();
   const [simulationType, setSimulationType] = useState('technical');
+  const [platforms, setPlatforms] = useState(['Windows']);
+  const [architecture, setArchitecture] = useState('AMD64');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(2);
   const [useGenAI, setUseGenAI] = useState(false);
@@ -131,6 +139,19 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
+  const hasAttackPatterns = false;
+
+  const isFormValid = () => {
+    return (
+      (
+        (simulationType === 'technical' && hasAttackPatterns)
+        || (simulationType === 'simulated' && configured && isEnterpriseEdition)
+        || (simulationType === 'mixed' && ((configured && isEnterpriseEdition) || hasAttackPatterns))
+      )
+      && platforms.length > 0
+      && architecture
+    );
+  };
 
   const handleClose = () => {
     setSimulationType('technical');
@@ -159,9 +180,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           variables: {
             id,
             interval,
-            selection,
-            simulationType,
-            useAI: useGenAI,
+            simulationConfig: {
+              selection,
+              simulationType,
+              platforms,
+              architecture,
+              useAI: useGenAI,
+            },
             filters,
           },
           onCompleted: (response) => {
@@ -181,9 +206,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           variables: {
             id,
             interval,
-            selection,
-            simulationType,
-            useAI: useGenAI,
+            simulationConfig: {
+              selection,
+              simulationType,
+              platforms,
+              architecture,
+              useAI: useGenAI,
+            },
             filters,
           },
           onCompleted: (response) => {
@@ -203,9 +232,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           variables: {
             id,
             interval,
-            selection,
-            simulationType,
-            useAI: useGenAI,
+            simulationConfig: {
+              selection,
+              simulationType,
+              platforms,
+              architecture,
+              useAI: useGenAI,
+            },
             filters,
           },
           onCompleted: (response) => {
@@ -348,45 +381,89 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const renderForm = () => {
     return (
       <>
-        <TextField
-          label={t_i18n('Interval between injections (in minute)')}
-          fullWidth={true}
-          type="number"
-          value={interval}
-          onChange={(event) => setInterval(Number.isNaN(parseInt(event.target.value, 10)) ? 1 : parseInt(event.target.value, 10))}
-          style={fieldSpacingContainerStyle}
-        />
-        <FormControl style={fieldSpacingContainerStyle}>
-          <InputLabel id="simulationType">{t_i18n('Number of injects by attack pattern')}</InputLabel>
-          <Select
-            labelId="selection"
-            value={selection}
-            onChange={(event) => setSelection(event.target.value)}
-            fullWidth={true}
+        {!hasAttackPatterns && (
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ position: 'relative' }}
           >
-            <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
-            <MenuItem value="random">{t_i18n('One (random)')}</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControlLabel
-          style={{ marginTop: 20 }}
-          label={t_i18n('Use AI')}
-          control={
-            <Switch disabled={!enabled || !configured || !isEnterpriseEdition} value={useGenAI} onChange={(event) => setUseGenAI(event.target.checked)} />
-          }
-        />
+            {t_i18n('No entity-type attack patterns were found.')}
+          </Alert>
+        )}
         <FormControl style={fieldSpacingContainerStyle}>
           <InputLabel id="simulationType">{t_i18n('Simulation type')}</InputLabel>
           <Select
             labelId="simulationType"
             value={simulationType}
             onChange={(event) => setSimulationType(event.target.value)}
-            fullWidth={true}
-            disabled={!useGenAI}
+            fullWidth
           >
-            <MenuItem value="technical">{t_i18n('Technical (payloads)')}</MenuItem>
-            <MenuItem value="simulated">{t_i18n('Simulated (emails)')}</MenuItem>
-            <MenuItem value="mixed" disabled={true}>{t_i18n('Mixed (both)')}</MenuItem>
+            <MenuItem value="technical" disabled={ !hasAttackPatterns}>{t_i18n('Technical (payloads)')}</MenuItem>
+            <MenuItem value="simulated" disabled={ !configured || !isEnterpriseEdition}>{t_i18n('Simulated emails (generated by AI)')}{!isEnterpriseEdition && <EEChip />}</MenuItem>
+            <MenuItem value="mixed" disabled>{t_i18n('Mixed (both)')}{!isEnterpriseEdition && <EEChip />}</MenuItem>
+          </Select>
+        </FormControl>
+        {(simulationType !== 'simulated') && (
+          <>
+            <FormControl style={fieldSpacingContainerStyle}>
+              <Autocomplete
+                id="simulationPlatforms"
+                multiple
+                options={platformOptions}
+                value={platformOptions.filter((platform) => platforms.includes(platform.value))}
+                onChange={(_event, newValue) => {
+                  const newSelectedValues = newValue.map((platform) => platform.value);
+                  setPlatforms(newSelectedValues);
+                }}
+                getOptionLabel={(option) => option.label}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={t_i18n('Targeted platforms')}
+                    variant="standard"
+                    required
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <li {...props}>
+                    <div className={classes.text}>{option.label ?? ''}</div>
+                  </li>
+                )}
+              />
+            </FormControl>
+            <FormControl style={fieldSpacingContainerStyle}>
+              <InputLabel id="simulationArchitecture">{t_i18n('Targeted architecture')}</InputLabel>
+              <Select
+                labelId="simulationArchitecture"
+                value={architecture}
+                onChange={(event) => setArchitecture(event.target.value)}
+                fullWidth
+                required
+              >
+                <MenuItem value="AMD64">{'x86_64'}</MenuItem>
+                <MenuItem value="ARM64" >{'arm64'}</MenuItem>
+              </Select>
+            </FormControl>
+            </>
+        )}
+        <TextField
+          label={t_i18n('Interval between injections (in minute)')}
+          fullWidth
+          type="number"
+          value={interval}
+          onChange={(event) => setInterval(Number.isNaN(parseInt(event.target.value, 10)) ? 1 : parseInt(event.target.value, 10))}
+          style={fieldSpacingContainerStyle}
+        />
+        <FormControl style={fieldSpacingContainerStyle}>
+          <InputLabel id="simulationNumberInjects">{t_i18n('Number of injects generated by attack pattern and platform')}</InputLabel>
+          <Select
+            labelId="selection"
+            value={selection}
+            onChange={(event) => setSelection(event.target.value)}
+            fullWidth
+          >
+            <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
+            <MenuItem value="random">{t_i18n('One (random)')}</MenuItem>
           </Select>
         </FormControl>
         <div className={classes.buttons}>
@@ -402,7 +479,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             variant="contained"
             color="secondary"
             onClick={handleGenerate}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isFormValid()}
             classes={{ root: classes.button }}
           >
             {t_i18n('Generate')}
