@@ -3629,7 +3629,7 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
 export const elReindexElements = async (context, user, ids, sourceIndex, destIndex, opts = {}) => {
   const { dbId, sourceUpdate = {} } = opts;
   const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('rel_has-reference'); ctx._source.remove('objectOrganization');";
-  const idReplaceScript = dbId ? `ctx._id="${dbId}";` : '';
+  const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
   const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
   const reindexParams = {
@@ -3646,7 +3646,7 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
         index: destIndex
       },
       script: { // remove old fields that are not mapped anymore but can be present in DB
-        params: { changes: sourceUpdate },
+        params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
         source,
       },
     },
