@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import ManagementMenu from '@components/data/ManagementMenu';
 import { ManagementDefinitionsLinesPaginationQuery } from '@components/data/__generated__/ManagementDefinitionsLinesPaginationQuery.graphql';
 import { ManagementDefinitionsLines_data$data } from '@components/data/__generated__/ManagementDefinitionsLines_data.graphql';
+import Alert from '@mui/material/Alert';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -10,6 +11,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { INDICATOR_DECAY_MANAGER } from '../../../utils/platformModulesHelper';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -134,31 +136,44 @@ const Management = () => {
   } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
   return (
     <div data-testid='data-management-page'>
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Management') }, { label: t_i18n('Restricted entities'), current: true }]}/>
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Management') }, {
+        label: t_i18n('Restricted entities'),
+        current: true,
+      }]}
+      />
+      <div style={{ width: '100%', marginTop: 10, marginBottom: 16, display: 'flex' }}>
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ padding: '0px 10px 0px 10px' }}
+        >
+          {t_i18n('This list display all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+        </Alert>
+      </div>
       {isNewManagementScreensEnables && (
-      <ManagementMenu />
+        <ManagementMenu/>
       )}
       {queryRef && (
-      <DataTable
-        dataColumns={{
-          entity_type: {
-            percentWidth: 33,
-          },
-          name: {
-            percentWidth: 33,
-          },
-          objectMarking: {
-            percentWidth: 33,
-          },
-        }}
-        resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        lineFragment={managementDefinitionLineFragment}
-        preloadedPaginationProps={preloadedPaginationProps}
-        // entityTypes={['Stix-Core-Object']}
-        // searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
-      />
+        <DataTable
+          dataColumns={{
+            entity_type: {
+              percentWidth: 33,
+            },
+            name: {
+              percentWidth: 33,
+            },
+            objectMarking: {
+              percentWidth: 33,
+            },
+          }}
+          resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          lineFragment={managementDefinitionLineFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          // entityTypes={['Stix-Core-Object']}
+          // searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
+        />
       )}
     </div>
   );

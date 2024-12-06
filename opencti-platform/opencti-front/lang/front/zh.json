@@ -2736,6 +2736,7 @@
   "This individual is now a user": "此个体现在是用户",
   "This individual is part of": "此个体是其一部分",
   "This item is built-in": "该项目是内置的",
+  "This list display all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "该列表显示所有已启用访问限制的实体，这意味着只有某些特定用户才能访问它们。您可以在此界面取消访问限制。",
   "This malware has been used": "该恶意软件已经被使用",
   "This operation cannot be undone.": "此操作不可撤销。",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。",
