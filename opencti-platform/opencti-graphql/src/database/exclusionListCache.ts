@@ -1,6 +1,6 @@
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../schema/stixCyberObservable';
-import { checkExclusionList, checkIpAddressLists, convertIpAddr } from '../utils/exclusionLists';
+import { checkExclusionList, checkIpAddressLists, checkIpAddrType, convertIpAddr, reverseString } from '../utils/exclusionLists';
 import type { AuthContext } from '../types/user';
 import { listAllEntities } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
@@ -19,12 +19,8 @@ let exclusionListCache: ExclusionListCacheItem[] | null = null;
 
 export const getIsCacheInitialized = (): boolean => exclusionListCache !== null;
 
-export const getCache = (entityType: string = ''): ExclusionListCacheItem[] | null => {
+const getCache = (entityType: string = ''): ExclusionListCacheItem[] | null => {
   return entityType && exclusionListCache ? exclusionListCache.filter((e) => e.types.includes(entityType)) : exclusionListCache;
-};
-
-const setCache = (newCache: ExclusionListCacheItem[]): void => {
-  exclusionListCache = [...newCache];
 };
 
 const isIPExclusionList = (exclusionList: BasicStoreEntityExclusionList) => {
@@ -32,12 +28,38 @@ const isIPExclusionList = (exclusionList: BasicStoreEntityExclusionList) => {
   return exclusionList.exclusion_list_entity_types.some((t) => ENTITY_IPV4_ADDR === t || ENTITY_IPV6_ADDR === t);
 };
 
-const buildExclusionListCacheItem = (exclusionList: BasicStoreEntityExclusionList, exclusionListFileContent: string | undefined) => {
-  let exclusionListFileValues = exclusionListFileContent?.split('\n');
-  if (exclusionListFileValues && isIPExclusionList(exclusionList)) {
-    exclusionListFileValues = convertIpAddr(exclusionListFileValues);
+const buildIPExclusionListCacheItem = (exclusionList: BasicStoreEntityExclusionList, exclusionListFileValues: string[]) => {
+  const ipv4Values = exclusionListFileValues.filter((i) => checkIpAddrType(i).isIpv4);
+  const ipv4ConvertedValues = convertIpAddr(ipv4Values).sort();
+  const ipv4List = { id: exclusionList.id, types: [ENTITY_IPV4_ADDR], values: ipv4ConvertedValues };
+
+  const ipv6Values = exclusionListFileValues.filter((i) => checkIpAddrType(i).isIpv6);
+  const ipv6ConvertedValues = convertIpAddr(ipv4Values).sort();
+  const ipv6List = { id: exclusionList.id, types: [ENTITY_IPV6_ADDR], values: ipv6ConvertedValues };
+
+  const ipLists = [];
+
+  if (ipv4Values.length > 0) {
+    ipLists.push(ipv4List);
   }
-  return { id: exclusionList.id, types: exclusionList.exclusion_list_entity_types, values: exclusionListFileValues ?? [] };
+  if (ipv6Values.length > 0) {
+    ipLists.push(ipv6List);
+  }
+  return ipLists;
+};
+
+const buildExclusionListCacheItem = (exclusionList: BasicStoreEntityExclusionList, exclusionListFileContent: string | undefined) => {
+  const exclusionListFileValues = exclusionListFileContent?.split(/\r\n|\n/).map((l) => l.trim()).filter((l) => l);
+  if (!exclusionListFileValues) {
+    return [];
+  }
+
+  if (isIPExclusionList(exclusionList)) {
+    return buildIPExclusionListCacheItem(exclusionList, exclusionListFileValues);
+  }
+
+  const sortedValues = exclusionListFileValues.map((v) => reverseString(v)).sort();
+  return [{ id: exclusionList.id, types: exclusionList.exclusion_list_entity_types, values: sortedValues }];
 };
 
 export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
@@ -50,7 +72,7 @@ export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
     try {
       const currentExclusionFileContent = await getFileContent(currentExclusionList.file_id);
       const currentExclusionListCacheItem = buildExclusionListCacheItem(currentExclusionList, currentExclusionFileContent);
-      builtCache.push(currentExclusionListCacheItem);
+      builtCache.push(...currentExclusionListCacheItem);
     } catch (e) {
       logApp.error('[OPENCTI-MODULE][EXCLUSION-BUILD-MANAGER] Exclusion list could not be built properly.', { cause: e, exclusionList: currentExclusionList });
     }
@@ -60,31 +82,30 @@ export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
 
 // cache is always initialized as an empty array if there is no redis data: we might want to change it to rebuild cache locally as a failsafe is there is no redis data
 export const initExclusionListCache = async () => {
-  const currentCache = await redisGetExclusionListCache();
-  setCache(currentCache);
+  exclusionListCache = await redisGetExclusionListCache();
 };
 
 export const rebuildExclusionListCache = async (context: AuthContext, cacheDate: string) => {
-  const newCache = await buildCacheFromAllExclusionLists(context);
-  setCache(newCache);
-  await redisSetExclusionListCache(newCache);
+  exclusionListCache = await buildCacheFromAllExclusionLists(context);
+  await redisSetExclusionListCache(exclusionListCache);
   const exclusionListStatus = { last_cache_date: cacheDate, [PLATFORM_INSTANCE_ID]: cacheDate };
   await redisUpdateExclusionListStatus(exclusionListStatus);
 };
 
 export const syncExclusionListCache = async (cacheDate: string) => {
-  const currentCache = await redisGetExclusionListCache();
-  setCache(currentCache);
+  exclusionListCache = await redisGetExclusionListCache();
   await redisUpdateExclusionListStatus({ [PLATFORM_INSTANCE_ID]: cacheDate });
 };
 
 export const checkObservableValue = async (observableValue: any) => {
   const { type, value } = observableValue;
+  if (!type || !value) {
+    return null;
+  }
   const relatedLists = getCache(type);
   if (!relatedLists) {
     throw FunctionalError('Failed to load exclusion list cache.', { relatedLists, type });
   }
   const isIpType = type === ENTITY_IPV4_ADDR || type === ENTITY_IPV6_ADDR;
-  const listCheck = await (isIpType ? checkIpAddressLists(value, relatedLists) : checkExclusionList(value, relatedLists));
-  return listCheck;
+  return (isIpType ? checkIpAddressLists(value, relatedLists) : checkExclusionList(value, relatedLists));
 };

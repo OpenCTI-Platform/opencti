@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { checkExclusionList, checkIpAddressLists, checkIpAddrType, convertIpAddr, convertIpv4ToBinary, convertIpv6ToBinary } from '../../../src/utils/exclusionLists';
+import {
+  checkExclusionList,
+  checkIpAddressLists,
+  checkIpAddrType,
+  convertIpAddr,
+  convertIpv4ToBinary,
+  convertIpv6ToBinary,
+  reverseString
+} from '../../../src/utils/exclusionLists';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL } from '../../../src/schema/stixCyberObservable';
 
 const ipv4ListToTest = [
@@ -79,25 +87,17 @@ const domainNameList = [
 const ipv4ExclusionList = [{
   id: 'ipv4ListResult',
   types: [ENTITY_IPV4_ADDR],
-  values: ipv4ListResult
-}, {
-  id: 'ipListResult',
-  types: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR],
-  values: ipListResult
+  values: ipv4ListResult.sort()
 }];
 const ipv6ExclusionList = [{
   id: 'ipv6ListResult',
   types: [ENTITY_IPV6_ADDR],
-  values: ipv6ListResult
-}, {
-  id: 'ipListResult',
-  types: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR],
-  values: ipListResult
+  values: ipv6ListResult.sort()
 }];
 const domainExclusionList = [{
   id: 'domainExclusionList',
   types: [ENTITY_DOMAIN_NAME, ENTITY_URL],
-  values: domainNameList
+  values: domainNameList.map((v) => reverseString(v)).sort()
 }];
 
 describe('Exclusion Lists', () => {
@@ -164,21 +164,21 @@ describe('Exclusion Lists', () => {
     describe('When I have a list of Ipv4', () => {
       it('should return a converted array of binary', () => {
         const result = convertIpAddr(ipv4ListToTest);
-        expect(JSON.stringify(result)).toBe(JSON.stringify(ipv4ListResult));
+        expect(result.sort().join('')).toBe(ipv4ListResult.sort().join(''));
       });
     });
 
     describe('When I have a list of Ipv6', () => {
       it('should return a converted array of binary', () => {
         const result = convertIpAddr(ipv6ListToTest);
-        expect(JSON.stringify(result)).toBe(JSON.stringify(ipv6ListResult));
+        expect(result.sort().join('')).toBe(ipv6ListResult.sort().join(''));
       });
     });
 
     describe('When I have a list of Ipv4 and IPV6', () => {
       it('should return a converted array of binary', () => {
         const result = convertIpAddr(ipListToTest);
-        expect(JSON.stringify(result)).toBe(JSON.stringify(ipListResult));
+        expect(result.sort().join('')).toBe(ipListResult.sort().join(''));
       });
     });
   });
@@ -187,7 +187,7 @@ describe('Exclusion Lists', () => {
     describe('When I check if an IPV4 is contained on lists', () => {
       describe('99.99.99.193', () => {
         it('should throw an error', async () => {
-          const result = await checkIpAddressLists('99.99.99.193', ipv4ExclusionList);
+          const result = checkIpAddressLists('99.99.99.193', ipv4ExclusionList);
           expect(result).not.toBe(null);
           expect(result?.value).toBe('99.99.99.193');
           expect(result?.listId).toBe('ipv4ListResult');
@@ -196,7 +196,7 @@ describe('Exclusion Lists', () => {
 
       describe('99.87.23.11', () => {
         it('should throw an error', async () => {
-          const result = await checkIpAddressLists('99.87.23.11', ipv4ExclusionList);
+          const result = checkIpAddressLists('99.87.23.11', ipv4ExclusionList);
           expect(result).not.toBe(null);
           expect(result?.value).toBe('99.87.23.11');
           expect(result?.listId).toBe('ipv4ListResult');
@@ -205,7 +205,7 @@ describe('Exclusion Lists', () => {
 
       describe('22.22.22.22', () => {
         it('should do nothing', async () => {
-          const result = await checkIpAddressLists('22.22.22.22', ipv4ExclusionList);
+          const result = checkIpAddressLists('22.22.22.22', ipv4ExclusionList);
           expect(result).toBe(null);
         });
       });
@@ -214,25 +214,16 @@ describe('Exclusion Lists', () => {
     describe('When I check if an IPV6 is contained on lists', () => {
       describe('2a12:e342:200::2:1819', () => {
         it('should throw an error', async () => {
-          const result = await checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList);
+          const result = checkIpAddressLists('2a12:e342:200::2:1819', ipv6ExclusionList);
           expect(result).not.toBe(null);
           expect(result?.value).toBe('2a12:e342:200::2:1819');
           expect(result?.listId).toBe('ipv6ListResult');
         });
       });
 
-      describe('2001:1424:0:1234::', () => {
-        it('should throw an error', async () => {
-          const result = await checkIpAddressLists('2001:1424:0:1234::', ipv6ExclusionList);
-          expect(result).not.toBe(null);
-          expect(result?.value).toBe('2001:1424:0:1234::');
-          expect(result?.listId).toBe('ipListResult');
-        });
-      });
-
       describe('2602:fba1:a00::100:19', () => {
         it('should do nothing', async () => {
-          const result = await checkExclusionList('2602:fba1:a00::100:19', ipv6ExclusionList);
+          const result = checkExclusionList('2602:fba1:a00::100:19', ipv6ExclusionList);
           expect(result).toBe(null);
         });
       });
@@ -243,7 +234,7 @@ describe('Exclusion Lists', () => {
     describe('When I check if a domain name is contained on lists', () => {
       describe('ns4.epidc.co.kr', () => {
         it('should throw an error', async () => {
-          const result = await checkExclusionList('ns4.epidc.co.kr', domainExclusionList);
+          const result = checkExclusionList('ns4.epidc.co.kr', domainExclusionList);
           expect(result).not.toBe(null);
           expect(result?.value).toBe('ns4.epidc.co.kr');
           expect(result?.listId).toBe('domainExclusionList');
@@ -252,7 +243,7 @@ describe('Exclusion Lists', () => {
 
       describe('www.test.ambfinancial.com', () => {
         it('should throw an error', async () => {
-          const result = await checkExclusionList('www.test.ambfinancial.com', domainExclusionList);
+          const result = checkExclusionList('www.test.ambfinancial.com', domainExclusionList);
           expect(result).not.toBe(null);
           expect(result?.value).toBe('www.test.ambfinancial.com');
           expect(result?.listId).toBe('domainExclusionList');
@@ -261,7 +252,7 @@ describe('Exclusion Lists', () => {
 
       describe('test.domain.name.fr', () => {
         it('should do nothing', async () => {
-          const result = await checkExclusionList('test.domain.name.fr', domainExclusionList);
+          const result = checkExclusionList('test.domain.name.fr', domainExclusionList);
           expect(result).toBe(null);
         });
       });
