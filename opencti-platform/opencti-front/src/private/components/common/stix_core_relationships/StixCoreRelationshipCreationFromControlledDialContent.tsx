@@ -28,6 +28,7 @@ import {
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import { ChevronRightOutlined } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
+import { useLocation } from 'react-router-dom';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
@@ -216,7 +217,9 @@ const RenderForm = ({
     paginationOptions,
   } } = useContext(CreateRelationshipContext);
   const { schema } = useContext(UserContext);
+  const location = useLocation();
   const [reversed, setReversed] = useState<boolean>(initiallyReversed ?? false);
+  const isRelatedTo = location.pathname.includes('/knowledge/related');
 
   let fromEntities = [sourceEntity];
   let toEntities = targetEntities;
@@ -224,19 +227,12 @@ const RenderForm = ({
     fromEntities = targetEntities;
     toEntities = [sourceEntity];
   }
+  let isReversable = false;
   let resolvedRelationshipTypes = resolveRelationsTypes(
     fromEntities[0].entity_type,
     toEntities[0].entity_type,
     schema?.schemaRelationsTypesMapping ?? new Map(),
   );
-
-  // Check if the inverse relation has any unique relationship types
-  // If not, this creation form is not reversable
-  let isReversable = resolveRelationsTypes(
-    toEntities[0].entity_type,
-    fromEntities[0].entity_type,
-    schema?.schemaRelationsTypesMapping ?? new Map(),
-  ).filter((relType) => relType !== 'related-to').length > 0;
 
   const handleReverse = () => {
     setReversed(!reversed);
@@ -250,11 +246,29 @@ const RenderForm = ({
     );
   };
 
-  // If the initially resolved relationship types doesn't contain anything
-  // beyond 'related-to', we should invert the relation
-  if (resolvedRelationshipTypes.filter((relType) => relType !== 'related-to').length < 1) {
-    handleReverse();
-    isReversable = false;
+  if (!isRelatedTo) {
+    resolvedRelationshipTypes = resolvedRelationshipTypes.filter(
+      (relType) => relType !== 'related-to',
+    );
+
+    // Check if the inverse relation has any unique relationship types
+    // If not, this creation form is not reversable
+    isReversable = resolveRelationsTypes(
+      toEntities[0].entity_type,
+      fromEntities[0].entity_type,
+      schema?.schemaRelationsTypesMapping ?? new Map(),
+    ).filter((relType) => relType !== 'related-to').length > 0;
+
+    // If the initially resolved relationship types doesn't contain anything
+    // beyond 'related-to', we should invert the relation
+    if (resolvedRelationshipTypes.filter((relType) => relType !== 'related-to').length < 1) {
+      handleReverse();
+      isReversable = false;
+    }
+  } else {
+    resolvedRelationshipTypes = resolvedRelationshipTypes.filter(
+      (relType) => relType === 'related-to',
+    );
   }
 
   const relationshipTypes = resolvedRelationshipTypes;
