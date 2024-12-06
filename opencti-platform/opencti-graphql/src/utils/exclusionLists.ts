@@ -1,4 +1,3 @@
-import { MAX_EVENT_LOOP_PROCESSING_TIME } from '../database/utils';
 import { type ExclusionListCacheItem } from '../database/exclusionListCache';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
@@ -56,48 +55,66 @@ export const convertIpAddr = (list: string[]) => {
   });
 };
 
-export const checkIpAddressLists = async (ipToTest: string, exclusionList: ExclusionListCacheItem[]) => {
+// search valueToCheck in an ordered exclusionListValues. Time complexity O(log(n))
+const binarySearchList = (exclusionListValues: string[], valueToCheck: string, isIpValue: boolean) => {
+  let start = 0;
+  let end = exclusionListValues.length - 1;
+
+  // Iterate while start not meets end
+  while (start <= end) {
+    // Find the mid index
+    const mid = Math.floor((start + end) / 2);
+    const midValue = exclusionListValues[mid];
+
+    // If element is present at mid, return True
+    const isStartWithCheck = isIpValue || midValue.endsWith('.');
+    if ((isStartWithCheck && valueToCheck.startsWith(midValue)) || valueToCheck === midValue) {
+      return true;
+    }
+
+    // Else look in left or right half accordingly
+    if (midValue < valueToCheck) {
+      start = mid + 1;
+    } else {
+      end = mid - 1;
+    }
+  }
+
+  return false;
+};
+
+export const checkIpAddressLists = (ipToTest: string, exclusionList: ExclusionListCacheItem[]) => {
   const { isIpv4 } = checkIpAddrType(ipToTest);
   const binary = isIpv4 ? convertIpv4ToBinary(ipToTest) : convertIpv6ToBinary(ipToTest);
 
-  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < exclusionList.length; i += 1) {
     const { id, values } = exclusionList[i];
 
-    for (let j = 0; j < values.length; j += 1) {
-      if (binary.startsWith(values[j])) {
-        return { value: ipToTest, listId: id };
-      }
-
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
+    const isBinaryInList = binarySearchList(values, binary, true);
+    if (isBinaryInList) {
+      return { value: ipToTest, listId: id };
     }
   }
   return null;
 };
 
-export const checkExclusionList = async (valueToTest: string, exclusionList: ExclusionListCacheItem[]) => {
-  let startProcessingTime = new Date().getTime();
+export const reverseString = (originalSring: string) => {
+  let x = '';
 
+  for (let i = originalSring.length - 1; i >= 0; i -= 1) {
+    x += originalSring[i];
+  }
+
+  return x;
+};
+export const checkExclusionList = (valueToTest: string, exclusionList: ExclusionListCacheItem[]) => {
+  const valueToTestReverse = reverseString(valueToTest);
   for (let i = 0; i < exclusionList.length; i += 1) {
     const { id, values } = exclusionList[i];
 
-    for (let j = 0; j < values.length; j += 1) {
-      const isWildCard = values[j].startsWith('.');
-      if ((isWildCard && valueToTest.endsWith(values[j])) || valueToTest === values[j]) {
-        return { value: valueToTest, listId: id };
-      }
-
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
+    const isValueInList = binarySearchList(values, valueToTestReverse, false);
+    if (isValueInList) {
+      return { value: valueToTest, listId: id };
     }
   }
   return null;
