@@ -24,7 +24,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
-import { htmlToPdf } from '../../../../utils/htmlToPdf';
+import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 

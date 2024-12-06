@@ -54,12 +54,12 @@ const executiveSummaryContent = (containerType: string) => {
         </tbody>
       </table>
       
+      <h3>2. Executive Summary</h3>
+      <div>$containerDescription</div>
+      
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-      
-      <h3>2. Executive Summary</h3>
-      <div>$containerDescription</div>
       
       <h3>3. Key points</h3>
       <blockquote>
