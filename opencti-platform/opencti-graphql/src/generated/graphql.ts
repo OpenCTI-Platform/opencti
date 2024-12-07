@@ -23495,7 +23495,6 @@ export type SimulationConfig = {
   platforms?: InputMaybe<Array<InputMaybe<Platform>>>;
   selection?: InputMaybe<Selection>;
   simulationType?: InputMaybe<SimulationType>;
-  useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export enum SimulationType {
