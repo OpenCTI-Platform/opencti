@@ -14,7 +14,7 @@ import {
 } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import conf from '../../config/conf';
-import { createInjectInScenario, createScenario, getAttackPatterns, getInjectorContracts, getKillChainPhases, getScenarioResult } from '../../database/xtm-obas';
+import { createInjectInScenario, createScenario, getAttackPatterns, getKillChainPhases, getScenarioResult, searchInjectorContracts } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../utils/ee';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
@@ -97,13 +97,13 @@ export const generateOpenBasScenario = async (
   attackPatterns,
   labels,
   author,
-  simulationType,
-  simulationPlatforms,
-  simulationArchitecture,
-  interval,
-  selection,
-  useAI
+  simulationConfig
 ) => {
+  const { interval, selection, simulationType = 'technical', platforms = ['Windows'], architecture = 'AMD64', useAI = false } = simulationConfig;
+
+  if (useAI || simulationType !== 'technical') {
+    await checkEnterpriseEdition(context);
+  }
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
@@ -340,7 +340,7 @@ export const generateOpenBasScenario = async (
       );
       dependsOnDuration += (interval * 60);
     } else {
-      const obasInjectorContracts = await getInjectorContracts(obasAttackPattern.attack_pattern_id);
+      const obasInjectorContracts = await searchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
       let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
       if (selection === 'random') {
         finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
@@ -371,36 +371,30 @@ export const generateOpenBasScenario = async (
 
 export const generateContainerScenario = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
-  const { id, interval, selection, simulationType = 'technical', simulationPlatforms = ['Windows'], simulationArchitecture = 'AMD64', useAI = false } = args;
-  if (useAI || simulationType !== 'technical') {
-    await checkEnterpriseEdition(context);
-  }
+  const { id, simulationConfig } = args;
+
   const container = await storeLoadById(context, user, id, ENTITY_TYPE_CONTAINER);
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI);
+  return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
 
 export const generateThreatScenario = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
-  const { id, interval, selection, simulationType = 'technical', simulationPlatforms = ['Windows'], simulationArchitecture = 'AMD64', useAI = false } = args;
-  if (useAI || simulationType !== 'technical') {
-    await checkEnterpriseEdition(context);
-  }
+  const { id, simulationConfig } = args;
+
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI);
+  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
 
 export const generateVictimScenario = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
-  const { id, interval, selection, simulationType = 'technical', simulationPlatforms = ['Windows'], simulationArchitecture = 'AMD64', useAI = false } = args;
-  if (useAI || simulationType !== 'technical') {
-    await checkEnterpriseEdition(context);
-  }
+  const { id, simulationConfig } = args;
+
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
@@ -419,5 +413,5 @@ export const generateVictimScenario = async (context, user, args) => {
   );
   const threatsIds = threats.map((n) => n.id);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, simulationPlatforms, simulationArchitecture, interval, selection, useAI);
+  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };

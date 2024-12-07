@@ -27,8 +27,9 @@ enum Architecture {
 }
 
 input SimulationConfig {
+    interval: Int,
     selection: Selection
-    type: SimulationType
+    simulationType: SimulationType
     platforms: [Platform]
     architecture: Architecture
     useAI: Boolean
@@ -52,7 +53,7 @@ type Query {
 }
 
 type Mutation {
-    obasContainerGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasThreatGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasVictimGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasContainerGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasThreatGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasVictimGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
 }

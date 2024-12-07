@@ -96,20 +96,20 @@ const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = g
 `;
 
 const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasContainerGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasContainerGenerateScenario(id: $id, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasThreatGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasThreatGenerateScenario(id: $id, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
 const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasVictimGenerateScenario(id: $id, interval: $interval, simulationConfig: $simulationConfig, filters: $filters)
+  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasVictimGenerateScenario(id: $id, simulationConfig: $simulationConfig, filters: $filters)
   }
 `;
 
@@ -139,7 +139,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const hasAttackPatterns = false;
+  const hasAttackPatterns = true;
 
   const isFormValid = () => {
     return (
@@ -179,8 +179,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         commitMutationGenerateContainer({
           variables: {
             id,
-            interval,
             simulationConfig: {
+              interval,
               selection,
               simulationType,
               platforms,
@@ -205,8 +205,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         commitMutationGenerateThreat({
           variables: {
             id,
-            interval,
             simulationConfig: {
+              interval,
               selection,
               simulationType,
               platforms,
@@ -231,8 +231,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         commitMutationGenerateVictim({
           variables: {
             id,
-            interval,
             simulationConfig: {
+              interval,
               selection,
               simulationType,
               platforms,

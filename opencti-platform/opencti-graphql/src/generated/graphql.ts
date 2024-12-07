@@ -14855,7 +14855,6 @@ export type MutationNotifierFieldPatchArgs = {
 export type MutationObasContainerGenerateScenarioArgs = {
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
-  interval?: InputMaybe<Scalars['Int']['input']>;
   simulationConfig?: InputMaybe<SimulationConfig>;
 };
 
@@ -14863,7 +14862,6 @@ export type MutationObasContainerGenerateScenarioArgs = {
 export type MutationObasThreatGenerateScenarioArgs = {
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
-  interval?: InputMaybe<Scalars['Int']['input']>;
   simulationConfig?: InputMaybe<SimulationConfig>;
 };
 
@@ -14871,7 +14869,6 @@ export type MutationObasThreatGenerateScenarioArgs = {
 export type MutationObasVictimGenerateScenarioArgs = {
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
-  interval?: InputMaybe<Scalars['Int']['input']>;
   simulationConfig?: InputMaybe<SimulationConfig>;
 };
 
@@ -23494,9 +23491,10 @@ export type SettingsMessageInput = {
 
 export type SimulationConfig = {
   architecture?: InputMaybe<Architecture>;
+  interval?: InputMaybe<Scalars['Int']['input']>;
   platforms?: InputMaybe<Array<InputMaybe<Platform>>>;
   selection?: InputMaybe<Selection>;
-  type?: InputMaybe<SimulationType>;
+  simulationType?: InputMaybe<SimulationType>;
   useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
