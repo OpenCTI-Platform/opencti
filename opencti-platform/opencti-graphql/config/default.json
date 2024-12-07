@@ -160,8 +160,8 @@
     "model_images": ""
   },
   "xtm": {
-    "openbas_url": "http://localhost:8080",
-    "openbas_token": "a2d56691-ab8b-4a99-816e-bec51d14056d",
+    "openbas_url": "",
+    "openbas_token": "",
     "openbas_reject_unauthorized": false,
     "openbas_disable_display": false,
     "openerm_url": "",

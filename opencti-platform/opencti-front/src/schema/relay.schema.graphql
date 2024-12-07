@@ -8949,9 +8949,9 @@ type Mutation {
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
-  obasContainerGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String
-  obasThreatGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String
-  obasVictimGenerateScenario(id: ID!, interval: Int, simulationConfig: SimulationConfig, filters: FilterGroup): String
+  obasContainerGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): String
+  obasThreatGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): String
+  obasVictimGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): String
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
@@ -12222,8 +12222,9 @@ enum Architecture {
 }
 
 input SimulationConfig {
+  interval: Int
   selection: Selection
-  type: SimulationType
+  simulationType: SimulationType
   platforms: [Platform]
   architecture: Architecture
   useAI: Boolean

@@ -56,6 +56,51 @@ export const getInjectorContracts = async (attackPatternId: string) => {
   }
 };
 
+export const searchInjectorContracts = async (attackPatternId: string, platforms: string[], architecture: string) => {
+  const httpClient = buildXTmOpenBasHttpClient();
+  try {
+    const importFilter: any = {
+      mode: 'and',
+      filters: [
+        {
+          key: 'injector_contract_attack_patterns',
+          operator: 'contains',
+          values: [attackPatternId],
+        }
+      ],
+    };
+    const platformFilter = {
+      key: 'injector_contract_platforms',
+      mode: 'and',
+      operator: 'contains',
+      values: platforms,
+    };
+    const architectureFilter = {
+      key: 'injector_contract_arch',
+      mode: 'and',
+      operator: 'eq',
+      values: [architecture],
+    };
+    const searchPaginationInput = {
+      filterGroup: {
+        filters: [
+          ...importFilter.filters,
+          architectureFilter,
+          platformFilter,
+        ],
+        mode: 'and',
+      },
+      page: 0,
+      size: 100,
+    };
+
+    const { data: injectorContracts } = await httpClient.post('/injector_contracts/search', searchPaginationInput);
+    return injectorContracts.content;
+  } catch (err) {
+    throw DatabaseError('Error querying OpenBAS', { cause: err });
+  }
+};
+
 export const createScenario = async (name: string, subtitle: string, description: string, tags: Label[], id: string, type: string, category: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
