@@ -12,7 +12,6 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_THREAT_ACTOR_GROUP
 } from '../../schema/stixDomainObject';
-import { UnsupportedError } from '../../config/errors';
 import conf from '../../config/conf';
 import { createInjectInScenario, createScenario, getAttackPatterns, getKillChainPhases, getScenarioResult, searchInjectorContracts } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
@@ -99,11 +98,12 @@ export const generateOpenBasScenario = async (
   author,
   simulationConfig
 ) => {
-  const { interval, selection, simulationType = 'technical', platforms = ['Windows'], architecture = 'AMD64', useAI = false } = simulationConfig;
+  const { interval, selection, simulationType = 'technical', platforms = ['Windows'], architecture = 'AMD64' } = simulationConfig;
 
-  if (useAI || simulationType !== 'technical') {
+  if (simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
   }
+
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
@@ -129,10 +129,7 @@ export const generateOpenBasScenario = async (
   const indexedSortedObasKillChainPhase = R.indexBy(R.prop('phase_id'), sortedObasKillChainPhases);
 
   let dependsOnDuration = 0;
-  if (attackPatterns.length === 0) {
-    if (!useAI) {
-      throw UnsupportedError('No attack pattern associated to this entity. Please use AI to generate the scenario. This feature will be enhanced in the future to cover more types of entities.');
-    }
+  if (simulationType !== 'technical' && attackPatterns.length === 0) {
     // eslint-disable-next-line no-restricted-syntax
     for (const obasKillChainPhase of sortedObasKillChainPhases) {
       const killChainPhaseName = obasKillChainPhase.phase_name;
