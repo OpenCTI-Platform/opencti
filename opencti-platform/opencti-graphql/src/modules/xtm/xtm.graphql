@@ -32,7 +32,6 @@ input SimulationConfig {
     simulationType: SimulationType
     platforms: [Platform]
     architecture: Architecture
-    useAI: Boolean
 }
 
 type SimulationsResult {
