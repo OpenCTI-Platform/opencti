@@ -14,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import useAuth from './useAuth';
-import { isNotEmptyField } from '../utils';
 
 const useEnterpriseEdition = (): boolean => {
   const { settings } = useAuth();
-  return isNotEmptyField(settings.enterprise_edition);
+  return settings.platform_enterprise_edition.license_validated;
 };
 
 export default useEnterpriseEdition;

@@ -16,7 +16,7 @@ import { UnsupportedError } from '../../config/errors';
 import conf from '../../config/conf';
 import { createInjectInScenario, createScenario, getAttackPatterns, getInjectorContracts, getKillChainPhases, getScenarioResult } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
-import { checkEnterpriseEdition } from '../../utils/ee';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import { elSearchFiles } from '../../database/file-search';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';

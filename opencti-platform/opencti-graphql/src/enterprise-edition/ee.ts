@@ -1,7 +1,7 @@
 import type { AuthContext } from '../types/user';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
-import { SYSTEM_USER } from './access';
+import { SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isNotEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';

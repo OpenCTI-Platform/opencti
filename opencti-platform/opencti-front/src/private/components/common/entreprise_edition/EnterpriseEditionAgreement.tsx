@@ -8,9 +8,10 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
+import TextField from '@mui/material/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { now } from '../../../../utils/Time';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const EnterpriseEditionAgreementMutationFieldPatch = graphql`
   mutation EnterpriseEditionAgreementMutation($id: ID!, $input: [EditInput]!) {
@@ -34,6 +35,7 @@ EnterpriseEditionAgreementProps
 > = ({ open, onClose, settingsId }) => {
   const { t_i18n } = useFormatter();
   const [enterpriseEditionConsent, setEnterpriseEditionConsent] = useState(false);
+  const [enterpriseLicense, setEnterpriseLicense] = useState('');
   const [commitMutation] = useApiMutation(
     EnterpriseEditionAgreementMutationFieldPatch,
   );
@@ -41,10 +43,10 @@ EnterpriseEditionAgreementProps
     commitMutation({
       variables: {
         id: settingsId,
-        input: {
-          key: 'enterprise_edition',
-          value: now(),
-        },
+        input: [{
+          key: 'enterprise_license',
+          value: enterpriseLicense,
+        }],
       },
     });
     onClose();
@@ -88,6 +90,14 @@ EnterpriseEditionAgreementProps
           </li>
         </ul>
         <FormGroup>
+          <TextField
+            onChange={(event) => setEnterpriseLicense(event.target.value)}
+            multiline={true}
+            fullWidth={true}
+            minRows={20}
+            placeholder={t_i18n('Please paste your Filigran license or anything to activate testing')}
+            variant="outlined"
+          />
           <FormControlLabel
             control={
               <Checkbox
@@ -116,7 +126,7 @@ EnterpriseEditionAgreementProps
         <Button
           color="secondary"
           onClick={enableEnterpriseEdition}
-          disabled={!enterpriseEditionConsent}
+          disabled={!(enterpriseEditionConsent && isNotEmptyField((enterpriseLicense)))}
         >
           {t_i18n('Enable')}
         </Button>
