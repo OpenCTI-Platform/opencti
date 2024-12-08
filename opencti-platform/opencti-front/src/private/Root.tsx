@@ -63,7 +63,15 @@ const rootSettingsFragment = graphql`
       running
       warning
     }
-    enterprise_edition
+    platform_enterprise_edition {
+      license_validated
+      license_expired
+      license_expiration_date
+      license_customer
+      license_enterprise
+      license_platform
+      license_platform_match
+    }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
     ...PasswordPolicies

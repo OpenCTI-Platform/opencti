@@ -121,7 +121,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
-  const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+  const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
 
   const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {

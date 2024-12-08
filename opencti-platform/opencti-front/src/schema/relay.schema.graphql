@@ -1303,6 +1303,16 @@ type SettingsMessage {
   recipients: [Member!]
 }
 
+type PlatformEE {
+  license_enterprise: Boolean!
+  license_customer: String!
+  license_validated: Boolean!
+  license_expired: Boolean!
+  license_expiration_date: DateTime!
+  license_platform: String!
+  license_platform_match: Boolean!
+}
+
 enum PlatformCriticalAlertType {
   GROUP_WITH_NULL_CONFIDENCE_LEVEL
 }
@@ -1338,6 +1348,7 @@ type Settings implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
   platform_title: String
   platform_favicon: String
@@ -1393,7 +1404,6 @@ type Settings implements InternalObject & BasicObject {
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   created_at: DateTime!
   updated_at: DateTime!
-  enterprise_edition: DateTime
   activity_listeners: [Member!]
   otp_mandatory: Boolean
   password_policy_min_length: Int

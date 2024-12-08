@@ -11,7 +11,9 @@ import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graph
 export const rootPublicQuery = graphql`
   query LoginRootPublicQuery {
     settings {
-      enterprise_edition
+      platform_enterprise_edition {
+        license_validated
+      }
       platform_theme
       platform_login_message
       platform_consent_message
