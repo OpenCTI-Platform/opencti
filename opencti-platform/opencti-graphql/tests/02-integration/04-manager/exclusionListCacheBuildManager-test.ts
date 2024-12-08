@@ -4,7 +4,7 @@ import { testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
 import { buildCacheFromAllExclusionLists } from '../../../src/database/exclusionListCache';
-import { checkExclusionList, checkIpAddressLists } from '../../../src/utils/exclusionLists';
+import { checkExclusionLists } from '../../../src/utils/exclusionLists';
 
 describe('Exclusion list cache build manager tests ', () => {
   const context = testContext;
@@ -75,15 +75,15 @@ describe('Exclusion list cache build manager tests ', () => {
     expect(ipCache.length).toEqual(1);
     expect(ipCache[0].types).toEqual([ENTITY_IPV4_ADDR]);
     expect(ipCache[0].values.length).toEqual(3);
-    expect(checkIpAddressLists('127.0.0.1', ipCache)).toBeTruthy();
-    expect(checkIpAddressLists('10.10.0.10', ipCache)).toBeTruthy();
-    expect(checkIpAddressLists('2.2.2.2', ipCache)).toBeTruthy();
+    expect(checkExclusionLists('127.0.0.1', ENTITY_IPV4_ADDR, ipCache)).toBeTruthy();
+    expect(checkExclusionLists('10.10.0.10', ENTITY_IPV4_ADDR, ipCache)).toBeTruthy();
+    expect(checkExclusionLists('2.2.2.2', ENTITY_IPV4_ADDR, ipCache)).toBeTruthy();
     const domainCache = builtCache.filter((c) => c.id === exclusionListDomainId);
     expect(domainCache.length).toEqual(1);
     expect(domainCache[0].types).toEqual([ENTITY_DOMAIN_NAME]);
     expect(domainCache[0].values.length).toEqual(3);
-    expect(checkExclusionList('google.com', domainCache)).toBeTruthy();
-    expect(checkExclusionList('filigran.io', domainCache)).toBeTruthy();
-    expect(checkExclusionList('www.test.net', domainCache)).toBeTruthy();
+    expect(checkExclusionLists('google.com', ENTITY_DOMAIN_NAME, domainCache)).toBeTruthy();
+    expect(checkExclusionLists('filigran.io', ENTITY_DOMAIN_NAME, domainCache)).toBeTruthy();
+    expect(checkExclusionLists('www.test.net', ENTITY_DOMAIN_NAME, domainCache)).toBeTruthy();
   });
 });
