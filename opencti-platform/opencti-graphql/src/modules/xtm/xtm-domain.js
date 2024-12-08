@@ -23,7 +23,7 @@ import {
   getScenarioResult as obasGetScenarioResult,
 } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
-import { checkEnterpriseEdition } from '../../utils/ee';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import { elSearchFiles } from '../../database/file-search';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';

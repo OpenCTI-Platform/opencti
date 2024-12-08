@@ -1,6 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
+import forge from 'node-forge';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_FEATURE_FLAGS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -18,6 +19,7 @@ import { UnsupportedError } from '../config/errors';
 import { markAllSessionsForRefresh } from '../database/session';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { OPENCTI_CA } from '../enterprise-edition/opencti_ca';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -190,8 +192,62 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
 
+export const getEnterpriseEditionInfo = (settings) => {
+  if (isNotEmptyField(settings.enterprise_license)) {
+    let license_customer = 'Trial';
+    let license_validated = false;
+    let license_expired = true;
+    let license_platform_match = false;
+    let license_expiration_date = now();
+    let license_platform = settings.internal_id;
+    try {
+      const clientCrt = forge.pki.certificateFromPem(settings.enterprise_license);
+      const isValidCert = OPENCTI_CA.verify(clientCrt);
+      license_customer = clientCrt.subject.getField('O').value;
+      license_platform = clientCrt.subject.getField('OU').value;
+      license_platform_match = license_platform === 'global_licence' || settings.internal_id === license_platform;
+      license_expired = new Date() <= clientCrt.validity.notAfter;
+      license_validated = isValidCert && license_platform_match && license_expired;
+      license_expiration_date = clientCrt.validity.notAfter;
+    } catch {
+      // Nothing to do here
+    }
+    return {
+      license_enterprise: true,
+      license_customer,
+      license_validated,
+      license_expired,
+      license_expiration_date,
+      license_platform,
+      license_platform_match
+    };
+  }
+  return {
+    license_enterprise: false,
+    license_customer: 'invalid',
+    license_validated: false,
+    license_expired: true,
+    license_expiration_date: now(),
+    license_platform: 'invalid',
+    license_platform_match: true
+  };
+};
+
 export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.platform_messages ?? '[]');
+  const enterpriseEditionInfo = getEnterpriseEditionInfo(settings);
+  const isInvalidLicense = enterpriseEditionInfo.license_enterprise && !enterpriseEditionInfo.license_validated;
+  if (isInvalidLicense) {
+    messages.push({
+      id: 'license-message',
+      message: 'You currently using OpenCTI enterprise edition, please contact Filigran to get your license',
+      activated: true,
+      dismissible: false,
+      updated_at: now(),
+      color: '#d0021b',
+      recipients: []
+    });
+  }
   return messages.filter(({ recipients }) => {
     // eslint-disable-next-line max-len
     return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));

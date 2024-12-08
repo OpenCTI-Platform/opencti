@@ -24,9 +24,10 @@ const EnterpriseEditionButton = ({
   inLine = false,
   disabled = false,
 }: {
-  feature?: string;
+  feature?: string
   inLine?: boolean
   disabled?: boolean
+  title?: string
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -62,7 +63,7 @@ const EnterpriseEditionButton = ({
             }),
           }}
         >
-          {t_i18n('Enable Enterprise Edition')}
+          {t_i18n('Setup your Enterprise Edition license')}
         </Button>
       ) : (
         <Button

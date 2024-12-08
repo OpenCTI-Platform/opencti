@@ -18615,6 +18615,17 @@ export enum PlatformCriticalAlertType {
   GroupWithNullConfidenceLevel = 'GROUP_WITH_NULL_CONFIDENCE_LEVEL'
 }
 
+export type PlatformEe = {
+  __typename?: 'PlatformEE';
+  license_customer: Scalars['String']['output'];
+  license_enterprise: Scalars['Boolean']['output'];
+  license_expiration_date: Scalars['DateTime']['output'];
+  license_expired: Scalars['Boolean']['output'];
+  license_platform: Scalars['String']['output'];
+  license_platform_match: Scalars['Boolean']['output'];
+  license_validated: Scalars['Boolean']['output'];
+};
+
 export type PlatformProtectedSensitiveConfig = {
   __typename?: 'PlatformProtectedSensitiveConfig';
   ce_ee_toggle: PlatformProtectedSubConfig;
@@ -23449,7 +23460,6 @@ export type Settings = BasicObject & InternalObject & {
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
-  enterprise_edition?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
@@ -23474,6 +23484,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_critical_alerts: Array<PlatformCriticalAlert>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
+  platform_enterprise_edition: PlatformEe;
   platform_favicon?: Maybe<Scalars['String']['output']>;
   platform_feature_flags?: Maybe<Array<Module>>;
   platform_language?: Maybe<Scalars['String']['output']>;
@@ -31337,6 +31348,7 @@ export type ResolversTypes = ResolversObject<{
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
+  PlatformEE: ResolverTypeWrapper<PlatformEe>;
   PlatformProtectedSensitiveConfig: ResolverTypeWrapper<PlatformProtectedSensitiveConfig>;
   PlatformProtectedSubConfig: ResolverTypeWrapper<PlatformProtectedSubConfig>;
   PlayBookExecution: ResolverTypeWrapper<PlayBookExecution>;
@@ -32118,6 +32130,7 @@ export type ResolversParentTypes = ResolversObject<{
   PhoneNumberAddInput: PhoneNumberAddInput;
   PlatformCriticalAlert: Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversParentTypes['PlatformCriticalAlertDetails']> };
   PlatformCriticalAlertDetails: Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversParentTypes['Group']> };
+  PlatformEE: PlatformEe;
   PlatformProtectedSensitiveConfig: PlatformProtectedSensitiveConfig;
   PlatformProtectedSubConfig: PlatformProtectedSubConfig;
   PlayBookExecution: PlayBookExecution;
@@ -38159,6 +38172,17 @@ export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformEE'] = ResolversParentTypes['PlatformEE']> = ResolversObject<{
+  license_customer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  license_enterprise?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_expiration_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  license_expired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_validated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PlatformProtectedSensitiveConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSensitiveConfig'] = ResolversParentTypes['PlatformProtectedSensitiveConfig']> = ResolversObject<{
   ce_ee_toggle?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -39262,7 +39286,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
-  enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
@@ -39287,6 +39310,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_enterprise_edition?: Resolver<ResolversTypes['PlatformEE'], ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42052,6 +42076,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PhoneNumber?: PhoneNumberResolvers<ContextType>;
   PlatformCriticalAlert?: PlatformCriticalAlertResolvers<ContextType>;
   PlatformCriticalAlertDetails?: PlatformCriticalAlertDetailsResolvers<ContextType>;
+  PlatformEE?: PlatformEeResolvers<ContextType>;
   PlatformProtectedSensitiveConfig?: PlatformProtectedSensitiveConfigResolvers<ContextType>;
   PlatformProtectedSubConfig?: PlatformProtectedSubConfigResolvers<ContextType>;
   PlayBookExecution?: PlayBookExecutionResolvers<ContextType>;

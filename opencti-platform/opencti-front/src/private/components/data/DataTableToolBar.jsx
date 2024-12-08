@@ -1678,7 +1678,7 @@ class DataTableToolBar extends Component {
           }
           // endregion
           // region EE
-          const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+          const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
           // endregion
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');

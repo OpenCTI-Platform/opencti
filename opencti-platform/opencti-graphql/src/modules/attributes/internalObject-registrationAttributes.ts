@@ -201,6 +201,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'password_policy_min_uppercase', label: 'Min policy uppercase', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_whitemark', label: 'Whitemark', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'enterprise_edition', label: 'Enterprise edition date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'enterprise_license', label: 'Enterprise edition license', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'activity_listeners_ids', label: 'Activity listeners IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'platform_messages', label: 'Platform messages', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, schemaDef: settingsMessages, isFilterable: false },
     { name: 'analytics_google_analytics_v4', label: 'Google analytics V4', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
