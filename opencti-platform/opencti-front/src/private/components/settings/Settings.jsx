@@ -31,7 +31,6 @@ import Loader from '../../../components/Loader';
 import ColorPickerField from '../../../components/ColorPickerField';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
@@ -104,7 +103,13 @@ const settingsQuery = graphql`
         name
         focusOn
       }
-      enterprise_edition
+      platform_enterprise_edition {
+        license_enterprise
+        license_validated
+        license_customer
+        license_expiration_date
+        license_expired
+      }
       otp_mandatory
       ...SettingsMessages_settingsMessages
       analytics_google_analytics_v4
@@ -148,7 +153,13 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         platform_whitemark
-        enterprise_edition
+        platform_enterprise_edition {
+          license_enterprise
+          license_validated
+          license_customer
+          license_expiration_date
+          license_expired
+        }
         platform_login_message
         platform_banner_text
         platform_banner_level
@@ -195,7 +206,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_whitemark: Yup.string().nullable(),
-  enterprise_edition: Yup.string().nullable(),
+  enterprise_license: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
@@ -209,7 +220,7 @@ const Settings = () => {
   const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
 
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,
@@ -300,138 +311,18 @@ const Settings = () => {
             )(settings);
             const modules = settings.platform_modules;
             const { version, dependencies } = about;
-            const isEnterpriseEdition = isNotEmptyField(
-              settings.enterprise_edition,
-            );
+            const isEnterpriseEdition = settings.platform_enterprise_edition.license_enterprise;
             return (
               <>
                 <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Configuration')}
-                    </Typography>
-                    <Paper
-                      classes={{ root: classes.paper }}
-                      variant="outlined"
-                      className={'paper-for-grid'}
-                    >
-                      <Formik
-                        onSubmit={() => {
-                        }}
-                        enableReinitialize={true}
-                        initialValues={initialValues}
-                        validationSchema={settingsValidation(t_i18n)}
-                      >
-                        {() => (
-                          <Form>
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="platform_title"
-                              label={t_i18n('Platform title')}
-                              fullWidth
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_title"
-                                />
-                              }
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="platform_favicon"
-                              label={t_i18n('Platform favicon URL')}
-                              fullWidth
-                              style={{ marginTop: 20 }}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_favicon"
-                                />
-                              }
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="platform_email"
-                              label={t_i18n('Sender email address')}
-                              fullWidth
-                              style={{ marginTop: 20 }}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_email"
-                                />
-                              }
-                            />
-                            <Field
-                              component={SelectField}
-                              variant="standard"
-                              name="platform_theme"
-                              label={t_i18n('Theme')}
-                              fullWidth
-                              containerstyle={fieldSpacingContainerStyle}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helpertext={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_theme"
-                                />
-                              }
-                            >
-                              <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
-                              <MenuItem value="light">{t_i18n('Light')}</MenuItem>
-                            </Field>
-                            <Field
-                              component={SelectField}
-                              variant="standard"
-                              name="platform_language"
-                              label={t_i18n('Language')}
-                              fullWidth
-                              containerstyle={fieldSpacingContainerStyle}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)}
-                              helpertext={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_language"
-                                />
-                              }
-                            >
-                              <MenuItem value="auto">
-                                <em>{t_i18n('Automatic')}</em>
-                              </MenuItem>
-                              {
-                                availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
-                              }
-                            </Field>
-                            <HiddenTypesField />
-                          </Form>
-                        )}
-                      </Formik>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
-                      {t_i18n('OpenCTI platform')}
+                      {t_i18n('OpenCTI Enterprise')}
                     </Typography>
-                    <div style={{ float: 'right', marginTop: isSensitive ? theme.spacing(-5) : theme.spacing(-4.5), position: 'relative' }}>
-                      {!isEnterpriseEdition ? (
-                        <EnterpriseEditionButton disabled={!isAllowed} inLine />
-                      ) : (
+                    <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
+                      <EnterpriseEditionButton disabled={!isAllowed} inLine/>
+                      {isEnterpriseEdition && <div>
                         <DangerZoneBlock
                           type={'ce_ee_toggle'}
                           sx={{
@@ -492,7 +383,7 @@ const Settings = () => {
                                     color="secondary"
                                     onClick={() => {
                                       setOpenEEChanges(false);
-                                      handleSubmitField(id, 'enterprise_edition', '');
+                                      handleSubmitField(id, 'enterprise_license', '');
                                     }}
                                   >
                                     {t_i18n('Validate')}
@@ -502,8 +393,164 @@ const Settings = () => {
                             </>
                           )}
                         </DangerZoneBlock>
-                      )}
-                    </div>
+                      </div>}
+                      { isEnterpriseEdition && settings.platform_enterprise_edition.license_validated
+                          && <List>
+                            <ListItem divider={true}>
+                              <ListItemText primary={t_i18n('License activated for')} />
+                              <ItemBoolean
+                                variant="large"
+                                label={settings.platform_enterprise_edition.license_customer}
+                                status={true}
+                              />
+                            </ListItem>
+                            <ListItem divider={true}>
+                              <ListItemText primary={t_i18n('License expiration date')} />
+                              <ItemBoolean
+                                variant="xlarge"
+                                label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
+                                status={settings.platform_enterprise_edition.license_expired}
+                              />
+                            </ListItem>
+                          </List>
+                      }
+                      { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
+                          && <List>
+                            <ListItem divider={true}>
+                              <ListItemText primary={t_i18n('License activated for')} secondary={'Please contact Filigran to get your license'} />
+                              <ItemBoolean
+                                variant="large"
+                                label={settings.platform_enterprise_edition.license_customer}
+                                status={false}
+                              />
+                            </ListItem>
+                          </List>
+                      }
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6}></Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t_i18n('Configuration')}
+                    </Typography>
+                    <Paper
+                      classes={{ root: classes.paper }}
+                      variant="outlined"
+                      className={'paper-for-grid'}
+                    >
+                      <Formik
+                        onSubmit={() => {
+                        }}
+                        enableReinitialize={true}
+                        initialValues={initialValues}
+                        validationSchema={settingsValidation(t_i18n)}
+                      >
+                        {() => (
+                          <Form>
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name="platform_title"
+                              label={t_i18n('Platform title')}
+                              fullWidth
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                                  }
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_title"
+                                />
+                                  }
+                            />
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name="platform_favicon"
+                              label={t_i18n('Platform favicon URL')}
+                              fullWidth
+                              style={{ marginTop: 20 }}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                                  }
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_favicon"
+                                />
+                                  }
+                            />
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name="platform_email"
+                              label={t_i18n('Sender email address')}
+                              fullWidth
+                              style={{ marginTop: 20 }}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                                  }
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_email"
+                                />
+                                  }
+                            />
+                            <Field
+                              component={SelectField}
+                              variant="standard"
+                              name="platform_theme"
+                              label={t_i18n('Theme')}
+                              fullWidth
+                              containerstyle={fieldSpacingContainerStyle}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onChange={(name, value) => handleSubmitField(id, name, value)
+                                  }
+                              helpertext={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_theme"
+                                />
+                                  }
+                            >
+                              <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
+                              <MenuItem value="light">{t_i18n('Light')}</MenuItem>
+                            </Field>
+                            <Field
+                              component={SelectField}
+                              variant="standard"
+                              name="platform_language"
+                              label={t_i18n('Language')}
+                              fullWidth
+                              containerstyle={fieldSpacingContainerStyle}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
+                              helpertext={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_language"
+                                />
+                              }
+                            >
+                              <MenuItem value="auto">
+                                <em>{t_i18n('Automatic')}</em>
+                              </MenuItem>
+                              {
+                                availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
+                              }
+                            </Field>
+                            <HiddenTypesField />
+                          </Form>
+                        )}
+                      </Formik>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
+                      {t_i18n('OpenCTI platform')}
+                    </Typography>
+
                     <Paper
                       classes={{ root: classes.paper }}
                       className={'paper-for-grid'}
@@ -578,17 +625,6 @@ const Settings = () => {
                                       ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
                                   status={settings.platform_ai_enabled && settings.platform_ai_has_token}
                                   tooltip={settings.platform_ai_has_token ? `${settings.platform_ai_type} - ${settings.platform_ai_model}` : t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
-                                />
-                              </ListItem>
-                              <ListItem divider={true}>
-                                <Field
-                                  component={TextField}
-                                  type="number"
-                                  variant="standard"
-                                  disabled={true}
-                                  name="filigran_support_key"
-                                  label={t_i18n('Filigran support key')}
-                                  fullWidth={true}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
