@@ -150,9 +150,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]

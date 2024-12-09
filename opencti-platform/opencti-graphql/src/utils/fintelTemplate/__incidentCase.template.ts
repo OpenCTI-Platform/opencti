@@ -1,4 +1,5 @@
-import type { FintelTemplate } from '../../generated/graphql';
+import type { FintelTemplate, FintelTemplateAddInput } from '../../generated/graphql';
+import { widgetAttackPatterns, widgetContainerObservables, widgetIncidentIOC, widgetIncidentResponseMultiAttributes, widgetIncidentTasksActions } from './__fintelTemplateWidgets';
 
 const content = `
 <div>
@@ -94,17 +95,16 @@ const content = `
 </div>
 `;
 
-export const fintelTemplateIncidentResponse: FintelTemplate = {
+export const fintelTemplateIncidentResponse: FintelTemplateAddInput = {
   name: 'Incident Response Report',
-  id: 'templateIncidentCase-id',
   content,
   start_date: '1970-01-01T00:00:00Z',
   settings_types: ['Incident-Response'],
-  template_widgets_ids: [
-    'containerObservablesId',
-    'incidentIOCId',
-    'incidentTasksAndActionsId',
-    'attackPatternsId',
-    'widgetIncidentResponseMultiAttributesId',
+  fintel_template_widgets: [
+    widgetContainerObservables,
+    widgetIncidentIOC,
+    widgetIncidentTasksActions,
+    widgetAttackPatterns,
+    widgetIncidentResponseMultiAttributes,
   ],
 };

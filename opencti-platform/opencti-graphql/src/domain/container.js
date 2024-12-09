@@ -2,7 +2,14 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -12,7 +19,12 @@ import {
   ENTITY_TYPE_CONTAINER
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import {
+  buildPagination,
+  READ_ENTITIES_INDICES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES
+} from '../database/utils';
 import { now } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
@@ -24,8 +36,7 @@ import { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
-import { usedFintelTemplatesByEntityType } from '../utils/fintelTemplate/__fintelTemplates';
-import { hardcodedTemplateWidgets } from '../utils/fintelTemplate/__widget';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -264,23 +275,6 @@ export const getFintelTemplates = async (context, user, container) => {
   if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
-  const entityType = container.entity_type;
-  return usedFintelTemplatesByEntityType[entityType] ?? [];
-};
-
-export const getFintelTemplateAndUtils = async (context, user, container, templateId) => {
-  // check feature is enabled
-  const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  if (!isEE || !isFileFromTemplateEnabled) {
-    return null;
-  }
-  // fetch template (hardcoded for the moment)
-  const fintelTemplate = (usedFintelTemplatesByEntityType[container.entity_type] ?? []).find((t) => t.id === templateId);
-  const { template_widgets_ids } = fintelTemplate;
-  // fetch the widgets used in the template (hardcoded for the moment)
-  const template_widgets = hardcodedTemplateWidgets
-    .filter((w) => template_widgets_ids.includes(w.id));
-  // return template and the associated utils
-  return { fintelTemplate, template_widgets };
+  const filters = addFilter(undefined, 'settings_types', container.entity_type);
+  return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };

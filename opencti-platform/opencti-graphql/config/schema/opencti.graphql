@@ -912,10 +912,6 @@ type Widget {
   parameters: WidgetParameters
   layout: WidgetLayout
 }
-type FintelTemplateAndUtils {
-  fintelTemplate: FintelTemplate!,
-  template_widgets: [Widget!]!,
-}
 
 type IndexedFile {
   id: ID!
@@ -3191,9 +3187,6 @@ interface Container {
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3379,9 +3372,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3613,9 +3603,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3823,9 +3810,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4057,9 +4041,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

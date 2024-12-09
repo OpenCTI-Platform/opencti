@@ -157,9 +157,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         filters: FilterGroup
     ): FileConnection
     fintelTemplates: [FintelTemplate!]
-    fintelTemplateAndUtils(
-        templateId: String!
-    ): FintelTemplateAndUtils
     editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]

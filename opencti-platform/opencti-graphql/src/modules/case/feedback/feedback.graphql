@@ -149,9 +149,6 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

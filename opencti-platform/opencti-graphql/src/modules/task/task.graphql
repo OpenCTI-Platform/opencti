@@ -148,9 +148,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     filters: FilterGroup
   ): FileConnection
   fintelTemplates: [FintelTemplate!]
-  fintelTemplateAndUtils(
-    templateId: String!
-  ): FintelTemplateAndUtils
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

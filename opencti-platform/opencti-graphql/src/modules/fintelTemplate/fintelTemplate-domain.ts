@@ -7,6 +7,9 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { isEnterpriseEdition } from '../../utils/ee';
 import { ForbiddenAccess } from '../../config/errors';
+import { storeLoadById } from '../../database/middleware-loader';
+import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
+import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -19,32 +22,38 @@ export const canCustomizeTemplate = async (context: AuthContext) => {
   }
 };
 
+export const canViewTemplates = async (context: AuthContext) => {
+  const isEE = await isEnterpriseEdition(context);
+  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
+  if (!isEE || !isFileFromTemplateEnabled) {
+    return false;
+  }
+  return true;
+};
+
+export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
+  await canCustomizeTemplate(context);
+  return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
+};
+
 export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
   input: FintelTemplateAddInput,
+  dontCheckCustomize = false,
 ) => {
-  await canCustomizeTemplate(context);
+  if (!dontCheckCustomize) await canCustomizeTemplate(context);
+  const finalInput = {
+    ...input,
+    content: input.content ?? '',
+    fintel_template_widgets: input.fintel_template_widgets ?? [],
+  };
   const created = await createEntity(
     context,
     user,
-    input,
+    finalInput,
     ENTITY_TYPE_FINTEL_TEMPLATE,
   );
-
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `creates template \`${created.name}\``,
-    context_data: {
-      id: created.id,
-      entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
-      input,
-    },
-  });
-
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
 };
 
@@ -98,4 +107,17 @@ export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser,
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].DELETE_TOPIC, deleted, user).then(() => templateId);
+};
+
+export const initFintelTemplates = async (context: AuthContext, user: AuthUser) => {
+  const builtInTemplatesInputs = [
+    generateFintelTemplateExecutiveSummary('Report'),
+    generateFintelTemplateExecutiveSummary('Grouping'),
+    fintelTemplateIncidentResponse,
+    generateFintelTemplateExecutiveSummary('Case-Incident'),
+    generateFintelTemplateExecutiveSummary('Case-Rfi'),
+    generateFintelTemplateExecutiveSummary('Case-Rft')
+  ];
+  await Promise.all(builtInTemplatesInputs
+    .map((input) => addFintelTemplate(context, user, input, true)));
 };

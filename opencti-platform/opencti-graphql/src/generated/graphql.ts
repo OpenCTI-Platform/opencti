@@ -1938,7 +1938,6 @@ export type Case = {
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -2015,11 +2014,6 @@ export type CaseFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type CaseFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -2195,7 +2189,6 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -2276,11 +2269,6 @@ export type CaseIncidentFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type CaseIncidentFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -2504,7 +2492,6 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -2584,11 +2571,6 @@ export type CaseRfiFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type CaseRfiFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -2811,7 +2793,6 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -2891,11 +2872,6 @@ export type CaseRftFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type CaseRftFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -3815,7 +3791,6 @@ export type Container = {
   entity_type: Scalars['String']['output'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -3874,11 +3849,6 @@ export type ContainerFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type ContainerFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -7809,7 +7779,6 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -7887,11 +7856,6 @@ export type FeedbackFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type FeedbackFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -8217,6 +8181,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
   content: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  fintel_template_widgets: Array<FintelTemplateWidget>;
   id: Scalars['ID']['output'];
   instance_filters?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
@@ -8224,23 +8189,16 @@ export type FintelTemplate = BasicObject & InternalObject & {
   settings_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   start_date?: Maybe<Scalars['DateTime']['output']>;
-  template_widgets_ids: Array<Scalars['String']['output']>;
 };
 
 export type FintelTemplateAddInput = {
-  content: Scalars['String']['input'];
+  content?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  fintel_template_widgets?: InputMaybe<Array<InputMaybe<FintelTemplateWidgetAddInput>>>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  settings_typess: Array<Scalars['String']['input']>;
+  settings_types: Array<Scalars['String']['input']>;
   start_date?: InputMaybe<Scalars['DateTime']['input']>;
-  template_widgets_ids: Array<Scalars['String']['input']>;
-};
-
-export type FintelTemplateAndUtils = {
-  __typename?: 'FintelTemplateAndUtils';
-  fintelTemplate: FintelTemplate;
-  template_widgets: Array<Widget>;
 };
 
 export type FintelTemplateConnection = {
@@ -8253,6 +8211,18 @@ export type FintelTemplateEdge = {
   __typename?: 'FintelTemplateEdge';
   cursor: Scalars['String']['output'];
   node: FintelTemplate;
+};
+
+export type FintelTemplateWidget = {
+  __typename?: 'FintelTemplateWidget';
+  id: Scalars['ID']['output'];
+  variable_name: Scalars['String']['output'];
+  widget: Widget;
+};
+
+export type FintelTemplateWidgetAddInput = {
+  variable_name: Scalars['String']['input'];
+  widget: Scalars['Any']['input'];
 };
 
 export enum Format {
@@ -8393,7 +8363,6 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -8470,11 +8439,6 @@ export type GroupingFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type GroupingFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -16515,7 +16479,6 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -16592,11 +16555,6 @@ export type NoteFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type NoteFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -16999,7 +16957,6 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   first_observed: Scalars['DateTime']['output'];
   groupings?: Maybe<GroupingConnection>;
@@ -17078,11 +17035,6 @@ export type ObservedDataFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type ObservedDataFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -17338,7 +17290,6 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -17414,11 +17365,6 @@ export type OpinionFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type OpinionFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -19416,6 +19362,7 @@ export type Query = {
   filesMetrics?: Maybe<FilesMetrics>;
   filterKeysSchema: Array<FilterKeysSchema>;
   filtersRepresentatives: Array<RepresentativeWithId>;
+  fintelTemplate?: Maybe<FintelTemplate>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
@@ -20236,6 +20183,11 @@ export type QueryFileArgs = {
 
 export type QueryFiltersRepresentativesArgs = {
   filters: FilterGroup;
+};
+
+
+export type QueryFintelTemplateArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -22587,7 +22539,6 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -22666,11 +22617,6 @@ export type ReportFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type ReportFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -26585,7 +26531,6 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
-  fintelTemplateAndUtils?: Maybe<FintelTemplateAndUtils>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -26661,11 +26606,6 @@ export type TaskFilesFromTemplateArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type TaskFintelTemplateAndUtilsArgs = {
-  templateId: Scalars['String']['input'];
 };
 
 
@@ -31059,9 +30999,10 @@ export type ResolversTypes = ResolversObject<{
   FilterOperator: FilterOperator;
   FintelTemplate: ResolverTypeWrapper<FintelTemplate>;
   FintelTemplateAddInput: FintelTemplateAddInput;
-  FintelTemplateAndUtils: ResolverTypeWrapper<FintelTemplateAndUtils>;
   FintelTemplateConnection: ResolverTypeWrapper<FintelTemplateConnection>;
   FintelTemplateEdge: ResolverTypeWrapper<FintelTemplateEdge>;
+  FintelTemplateWidget: ResolverTypeWrapper<FintelTemplateWidget>;
+  FintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Format: Format;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
@@ -31874,9 +31815,10 @@ export type ResolversParentTypes = ResolversObject<{
   FilterKeysSchema: FilterKeysSchema;
   FintelTemplate: FintelTemplate;
   FintelTemplateAddInput: FintelTemplateAddInput;
-  FintelTemplateAndUtils: FintelTemplateAndUtils;
   FintelTemplateConnection: FintelTemplateConnection;
   FintelTemplateEdge: FintelTemplateEdge;
+  FintelTemplateWidget: FintelTemplateWidget;
+  FintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput;
   Float: Scalars['Float']['output'];
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'allowed_marking' | 'default_dashboard' | 'default_marking' | 'max_shareable_marking' | 'members'> & { allowed_marking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, default_marking?: Maybe<Array<ResolversParentTypes['DefaultMarking']>>, max_shareable_marking: Array<ResolversParentTypes['MarkingDefinition']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
@@ -33046,7 +32988,6 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -33122,7 +33063,6 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseIncidentExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseIncidentFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseIncidentGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -33203,7 +33143,6 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseRfiExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseRfiFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseRfiGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -33283,7 +33222,6 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CaseRftExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<CaseRftFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseRftGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -33629,7 +33567,6 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ContainerExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ContainerFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<ContainerFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ContainerGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -34985,7 +34922,6 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<FeedbackExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<FeedbackFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<FeedbackGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -35125,6 +35061,7 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   instance_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -35132,13 +35069,6 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   settings_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  template_widgets_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type FintelTemplateAndUtilsResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateAndUtils'] = ResolversParentTypes['FintelTemplateAndUtils']> = ResolversObject<{
-  fintelTemplate?: Resolver<ResolversTypes['FintelTemplate'], ParentType, ContextType>;
-  template_widgets?: Resolver<Array<ResolversTypes['Widget']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -35151,6 +35081,13 @@ export type FintelTemplateConnectionResolvers<ContextType = any, ParentType exte
 export type FintelTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateEdge'] = ResolversParentTypes['FintelTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['FintelTemplate'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type FintelTemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateWidget'] = ResolversParentTypes['FintelTemplateWidget']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  variable_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  widget?: Resolver<ResolversTypes['Widget'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -35231,7 +35168,6 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<GroupingExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<GroupingFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<GroupingGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -37478,7 +37414,6 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NoteExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NoteExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NoteFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<NoteFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<NoteGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -37672,7 +37607,6 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ObservedDataExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<ObservedDataFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   first_observed?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ObservedDataGroupingsArgs>>;
@@ -37770,7 +37704,6 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<OpinionExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<OpinionFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<OpinionGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -38513,6 +38446,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   filesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType>;
   filterKeysSchema?: Resolver<Array<ResolversTypes['FilterKeysSchema']>, ParentType, ContextType>;
   filtersRepresentatives?: Resolver<Array<ResolversTypes['RepresentativeWithId']>, ParentType, ContextType, RequireFields<QueryFiltersRepresentativesArgs, 'filters'>>;
+  fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
@@ -38924,7 +38858,6 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ReportExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<ReportFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ReportGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -40364,7 +40297,6 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<TaskExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskFilesFromTemplateArgs>>;
-  fintelTemplateAndUtils?: Resolver<Maybe<ResolversTypes['FintelTemplateAndUtils']>, ParentType, ContextType, RequireFields<TaskFintelTemplateAndUtilsArgs, 'templateId'>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<TaskGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -41851,9 +41783,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   FilterDefinitionSchema?: FilterDefinitionSchemaResolvers<ContextType>;
   FilterKeysSchema?: FilterKeysSchemaResolvers<ContextType>;
   FintelTemplate?: FintelTemplateResolvers<ContextType>;
-  FintelTemplateAndUtils?: FintelTemplateAndUtilsResolvers<ContextType>;
   FintelTemplateConnection?: FintelTemplateConnectionResolvers<ContextType>;
   FintelTemplateEdge?: FintelTemplateEdgeResolvers<ContextType>;
+  FintelTemplateWidget?: FintelTemplateWidgetResolvers<ContextType>;
   GetMetrics?: GetMetricsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupConnection?: GroupConnectionResolvers<ContextType>;

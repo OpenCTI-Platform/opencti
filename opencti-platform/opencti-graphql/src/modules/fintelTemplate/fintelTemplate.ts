@@ -2,8 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_FINTEL_TEMPLATE, type StixFintelTemplate, type StoreEntityFintelTemplate } from './fintelTemplate-types';
-import { ENTITY_TYPE_WIDGET } from '../widget/widget';
+import {
+  ENTITY_TYPE_FINTEL_TEMPLATE,
+  type StixFintelTemplate,
+  type StoreEntityFintelTemplate
+} from './fintelTemplate-types';
 import { convertFintelTemplateToStix } from './fintelTemplate-converter';
 
 export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTemplate, StixFintelTemplate> = {
@@ -24,8 +27,8 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
     { name: 'settings_types', label: 'Available for types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'instance_filters', label: 'Instance filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
-    { name: 'template_widgets_ids', label: 'Widget ids', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_WIDGET], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'start_date', label: 'Available since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'fintel_template_widgets', label: 'Fintel template widgets', type: 'object', format: 'flat', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixFintelTemplate) => {

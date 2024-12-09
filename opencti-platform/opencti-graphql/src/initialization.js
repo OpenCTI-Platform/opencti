@@ -20,6 +20,7 @@ import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
+import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -127,6 +128,9 @@ const platformInit = async (withMarkings = true) => {
     }
     if (isFeatureEnabled('EXCLUSION_LIST')) {
       await initExclusionListCache();
+    }
+    if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
+      await initFintelTemplates(context, SYSTEM_USER);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

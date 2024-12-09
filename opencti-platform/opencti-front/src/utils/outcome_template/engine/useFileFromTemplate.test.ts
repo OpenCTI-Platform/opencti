@@ -42,19 +42,21 @@ describe('Hook: useFileFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        FintelTemplateAndUtils() {
+        FintelTemplate() {
           return {
-            template: {
+            fintelTemplate: {
               id: 'testTemplate',
               name: 'Test template',
-              template_widgets_ids: ['myAttributes'],
+              fintel_template_widgets: [{
+                id: 'XXXX',
+                variable_name: 'myAttributes',
+                widget: {
+                  type: 'attribute',
+                  dataSelection: [{}],
+                },
+              }],
               content: 'Hello, I am container $containerName of type $containerType',
             },
-            template_widgets: [{
-              id: 'myAttributes',
-              type: 'attribute',
-              dataSelection: [{}],
-            }],
           };
         },
       });
@@ -78,16 +80,18 @@ describe('Hook: useFileFromTemplate', () => {
             template: {
               id: 'testTemplate',
               name: 'Test template',
-              template_widgets_ids: ['containerList'],
+              fintel_template_widgets: [{
+                id: 'YYY',
+                variable_name: 'containerList',
+                widget: {
+                  type: 'list',
+                  dataSelection: [{
+                    filters: null,
+                  }],
+                },
+              }],
               content: 'Hello, I have: $containerList',
             },
-            template_widgets: [{
-              id: 'containerList',
-              type: 'list',
-              dataSelection: [{
-                filters: null,
-              }],
-            }],
           };
         },
       });

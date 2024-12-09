@@ -10,7 +10,7 @@ export interface FintelTemplate {
   settings_types: string;
   instance_filters: string;
   content: string;
-  template_widgets_ids: [string];
+  fintel_template_widgets: [FintelTemplate];
   start_date: string;
 }
 
@@ -21,7 +21,7 @@ export interface BasicStoreEntityFintelTemplate extends BasicStoreEntity {
   settings_types: string;
   instance_filters: string;
   content: string;
-  template_widgets_ids: [string];
+  fintel_template_widgets: [FintelTemplate];
   start_date: string;
 }
 
@@ -31,7 +31,7 @@ export interface StoreEntityFintelTemplate extends StoreEntity {
   settings_types: string;
   instance_filters: string;
   content: string;
-  template_widgets_ids: [string];
+  fintel_template_widgets: [FintelTemplate];
   start_date: string;
 }
 // endregion
@@ -43,7 +43,7 @@ export interface StixFintelTemplate extends StixObject {
   settings_types: string;
   instance_filters: string;
   content: string;
-  template_widgets_ids: [string];
+  fintel_template_widgets: [FintelTemplate];
   start_date: string;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
