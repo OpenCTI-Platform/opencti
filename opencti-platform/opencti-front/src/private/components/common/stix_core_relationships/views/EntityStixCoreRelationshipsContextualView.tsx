@@ -206,8 +206,14 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
+  const existEntitiesToDisplay = containers.length > 0;
+
   // Filters due to screen context
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
+
+  // if no containers, the query should return nothing
+  // (and the filter is not valid (empty array not authorized with the 'eq' operator))
+  // so we won't use it and won't do the query: components are not called if !existEntitiesToDisplay
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
@@ -269,36 +275,34 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         currentView={currentView}
         searchContext={{ elementId: [entityId] }}
       >
-        {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-            <EntityStixCoreRelationshipsContextualViewLines
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onToggleEntity={onToggleEntity}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              selectAll={selectAll}
-            />
-          </React.Suspense>
-        ) : (
-          <Loader variant={LoaderVariant.inElement}/>
-        )}
+        {
+          existEntitiesToDisplay
+          && <EntityStixCoreRelationshipsContextualViewLines
+            paginationOptions={paginationOptions}
+            dataColumns={dataColumns}
+            onToggleEntity={onToggleEntity}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            selectAll={selectAll}
+             />
+        }
       </ListLines>
-      <ToolBar
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
-        numberOfSelectedElements={numberOfSelectedElements}
-        selectAll={selectAll}
-        filters={contextFilters}
-        search={searchTerm}
-        handleClearSelectedElements={handleClearSelectedElements}
-        variant="medium"
-        warning={true}
-        warningMessage={t_i18n(
-          'Be careful, you are about to delete the selected entities',
-        )}
-      />
+      {existEntitiesToDisplay
+        && <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={contextFilters}
+          search={searchTerm}
+          handleClearSelectedElements={handleClearSelectedElements}
+          variant="medium"
+          warning={true}
+          warningMessage={t_i18n(
+            'Be careful, you are about to delete the selected entities',
+          )}
+           />}
     </>
   );
 };
