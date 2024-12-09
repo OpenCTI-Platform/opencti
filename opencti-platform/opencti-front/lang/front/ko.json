@@ -1829,7 +1829,6 @@
   "No entities added in this context.": "이 컨텍스트에 추가된 엔터티가 없습니다.",
   "No entities of this type has been found.": "이 유형의 엔터티가 발견되지 않았습니다.",
   "No entities were found for this search.": "이 검색에 대한 엔터티가 발견되지 않았습니다.",
-  "No entity-type attack patterns were found.": "엔티티 유형 공격 패턴이 발견되지 않았습니다.",
   "No export connector available to generate an export": "내보내기를 생성할 수 있는 내보내기 커넥터가 없습니다",
   "No file for the moment": "현재 파일 없음",
   "No file selected.": "선택된 파일 없음.",
