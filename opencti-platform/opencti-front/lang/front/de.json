@@ -1817,6 +1817,7 @@
   "No connectors for this type of entity": "Keine Konnektoren für diese Art von Entität",
   "No containers about this entity.": "Keine Container über diese Entität.",
   "No creators accumulation": "Keine Akkumulation von Erstellern",
+  "No data available.": "Keine Daten verfügbar.",
   "No default value set in Settings...": "In den Entitätseinstellungen ist kein Standardwert für dieses Attribut festgelegt. Sie können einen Wert mit der obigen Eingabe angeben. Dieser Wert wird verwendet, wenn die Daten in der CSV-Datei fehlen.",
   "No description": "Keine Beschreibung",
   "No description of this targeting": "Keine Beschreibung dieses Ziels",

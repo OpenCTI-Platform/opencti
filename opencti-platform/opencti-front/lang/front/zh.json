@@ -1817,6 +1817,7 @@
   "No connectors for this type of entity": "此类型的实体没有连接器",
   "No containers about this entity.": "没有关于此实体的容器。",
   "No creators accumulation": "没有创作者积累",
+  "No data available.": "无数据。",
   "No default value set in Settings...": "实体设置中未为此属性设置默认值。您可以通过上面的输入提供一个。如果 CSV 文件中缺少数据，将使用此值。",
   "No description": "无说明",
   "No description of this targeting": "没有关于此针对的描述",

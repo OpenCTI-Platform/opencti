@@ -77,7 +77,7 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
     }
   };
 
-  if (!opinionOptions || opinionOptions.length === 0) {
+  if (opinionOptions.length === 0) {
     return (
       <Chart
         options={{
