@@ -1130,6 +1130,7 @@
   "Evolution": "진화",
   "Example": "예",
   "Exclusion Lists": "제외 목록",
+  "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "제외 목록을 사용하면 정상적이고 합법적인 지표로 간주되는 지표를 가져오지 못하게 할 수 있습니다. 제외 목록은 STIX 패턴이 있는 인디케이터에만 적용됩니다.",
   "Execution at": "실행 시간",
   "Execution ended at": "실행 종료 시간",
   "Existing public dashboards": "기존 공개 대시보드",
