@@ -12336,12 +12336,12 @@ type Theme implements InternalObject & BasicObject {
   entity_type: String!
   parent_types: [String!]!
   name: String!
-  theme_background: String
-  theme_paper: String
-  theme_nav: String
-  theme_primary: String
-  theme_secondary: String
-  theme_accent: String
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
   theme_logo: String
   theme_logo_collapsed: String
   theme_logo_login: String
@@ -12359,12 +12359,12 @@ type ThemeConnection {
 
 input ThemeAddInput {
   name: String!
-  theme_background: String
-  theme_paper: String
-  theme_nav: String
-  theme_primary: String
-  theme_secondary: String
-  theme_accent: String
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
   theme_logo: String
   theme_logo_collapsed: String
   theme_logo_login: String
