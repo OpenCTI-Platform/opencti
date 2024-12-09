@@ -2871,7 +2871,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
-      event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs);
+      event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit, relatedRestrictions });
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
