@@ -1,11 +1,11 @@
 {
   "name": "opencti-front",
-  "version": "6.4.2",
+  "version": "6.4.3",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
     "@analytics/google-analytics": "1.0.7",
-    "@ckeditor/ckeditor5-react": "9.3.0",
+    "@ckeditor/ckeditor5-react": "9.4.0",
     "@date-fns/upgrade": "1.0.3",
     "@date-io/date-fns": "3.0.0",
     "@emotion/react": "11.13.0",
@@ -59,7 +59,7 @@
     "qrcode": "1.5.4",
     "ramda": "0.30.1",
     "react": "18.3.1",
-    "react-apexcharts": "1.4.1",
+    "react-apexcharts": "1.6.0",
     "react-color": "2.19.3",
     "react-compound-slider": "3.4.0",
     "react-cookie": "7.2.0",
@@ -93,7 +93,7 @@
     "three-spritetext": "1.8.2",
     "unified": "11.0.4",
     "use-analytics": "1.1.0",
-    "uuid": "10.0.0",
+    "uuid": "11.0.3",
     "yup": "1.4.0"
   },
   "devDependencies": {
@@ -118,7 +118,6 @@
     "@types/react-test-renderer": "18.3.0",
     "@types/relay-runtime": "17.0.4",
     "@types/relay-test-utils": "17.0.0",
-    "@types/uuid": "10.0.0",
     "@vitejs/plugin-react": "4.3.1",
     "babel-plugin-relay": "17.0.0",
     "chokidar": "3.6.0",

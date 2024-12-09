@@ -395,7 +395,7 @@ export const isBypassUser = (user: AuthUser): boolean => {
 };
 
 export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
-  return isBypassUser(user) || (user.capabilities || []).some((s) => s.name.includes(capability));
+  return isBypassUser(user) || (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
 };
 
 export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = []) => {

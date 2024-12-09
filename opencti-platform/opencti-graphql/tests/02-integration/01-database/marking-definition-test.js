@@ -4,6 +4,8 @@ import { addAllowedMarkingDefinition, markingDefinitionDelete } from '../../../s
 import { cleanMarkings, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
+import { resetCacheForEntity } from "../../../src/database/cache";
+import { ENTITY_TYPE_MARKING_DEFINITION } from "../../../src/schema/stixMetaObject";
 
 const markings = [
   {
@@ -49,8 +51,10 @@ const markings = [
 ];
 
 const createMarking = async (marking) => {
-  const { definition_type, definition, x_opencti_order, x_opencti_color } = marking;
+  // reset the cache for markings
+  resetCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION);
   // Create the markingDefinition
+  const { definition_type, definition, x_opencti_order, x_opencti_color } = marking;
   return await addAllowedMarkingDefinition(testContext, SYSTEM_USER, {
     definition_type,
     definition,

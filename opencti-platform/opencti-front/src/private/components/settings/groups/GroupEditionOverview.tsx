@@ -6,6 +6,8 @@ import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { useTheme } from '@mui/styles';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -179,9 +181,22 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               component={SwitchField}
               type="checkbox"
               name="auto_new_marking"
-              label={t_i18n(
-                'Automatically authorize this group to new marking definition',
-              )}
+              label={<>
+                {t_i18n(
+                  'Automatically authorize this group to new marking definition',
+                )}
+                <Tooltip
+                  title={t_i18n(
+                    'The new marking definitions will also be shareable by this group.',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ margin: '0 0 -5px 10px' }}
+                  />
+                </Tooltip>
+              </>}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
             />

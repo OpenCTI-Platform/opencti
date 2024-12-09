@@ -1257,13 +1257,13 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           if (indicator.object_marking_refs) {
             stixObservable.object_marking_refs = indicator.object_marking_refs;
           }
-          if (indicator.created_by_ref) {
+          if (indicator.created_by_ref && stixObservable.extensions[STIX_EXT_OCTI_SCO]) {
             stixObservable.extensions[STIX_EXT_OCTI_SCO].created_by_ref = indicator.created_by_ref;
           }
-          if (indicator.labels) {
+          if (indicator.labels && stixObservable.extensions[STIX_EXT_OCTI_SCO]) {
             stixObservable.extensions[STIX_EXT_OCTI_SCO].labels = indicator.labels;
           }
-          if (indicator.external_references) {
+          if (indicator.external_references && stixObservable.extensions[STIX_EXT_OCTI_SCO]) {
             stixObservable.extensions[STIX_EXT_OCTI_SCO].external_references = indicator.external_references;
           }
           if (granted_refs) {
