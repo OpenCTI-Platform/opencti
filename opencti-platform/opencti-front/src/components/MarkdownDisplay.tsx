@@ -56,6 +56,8 @@ interface MarkdownWithRedirectionWarningProps {
   removeLinks?: boolean;
   removeLineBreaks?: boolean;
   remarkPlugins?: PluggableList;
+  emptyStringIfUndefined?: boolean;
+  disableWarningAtLinkClick?: boolean;
 }
 
 const MarkdownDisplay: FunctionComponent<
@@ -70,6 +72,8 @@ MarkdownWithRedirectionWarningProps
   removeLinks,
   removeLineBreaks,
   remarkPlugins,
+  emptyStringIfUndefined,
+  disableWarningAtLinkClick,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -158,15 +162,11 @@ MarkdownWithRedirectionWarningProps
       handleOpenExternalLink(link.href);
     }
   };
-  if (removeLinks || removeLineBreaks) {
-    return (
-      <FieldOrEmpty source={content}>
-        {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
-      </FieldOrEmpty>
-    );
-  }
-  return (
-    <FieldOrEmpty source={content}>
+  let markdownDisplayContent;
+  if (disableWarningAtLinkClick || removeLinks || removeLineBreaks) {
+    markdownDisplayContent = remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement();
+  } else {
+    markdownDisplayContent = <>
       <div onClick={(event) => browseLinkWarning(event)}>
         {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
       </div>
@@ -176,8 +176,9 @@ MarkdownWithRedirectionWarningProps
         setDisplayExternalLink={setDisplayExternalLink}
         setExternalLink={setExternalLink}
       />
-    </FieldOrEmpty>
-  );
+    </>;
+  }
+  return emptyStringIfUndefined ? markdownDisplayContent : <FieldOrEmpty source={content}>{markdownDisplayContent}</FieldOrEmpty>;
 };
 
 export default MarkdownDisplay;

@@ -9,7 +9,7 @@ import {
   containersNumberByAuthor,
   containersNumberByEntity,
   containerEditAuthorizedMembers,
-  getContentsFromTemplate,
+  getFilesFromTemplate,
   getTemplateAndUtils,
   getTemplates
 } from '../domain/container';
@@ -51,7 +51,7 @@ const containerResolvers = {
     currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
-    contentsFromTemplate: (container, { first, prefixMimeType }, context) => getContentsFromTemplate(context, context.user, container, { first, prefixMimeType }),
+    filesFromTemplate: (container, { first, prefixMimeType }, context) => getFilesFromTemplate(context, context.user, container, { first, prefixMimeType }),
     templates: (container, _, context) => getTemplates(context, context.user, container),
     templateAndUtils: (container, args, context) => getTemplateAndUtils(context, context.user, container, args.templateId),
   },
