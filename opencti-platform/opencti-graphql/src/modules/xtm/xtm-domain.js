@@ -12,7 +12,7 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_THREAT_ACTOR_GROUP
 } from '../../schema/stixDomainObject';
-import conf from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
 import { createInjectInScenario, createScenario, getAttackPatterns, getKillChainPhases, getScenarioResult, searchInjectorContracts } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../utils/ee';
@@ -338,28 +338,33 @@ export const generateOpenBasScenario = async (
       dependsOnDuration += (interval * 60);
     } else {
       const obasInjectorContracts = await searchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
-      let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
-      if (selection === 'random') {
-        finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
-      }
-      if (simulationType === 'technical') {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const finalObasInjectorContract of finalObasInjectorContracts) {
-          const obasInjectorContractContent = JSON.parse(finalObasInjectorContract.injector_contract_content);
-          const title = `[${obasAttackPattern.attack_pattern_external_id}] ${obasAttackPattern.attack_pattern_name} - ${finalObasInjectorContract.injector_contract_labels.en}`;
-          await createInjectInScenario(
-            obasScenario.scenario_id,
-            obasInjectorContractContent.config.type,
-            finalObasInjectorContract.injector_contract_id,
-            title,
-            dependsOnDuration,
-            null,
-            [{ value: 'opencti', color: '#001bda' }, { value: 'technical', color: '#b9461a' }]
-          );
-          dependsOnDuration += (interval * 60);
-        }
+
+      if (obasInjectorContracts.length === 0) {
+        logApp.error('[GENERATION SCENARIO OBAS] No contracts available for this configuration.');
       } else {
+        let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
+        if (selection === 'random') {
+          finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
+        }
+        if (simulationType === 'technical') {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const finalObasInjectorContract of finalObasInjectorContracts) {
+            const obasInjectorContractContent = JSON.parse(finalObasInjectorContract.injector_contract_content);
+            const title = `[${obasAttackPattern.attack_pattern_external_id}] ${obasAttackPattern.attack_pattern_name} - ${finalObasInjectorContract.injector_contract_labels.en}`;
+            await createInjectInScenario(
+              obasScenario.scenario_id,
+              obasInjectorContractContent.config.type,
+              finalObasInjectorContract.injector_contract_id,
+              title,
+              dependsOnDuration,
+              null,
+              [{ value: 'opencti', color: '#001bda' }, { value: 'technical', color: '#b9461a' }]
+            );
+            dependsOnDuration += (interval * 60);
+          }
+        } else {
         // TODO MIXED Case
+        }
       }
     }
   }
