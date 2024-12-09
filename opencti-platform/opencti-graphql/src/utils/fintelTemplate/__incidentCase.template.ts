@@ -1,4 +1,4 @@
-import type { FintelTemplate, FintelTemplateAddInput } from '../../generated/graphql';
+import type { FintelTemplateAddInput } from '../../generated/graphql';
 import { widgetAttackPatterns, widgetContainerObservables, widgetIncidentIOC, widgetIncidentResponseMultiAttributes, widgetIncidentTasksActions } from './__fintelTemplateWidgets';
 
 const content = `

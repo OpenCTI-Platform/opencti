@@ -263,6 +263,22 @@ export const getFintelTemplates = async (context, user, container) => {
   if (!isEE || !isFileFromTemplateEnabled) {
     return null;
   }
-  const filters = addFilter(undefined, 'settings_types', container.entity_type);
+  const nowDate = new Date().getTime();
+  const filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'settings_types',
+        values: [container.entity_type],
+        operator: 'eq',
+      },
+      {
+        key: 'start_date',
+        values: [nowDate],
+        operator: 'lte',
+      }
+    ],
+    filterGroups: [],
+  };
   return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
