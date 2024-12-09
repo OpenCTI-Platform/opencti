@@ -2,14 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, timeSeriesEntities } from '../database/middleware';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listAllEntities,
-  listEntities,
-  listEntitiesThroughRelationsPaginated,
-  storeLoadById
-} from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listAllEntities, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -19,12 +12,7 @@ import {
   ENTITY_TYPE_CONTAINER
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import {
-  buildPagination,
-  READ_ENTITIES_INDICES,
-  READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_RELATIONSHIPS_INDICES
-} from '../database/utils';
+import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';

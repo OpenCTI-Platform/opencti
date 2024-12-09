@@ -119,5 +119,5 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     generateFintelTemplateExecutiveSummary('Case-Rft')
   ];
   await Promise.all(builtInTemplatesInputs
-    .map((input) => addFintelTemplate(context, user, input, true)));
+    .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
 };

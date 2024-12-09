@@ -110,6 +110,9 @@ const platformInit = async (withMarkings = true) => {
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
+      if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
+        await initFintelTemplates(context, SYSTEM_USER);
+      }
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_INIT_RETRO_MAPPING_MIGRATION) {
@@ -128,9 +131,6 @@ const platformInit = async (withMarkings = true) => {
     }
     if (isFeatureEnabled('EXCLUSION_LIST')) {
       await initExclusionListCache();
-    }
-    if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
-      await initFintelTemplates(context, SYSTEM_USER);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
