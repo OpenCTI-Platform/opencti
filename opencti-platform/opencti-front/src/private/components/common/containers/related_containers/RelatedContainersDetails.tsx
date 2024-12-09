@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { RelatedContainerNode } from '@components/common/containers/RelatedContainers';
+import { RelatedContainerNode } from '@components/common/containers/related_containers/RelatedContainers';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { RelatedContainersDetailsLinesPaginationQuery } from '@components/common/containers/__generated__/RelatedContainersDetailsLinesPaginationQuery.graphql';
 import { RelatedContainersDetailsLines_data$data } from '@components/common/containers/__generated__/RelatedContainersDetailsLines_data.graphql';
 import { RelatedContainersDetailsQuery, RelatedContainersDetailsQuery$variables } from '@components/common/containers/__generated__/RelatedContainersDetailsQuery.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemMarkings from '../../../../components/ItemMarkings';
-import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
-import DataTable from '../../../../components/dataGrid/DataTable';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../../components/i18n';
+import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import ItemMarkings from '../../../../../components/ItemMarkings';
+import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
+import DataTable from '../../../../../components/dataGrid/DataTable';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'RelatedContainersDetailsStore';
 
@@ -31,28 +31,6 @@ export const relatedContainersDetailsQuery = graphql`
     ) {
       label
       value
-    }
-    stixCoreObjects(
-      first: 10
-      filters: $filters
-    ) {
-      edges {
-        node {
-          id
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on Indicator {
-            name
-          }
-          entity_type
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        globalCount
-      }
     }
   }
 `;
