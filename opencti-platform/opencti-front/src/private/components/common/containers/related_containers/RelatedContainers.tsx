@@ -4,15 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
-import RelatedContainersDetails from '@components/common/containers/RelatedContainersDetails';
+import RelatedContainersDetails from '@components/common/containers/related_containers/RelatedContainersDetails';
 import Drawer from '@components/common/drawer/Drawer';
-import { resolveLink } from '../../../../utils/Entity';
-import { useFormatter } from '../../../../components/i18n';
+import { resolveLink } from '../../../../../utils/Entity';
+import { useFormatter } from '../../../../../components/i18n';
 import {
   RelatedContainersFragment_container_connection$key,
   RelatedContainersFragment_container_connection$data,
-} from './__generated__/RelatedContainersFragment_container_connection.graphql';
-import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
+} from '../__generated__/RelatedContainersFragment_container_connection.graphql';
+import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 
 export const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
