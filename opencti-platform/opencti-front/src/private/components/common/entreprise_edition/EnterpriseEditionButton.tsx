@@ -23,6 +23,7 @@ const EnterpriseEditionButton = ({
   feature,
   inLine = false,
   disabled = false,
+  title = 'Manage your Enterprise Edition license',
 }: {
   feature?: string
   inLine?: boolean
@@ -63,7 +64,7 @@ const EnterpriseEditionButton = ({
             }),
           }}
         >
-          {t_i18n('Setup your Enterprise Edition license')}
+          {t_i18n(title)}
         </Button>
       ) : (
         <Button

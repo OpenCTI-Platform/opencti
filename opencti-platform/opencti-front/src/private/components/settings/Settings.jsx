@@ -38,6 +38,7 @@ import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
+import ItemCopy from "../../../components/ItemCopy";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -106,9 +107,11 @@ const settingsQuery = graphql`
       platform_enterprise_edition {
         license_enterprise
         license_validated
+        license_expiration_prevention
         license_customer
         license_expiration_date
         license_expired
+        license_lts
       }
       otp_mandatory
       ...SettingsMessages_settingsMessages
@@ -157,8 +160,10 @@ export const settingsMutationFieldPatch = graphql`
           license_enterprise
           license_validated
           license_customer
+          license_expiration_prevention
           license_expiration_date
           license_expired
+          license_lts
         }
         platform_login_message
         platform_banner_text
@@ -318,11 +323,11 @@ const Settings = () => {
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
-                      {t_i18n('OpenCTI Enterprise')}
+                      {t_i18n('Enterprise Edition')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
-                      <EnterpriseEditionButton disabled={!isAllowed} inLine/>
-                      {isEnterpriseEdition && <div>
+                      <EnterpriseEditionButton disabled={!isAllowed} title={isEnterpriseEdition ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'} inLine/>
+                      {isEnterpriseEdition && <div style={{ float: 'right' }}>
                         <DangerZoneBlock
                           type={'ce_ee_toggle'}
                           sx={{
@@ -394,6 +399,12 @@ const Settings = () => {
                           )}
                         </DangerZoneBlock>
                       </div>}
+                      <list>
+                        <ListItem divider={true}>
+                          <ListItemText primary={t_i18n('Platform identifier')} />
+                          <ItemCopy content={settings.id} variant="inLine" />
+                        </ListItem>
+                      </list>
                       { isEnterpriseEdition && settings.platform_enterprise_edition.license_validated
                           && <List>
                             <ListItem divider={true}>
@@ -404,7 +415,7 @@ const Settings = () => {
                                 status={true}
                               />
                             </ListItem>
-                            <ListItem divider={true}>
+                            <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
                               <ListItemText primary={t_i18n('License expiration date')} />
                               <ItemBoolean
                                 variant="xlarge"
@@ -412,6 +423,22 @@ const Settings = () => {
                                 status={!settings.platform_enterprise_edition.license_expired}
                               />
                             </ListItem>
+                            { !settings.platform_enterprise_edition.license_expired
+                                && settings.platform_enterprise_edition.license_expiration_prevention && <ListItem divider={true}>
+                                  <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
+                                    Your license will expire in less than 3 months, please contact Filigran to renew your license
+                                  </Alert>
+                                </ListItem>}
+                            { /**
+                            <ListItem divider={true}>
+                              <ListItemText primary={t_i18n('LTS Support')} />
+                              <ItemBoolean
+                                variant="large"
+                                label={settings.platform_enterprise_edition.license_lts ? 'YES' : 'NO'}
+                                status={settings.platform_enterprise_edition.license_lts}
+                              />
+                            </ListItem>
+                                * */ }
                           </List>
                       }
                       { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
