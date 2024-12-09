@@ -205,9 +205,9 @@ export const getEnterpriseEditionInfo = (settings) => {
       const isValidCert = OPENCTI_CA.verify(clientCrt);
       license_customer = clientCrt.subject.getField('O').value;
       license_platform = clientCrt.subject.getField('OU').value;
-      license_platform_match = license_platform === 'global_licence' || settings.internal_id === license_platform;
-      license_expired = new Date() <= clientCrt.validity.notAfter;
-      license_validated = isValidCert && license_platform_match && license_expired;
+      license_platform_match = license_platform === 'global_license' || settings.internal_id === license_platform;
+      license_expired = new Date() > clientCrt.validity.notAfter;
+      license_validated = isValidCert && license_platform_match && !license_expired;
       license_expiration_date = clientCrt.validity.notAfter;
     } catch {
       // Nothing to do here
