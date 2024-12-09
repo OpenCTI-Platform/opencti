@@ -29,7 +29,7 @@ const inputs = [
         lang: 'en',
         last_seen: '5138-11-16T09:46:40.000Z',
         modified: '2024-12-02T13:55:40.064Z',
-        name: 'AP  T29',
+        name: 'APT29',
         'object-label': [
           'debcc53e-9515-4107-bbdc-8eb8084f7527'
         ],
@@ -41,14 +41,14 @@ const inputs = [
           'Basic-Object',
           'Stix-Object',
           'Stix-Core-Object',
-          'Stix-  Domain-Object'
+          'Stix-Domain-Object'
         ],
         primary_motivation: 'Espionage',
         'rel_created-by.internal_id': [
           'bc9fe33d-e694-4604-abc1-82f2e99cd00a'
         ],
         'rel_external-reference.internal_id': [],
-        'rel_object-labe  l.internal_id': [
+        'rel_object-label.internal_id': [
           'debcc53e-9515-4107-bbdc-8eb8084f7527'
         ],
         'rel_object-marking.internal_id': [
@@ -120,7 +120,7 @@ const relInputs = [
         standard_id: 'relationship--54af1a95-b0e8-53d6-8c0c-074f57e9d58c',
         start_time: '2024-12-06T08:40:55.000Z',
         stop_time: '2024-12-06T08:41:55.000Z',
-        'ta  rget_ref': 'malware--temporary',
+        target_ref: 'malware--temporary',
         to: null,
         toId: 'd9162b45-55dd-403b-906b-a16edf74ebff',
         toName: 'HAMMERTOSS',
