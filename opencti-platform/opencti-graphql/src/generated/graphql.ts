@@ -8221,6 +8221,12 @@ export enum Format {
   Text = 'text'
 }
 
+export type GenerationResponse = {
+  __typename?: 'GenerationResponse';
+  attackPatternsWithoutInjectorContracts?: Maybe<Scalars['String']['output']>;
+  urlResponse?: Maybe<Scalars['String']['output']>;
+};
+
 export type GetMetrics = {
   __typename?: 'GetMetrics';
   total?: Maybe<Scalars['String']['output']>;
@@ -13625,9 +13631,9 @@ export type Mutation = {
   notifierAdd?: Maybe<Notifier>;
   notifierDelete?: Maybe<Scalars['ID']['output']>;
   notifierFieldPatch?: Maybe<Notifier>;
-  obasContainerGenerateScenario?: Maybe<Scalars['String']['output']>;
-  obasThreatGenerateScenario?: Maybe<Scalars['String']['output']>;
-  obasVictimGenerateScenario?: Maybe<Scalars['String']['output']>;
+  obasContainerGenerateScenario?: Maybe<GenerationResponse>;
+  obasThreatGenerateScenario?: Maybe<GenerationResponse>;
+  obasVictimGenerateScenario?: Maybe<GenerationResponse>;
   observedDataAdd?: Maybe<ObservedData>;
   observedDataEdit?: Maybe<ObservedDataEditMutations>;
   opinionAdd?: Maybe<Opinion>;
@@ -31024,6 +31030,7 @@ export type ResolversTypes = ResolversObject<{
   FilterOperator: FilterOperator;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Format: Format;
+  GenerationResponse: ResolverTypeWrapper<GenerationResponse>;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
   Group: ResolverTypeWrapper<Omit<Group, 'allowed_marking' | 'default_dashboard' | 'default_marking' | 'max_shareable_marking' | 'members'> & { allowed_marking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, default_dashboard?: Maybe<ResolversTypes['Workspace']>, default_marking?: Maybe<Array<ResolversTypes['DefaultMarking']>>, max_shareable_marking: Array<ResolversTypes['MarkingDefinition']>, members?: Maybe<ResolversTypes['UserConnection']> }>;
   GroupAddInput: GroupAddInput;
@@ -31836,6 +31843,7 @@ export type ResolversParentTypes = ResolversObject<{
   FilterGroup: FilterGroup;
   FilterKeysSchema: FilterKeysSchema;
   Float: Scalars['Float']['output'];
+  GenerationResponse: GenerationResponse;
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'allowed_marking' | 'default_dashboard' | 'default_marking' | 'max_shareable_marking' | 'members'> & { allowed_marking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, default_marking?: Maybe<Array<ResolversParentTypes['DefaultMarking']>>, max_shareable_marking: Array<ResolversParentTypes['MarkingDefinition']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
   GroupAddInput: GroupAddInput;
@@ -35074,6 +35082,12 @@ export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type GenerationResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['GenerationResponse'] = ResolversParentTypes['GenerationResponse']> = ResolversObject<{
+  attackPatternsWithoutInjectorContracts?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  urlResponse?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type GetMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GetMetrics'] = ResolversParentTypes['GetMetrics']> = ResolversObject<{
   total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -37041,9 +37055,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   notifierAdd?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<MutationNotifierAddArgs, 'input'>>;
   notifierDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNotifierDeleteArgs, 'id'>>;
   notifierFieldPatch?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<MutationNotifierFieldPatchArgs, 'id' | 'input'>>;
-  obasContainerGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasContainerGenerateScenarioArgs, 'id'>>;
-  obasThreatGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasThreatGenerateScenarioArgs, 'id'>>;
-  obasVictimGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasVictimGenerateScenarioArgs, 'id'>>;
+  obasContainerGenerateScenario?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasContainerGenerateScenarioArgs, 'id'>>;
+  obasThreatGenerateScenario?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasThreatGenerateScenarioArgs, 'id'>>;
+  obasVictimGenerateScenario?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasVictimGenerateScenarioArgs, 'id'>>;
   observedDataAdd?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<MutationObservedDataAddArgs, 'input'>>;
   observedDataEdit?: Resolver<Maybe<ResolversTypes['ObservedDataEditMutations']>, ParentType, ContextType, RequireFields<MutationObservedDataEditArgs, 'id'>>;
   opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationOpinionAddArgs, 'input'>>;
@@ -41782,6 +41796,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   FilterDefinition?: FilterDefinitionResolvers<ContextType>;
   FilterDefinitionSchema?: FilterDefinitionSchemaResolvers<ContextType>;
   FilterKeysSchema?: FilterKeysSchemaResolvers<ContextType>;
+  GenerationResponse?: GenerationResponseResolvers<ContextType>;
   GetMetrics?: GetMetricsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupConnection?: GroupConnectionResolvers<ContextType>;
