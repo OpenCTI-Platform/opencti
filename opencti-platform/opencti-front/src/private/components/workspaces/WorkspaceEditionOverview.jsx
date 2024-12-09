@@ -54,14 +54,15 @@ const WorkspaceEditionOverviewComponent = (props) => {
   };
 
   const handleSubmitField = (name, value) => {
+    const sanitizedValue = value?.trim() || '';
     workspaceValidation(t_i18n)
-      .validateAt(name, { [name]: value })
+      .validateAt(name, { [name]: sanitizedValue })
       .then(() => {
         commitMutation({
           mutation: workspaceMutationFieldPatch,
           variables: {
             id: workspace.id,
-            input: { key: name, value: value || '' },
+            input: { key: name, value: sanitizedValue },
           },
         });
       })
@@ -74,7 +75,7 @@ const WorkspaceEditionOverviewComponent = (props) => {
   };
   return (
     <Formik
-      enableReinitialize={true}
+      enableReinitialize
       initialValues={initialValues}
       validationSchema={workspaceValidation}
       onSubmit={(values) => {
@@ -89,8 +90,8 @@ const WorkspaceEditionOverviewComponent = (props) => {
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
-            onFocus={() => handleChangeFocus('name')}
-            onBlur={() => handleSubmitField('name')}
+            onFocus={(e) => handleChangeFocus('name', e.target.value)}
+            onBlur={(e) => handleSubmitField('name', e.target.value)}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
