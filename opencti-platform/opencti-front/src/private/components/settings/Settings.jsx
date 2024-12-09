@@ -409,7 +409,7 @@ const Settings = () => {
                               <ItemBoolean
                                 variant="xlarge"
                                 label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
-                                status={settings.platform_enterprise_edition.license_expired}
+                                status={!settings.platform_enterprise_edition.license_expired}
                               />
                             </ListItem>
                           </List>
