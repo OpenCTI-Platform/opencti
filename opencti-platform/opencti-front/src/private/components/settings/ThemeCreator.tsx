@@ -60,12 +60,24 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
       .trim()
       .min(2)
       .required(t_i18n('This field is required')),
-    theme_background: Yup.string().nullable(),
-    theme_paper: Yup.string().nullable(),
-    theme_nav: Yup.string().nullable(),
-    theme_primary: Yup.string().nullable(),
-    theme_secondary: Yup.string().nullable(),
-    theme_accent: Yup.string().nullable(),
+    theme_background: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_paper: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_nav: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_primary: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_secondary: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_accent: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
     theme_logo: Yup.string().nullable(),
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
@@ -94,12 +106,12 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
 
   const initialValues = {
     name: '',
-    theme_background: '',
-    theme_paper: '',
-    theme_nav: '',
-    theme_primary: '',
-    theme_secondary: '',
-    theme_accent: '',
+    theme_background: '#070d19',
+    theme_paper: '#09101e',
+    theme_nav: '#070d19',
+    theme_primary: '#0fbcff',
+    theme_secondary: '#00f1bd',
+    theme_accent: '#0f1e38',
     theme_logo: '',
     theme_logo_collapsed: '',
     theme_logo_login: '',
@@ -130,7 +142,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
-                InputLabelProps={{ shrink: true }}
                 fullWidth
               />
               <Field
@@ -142,7 +153,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
                 variant="standard"
               />
               <Field
@@ -154,7 +164,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
                 variant="standard"
               />
               <Field
@@ -166,7 +175,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
                 variant="standard"
               />
               <Field
@@ -178,7 +186,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
                 variant="standard"
               />
               <Field
@@ -190,7 +197,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
                 variant="standard"
               />
               <Field
@@ -202,7 +208,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
                 variant="standard"
               />
               <Field
@@ -215,7 +220,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
               />
               <Field
                 component={TextField}
@@ -227,7 +231,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
               />
               <Field
                 component={TextField}
@@ -239,7 +242,6 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
                   shrink: true,
                 }}
                 fullWidth
-                style={{ marginTop: 20 }}
               />
             </DialogContent>
             <DialogActions>
