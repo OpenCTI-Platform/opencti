@@ -340,7 +340,7 @@ export const generateOpenBasScenario = async (
       const obasInjectorContracts = await searchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
 
       if (obasInjectorContracts.length === 0) {
-        logApp.error('[GENERATION SCENARIO OBAS] No contracts available for this configuration.');
+        logApp.info('[GENERATION SCENARIO OBAS] No contracts available for this configuration.');
       } else {
         let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
         if (selection === 'random') {
@@ -368,6 +368,7 @@ export const generateOpenBasScenario = async (
       }
     }
   }
+
   return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
 };
 

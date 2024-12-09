@@ -9,7 +9,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -119,6 +119,58 @@ const platformOptions = [
   { label: 'MacOS', value: 'MacOS' },
 ];
 
+const stixCoreObjectSimulationResultAttackPatternForContainersQuery = graphql`
+  query StixCoreObjectSimulationResultAttackPatternForContainersQuery($id: String!) {
+    stixCoreObject(id: $id) {
+      id    
+      entity_type
+      ... on Container {
+        objects (types: ["Attack-Pattern"]){
+          edges {
+            types
+            node {
+              ... on AttackPattern {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const stixCoreObjectSimulationResultAttackPatternsForThreatsQuery = graphql`
+  query StixCoreObjectSimulationResultAttackPatternForThreatsQuery($id: Any!) {
+    stixCoreRelationships(filters: {
+      mode: and,
+      filters: [
+        {
+        key: "relationship_type",
+        values: ["uses"],
+      },
+        {
+          key: "fromOrToId",
+          values: [$id],
+        },
+        {
+          key: "elementWithTargetTypes",
+          values: ["Attack-Pattern"],
+        }
+      ],
+      filterGroups: [
+        
+      ],
+    }) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`;
+
 const StixCoreObjectSimulationResult = ({ id, type }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -138,7 +190,27 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const hasAttackPatterns = true;
+
+  // Determine the query based on the type
+  let attackPatternsQuery;
+  if (type === 'container') {
+    attackPatternsQuery = stixCoreObjectSimulationResultAttackPatternForContainersQuery;
+  } else if (type === 'threat') {
+    attackPatternsQuery = stixCoreObjectSimulationResultAttackPatternsForThreatsQuery;
+  } else {
+    throw new Error('Type should be container or threat');
+  }
+
+  // Fetch the data using the selected query
+  const data = useLazyLoadQuery(attackPatternsQuery, { id });
+
+  // Check if there are attack patterns in the result
+  let hasAttackPatterns = false;
+  if (type === 'container' && data?.stixCoreObject?.objects?.edges?.length > 0) {
+    hasAttackPatterns = true;
+  } else if (type === 'threat' && data?.stixCoreRelationships?.edges?.length > 0) {
+    hasAttackPatterns = true;
+  }
 
   const canGenerateScenario = () => {
     return (
@@ -379,7 +451,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           <Alert
             severity="warning"
             variant="outlined"
-            style={{ position: 'relative' }}
+            style={{ marginTop: 5 }}
           >
             {t_i18n('Simulation type : Technical (payloads) require attack patterns in this entity.')}
           </Alert>
