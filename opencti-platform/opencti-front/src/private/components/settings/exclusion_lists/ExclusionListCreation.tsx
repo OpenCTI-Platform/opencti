@@ -21,6 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
+import { splitMultilines } from '../../../../utils/String';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -123,7 +124,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, errors }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -164,7 +165,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             label={t_i18n('Create with file')}
           />
           {isCreatedWithFile ? (
-            <CustomFileUploader setFieldValue={setFieldValue} />
+            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} />
           ) : (
             <Field
               style={fieldSpacingContainerStyle}
