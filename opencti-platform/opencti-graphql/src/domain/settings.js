@@ -3,7 +3,7 @@ import nconf from 'nconf';
 import * as R from 'ramda';
 import forge from 'node-forge';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_FEATURE_FLAGS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
+import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -13,7 +13,7 @@ import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { now } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { markAllSessionsForRefresh } from '../database/session';
@@ -200,13 +200,17 @@ export const getEnterpriseEditionInfo = (settings) => {
     let license_platform_match = false;
     let license_expiration_date = now();
     let license_platform = settings.internal_id;
+    let license_expiration_prevention = false;
+    let license_lts = false;
     try {
       const clientCrt = forge.pki.certificateFromPem(settings.enterprise_license);
       const isValidCert = OPENCTI_CA.verify(clientCrt);
+      license_lts = clientCrt.extensions.find((ext) => ext.id === '1.2.3.4.5.6.7.8.9')?.value === '1';
       license_customer = clientCrt.subject.getField('O').value;
       license_platform = clientCrt.subject.getField('OU').value;
       license_platform_match = license_platform === 'global_license' || settings.internal_id === license_platform;
       license_expired = new Date() > clientCrt.validity.notAfter;
+      license_expiration_prevention = utcDate(clientCrt.validity.notAfter).diff(now(), 'months') < 3;
       license_validated = isValidCert && license_platform_match && !license_expired;
       license_expiration_date = clientCrt.validity.notAfter;
     } catch {
@@ -218,7 +222,9 @@ export const getEnterpriseEditionInfo = (settings) => {
       license_validated,
       license_expired,
       license_expiration_date,
+      license_expiration_prevention,
       license_platform,
+      license_lts,
       license_platform_match
     };
   }
@@ -229,6 +235,8 @@ export const getEnterpriseEditionInfo = (settings) => {
     license_expired: true,
     license_expiration_date: now(),
     license_platform: 'invalid',
+    license_lts: false,
+    license_expiration_prevention: false,
     license_platform_match: true
   };
 };

@@ -1235,8 +1235,10 @@ type PlatformEE {
   license_customer: String!
   license_validated: Boolean!
   license_expired: Boolean!
+  license_expiration_prevention: Boolean!
   license_expiration_date: DateTime!
   license_platform: String!
+  license_lts: Boolean!
   license_platform_match: Boolean!
 }
 
