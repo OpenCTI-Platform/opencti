@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -11,14 +10,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
-import withRouter from '../../../../utils/compat_router/withRouter';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { observedDataEditionQuery } from './ObservedDataEdition';
 import ObservedDataEditionContainer from './ObservedDataEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const ObservedDataPopoverDeletionMutation = graphql`
   mutation ObservedDataPopoverDeletionMutation($id: ID!) {
@@ -28,109 +27,73 @@ const ObservedDataPopoverDeletionMutation = graphql`
   }
 `;
 
-class ObservedDataPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayExport: false,
-      displayDelete: false,
-      displayEdit: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+const ObservedDataPopover = ({ id }) => {
+  const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
+  const handleCloseDelete = () => setDisplayDelete(false);
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: ObservedDataPopoverDeletionMutation,
-      variables: {
-        id: this.props.id,
-      },
+      variables: { id },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.navigate('/dashboard/events/observed_data');
+        setDeleting(false);
+        handleClose();
+        navigate('/dashboard/events/observed_data');
       },
     });
-  }
-
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
-  render() {
-    const { t, id } = this.props;
-    return (
+  };
+  const handleOpenEdit = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
+  const handleCloseEdit = () => setDisplayEdit(false);
+  return isFABReplaced
+    ? (<></>)
+    : (
       <>
         <ToggleButton
           value="popover"
           size="small"
-
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
         >
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <Dialog
-          open={this.state.displayDelete}
+          open={displayDelete}
           PaperProps={{ elevation: 1 }}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
+          onClose={handleCloseDelete}
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this observed data?')}
+              {t_i18n('Do you want to delete this observed data?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
             </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -142,8 +105,8 @@ class ObservedDataPopover extends Component {
               return (
                 <ObservedDataEditionContainer
                   observedData={props.observedData}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                  open={this.state.displayEdit}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
                 />
               );
             }
@@ -152,14 +115,6 @@ class ObservedDataPopover extends Component {
         />
       </>
     );
-  }
-}
-
-ObservedDataPopover.propTypes = {
-  id: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
 };
 
-export default compose(inject18n, withRouter)(ObservedDataPopover);
+export default ObservedDataPopover;
