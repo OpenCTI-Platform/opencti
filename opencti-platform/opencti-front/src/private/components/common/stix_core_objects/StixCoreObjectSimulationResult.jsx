@@ -596,10 +596,16 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     return (
       <>
         <Alert icon={<CheckOutlined fontSize="inherit" />} severity="success">
-          {t_i18n('The scenario has been correctly generated in your OpenBAS platform')}
+          {t_i18n('The scenario has been correctly generated in your OpenBAS platform.')}
+          {result.attackPatternsWithoutInjectorContracts.length > 0 && (
+            <>
+              {t_i18n(' The next attack patterns don\'t have any contract linked: ')}
+              {result.attackPatternsWithoutInjectorContracts.join(', ')}
+            </>
+          )}
         </Alert>
         <Box textAlign='center' style={{ marginTop: 20 }}>
-          <Button component={Link} to={result} target="_blank" variant="outlined" endIcon={<OpenInNewOutlined />}>
+          <Button component={Link} to={result.url_response} target="_blank" variant="outlined" endIcon={<OpenInNewOutlined />}>
             {t_i18n('Access to the scenario')}
           </Button>
         </Box>
