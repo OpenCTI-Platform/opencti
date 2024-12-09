@@ -80,7 +80,7 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   let key = entityType;
   let value = indicatorName;
   if (isStixCyberObservableHashedObservable(entityType)) {
-    if (observable.hashes) {
+    if (observable.hashes) { // TODO need to handle the case where observable.hashes has multiple keys
       key = '';
       value = '';
       if (observable.hashes['SHA-256']) {
@@ -117,17 +117,17 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   if (key.includes('Artifact')) {
     key = key.replaceAll('Artifact', 'File');
   }
-  return { key, value };
+  return { key, value }; // TODO need to return a list of keys/values
 };
 export const createIndicatorFromObservable = async (context, user, input, observable) => {
   try {
     let entityType = observable.entity_type;
     const indicatorName = observableValue(observable);
-    const { key, value } = generateKeyValueForIndicator(entityType, indicatorName, observable);
+    const { key, value } = generateKeyValueForIndicator(entityType, indicatorName, observable); // TODO should return a list
     if (key.includes('Artifact')) {
       entityType = 'StixFile';
     }
-    const pattern = await createStixPattern(context, user, key, value);
+    const pattern = await createStixPattern(context, user, key, value); // TODO how createStixPattern will handle a list of keys/values?
     if (pattern) {
       const indicatorToCreate = {
         pattern_type: STIX_PATTERN_TYPE,
