@@ -5,7 +5,6 @@ import { graphql, useFragment, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { RootSubTypeQuery$variables } from '@components/settings/sub_types/__generated__/RootSubTypeQuery.graphql';
-import TemplatesGrid from '@components/settings/sub_types/templates/TemplatesGrid';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
@@ -17,13 +16,8 @@ import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import type { Theme } from '../../../../components/Theme';
-
-export const PAPER_STYLE: (t: Theme) => CSSProperties = (theme) => ({
-  marginTop: theme.spacing(1),
-  padding: theme.spacing(2),
-  borderRadius: theme.spacing(0.5),
-  position: 'relative',
-});
+import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -46,6 +40,7 @@ const subTypeFragment = graphql`
       ...EntitySettingsOverviewLayoutCustomization_entitySetting
       ...EntitySettingSettings_entitySetting
       ...EntitySettingAttributes_entitySetting
+      ...FintelTemplatesGrid_templates
     }
     statuses {
       id
@@ -91,15 +86,28 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
   // const hasTemplates = subType.settings?.availableSettings.includes('templates')
   const hasTemplates = true;
 
+  const paperStyle: CSSProperties = {
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
+    borderRadius: theme.spacing(0.5),
+    position: 'relative',
+  };
+
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
+      <Breadcrumbs elements={[
+        { label: t_i18n('Settings') },
+        { label: t_i18n('Customization') },
+        { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
+        { label: subType.label },
+      ]}
+      />
+
       <CustomizationMenu />
 
-      <div style={{ marginBottom: 23 }}>
-        <Typography variant="h1" gutterBottom={true}>
-          {t_i18n(`entity_${subType.label}`)}
-        </Typography>
-      </div>
+      <Typography variant="h1" gutterBottom={true} sx={{ mb: 3 }}>
+        {t_i18n(`entity_${subType.label}`)}
+      </Typography>
 
       <Grid container spacing={3}>
         <Grid item xs={hasTemplates ? 6 : 12}>
@@ -107,7 +115,7 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             {t_i18n('Configuration')}
           </Typography>
           <Paper
-            style={PAPER_STYLE(theme)}
+            style={paperStyle}
             variant="outlined"
             className={'paper-for-grid'}
           >
@@ -129,7 +137,7 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
           </Paper>
         </Grid>
 
-        {hasTemplates && <TemplatesGrid />}
+        {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
 
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
           <Grid item xs={12}>
@@ -145,7 +153,7 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             </div>
             <div className="clearfix" />
             <Paper
-              style={PAPER_STYLE(theme)}
+              style={paperStyle}
               variant="outlined"
               className={'paper-for-grid'}
             >

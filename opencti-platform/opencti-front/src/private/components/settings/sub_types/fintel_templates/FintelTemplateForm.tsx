@@ -7,47 +7,43 @@ import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
-import RichTextField from '../../../../../components/fields/RichTextField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
 
-export interface TemplateFormInputs {
+export interface FintelTemplateFormInputs {
   name: string
   description: string | null
-  content: string
   published: boolean
 }
 
-interface TemplateFormProps {
+interface FintelTemplateFormProps {
   onClose: () => void
-  onSubmit: FormikConfig<TemplateFormInputs>['onSubmit']
+  onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit']
   onSubmitField: (field: string, value: unknown) => void
-  defaultValues?: TemplateFormInputs
+  defaultValues?: FintelTemplateFormInputs
   isEdition?: boolean
 }
 
-const TemplateForm = ({
+const FintelTemplateForm = ({
   onClose,
   onSubmit,
   onSubmitField,
   defaultValues,
   isEdition = false,
-}: TemplateFormProps) => {
+}: FintelTemplateFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const validation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string(),
-    content: Yup.string().trim().required(t_i18n('This field is required')),
     published: Yup.boolean().required(t_i18n('This field is required')),
   });
 
-  const initialValues: TemplateFormInputs = defaultValues ?? {
+  const initialValues: FintelTemplateFormInputs = defaultValues ?? {
     name: '',
     description: null,
-    content: '',
     published: false,
   };
 
@@ -60,13 +56,13 @@ const TemplateForm = ({
   const onUpdate = isEdition ? updateField : undefined;
 
   return (
-    <Formik<TemplateFormInputs>
+    <Formik<FintelTemplateFormInputs>
       enableReinitialize={true}
       validationSchema={validation}
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting, errors }) => {
+      {({ submitForm, handleReset, isSubmitting }) => {
         return (
           <Form>
             <Field
@@ -94,18 +90,6 @@ const TemplateForm = ({
               style={fieldSpacingContainerStyle}
               multiline={true}
               rows="4"
-              onSubmit={onUpdate}
-            />
-            <Field
-              component={RichTextField}
-              name="content"
-              label={t_i18n('Content')}
-              meta={{ error: errors.content }}
-              style={{
-                ...fieldSpacingContainerStyle,
-                height: 400,
-              }}
-              required
               onSubmit={onUpdate}
             />
 
@@ -144,4 +128,4 @@ const TemplateForm = ({
   );
 };
 
-export default TemplateForm;
+export default FintelTemplateForm;

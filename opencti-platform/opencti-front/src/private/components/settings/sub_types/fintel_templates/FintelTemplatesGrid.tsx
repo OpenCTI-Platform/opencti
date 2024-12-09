@@ -6,18 +6,52 @@ import { useTheme } from '@mui/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { Add as AddIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import TemplateFormDrawer from '@components/settings/sub_types/templates/TemplateFormDrawer';
-import { TemplateFormInputs } from '@components/settings/sub_types/templates/TemplateForm';
-import { PAPER_STYLE } from '../SubType';
+import { graphql, useFragment } from 'react-relay';
+import { SubType_subType$data } from '@components/settings/sub_types/__generated__/SubType_subType.graphql';
+import { FintelTemplatesGrid_templates$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatesGrid_templates.graphql';
+import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
+import { FintelTemplateFormInputs } from './FintelTemplateForm';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 
-const TemplatesGrid = () => {
+const fintelTemplateFragment = graphql`
+  fragment FintelTemplatesGrid_template on FintelTemplate {
+    id
+    name
+    description
+    instance_filters
+    content
+    settings_types
+    template_widgets_ids
+    start_date
+  }
+`;
+
+const fintelTemplatesFragment = graphql`
+  fragment FintelTemplatesGrid_templates on EntitySetting {
+    fintelTemplates {
+      ...FintelTemplatesGrid_template
+    }
+  }
+`;
+
+interface FintelTemplatesGridProps {
+  data: SubType_subType$data['settings']
+}
+
+const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
+  const templates = useFragment<FintelTemplatesGrid_templates$key>(
+    fintelTemplatesFragment,
+    data,
+  );
+
+  console.log('ccsv', templates);
+
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [templateToEdit, setTemplateToEdit] = useState<TemplateFormInputs>();
+  const [templateToEdit, setTemplateToEdit] = useState<FintelTemplateFormInputs>();
 
   return (
     <>
@@ -42,13 +76,17 @@ const TemplatesGrid = () => {
         <Paper
           variant="outlined"
           className="paper-for-grid"
-          style={PAPER_STYLE(theme)}
+          style={{
+            marginTop: theme.spacing(1),
+            padding: theme.spacing(2),
+            borderRadius: theme.spacing(0.5),
+            position: 'relative',
+          }}
         >
           <button onClick={() => {
             setTemplateToEdit({
               name: 'Super template',
               description: 'pouet pouet',
-              content: '<p>I am a template</p>',
               published: true,
             });
             setDrawerOpen(true);
@@ -59,7 +97,7 @@ const TemplatesGrid = () => {
         </Paper>
       </Grid>
 
-      <TemplateFormDrawer
+      <FintelTemplateFormDrawer
         isOpen={isDrawerOpen}
         template={templateToEdit}
         onClose={() => {
@@ -71,4 +109,4 @@ const TemplatesGrid = () => {
   );
 };
 
-export default TemplatesGrid;
+export default FintelTemplatesGrid;

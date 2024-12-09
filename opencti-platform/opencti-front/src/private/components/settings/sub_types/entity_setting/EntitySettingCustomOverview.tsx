@@ -1,5 +1,5 @@
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { RestartAlt } from '@mui/icons-material';
@@ -9,7 +9,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
 import { SubType_subType$data } from '@components/settings/sub_types/__generated__/SubType_subType.graphql';
 import { useTheme } from '@mui/styles';
-import { PAPER_STYLE } from '@components/settings/sub_types/SubType';
 import EntitySettingsOverviewLayoutCustomization, {
   EntitySettingsOverviewLayoutCustomizationData,
   entitySettingsOverviewLayoutCustomizationEdit,
@@ -53,6 +52,13 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
 
   const layout = entitySetting.overview_layout_customization;
 
+  const paperStyle: CSSProperties = {
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
+    borderRadius: theme.spacing(0.5),
+    position: 'relative',
+  };
+
   return layout ? (
     <>
       <Grid item xs={6}>
@@ -75,7 +81,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
         <Paper
           variant="outlined"
           className={'paper-for-grid'}
-          style={PAPER_STYLE(theme)}
+          style={paperStyle}
         >
           <EntitySettingsOverviewLayoutCustomization
             entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
@@ -89,7 +95,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
         <Paper
           variant="outlined"
           className={'paper-for-grid'}
-          style={PAPER_STYLE(theme)}
+          style={paperStyle}
         >
           <Grid container>
             {layout.map(({ key, width, label }) => (

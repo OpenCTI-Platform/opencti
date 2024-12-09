@@ -1,19 +1,19 @@
 import Drawer from '@components/common/drawer/Drawer';
 import React from 'react';
-import TemplateForm, { TemplateFormInputs } from '@components/settings/sub_types/templates/TemplateForm';
+import FintelTemplateForm, { FintelTemplateFormInputs } from './FintelTemplateForm';
 import { useFormatter } from '../../../../../components/i18n';
 
-interface TemplateFormDrawerProps {
+interface FintelTemplateFormDrawerProps {
   isOpen: boolean
   onClose: () => void
-  template?: TemplateFormInputs
+  template?: FintelTemplateFormInputs
 }
 
-const TemplateFormDrawer = ({
+const FintelTemplateFormDrawer = ({
   isOpen,
   onClose,
   template,
-}: TemplateFormDrawerProps) => {
+}: FintelTemplateFormDrawerProps) => {
   const { t_i18n } = useFormatter();
   const createTitle = t_i18n('Create a template');
   const editionTitle = t_i18n('Update a template');
@@ -24,7 +24,7 @@ const TemplateFormDrawer = ({
       open={isOpen}
       onClose={onClose}
     >
-      <TemplateForm
+      <FintelTemplateForm
         onClose={onClose}
         onSubmit={console.log}
         onSubmitField={console.log}
@@ -35,4 +35,4 @@ const TemplateFormDrawer = ({
   );
 };
 
-export default TemplateFormDrawer;
+export default FintelTemplateFormDrawer;
