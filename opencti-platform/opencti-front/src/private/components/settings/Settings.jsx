@@ -445,6 +445,7 @@ const Settings = () => {
                           && <List>
                             <ListItem divider={false}>
                               <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
+                                You currently using OpenCTI enterprise edition<br/>
                                 Please contact Filigran to get your license - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
                               </Alert>
                             </ListItem>
