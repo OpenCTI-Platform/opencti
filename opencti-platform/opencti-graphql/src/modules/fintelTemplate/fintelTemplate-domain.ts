@@ -25,10 +25,7 @@ export const canCustomizeTemplate = async (context: AuthContext) => {
 export const canViewTemplates = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
   const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  if (!isEE || !isFileFromTemplateEnabled) {
-    return false;
-  }
-  return true;
+  return !(!isEE || !isFileFromTemplateEnabled);
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -43,7 +40,7 @@ export const addFintelTemplate = async (
   dontCheckCustomize = false,
 ) => {
   if (!dontCheckCustomize) await canCustomizeTemplate(context);
-  const finalInput = {
+  const finalInput: FintelTemplateAddInput = {
     ...input,
     content: input.content ?? '',
     fintel_template_widgets: input.fintel_template_widgets ?? [],

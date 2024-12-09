@@ -18,7 +18,7 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
-import { canCustomizeTemplate, canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
+import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 

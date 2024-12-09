@@ -43,15 +43,6 @@ export const entitySettingFragment = graphql`
         width
         label
     }
-    fintelTemplates {
-        id
-        name
-        description
-        instance_filters
-        content
-        settings_types
-        start_date        
-    }
   }
 `;
 
