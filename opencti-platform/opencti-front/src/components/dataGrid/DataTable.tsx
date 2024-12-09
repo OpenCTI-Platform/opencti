@@ -5,6 +5,7 @@ import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import Alert from '@mui/material/Alert';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
@@ -19,6 +20,7 @@ import { useDataTableContext } from './components/DataTableContext';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
+| 'storageKey'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -43,6 +45,7 @@ const DataTableInternalFilters = ({
   additionalHeaderButtons,
   currentView,
   exportContext,
+  storageKey,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
 
@@ -73,6 +76,7 @@ const DataTableInternalFilters = ({
             keyword={searchTerm}
           />
         )}
+
         {!hideFilters && (
           <DataTableFilters
             availableFilterKeys={availableFilterKeys}
@@ -87,6 +91,17 @@ const DataTableInternalFilters = ({
           />
         )}
       </div>
+      {storageKey === 'restrictedEntities' && (
+        <div style={{ width: '100%', marginBottom: 20 }}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ padding: '0px 10px 0px 10px' }}
+          >
+            {('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+          </Alert>
+        </div>
+      )}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}
@@ -96,6 +111,7 @@ const DataTableInternalFilters = ({
           entityTypes={computedEntityTypes}
         />
       )}
+
     </>
   );
 };
@@ -136,6 +152,7 @@ const DataTableInternalToolbar = ({
         flex: 1,
       }}
     >
+
       <DataTableToolBar
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
@@ -200,6 +217,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideSearch,
     hideFilters,
     taskScope,
+    storageKey,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -242,6 +260,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           currentView={currentView}
           exportContext={exportContext}
           searchContextFinal={computedSearchContextFinal}
+          storageKey={storageKey}
         />
       )}
       dataTableToolBarComponent={(
