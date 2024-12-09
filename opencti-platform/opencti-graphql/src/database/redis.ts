@@ -8,7 +8,7 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, fromBase64, isEmptyField, toBase64, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -902,10 +902,10 @@ export const redisGetExclusionListStatus = async () => {
 
 export const redisGetExclusionListCache = async () => {
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
-  return JSON.parse(fromBase64(rawCache) ?? '[]');
+  return rawCache ? JSON.parse(rawCache) : [];
 };
 export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]) => {
-  const stringifiedCache = toBase64(JSON.stringify(cache)) as string;
+  const stringifiedCache = JSON.stringify(cache);
   await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
 };
 
