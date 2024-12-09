@@ -21,7 +21,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import { splitMultilines } from '../../../../utils/String';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -159,9 +158,14 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
           />
           <FormControlLabel
             style={fieldSpacingContainerStyle}
-            control={<Switch defaultChecked onChange={(_, isChecked) => {
-              setIsCreatedWithFile(isChecked);
-            }} />}
+            control={
+              <Switch
+                defaultChecked
+                onChange={(_, isChecked) => {
+                  setIsCreatedWithFile(isChecked);
+                }}
+              />
+            }
             label={t_i18n('Create with file')}
           />
           {isCreatedWithFile ? (
