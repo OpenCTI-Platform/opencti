@@ -167,7 +167,7 @@ const ExclusionLists = () => {
     },
     created_at: {
       label: t_i18n('Creation date'),
-      percentWidth: 10,
+      percentWidth: 15,
       isSortable: true,
     },
     enabled: {
@@ -186,7 +186,7 @@ const ExclusionLists = () => {
     exclusion_list_entity_types: {
       id: 'exclusion_list_entity_types',
       label: t_i18n('Entity type'),
-      percentWidth: 20,
+      percentWidth: 15,
       isSortable: false,
       render: (node: ExclusionListsLine_node$data) => renderExclusionListEntityTypes(node.exclusion_list_entity_types ?? []),
     },
