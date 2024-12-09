@@ -244,6 +244,9 @@ export const generateOpenBasScenario = async (
   const sortByKillChainPhase = R.sortBy(R.path(['attack_pattern_kill_chain_phase', 'phase_order']));
   const sortedEnrichedFilteredObasAttackPatterns = sortByKillChainPhase(enrichedFilteredObasAttackPatterns);
 
+  // Initialize an array to collect attack patterns without contracts
+  const attackPatternsWithoutInjectorContracts = [];
+
   // Get the injector contracts
   // eslint-disable-next-line no-restricted-syntax
   for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
@@ -340,6 +343,7 @@ export const generateOpenBasScenario = async (
       const obasInjectorContracts = await searchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
 
       if (obasInjectorContracts.length === 0) {
+        attackPatternsWithoutInjectorContracts.push(obasAttackPattern.attack_pattern_name);
         logApp.info('[GENERATION SCENARIO OBAS] No contracts available for this configuration.');
       } else {
         let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
@@ -369,7 +373,10 @@ export const generateOpenBasScenario = async (
     }
   }
 
-  return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
+  return {
+    'url response': `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`,
+    attackPatternWithoutInjectorContracts: attackPatternsWithoutInjectorContracts
+  };
 };
 
 export const generateContainerScenario = async (context, user, args) => {
