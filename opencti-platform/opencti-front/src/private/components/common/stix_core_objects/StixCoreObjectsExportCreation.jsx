@@ -13,6 +13,7 @@ import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -195,11 +196,12 @@ const StixCoreObjectsExportCreationComponent = ({
                               </Field>
                               <ObjectMarkingField
                                 name="contentMaxMarkings"
-                                label={t_i18n('Content max marking definition levels')}
+                                label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                                 onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                                 style={fieldSpacingContainerStyle}
                                 setFieldValue={setFieldValue}
                                 limitToMaxSharing
+                                helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                               />
                               <ObjectMarkingField
                                 name="fileMarkings"
