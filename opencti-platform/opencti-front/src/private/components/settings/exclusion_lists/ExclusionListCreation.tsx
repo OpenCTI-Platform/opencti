@@ -154,7 +154,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               <ItemIcon type={option.type} />
               <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
             </li>}
-            textfieldprops={{ label: t_i18n('Entity types') }}
+            textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
           />
           <FormControlLabel
             style={fieldSpacingContainerStyle}
