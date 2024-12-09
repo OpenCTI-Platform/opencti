@@ -120,11 +120,11 @@ export default createFragmentContainer(
   WorkspaceEditionOverviewComponent,
   {
     workspace: graphql`
-        fragment WorkspaceEditionOverview_workspace on Workspace {
-            id
-            name
-            description
-        }
+      fragment WorkspaceEditionOverview_workspace on Workspace {
+        id
+        name
+        description
+      }
     `,
   },
 );
