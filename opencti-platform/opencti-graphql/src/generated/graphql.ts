@@ -27578,28 +27578,28 @@ export type Theme = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
-  theme_accent?: Maybe<Scalars['String']['output']>;
-  theme_background?: Maybe<Scalars['String']['output']>;
+  theme_accent: Scalars['String']['output'];
+  theme_background: Scalars['String']['output'];
   theme_logo?: Maybe<Scalars['String']['output']>;
   theme_logo_collapsed?: Maybe<Scalars['String']['output']>;
   theme_logo_login?: Maybe<Scalars['String']['output']>;
-  theme_nav?: Maybe<Scalars['String']['output']>;
-  theme_paper?: Maybe<Scalars['String']['output']>;
-  theme_primary?: Maybe<Scalars['String']['output']>;
-  theme_secondary?: Maybe<Scalars['String']['output']>;
+  theme_nav: Scalars['String']['output'];
+  theme_paper: Scalars['String']['output'];
+  theme_primary: Scalars['String']['output'];
+  theme_secondary: Scalars['String']['output'];
 };
 
 export type ThemeAddInput = {
   name: Scalars['String']['input'];
-  theme_accent?: InputMaybe<Scalars['String']['input']>;
-  theme_background?: InputMaybe<Scalars['String']['input']>;
+  theme_accent: Scalars['String']['input'];
+  theme_background: Scalars['String']['input'];
   theme_logo?: InputMaybe<Scalars['String']['input']>;
   theme_logo_collapsed?: InputMaybe<Scalars['String']['input']>;
   theme_logo_login?: InputMaybe<Scalars['String']['input']>;
-  theme_nav?: InputMaybe<Scalars['String']['input']>;
-  theme_paper?: InputMaybe<Scalars['String']['input']>;
-  theme_primary?: InputMaybe<Scalars['String']['input']>;
-  theme_secondary?: InputMaybe<Scalars['String']['input']>;
+  theme_nav: Scalars['String']['input'];
+  theme_paper: Scalars['String']['input'];
+  theme_primary: Scalars['String']['input'];
+  theme_secondary: Scalars['String']['input'];
 };
 
 export type ThemeConnection = {
@@ -41236,15 +41236,15 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_background?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_logo_collapsed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_logo_login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_nav?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_paper?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_primary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_nav?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_paper?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_primary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_secondary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
