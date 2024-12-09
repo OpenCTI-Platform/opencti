@@ -99,6 +99,9 @@
     "enabled": true,
     "interval": 6000000
   },
+  "ingestion_manager": {
+    "enabled": false
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"
