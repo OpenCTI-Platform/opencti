@@ -6,6 +6,7 @@ import {
   RelatedContainersDetailsTableLinesPaginationQuery,
 } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLinesPaginationQuery.graphql';
 import { RelatedContainersDetailsTableLines_data$data } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLines_data.graphql';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../../components/i18n';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
@@ -13,6 +14,7 @@ import { UsePreloadedPaginationFragment } from '../../../../../utils/hooks/usePr
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import { resolveLink } from '../../../../../utils/Entity';
 
 const LOCAL_STORAGE_KEY = 'RelatedContainersDetailsTable';
 
@@ -115,6 +117,7 @@ interface RelatedContainersDetailsTableProps {
 
 const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps> = ({ filters: queryFilters }) => {
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
 
   const initialValues = {
     searchTerm: '',
@@ -129,9 +132,18 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const contextFilters = useBuildEntityTypeBasedFilterContext(['Stix-Cyber-Observable', 'Indicator'], filters);
-  console.log(contextFilters);
-  const queryPaginationOptions = { ...paginationOptions, filters: queryFilters };
+
+  const userFilters = useBuildEntityTypeBasedFilterContext(['Stix-Cyber-Observable', 'Indicator'], filters);
+  // Prefilter query by applying related observable & indicator filters, then merge with user-defined filters
+  const mergedFilters = {
+    ...queryFilters,
+    filterGroups: [
+      ...(queryFilters?.filterGroups ?? []),
+      ...(userFilters?.filterGroups ?? []),
+    ],
+  };
+
+  const queryPaginationOptions = { ...paginationOptions, filters: mergedFilters };
 
   const dataColumns = {
     entity_type: { percentWidth: 15 },
@@ -173,10 +185,12 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
         preloadedPaginationProps={preloadedPaginationProps}
         entityTypes={['Stix-Cyber-Observable', 'Indicator']}
         searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable', 'Indicator'] }}
+        availableEntityTypes={['Stix-Cyber-Observable', 'Indicator']}
         disableNavigation
         disableToolBar
         disableSelectAll
         canToggleLine={false}
+        onLineClick={ (row) => navigate(`${resolveLink(row.entity_type)}/${row.id}`) }
       />
       )}
     </Grid>
