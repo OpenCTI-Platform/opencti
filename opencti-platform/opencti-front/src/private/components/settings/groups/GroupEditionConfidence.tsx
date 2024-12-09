@@ -162,7 +162,6 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
               entityType="Group"
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
-              variant="edit"
               disabled={false}
             />
             <FieldArray

@@ -152,7 +152,10 @@ DataSourceEditionOverviewProps
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     x_mitre_platforms: Yup.array().nullable(),
     collection_layers: Yup.array().nullable(),
     references: Yup.array(),
@@ -275,7 +278,6 @@ DataSourceEditionOverviewProps
             entityType="Data-Source"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
-            variant="edit"
           />
           <Field
             component={MarkdownField}

@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import InputSliderField from '../../../../components/InputSliderField';
+import InputScaleField from '../../../../components/InputScaleField';
 import { useFormatter } from '../../../../components/i18n';
 import { GenericContext } from '../model/GenericContextModel';
 import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
@@ -25,7 +25,6 @@ const useStyles = makeStyles(() => ({
 interface ConfidenceFieldProps {
   name?: string;
   label?: string;
-  variant?: string;
   onSubmit?: (name: string, value: string) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?: readonly (GenericContext | null)[] | null;
@@ -37,7 +36,6 @@ interface ConfidenceFieldProps {
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   name = 'confidence',
   label,
-  variant,
   onFocus,
   onSubmit,
   editContext,
@@ -56,13 +54,11 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
       severity="info"
       icon={false}
       variant="outlined"
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', ...(containerStyle || {}) }}
       aria-label={finalLabel}
     >
       <Field
-        component={InputSliderField}
-        variant={variant}
-        containerstyle={containerStyle}
+        component={InputScaleField}
         fullWidth={true}
         entityType={entityType}
         attributeName={name}

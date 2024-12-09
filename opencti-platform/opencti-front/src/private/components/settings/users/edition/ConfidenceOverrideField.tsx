@@ -179,7 +179,6 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               <ConfidenceField
                 name={`${name}.max_confidence`}
                 entityType={value.entity_type}
-                variant="edit"
                 onSubmit={handleSubmitConfidence}
               />
             )}

@@ -1,13 +1,12 @@
-import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
+import { Field, FieldProps } from 'formik';
 import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
-interface InputSliderFieldProps {
+interface InputScaleFieldProps {
   label: string;
-  variant?: string;
   onSubmit?: (name: string, value: string | number | number[]) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?:
@@ -23,14 +22,14 @@ interface InputSliderFieldProps {
   maxLimit?: number;
 }
 
-const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
+const InputScaleField: FunctionComponent<InputScaleFieldProps & FieldProps> = ({
   form: { setFieldValue },
   field: { name, value },
   label,
-  variant,
   onFocus,
   onSubmit,
   editContext,
+  containerStyle,
   entityType,
   attributeName,
   disabled,
@@ -53,75 +52,19 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
       background: `${color}`,
     },
   };
-  const updateFromSelect = (event: SelectChangeEvent) => {
+  const handleValueChange = (event: SelectChangeEvent) => {
     setFieldValue(name, event.target.value);
     onSubmit?.(name, event.target.value);
   };
+
   const currentLevel = buildScaleLevel(value, scale);
 
   const [initialValue] = useState(value);
-  if (variant === 'edit') {
-    // disabled prop is "forced", be it true or false
-    const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
-    return (
-      <>
-        <Grid container={true} spacing={3} >
-          <Grid item xs={6}>
-            <Field
-              component={SimpleTextField}
-              fullWidth
-              type="number"
-              name={name}
-              label={label}
-              onSubmit={onSubmit}
-              onFocus={onFocus}
-              disabled={finalDisabled}
-              helpertext={
-                <SubscriptionFocus context={editContext} fieldName={name} />
-              }
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <Select
-              fullWidth
-              labelId={name}
-              value={currentLevel.level.value?.toString() ?? ''}
-              onChange={updateFromSelect}
-              disabled={finalDisabled}
-              sx={{ marginTop: 2 }} // to align field with the number input, that has a label
-            >
-              {marks.map((mark, i: number) => {
-                return (
-                  <MenuItem
-                    key={i}
-                    value={mark.value.toString()}
-                  >
-                    {mark.label}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </Grid>
-        </Grid>
-        <Slider
-          value={typeof value === 'string' ? parseInt(value, 10) : value ?? 0}
-          min={min}
-          max={max}
-          onChange={(_, v) => setFieldValue(name, v.toString())}
-          onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
-          sx={sliderStyle}
-          style={{ margin: '5px 0 0 0' }}
-          valueLabelDisplay="off"
-          size="small"
-          valueLabelFormat={() => currentLevel.level.label}
-          disabled={finalDisabled}
-        />
-      </>
-    );
-  }
+  const finalDisabled = disabled === true || disabled === false ? disabled : initialValue > max;
+
   return (
     <>
-      <Grid container={true} spacing={3} >
+      <Grid container={true} spacing={3} style={containerStyle}>
         <Grid item xs={6}>
           <Field
             component={SimpleTextField}
@@ -129,7 +72,13 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             type="number"
             name={name}
             label={label}
-            disabled={disabled}
+            onSubmit={onSubmit}
+            onFocus={onFocus}
+            disabled={finalDisabled}
+            onChange={handleValueChange}
+            helpertext={
+              editContext ? <SubscriptionFocus context={editContext} fieldName={name} /> : undefined
+              }
           />
         </Grid>
         <Grid item xs={6}>
@@ -137,8 +86,8 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             fullWidth
             labelId={name}
             value={currentLevel.level.value?.toString() ?? ''}
-            onChange={(event) => setFieldValue(name, event.target.value)}
-            disabled={disabled}
+            onChange={handleValueChange}
+            disabled={finalDisabled}
             sx={{ marginTop: 2 }}
           >
             {marks.map((mark, i: number) => {
@@ -155,19 +104,20 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
         </Grid>
       </Grid>
       <Slider
-        value={value || 0}
+        value={typeof value === 'string' ? parseInt(value, 10) : value ?? 0}
         min={min}
         max={max}
         onChange={(_, v) => setFieldValue(name, v.toString())}
+        onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
         sx={sliderStyle}
         style={{ margin: '5px 0 0 0' }}
-        valueLabelDisplay="auto"
+        valueLabelDisplay={editContext ? 'off' : 'auto'}
         size="small"
         valueLabelFormat={() => currentLevel.level.label}
-        disabled={disabled}
+        disabled={finalDisabled}
       />
     </>
   );
 };
 
-export default InputSliderField;
+export default InputScaleField;
