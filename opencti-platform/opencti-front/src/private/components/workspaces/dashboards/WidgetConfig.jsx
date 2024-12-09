@@ -512,6 +512,12 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       },
     ]);
   };
+  const handleDataDuplication = () => {
+    setDataSelection([
+      ...dataSelection,
+      dataSelection[dataSelection.length - 1],
+    ]);
+  };
   const handleRemoveDataSelection = (i) => {
     const newDataSelection = Array.from(dataSelection);
     newDataSelection.splice(i, 1);
@@ -801,6 +807,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         {perspective === 'entities' && (
           <div className={classes.add}>
             <Button
+              style={{ marginRight: 20 }}
               variant="contained"
               disabled={getCurrentDataSelectionLimit() === dataSelection.length}
               color="secondary"
@@ -809,6 +816,16 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               classes={{ root: classes.buttonAdd }}
             >
               <AddOutlined fontSize="small" />
+            </Button>
+
+            <Button
+              variant="contained"
+              disabled={getCurrentDataSelectionLimit() === dataSelection.length}
+              size="small"
+              onClick={() => handleDataDuplication()}
+              classes={{ root: classes.buttonAdd }}
+            >
+              {t_i18n('Duplicate Last Filter')}
             </Button>
           </div>
         )}
@@ -825,6 +842,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               <AddOutlined fontSize="small" /> {t_i18n('Relationships')}
             </Button>
             <Button
+              style={{ marginRight: 20 }}
               variant="contained"
               disabled={getCurrentDataSelectionLimit() === dataSelection.length}
               color="secondary"
@@ -834,12 +852,22 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             >
               <AddOutlined fontSize="small" /> {t_i18n('Entities')}
             </Button>
+            <Button
+              variant="contained"
+              disabled={getCurrentDataSelectionLimit() === dataSelection.length}
+              size="small"
+              onClick={() => handleDataDuplication()}
+              classes={{ root: classes.buttonAdd }}
+            >
+              {t_i18n('Duplicate Last Filter')}
+            </Button>
           </div>
         )}
         {perspective === 'audits' && (
           <div className={classes.add}>
             <Button
               variant="contained"
+              style={{ marginRight: 20 }}
               disabled={
                 getCurrentDataSelectionLimit() === dataSelection.length
                 || getCurrentCategory() === 'distribution'
@@ -850,6 +878,15 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               classes={{ root: classes.buttonAdd }}
             >
               <AddOutlined fontSize="small" />
+            </Button>
+            <Button
+              variant="contained"
+              disabled={getCurrentDataSelectionLimit() === dataSelection.length}
+              size="small"
+              onClick={() => handleDataDuplication()}
+              classes={{ root: classes.buttonAdd }}
+            >
+              {t_i18n('Duplicate Last Filter')}
             </Button>
           </div>
         )}
