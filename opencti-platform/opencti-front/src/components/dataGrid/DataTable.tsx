@@ -6,6 +6,7 @@ import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
@@ -95,13 +96,11 @@ const DataTableInternalFilters = ({
           <Alert
             severity="info"
             variant="outlined"
-            style={{
-              padding: '0px 10px',
-              display: 'flex',
-              alignItems: 'center',
-            }}
+            style={{ padding: '0px 10px' }}
           >
-            {message}
+            <Typography>
+              {message}
+            </Typography>
           </Alert>
         </div>
       )}
