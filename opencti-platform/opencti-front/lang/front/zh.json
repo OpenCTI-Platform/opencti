@@ -1130,6 +1130,7 @@
   "Evolution": "演变",
   "Example": "示例",
   "Exclusion Lists": "排除列表",
+  "Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.": "排除列表可用于防止导入被认为是良性和合法的指标。排除列表仅适用于具有 STIX 模式的指标。",
   "Execution at": "在",
   "Execution ended at": "执行结束于",
   "Existing public dashboards": "现有公共仪表盘",
