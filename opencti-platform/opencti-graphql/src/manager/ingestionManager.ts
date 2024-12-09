@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
+import axios from 'axios';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -175,6 +176,23 @@ const rssHttpGetter = (): Getter => {
   const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
     const { data } = await httpClient.get(uri);
+    return data;
+  };
+};
+
+const rssHttpGetterV2 = (): Getter => {
+  return async (uri: string) => {
+    console.log(`${uri}`);
+    const options = {
+      method: 'GET',
+      url: 'https://www.securityweek.com/feed',
+      params: { '': '' },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0'
+      }
+    };
+
+    const { data } = await axios.request(options);
     return data;
   };
 };
