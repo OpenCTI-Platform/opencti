@@ -2685,6 +2685,7 @@
   "The rule has been disabled, clean-up launched...": "ルールは無効化され、クリーンアップが開始されました...",
   "The rule has been enabled, rescan of platform data launched...": "ルールが有効化され、プラットフォームデータの再スキャンが開始されました...",
   "The scenario has been correctly generated in your OpenBAS platform": "シナリオはOpenBASプラットフォームで正しく生成されました。",
+  "The scenario has been correctly generated in your OpenBAS platform.": "シナリオは、OpenBAS プラットフォームで正しく生成されています。",
   "The STIX ID has been removed": "STIX ID が削除されました",
   "The tag has been added": "タグが追加されました",
   "The tag has been removed": "タグは削除されました",

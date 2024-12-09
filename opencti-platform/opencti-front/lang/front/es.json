@@ -2685,6 +2685,7 @@
   "The rule has been disabled, clean-up launched...": "La regla ha sido desactivada, limpieza lanzada...",
   "The rule has been enabled, rescan of platform data launched...": "La regla ha sido activada, reescaneo de los datos de la plataforma lanzado...",
   "The scenario has been correctly generated in your OpenBAS platform": "El escenario se ha generado correctamente en su plataforma OpenBAS",
+  "The scenario has been correctly generated in your OpenBAS platform.": "El escenario se ha generado correctamente en su plataforma OpenBAS.",
   "The STIX ID has been removed": "El ID de STIX ha sido eliminado",
   "The tag has been added": "Se ha añadido la etiqueta",
   "The tag has been removed": "Se ha eliminado la etiqueta",

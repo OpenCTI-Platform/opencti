@@ -2685,6 +2685,7 @@
   "The rule has been disabled, clean-up launched...": "该规则已禁用，清理已启动",
   "The rule has been enabled, rescan of platform data launched...": "该规则已启用，平台数据的重新扫描已启动",
   "The scenario has been correctly generated in your OpenBAS platform": "场景已在 OpenBAS 平台正确生成",
+  "The scenario has been correctly generated in your OpenBAS platform.": "场景已在 OpenBAS 平台中正确生成。",
   "The STIX ID has been removed": "STIX ID 已被删除",
   "The tag has been added": "标签已添加",
   "The tag has been removed": "标签已删除",

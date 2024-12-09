@@ -2685,6 +2685,7 @@
   "The rule has been disabled, clean-up launched...": "규칙이 비활성화되었습니다, 정리 시작...",
   "The rule has been enabled, rescan of platform data launched...": "규칙이 활성화되었습니다, 플랫폼 데이터 다시 스캔 시작...",
   "The scenario has been correctly generated in your OpenBAS platform": "시나리오가 OpenBAS 플랫폼에서 올바르게 생성되었습니다",
+  "The scenario has been correctly generated in your OpenBAS platform.": "시나리오가 OpenBAS 플랫폼에서 올바르게 생성되었습니다.",
   "The STIX ID has been removed": "STIX ID가 제거되었습니다",
   "The tag has been added": "태그가 추가되었습니다",
   "The tag has been removed": "태그가 제거되었습니다",
