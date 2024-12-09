@@ -6,12 +6,12 @@ import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainersDetails from '@components/common/containers/related_containers/RelatedContainersDetails';
 import Drawer from '@components/common/drawer/Drawer';
+import {
+  RelatedContainersFragment_container_connection$data,
+  RelatedContainersFragment_container_connection$key,
+} from '@components/common/containers/related_containers/__generated__/RelatedContainersFragment_container_connection.graphql';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
-import {
-  RelatedContainersFragment_container_connection$key,
-  RelatedContainersFragment_container_connection$data,
-} from '../__generated__/RelatedContainersFragment_container_connection.graphql';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 
 export const RelatedContainersFragment = graphql`
