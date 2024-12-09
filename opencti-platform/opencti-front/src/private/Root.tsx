@@ -67,10 +67,12 @@ const rootSettingsFragment = graphql`
       license_validated
       license_expired
       license_expiration_date
+      license_expiration_prevention
       license_customer
       license_enterprise
       license_platform
       license_platform_match
+      license_lts
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
