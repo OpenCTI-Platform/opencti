@@ -2727,6 +2727,7 @@
   "This field must be >= 1": "이 필드는 &\\\\;= 1이어야 합니다",
   "This field must be a number": "이 필드는 숫자여야 합니다",
   "This field must only contain alphanumeric chars, dashes and space": "이 필드는 영숫자, 대시 및 공백만 포함해야 합니다",
+  "This field should not be empty.": "이 필드는 비어 있으면 안 됩니다.",
   "This file is not in the specified format": "이 파일은 지정된 형식이 아닙니다",
   "This file is too large": "이 파일은 너무 큽니다",
   "This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ": "이 필터에는 플랫폼 디스플레이에서 아직 완전히 지원되지 않으며 API를 통해서만 편집할 수 있는 중첩된 필터 그룹이 포함되어 있습니다. 이는 API를 통해 생성되었거나 이전 필터 형식에서 마이그레이션된 것일 수 있습니다. 참고로 여기에 필터 객체의 내용이 있습니다: ",

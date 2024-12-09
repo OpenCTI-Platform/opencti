@@ -2727,6 +2727,7 @@
   "This field must be >= 1": "This field must be >= 1",
   "This field must be a number": "This field must be a number",
   "This field must only contain alphanumeric chars, dashes and space": "This field must only contain alphanumeric chars, dashes and space",
+  "This field should not be empty.": "This field should not be empty.",
   "This file is not in the specified format": "This file is not in the specified format",
   "This file is too large": "This file is too large",
   "This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ": "This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ",

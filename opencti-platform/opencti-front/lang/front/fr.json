@@ -2727,6 +2727,7 @@
   "This field must be >= 1": "Ce champ doit être >= 1",
   "This field must be a number": "Ce champ doit être un nombre",
   "This field must only contain alphanumeric chars, dashes and space": "Ce champ ne peut contenir que des caractères alphanumériques, des tirets et des espaces",
+  "This field should not be empty.": "Ce champ ne doit pas être vide.",
   "This file is not in the specified format": "Ce fichier n'est pas au format spécifié",
   "This file is too large": "Ce fichier est trop volumineux",
   "This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ": "Ce filtre contient des groupes de filtres imbriqués, qui ne sont pas encore totalement pris en charge dans l'affichage de la plateforme et ne peuvent être modifiés que via l'API. Ils peuvent avoir été créés via l'API ou lors d'une migration à partir d'un format de filtre précédent. Pour votre information, voici le contenu de l'objet de filtre:",

@@ -2727,6 +2727,7 @@
   "This field must be >= 1": "此字段必须为 >= 1",
   "This field must be a number": "该字段必须为数字",
   "This field must only contain alphanumeric chars, dashes and space": "此字段只能包含字母、数字、字符、下划线和空格",
+  "This field should not be empty.": "该字段不应为空。",
   "This file is not in the specified format": "该文件不是指定格式",
   "This file is too large": "该文件太大",
   "This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ": "这个过滤器含有嵌套的过滤器组，目前平台的显示还不完全支持，只能通过 API 进行编辑。它们可能是通过 API 创建的，或者是从之前的过滤器格式迁移过来的。为了供您参考，这里是过滤器对象的内容：",
