@@ -343,8 +343,8 @@ export const generateOpenBasScenario = async (
       const obasInjectorContracts = await searchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
 
       if (obasInjectorContracts.length === 0) {
-        attackPatternsWithoutInjectorContracts.push(obasAttackPattern.attack_pattern_name);
-        logApp.info('[GENERATION SCENARIO OBAS] No contracts available for this configuration.');
+        attackPatternsWithoutInjectorContracts.push(obasAttackPattern.attack_pattern_external_id);
+        logApp.info(`[GENERATION SCENARIO OBAS] No injector contracts available for this attack pattern ${obasAttackPattern.attack_pattern_external_id}`);
       } else {
         let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
         if (selection === 'random') {
@@ -375,7 +375,7 @@ export const generateOpenBasScenario = async (
 
   return {
     urlResponse: `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`,
-    attackPatternWithoutInjectorContracts: attackPatternsWithoutInjectorContracts
+    attackPatternsWithoutInjectorContracts: attackPatternsWithoutInjectorContracts.join(', ')
   };
 };
 
