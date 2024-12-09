@@ -63,13 +63,28 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   const themeOptions = themes.edges.map((node) => ({ ...node.node }));
 
   const themeValidator = Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-    theme_background: Yup.string().nullable(),
-    theme_paper: Yup.string().nullable(),
-    theme_nav: Yup.string().nullable(),
-    theme_primary: Yup.string().nullable(),
-    theme_secondary: Yup.string().nullable(),
-    theme_accent: Yup.string().nullable(),
+    name: Yup.string()
+      .trim()
+      .min(2)
+      .required(t_i18n('This field is required')),
+    theme_background: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_paper: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_nav: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_primary: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_secondary: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
+    theme_accent: Yup.string()
+      .matches(/^#[0-9a-fA-F]{6}$/)
+      .required(t_i18n('This field is required')),
     theme_logo: Yup.string().nullable(),
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
