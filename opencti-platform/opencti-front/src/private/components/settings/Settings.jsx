@@ -38,7 +38,7 @@ import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
-import ItemCopy from "../../../components/ItemCopy";
+import ItemCopy from '../../../components/ItemCopy';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -443,13 +443,10 @@ const Settings = () => {
                       }
                       { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
                           && <List>
-                            <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('License activated for')} secondary={'Please contact Filigran to get your license'} />
-                              <ItemBoolean
-                                variant="large"
-                                label={settings.platform_enterprise_edition.license_customer}
-                                status={false}
-                              />
+                            <ListItem divider={false}>
+                              <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
+                                Please contact Filigran to get your license - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
+                              </Alert>
                             </ListItem>
                           </List>
                       }
