@@ -901,12 +901,10 @@ export const redisGetExclusionListStatus = async () => {
 };
 
 export const redisGetExclusionListCache = async () => {
-  // TODO prevent event loop lock during parse ?
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
   return rawCache ? JSON.parse(rawCache) : [];
 };
 export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]) => {
-  // TODO prevent event loop lock during stringify ?
   const stringifiedCache = JSON.stringify(cache);
   await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
 };
