@@ -100,7 +100,7 @@ const relInputs = [
         internal_id: '23c0c086-afee-45e5-b276-872948997816',
         lang: 'en',
         modified: '2024-12-06T08:41:59.290Z',
-        'object-marking  ': [
+        'object-marking': [
           'eaccd139-ec2e-48d9-b2ef-a17ba6e7e938'
         ],
         parent_types: [
