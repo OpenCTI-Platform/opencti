@@ -29,6 +29,7 @@ export interface CsvBundlerIngestionOpts {
   csvMapper: CsvMapperParsed,
   maxRecordNumber?: number,
   connectorId: string,
+  draftId?: string,
 }
 
 const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
@@ -50,6 +51,7 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
     applicant_id: opts.applicantUser.id,
     work_id: opts.workId,
     content: bundleContentAsString,
+    draft_id: opts.draftId ?? '',
   });
   return objectCount;
 };

@@ -114,7 +114,8 @@
     },
     "csv_ingestion": {
       "max_bundle_size": 1000
-    }
+    },
+    "validation_mode" : "workbench"
   },
   "demo_mode": false,
   "http_proxy": "",
