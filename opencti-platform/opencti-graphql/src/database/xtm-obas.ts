@@ -46,16 +46,6 @@ export const getAttackPatterns = async () => {
   }
 };
 
-export const getInjectorContracts = async (attackPatternId: string) => {
-  const httpClient = buildXTmOpenBasHttpClient();
-  try {
-    const { data: injectorContracts } = await httpClient.get(`/attack_patterns/${attackPatternId}/injector_contracts`);
-    return injectorContracts;
-  } catch (err) {
-    throw DatabaseError('Error querying OpenBAS', { cause: err });
-  }
-};
-
 export const searchInjectorContracts = async (attackPatternId: string, platforms: string[], architecture: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
