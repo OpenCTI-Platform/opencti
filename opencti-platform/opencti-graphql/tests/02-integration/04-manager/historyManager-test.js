@@ -116,6 +116,94 @@ const eventWithGrantedRefsOnly = {
   }
 };
 
+const eventWithRelatedRestriction = {
+  id: '1733757875310-0',
+  event: 'update',
+  data: {
+    version: '4',
+    type: 'update',
+    scope: 'external',
+    message: 'adds `AlienVault` in `Contains`',
+    origin: {
+      socket: 'query',
+      ip: '::1',
+      user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      group_ids: [
+        'eeacced8-cf03-4fd3-bfdb-7398839ef015'
+      ],
+      organization_ids: [],
+      user_metadata: {},
+      referer: 'http://localhost:3000/dashboard/analyses/reports/e6babfee-aa64-4e3a-9c67-1a163c178ca0/knowledge/graph?zoom=%7B%22k%22%3A0.853929691647981%2C%22x%22%3A21.67720005607563%2C%22y%22%3A-0.5756976120699228%7D&mode3D=false&selectRectangleModeFree=false&selectModeFree=false&selectModeFreeReady=true&modeFixed=false&modeTree=&displayTimeRange=false&selectedTimeRangeInterval=Wed+Dec+04+2024+00%3A00%3A00+GMT%2B0100+%28heure+normale+d%E2%80%99Europe+centrale%29%2CSat+Dec+07+2024+09%3A00%3A00+GMT%2B0100+%28heure+normale+d%E2%80%99Europe+centrale%29&stixCoreObjectsTypes=&markedBy=&createdBy=&width=null&height=null&zoomed=false&keyword=&openCreatedRelation=false'
+    },
+    data: {
+      id: 'report--50ddc6fe-2a84-5c9a-904d-f964a94d1ff7',
+      spec_version: '2.1',
+      type: 'report',
+      extensions: {
+        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+          extension_type: 'property-extension',
+          id: 'e6babfee-aa64-4e3a-9c67-1a163c178ca0',
+          type: 'Report',
+          created_at: '2024-11-18T09:43:49.623Z',
+          updated_at: '2024-12-09T15:24:28.686Z',
+          is_inferred: false,
+          creator_ids: [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+          ],
+          assignee_ids: [
+            '71432b4c-34d3-42dc-9b3d-5622b02b4954'
+          ],
+          workflow_id: 'a4b90e6f-06ae-461a-8dac-666cdb4a5ae7'
+        }
+      },
+      created: '2024-11-18T09:43:40.000Z',
+      modified: '2024-12-09T14:18:43.125Z',
+      revoked: false,
+      confidence: 100,
+      lang: 'en',
+      object_marking_refs: [
+        'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9'
+      ],
+      name: 'Report test',
+      description: 'description',
+      report_types: [
+        'threat-report'
+      ],
+      published: '2024-11-18T09:43:40.000Z',
+      object_refs: [
+        'relationship--aefe7518-a66e-5412-a26d-8a5f5eb74fe9',
+        'campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7',
+        'grouping--a5c0cace-a530-58ae-907f-eb0d8e41913f',
+        'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd',
+        'malware--3b0ff6e4-58fc-5312-aa59-ae755dc10189',
+        'intrusion-set--36319194-19e1-50ac-9163-778b56a1bf12',
+        'malware--4cc56e92-fc59-500e-966d-bcd32538c248',
+        'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb'
+      ]
+    },
+    relatedRestrictions: {
+      markings: [
+        '4584aeee-10b6-47a7-808e-603440642285'
+      ]
+    },
+    context: {
+      patch: [
+        {
+          op: 'add',
+          path: '/object_refs/7',
+          value: 'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb'
+        }
+      ],
+      reverse_patch: [
+        {
+          op: 'remove',
+          path: '/object_refs/7'
+        }
+      ]
+    }
+  }
+};
+
 describe('History manager test resolveGrantedRefsIds', () => {
   it('should return empty map if granted refs ids are present', async () => {
     const organizationByIdsMap = await resolveGrantedRefsIds(testContext, [eventWithGrantedRefIds]);
@@ -157,5 +245,19 @@ describe('history manager test buildHistoryElementsFromEvents', () => {
     expect(historyElement.group_ids).toEqual(eventWithGrantedRefsOnly.data.origin.group_ids);
     expect(historyElement.organization_ids).toEqual(eventWithGrantedRefsOnly.data.origin.organization_ids);
     expect(historyElement['rel_granted.internal_id'].length).toEqual(1);
+  });
+  it('should build history with markins for related entities', async () => {
+    const historyElements = await buildHistoryElementsFromEvents(testContext, [eventWithRelatedRestriction]);
+
+    expect(historyElements.length).toEqual(1);
+    const historyElement = historyElements[0];
+    expect(historyElement.internal_id).toEqual(eventWithRelatedRestriction.id);
+    expect(historyElement._index).toEqual(INDEX_HISTORY);
+    expect(historyElement.entity_type).toEqual(ENTITY_TYPE_HISTORY);
+    expect(historyElement.event_type).toEqual('mutation');
+    expect(historyElement.event_scope).toEqual(eventWithRelatedRestriction.event);
+    expect(historyElement.user_id).toEqual(eventWithRelatedRestriction.data.origin.user_id);
+    expect(historyElement.group_ids).toEqual(eventWithRelatedRestriction.data.origin.group_ids);
+    expect(historyElement['rel_object-marking.internal_id'].length).toEqual(2);
   });
 });
