@@ -13,6 +13,7 @@
   "A public dashboard is a snapshot...": "공개 대시보드는 특정 시점에서 개인 대시보드의 스냅샷입니다. 개인 대시보드를 수정해도 이미 생성된 공개 대시보드는 수정되지 않습니다.",
   "About": "정보",
   "Abstract": "요약",
+  "Not all data displayed, limitations applied": "모든 데이터가 표시되는 것은 아니며, 제한 사항이 적용됩니다",
   "Accent color": "강조 색상",
   "Accept": "수락",
   "Access administration": "액세스 관리",

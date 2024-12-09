@@ -13,6 +13,7 @@
   "A public dashboard is a snapshot...": "Un tableau de bord public est un instantané d'un tableau de bord privé à un moment précis. Si vous modifiez le tableau de bord privé, les tableaux de bord publics déjà créés ne seront pas modifiés.",
   "About": "A propos",
   "Abstract": "Résumé",
+  "Not all data displayed, limitations applied": "Toutes les données ne sont pas affichées, des limitations sont appliquées",
   "Accent color": "Couleur d'accentuation",
   "Accept": "Accepter",
   "Access administration": "Accéder à l'administration",

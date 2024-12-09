@@ -13,6 +13,7 @@
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
   "About": "Acerca de",
   "Abstract": "Resumen",
+  "Not all data displayed, limitations applied": "No se muestran todos los datos, se aplican limitaciones",
   "Accent color": "Color de resalte",
   "Accept": "Aceptar",
   "Access administration": "Acceder a la administración",

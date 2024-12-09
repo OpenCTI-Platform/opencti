@@ -473,6 +473,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   render() {
     const {
       handleChangeView,
+      data,
       theme,
     } = this.props;
     const {
@@ -498,6 +499,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       this.graphObjects,
     );
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
+    const warningMessage = data.containersObjectsOfObject.pageInfo.hasNextPage ? 'Not all data displayed, limitations applied' : undefined;
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => {
@@ -544,6 +546,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                 handleChangeView={handleChangeView.bind(this)}
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
+                warningMessage={warningMessage}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

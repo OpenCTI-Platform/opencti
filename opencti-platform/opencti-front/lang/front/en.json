@@ -13,6 +13,7 @@
   "A public dashboard is a snapshot...": "A public dashboard is a snapshot of a private dashboard at a specific time. If you modify the private dashboard, already created public dashboards won't be modified.",
   "About": "About",
   "Abstract": "Abstract",
+  "Not all data displayed, limitations applied": "Not all data displayed, limitations applied",
   "Accent color": "Accent color",
   "Accept": "Accept",
   "Access administration": "Access administration",
