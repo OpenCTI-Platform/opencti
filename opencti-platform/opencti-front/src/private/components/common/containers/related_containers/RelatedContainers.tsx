@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { OpenInNewOutlined } from '@mui/icons-material';
+import { NorthEastOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
-import { resolveLink } from '../../../../utils/Entity';
-import { useFormatter } from '../../../../components/i18n';
+import RelatedContainersDetails from '@components/common/containers/related_containers/RelatedContainersDetails';
+import Drawer from '@components/common/drawer/Drawer';
 import {
-  RelatedContainersFragment_container_connection$key,
   RelatedContainersFragment_container_connection$data,
-} from './__generated__/RelatedContainersFragment_container_connection.graphql';
-import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
+  RelatedContainersFragment_container_connection$key,
+} from '@components/common/containers/related_containers/__generated__/RelatedContainersFragment_container_connection.graphql';
+import { resolveLink } from '../../../../../utils/Entity';
+import { useFormatter } from '../../../../../components/i18n';
+import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 
 export const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
@@ -32,25 +34,66 @@ export const RelatedContainersFragment = graphql`
             entity_type
           }
         }
+        creators {
+          id
+          name
+        }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         ... on Report {
           name
           modified
+          description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
         }
         ... on Grouping {
           name
           modified
+          description
         }
         ... on CaseIncident {
           name
           modified
+          description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
+
         }
         ... on CaseRfi {
           name
           modified
+          description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
+
         }
         ... on CaseRft {
           name
           modified
+          description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
+
         }
       }
     }
@@ -60,7 +103,7 @@ export const RelatedContainersFragment = graphql`
   }
 `;
 
-type RelatedContainerNode = NonNullable<NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]>['node'];
+export type RelatedContainerNode = NonNullable<NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]>['node'];
 
 interface RelatedContainersProps {
   relatedContainers: RelatedContainersFragment_container_connection$key | null | undefined;
@@ -75,6 +118,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const [selectedContainer, setSelectedContainer] = useState<RelatedContainerNode | undefined>();
   const relatedContainers = useFragment(
     RelatedContainersFragment,
     relatedContainersKey,
@@ -83,6 +127,13 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 
   const containers = (relatedContainers?.edges ?? []).filter((edge) => edge?.node.id !== containerId).map((edge) => edge?.node);
   const containersGlobalCount = relatedContainers?.pageInfo?.globalCount ?? 0;
+
+  const handleOpenDetails = (container?: RelatedContainerNode) => {
+    if (!container) {
+      return;
+    }
+    setSelectedContainer(container);
+  };
 
   return (
     <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
@@ -113,8 +164,31 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         disableNavigation={true}
         storageKey={`related-containers-${entityType}-${containerId}`}
         hideHeaders={true}
-        onLineClick={(row: RelatedContainerNode) => navigate(`${resolveLink(row?.entity_type)}/${row?.id}`)}
+        onLineClick={(row: RelatedContainerNode) => handleOpenDetails(row)}
       />
+      <Drawer
+        title={selectedContainer?.name ?? '-'}
+        open={!!selectedContainer}
+        onClose={() => setSelectedContainer(undefined)}
+        header={
+          <IconButton
+            color="primary"
+            aria-label="Go to container"
+            onClick={() => navigate(`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`)}
+            size="medium"
+            style={{ position: 'absolute', right: 12 }}
+          >
+            <NorthEastOutlined/>
+          </IconButton>
+        }
+      >
+        {selectedContainer && (
+          <RelatedContainersDetails
+            containerId={containerId}
+            relatedContainer={selectedContainer}
+          />
+        )}
+      </Drawer>
     </div>
   );
 };

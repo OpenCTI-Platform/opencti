@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import RelatedContainers from '@components/common/containers/RelatedContainers';
+import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
 import Divider from '@mui/material/Divider';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
