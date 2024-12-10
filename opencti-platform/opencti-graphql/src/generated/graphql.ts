@@ -375,8 +375,8 @@ export type AppMemory = {
 };
 
 export enum Architecture {
-  Amd64 = 'AMD64',
-  Arm64 = 'ARM64'
+  Arm64 = 'arm64',
+  X86_64 = 'x86_64'
 }
 
 export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyberObservable & StixObject & {
