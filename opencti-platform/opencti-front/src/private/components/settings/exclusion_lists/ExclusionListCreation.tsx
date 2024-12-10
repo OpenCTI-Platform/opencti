@@ -9,7 +9,6 @@ import { ExclusionListsLinesPaginationQuery$variables } from '@components/settin
 import { Option } from '@components/common/form/ReferenceField';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -34,8 +33,8 @@ interface ExclusionListCreationFormData {
   name: string;
   description: string;
   exclusion_list_entity_types: Option[];
-  file: File | undefined;
-  content: string | undefined;
+  file: File | null;
+  content: string | null;
   action: string;
 }
 
@@ -110,8 +109,8 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     name: '',
     description: '',
     exclusion_list_entity_types: [],
-    file: undefined,
-    content: undefined,
+    file: null,
+    content: null,
     action: 'Exclusion',
   };
 
@@ -125,7 +124,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     <Formik<ExclusionListCreationFormData>
       initialValues={initialValues}
       validateOnBlur={false}
-      validateOnChange={false}
+      validateOnChange={true}
       validationSchema={exclusionListValidator(t_i18n, isFileChecked)}
       onSubmit={onSubmit}
       onReset={onReset}
