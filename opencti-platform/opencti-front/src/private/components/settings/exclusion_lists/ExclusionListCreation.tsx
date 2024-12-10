@@ -124,7 +124,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     <Formik<ExclusionListCreationFormData>
       initialValues={initialValues}
       validateOnBlur={false}
-      validateOnChange={true}
+      validateOnChange={false}
       validationSchema={exclusionListValidator(t_i18n, isFileChecked)}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -136,6 +136,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            required
           />
           <Field
             component={MarkdownField}
@@ -161,6 +162,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
             </li>}
             textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
+            required
           />
           <div style={fieldSpacingContainerStyle}>
             <span onClick={toggleFile} style={{ cursor: 'pointer' }}>{t_i18n('Content')}</span>
@@ -172,7 +174,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             <span onClick={toggleFile} style={{ cursor: 'pointer' }}>{t_i18n('File')}</span>
           </div>
           {isFileChecked ? (
-            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} />
+            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isFileChecked} />
           ) : (
             <Field
               style={fieldSpacingContainerStyle}
@@ -181,6 +183,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               label={t_i18n('Content (1 / line)')}
               multiline
               rows="4"
+              required={!isFileChecked}
             />
           )}
           <Field
