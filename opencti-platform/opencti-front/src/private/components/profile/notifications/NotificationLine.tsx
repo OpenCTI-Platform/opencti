@@ -98,8 +98,8 @@ interface NotificationLineProps {
   onLabelClick: (
     k: string,
     id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
+    value: Record<string, unknown> | string,
+    event: React.KeyboardEvent | React.MouseEvent
   ) => void;
   selectedElements: Record<string, NotificationLine_node$data>;
   deSelectedElements: Record<string, NotificationLine_node$data>;
@@ -143,6 +143,7 @@ NotificationLineProps
   selectedElements,
   deSelectedElements,
   onToggleEntity,
+  onLabelClick, // used for trigger name click
   selectAll,
   onToggleShiftEntity,
   index,
@@ -290,6 +291,11 @@ NotificationLineProps
                     }
                     variant="outlined"
                     label={data.name}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onLabelClick('name', data.name, 'eq', e);
+                    }}
                   />
                 </Tooltip>
               </div>

@@ -18,6 +18,7 @@ import {
   triggerEdit,
   triggerGet,
   triggersActivityFind,
+  triggersFind,
   triggersGet,
   triggersKnowledgeCount,
   triggersKnowledgeFind,
@@ -34,6 +35,8 @@ const notificationResolvers: Resolvers = {
     // Activity trigger
     triggerActivity: (_, { id }, context) => triggerGet(context, context.user, id),
     triggersActivity: (_, args, context) => triggersActivityFind(context, context.user, args),
+    // All triggers : knowledge & activity if user has the right capability
+    triggers: (_, args, context) => triggersFind(context, context.user, args),
     // Notifications
     notification: (_, { id }, context) => notificationGet(context, context.user, id),
     notifications: (_, args, context) => notificationsFind(context, context.user, args),

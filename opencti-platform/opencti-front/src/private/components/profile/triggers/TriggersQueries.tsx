@@ -48,3 +48,20 @@ export const triggersQueriesActivitySearchQuery = graphql`
     }
   }
 `;
+
+export const triggersQueriesSearchQuery = graphql`
+  query TriggersQueriesSearchQuery(
+    $search: String
+    $filters: FilterGroup
+  ) {
+    triggers(search: $search, filters: $filters) {
+      edges {
+        node {
+          id
+          name
+          trigger_type
+        }
+      }
+    }
+  }
+`;
