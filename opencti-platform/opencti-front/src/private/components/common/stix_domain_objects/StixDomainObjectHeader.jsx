@@ -577,8 +577,9 @@ const StixDomainObjectHeader = (props) => {
               <StixCoreObjectFileExport
                 scoId={stixDomainObject.id}
                 scoEntityType={entityType}
-              OpenFormComponent={StixCoreObjectFileExportButton}
-            /></Security>
+                OpenFormComponent={StixCoreObjectFileExportButton}
+              />
+            </Security>
             {isKnowledgeUpdater && (
               <StixCoreObjectContainer elementId={stixDomainObject.id} />
             )}

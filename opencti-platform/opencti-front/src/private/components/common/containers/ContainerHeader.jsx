@@ -929,13 +929,14 @@ const ContainerHeader = (props) => {
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
-                scoId={container.id}
-                scoName={container.name}
-                scoEntityType={container.entity_type}
-                redirectToContentTab={!!redirectToContent}
-                OpenFormComponent={StixCoreObjectFileExportButton}
-                onExportCompleted={handleExportCompleted}
-              /></Security>
+                  scoId={container.id}
+                  scoName={container.name}
+                  scoEntityType={container.entity_type}
+                  redirectToContentTab={!!redirectToContent}
+                  OpenFormComponent={StixCoreObjectFileExportButton}
+                  onExportCompleted={handleExportCompleted}
+                />
+              </Security>
             )}
             {enableSuggestions && (
               <QueryRenderer
