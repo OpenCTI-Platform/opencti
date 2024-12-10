@@ -18,6 +18,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../components/ItemIcon';
 import { itemColor } from '../../../utils/Colors';
 import ItemEntityType from '../../../components/ItemEntityType';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
@@ -224,6 +225,8 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
 
 const Relationships = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Relationships | Data'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

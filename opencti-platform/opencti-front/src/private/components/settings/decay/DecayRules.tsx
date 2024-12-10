@@ -17,6 +17,7 @@ import { DecayRulesLine_node$data } from './__generated__/DecayRulesLine_node.gr
 import useAuth from '../../../../utils/hooks/useAuth';
 import { INDICATOR_DECAY_MANAGER } from '../../../../utils/platformModulesHelper';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'view-decay-rules';
 
@@ -31,6 +32,8 @@ const useStyles = makeStyles<Theme>(() => ({
 const DecayRules = () => {
   const classes = useStyles();
   const { fd, t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Customization: Decay Rules | Settings'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {

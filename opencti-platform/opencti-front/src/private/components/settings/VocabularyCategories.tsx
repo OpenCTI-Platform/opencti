@@ -8,6 +8,7 @@ import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../uti
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -27,6 +28,8 @@ const useStyles = makeStyles(() => ({
 const VocabularyCategories = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Vocabularies | Settings'));
   const { categories, sortBy, orderAsc, searchTerm, handleSort, handleSearch } = useVocabularyCategoryAsQuery();
   const renderLines = () => {
     const dataColumns = {

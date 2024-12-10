@@ -9,6 +9,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import KillChainPhasePopover from './kill_chain_phases/KillChainPhasePopover';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const killChainPhasesLinesQuery = graphql`
   query KillChainPhasesLinesPaginationQuery(
@@ -101,6 +102,8 @@ const LOCAL_STORAGE_KEY = 'killChainPhases';
 
 const KillChainPhases = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Kill Chain Phases | Settings'));
 
   const initialValues = {
     sortBy: 'x_opencti_order',
