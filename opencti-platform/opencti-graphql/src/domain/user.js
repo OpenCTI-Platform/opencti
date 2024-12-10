@@ -588,23 +588,25 @@ export const addUser = async (context, user, newUser) => {
   }));
   await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
   // Either use the provided groups or Assign the default groups to user (SSO)
-  const userRelationGroups = (newUser.groups ?? []).map((group) => ({
+  let relationGroups = (newUser.groups ?? []).map((group) => ({
     fromId: element.id,
     toId: group,
     relationship_type: RELATION_MEMBER_OF,
   }));
-  const defaultAssignationFilter = {
-    mode: 'and',
-    filters: [{ key: 'default_assignation', values: [true] }],
-    filterGroups: [],
-  };
-  const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
-  const defaultRelationGroups = defaultGroups.edges.map((e) => ({
-    fromId: element.id,
-    toId: e.node.internal_id,
-    relationship_type: RELATION_MEMBER_OF,
-  }));
-  const relationGroups = [...userRelationGroups, ...defaultRelationGroups];
+  if ((newUser.groups ?? []).length === 0) { // if no provided groups, assign the user to the default groups
+    const defaultAssignationFilter = {
+      mode: 'and',
+      filters: [{ key: 'default_assignation', values: [true] }],
+      filterGroups: [],
+    };
+    const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
+    const defaultRelationGroups = defaultGroups.edges.map((e) => ({
+      fromId: element.id,
+      toId: e.node.internal_id,
+      relationship_type: RELATION_MEMBER_OF,
+    }));
+    relationGroups = relationGroups.concat(defaultRelationGroups);
+  }
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   if (isCreation) {
