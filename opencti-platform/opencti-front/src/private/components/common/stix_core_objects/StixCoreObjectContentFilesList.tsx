@@ -10,6 +10,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import useDeletion from 'src/utils/hooks/useDeletion';
+import DeleteDialog from 'src/components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
@@ -61,10 +63,11 @@ const StixCoreObjectContentFilesList = ({
   onFileChange,
 }: StixCoreObjectContentFilesListProps) => {
   const { fld, t_i18n } = useFormatter();
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const deletion = useDeletion({});
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
+
   const openPopover = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
     setAnchorEl(e.currentTarget);
@@ -76,17 +79,21 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
-  const submitDelete = (fileId: string) => {
+  const submitDelete = () => {
+    if (!menuFile?.id) return;
+    deletion.handleCloseDelete();
     closePopover();
-    setDeleting(fileId);
+    deletion.setDeleting(true);
     commitDelete({
-      variables: { fileName: fileId },
+      variables: { fileName: menuFile.id },
       onCompleted: () => {
-        setDeleting(null);
-        onFileChange(fileId, true);
+        deletion.setDeleting(false);
+        onFileChange(menuFile.id, true);
       },
     });
   };
+
+  const handleDelete = () => deletion.handleOpenDelete();
 
   const downloadPdf = async (file: ContentFile) => {
     closePopover();
@@ -108,6 +115,11 @@ const StixCoreObjectContentFilesList = ({
     }
   };
 
+  const handleClose = () => {
+    deletion.handleCloseDelete();
+    closePopover();
+  };
+
   return (
     <List>
       {files.map((file) => (
@@ -118,7 +130,7 @@ const StixCoreObjectContentFilesList = ({
               divider={true}
               selected={file.id === currentFileId}
               onClick={() => handleSelectFile(file.id)}
-              disabled={deleting === file.id}
+              disabled={deletion.deleting}
             >
               <ListItemIcon>
                 {renderIcon(file.metaData?.mimetype ?? '')}
@@ -171,9 +183,15 @@ const StixCoreObjectContentFilesList = ({
                 {t_i18n('Download in PDF')}
               </MenuItem>
             )}
-            <MenuItem onClick={() => submitDelete(menuFile.id)}>
+            <MenuItem onClick={handleDelete}>
               {t_i18n('Delete')}
             </MenuItem>
+            <DeleteDialog
+              title={t_i18n('Are you sure you want to delete this file?')}
+              deletion={deletion}
+              onClose={handleClose}
+              submitDelete={submitDelete}
+            />
           </>
         )}
       </Menu>

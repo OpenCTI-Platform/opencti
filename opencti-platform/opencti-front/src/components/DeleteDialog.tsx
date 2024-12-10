@@ -12,12 +12,14 @@ type DeleteDialogProps = {
   title: React.ReactNode
   deletion: Deletion
   submitDelete: () => void
+  onClose?: () => void
 };
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
   title,
   deletion,
   submitDelete,
+  onClose,
 }) => {
   const { t_i18n } = useFormatter();
   return (
@@ -26,7 +28,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
       PaperProps={{ elevation: 1 }}
       keepMounted={true}
       TransitionComponent={Transition}
-      onClose={deletion.handleCloseDelete}
+      onClose={onClose ?? deletion.handleCloseDelete}
     >
       <DialogContent>
         <DialogContentText>
@@ -34,7 +36,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={deletion.handleCloseDelete} disabled={deletion.deleting}>
+        <Button onClick={onClose ?? deletion.handleCloseDelete} disabled={deletion.deleting}>
           {t_i18n('Cancel')}
         </Button>
         <Button color="secondary" onClick={submitDelete} disabled={deletion.deleting}>
