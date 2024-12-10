@@ -10,9 +10,10 @@ import {
   PLATFORM_ORGANIZATION,
   securityQuery,
   EXTERNAL_ORGANIZATION,
-  USER_EDITOR
+  USER_EDITOR,
+  EXTERNAL_USER_ANALYST
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 
 const CREATE_QUERY = gql`
@@ -509,9 +510,9 @@ describe('Case Incident Response and organization sharing standard behavior with
   let platformOrganizationId: string;
   let testOrganizationId: string;
   let caseIrId: string;
-  let userEditorId: string;
+  let externalUserId: string;
   let settingsInternalId: string;
-  it('should plateform organization sharing and EE activated', async () => {
+  it('should platform organization sharing and EE activated', async () => {
     // Get organization id
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
 
@@ -560,13 +561,13 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd).not.toBeUndefined();
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
-  it('should Editor user not access Case Incident Response', async () => {
-    const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+  it('User not in platform organization should not have access Case Incident Response', async () => {
+    const caseIRQueryResult = await queryAsUser(EXTERNAL_USER_ANALYST.client, { query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult.data?.caseIncident).toBeNull();
   });
   it('should Admin user activate Authorized Members', async () => {
-    userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    externalUserId = await getUserIdByEmail(EXTERNAL_USER_ANALYST.email);
     const caseIRUpdatedQueryResult = await adminQuery({
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: {
@@ -577,7 +578,7 @@ describe('Case Incident Response and organization sharing standard behavior with
             access_right: 'admin'
           },
           {
-            id: userEditorId,
+            id: externalUserId,
             access_right: 'view'
           }
         ]
@@ -591,13 +592,13 @@ describe('Case Incident Response and organization sharing standard behavior with
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        id: externalUserId,
         access_right: 'view'
       }
     ]);
   });
   it('should Editor user access Case Incident Response out of her organization if authorized members activated', async () => {
-    const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    const caseIRQueryResult = await queryAsUser(EXTERNAL_USER_ANALYST.client, { query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
@@ -612,7 +613,7 @@ describe('Case Incident Response and organization sharing standard behavior with
       }
     });
     // Verify Editor user has no more access to Case incident
-    const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    const caseIRQueryResult = await queryAsUser(EXTERNAL_USER_ANALYST.client, { query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult.data?.caseIncident).toBeNull();
   });
@@ -628,7 +629,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(EXTERNAL_ORGANIZATION.name);
 
     // Verify Editor user has access to Case incident
-    const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    const caseIRQueryResult = await queryAsUser(EXTERNAL_USER_ANALYST.client, { query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);

@@ -93,8 +93,7 @@ export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { q
  * @param request
  */
 export const queryAsUser = async (client: AxiosInstance, request: { query: any, variables: any }) => {
-  const result = await executeInternalQuery(client, print(request.query), request.variables);
-  return result;
+  return executeInternalQuery(client, print(request.query), request.variables);
 };
 
 /**
