@@ -119,7 +119,9 @@ html .md-footer-meta.md-typeset a:focus,html .md-footer-meta.md-typeset a:hover 
 }
 
 .md-typeset__table td, th {
-  white-space: nowrap;
+  max-width: 21vw;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 
@@ -133,4 +135,14 @@ html, body {
 .glightbox img {
   border: 1px solid #273d5f;
   border-radius: 4.8px;
+}
+
+.md-grid {
+  max-width: 100%;
+}
+
+.md-content {
+  max-width: 71vw;
+  margin-left: auto;
+  margin-right: auto;
 }
