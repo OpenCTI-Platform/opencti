@@ -87,7 +87,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
     if (predefinedGroups) {
       setGroups(predefinedGroups);
     } else {
-      fetchQuery(groupsQuery, {})
+      fetchQuery(groupsQuery, { orderBy: 'name', orderMode: 'asc' })
         .toPromise()
         .then((data) => {
           const dataGroups = (data as GroupFieldQuery$data).groups?.edges ?? [];
