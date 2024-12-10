@@ -155,6 +155,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
               enableAskAi={true}
             />
