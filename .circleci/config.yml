@@ -68,7 +68,7 @@ jobs:
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+      - image: nikolaik/python-nodejs:python3.10-nodejs18
     resource_class: medium+
     steps:
       - run:
