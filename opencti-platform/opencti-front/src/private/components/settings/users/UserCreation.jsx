@@ -3,10 +3,10 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
-import { graphql } from 'react-relay';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import GroupField from '../../common/form/GroupField';
+import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -65,11 +65,13 @@ const userValidation = (t) => Yup.object().shape({
     }),
 });
 
-const UserCreation = ({ paginationOptions }) => {
+const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+
+  const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -123,7 +125,7 @@ const UserCreation = ({ paginationOptions }) => {
               password: '',
               confirmation: '',
               objectOrganization: [],
-              groups: [],
+              groups: defaultGroups.edges.map((g) => ({ value: g.node.id, label: g.node.name })),
               account_status: 'Active',
               account_lock_after_date: null,
               user_confidence_level: null,
