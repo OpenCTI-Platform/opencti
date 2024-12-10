@@ -122,7 +122,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
           gutterBottom={true}
           style={{ marginTop: 20 }}
         >
-          {t_i18n('Entity Type')}
+          {t_i18n('Entity type')}
         </Typography>
         <ItemEntityType entityType={relatedContainer.entity_type} />
 
