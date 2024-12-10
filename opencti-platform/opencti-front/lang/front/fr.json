@@ -2308,7 +2308,7 @@
   "Remove this reaction point": "Supprimer ce point de réaction",
   "Renew": "Renouveler",
   "Replace": "Remplacer",
-  "Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.": "L'opération Replace remplacera effectivement les valeurs de ce champ ajoutées dans le contexte de ce playbook tel que l'enrichissement ou d'autres manipulations de connaissances, mais elle ne les ajoutera que si les valeurs sont déjà écrites dans la plateforme.",
+  "Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.": "L'opération de remplacement, ne remplacera effectivement que les valeurs de ce champ ajoutées dans le contexte de ce playbook tel que l'enrichissement ou d'autres manipulations de connaissances, mais elle ne les ajoutera que si les valeurs sont déjà écrites dans la plateforme.",
   "Report": "Report",
   "Report actions": "Rapport d'actions",
   "Report name": "Nom du rapport",
