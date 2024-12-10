@@ -95,11 +95,13 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
             const max_confidence = n?.node.group_confidence_level
               ? `${t_i18n('Max Confidence Level:')} ${n.node.group_confidence_level.max_confidence}`
               : t_i18n('No Max Confidence Level');
-            const newLabel = showConfidence
+            const groupLabel = n?.node.name ?? '';
+            const groupLabelInList = showConfidence
               ? `${n?.node.name} (${max_confidence})`
               : n?.node.name ?? '';
             return {
-              label: newLabel,
+              label: groupLabel,
+              labelInList: groupLabelInList,
               value: n?.node.id ?? '',
             };
           });
@@ -125,12 +127,12 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       options={groups}
       onInputChange={searchGroups}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string }) => (
+      renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string, labelInList?: string }) => (
         <li {...renderProps}>
           <div className={classes.icon} style={{ color: option.color }}>
             <ItemIcon type="Group" />
           </div>
-          <div className={classes.text}>{option.label}</div>
+          <div className={classes.text}>{option.labelInList ?? option.label}</div>
         </li>
       )}
       classes={{ clearIndicator: classes.autoCompleteIndicator }}
