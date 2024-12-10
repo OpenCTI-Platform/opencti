@@ -25,25 +25,17 @@ const useStyles = makeStyles({
   },
 });
 
-export const searchGroupFieldQuery = graphql`
-  query GroupFieldSearchQuery($search: String) {
-    groups(orderBy: name, search: $search) {
-      edges {
-        node {
-          id
-          name
-          group_confidence_level {
-            max_confidence
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const groupsQuery = graphql`
-  query GroupFieldQuery {
-    groups {
+  query GroupFieldQuery(
+    $orderMode: OrderingMode
+    $orderBy: GroupsOrdering
+    $filters: FilterGroup
+  ) {
+    groups(
+      orderMode: $orderMode
+      orderBy: $orderBy
+      filters: $filters
+    ) {
       edges {
         node {
           id
@@ -95,7 +87,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
     if (predefinedGroups) {
       setGroups(predefinedGroups);
     } else {
-      fetchQuery(groupsQuery)
+      fetchQuery(groupsQuery, {})
         .toPromise()
         .then((data) => {
           const dataGroups = (data as GroupFieldQuery$data).groups?.edges ?? [];
