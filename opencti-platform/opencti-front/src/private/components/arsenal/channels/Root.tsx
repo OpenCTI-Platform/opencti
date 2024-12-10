@@ -145,6 +145,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   <ChannelEdition channelId={channel.id} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
             />
             <Box
