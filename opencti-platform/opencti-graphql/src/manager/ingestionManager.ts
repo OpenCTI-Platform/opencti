@@ -13,7 +13,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FROM_START_STR, now, sanitizeForMomentParsing, utcDate } from '../utils/format';
+import { FROM_START_STR, now, sanitizeForMomentParsing, sinceNowInMinutes, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
@@ -48,6 +48,9 @@ import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-ty
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
+const RSS_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:rss_feed:min_interval_minutes') || 5;
+const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
+const CSV_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:csv_feed:min_interval_minutes') || 5;
 
 let running = false;
 
@@ -177,7 +180,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
 const rssHttpGetter = (): Getter => {
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
-    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0' }
+    headers: { 'User-Agent': RSS_FEED_USER_AGENT }
   };
   const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
@@ -260,11 +263,12 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Update the state
     lastPubDate = R.last(items)?.pubDate;
-    await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
+    await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate, last_execution_date: now() });
     // Patch the related connector
     const state = { current_state_date: lastPubDate };
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   } else {
+    await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   }
 };
@@ -281,9 +285,11 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    // If ingestion have remaining messages in the queue, dont fetch any new data
+    // If ingestion have remaining messages in the queue, or if last execution was done before RSS_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    if (messages_number === 0) {
+    const { last_execution_date } = ingestion;
+    const shouldExecuteIngestion = !last_execution_date || sinceNowInMinutes(last_execution_date) > RSS_FEED_MIN_INTERVAL_MINUTES;
+    if (messages_number === 0 && shouldExecuteIngestion) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
@@ -511,7 +517,7 @@ export const processCsvLines = async (
     await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.
 
     logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
-    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast) };
+    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast), last_execution_date: now() };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   }
@@ -538,9 +544,11 @@ const csvExecutor = async (context: AuthContext) => {
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    // If ingestion have remaining messages in the queue, dont fetch any new data
+    // If ingestion have remaining messages in the queue, or if last execution was done before CSV_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    if (messages_number === 0) {
+    const { last_execution_date } = ingestion;
+    const shouldExecuteIngestion = !last_execution_date || sinceNowInMinutes(last_execution_date) > CSV_FEED_MIN_INTERVAL_MINUTES;
+    if (messages_number === 0 && shouldExecuteIngestion) {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - CSV ingestion execution', { cause: e, name: ingestion.name });
