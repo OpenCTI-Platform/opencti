@@ -2,12 +2,16 @@ import Drawer from '@components/common/drawer/Drawer';
 import React from 'react';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
-import FintelTemplateForm, { FintelTemplateFormInputs } from './FintelTemplateForm';
+import { useNavigate } from 'react-router-dom';
+import { FintelTemplateFormDrawerAddMutation } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateFormDrawerAddMutation.graphql';
+import { FintelTemplateFormDrawerEditMutation } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateFormDrawerEditMutation.graphql';
+import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { resolveLink } from '../../../../../utils/Entity';
 
-const fintelTemplateAdd = graphql`
+const fintelTemplateAddMutation = graphql`
   mutation FintelTemplateFormDrawerAddMutation($input: FintelTemplateAddInput!) {
     fintelTemplateAdd(input: $input) {
       id
@@ -16,6 +20,21 @@ const fintelTemplateAdd = graphql`
       instance_filters
       settings_types
       start_date
+      entity_type
+    }
+  }
+`;
+
+const fintelTemplateEditMutation = graphql`
+  mutation FintelTemplateFormDrawerEditMutation($id: ID!, $input: [EditInput!]!) {
+    fintelTemplateFieldPatch(id: $id, input: $input) {
+      id
+      name
+      description
+      instance_filters
+      settings_types
+      start_date
+      entity_type
     }
   }
 `;
@@ -24,7 +43,7 @@ interface FintelTemplateFormDrawerProps {
   isOpen: boolean
   onClose: () => void
   entityType: string
-  template?: FintelTemplateFormInputs
+  template?: { id: string } & FintelTemplateFormInputs
 }
 
 const FintelTemplateFormDrawer = ({
@@ -33,11 +52,13 @@ const FintelTemplateFormDrawer = ({
   entityType,
   template,
 }: FintelTemplateFormDrawerProps) => {
+  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const createTitle = t_i18n('Create a template');
   const editionTitle = t_i18n('Update a template');
 
-  const [commitAddMutation] = useApiMutation(fintelTemplateAdd);
+  const [commitAddMutation] = useApiMutation<FintelTemplateFormDrawerAddMutation>(fintelTemplateAddMutation);
+  const [commitEditMutation] = useApiMutation<FintelTemplateFormDrawerEditMutation>(fintelTemplateEditMutation);
 
   const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
     values,
@@ -52,23 +73,32 @@ const FintelTemplateFormDrawer = ({
           settings_types: [entityType],
         },
       },
-      updater: (store) => {
-        // insertNode(
-        //   store,
-        //   'Pagination_publicDashboards',
-        //   paginationOptions,
-        //   'publicDashboardAdd',
-        // );
-      },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         onClose();
-        MESSAGING$.notifySuccess(t_i18n('Fintel template created'));
+        if (response.fintelTemplateAdd) {
+          const { id, entity_type } = response.fintelTemplateAdd;
+          MESSAGING$.notifySuccess(t_i18n('Fintel template created'));
+          // navigate(`${resolveLink(entity_type)}/${entityType}/templates/${id}`);
+        }
       },
       onError: (error) => {
         setSubmitting(false);
         handleError(error);
+      },
+    });
+  };
+
+  const onEdit = (field: FintelTemplateFormInputKeys, value: unknown) => {
+    if (!template) return;
+
+    let input: { key:string, value: [unknown] } = { key: field, value: [value] };
+    if (field === 'published') input = { key: 'start_date', value: [value ? new Date() : null] };
+    commitEditMutation({
+      variables: {
+        id: template.id,
+        input: [input],
       },
     });
   };
@@ -82,7 +112,7 @@ const FintelTemplateFormDrawer = ({
       <FintelTemplateForm
         onClose={onClose}
         onSubmit={onAdd}
-        onSubmitField={console.log}
+        onSubmitField={onEdit}
         isEdition={!!template}
         defaultValues={template}
       />

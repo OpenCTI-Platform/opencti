@@ -17,10 +17,12 @@ export interface FintelTemplateFormInputs {
   published: boolean
 }
 
+export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
+
 interface FintelTemplateFormProps {
   onClose: () => void
   onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit']
-  onSubmitField: (field: string, value: unknown) => void
+  onSubmitField: (field: FintelTemplateFormInputKeys, value: unknown) => void
   defaultValues?: FintelTemplateFormInputs
   isEdition?: boolean
 }
@@ -47,10 +49,10 @@ const FintelTemplateForm = ({
     published: false,
   };
 
-  const updateField = async (field: string, value: unknown) => {
+  const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
     validation.validateAt(field, { [field]: value })
-      .catch(() => false)
-      .then(() => onSubmitField(field, value));
+      .then(() => onSubmitField(field, value))
+      .catch(() => false);
   };
 
   const onUpdate = isEdition ? updateField : undefined;

@@ -8,7 +8,10 @@ import { Add as AddIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { graphql, useFragment } from 'react-relay';
 import { SubType_subType$data } from '@components/settings/sub_types/__generated__/SubType_subType.graphql';
-import { FintelTemplatesGrid_templates$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatesGrid_templates.graphql';
+import {
+  FintelTemplatesGrid_templates$data,
+  FintelTemplatesGrid_templates$key,
+} from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatesGrid_templates.graphql';
 import FintelTemplatePopover from '@components/settings/sub_types/fintel_templates/FintelTemplatePopover';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
 import { FintelTemplateFormInputs } from './FintelTemplateForm';
@@ -17,11 +20,12 @@ import { useFormatter } from '../../../../../components/i18n';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 import ItemBoolean from '../../../../../components/ItemBoolean';
+import { resolveLink } from '../../../../../utils/Entity';
 
 const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
     target_type
-    fintelTemplates {
+    fintelTemplates(first: 500) @connection(key: "FintelTemplates_pagination") {
       edges {
         node {
           id
@@ -30,11 +34,14 @@ const fintelTemplatesFragment = graphql`
           instance_filters
           settings_types
           start_date
+          entity_type
         }
       }
     }
   }
 `;
+
+type TemplateType = NonNullable<FintelTemplatesGrid_templates$data['fintelTemplates']>['edges'][0]['node'];
 
 interface FintelTemplatesGridProps {
   data: SubType_subType$data['settings']
@@ -46,7 +53,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
 
   const [dataTableRef, setDataTableRef] = useState<HTMLDivElement | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [templateToEdit, setTemplateToEdit] = useState<FintelTemplateFormInputs>();
+  const [templateToEdit, setTemplateToEdit] = useState<{ id: string } & FintelTemplateFormInputs>();
 
   const dataResolved = useFragment<FintelTemplatesGrid_templates$key>(
     fintelTemplatesFragment,
@@ -55,7 +62,16 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
 
   if (!dataResolved) return null;
   const { target_type, fintelTemplates } = dataResolved;
-  type TemplateType = NonNullable<typeof fintelTemplates>[0];
+
+  const onUpdate = (template: TemplateType) => {
+    setTemplateToEdit({
+      id: template.id,
+      name: template.name,
+      description: template.description ?? null,
+      published: !!template.start_date,
+    });
+    setDrawerOpen(true);
+  };
 
   return (
     <>
@@ -87,18 +103,6 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
             position: 'relative',
           }}
         >
-          <button onClick={() => {
-            setTemplateToEdit({
-              name: 'Super template',
-              description: 'pouet pouet',
-              published: true,
-            });
-            setDrawerOpen(true);
-          }}
-          >
-            TODO DataTable of existing templates here
-          </button>
-
           <div style={{ height: '100%', width: '100%' }} ref={(r) => setDataTableRef(r)}>
             <DataTableWithoutFragment
               dataColumns={{
@@ -116,13 +120,18 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 },
               }}
               storageKey={`fintel-templates-${target_type}`}
-              useComputeLink={(template: TemplateType) => `templates/${template.id}`}
-              globalCount={fintelTemplates?.length ?? 0}
-              data={fintelTemplates}
+              useComputeLink={(t: TemplateType) => {
+                return `${resolveLink(t.entity_type)}/${target_type}/templates/${t.id}`;
+              }}
+              globalCount={fintelTemplates?.edges.length ?? 0}
+              data={(fintelTemplates?.edges ?? []).map((e) => e.node)}
               rootRef={dataTableRef ?? undefined}
               variant={DataTableVariant.inline}
               actions={(template: TemplateType) => (
-                <FintelTemplatePopover />
+                <FintelTemplatePopover
+                  templateId={template.id}
+                  onUpdate={() => onUpdate(template)}
+                />
               )}
             />
           </div>
