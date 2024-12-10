@@ -25,7 +25,7 @@ import { resolveLink } from '../../../../../utils/Entity';
 const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
     target_type
-    fintelTemplates(first: 500) @connection(key: "FintelTemplates_pagination") {
+    fintelTemplates(first: 500) @connection(key: "Pagination_fintelTemplates") {
       edges {
         node {
           id

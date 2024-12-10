@@ -45,6 +45,11 @@ type FintelTemplateConnection {
   edges: [FintelTemplateEdge!]!
 }
 
+enum FintelTemplateOrdering {
+  name
+  start_date
+}
+
 type Query {
   fintelTemplate(id: ID!): FintelTemplate @auth(for: [KNOWLEDGE_KNUPDATE])
 }

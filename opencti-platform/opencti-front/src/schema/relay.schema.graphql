@@ -10868,7 +10868,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
-  fintelTemplates: FintelTemplateConnection
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
 }
 
 enum EntitySettingsOrdering {
@@ -12409,4 +12409,9 @@ type FintelTemplateEdge {
 type FintelTemplateConnection {
   pageInfo: PageInfo!
   edges: [FintelTemplateEdge!]!
+}
+
+enum FintelTemplateOrdering {
+  name
+  start_date
 }

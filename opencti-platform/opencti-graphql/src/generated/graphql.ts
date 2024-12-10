@@ -7192,6 +7192,15 @@ export type EntitySetting = BasicObject & InternalObject & {
   updated_at: Scalars['DateTime']['output'];
 };
 
+
+export type EntitySettingFintelTemplatesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FintelTemplateOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type EntitySettingConnection = {
   __typename?: 'EntitySettingConnection';
   edges: Array<EntitySettingEdge>;
@@ -8212,6 +8221,11 @@ export type FintelTemplateEdge = {
   cursor: Scalars['String']['output'];
   node: FintelTemplate;
 };
+
+export enum FintelTemplateOrdering {
+  Name = 'name',
+  StartDate = 'start_date'
+}
 
 export type FintelTemplateWidget = {
   __typename?: 'FintelTemplateWidget';
@@ -31001,6 +31015,7 @@ export type ResolversTypes = ResolversObject<{
   FintelTemplateAddInput: FintelTemplateAddInput;
   FintelTemplateConnection: ResolverTypeWrapper<FintelTemplateConnection>;
   FintelTemplateEdge: ResolverTypeWrapper<FintelTemplateEdge>;
+  FintelTemplateOrdering: FintelTemplateOrdering;
   FintelTemplateWidget: ResolverTypeWrapper<FintelTemplateWidget>;
   FintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
@@ -34673,7 +34688,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   defaultValuesAttributes?: Resolver<Array<ResolversTypes['DefaultValueAttribute']>, ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType>;
+  fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType, Partial<EntitySettingFintelTemplatesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   overview_layout_customization?: Resolver<Maybe<Array<ResolversTypes['OverviewWidgetCustomization']>>, ParentType, ContextType>;
