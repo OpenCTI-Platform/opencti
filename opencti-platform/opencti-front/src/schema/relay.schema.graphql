@@ -10868,7 +10868,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
-  fintelTemplates: [FintelTemplate!]
+  fintelTemplates: FintelTemplateConnection
 }
 
 enum EntitySettingsOrdering {

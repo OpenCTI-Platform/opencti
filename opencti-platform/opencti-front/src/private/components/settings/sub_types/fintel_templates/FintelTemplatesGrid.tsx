@@ -22,12 +22,16 @@ const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
     target_type
     fintelTemplates {
-      id
-      name
-      description
-      instance_filters
-      settings_types
-      start_date
+      edges {
+        node {
+          id
+          name
+          description
+          instance_filters
+          settings_types
+          start_date
+        }
+      }
     }
   }
 `;

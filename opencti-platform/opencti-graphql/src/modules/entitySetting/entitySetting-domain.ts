@@ -21,6 +21,7 @@ import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewL
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import type { StoreEntityConnection } from '../../types/store';
 
 // -- LOADING --
 
@@ -102,13 +103,13 @@ export const getTemplatesForSetting = async (
   context: AuthContext,
   user: AuthUser,
   targetType: string,
-): Promise<BasicStoreEntityFintelTemplate[]> => {
+): Promise<StoreEntityConnection<BasicStoreEntityFintelTemplate>> => {
   const canGetTemplates = await canViewTemplates(context);
   if (!canGetTemplates) {
     return [];
   }
   const filters = addFilter(undefined, 'settings_types', [targetType]);
-  return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
