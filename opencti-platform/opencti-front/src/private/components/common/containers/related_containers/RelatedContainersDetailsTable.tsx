@@ -156,7 +156,7 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
 
   const queryRef = useQueryLoading(
     relatedContainersDetailsTableLinesQuery,
-    { ...queryPaginationOptions, count: 25 },
+    { ...queryPaginationOptions, count: 5 },
   );
 
   const preloadedPaginationProps = { // creators: {},

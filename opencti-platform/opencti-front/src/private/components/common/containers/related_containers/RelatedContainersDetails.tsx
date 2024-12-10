@@ -13,6 +13,11 @@ import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import ItemAssignees from '../../../../../components/ItemAssignees';
+import ItemStatus from '../../../../../components/ItemStatus';
+import ItemEntityType from '../../../../../components/ItemEntityType';
+import ItemCreators from '../../../../../components/ItemCreators';
+import ItemAuthor from '../../../../../components/ItemAuthor';
 
 export const relatedContainersDetailsQuery = graphql`
   query RelatedContainersDetailsQuery(
@@ -45,13 +50,13 @@ const RelatedContainersDetailsDistribution: React.FC<{
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 
-  return (<WidgetHorizontalBars
+  return (<div style={{ height: 150 }}><WidgetHorizontalBars
     series={series}
     distributed={false}
     stacked
     stackType='100%'
     legend={true}
-          />);
+                                       /></div>);
 };
 
 interface RelatedContainersDetailsProps {
@@ -117,35 +122,50 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
           gutterBottom={true}
           style={{ marginTop: 20 }}
         >
+          {t_i18n('Entity Type')}
+        </Typography>
+        <ItemEntityType entityType={relatedContainer.entity_type} />
+
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ marginTop: 40 }}
+        >
           {t_i18n('Description')}
         </Typography>
         <ExpandableMarkdown source={relatedContainer.description} limit={300} />
+
         <Typography
           variant="h3"
           gutterBottom={true}
           style={{ marginTop: 20 }}
         >
-          {t_i18n('Assignees')}
+          {t_i18n('Author')}
         </Typography>
-        {/* <ItemAssignees assignees={relatedContainer.objectAssignee ?? []} stixDomainObjectId={relatedContainer.id}/> */}
+        <ItemAuthor
+          createdBy={relatedContainer.createdBy}
+        />
+
         <Typography
           variant="h3"
           gutterBottom={true}
           style={{ marginTop: 20 }}
         >
-          {t_i18n('Original creation date')}
+          {t_i18n('Modification date')}
         </Typography>
         {fldt(relatedContainer.modified)}
       </Grid>
       <Grid item xs={6}>
+
         <Typography
           variant="h3"
           gutterBottom={true}
           style={{ marginTop: 20 }}
         >
-          {t_i18n('Due Date')}
+          {t_i18n('Marking')}
         </Typography>
-        {/* <ItemDueDate due_date={relatedContainer.due_date} variant="inElement" /> */}
+        <ItemMarkings markingDefinitions={relatedContainer.objectMarking}/>
+
         <Typography
           variant="h3"
           gutterBottom={true}
@@ -153,19 +173,26 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         >
           {t_i18n('Processing status')}
         </Typography>
-        {/* <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} /> */}
-        {relatedContainer.objectMarking && relatedContainer.objectMarking.length > 0 && (
-        <>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t_i18n('Marking')}
-          </Typography>
-          <ItemMarkings markingDefinitions={relatedContainer.objectMarking}/>
-        </>
-        )}
+        <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} />
+
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ marginTop: 20 }}
+        >
+          {t_i18n('Assignees')}
+        </Typography>
+        <ItemAssignees assignees={relatedContainer.objectAssignee ?? []} stixDomainObjectId={relatedContainer.id}/>
+
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ marginTop: 20 }}
+        >
+          {t_i18n('Creators')}
+        </Typography>
+        <ItemCreators creators={relatedContainer.creators ?? []} />
+
       </Grid>
       <Grid item xs={12}>
         <Typography

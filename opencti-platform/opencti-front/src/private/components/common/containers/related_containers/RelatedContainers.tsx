@@ -34,10 +34,28 @@ export const RelatedContainersFragment = graphql`
             entity_type
           }
         }
+        creators {
+          id
+          name
+        }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
         ... on Report {
           name
           modified
           description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
         }
         ... on Grouping {
           name
@@ -48,16 +66,34 @@ export const RelatedContainersFragment = graphql`
           name
           modified
           description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
+
         }
         ... on CaseRfi {
           name
           modified
           description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
+
         }
         ... on CaseRft {
           name
           modified
           description
+          objectAssignee {
+            entity_type
+            id
+            name
+          }
+
         }
       }
     }
