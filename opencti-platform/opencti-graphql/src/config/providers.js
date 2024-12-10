@@ -87,6 +87,7 @@ const configurationMapping = {
   skip_request_compression: 'skipRequestCompression',
   cert: 'idpCert',
   decryption_pvk: 'decryptionPvk',
+  decryption_cert: 'decryptionCert',
   // OpenID Client - everything is already in snake case
 };
 const configRemapping = (config) => {
