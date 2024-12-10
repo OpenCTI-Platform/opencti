@@ -456,15 +456,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       <>
         <FormControl style={{ width: '100%' }}>
           <InputLabel id="simulationType">{t_i18n('Simulation type')}</InputLabel>
-          {!hasAttackPatterns && (
-            <Alert
-              severity="warning"
-              variant="outlined"
-              style={{ marginTop: 20, marginBottom: 5 }}
-            >
-              {t_i18n('Simulation type : Technical (payloads) require attack patterns in this entity.')}
-            </Alert>
-          )}
           <Select
             labelId="simulationType"
             value={simulationType}
@@ -479,6 +470,15 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         </FormControl>
         {(simulationType !== 'simulated') && (
           <>
+            {!hasAttackPatterns && (
+              <Alert
+                severity="warning"
+                variant="outlined"
+                style={{ marginTop: 20, marginBottom: 5 }}
+              >
+                {t_i18n('Technical (payloads) require attack patterns in this entity.')}
+              </Alert>
+            )}
             <FormControl style={fieldSpacingContainerStyle}>
               <Autocomplete
                 id="simulationPlatforms"
@@ -605,7 +605,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         </Alert>
         {result.attackPatternsWithoutInjectorContracts && result.attackPatternsWithoutInjectorContracts.trim() !== '' && (
           <Alert severity="warning" sx={{ marginTop: 1 }}>
-            {t_i18n("The next attack patterns don't have any contract linked: ")}
+            {t_i18n("The following TTPs are not covered in the Openbas catalog : ")}
             {result.attackPatternsWithoutInjectorContracts}
           </Alert>
         )}
