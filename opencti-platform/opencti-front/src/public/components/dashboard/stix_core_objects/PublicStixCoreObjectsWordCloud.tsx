@@ -105,7 +105,7 @@ const PublicStixCoreObjectsWordCloud = ({
 
   return (
     <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
+      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
       variant="inLine"
     >
       {queryRef ? (
