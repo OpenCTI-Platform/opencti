@@ -20,6 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -54,12 +55,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
 }) => {
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
-
-  const [isFileChecked, setIsFileChecked] = useState<boolean>(true);
-  const toggleFile = () => {
-    setIsFileChecked(!isFileChecked);
-  };
-
+  const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(true);
   const [commit] = useApiMutation(exclusionListCreationFileMutation);
   const onSubmit: FormikConfig<ExclusionListCreationFormData>['onSubmit'] = (
     values,
@@ -122,7 +118,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       initialValues={initialValues}
       validateOnBlur={false}
       validateOnChange={false}
-      validationSchema={exclusionListValidator(t_i18n, isFileChecked)}
+      validationSchema={exclusionListValidator(t_i18n, isUploadFileChecked)}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -161,17 +157,20 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
             required
           />
-          <div style={fieldSpacingContainerStyle}>
-            <span onClick={toggleFile} style={{ cursor: 'pointer' }}>{t_i18n('Content')}</span>
-            <Switch
-              defaultChecked
-              checked={isFileChecked}
-              onChange={toggleFile}
-            />
-            <span onClick={toggleFile} style={{ cursor: 'pointer' }}>{t_i18n('File')}</span>
-          </div>
-          {isFileChecked ? (
-            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isFileChecked} />
+          <FormControlLabel
+            style={fieldSpacingContainerStyle}
+            control={
+              <Switch
+                defaultChecked
+                onChange={(_, isChecked) => {
+                  setIsUploadFileChecked(isChecked);
+                }}
+              />
+            }
+            label={t_i18n('Upload file')}
+          />
+          {isUploadFileChecked ? (
+            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isUploadFileChecked} />
           ) : (
             <Field
               style={fieldSpacingContainerStyle}
@@ -180,7 +179,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               label={t_i18n('Content (1 / line)')}
               multiline
               rows="4"
-              required={!isFileChecked}
+              required={!isUploadFileChecked}
             />
           )}
           <div style={{ marginTop: 20, textAlign: 'right' }}>
