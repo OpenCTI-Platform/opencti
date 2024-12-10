@@ -50,6 +50,7 @@ export const adminQueryWithSuccess = async (request: { query: any, variables: an
     query: request.query,
     variables: request.variables,
   });
+  logApp.info('ERRORS:', { errors: requestResult.errors });
   expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
   expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
   return requestResult;
