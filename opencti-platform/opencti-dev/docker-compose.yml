@@ -44,6 +44,13 @@ services:
       - 5601:5601
     depends_on:
       - opencti-dev-elasticsearch
+  opencti-dev-smtp:
+    container_name: opencti-dev-smtp
+    image: maildev/maildev:2.1.0
+    restart: unless-stopped
+    ports:
+      - 1025:1025
+      - 1080:1080
 
   # Disabled by default, to run use:
   # docker compose --profile opensearch up -d

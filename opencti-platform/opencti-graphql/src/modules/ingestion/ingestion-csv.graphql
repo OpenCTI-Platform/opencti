@@ -69,7 +69,8 @@ input IngestionCsvAddInput {
 
 type Mutation {
     ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [CSVMAPPERS])
-    ingestionCsvDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
-    ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [CSVMAPPERS])
+    ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionCsvResetState(id: ID!): IngestionCsv @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionCsvDelete(id: ID!): ID @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
 }

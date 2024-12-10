@@ -13566,6 +13566,7 @@ export type Mutation = {
   ingestionCsvAdd?: Maybe<IngestionCsv>;
   ingestionCsvDelete?: Maybe<Scalars['ID']['output']>;
   ingestionCsvFieldPatch?: Maybe<IngestionCsv>;
+  ingestionCsvResetState?: Maybe<IngestionCsv>;
   ingestionCsvTester?: Maybe<CsvMapperTestResult>;
   ingestionRssAdd?: Maybe<IngestionRss>;
   ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
@@ -13573,6 +13574,7 @@ export type Mutation = {
   ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
   ingestionTaxiiDelete?: Maybe<Scalars['ID']['output']>;
   ingestionTaxiiFieldPatch?: Maybe<IngestionTaxii>;
+  ingestionTaxiiResetState?: Maybe<IngestionTaxii>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
   killChainPhaseAdd?: Maybe<KillChainPhase>;
@@ -14556,6 +14558,11 @@ export type MutationIngestionCsvFieldPatchArgs = {
 };
 
 
+export type MutationIngestionCsvResetStateArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationIngestionCsvTesterArgs = {
   input: IngestionCsvAddInput;
 };
@@ -14590,6 +14597,11 @@ export type MutationIngestionTaxiiDeleteArgs = {
 export type MutationIngestionTaxiiFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationIngestionTaxiiResetStateArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -36961,6 +36973,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionCsvAdd?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvAddArgs, 'input'>>;
   ingestionCsvDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionCsvDeleteArgs, 'id'>>;
   ingestionCsvFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvFieldPatchArgs, 'id' | 'input'>>;
+  ingestionCsvResetState?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvResetStateArgs, 'id'>>;
   ingestionCsvTester?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionCsvTesterArgs, 'input'>>;
   ingestionRssAdd?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddArgs, 'input'>>;
   ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
@@ -36968,6 +36981,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
   ingestionTaxiiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiDeleteArgs, 'id'>>;
   ingestionTaxiiFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiFieldPatchArgs, 'id' | 'input'>>;
+  ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;

@@ -28,7 +28,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -76,8 +75,7 @@ export interface IngestionCsvAddInput {
   csv_mapper_id: string | Option
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
-  current_state_date: Date | null
-  ingestion_running?: boolean | null,
+  ingestion_running?: boolean | null
   user_id: string | Option
   username?: string
   password?: string
@@ -148,9 +146,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     uri: Yup.string().required(t_i18n('This field is required')),
     authentication_type: Yup.string().required(t_i18n('This field is required')),
     authentication_value: Yup.string().nullable(),
-    current_state_date: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
     csv_mapper_id: Yup.object().required(t_i18n('This field is required')),
     username: Yup.string().nullable(),
     password: Yup.string().nullable(),
@@ -180,7 +175,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
-      current_state_date: values.current_state_date,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       markings: markings ?? [],
     };
@@ -211,7 +205,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     authentication_type: ingestionCsvData.authentication_type,
     authentication_value: ingestionCsvData.authentication_value,
-    current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
     user_id: convertUser(ingestionCsvData, 'user'),
     username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
@@ -232,7 +225,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     csv_mapper_id: '',
     authentication_type: 'none',
     authentication_value: '',
-    current_state_date: null,
     user_id: '',
     username: '',
     password: '',
@@ -265,16 +257,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             label={t_i18n('Description')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
-          />
-          <Field
-            component={DateTimePickerField}
-            name="current_state_date"
-            textFieldProps={{
-              label: t_i18n('Import from date (empty = all Csv possible items)'),
-              variant: 'standard',
-              fullWidth: true,
-              style: fieldSpacingContainerStyle,
-            }}
           />
           <Field
             component={TextField}

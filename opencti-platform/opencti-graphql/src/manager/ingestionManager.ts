@@ -320,20 +320,24 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
   const params = prepareTaxiiGetParam(ingestion);
-  const { data, headers } = await httpClient.get(url, { params });
 
-  logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
+  logApp.info('[OPENCTI-MODULE] Taxii HTTP sending', {
     ingestion: ingestion.name,
     request: {
       params,
       url,
-    },
+    }
+  });
+  const { data, headers, status } = await httpClient.get(url, { params });
+  logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
+    ingestion: ingestion.name,
     response: {
       addedLastHeader: headers['x-taxii-date-added-last'],
       addedFirstHeader: headers['x-taxii-date-added-first'],
       more: data.more,
       next: data.next,
-    }
+      status,
+    },
   });
   return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
 };
