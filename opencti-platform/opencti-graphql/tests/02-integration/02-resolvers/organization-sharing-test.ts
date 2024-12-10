@@ -10,7 +10,8 @@ import {
   PYTHON_PATH,
   EXTERNAL_ORGANIZATION,
   testContext,
-  USER_EDITOR
+  USER_EDITOR,
+  EXTERNAL_USER_ANALYST
 } from '../../utils/testQuery';
 import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
@@ -92,13 +93,13 @@ describe('Organization sharing standard behavior for container', () => {
       }
     `;
     // Delete the organization should fail with error
-    await queryAsUserIsExpectedError(USER_EDITOR.client, {
+    await queryAsUserIsExpectedError(EXTERNAL_USER_ANALYST.client, {
       query: DELETE_QUERY,
       variables: { id: PLATFORM_ORGANIZATION.standard_id },
     }, 'Cannot delete the platform organization.', 'FUNCTIONAL_ERROR');
   });
   it('should user from different organization not access the report', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(EXTERNAL_USER_ANALYST.client, {
       query: REPORT_STIX_DOMAIN_ENTITIES,
       variables: { id: reportInternalId },
     });
@@ -117,8 +118,8 @@ describe('Organization sharing standard behavior for container', () => {
     // Need background task magic to happens for sharing
     await taskHandler();
   });
-  it('should Editor user access all objects', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+  it('should user in external organization access all objects', async () => {
+    const queryResult = await queryAsUserWithSuccess(EXTERNAL_USER_ANALYST.client, {
       query: REPORT_STIX_DOMAIN_ENTITIES,
       variables: { id: reportInternalId },
     });
