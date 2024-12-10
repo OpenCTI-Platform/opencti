@@ -35,7 +35,6 @@ interface ExclusionListCreationFormData {
   exclusion_list_entity_types: Option[];
   file: File | null;
   content: string | null;
-  action: string;
 }
 
 interface ExclusionListCreationFormProps {
@@ -55,7 +54,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
 }) => {
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
-  const actions: string[] = ['Exclusion'];
 
   const [isFileChecked, setIsFileChecked] = useState<boolean>(true);
   const toggleFile = () => {
@@ -111,7 +109,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     exclusion_list_entity_types: [],
     file: null,
     content: null,
-    action: 'Exclusion',
   };
 
   const entityTypesOptions: Option[] = entityTypes.map((type) => ({
@@ -186,20 +183,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               required={!isFileChecked}
             />
           )}
-          <Field
-            component={AutocompleteField}
-            name="action"
-            fullWidth={true}
-            style={fieldSpacingContainerStyle}
-            options={actions}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: string,
-            ) => <li key={option} {...props}>{option}</li>}
-            textfieldprops={{ label: t_i18n('Action') }}
-            disabled
-          />
-
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="contained"
