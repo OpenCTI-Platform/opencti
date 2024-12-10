@@ -51,11 +51,8 @@ const useBuildListOutcome = () => {
                 } catch (e) {
                   property = '';
                 }
-                const strAttribute = buildReadableAttribute(property, col);
-                // The trick here is to add a zero-width space every 10 chars to be able to make a
-                // multiline text even for values like long IDs without spaces.
-                const wrappableAttribute = (strAttribute.match(/.{1,10}/g) ?? []).join('\u{200B}');
-                return <td key={`${n.id}-${col.attribute}`}>{wrappableAttribute}</td>;
+                const readableAttribute = buildReadableAttribute(property, col, true);
+                return <td key={`${n.id}-${col.attribute}`}>{readableAttribute}</td>;
               })}
             </tr>
           ))}

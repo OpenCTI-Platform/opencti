@@ -1,39 +1,40 @@
 import useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import useDonutOutcome from './stix_relationships/useDonutOutcome';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
-import { TemplateAndUtilsContainerQuery$data } from './__generated__/TemplateAndUtilsContainerQuery.graphql';
-import templateAndUtilsContainerQuery from './TemplateAndUtilsContainerQuery';
+import fintelTemplateQuery from './FintelTemplateQuery';
 import useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import { useFormatter } from '../../../components/i18n';
 import { useBuildFiltersForTemplateWidgets } from '../../filters/filtersUtils';
+import { FintelTemplateQuery$data } from './__generated__/FintelTemplateQuery.graphql';
 
-const useContentFromTemplate = () => {
+const useFileFromTemplate = () => {
   const { t_i18n } = useFormatter();
   const { buildDonutOutcome } = useDonutOutcome();
   const { buildListOutcome } = useBuildListOutcome();
   const { buildAttributesOutcome } = useBuildAttributesOutcome();
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
-  const buildContentFromTemplate = async (
+  const buildFileFromTemplate = async (
     containerId: string,
     templateId: string,
     maxContentMarkings: string[],
   ) => {
     // fetch template and useful widgets
-    const variables = { id: containerId, templateId };
-    const { container } = await fetchQuery(
-      templateAndUtilsContainerQuery,
+    const variables = { id: templateId };
+    const { fintelTemplate } = await fetchQuery(
+      fintelTemplateQuery,
       variables,
-    ).toPromise() as TemplateAndUtilsContainerQuery$data;
+    ).toPromise() as FintelTemplateQuery$data;
 
-    if (!container || !container.templateAndUtils) {
-      throw Error('No template found');
+    if (!fintelTemplate) {
+      throw Error('No fintel template found');
     }
 
-    const { template, template_widgets } = container.templateAndUtils;
-    let { content } = template;
+    let { content } = fintelTemplate;
+    const { fintel_template_widgets } = fintelTemplate;
 
-    for (const widget of template_widgets) {
+    for (const templateWidget of fintel_template_widgets) {
+      const { widget } = templateWidget;
       // attribute widgets
       if (widget.type === 'attribute') {
         // eslint-disable-next-line no-await-in-loop
@@ -42,7 +43,7 @@ const useContentFromTemplate = () => {
           widget.dataSelection[0],
         );
         for (const outcome of attributesOutcomes) {
-          content = content.replaceAll(`$${outcome.variableName}`, outcome.attributeData);
+          content = content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
         }
       // other widgets
       } else {
@@ -71,14 +72,14 @@ const useContentFromTemplate = () => {
           outcome = `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`;
           MESSAGING$.notifyError('One of the widgets has not been resolved.');
         }
-        content = content.replace(`$${widget.id}`, outcome);
+        content = content.replace(`$${templateWidget.variable_name}`, outcome);
       }
     }
 
     return content;
   };
 
-  return { buildContentFromTemplate };
+  return { buildFileFromTemplate };
 };
 
-export default useContentFromTemplate;
+export default useFileFromTemplate;

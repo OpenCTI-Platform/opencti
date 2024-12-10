@@ -13,6 +13,7 @@ import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 const styles = () => ({
   paper: {
@@ -118,7 +119,7 @@ class CampaignsVerticalBars extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t(NO_DATA_WIDGET_MESSAGE)}
                 </span>
               </div>
             );

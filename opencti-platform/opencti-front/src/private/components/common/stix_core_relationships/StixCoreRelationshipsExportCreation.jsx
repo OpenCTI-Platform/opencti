@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -222,11 +223,12 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                       </Field>
                                       <ObjectMarkingField
                                         name="contentMaxMarkings"
-                                        label={t('Content max marking definition levels')}
+                                        label={t(CONTENT_MAX_MARKINGS_TITLE)}
                                         onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                         style={fieldSpacingContainerStyle}
                                         setFieldValue={setFieldValue}
                                         limitToMaxSharing
+                                        helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                                       />
                                       <ObjectMarkingField
                                         name="fileMarkings"
