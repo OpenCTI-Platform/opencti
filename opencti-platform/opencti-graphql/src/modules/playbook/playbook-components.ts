@@ -26,9 +26,11 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_THREAT_ACTOR,
+  INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
+  INPUT_PARTICIPANT
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
@@ -572,6 +574,12 @@ const attributePathMapping: any = {
   [INPUT_CREATED_BY]: {
     [ABSTRACT_STIX_CORE_OBJECT]: `/${createdBy.stixName}`,
     [ABSTRACT_STIX_RELATIONSHIP]: `/${createdBy.stixName}`,
+  },
+  [INPUT_ASSIGNEE]: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/assignee_ids`,
+  },
+  [INPUT_PARTICIPANT]: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/participant_ids`,
   },
   confidence: {
     [ABSTRACT_STIX_DOMAIN_OBJECT]: '/confidence',
