@@ -57,7 +57,12 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
   const actions: string[] = ['Exclusion'];
-  const [isCreatedWithFile, setIsCreatedWithFile] = useState<boolean>(true);
+
+  const [isFileChecked, setIsFileChecked] = useState<boolean>(true);
+  const toggleFile = () => {
+    setIsFileChecked(!isFileChecked);
+  };
+
   const [commit] = useApiMutation(exclusionListCreationFileMutation);
   const onSubmit: FormikConfig<ExclusionListCreationFormData>['onSubmit'] = (
     values,
@@ -121,7 +126,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       initialValues={initialValues}
       validateOnBlur={false}
       validateOnChange={false}
-      validationSchema={exclusionListValidator(t_i18n, isCreatedWithFile)}
+      validationSchema={exclusionListValidator(t_i18n, isFileChecked)}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -158,19 +163,16 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             </li>}
             textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
           />
-          <FormControlLabel
-            style={fieldSpacingContainerStyle}
-            control={
-              <Switch
-                defaultChecked
-                onChange={(_, isChecked) => {
-                  setIsCreatedWithFile(isChecked);
-                }}
-              />
-            }
-            label={t_i18n('Create with file')}
-          />
-          {isCreatedWithFile ? (
+          <div style={fieldSpacingContainerStyle}>
+            <span onClick={toggleFile} style={{ cursor: 'pointer' }}>{t_i18n('Content')}</span>
+            <Switch
+              defaultChecked
+              checked={isFileChecked}
+              onChange={toggleFile}
+            />
+            <span onClick={toggleFile} style={{ cursor: 'pointer' }}>{t_i18n('File')}</span>
+          </div>
+          {isFileChecked ? (
             <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} />
           ) : (
             <Field
