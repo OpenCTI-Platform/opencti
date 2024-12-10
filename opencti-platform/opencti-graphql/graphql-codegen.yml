@@ -53,6 +53,7 @@ generates:
         SupportPackage: ../modules/support/support-types#BasicStoreEntitySupportPackage
         DraftWorkspace: ../modules/draftWorkspace/draftWorkspace-types#BasicStoreEntityDraftWorkspace
         ExclusionList: ../modules/exclusionList/exclusionList-types#BasicStoreEntityExclusionList
+        RequestAccess: ../modules/requestAccess/requestAccess-types#BasicStoreEntityRequestAccess
   ./graphql.schema.json:
     plugins:
       - "introspection"
