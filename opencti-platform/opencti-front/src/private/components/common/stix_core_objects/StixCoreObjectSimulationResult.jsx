@@ -185,10 +185,11 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [openCallToAction, setOpenCallToAction] = useState(false);
+  const { oBasConfigured, oBasDisableDisplay } = useXTM();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
-  const { oBasConfigured, oBasDisableDisplay } = useXTM();
-  const [simulationType, setSimulationType] = useState('technical');
+  const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
+  const [simulationType, setSimulationType] = useState(isSimulatedEmailsAvailable ? 'simulated' : 'technical');
   const [platforms, setPlatforms] = useState(['Windows']);
   const [architecture, setArchitecture] = useState('AMD64');
   const [selection, setSelection] = useState('random');
@@ -199,7 +200,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const [attackPatterns, setAttackPatterns] = useState(null);
 
   // Determine the query based on the type
   let attackPatternsQuery;
@@ -211,32 +211,16 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     throw new Error('Type should be container or threat');
   }
 
-  let hasAttackPatterns = false;
-
   // Fetch the attackPatterns using the selected query
-  const fetchedAttackPatterns = useLazyLoadQuery(attackPatternsQuery, { id });
+  const attackPatterns = useLazyLoadQuery(attackPatternsQuery, { id });
 
   // Check if there are attack patterns in the entity
-  useEffect(() => {
-    setAttackPatterns(fetchedAttackPatterns);
-  }, [fetchedAttackPatterns]);
-
-  // Check if there are attack patterns in the entity
-  useEffect(() => {
-    if (attackPatterns) {
-      if (type === 'container' && attackPatterns?.stixCoreObject?.objects?.edges?.length > 0) {
-        hasAttackPatterns = true;
-      } else if (type === 'threat' && attackPatterns?.stixCoreRelationships?.edges?.length > 0) {
-        hasAttackPatterns = true;
-      }
-
-      if (!hasAttackPatterns) {
-        setSimulationType('simulated');
-      }
-    }
-  }, [attackPatterns, type]);
-
-  const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
+  let hasAttackPatterns = false;
+  if (type === 'container' && attackPatterns?.stixCoreObject?.objects?.edges?.length > 0) {
+    hasAttackPatterns = true;
+  } else if (type === 'threat' && attackPatterns?.stixCoreRelationships?.edges?.length > 0) {
+    hasAttackPatterns = true;
+  }
 
   const canGenerateScenario = () => {
     return (
@@ -478,7 +462,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             <Alert
               severity="warning"
               variant="outlined"
-              style={{ margin: 20 }}
+              style={{ marginTop: 20, marginBottom: 5 }}
             >
               {t_i18n('Simulation type : Technical (payloads) require attack patterns in this entity.')}
             </Alert>
