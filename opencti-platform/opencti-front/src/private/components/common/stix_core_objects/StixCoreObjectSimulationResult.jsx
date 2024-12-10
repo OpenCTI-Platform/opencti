@@ -224,11 +224,9 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
 
   const canGenerateScenario = () => {
     return (
-      (
         (simulationType === 'technical' && hasAttackPatterns && platforms.length > 0 && architecture)
         || (simulationType === 'simulated' && enabled && configured && isEnterpriseEdition)
         || (simulationType === 'mixed' && ((enabled && configured && isEnterpriseEdition) && (hasAttackPatterns && platforms.length > 0 && architecture)))
-      )
     );
   };
 
