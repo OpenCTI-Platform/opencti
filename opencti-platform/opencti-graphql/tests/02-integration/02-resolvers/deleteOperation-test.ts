@@ -1,7 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, queryAsAdmin, EXTERNAL_ORGANIZATION, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { editorQuery, queryAsAdmin, USER_PARTICIPATE, PLATFORM_ORGANIZATION } from '../../utils/testQuery';
+import { getOrganizationEntity, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { wait } from '../../../src/database/utils';
@@ -123,6 +123,7 @@ describe('Delete operation resolver testing', () => {
 
   it('should deleteOperation be created', async () => {
   // Create and delete the report
+    const organizationEntity = await getOrganizationEntity(PLATFORM_ORGANIZATION);
     const REPORT_TO_CREATE = {
       input: {
         name: 'Report for deletion',
@@ -130,7 +131,7 @@ describe('Delete operation resolver testing', () => {
         published: '2020-02-26T00:51:35.000Z',
         confidence: 90,
         objectMarking: [MARKING_TLP_RED],
-        objectOrganization: [EXTERNAL_ORGANIZATION.standard_id],
+        objectOrganization: [organizationEntity.id],
       },
     };
     const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
