@@ -97,7 +97,7 @@
     "yup": "1.4.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.48.1",
+    "@playwright/test": "1.49.1",
     "@rollup/plugin-graphql": "2.0.4",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.4.2",
