@@ -12217,8 +12217,8 @@ enum Platform {
 }
 
 enum Architecture {
-  AMD64
-  ARM64
+  x86_64
+  arm64
 }
 
 input SimulationConfig {

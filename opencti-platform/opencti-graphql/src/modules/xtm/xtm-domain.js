@@ -98,7 +98,7 @@ export const generateOpenBasScenario = async (
   author,
   simulationConfig
 ) => {
-  const { interval, selection, simulationType = 'technical', platforms = ['Windows'], architecture = 'AMD64' } = simulationConfig;
+  const { interval, selection, simulationType = 'technical', platforms = ['Windows'], architecture = 'x86_64' } = simulationConfig;
 
   if (simulationType !== 'technical') {
     await checkEnterpriseEdition(context);

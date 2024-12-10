@@ -18,8 +18,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import { Autocomplete } from '@mui/material';
+import EEChip from '../entreprise_edition/EEChip';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
@@ -191,7 +191,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
   const [simulationType, setSimulationType] = useState(isSimulatedEmailsAvailable ? 'simulated' : 'technical');
   const [platforms, setPlatforms] = useState(['Windows']);
-  const [architecture, setArchitecture] = useState('AMD64');
+  const [architecture, setArchitecture] = useState('x86_64');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -518,8 +518,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                 required
                 disabled={!hasAttackPatterns}
               >
-                <MenuItem value="AMD64">{'x86_64'}</MenuItem>
-                <MenuItem value="ARM64" >{'arm64'}</MenuItem>
+                <MenuItem value="x86_64">{'x86_64'}</MenuItem>
+                <MenuItem value="arm64" >{'arm64'}</MenuItem>
               </Select>
             </FormControl>
             </>
@@ -605,7 +605,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         </Alert>
         {result.attackPatternsWithoutInjectorContracts && result.attackPatternsWithoutInjectorContracts.trim() !== '' && (
           <Alert severity="warning" sx={{ marginTop: 1 }}>
-            {t_i18n("The following TTPs are not covered in the Openbas catalog : ")}
+            {t_i18n('The following TTPs are not covered in the Openbas catalog : ')}
             {result.attackPatternsWithoutInjectorContracts}
           </Alert>
         )}
