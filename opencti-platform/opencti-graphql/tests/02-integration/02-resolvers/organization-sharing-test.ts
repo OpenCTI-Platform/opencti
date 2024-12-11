@@ -10,7 +10,6 @@ import {
   PYTHON_PATH,
   EXTERNAL_ORGANIZATION,
   testContext,
-  USER_EDITOR,
   EXTERNAL_USER_ANALYST
 } from '../../utils/testQuery';
 import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
