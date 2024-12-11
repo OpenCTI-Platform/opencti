@@ -83,7 +83,7 @@ steps:
 
 
   - name: frontend-e2e-tests
-    image: node:20.18.0
+    image: node:20.18.1
     volumes:
     - name: cache-node-frontend-e2e
       path: /drone/src/opencti-platform/opencti-front/node_modules
@@ -103,7 +103,7 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:20.18.0
+    image: node:20.18.1
     failure: ignore
     when:
       status:
@@ -132,7 +132,7 @@ steps:
       - frontend-e2e-tests
 
   - name: frontend-verify-translation
-    image: node:20.18.0
+    image: node:20.18.1
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
