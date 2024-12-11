@@ -144,6 +144,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: contextFilters,
+    fromTypes: stixCoreObjectTypes,
   };
 
   const {
