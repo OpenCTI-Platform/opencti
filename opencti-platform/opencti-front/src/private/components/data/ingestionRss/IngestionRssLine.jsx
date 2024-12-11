@@ -101,6 +101,12 @@ class IngestionRssLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.last_execution_date.width }}
+              >
+                {nsdt(node.last_execution_date)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.current_state_date.width }}
               >
                 {nsdt(node.current_state_date)}
@@ -141,6 +147,7 @@ const IngestionRssLineFragment = createFragmentContainer(
         uri
         ingestion_running
         current_state_date
+        last_execution_date
       }
     `,
   },
@@ -202,6 +209,17 @@ class IngestionRssDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.last_execution_date.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={100}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.current_state_date.width }}
               >
                 <Skeleton
@@ -215,7 +233,7 @@ class IngestionRssDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVert/>
         </ListItemSecondaryAction>
       </ListItem>
     );
