@@ -16,7 +16,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, buildStandardUser, EXTERNAL_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, EXTERNAL_ORGANIZATION, testContext, TESTING_ORGS } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -185,7 +185,7 @@ describe('Entities listing', () => {
   it('should list multiple entities', async () => {
     const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
-    expect(entities.edges.length).toEqual(10); // 2 malwares + 8 organizations
+    expect(entities.edges.length).toEqual(TESTING_ORGS.length + 6 + 2); // 2 malwares + 6 organizations from data init
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
     expect(aggregationMap.get('Paradise Ransomware')).not.toBeUndefined();
     expect(aggregationMap.get('Allied Universal')).not.toBeUndefined();

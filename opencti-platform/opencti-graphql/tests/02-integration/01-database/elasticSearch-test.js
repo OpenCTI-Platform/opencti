@@ -33,7 +33,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
-import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ROLES, TESTING_USERS } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ORGS, TESTING_ROLES, TESTING_USERS } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
@@ -235,7 +235,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(R.head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(36);
+    expect(R.head(data).value).toEqual(34 + TESTING_ORGS.length);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -420,7 +420,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Sector')).toBe(3);
-    expect(entityTypeMap.get('Organization')).toBe(8);
+    expect(entityTypeMap.get('Organization')).toBe(6 + TESTING_ORGS.length);
     expect(entityTypeMap.get('Incident')).toBe(1);
     expect(entityTypeMap.get('Indicator')).toBe(3);
     expect(entityTypeMap.get('Intrusion-Set')).toBe(1);
@@ -450,7 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(521 + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(519 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -484,9 +484,9 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Sector')).toBe(3);
-    expect(entityTypeMap.get('Organization')).toBe(8);
+    expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length + 6);
     expect(entityTypeMap.get('Incident')).toBe(1);
-    expect(entityTypeMap.get('Indicator')).toBe(2);
+    expect(entityTypeMap.get('Indicator')).toBe(1);
     expect(data.edges.length).toEqual(20);
     expect(data.pageInfo.endCursor).toBeDefined();
 
@@ -569,7 +569,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Sector')).toBe(3);
-    expect(entityTypeMap.get('Organization')).toBe(8);
+    expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length + 6);
     expect(entityTypeMap.get('Incident')).toBe(1);
     expect(entityTypeMap.get('Indicator')).toBe(3);
     expect(entityTypeMap.get('Intrusion-Set')).toBe(1);
@@ -598,7 +598,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(529);
+    expect(data.edges.length).toEqual(530);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -664,7 +664,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('Individual')).toBe(1);
-    expect(entityTypeMap.get('Organization')).toBe(2);
+    expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length);
     expect(entityTypeMap.get('Incident')).toBe(1);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('Malware-Analysis')).toBe(1);
@@ -674,7 +674,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Opinion')).toBe(1);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(368);
+    expect(data.edges.length).toEqual(VOCABULARY_COUNT + TESTING_ORGS.length + 26);
     filters = {
       mode: 'and',
       filters: [
@@ -708,7 +708,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('StatusTemplate')).toBe(6);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
-    expect(entityTypeMap.get('Organization')).toBe(8);
+    expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length + 6);
     expect(entityTypeMap.get('Marking-Definition')).toBe(11);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
@@ -735,7 +735,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(13);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
-    expect(data.edges.length).toEqual(521 + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(522 + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -839,7 +839,7 @@ describe('Elasticsearch pagination', () => {
     expect(internalRelationshipsByType['has-capability'].length).toEqual(54);
     expect(internalRelationshipsByType['has-role'].length).toEqual(9);
     expect(internalRelationshipsByType['member-of'].length).toEqual(15);
-    expect(internalRelationshipsByType['participate-to'].length).toEqual(7);
+    expect(internalRelationshipsByType['participate-to'].length).toEqual(8);
 
     const stixCoreRelationships = groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].map((m) => m.node);
     const stixCoreRelationshipsByType = R.groupBy((m) => m.entity_type, stixCoreRelationships);
@@ -876,7 +876,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
 
-    expect(data.edges.length).toEqual(268);
+    expect(data.edges.length).toEqual(269);
 
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
@@ -889,7 +889,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('accesses-to')).toBe(28);
     expect(entityTypeMap.get('member-of')).toBe(15);
     expect(entityTypeMap.get('has-role')).toBe(9);
-    expect(entityTypeMap.get('participate-to')).toBe(7);
+    expect(entityTypeMap.get('participate-to')).toBe(8);
     expect(entityTypeMap.get('uses')).toBe(3);
     expect(entityTypeMap.get('part-of')).toBe(6);
     expect(entityTypeMap.get('indicates')).toBe(4);
@@ -906,7 +906,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(268);
+    expect(data.length).toEqual(269);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

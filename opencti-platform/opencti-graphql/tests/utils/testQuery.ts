@@ -277,18 +277,31 @@ TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 // Organization
 export interface OrganizationTestData {
   name: string,
-  standard_id: string
+  standard_id: string,
+  description?: string,
 }
+
+export const TESTING_ORGS: OrganizationTestData[] = [];
+export const TEST_ORGANIZATION: OrganizationTestData = {
+  name: 'TestOrganization',
+  standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
+  description: 'To be used by any test as knowledge data'
+};
+TESTING_ORGS.push(TEST_ORGANIZATION);
 
 export const EXTERNAL_ORGANIZATION: OrganizationTestData = {
   name: 'ExternalOrganization',
-  standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
+  standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'ExternalOrganization', identity_class: 'organization' }),
+  description: 'To be used in tests that requires a platform organization configured, as another organization than the platform one.'
 };
+TESTING_ORGS.push(EXTERNAL_ORGANIZATION);
 
 export const PLATFORM_ORGANIZATION: OrganizationTestData = {
   name: 'PlatformOrganization',
   standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'PlatformOrganization', identity_class: 'organization' }),
+  description: 'To be used in tests that requires a platform organization configured, as main platform organization.'
 };
+TESTING_ORGS.push(PLATFORM_ORGANIZATION);
 
 // Users
 export interface UserTestData {
@@ -358,7 +371,7 @@ export const USER_SECURITY: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'security@opencti.io' }),
   email: 'security@opencti.io',
   password: 'security',
-  organizations: [PLATFORM_ORGANIZATION],
+  organizations: [PLATFORM_ORGANIZATION, TEST_ORGANIZATION],
   groups: [AMBER_STRICT_GROUP],
   client: createHttpClient('security@opencti.io', 'security')
 };

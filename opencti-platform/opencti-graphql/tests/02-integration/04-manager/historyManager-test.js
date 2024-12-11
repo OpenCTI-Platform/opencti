@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { INDEX_HISTORY } from '../../../src/database/utils';
 import { buildHistoryElementsFromEvents, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
-import { testContext } from '../../utils/testQuery';
+import { EXTERNAL_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 
 const eventWithGrantedRefIds = {
   id: '1731595374948-0',
@@ -91,7 +91,7 @@ const eventWithGrantedRefsOnly = {
           created_at: '2024-06-10T12:55:17.446Z',
           updated_at: '2024-07-22T09:21:43.375Z',
           is_inferred: false,
-          granted_refs: ['identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727'], // TestOrganization
+          granted_refs: [TEST_ORGANIZATION.standard_id], // TestOrganization
           creator_ids: ['a93d949b-b56d-4426-b7fe-b79ec3718b0e'],
           workflow_id: 'b28a370a-317b-4c50-8f0d-483b17d11abb'
         }
@@ -107,7 +107,7 @@ const eventWithGrantedRefsOnly = {
     },
     context: {
       patch: [
-        { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs', value: ['identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727'] }
+        { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs', value: [TEST_ORGANIZATION.standard_id] }
       ],
       reverse_patch: [
         { op: 'remove', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs' }
@@ -125,7 +125,7 @@ describe('History manager test resolveGrantedRefsIds', () => {
   it('should return organization if granted refs are present and not granted refs ids', async () => {
     const organizationByIdsMap = await resolveGrantedRefsIds(testContext, [eventWithGrantedRefsOnly]);
     expect(organizationByIdsMap.size).toEqual(1);
-    expect(organizationByIdsMap.has('identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727')).toBeTruthy();
+    expect(organizationByIdsMap.has(TEST_ORGANIZATION.standard_id)).toBeTruthy();
   });
 });
 

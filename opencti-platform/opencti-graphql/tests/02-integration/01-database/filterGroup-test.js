@@ -1237,7 +1237,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(44);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(45);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1257,7 +1257,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(33); // 44 entities - 11 entities with a source reliability = 33
+    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 44 entities - 11 entities with a source reliability = 33
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1317,7 +1317,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(38); // 44 entities - 6 entities with source reliability equals to A = 38
+    expect(queryResult.data.globalSearch.edges.length).toEqual(39); // 44 entities - 6 entities with source reliability equals to A = 38
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1420,7 +1420,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(31); // 44 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
+    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 44 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
