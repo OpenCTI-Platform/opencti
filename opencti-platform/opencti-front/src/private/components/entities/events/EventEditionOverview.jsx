@@ -21,6 +21,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import EventDeletion from './EventDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const eventMutationFieldPatch = graphql`
   mutation EventEditionOverviewFieldPatchMutation(
@@ -77,7 +79,8 @@ const eventMutationRelationDelete = graphql`
 const EventEditionOverviewComponent = (props) => {
   const { event, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -195,7 +198,7 @@ const EventEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
-              }
+            }
           />
           <OpenVocabField
             label={t_i18n('Event types')}
@@ -221,7 +224,7 @@ const EventEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-              }
+            }
           />
           <Field
             component={DateTimePickerField}
@@ -234,7 +237,7 @@ const EventEditionOverviewComponent = (props) => {
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="start_date"/>
+                <SubscriptionFocus context={context} fieldName="start_date" />
               ),
             }}
           />
@@ -249,7 +252,7 @@ const EventEditionOverviewComponent = (props) => {
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="end_date"/>
+                <SubscriptionFocus context={context} fieldName="end_date" />
               ),
             }}
           />
@@ -262,17 +265,17 @@ const EventEditionOverviewComponent = (props) => {
             variant="edit"
           />
           {event.workflowEnabled && (
-          <StatusField
-            name="x_opencti_workflow_id"
-            type="Event"
-            onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            setFieldValue={setFieldValue}
-            style={{ marginTop: 20 }}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                }
-          />
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Event"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+              }
+            />
           )}
           <CreatedByField
             name="createdBy"
@@ -280,7 +283,7 @@ const EventEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
+            }
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
@@ -288,20 +291,27 @@ const EventEditionOverviewComponent = (props) => {
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
+            }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-          <CommitMessage
-            submitForm={submitForm}
-            disabled={isSubmitting || !isValid || !dirty}
-            setFieldValue={setFieldValue}
-            open={false}
-            values={values.references}
-            id={event.id}
-          />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <EventDeletion
+                  id={event.id}
+                />
+              : <div />}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={event.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

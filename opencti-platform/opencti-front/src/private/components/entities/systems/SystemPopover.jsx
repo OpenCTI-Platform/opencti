@@ -1,6 +1,4 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -11,14 +9,15 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
-import withRouter from '../../../../utils/compat_router/withRouter';
-import inject18n from '../../../../components/i18n';
+import { useNavigate } from 'react-router-dom';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { systemEditionQuery } from './SystemEdition';
 import SystemEditionContainer from './SystemEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { useFormatter } from '../../../../components/i18n';
 
 const SystemPopoverDeletionMutation = graphql`
   mutation SystemPopoverDeletionMutation($id: ID!) {
@@ -28,109 +27,74 @@ const SystemPopoverDeletionMutation = graphql`
   }
 `;
 
-class SystemPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDelete: false,
-      displayEdit: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+const SystemPopover = ({ id }) => {
+  const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
+  const handleCloseDelete = () => setDisplayDelete(false);
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: SystemPopoverDeletionMutation,
-      variables: {
-        id: this.props.id,
-      },
+      variables: { id },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.navigate('/dashboard/entities/systems');
+        setDeleting(false);
+        handleClose();
+        navigate('/dashboard/entities/systems');
       },
     });
-  }
+  };
+  const handleOpenEdit = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
+  const handleCloseEdit = () => setDisplayEdit(false);
 
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
-  render() {
-    const { t, id, disabled } = this.props;
-    return (
+  return isFABReplaced
+    ? (<></>)
+    : (
       <>
         <ToggleButton
-          disabled={disabled}
           value="popover"
           size="small"
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
         >
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <Dialog
+          open={displayDelete}
           PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
-          keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
+          onClose={handleCloseDelete}
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this system?')}
+              {t_i18n('Do you want to delete this system?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
             </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -142,8 +106,8 @@ class SystemPopover extends Component {
               return (
                 <SystemEditionContainer
                   system={props.system}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                  open={this.state.displayEdit}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
                 />
               );
             }
@@ -152,15 +116,6 @@ class SystemPopover extends Component {
         />
       </>
     );
-  }
-}
-
-SystemPopover.propTypes = {
-  id: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
-  disabled: PropTypes.bool,
 };
 
-export default compose(inject18n, withRouter)(SystemPopover);
+export default SystemPopover;
