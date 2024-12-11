@@ -58,6 +58,5 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseTy
     get: async (url: string, opts: any = {}) => caller.get(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     post: async (url: string, data: object, opts: any = {}) => caller.post(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     delete: async (url: string, opts: any = {}) => caller.delete(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
-    request: async (url: string, opts: any = {}) => caller.request({ ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
   };
 };
