@@ -509,7 +509,7 @@ export const processCsvLines = async (
     objectsInBundleCount = objectCount;
     await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.
 
-    logApp.info(`[OPENCTI-MODULE] INGESTION - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
+    logApp.info(`[OPENCTI-MODULE] INGESTION Csv - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast), last_execution_date: now() };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
@@ -524,6 +524,15 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
   await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
+
+  try {
+    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+    await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
+  } catch (e: any) {
+    logApp.error(`[OPENCTI-MODULE] INGESTION Csv - Error trying to fetch csv feed for: ${ingestion.name}`);
+    logApp.error(e, { ingestion });
+    throw e;
+  }
 };
 
 const csvExecutor = async (context: AuthContext) => {

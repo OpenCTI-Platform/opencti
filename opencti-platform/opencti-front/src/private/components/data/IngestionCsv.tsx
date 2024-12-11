@@ -55,12 +55,17 @@ const IngestionCsv = () => {
       },
       uri: {
         label: 'URL',
-        width: '30%',
+        width: '20%',
         isSortable: true,
       },
       ingestion_running: {
         label: 'Status',
-        width: '20%',
+        width: '15%',
+        isSortable: false,
+      },
+      last_execution_date: {
+        label: 'Last run',
+        width: '15%',
         isSortable: false,
       },
       current_state_hash: {
