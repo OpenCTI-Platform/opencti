@@ -427,11 +427,21 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               />
               <div style={{
                 display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
-                gap: '10px',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
               }}
               >
+                {typeof handleDelete === 'function' && (
+                  <Button
+                    variant="contained"
+                    onClick={() => handleDelete()}
+                    classes={{ root: classes.button }}
+                    disabled={inferred}
+                  >
+                    {t_i18n('Delete')}
+                  </Button>
+                )}
                 {enableReferences && (
                   <CommitMessage
                     submitForm={submitForm}
@@ -442,16 +452,6 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                     id={stixSightingRelationship.id}
                     noStoreUpdate={noStoreUpdate}
                   />
-                )}
-                {typeof handleDelete === 'function' && (
-                  <Button
-                    variant="contained"
-                    onClick={() => handleDelete()}
-                    classes={{ root: classes.button }}
-                    disabled={inferred}
-                  >
-                    {t_i18n('Delete')}
-                  </Button>
                 )}
               </div>
             </Form>
