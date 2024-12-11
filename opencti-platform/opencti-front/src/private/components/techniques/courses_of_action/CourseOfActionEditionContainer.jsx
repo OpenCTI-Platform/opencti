@@ -9,7 +9,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const CourseOfActionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, courseOfAction, open, controlledDial } = props;
   const { editContext } = courseOfAction;
@@ -19,9 +19,9 @@ const CourseOfActionEditionContainer = (props) => {
       title={t_i18n('Update a course of action')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <CourseOfActionEditionOverview
         courseOfAction={courseOfAction}
