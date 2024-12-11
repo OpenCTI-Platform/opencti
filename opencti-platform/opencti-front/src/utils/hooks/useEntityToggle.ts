@@ -25,8 +25,8 @@ type UseEntityToggleType = {
   representative?: {
     main: string;
   };
-  attribute_abstract?: string;
-  explanation?: string;
+  attribute_abstract?: string | null;
+  explanation?: string | null;
 };
 
 const useEntityToggle = <T extends UseEntityToggleType>(
