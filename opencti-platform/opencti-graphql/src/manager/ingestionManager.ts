@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import axios from 'axios';
+import { AxiosError } from 'axios';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -189,23 +189,6 @@ const rssHttpGetter = (): Getter => {
   };
 };
 
-const rssHttpGetterV2 = (): Getter => {
-  return async (uri: string) => {
-    console.log(`${uri}`);
-    const options = {
-      method: 'GET',
-      url: 'https://www.securityweek.com/feed',
-      params: { '': '' },
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0'
-      }
-    };
-
-    const { data } = await axios.request(options);
-    return data;
-  };
-};
-
 // RSS Title is mandatory
 // A valid date is required, and after the current_state_date
 const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined): DataItem[] => {
@@ -293,10 +276,20 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
+          if (e instanceof AxiosError) {
+            if (e?.response?.headers) {
+              if (e.response.headers['cf-mitigated']) {
+                logApp.warn(`[OPENCTI-MODULE] INGESTION Rss - Cloudflare challenge fail for ${ingestion.uri}`);
+              }
+            }
+          }
+          // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
+          patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
       // Update the state
+      logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - queue already filled with messages (${messages_number}) or last run is more recent than ${RSS_FEED_MIN_INTERVAL_MINUTES} minutes.`);
       const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
       ingestionPromises.push(ingestionPromise);
     }
@@ -552,10 +545,13 @@ const csvExecutor = async (context: AuthContext) => {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - CSV ingestion execution', { cause: e, name: ingestion.name });
+          // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
+          patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
       // Update the state
+      logApp.info(`[OPENCTI-MODULE] INGESTION csv, skipping ${ingestion.name} - queue already filled with messages (${messages_number}) or last run is more recent than ${RSS_FEED_MIN_INTERVAL_MINUTES} minutes.`);
       const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
       ingestionPromises.push(ingestionPromise);
     }
