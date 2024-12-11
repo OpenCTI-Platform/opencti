@@ -384,7 +384,7 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
     if (isNotEmptyField(element.x_opencti_files) && isNotEmptyField(fileMarkingsMap)) {
       element.x_opencti_files.forEach((f) => {
         if (isNotEmptyField(f.file_markings)) {
-          files.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]) });
+          files.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]).filter((fm) => fm) });
         } else {
           files.push(f);
         }
