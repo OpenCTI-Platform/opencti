@@ -140,12 +140,13 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <StixDomainObjectHeader
               entityType="Tool"
               stixDomainObject={tool}
-              PopoverComponent={<ToolPopover />}
+              PopoverComponent={<ToolPopover id={tool.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ToolEdition toolId={tool.id} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
             />
             <Box
