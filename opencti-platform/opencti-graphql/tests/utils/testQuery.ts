@@ -185,7 +185,7 @@ export const ROLE_PLATFORM_ADMIN: Role = {
 TESTING_ROLES.push(ROLE_PLATFORM_ADMIN);
 
 // Groups
-interface Group {
+export interface GroupTestData {
   id: string,
   name: string,
   markings: string[],
@@ -194,9 +194,9 @@ interface Group {
   max_shareable_markings: string[],
 }
 
-export const TESTING_GROUPS: Group[] = [];
+export const TESTING_GROUPS: GroupTestData[] = [];
 
-export const GREEN_GROUP: Group = {
+export const GREEN_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN GROUP' }),
   name: 'GREEN GROUP',
   markings: [MARKING_TLP_GREEN],
@@ -209,7 +209,7 @@ export const GREEN_GROUP: Group = {
 };
 TESTING_GROUPS.push(GREEN_GROUP);
 
-export const AMBER_GROUP: Group = {
+export const AMBER_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
   name: 'AMBER GROUP',
   markings: [MARKING_TLP_AMBER],
@@ -222,7 +222,7 @@ export const AMBER_GROUP: Group = {
 };
 TESTING_GROUPS.push(AMBER_GROUP);
 
-export const AMBER_STRICT_GROUP: Group = {
+export const AMBER_STRICT_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER STRICT GROUP' }),
   name: 'AMBER STRICT GROUP',
   markings: [MARKING_TLP_AMBER_STRICT],
@@ -235,7 +235,7 @@ export const AMBER_STRICT_GROUP: Group = {
 };
 TESTING_GROUPS.push(AMBER_STRICT_GROUP);
 
-export const CONNECTOR_GROUP: Group = {
+export const CONNECTOR_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'TEST CONNECTOR GROUP' }),
   name: 'TEST CONNECTOR GROUP',
   markings: [MARKING_TLP_GREEN],
@@ -248,7 +248,7 @@ export const CONNECTOR_GROUP: Group = {
 };
 TESTING_GROUPS.push(CONNECTOR_GROUP);
 
-export const GREEN_DISINFORMATION_ANALYST_GROUP: Group = {
+export const GREEN_DISINFORMATION_ANALYST_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN DISINFORMATION ANALYST GROUP' }),
   name: 'GREEN DISINFORMATION ANALYST GROUP',
   markings: [MARKING_TLP_GREEN],
@@ -261,7 +261,7 @@ export const GREEN_DISINFORMATION_ANALYST_GROUP: Group = {
 };
 TESTING_GROUPS.push(GREEN_DISINFORMATION_ANALYST_GROUP);
 
-export const PLATFORM_ADMIN_GROUP: Group = {
+export const PLATFORM_ADMIN_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'Platform admin group' }),
   name: 'Platform admin group',
   markings: [MARKING_TLP_CLEAR],
@@ -275,29 +275,32 @@ export const PLATFORM_ADMIN_GROUP: Group = {
 TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 
 // Organization
-export interface Organization {
+export interface OrganizationTestData {
   name: string,
   id: string
 }
 
-export const TEST_ORGANIZATION: Organization = {
+export const TESTING_ORGS: OrganizationTestData[] = [];
+export const TEST_ORGANIZATION: OrganizationTestData = {
   name: 'TestOrganization',
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
 };
+TESTING_ORGS.push(TEST_ORGANIZATION);
 
-export const PLATFORM_ORGANIZATION: Organization = {
+export const PLATFORM_ORGANIZATION: OrganizationTestData = {
   name: 'PlatformOrganization',
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'PlatformOrganization', identity_class: 'organization' }),
 };
+TESTING_ORGS.push(PLATFORM_ORGANIZATION);
 
 // Users
-interface User {
+interface UserTestData {
   id: string,
   email: string,
   password: string,
   roles?: Role[],
-  organizations?: Organization[],
-  groups: Group[],
+  organizations?: OrganizationTestData[],
+  groups: GroupTestData[],
   client: AxiosInstance,
 }
 
@@ -334,8 +337,8 @@ export const ADMIN_USER: AuthUser = {
   restrict_delete: false,
   no_creators: false,
 };
-export const TESTING_USERS: User[] = [];
-export const USER_PARTICIPATE: User = {
+export const TESTING_USERS: UserTestData[] = [];
+export const USER_PARTICIPATE: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
   password: 'participate',
@@ -343,7 +346,7 @@ export const USER_PARTICIPATE: User = {
   client: createHttpClient('participate@opencti.io', 'participate')
 };
 TESTING_USERS.push(USER_PARTICIPATE);
-export const USER_EDITOR: User = {
+export const USER_EDITOR: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'editor@opencti.io' }),
   email: 'editor@opencti.io',
   password: 'editor',
@@ -353,7 +356,7 @@ export const USER_EDITOR: User = {
 };
 TESTING_USERS.push(USER_EDITOR);
 
-export const USER_SECURITY: User = {
+export const USER_SECURITY: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'security@opencti.io' }),
   email: 'security@opencti.io',
   password: 'security',
@@ -363,7 +366,7 @@ export const USER_SECURITY: User = {
 };
 TESTING_USERS.push(USER_SECURITY);
 
-export const USER_CONNECTOR: User = {
+export const USER_CONNECTOR: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'connector@opencti.io' }),
   email: 'connector@opencti.io',
   password: 'connector',
@@ -372,7 +375,7 @@ export const USER_CONNECTOR: User = {
 };
 TESTING_USERS.push(USER_CONNECTOR);
 
-export const USER_DISINFORMATION_ANALYST: User = {
+export const USER_DISINFORMATION_ANALYST: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
   email: 'anais@opencti.io',
   password: 'disinformation',
@@ -381,7 +384,7 @@ export const USER_DISINFORMATION_ANALYST: User = {
 };
 TESTING_USERS.push(USER_DISINFORMATION_ANALYST);
 
-export const USER_PLATFORM_ADMIN: User = {
+export const USER_PLATFORM_ADMIN: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'platform@opencti.io' }),
   email: 'platform@opencti.io',
   password: 'platformadmin',
@@ -443,7 +446,7 @@ const GROUP_ASSIGN_MUTATION = `
     }
   }
 `;
-const createGroup = async (input: Group): Promise<string> => {
+const createGroup = async (input: GroupTestData): Promise<string> => {
   const { data } = await internalAdminQuery(GROUP_CREATION_MUTATION, {
     input: { name: input.name, group_confidence_level: input.group_confidence_level }
   });
@@ -465,7 +468,7 @@ const createGroup = async (input: Group): Promise<string> => {
   }
   return data.groupAdd.id;
 };
-const assignGroupToUser = async (group: Group, user: User) => {
+const assignGroupToUser = async (group: GroupTestData, user: UserTestData) => {
   await internalAdminQuery(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
 };
 // endregion
@@ -499,7 +502,7 @@ const createOrganization = async (input: { name: string }): Promise<string> => {
   return organization.data.organizationAdd.id;
 };
 
-const assignOrganizationToUser = async (organization: Organization, user: User) => {
+const assignOrganizationToUser = async (organization: OrganizationTestData, user: UserTestData) => {
   await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
 };
 // endregion
@@ -566,7 +569,7 @@ const USER_CREATION_MUTATION = `
     }
   }
 `;
-const createUser = async (user: User) => {
+const createUser = async (user: UserTestData) => {
   // Assign user to groups
   for (let indexGroup = 0; indexGroup < user.groups.length; indexGroup += 1) {
     const group = user.groups[indexGroup];
