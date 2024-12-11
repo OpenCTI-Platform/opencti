@@ -3,8 +3,8 @@ import { addTheme, deleteTheme, editTheme, findAll, findById } from './theme-dom
 
 const themeResolvers: Resolvers = {
   Query: {
-    theme: (_, { id }, context) => findById(context, context.user, id),
-    themes: (_, args, context) => findAll(context, context.user, args),
+    theme: (_, { id }, context) => findById(context, id),
+    themes: (_, args, context) => findAll(context, args),
   },
   Mutation: {
     themeAdd: (_, { input }, context) => addTheme(context, context.user, input),
