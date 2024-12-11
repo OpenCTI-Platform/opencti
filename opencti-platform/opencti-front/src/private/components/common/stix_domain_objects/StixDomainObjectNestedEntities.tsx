@@ -1,16 +1,15 @@
-import { IconButton, List, styled, Typography } from '@mui/material';
-import React, { FunctionComponent, useContext, useEffect } from 'react';
-import { useFormatter } from 'src/components/i18n';
-import Security from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
-import useHelper from 'src/utils/hooks/useHelper';
-import { QueryRenderer } from 'src/relay/environment';
+import { IconButton, List, Typography } from '@mui/material';
+import React, { FunctionComponent, useState } from 'react';
 import { Add } from '@mui/icons-material';
-import StixNestedRefRelationshipCreationFromEntityFabless from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityFabless';
-import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
+import { useFormatter } from '../../../../components/i18n';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import StixNestedRefRelationshipCreationFromEntity from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
 import { StixDomainObjectNestedEntitiesLines_data$data } from './__generated__/StixDomainObjectNestedEntitiesLines_data.graphql';
+import StixNestedRefRelationshipCreationFromEntityFabless from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityFabless';
 
 interface StixDomainObjectNestedEntitiesProps {
   entityId: string,
@@ -26,25 +25,22 @@ StixDomainObjectNestedEntitiesProps
   targetStixCoreObjectTypes,
 }) => {
   const { t_i18n } = useFormatter();
-  const { setState } = useContext(CreateRelationshipContext);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const StyledContainer = styled('div')({ marginTop: 20 });
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [sortBy, setSortBy] = useState(null);
+  const [orderAsc, setOrderAsc] = useState<boolean>(false);
 
   const paginationOptions = {
     fromOrToId: entityId,
-    search: '',
-    orderBy: null,
-    orderMode: 'desc',
+    search: searchTerm,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
   };
 
-  useEffect(() => setState({
-    paginationOptions,
-  }), []);
-
   return (
-    <StyledContainer>
+    <div style={{ marginTop: 20 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Nested objects')}
       </Typography>
@@ -53,28 +49,26 @@ StixDomainObjectNestedEntitiesProps
         placeholder={<div style={{ height: 29 }} />}
       >
         {isFABReplaced
-          ? <StixNestedRefRelationshipCreationFromEntityFabless
+          ? (
+            <StixNestedRefRelationshipCreationFromEntityFabless
               id={entityId}
               entityType={entityType}
-              isReversable={false}
-              controlledDial={({ onOpen }) => {
-                return (
-                  <IconButton
-                    color="primary"
-                    aria-label={t_i18n('Label')}
-                    onClick={onOpen}
-                    size="large"
-                    style={{
-                      float: 'left',
-                      margin: '-15px 0 0 -2px',
-                    }}
-                  >
-                    <Add fontSize="small" />
-                  </IconButton>
-                );
-              }}
+              targetStixCoreObjectTypes={targetStixCoreObjectTypes}
+              controlledDial={({ onOpen }) => (
+                <IconButton
+                  color="primary"
+                  aria-label="Label"
+                  onClick={onOpen}
+                  style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+                  size="large"
+                >
+                  <Add fontSize="small" />
+                </IconButton>
+              )}
             />
-          : <StixNestedRefRelationshipCreationFromEntity
+          )
+          : (
+            <StixNestedRefRelationshipCreationFromEntity
               paginationOptions={paginationOptions}
               entityId={entityId}
               variant="inLine"
@@ -82,6 +76,7 @@ StixDomainObjectNestedEntitiesProps
               targetStixCoreObjectTypes={targetStixCoreObjectTypes}
               isRelationReversed={false}
             />
+          )
         }
       </Security>
       <div className="clearfix" />
@@ -98,7 +93,7 @@ StixDomainObjectNestedEntitiesProps
           )}
         />
       </List>
-    </StyledContainer>
+    </div>
   );
 };
 

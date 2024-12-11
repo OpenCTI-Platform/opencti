@@ -220,6 +220,7 @@ const RenderForm = ({
   const location = useLocation();
   const [reversed, setReversed] = useState<boolean>(initiallyReversed ?? false);
   const isRelatedTo = location.pathname.includes('/knowledge/related');
+  const isObservable = location.pathname.includes('/observations/observables');
 
   let fromEntities = [sourceEntity];
   let toEntities = targetEntities;
@@ -246,29 +247,32 @@ const RenderForm = ({
     );
   };
 
-  if (!isRelatedTo) {
-    resolvedRelationshipTypes = resolvedRelationshipTypes.filter(
-      (relType) => relType !== 'related-to',
-    );
+  // Skip this initial reverse logic for observables
+  if (!isObservable) {
+    if (!isRelatedTo) {
+      resolvedRelationshipTypes = resolvedRelationshipTypes.filter(
+        (relType) => relType !== 'related-to',
+      );
 
-    // Check if the inverse relation has any unique relationship types
-    // If not, this creation form is not reversable
-    isReversable = resolveRelationsTypes(
-      toEntities[0].entity_type,
-      fromEntities[0].entity_type,
-      schema?.schemaRelationsTypesMapping ?? new Map(),
-    ).filter((relType) => relType !== 'related-to').length > 0;
+      // Check if the inverse relation has any unique relationship types
+      // If not, this creation form is not reversable
+      isReversable = resolveRelationsTypes(
+        toEntities[0].entity_type,
+        fromEntities[0].entity_type,
+        schema?.schemaRelationsTypesMapping ?? new Map(),
+      ).filter((relType) => relType !== 'related-to').length > 0;
 
-    // If the initially resolved relationship types doesn't contain anything
-    // beyond 'related-to', we should invert the relation
-    if (resolvedRelationshipTypes.filter((relType) => relType !== 'related-to').length < 1) {
-      handleReverse();
-      isReversable = false;
+      // If the initially resolved relationship types doesn't contain anything
+      // beyond 'related-to', we should invert the relation
+      if (resolvedRelationshipTypes.filter((relType) => relType !== 'related-to').length < 1) {
+        handleReverse();
+        isReversable = false;
+      }
+    } else {
+      resolvedRelationshipTypes = resolvedRelationshipTypes.filter(
+        (relType) => relType === 'related-to',
+      );
     }
-  } else {
-    resolvedRelationshipTypes = resolvedRelationshipTypes.filter(
-      (relType) => relType === 'related-to',
-    );
   }
 
   const relationshipTypes = resolvedRelationshipTypes;

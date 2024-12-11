@@ -128,38 +128,45 @@ export const stixNestedRefRelationshipCreationFromEntityLinesQuery = graphql`
   }
 `;
 
+export const stixNestedRefRelationshipCreationFromEntityLinesFragment = graphql`
+fragment StixNestedRefRelationshipCreationFromEntityLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    types: { type: "[String]" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "StixNestedRefRelationshipCreationFromEntityLinesRefetchQuery") {
+    stixCoreObjects(
+      search: $search
+      types: $types
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreObjects") {
+      edges {
+        node {
+          id
+          ...StixNestedRefRelationshipCreationFromEntityLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
+
 const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContainer(
   StixNestedRefRelationshipCreationFromEntityLinesContainer,
   {
-    data: graphql`
-      fragment StixNestedRefRelationshipCreationFromEntityLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "FilterGroup" }
-        ) {
-          stixCoreObjects(
-            search: $search
-            types: $types
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-          ) @connection(key: "Pagination_stixCoreObjects") {
-            edges {
-              node {
-                id
-                ...StixNestedRefRelationshipCreationFromEntityLine_node
-              }
-            }
-          }
-        }
-    `,
+    data: stixNestedRefRelationshipCreationFromEntityLinesFragment,
   },
   {
     direction: 'forward',

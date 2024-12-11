@@ -430,10 +430,12 @@ const StixCyberObservableCreation = ({
     bulkCommit({
       variables: finalValues,
       onStepError: (error) => {
+        console.error({ error });
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
       onCompleted: (total) => {
+        console.log({ total });
         setSubmitting(false);
         if (total < 2) {
           // If > 2, this is calling when closing progress bar modal.
