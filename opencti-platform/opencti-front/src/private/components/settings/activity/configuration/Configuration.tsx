@@ -47,6 +47,7 @@ import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
+import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -105,6 +106,8 @@ ConfigurationComponentProps
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Activity: Configuration | Settings'));
   const [commit] = useApiMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(
     configurationQuery,

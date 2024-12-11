@@ -16,6 +16,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
@@ -25,6 +26,8 @@ const Incidents: FunctionComponent = () => {
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Incidents | Events'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

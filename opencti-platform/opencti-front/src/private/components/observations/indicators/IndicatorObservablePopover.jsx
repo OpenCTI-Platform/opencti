@@ -64,24 +64,33 @@ class IndicatorObservablePopover extends Component {
   }
 
   handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
     event.stopPropagation();
+    event.preventDefault();
+    this.setState({ anchorEl: event.currentTarget });
   }
 
-  handleClose() {
+  handleClose(event) {
+    event.stopPropagation();
+    event.preventDefault();
     this.setState({ anchorEl: null });
   }
 
-  handleOpenDelete() {
+  handleOpenDelete(event) {
+    event.stopPropagation();
+    event.preventDefault();
     this.setState({ displayDelete: true });
-    this.handleClose();
+    this.handleClose(event);
   }
 
-  handleCloseDelete() {
+  handleCloseDelete(event) {
+    event.stopPropagation();
+    event.preventDefault();
     this.setState({ deleting: false, displayDelete: false });
   }
 
-  submitDelete() {
+  submitDelete(event) {
+    event.stopPropagation();
+    event.preventDefault();
     this.setState({ deleting: true });
     commitMutation({
       mutation: indicatorObservablePopoverDeletionMutation,
@@ -92,7 +101,7 @@ class IndicatorObservablePopover extends Component {
       },
       updater: (store) => deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, { first: 100 }),
       onCompleted: () => {
-        this.handleCloseDelete();
+        this.handleCloseDelete(event);
         if (this.props.onDelete) {
           this.props.onDelete();
         }
@@ -108,7 +117,6 @@ class IndicatorObservablePopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="large"
           color="primary"
         >
           <MoreVert />

@@ -57,13 +57,13 @@ const styles = (theme) => ({
 });
 
 const markingDefinitionMutation = graphql`
-  mutation MarkingDefinitionCreationMutation(
-    $input: MarkingDefinitionAddInput!
-  ) {
-    markingDefinitionAdd(input: $input) {
-      ...MarkingDefinitionLine_node
+    mutation MarkingDefinitionCreationMutation(
+        $input: MarkingDefinitionAddInput!
+    ) {
+        markingDefinitionAdd(input: $input) {
+            ...MarkingDefinitionsLine_node
+        }
     }
-  }
 `;
 
 const markingDefinitionValidation = (t) => Yup.object().shape({

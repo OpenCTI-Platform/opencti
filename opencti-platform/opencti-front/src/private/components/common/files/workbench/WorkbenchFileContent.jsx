@@ -62,7 +62,7 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import RichTextField from '../../../../../components/fields/RichTextField';
 import Drawer from '../../drawer/Drawer';
 import Transition from '../../../../../components/Transition';
-import { markingDefinitionsLinesSearchQuery } from '../../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsLinesSearchQuery } from '../../../settings/MarkingDefinitionsQuery';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 

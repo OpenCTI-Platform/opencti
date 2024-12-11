@@ -8,18 +8,14 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import MarkingDefinitionEdition from './MarkingDefinitionEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const markingDefinitionPopoverDeletionMutation = graphql`
   mutation MarkingDefinitionPopoverDeletionMutation($id: ID!) {
@@ -42,13 +38,15 @@ const markingDefinitionEditionQuery = graphql`
 `;
 
 const MarkingDefinitionPopover = ({
-  markingDefinitionId, disabled, paginationOptions,
+  markingDefinition, paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isSensitive, isAllowed } = useSensitiveModifications('markings', markingDefinition.standard_id);
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const disabled = !isAllowed && isSensitive;
 
   const handleOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -82,10 +80,10 @@ const MarkingDefinitionPopover = ({
     setDeleting(true);
     commit({
       variables: {
-        id: markingDefinitionId,
+        id: markingDefinition.id,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_markingDefinitions', paginationOptions, markingDefinitionId);
+        deleteNode(store, 'Pagination_markingDefinitions', paginationOptions, markingDefinition.id);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -119,7 +117,7 @@ const MarkingDefinitionPopover = ({
       </Menu>
       <QueryRenderer
         query={markingDefinitionEditionQuery}
-        variables={{ id: markingDefinitionId }}
+        variables={{ id: markingDefinition.id }}
         render={({ props }) => {
           if (props) {
             return (

@@ -10,7 +10,6 @@ const ToolEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const { handleClose, tool, open, controlledDial } = props;
   const { editContext } = tool;
 

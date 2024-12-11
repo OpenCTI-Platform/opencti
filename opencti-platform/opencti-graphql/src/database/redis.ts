@@ -1,6 +1,6 @@
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import Redis, { Cluster, type RedisOptions, type SentinelAddress } from 'ioredis';
-import Redlock from 'redlock';
+import { Redlock } from '@sesamecare-oss/redlock';
 import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
@@ -27,6 +27,7 @@ import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, gen
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
+import type { ExclusionListCacheItem } from './exclusionListCache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -884,3 +885,34 @@ export const redisDeleteSupportPackageNodeStatus = (supportPackageId: string) =>
 };
 
 // endregion - support package handling
+
+// region - exclusion list cache handling
+
+const EXCLUSION_LIST_STATUS_KEY = 'exclusion_list_status';
+const EXCLUSION_LIST_CACHE_KEY = 'exclusion_list_cache';
+export const redisUpdateExclusionListStatus = async (exclusionListStatus: object) => {
+  const clientBase = getClientBase();
+  await redisTx(clientBase, async (tx) => {
+    tx.hset(EXCLUSION_LIST_STATUS_KEY, exclusionListStatus);
+  });
+};
+export const redisGetExclusionListStatus = async () => {
+  return getClientBase().hgetall(EXCLUSION_LIST_STATUS_KEY);
+};
+
+export const redisGetExclusionListCache = async () => {
+  const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
+  try {
+    return rawCache ? JSON.parse(rawCache) : [];
+  } catch (e) {
+    logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', { rawCache });
+    await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+    return [];
+  }
+};
+export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]) => {
+  const stringifiedCache = JSON.stringify(cache);
+  await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
+};
+
+// endregion - exclusion list cache handling

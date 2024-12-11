@@ -60,9 +60,8 @@ const useStyles = makeStyles<Theme>(() => ({
     zIndex: 1001,
   },
   container: {
-    width: '100%',
-    height: '100%',
-    maxHeight: '100%',
+    flex: '1 0 0',
+    overflow: 'hidden',
   },
 }));
 
@@ -783,7 +782,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             {({ platformModuleHelpers }) => (
               <>
                 {queryRef && (
-                  <div style={{ height: '98%' }} ref={setTableRootRef}>
+                  <div style={{ height: '100%' }} ref={setTableRootRef}>
                     <DataTable
                       disableToolBar
                       disableSelectAll
