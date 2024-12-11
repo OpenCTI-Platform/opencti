@@ -122,6 +122,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         enableQuickSubscription={true}
         enableAskAi={true}
         redirectToContent={true}
+        enableEnricher={true}
       />
       <Box
         sx={{

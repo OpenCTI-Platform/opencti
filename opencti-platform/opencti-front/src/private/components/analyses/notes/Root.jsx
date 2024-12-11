@@ -102,6 +102,7 @@ const RootNote = () => {
                         }
                         redirectToContent={false}
                         disableAuthorizedMembers={true}
+                        enableEnricher={true}
                       />
                     }
                   >
@@ -115,6 +116,7 @@ const RootNote = () => {
                       }
                       redirectToContent={false}
                       disableAuthorizedMembers={true}
+                      enableEnricher={true}
                     />
                   </CollaborativeSecurity>
                   <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}>

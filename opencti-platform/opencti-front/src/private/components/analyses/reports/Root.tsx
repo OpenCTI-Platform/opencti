@@ -130,6 +130,7 @@ const RootReport = () => {
                     enableAskAi={true}
                     overview={isOverview}
                     redirectToContent={true}
+                    enableEnricher={true}
                   />
                   <Box
                     sx={{

@@ -466,6 +466,7 @@ const ContainerHeader = (props) => {
     investigationAddFromContainer,
     enableAskAi,
     redirectToContent,
+    enableEnricher,
   } = props;
   const classes = useStyles();
   const theme = useTheme();
@@ -1102,7 +1103,7 @@ const ContainerHeader = (props) => {
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>
             )}
-            {isFABReplaced && (
+            {isFABReplaced && enableEnricher && (
               <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                 <StixCoreObjectEnrichment
                   stixCoreObjectId={container.id}
