@@ -22,6 +22,7 @@ import { useDataTableContext } from './components/DataTableContext';
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
 | 'message'
+| 'storageKey'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -46,6 +47,7 @@ const DataTableInternalFilters = ({
   additionalHeaderButtons,
   currentView,
   exportContext,
+  storageKey,
   message,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
@@ -77,6 +79,7 @@ const DataTableInternalFilters = ({
             keyword={searchTerm}
           />
         )}
+
         {!hideFilters && (
           <DataTableFilters
             availableFilterKeys={availableFilterKeys}
@@ -104,6 +107,17 @@ const DataTableInternalFilters = ({
           </Alert>
         </div>
       )}
+      {storageKey === 'restrictedEntities' && (
+        <div style={{ width: '100%', marginBottom: 20 }}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ padding: '0px 10px 0px 10px' }}
+          >
+            {('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+          </Alert>
+        </div>
+      )}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}
@@ -113,6 +127,7 @@ const DataTableInternalFilters = ({
           entityTypes={computedEntityTypes}
         />
       )}
+
     </>
   );
 };
@@ -153,6 +168,7 @@ const DataTableInternalToolbar = ({
         flex: 1,
       }}
     >
+
       <DataTableToolBar
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
@@ -219,6 +235,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideFilters,
     taskScope,
     message,
+    storageKey,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -261,6 +278,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           currentView={currentView}
           exportContext={exportContext}
           searchContextFinal={computedSearchContextFinal}
+          storageKey={storageKey}
           message={message}
         />
       )}
