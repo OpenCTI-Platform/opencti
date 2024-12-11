@@ -686,7 +686,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const resolvedFiles = [];
     files.forEach((f) => {
       if (isNotEmptyField(f.file_markings)) {
-        resolvedFiles.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]) });
+        resolvedFiles.push({ ...f, [INPUT_MARKINGS]: f.file_markings.map((m) => fileMarkingsMap[m]).filter((fm) => fm) });
       } else {
         resolvedFiles.push(f);
       }
