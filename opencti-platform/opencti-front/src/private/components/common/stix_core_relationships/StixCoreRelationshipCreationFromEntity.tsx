@@ -708,11 +708,14 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } = useEntityToggle(getLocalStorageKey(entityId));
 
   useEffect(() => {
-    const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
-      id: item.id,
-      entity_type: item.entity_type ?? '',
-      name: item.name ?? item.observable_value ?? item.attribute_abstract ?? item.representative?.main.toString?.() ?? '',
-    }));
+    const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => {
+      const name = item.name ?? item.observable_value ?? item.attribute_abstract ?? item.explanation ?? item.representative?.main ?? '';
+      return {
+        id: item.id,
+        entity_type: item.entity_type ?? '',
+        name: String(name),
+      };
+    });
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
 
