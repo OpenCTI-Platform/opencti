@@ -13639,13 +13639,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdi-material-ui@npm:7.9.1":
-  version: 7.9.1
-  resolution: "mdi-material-ui@npm:7.9.1"
+"mdi-material-ui@npm:7.9.3":
+  version: 7.9.3
+  resolution: "mdi-material-ui@npm:7.9.3"
   peerDependencies:
-    "@mui/material": ^5.0.0 || ^5.0.0-rc.0
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/866cc8a1a5c12c88ce8ce2a93bb5016b4921996a1601f5a21daf1aeb08eb1c785b36514f290f184bd931100f1fbe6cacc743b0060792aebd77ae0fb5c8271ed6
+    "@mui/material": ^5.0.0 || ^6.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/bc8ae1c443c3d26214d6453f96ffe0ff987ca80b2e9af683b03595a4e1737f49e01a6a9bf57949cdc61797f6752902d332070f3b539a58fbdba21e94c4b6712c
   languageName: node
   linkType: hard
 
@@ -14865,7 +14865,7 @@ __metadata:
     leaflet: "npm:1.9.4"
     lodash: "npm:4.17.21"
     markdown-to-jsx: "npm:7.5.0"
-    mdi-material-ui: "npm:7.9.1"
+    mdi-material-ui: "npm:7.9.3"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.45"
     monocart-reporter: "npm:2.4.5"
