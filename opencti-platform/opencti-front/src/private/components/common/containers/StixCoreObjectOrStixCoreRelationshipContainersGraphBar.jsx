@@ -18,6 +18,7 @@ import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Slide from '@mui/material/Slide';
+import Alert from '@mui/material/Alert';
 import inject18n from '../../../../components/i18n';
 import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
@@ -140,6 +141,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       stixCoreObjectsTypes,
       createdBy,
       markedBy,
+      warningMessage,
       report,
       numberOfSelectedNodes,
       numberOfSelectedLinks,
@@ -378,13 +380,13 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     </Tooltip>
                   </div>
                   {report && (
-                    <div
-                      style={{
-                        float: 'right',
-                        display: 'flex',
-                        height: '100%',
-                      }}
-                    ></div>
+                  <div
+                    style={{
+                      float: 'right',
+                      display: 'flex',
+                      height: '100%',
+                    }}
+                  ></div>
                   )}
                   <div className="clearfix" />
                 </div>
@@ -779,6 +781,11 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                       </IconButton>
                     </span>
                   </Tooltip>
+                  {!!warningMessage && (
+                    <Alert severity="warning">
+                      {warningMessage}
+                    </Alert>
+                  )}
                 </div>
                 <div
                   style={{
@@ -894,6 +901,7 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphBar.propTypes = {
   selectedNodes: PropTypes.array,
   selectedLinks: PropTypes.array,
   view: PropTypes.string,
+  warningMessage: PropTypes.string,
   handleChangeView: PropTypes.func,
   numberOfSelectedNodes: PropTypes.number,
   numberOfSelectedLinks: PropTypes.number,

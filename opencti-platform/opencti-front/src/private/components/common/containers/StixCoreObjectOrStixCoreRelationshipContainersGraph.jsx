@@ -473,7 +473,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   render() {
     const {
       handleChangeView,
+      data,
       theme,
+      t,
     } = this.props;
     const {
       mode3D,
@@ -498,6 +500,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       this.graphObjects,
     );
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
+    const warningMessage = data.containersObjectsOfObject.pageInfo.hasNextPage
+      ? `${t('Limitations applied, number of fully loaded containers: ')} ${data.containersObjectsOfObject.pageInfo.globalCount}. ${t('Open this entity in an investigation to be able to see all objects.')}`
+      : undefined;
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => {
@@ -544,6 +549,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                 handleChangeView={handleChangeView.bind(this)}
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
+                warningMessage={warningMessage}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

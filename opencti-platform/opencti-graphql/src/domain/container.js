@@ -14,7 +14,7 @@ import {
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
-import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
+import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
@@ -175,7 +175,19 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
   const element = await internalLoadById(context, user, id);
   const queryFilters = addFilter(filters, buildRefRelationKey(RELATION_OBJECT), element.internal_id);
   const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], { filters: queryFilters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, search });
-  const objectIds = R.uniq(containers.map((n) => n[buildRefRelationKey(RELATION_OBJECT)]).flat());
+  let objectIds = [];
+  let hasMoreThanMaxObject = false;
+  let loadedReportsCount = 0;
+  for (let i = 0; i < containers.length; i += 1) {
+    const currentContainer = containers[0];
+    const currentContainerObjectIds = currentContainer[buildRefRelationKey(RELATION_OBJECT)].flat();
+    objectIds = R.uniq(objectIds.concat(...currentContainerObjectIds));
+    loadedReportsCount += 1;
+    if (objectIds.length > MAX_RELATED_CONTAINER_OBJECT_RESOLUTION) {
+      hasMoreThanMaxObject = true;
+      break;
+    }
+  }
   const resolvedObjectsMap = await internalFindByIds(context, user, objectIds, { type: types, toMap: true });
   const resolvedObjects = Object.values(resolvedObjectsMap);
   resolvedObjects.push(
@@ -205,7 +217,9 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
       }
     ))).flat())
   );
-  return buildPagination(0, null, resolvedObjects.map((r) => ({ node: r })), resolvedObjects.length);
+  const limit = hasMoreThanMaxObject ? resolvedObjects.length : 0;
+  const globalCount = hasMoreThanMaxObject ? loadedReportsCount : resolvedObjects.length;
+  return buildPagination(limit, null, resolvedObjects.map((r) => ({ node: r })), globalCount);
 };
 
 export const filterUnwantedEntitiesOut = async ({ context, user, ids }) => {

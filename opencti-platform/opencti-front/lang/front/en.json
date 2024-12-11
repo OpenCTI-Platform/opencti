@@ -13,6 +13,8 @@
   "A public dashboard is a snapshot...": "A public dashboard is a snapshot of a private dashboard at a specific time. If you modify the private dashboard, already created public dashboards won't be modified.",
   "About": "About",
   "Abstract": "Abstract",
+  "Limitations applied, number of fully loaded containers: ": "Limitations applied, number of fully loaded containers: ",
+  "Open this entity in an investigation to be able to see all objects.": "Open this entity in an investigation to be able to see all objects.",
   "Accent color": "Accent color",
   "Accept": "Accept",
   "Access administration": "Access administration",
