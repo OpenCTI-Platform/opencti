@@ -76,7 +76,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={threatActorGroup.id}
-                relationshipTypes={['part-of', 'cooperates-with', 'employed-by', 'derived-from']}
+                relationshipTypes={['related-to', 'part-of', 'cooperates-with', 'employed-by', 'derived-from']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
@@ -90,7 +90,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={threatActorGroup.id}
-                relationshipTypes={['attributed-to']}
+                relationshipTypes={['related-to', 'attributed-to']}
                 stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
@@ -104,7 +104,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={threatActorGroup.id}
-                relationshipTypes={['attributed-to', 'participates-in']}
+                relationshipTypes={['related-to', 'attributed-to', 'participates-in']}
                 stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
