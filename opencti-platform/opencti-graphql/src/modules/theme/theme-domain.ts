@@ -6,24 +6,28 @@ import type { EditInput, ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
+import { SYSTEM_USER } from '../../utils/access';
 import { type BasicStoreEntityTheme } from './theme-types';
 
 export const findById = (
   context: AuthContext,
-  user: AuthUser,
   id: string,
 ) => storeLoadById<BasicStoreEntityTheme>(
   context,
-  user,
+  SYSTEM_USER,
   id,
   ENTITY_TYPE_THEME,
 );
 
 export const findAll = async (
   context: AuthContext,
-  user: AuthUser,
   opts: EntityOptions<BasicStoreEntityTheme>,
-) => listEntitiesPaginated<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], opts);
+) => listEntitiesPaginated<BasicStoreEntityTheme>(
+  context,
+  SYSTEM_USER,
+  [ENTITY_TYPE_THEME],
+  opts,
+);
 
 export const addTheme = async (
   context: AuthContext,
