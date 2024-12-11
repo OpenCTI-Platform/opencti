@@ -110,6 +110,19 @@ export const draftIds: AttributeDefinition = {
   featureFlag: 'DRAFT_WORKSPACE'
 };
 
+export const draftContext: AttributeDefinition = {
+  name: 'draft_context',
+  label: 'Current draft context',
+  type: 'string',
+  format: 'short',
+  mandatoryType: 'no',
+  multiple: false,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: 'DRAFT_WORKSPACE'
+};
+
 export const draftChange: AttributeDefinition = {
   name: 'draft_change',
   label: 'Draft change',
