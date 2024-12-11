@@ -55,7 +55,7 @@ const IngestionCsv = () => {
       },
       uri: {
         label: 'URL',
-        width: '20%',
+        width: '25%',
         isSortable: true,
       },
       ingestion_running: {
