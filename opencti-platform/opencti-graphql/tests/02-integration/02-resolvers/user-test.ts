@@ -762,7 +762,7 @@ describe('User has no capability query behavior', () => {
   });
 });
 
-describe.only('User has no settings capability and is organization admin query behavior', () => {
+describe('User has no settings capability and is organization admin query behavior', () => {
   let userAddedByVirtualAdmin: string;
   let userVirtualAdminId: string;
   let amberGroupId: string;
