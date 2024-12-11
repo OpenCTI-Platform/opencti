@@ -599,8 +599,9 @@ const Settings = () => {
                                 />
                               }
                             >
-                              <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
-                              <MenuItem value="light">{t_i18n('Light')}</MenuItem>
+                              {themes.edges.map(({ node }) => (
+                                <MenuItem key={node.id} value={node.name}>{node.name}</MenuItem>
+                              ))}
                             </Field>
                             <Field
                               component={SelectField}
