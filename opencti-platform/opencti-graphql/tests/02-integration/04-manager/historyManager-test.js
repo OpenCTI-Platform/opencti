@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { INDEX_HISTORY } from '../../../src/database/utils';
 import { buildHistoryElementsFromEvents, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
-import { EXTERNAL_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 
 const eventWithGrantedRefIds = {
   id: '1731595374948-0',
