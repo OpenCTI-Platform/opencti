@@ -13,7 +13,7 @@ import ObservedData from './ObservedData';
 import ObservedDataPopover from './ObservedDataPopover';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
@@ -120,9 +120,8 @@ class RootObservedData extends Component {
                     { label: observedData.name, current: true },
                   ]}
                   />
-                  <StixDomainObjectHeader
-                    entityType="Observed-Data"
-                    stixDomainObject={observedData}
+                  <ContainerHeader
+                    container={observedData}
                     PopoverComponent={<ObservedDataPopover />}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -131,6 +130,7 @@ class RootObservedData extends Component {
                     )}
                     redirectToContent = {false}
                     disableAuthorizedMembers={true}
+                    enableEnricher={false}
                   />
                   <Box
                     sx={{

@@ -130,6 +130,7 @@ const RootGrouping = () => {
                     enableQuickExport={true}
                     enableAskAi={true}
                     redirectToContent={true}
+                    enableEnricher={true}
                   />
                   <Box
                     sx={{
