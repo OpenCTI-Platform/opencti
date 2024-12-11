@@ -1817,6 +1817,7 @@
   "No connectors for this type of entity": "이 유형의 엔터티에 대한 커넥터가 없습니다",
   "No containers about this entity.": "이 엔터티에 대한 컨테이너가 없습니다.",
   "No creators accumulation": "크리에이터 누적 없음",
+  "No data available.": "사용 가능한 데이터가 없습니다.",
   "No default value set in Settings...": "엔터티 설정에서 이 속성에 대한 기본값이 설정되지 않았습니다. 위의 입력란에 하나를 제공할 수 있습니다. 이 값은 CSV 파일에 데이터가 없을 경우 사용됩니다.",
   "No description": "설명 없음",
   "No description of this targeting": "이 표적에 대한 설명 없음",
