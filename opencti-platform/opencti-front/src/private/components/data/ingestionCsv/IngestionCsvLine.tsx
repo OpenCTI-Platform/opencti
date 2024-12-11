@@ -71,7 +71,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
