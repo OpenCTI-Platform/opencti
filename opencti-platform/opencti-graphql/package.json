@@ -108,7 +108,7 @@
     "graphql-redis-subscriptions": "2.6.1",
     "graphql-relay": "0.10.2",
     "graphql-scalars": "1.23.0",
-    "graphql-subscriptions": "2.0.0",
+    "graphql-subscriptions": "3.0.0",
     "graphql-upload": "17.0.0",
     "graphql-ws": "5.16.0",
     "helmet": "7.2.0",

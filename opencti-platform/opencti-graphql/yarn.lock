@@ -8666,14 +8666,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-subscriptions@npm:2.0.0":
-  version: 2.0.0
-  resolution: "graphql-subscriptions@npm:2.0.0"
-  dependencies:
-    iterall: "npm:^1.3.0"
+"graphql-subscriptions@npm:3.0.0":
+  version: 3.0.0
+  resolution: "graphql-subscriptions@npm:3.0.0"
   peerDependencies:
     graphql: ^15.7.2 || ^16.0.0
-  checksum: 10/fcf47bd8cef90f3d38f07b49b4b0e70514c22d56e3604a6cde03a250d3129a6c5b3e8420953a6fe5dab68e48d092a4d13fa39bcc61610bdd6c4a0804b9ee2f82
+  checksum: 10/9dbee94d1f8a8742631e6deba33fed4a688b893bb5e287c346b5d01a237b80f96eb4ed2576a3b44c608e553cfd1f2cb400f88b0ffc882cb4effaa4db789f1ce0
   languageName: node
   linkType: hard
 
@@ -9505,7 +9503,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iterall@npm:1.3.0, iterall@npm:^1.3.0":
+"iterall@npm:1.3.0":
   version: 1.3.0
   resolution: "iterall@npm:1.3.0"
   checksum: 10/700c3e9ae194a00b66dc8dcb449195f84add4e64afaf7ed624177e19565393f9bddd34d621ea70c8eceab87a8536fc0e45bb1c9d1ea7c710d41ed0c3d937b19f
@@ -10937,7 +10935,7 @@ __metadata:
     graphql-redis-subscriptions: "npm:2.6.1"
     graphql-relay: "npm:0.10.2"
     graphql-scalars: "npm:1.23.0"
-    graphql-subscriptions: "npm:2.0.0"
+    graphql-subscriptions: "npm:3.0.0"
     graphql-tag: "npm:2.12.6"
     graphql-upload: "npm:17.0.0"
     graphql-ws: "npm:5.16.0"
