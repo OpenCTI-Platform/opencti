@@ -34,7 +34,7 @@ const editThemeMutation = graphql`
   }
 `;
 
-interface ThemeType extends CustomThemeBaseType {
+export interface ThemeType extends CustomThemeBaseType {
   id: string;
 }
 
