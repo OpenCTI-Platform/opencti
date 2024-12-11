@@ -40,13 +40,13 @@ input ThemeAddInput {
 }
 
 type Query {
-  theme(id: String!): Theme @auth(for: [KNOWLEDGE])
+  theme(id: String!): Theme @public
   themes(
     first: Int
     after: ID
     search: String
     toStix: Boolean
-  ): ThemeConnection @auth(for: [KNOWLEDGE])
+  ): ThemeConnection @public
 }
 
 type Mutation {
