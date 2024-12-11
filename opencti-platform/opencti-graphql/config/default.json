@@ -6,7 +6,7 @@
     "public_dashboard_authorized_domains": "",
     "enabled": true,
     "enabled_ui": true,
-    "enabled_dev_features": ["EXCLUSION_LIST"],
+    "enabled_dev_features": [],
     "https_cert": {
       "ca": [],
       "key": null,
