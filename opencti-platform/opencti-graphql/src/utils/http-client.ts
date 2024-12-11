@@ -25,7 +25,7 @@ export interface GetHttpClient {
   }
 }
 
-const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent, defaultHttpsAgent: HttpsAgent) => {
+const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent | undefined, defaultHttpsAgent: HttpsAgent | undefined) => {
   const agentUri = baseURL ? `${baseURL}${uri}` : uri;
   return {
     httpAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpAgent,
@@ -38,8 +38,12 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseTy
   const cert = isNotEmptyField(certificates?.cert) ? fromBase64(certificates?.cert) : undefined;
   const key = isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined;
   const ca = isNotEmptyField(certificates?.ca) ? fromBase64(certificates?.ca) : undefined;
-  const defaultHttpAgent = new http.Agent();
-  const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: rejectUnauthorized === true, cert, key, ca });
+  const defaultHttpAgent: http.Agent | undefined = undefined;
+  let defaultHttpsAgent: https.Agent | undefined;
+
+  if (cert || key || ca) {
+    defaultHttpsAgent = new https.Agent({ rejectUnauthorized: rejectUnauthorized === true, cert, key, ca });
+  }
   // Create the default caller
   const caller = axios.create({
     baseURL,
