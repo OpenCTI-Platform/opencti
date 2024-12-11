@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin, USER_EDITOR, EXTERNAL_ORGANIZATION, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin, USER_EDITOR, EXTERNAL_ORGANIZATION, USER_SECURITY, TESTING_ORGS } from '../../utils/testQuery';
 import { getOrganizationEntity, queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
@@ -139,7 +139,7 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should list organizations', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.organizations.edges.length).toEqual(9);
+    expect(queryResult.data.organizations.edges.length).toEqual(TESTING_ORGS.length + 7);
   });
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`
