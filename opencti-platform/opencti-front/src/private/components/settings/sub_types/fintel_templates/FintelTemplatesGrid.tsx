@@ -24,8 +24,9 @@ import { resolveLink } from '../../../../../utils/Entity';
 
 const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
+    id
     target_type
-    fintelTemplates(first: 500) @connection(key: "Pagination_fintelTemplates") {
+    fintelTemplates {
       edges {
         node {
           id
@@ -61,7 +62,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
   );
 
   if (!dataResolved) return null;
-  const { target_type, fintelTemplates } = dataResolved;
+  const { target_type, fintelTemplates, id: entitySettingId } = dataResolved;
 
   const onUpdate = (template: TemplateType) => {
     setTemplateToEdit({
@@ -129,6 +130,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
               variant={DataTableVariant.inline}
               actions={(template: TemplateType) => (
                 <FintelTemplatePopover
+                  entitySettingId={entitySettingId}
                   templateId={template.id}
                   onUpdate={() => onUpdate(template)}
                 />

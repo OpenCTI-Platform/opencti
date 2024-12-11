@@ -13,6 +13,7 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import stopEvent from '../../../../../utils/domEvent';
+import { deleteNodeFromEdge } from '../../../../../utils/store';
 
 const fintelTemplatePopoverDeleteMutation = graphql`
   mutation FintelTemplatePopoverDeleteMutation($id: ID!) {
@@ -21,11 +22,16 @@ const fintelTemplatePopoverDeleteMutation = graphql`
 `;
 
 interface FintelTemplatePopoverProps {
+  entitySettingId: string
   templateId: string
   onUpdate: () => void
 }
 
-const FintelTemplatePopover = ({ templateId, onUpdate }: FintelTemplatePopoverProps) => {
+const FintelTemplatePopover = ({
+  entitySettingId,
+  templateId,
+  onUpdate,
+}: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
 
@@ -65,6 +71,14 @@ const FintelTemplatePopover = ({ templateId, onUpdate }: FintelTemplatePopoverPr
     setDeleting(true);
     commitDeleteMutation({
       variables: { id: templateId },
+      updater: (store) => {
+        deleteNodeFromEdge(
+          store,
+          'fintelTemplates',
+          entitySettingId,
+          templateId,
+        );
+      },
       onCompleted: () => {
         setDeleting(false);
         onCloseDelete(e);
