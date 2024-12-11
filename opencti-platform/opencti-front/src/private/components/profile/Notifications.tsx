@@ -29,7 +29,7 @@ const Notifications: FunctionComponent = () => {
       orderAsc: false,
       filters: {
         ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['is_read'], ['Notification']),
+        filters: useGetDefaultFilterObject(['is_read', 'trigger_id'], ['Notification']),
       },
       numberOfElements: {
         number: 0,
@@ -67,7 +67,7 @@ const Notifications: FunctionComponent = () => {
         isSortable: true,
       },
       name: {
-        label: 'Trigger',
+        label: 'Trigger name',
         width: '15%',
         isSortable: true,
       },
