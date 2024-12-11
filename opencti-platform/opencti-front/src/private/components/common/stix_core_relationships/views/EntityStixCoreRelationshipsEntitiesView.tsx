@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useContext, useEffect } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../data/ToolBar';
@@ -14,6 +14,8 @@ import { DataColumns, PaginationOptions } from '../../../../../components/list_l
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import useHelper from '../../../../../utils/hooks/useHelper';
+import { CreateRelationshipContext } from '../../menus/CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -21,7 +23,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
   defaultStopTime: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   relationshipTypes: string[];
-  stixCoreObjectTypes?: string[];
+  stixCoreObjectTypes: string[];
   isRelationReversed: boolean;
   currentView: string;
   enableNestedView?: boolean;
@@ -38,7 +40,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   defaultStopTime,
   localStorage,
   relationshipTypes,
-  stixCoreObjectTypes = ['Stix-Core-Object'],
+  stixCoreObjectTypes,
   isRelationReversed,
   currentView,
   enableNestedView,
@@ -61,7 +63,9 @@ EntityStixCoreRelationshipsEntitiesViewProps
     numberOfElements,
     openExports,
   } = viewStorage;
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
@@ -152,6 +156,19 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   const finalView = currentView || view;
+
+  setCreateRelationshipContext({
+    stixCoreObjectTypes,
+    relationshipTypes,
+    connectionKey: 'Pagination_stixCoreObjects',
+    reversed: isRelationReversed,
+  });
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions,
+    });
+  }, []);
+
   return (
     <>
       <ListLines
@@ -239,25 +256,27 @@ EntityStixCoreRelationshipsEntitiesViewProps
           'Be careful, you are about to delete the selected entities (not the relationships)',
         )}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCoreRelationshipCreationFromEntity
-          entityId={entityId}
-          allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={reversedRelation}
-          handleReverseRelation={handleReverseRelation}
-          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
-            stixCoreObjectTypes,
-          )}
-          targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
-            stixCoreObjectTypes,
-          )}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          paginationOptions={paginationOptions}
-          connectionKey="Pagination_stixCoreObjects"
-          paddingRight={paddingRightButtonAdd ?? 220}
-        />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipCreationFromEntity
+            entityId={entityId}
+            allowedRelationshipTypes={relationshipTypes}
+            isRelationReversed={reversedRelation}
+            handleReverseRelation={handleReverseRelation}
+            targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
+              stixCoreObjectTypes,
+            )}
+            targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
+              stixCoreObjectTypes,
+            )}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            paginationOptions={paginationOptions}
+            connectionKey="Pagination_stixCoreObjects"
+            paddingRight={paddingRightButtonAdd ?? 220}
+          />
+        </Security>
+      )}
     </>
   );
 };
