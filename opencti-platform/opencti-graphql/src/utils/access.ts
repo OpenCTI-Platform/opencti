@@ -406,6 +406,61 @@ export const isOnlyOrgaAdmin = (user: AuthUser) => {
   return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
 };
 
+export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, settings:BasicStoreSettings) => {
+  const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
+
+  // If platform organization is set
+  if (settings.platform_organization) {
+    const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
+
+    // If user part of platform organization, is granted by default
+    if (user.inside_platform_organization) {
+      return true;
+    }
+    // Grant access to the user individual
+    if (element.internal_id === user.individual_id) {
+      return true;
+    }
+    // If not, user is by design inside an organization
+    // If element has no current sharing organization, it can be accessed (secure by default)
+    // If element is shared, user must have a matching sharing organization
+    return elementOrganizations.some((r) => userOrganizations.includes(r));
+  }
+  return true;
+};
+
+/**
+ * Organization unrestricted mean that this element is visible whatever the organization the user belongs to.
+ * @param element
+ */
+export const isOrganizationUnrestricted = (element: BasicStoreCommon) => {
+  const types = [element.entity_type, ...getParentTypes(element.entity_type)];
+  if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
+    return true;
+  }
+  return false;
+};
+
+export const isMarkingAllowed = (element: BasicStoreCommon, userAuthorizedMarkings: string[]) => {
+  const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
+  if (elementMarkings.length > 0) {
+    return elementMarkings.every((m) => userAuthorizedMarkings.includes(m));
+  }
+  return true;
+};
+
+export const canRequestAccess = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const elementsThatRequiresAccess: Array<BasicStoreCommon> = [];
+  for (let i = 0; i < elements.length; i += 1) {
+    if (!isOrganizationAllowed(elements[i], user, settings)) {
+      elementsThatRequiresAccess.push(elements[i]);
+    }
+    // TODO before removing ORGA_SHARING_REQUEST_FF: When it's ready check Authorized members
+  }
+  return elementsThatRequiresAccess;
+};
+
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
   const userFilterStoreElementsFn = async () => {
     // If user have bypass, grant access to all
@@ -417,39 +472,16 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
     return elements.filter((element) => {
       // 1. Check markings
-      const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
-      if (elementMarkings.length > 0) {
-        const markingAllowed = elementMarkings.every((m) => authorizedMarkings.includes(m));
-        if (!markingAllowed) {
-          return false;
-        }
+      if (!isMarkingAllowed(element, authorizedMarkings)) {
+        return false;
       }
       // 2. Check organizations
       // Allow unrestricted entities
-      const types = [element.entity_type, ...getParentTypes(element.entity_type)];
-      if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
+      if (isOrganizationUnrestricted(element)) {
         return true;
       }
       // Check restricted elements
-      const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-      const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
-      // If platform organization is set
-      if (settings.platform_organization) {
-        // If user part of platform organization, is granted by default
-        if (user.inside_platform_organization) {
-          return true;
-        }
-        // Grant access to the user individual
-        if (element.internal_id === user.individual_id) {
-          return true;
-        }
-        // If not, user is by design inside an organization
-        // If element has no current sharing organization, it can be accessed (secure by default)
-        // If element is shared, user must have a matching sharing organization
-        return elementOrganizations.some((r) => userOrganizations.includes(r));
-      }
-      // If no platform organization is set, user can
-      return true;
+      return isOrganizationAllowed(element, user, settings);
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {

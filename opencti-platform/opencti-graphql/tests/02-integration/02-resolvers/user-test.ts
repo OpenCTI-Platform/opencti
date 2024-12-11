@@ -9,20 +9,27 @@ import {
   AMBER_GROUP,
   editorQuery,
   getGroupIdByName,
-  getOrganizationIdByName,
   getUserIdByEmail,
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
-  TEST_ORGANIZATION,
+  EXTERNAL_ORGANIZATION,
   testContext,
   TESTING_GROUPS,
   TESTING_USERS,
   USER_DISINFORMATION_ANALYST,
-  USER_EDITOR
+  USER_EDITOR,
+  EXTERNAL_USER_ANALYST
 } from '../../utils/testQuery';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
-import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+  adminQueryWithSuccess,
+  getOrganizationEntity,
+  queryAsAdminWithSuccess,
+  queryAsUser,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess
+} from '../../utils/testQueryHelper';
 import { resolveUserByToken } from '../../../src/domain/user';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member } from '../../../src/generated/graphql';
@@ -668,10 +675,10 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
     const usersEdges = queryResult.data.members.edges as { node: Member }[];
-    expect(usersEdges.length).toEqual(24);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 3); // 3 built-in groups
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(8);
+    expect(usersEdges.length).toEqual(TESTING_USERS.length + 1 + TESTING_GROUPS.length + 3 + 8); // see above lines
   });
 });
 
@@ -756,12 +763,14 @@ describe('User has no capability query behavior', () => {
 });
 
 describe('User has no settings capability and is organization admin query behavior', () => {
-  let userInternalId: string;
-  let userEditorId: string;
-  let testOrganizationId: string;
+  let userAddedByVirtualAdmin: string;
+  let userVirtualAdminId: string;
   let amberGroupId: string;
-  let platformOrganizationId: string;
   const organizationsIds: string[] = [];
+  let platformOrganization: BasicStoreEntityOrganization;
+  let externalOrganization: BasicStoreEntityOrganization;
+  const virtualAdminClient = EXTERNAL_USER_ANALYST.client;
+  const userNotVirtualAdminClient = USER_EDITOR.client;
 
   const ORGA_ADMIN_ADD_QUERY = gql`
         mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
@@ -823,8 +832,8 @@ describe('User has no settings capability and is organization admin query behavi
     await adminQuery({
       query: ORGA_ADMIN_DELETE_QUERY, // +1 update organization
       variables: {
-        id: testOrganizationId,
-        memberId: userEditorId,
+        id: externalOrganization.id,
+        memberId: userVirtualAdminId,
       },
     });
     for (let i = 0; i < organizationsIds.length; i += 1) {
@@ -835,45 +844,52 @@ describe('User has no settings capability and is organization admin query behavi
       });
     }
   });
+
+  it('should get organization entities for all following tests', async () => {
+    platformOrganization = await getOrganizationEntity(PLATFORM_ORGANIZATION);
+    externalOrganization = await getOrganizationEntity(EXTERNAL_ORGANIZATION);
+  });
+
   it('should has the capability to administrate the Organization', async () => {
-    userEditorId = await getUserIdByEmail(USER_EDITOR.email); // USER_EDITOR is perfect because she has no settings capabilities and is part of TEST_ORGANIZATION
+    // EXTERNAL_USER_ANALYST is perfect because she has no settings capabilities and is part of EXTERNAL_ORGANIZATION
+    userVirtualAdminId = await getUserIdByEmail(EXTERNAL_USER_ANALYST.email);
+
     const organizationAdminAddQueryResult = await adminQueryWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
-        id: TEST_ORGANIZATION.id,
-        memberId: userEditorId,
+        id: externalOrganization.standard_id,
+        memberId: userVirtualAdminId,
       },
     });
     expect(organizationAdminAddQueryResult.data.organizationAdminAdd).not.toBeNull();
-    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.id);
+    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(externalOrganization.standard_id);
 
     // Check that USER_EDITOR is Organization administrator
-    const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
+    const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userVirtualAdminId } });
     expect(editorUserQueryResult).not.toBeNull();
     expect(editorUserQueryResult.data.user).not.toBeNull();
-    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(5);
+    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(14); // FIXME needed ? virtual org admin is tested after
     const { capabilities } = editorUserQueryResult.data.user;
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
-  it('should user created', async () => {
-    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
-    organizationsIds.push(testOrganizationId);
+  it('should user created by the virtual organization admin', async () => {
+    organizationsIds.push(externalOrganization.id);
     amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
 
     const USER_TO_CREATE = {
       input: {
         name: 'User',
-        description: 'User description',
+        description: 'User to be added by virtual admin',
         password: 'user',
         user_email: 'user@mail.com',
         firstname: 'User',
         lastname: 'OpenCTI',
-        objectOrganization: [testOrganizationId],
+        objectOrganization: [externalOrganization.id],
         groups: [amberGroupId],
       },
     };
 
-    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to EXTERNAL_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
             mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
                 organizationFieldPatch(id: $id, input: $input) {
@@ -887,20 +903,20 @@ describe('User has no settings capability and is organization admin query behavi
         `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
-      variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
+      variables: { id: externalOrganization.id, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
     expect(queryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
     expect(queryResult.data.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
 
     // Create User
-    const user = await editorQuery({
+    const user = await queryAsUser(virtualAdminClient, {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
     expect(user).not.toBeNull();
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
-    userInternalId = user.data.userAdd.id;
+    userAddedByVirtualAdmin = user.data.userAdd.id;
   });
   it('should update user from its own organization', async () => {
     const UPDATE_QUERY = gql`
@@ -912,19 +928,18 @@ describe('User has no settings capability and is organization admin query behavi
                 }
             }
         `;
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(virtualAdminClient, {
       query: UPDATE_QUERY,
-      variables: { id: userInternalId, input: { key: 'account_status', value: ['Inactive'] } },
+      variables: { id: userAddedByVirtualAdmin, input: { key: 'account_status', value: ['Inactive'] } },
     });
     expect(queryResult.data.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
   it('should not add organization to user if not admin', async () => {
-    platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(userNotVirtualAdminClient, {
       query: ORGANIZATION_ADD_QUERY,
       variables: {
-        id: userInternalId,
-        organizationId: platformOrganizationId,
+        id: userAddedByVirtualAdmin,
+        organizationId: externalOrganization.id,
       },
     });
   });
@@ -943,71 +958,61 @@ describe('User has no settings capability and is organization admin query behavi
         `;
     const grantableGroupQueryResult = await adminQuery({
       query: UPDATE_QUERY,
-      variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
+      variables: { id: platformOrganization.id, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
     expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
     expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
-    organizationsIds.push(platformOrganizationId);
+    organizationsIds.push(platformOrganization.id);
 
     // Add Editor to PLATFORM_ORGANIZATION
     const addEditorToOrgaQuery = await adminQueryWithSuccess({
       query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
-        id: userEditorId,
-        organizationId: platformOrganizationId,
+        id: userVirtualAdminId,
+        organizationId: platformOrganization.id,
       },
     });
-    expect(addEditorToOrgaQuery.data.userEdit.organizationAdd.id).toEqual(userEditorId);
+    expect(addEditorToOrgaQuery.data.userEdit.organizationAdd.id).toEqual(userVirtualAdminId);
 
     // Editor administrate PLATFORM_ORGANIZATION
     const queryResult = await adminQueryWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
-        id: PLATFORM_ORGANIZATION.id,
-        memberId: userEditorId,
+        id: PLATFORM_ORGANIZATION.standard_id,
+        memberId: userVirtualAdminId,
       },
     });
     expect(queryResult.data.organizationAdminAdd).not.toBeNull();
-    expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.id);
+    expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.standard_id);
   });
   it('should add 2nd organization to user if admin', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(virtualAdminClient, {
       query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
-        id: userInternalId,
-        organizationId: platformOrganizationId,
+        id: userAddedByVirtualAdmin,
+        organizationId: platformOrganization.id,
       },
     });
-    expect(queryResult.data.userEdit.organizationAdd.id).toEqual(userInternalId);
+    expect(queryResult.data.userEdit.organizationAdd.id).toEqual(userAddedByVirtualAdmin);
   });
   it('should delete 2nd organization to user if admin', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(virtualAdminClient, {
       query: ORGANIZATION_DELETE_QUERY, // +1 delete of relation between orga & user
       variables: {
-        id: userInternalId,
-        organizationId: platformOrganizationId,
+        id: userAddedByVirtualAdmin,
+        organizationId: platformOrganization.id,
       },
     });
-    expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
-  });
-  it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
-    const queryResult = await adminQueryWithSuccess({
-      query: ORGANIZATION_DELETE_QUERY, // +1 delete event (delete relation) +1 update event
-      variables: {
-        id: userEditorId,
-        organizationId: platformOrganizationId,
-      },
-    });
-    expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userEditorId);
+    expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userAddedByVirtualAdmin);
   });
   it('should user deleted', async () => {
     // Delete user
-    await editorQuery({
+    await queryAsUserWithSuccess(virtualAdminClient, {
       query: DELETE_QUERY,
-      variables: { id: userInternalId },
+      variables: { id: userAddedByVirtualAdmin },
     });
     // Verify is no longer found
-    const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userAddedByVirtualAdmin } });
     expect(queryResult.data.user).toBeNull();
   });
 });
