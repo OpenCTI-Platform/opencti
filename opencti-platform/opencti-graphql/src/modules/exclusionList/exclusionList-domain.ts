@@ -114,27 +114,27 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   if (file) {
     await uploadExclusionListFile(context, user, exclusionList.internal_id, file);
   }
-  let element;
+  let updatedElement;
   if (input) {
-    const { updatedElement } = await updateAttribute(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, input);
-    element = updatedElement;
+    const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, input);
+    updatedElement = element;
   }
 
   if (file || (input && input.some((i) => i.key === 'enabled'))) {
     await refreshExclusionListStatus();
   }
-  if (element) {
+  if (updatedElement) {
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'update',
       event_access: 'administration',
-      message: `updates \`${input?.map((i) => i.key).join(', ')}\` for exclusion list \`${element.name}\``,
+      message: `updates \`${input?.map((i) => i.key).join(', ')}\` for exclusion list \`${updatedElement.name}\``,
       context_data: { id, entity_type: ENTITY_TYPE_EXCLUSION_LIST, input }
     });
-    return notify(BUS_TOPICS[ENTITY_TYPE_EXCLUSION_LIST].EDIT_TOPIC, element, user);
+    return notify(BUS_TOPICS[ENTITY_TYPE_EXCLUSION_LIST].EDIT_TOPIC, updatedElement, user);
   }
-  return exclusionList;
+  return updatedElement;
 };
 
 export const deleteExclusionList = async (context: AuthContext, user: AuthUser, exclusionListId: string) => {

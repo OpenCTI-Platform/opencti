@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
@@ -8,6 +8,8 @@ import Button from '@mui/material/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -17,6 +19,8 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
+import { now } from '../../../../utils/Time';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -26,12 +30,12 @@ const exclusionListCreationFileMutation = graphql`
   }
 `;
 
-interface ExclusionListCreationFileFormData {
+interface ExclusionListCreationFormData {
   name: string;
   description: string;
   exclusion_list_entity_types: Option[];
-  file: File | undefined;
-  action: string;
+  file: File | null;
+  content: string | null;
 }
 
 interface ExclusionListCreationFormProps {
@@ -51,19 +55,28 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
 }) => {
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
-  const actions: string[] = ['Exclusion'];
-  const [commitFile] = useApiMutation(exclusionListCreationFileMutation);
-  const onSubmitFile: FormikConfig<ExclusionListCreationFileFormData>['onSubmit'] = (
+  const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(true);
+  const [commit] = useApiMutation(exclusionListCreationFileMutation);
+  const onSubmit: FormikConfig<ExclusionListCreationFormData>['onSubmit'] = (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
+    let { file } = values;
+    if (!file && values.content) {
+      const blob = new Blob([values.content], { type: 'text/plain' });
+      file = new File(
+        [blob],
+        `${now()}_${values.name}.txt`,
+        { type: 'text/plain' },
+      );
+    }
     const input = {
       name: values.name,
       description: values.description,
       exclusion_list_entity_types: values.exclusion_list_entity_types.map((type) => type.value),
-      file: values.file,
+      file,
     };
-    commitFile({
+    commit({
       variables: {
         input,
       },
@@ -86,33 +99,37 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     });
   };
 
-  const initialValuesFile: ExclusionListCreationFileFormData = {
+  const initialValues: ExclusionListCreationFormData = {
     name: '',
     description: '',
     exclusion_list_entity_types: [],
-    file: undefined,
-    action: 'Exclusion',
+    file: null,
+    content: null,
   };
 
   const entityTypesOptions: Option[] = entityTypes.map((type) => ({
     value: type.id,
     label: type.label,
+    type: type.id,
   }));
 
   return (
-    <Formik<ExclusionListCreationFileFormData>
-      initialValues={initialValuesFile}
-      validationSchema={exclusionListValidator(t_i18n)}
-      onSubmit={onSubmitFile}
+    <Formik<ExclusionListCreationFormData>
+      initialValues={initialValues}
+      validateOnBlur={false}
+      validateOnChange={false}
+      validationSchema={exclusionListValidator(t_i18n, isUploadFileChecked)}
+      onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, errors }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            required
           />
           <Field
             component={MarkdownField}
@@ -133,24 +150,38 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             renderOption={(
               props: React.HTMLAttributes<HTMLLIElement>,
               option: Option,
-            ) => <li key={option.value} {...props}>{option.label}</li>}
-            textfieldprops={{ label: t_i18n('Entity types') }}
+            ) => <li key={option.value} {...props}>
+              <ItemIcon type={option.type} />
+              <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
+            </li>}
+            textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
+            required
           />
-          <CustomFileUploader setFieldValue={setFieldValue} />
-          <Field
-            component={AutocompleteField}
-            name="action"
-            fullWidth={true}
+          <FormControlLabel
             style={fieldSpacingContainerStyle}
-            options={actions}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: string,
-            ) => <li key={option} {...props}>{option}</li>}
-            textfieldprops={{ label: t_i18n('Action') }}
-            disabled
+            control={
+              <Switch
+                defaultChecked
+                onChange={(_, isChecked) => {
+                  setIsUploadFileChecked(isChecked);
+                }}
+              />
+            }
+            label={t_i18n('Upload file')}
           />
-
+          {isUploadFileChecked ? (
+            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isUploadFileChecked} />
+          ) : (
+            <Field
+              style={fieldSpacingContainerStyle}
+              component={TextField}
+              name="content"
+              label={t_i18n('Content (1 / line)')}
+              multiline
+              rows="4"
+              required={!isUploadFileChecked}
+            />
+          )}
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="contained"

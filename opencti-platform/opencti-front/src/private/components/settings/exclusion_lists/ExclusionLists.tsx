@@ -10,6 +10,7 @@ import {
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
 import Badge from '@mui/material/Badge';
+import Grid from '@mui/material/Grid';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemEntityType from '../../../../components/ItemEntityType';
@@ -123,12 +124,16 @@ const ExclusionLists = () => {
 
   const renderEnrichedTooltip = (exclusionListEntityTypes: readonly string[], firstEntityType: string) => (
     <EnrichedTooltip title={
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 7 }}>
-        {exclusionListEntityTypes.map((type) => (<ItemEntityType key={type} entityType={type} />))}
-      </div>
+      <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
+        {exclusionListEntityTypes.map((type) => (
+          <Grid item key={type} xs={6}>
+            <ItemEntityType entityType={type} />
+          </Grid>
+        ))}
+      </Grid>
     }
     >
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', margin: '10px 0' }}>
         <Badge variant="dot" color="primary">
           <ItemEntityType entityType={firstEntityType} />
         </Badge>
