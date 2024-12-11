@@ -565,6 +565,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   async handleAddRelation(stixCoreRelationship, skipReload = false) {
+    console.log(skipReload);
     const input = {
       toId: stixCoreRelationship.id,
       relationship_type: 'object',
