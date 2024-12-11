@@ -902,7 +902,13 @@ export const redisGetExclusionListStatus = async () => {
 
 export const redisGetExclusionListCache = async () => {
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
-  return rawCache ? JSON.parse(rawCache) : [];
+  try {
+    return rawCache ? JSON.parse(rawCache) : [];
+  } catch (e) {
+    logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', { rawCache });
+    await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+    return [];
+  }
 };
 export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]) => {
   const stringifiedCache = JSON.stringify(cache);
