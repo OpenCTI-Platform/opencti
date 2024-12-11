@@ -711,7 +711,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
       id: item.id,
       entity_type: item.entity_type ?? '',
-      name: item.name ?? item.observable_value ?? item.representative?.main.toString() ?? '',
+      name: item.name ?? item.observable_value ?? item.attribute_abstract ?? item.representative?.main.toString?.() ?? '',
     }));
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
