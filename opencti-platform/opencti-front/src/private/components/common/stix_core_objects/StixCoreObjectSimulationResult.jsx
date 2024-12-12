@@ -19,6 +19,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import { Autocomplete } from '@mui/material';
+import * as Yup from 'yup';
 import EEChip from '../entreprise_edition/EEChip';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
@@ -194,6 +195,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
+  const [platformError, setPlatformError] = useState('');
 
   const platformOptions = [
     { label: 'Windows', value: 'Windows' },
@@ -451,6 +453,25 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       />
     );
   };
+
+  // Validation for Platforms
+  const platformValidation = () => Yup.object().shape({
+    platforms: Yup.array()
+      .min(1, t_i18n('This field should not be empty.'))
+      .required(t_i18n('This field is required.')),
+  });
+
+  const validate = () => {
+    platformValidation(t_i18n)
+      .validate({ platforms })
+      .then(() => {
+        setPlatformError('');
+      })
+      .catch((err) => {
+        setPlatformError(err.message);
+      });
+  };
+
   const renderForm = () => {
     return (
       <>
@@ -478,7 +499,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                 {t_i18n('Technical (payloads) require attack patterns in this entity.')}
               </Alert>
             )}
-            <FormControl style={fieldSpacingContainerStyle}>
+            <FormControl style={fieldSpacingContainerStyle} error={!!platformError}>
               <Autocomplete
                 id="simulationPlatforms"
                 multiple
@@ -487,6 +508,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                 onChange={(_event, newValue) => {
                   const newSelectedValues = newValue.map((platform) => platform.value);
                   setPlatforms(newSelectedValues);
+                  validate();
                 }}
                 getOptionLabel={(option) => option.label}
                 renderInput={(params) => (
@@ -495,8 +517,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                     label={t_i18n('Targeted platforms')}
                     variant="standard"
                     required
-                    error={platforms.length === 0}
-                    helperText={platforms.length === 0 ? t_i18n('This field should not be empty.') : ''}
+                    error={!!platformError}
+                    helperText={platformError}
                   />
                 )}
                 renderOption={(props, option) => (

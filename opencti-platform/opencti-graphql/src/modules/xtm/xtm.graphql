@@ -29,7 +29,7 @@ enum Architecture {
 input SimulationConfig {
     interval: Int
     selection: Selection
-    simulationType: SimulationType
+    simulationType: SimulationType!
     platforms: [Platform]
     architecture: Architecture
 }
