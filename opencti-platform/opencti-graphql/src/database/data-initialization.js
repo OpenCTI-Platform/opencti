@@ -1,7 +1,7 @@
-import { logApp } from '../config/conf';
+import { isFeatureEnabled, logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
-import { initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
+import { entitySettingEditField, findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { createStatus, createStatusTemplate } from '../domain/status';
@@ -14,6 +14,8 @@ import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -229,6 +231,32 @@ const createDefaultStatusTemplates = async (context) => {
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4 });
 };
 
+const createInitialRequestAccessFlow = async (context) => {
+  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
+  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
+
+  // FIXME find entity toi use instead of ENTITY_TYPE_CONTAINER_CASE (RFI not possible)
+  const statusEntityRFIDeclined = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateDeclined.id, order: 0 });
+  const statusEntityRFIApproved = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateApproved.id, order: 0 });
+
+  const initialConfig = {
+    workflow: [statusEntityRFIApproved.id, statusEntityRFIDeclined.id],
+    approved_workflow_id: statusEntityRFIApproved.id,
+    declined_workflow_id: statusEntityRFIDeclined.id,
+  };
+
+  const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  if (rfiEntitySettings) {
+    logApp.info('ANGIE INIT rfiEntitySettings:', { rfiEntitySettings });
+    const editInput = [
+      { key: 'request_access_workflow', value: [initialConfig] }
+    ];
+    // TODO use updateAttribute instead
+    // await updateAttribute(context, user, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, {request_access_workflow});
+    await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
+  }
+};
+
 export const createCapabilities = async (context, capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
@@ -336,6 +364,9 @@ export const initializeData = async (context, withMarkings = true) => {
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
+  if (isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
+    await createInitialRequestAccessFlow(context);
+  }
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
   if (withMarkings) {
