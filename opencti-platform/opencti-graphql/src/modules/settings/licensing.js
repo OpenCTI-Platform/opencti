@@ -19,7 +19,14 @@ import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 
 const GLOBAL_LICENSE_OPTION = 'global';
+const LICENSE_OPTION_PRODUCT = 'opencti';
 const LICENSE_OPTION_LTS_IDENTIFIER = '1.2.3.4.5.6.7.8.9';
+const LICENSE_OPTION_PRODUCT_IDENTIFIER = '1.2.3.4.5.6.7.8.11';
+
+const getExtensionValue = (clientCrt, extension) => {
+  return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
+};
+
 export const getEnterpriseEditionInfo = (settings) => {
   if (isNotEmptyField(settings.enterprise_license)) {
     let license_customer = 'Trial';
@@ -35,10 +42,11 @@ export const getEnterpriseEditionInfo = (settings) => {
     try {
       const clientCrt = forge.pki.certificateFromPem(settings.enterprise_license);
       license_valid_cert = OPENCTI_CA.verify(clientCrt);
-      license_lts = clientCrt.extensions.find((ext) => ext.id === LICENSE_OPTION_LTS_IDENTIFIER)?.value === '1';
+      license_lts = getExtensionValue(clientCrt, LICENSE_OPTION_LTS_IDENTIFIER) === '1';
+      const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT_IDENTIFIER) === LICENSE_OPTION_PRODUCT;
       license_customer = clientCrt.subject.getField('O').value;
       license_platform = clientCrt.subject.getField('OU').value;
-      license_platform_match = license_platform === GLOBAL_LICENSE_OPTION || settings.internal_id === license_platform;
+      license_platform_match = valid_product && (license_platform === GLOBAL_LICENSE_OPTION || settings.internal_id === license_platform);
       license_expired = new Date() > clientCrt.validity.notAfter || new Date() < clientCrt.validity.notBefore;
       license_start_date = clientCrt.validity.notBefore;
       license_expiration_date = clientCrt.validity.notAfter;
