@@ -29,7 +29,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.sighting.length).toBe(4);
       expect(createEventsByTypes.indicator.length).toBe(37);
       expect(createEventsByTypes['attack-pattern'].length).toBe(9);
-      expect(createEventsByTypes['threat-actor'].length).toBe(15);
+      expect(createEventsByTypes['threat-actor'].length).toBe(17);
       expect(createEventsByTypes['observed-data'].length).toBe(1);
       expect(createEventsByTypes['tracking-number'].length).toBe(1);
       expect(createEventsByTypes.credential.length).toBe(1);
