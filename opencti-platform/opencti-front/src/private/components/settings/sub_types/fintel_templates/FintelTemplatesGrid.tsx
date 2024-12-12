@@ -7,12 +7,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { Add as AddIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { graphql, useFragment } from 'react-relay';
-import {
-  FintelTemplatesGrid_templates$data,
-  FintelTemplatesGrid_templates$key,
-} from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatesGrid_templates.graphql';
-import FintelTemplatePopover from '@components/settings/sub_types/fintel_templates/FintelTemplatePopover';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import { FintelTemplatesGrid_templates$data, FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
+import FintelTemplatePopover from './FintelTemplatePopover';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
 import { FintelTemplateFormInputs } from './FintelTemplateForm';
 import type { Theme } from '../../../../../components/Theme';
@@ -22,6 +19,7 @@ import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTab
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { resolveLink } from '../../../../../utils/Entity';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { deleteNodeFromEdge } from '../../../../../utils/store';
 
 const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
@@ -144,7 +142,14 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 variant={DataTableVariant.inline}
                 actions={(template: TemplateType) => (
                   <FintelTemplatePopover
-                    entitySettingId={entitySettingId}
+                    deleteUpdater={(store) => {
+                      deleteNodeFromEdge(
+                        store,
+                        'fintelTemplates',
+                        entitySettingId,
+                        template.id,
+                      );
+                    }}
                     templateId={template.id}
                     onUpdate={() => onUpdate(template)}
                   />

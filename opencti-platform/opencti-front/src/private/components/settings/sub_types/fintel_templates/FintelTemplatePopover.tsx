@@ -1,19 +1,18 @@
 import MoreVert from '@mui/icons-material/MoreVert';
 import React, { UIEvent, useState } from 'react';
 import { MenuItem, Menu, PopoverProps, IconButton } from '@mui/material';
-import { graphql } from 'react-relay';
-import { FintelTemplatePopoverDeleteMutation } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatePopoverDeleteMutation.graphql';
+import { graphql, UseMutationConfig } from 'react-relay';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import { FintelTemplatePopoverDeleteMutation } from './__generated__/FintelTemplatePopoverDeleteMutation.graphql';
 import Transition from '../../../../../components/Transition';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import stopEvent from '../../../../../utils/domEvent';
-import { deleteNodeFromEdge } from '../../../../../utils/store';
 
 const fintelTemplatePopoverDeleteMutation = graphql`
   mutation FintelTemplatePopoverDeleteMutation($id: ID!) {
@@ -22,15 +21,15 @@ const fintelTemplatePopoverDeleteMutation = graphql`
 `;
 
 interface FintelTemplatePopoverProps {
-  entitySettingId: string
   templateId: string
   onUpdate: () => void
+  deleteUpdater?: UseMutationConfig<FintelTemplatePopoverDeleteMutation>['updater']
 }
 
 const FintelTemplatePopover = ({
-  entitySettingId,
   templateId,
   onUpdate,
+  deleteUpdater,
 }: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
@@ -71,14 +70,7 @@ const FintelTemplatePopover = ({
     setDeleting(true);
     commitDeleteMutation({
       variables: { id: templateId },
-      updater: (store) => {
-        deleteNodeFromEdge(
-          store,
-          'fintelTemplates',
-          entitySettingId,
-          templateId,
-        );
-      },
+      updater: deleteUpdater,
       onCompleted: () => {
         setDeleting(false);
         onCloseDelete(e);
