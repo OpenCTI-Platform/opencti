@@ -103,10 +103,6 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         .map((stixId) => grantedRefsResolved.get(stixId))
         .filter((o) => isNotEmptyField(o));
     }
-    if (event.data.relatedRestrictions) {
-      const relatedMarkings = event.data.relatedRestrictions.markings ?? [];
-      eventMarkingRefs.push(...relatedMarkings);
-    }
     const contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
@@ -126,6 +122,11 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         .map((stixId) => markingsById.get(stixId)?.internal_id)
         .filter((o) => isNotEmptyField(o)) as string[];
       eventMarkingRefs.push(...previousMarkingRefs);
+      // Get related restrictions (e.g. markings of added objects in a container)
+      if (updateEvent.context.relatedRestrictions) {
+        const relatedMarkings = updateEvent.context.relatedRestrictions.markings ?? [];
+        eventMarkingRefs.push(...relatedMarkings);
+      }
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
