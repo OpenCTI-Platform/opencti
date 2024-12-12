@@ -8,14 +8,17 @@ import { FileLineDeleteMutation as deleteMutation } from '@components/common/fil
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
+import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import ListItem from '@mui/material/ListItem';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf';
-import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
+import { APP_BASE_PATH } from '../../../../relay/environment';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import type { Theme } from '../../../../components/Theme';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -41,15 +44,16 @@ export interface ContentFile {
   } | null | undefined
   objectMarking?: readonly {
     readonly id: string;
-    readonly representative: {
-      readonly main: string;
-    };
+    readonly definition?: string | null ;
+    readonly x_opencti_color?: string | null ;
   }[];
 }
 
 interface StixCoreObjectContentFilesListProps {
   files: ContentFile[],
+  stixCoreObjectId: string,
   stixCoreObjectName: string,
+  stixCoreObjectType: string,
   currentFileId: string,
   handleSelectFile: (fileId: string) => void,
   onFileChange: (fileName?: string, isDeleted?: boolean) => void,
@@ -57,11 +61,14 @@ interface StixCoreObjectContentFilesListProps {
 
 const StixCoreObjectContentFilesList = ({
   files,
-  currentFileId,
+  stixCoreObjectId,
   stixCoreObjectName,
+  stixCoreObjectType,
+  currentFileId,
   handleSelectFile,
   onFileChange,
 }: StixCoreObjectContentFilesListProps) => {
+  const theme = useTheme<Theme>();
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
 
@@ -80,9 +87,9 @@ const StixCoreObjectContentFilesList = ({
 
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
   const submitDelete = () => {
+    closePopover();
     if (!menuFile?.id) return;
     deletion.handleCloseDelete();
-    closePopover();
     deletion.setDeleting(true);
     commitDelete({
       variables: { fileName: menuFile.id },
@@ -95,33 +102,16 @@ const StixCoreObjectContentFilesList = ({
 
   const handleDelete = () => deletion.handleOpenDelete();
 
-  const downloadPdf = async (file: ContentFile) => {
-    closePopover();
-    const { id } = file;
-    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(id)}`;
-
-    try {
-      const { data } = await axios.get(url);
-      const currentName = (id.split('/').pop() ?? '').split('.')[0];
-
-      if (id.startsWith('fromTemplate')) {
-        const markings = file.objectMarking?.map((m) => m.representative.main) ?? [];
-        htmlToPdfReport(stixCoreObjectName, data, currentName, markings).download(`${currentName}.pdf`);
-      } else {
-        htmlToPdf(id, data).download(`${currentName}.pdf`);
-      }
-    } catch (e) {
-      MESSAGING$.notifyError('Error trying to download in PDF');
-    }
-  };
-
   const handleClose = () => {
     deletion.handleCloseDelete();
     closePopover();
   };
 
+  const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
+
   return (
     <List>
+      {files.length === 0 && <ListItem dense={true} divider={true} />}
       {files.map((file) => (
         <Fragment key={file.id}>
           <Tooltip title={`${file.name} (${file.metaData?.mimetype ?? ''})`}>
@@ -145,7 +135,14 @@ const StixCoreObjectContentFilesList = ({
                   },
                 }}
                 primary={file.name}
-                secondary={fld(file.lastModified ?? moment())}
+                secondary={(
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ paddingBottom: theme.spacing(0.5) }}>
+                      {fld(file.lastModified ?? moment())}
+                    </span>
+                    <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
+                  </div>
+                )}
               />
               <ListItemSecondaryAction>
                 <IconButton
@@ -168,32 +165,44 @@ const StixCoreObjectContentFilesList = ({
         onClose={closePopover}
       >
         {menuFile && (
-          <>
-            <MenuItem
-              component={Link}
-              to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
-              onClick={closePopover}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t_i18n('Download file')}
-            </MenuItem>
-            {menuFile.metaData?.mimetype !== 'application/pdf' && (
-              <MenuItem onClick={() => downloadPdf(menuFile)}>
-                {t_i18n('Download in PDF')}
+          <MenuItem
+            component={Link}
+            to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
+            onClick={closePopover}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t_i18n('Download file')}
+          </MenuItem>
+        )}
+        {canDownloadAsPdf && (
+          <StixCoreObjectFileExport
+            onClose={() => setAnchorEl(null)}
+            scoId={stixCoreObjectId}
+            scoName={stixCoreObjectName}
+            scoEntityType={stixCoreObjectType}
+            defaultValues={{
+              connector: BUILT_IN_HTML_TO_PDF.value,
+              format: 'application/pdf',
+              fileToExport: menuFile.id,
+            }}
+            onExportCompleted={onFileChange}
+            OpenFormComponent={({ onOpen }) => (
+              <MenuItem onClick={onOpen}>
+                {t_i18n('Generate a PDF export')}
               </MenuItem>
             )}
-            <MenuItem onClick={handleDelete}>
-              {t_i18n('Delete')}
-            </MenuItem>
-            <DeleteDialog
-              title={t_i18n('Are you sure you want to delete this file?')}
-              deletion={deletion}
-              onClose={handleClose}
-              submitDelete={submitDelete}
-            />
-          </>
+          />
         )}
+        <MenuItem onClick={handleDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+        <DeleteDialog
+          title={t_i18n('Are you sure you want to delete this file?')}
+          deletion={deletion}
+          onClose={handleClose}
+          submitDelete={submitDelete}
+        />
       </Menu>
     </List>
   );

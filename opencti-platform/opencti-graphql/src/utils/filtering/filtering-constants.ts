@@ -85,7 +85,7 @@ export const complexConversionFilterKeys = [
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
-  COMPUTED_RELIABILITY_FILTER, // reliability, or reliabilityof the author if no reliability
+  COMPUTED_RELIABILITY_FILTER, // reliability, or reliability of the author if no reliability
   INSTANCE_RELATION_FILTER, // nested relation for the from or to of a relationship
   INSTANCE_RELATION_TYPES_FILTER, // nested relation for the from or to type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
@@ -95,7 +95,7 @@ export const complexConversionFilterKeys = [
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
-  ALIAS_FILTER, // key that target both 'aliases' and 'x_opencti_aliases' attributes
+  ALIAS_FILTER, // key that target both the 'aliases' and 'x_opencti_aliases' attributes
 ];
 
 // list of the special filtering keys

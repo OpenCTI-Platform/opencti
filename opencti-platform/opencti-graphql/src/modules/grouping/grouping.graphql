@@ -147,7 +147,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): FileConnection
     exportFiles(first: Int): FileConnection
-    contentsFromTemplate(
+    filesFromTemplate(
         first: Int
         prefixMimeType: String
         after: ID

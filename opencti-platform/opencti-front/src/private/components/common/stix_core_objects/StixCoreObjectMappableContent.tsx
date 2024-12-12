@@ -50,7 +50,6 @@ interface StixCoreObjectMappableContentValues {
 
 const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableContentProps> = ({
   containerData,
-  handleDownloadPdf,
   handleTextSelection,
   askAi,
   editionMode,
@@ -223,7 +222,6 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               onSelect={handleTextSelection}
               askAi={askAi}
               disabled={!editionMode}
-              handleDownloadPdf={handleDownloadPdf}
               style={{
                 ...fieldSpacingContainerStyle,
                 minHeight: enrichedEditorHeight,

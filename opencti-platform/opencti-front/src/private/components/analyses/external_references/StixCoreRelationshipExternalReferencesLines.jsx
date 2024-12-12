@@ -36,6 +36,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import ExternalReferencePopover from './ExternalReferencePopover';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -362,7 +363,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                   textAlign: 'center',
                 }}
               >
-                {t('No entities of this type has been found.')}
+                {t(NO_DATA_WIDGET_MESSAGE)}
               </span>
             </div>
           )}

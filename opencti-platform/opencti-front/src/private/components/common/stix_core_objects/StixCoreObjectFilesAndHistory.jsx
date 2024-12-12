@@ -15,6 +15,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
@@ -441,11 +442,12 @@ const StixCoreObjectFilesAndHistory = ({
                   </Field>
                   <ObjectMarkingField
                     name="contentMaxMarkings"
-                    label={t_i18n('Content max marking definition levels')}
+                    label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                     onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                     style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     limitToMaxSharing
+                    helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                   />
                   <ObjectMarkingField
                     name="fileMarkings"

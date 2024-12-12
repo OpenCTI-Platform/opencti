@@ -42,6 +42,9 @@ const styles = (theme) => ({
   },
 });
 
+export const CONTENT_MAX_MARKINGS_TITLE = 'Content max marking definition levels';
+export const CONTENT_MAX_MARKINGS_HELPERTEXT = 'Entities with higher marking definition levels won\'t be included in the file content.';
+
 export const fileManagerAskJobImportMutation = graphql`
   mutation FileManagerAskJobImportMutation(
     $fileName: ID!
@@ -452,11 +455,12 @@ const FileManager = ({
                           </Field>
                           <ObjectMarkingField
                             name="contentMaxMarkings"
-                            label={t_i18n('Content max marking definition levels')}
+                            label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                             onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                             limitToMaxSharing
+                            helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                           />
                           <ObjectMarkingField
                             name="fileMarkings"

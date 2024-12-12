@@ -121,7 +121,6 @@ const widgetContainerObservables: Widget = {
       columns: [
         { label: 'Observable type', attribute: 'entity_type' },
         { label: 'Value', attribute: 'representative.main' },
-        { label: 'Description', attribute: 'description' }
       ],
     },
   ],
@@ -211,7 +210,6 @@ const widgetIndicators: Widget = {
       columns: [
         { label: 'Indicator types', attribute: 'indicator_types' },
         { label: 'Indicator pattern', attribute: 'pattern' },
-        { label: 'Description', attribute: 'description' },
       ],
     },
   ],
@@ -238,7 +236,7 @@ const widgetIncidentTasksActions: Widget = {
       columns: [
         { label: 'Task', attribute: 'representative.main' },
         { label: 'Due date (UTC)', attribute: 'due_date' },
-        { label: 'Status', attribute: 'status' },
+        { label: 'Status', attribute: 'status.template.name' },
       ],
     },
   ],
@@ -265,7 +263,6 @@ const widgetAttackPatterns: Widget = {
       columns: [
         { label: 'Technique ID', attribute: 'x_mitre_id' },
         { label: 'Technique', attribute: 'representative.main' },
-        { label: 'Description', attribute: 'description' },
       ],
     },
   ],
@@ -343,7 +340,6 @@ const widgetAllEntitiesAndObservables: Widget = {
       columns: [
         { label: 'Type', attribute: 'entity_type' },
         { label: 'Representative', attribute: 'representative.main' },
-        { label: 'Description', attribute: 'description' },
       ],
     },
   ],

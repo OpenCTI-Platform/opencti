@@ -1,6 +1,8 @@
 import React from 'react';
 import { useFormatter } from '../i18n';
 
+export const NO_DATA_WIDGET_MESSAGE = 'No data has been found.';
+
 const WidgetNoData = () => {
   const { t_i18n } = useFormatter();
 
@@ -13,7 +15,7 @@ const WidgetNoData = () => {
         justifyContent: 'center',
       }}
     >
-      <p>{t_i18n('No entities of this type has been found.')}</p>
+      <p>{t_i18n(NO_DATA_WIDGET_MESSAGE)}</p>
     </div>
   );
 };
