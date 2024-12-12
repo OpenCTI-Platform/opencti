@@ -2727,7 +2727,7 @@
   "This field must be >= 1": "このフィールドは>= 1でなければならない",
   "This field must be a number": "このフィールドは数字でなければなりません",
   "This field must only contain alphanumeric chars, dashes and space": "このフィールドに入力可能な文字はアルファベット、数字、\"-\", 半角スペースのみです",
-  "This field should not be empty.": "このフィールドは空であってはならない。",
+  "This field should not be empty": "このフィールドは空であってはならない",
   "This file is not in the specified format": "このファイルは指定された形式ではありません",
   "This file is too large": "このファイルは大きすぎます",
   "This filter contains imbricated filter groups, that are not fully supported yet in the platform display and can only be edited via the API. They might have been created via the API or a migration from a previous filter format. For your information, here is the content of the filter object: ": "このフィルターには、プラットフォームの表示ではまだ完全にサポートされていない、入れ子になったフィルターグループが含まれており、API経由でのみ編集することができます。これらはAPI経由で作成されたか、以前のフィルターフォーマットからの移行で作成された可能性があります。フィルターオブジェクトの内容は次のとおりです",

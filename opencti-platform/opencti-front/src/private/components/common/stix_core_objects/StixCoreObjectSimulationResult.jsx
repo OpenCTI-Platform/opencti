@@ -457,8 +457,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   // Validation for Platforms
   const platformValidation = () => Yup.object().shape({
     platforms: Yup.array()
-      .min(1, t_i18n('This field should not be empty.'))
-      .required(t_i18n('This field is required.')),
+      .min(1, t_i18n('This field should not be empty'))
+      .required(t_i18n('This field is required')),
   });
 
   const validate = () => {
