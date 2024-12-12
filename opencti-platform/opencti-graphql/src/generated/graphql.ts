@@ -23500,7 +23500,7 @@ export type SimulationConfig = {
   interval?: InputMaybe<Scalars['Int']['input']>;
   platforms?: InputMaybe<Array<InputMaybe<Platform>>>;
   selection?: InputMaybe<Selection>;
-  simulationType?: InputMaybe<SimulationType>;
+  simulationType: SimulationType;
 };
 
 export enum SimulationType {
