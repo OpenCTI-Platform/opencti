@@ -1,13 +1,18 @@
-import { graphql } from 'react-relay';
-import { ExclusionListsStatusQuery$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
-import React from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { EventRepeatOutlined, SyncDisabledOutlined, SyncOutlined, UpdateOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import { Theme } from 'src/components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { interval } from 'rxjs';
+import { TEN_SECONDS } from '../../../../utils/Time';
+
+const interval$ = interval(TEN_SECONDS);
 
 export const exclusionListsStatusQuery = graphql`
   query ExclusionListsStatusQuery {
@@ -19,13 +24,34 @@ export const exclusionListsStatusQuery = graphql`
   }
 `;
 
-const ExclusionListsStatus = ({ data }: { data: ExclusionListsStatusQuery$data }) => {
+interface ExclusionListsStatusComponentProps {
+  queryRef: PreloadedQuery<ExclusionListsStatusQuery>;
+  refetch: () => void;
+}
+
+const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusComponentProps> = ({ queryRef, refetch }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
-  const isInProgress = data.exclusionListCacheStatus?.isCacheRebuildInProgress;
+  const { exclusionListCacheStatus } = usePreloadedQuery(
+    exclusionListsStatusQuery,
+    queryRef,
+  );
+  const isInProgress = exclusionListCacheStatus?.isCacheRebuildInProgress;
+  const cacheDate = exclusionListCacheStatus?.cacheVersion;
+  const refreshDate = exclusionListCacheStatus?.refreshVersion;
+
+  useEffect(() => {
+    const subscription = interval$.subscribe(() => {
+      refetch();
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <>
-      <Grid container={true} spacing={3} style={{ marginBottom: theme.spacing(1) }}>
+      <Grid container={true} spacing={3} style={{ marginBottom: theme.spacing(2) }}>
         <Grid item xs={4}>
           <Paper
             variant="outlined"
@@ -85,7 +111,7 @@ const ExclusionListsStatus = ({ data }: { data: ExclusionListsStatusQuery$data }
                 {t_i18n('Cache date')}
               </div>
               <div>
-                {fldt(data.exclusionListCacheStatus?.cacheVersion)}
+                {fldt(cacheDate)}
               </div>
             </div>
           </Paper>
@@ -104,12 +130,36 @@ const ExclusionListsStatus = ({ data }: { data: ExclusionListsStatusQuery$data }
                 {t_i18n('Refresh date')}
               </div>
               <div>
-                {fldt(data.exclusionListCacheStatus?.refreshVersion)}
+                {fldt(refreshDate)}
               </div>
             </div>
           </Paper>
         </Grid>
       </Grid>
+    </>
+  );
+};
+
+
+const ExclusionListsStatus = () => {
+  const [queryRef, loadQuery] = useQueryLoader<ExclusionListsStatusQuery>(
+    exclusionListsStatusQuery,
+  );
+  useEffect(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, []);
+
+  const refetch = React.useCallback(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
+
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <ExclusionListsStatusComponent queryRef={queryRef} refetch={refetch} />
+        </React.Suspense>
+      )}
     </>
   );
 };
