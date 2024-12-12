@@ -35,7 +35,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const CaseRfiDetailsFragment = graphql`
+export const CaseRfiDetailsFragment = graphql`
   fragment CaseRfiDetails_case on CaseRfi {
     id
     name
