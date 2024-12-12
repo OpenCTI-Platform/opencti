@@ -86,9 +86,9 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const [commitDelete] = useApiMutation<FileLineDeleteMutation>(deleteMutation);
-  const submitDelete = (fileId?: string) => {
+  const submitDelete = () => {
     closePopover();
-    if (!fileId) return;
+    if (!menuFile?.id) return;
     deletion.handleCloseDelete();
     deletion.setDeleting(true);
     commitDelete({
@@ -194,7 +194,7 @@ const StixCoreObjectContentFilesList = ({
             )}
           />
         )}
-        <MenuItem onClick={() => submitDelete(menuFile?.id)}>
+        <MenuItem onClick={handleDelete}>
           {t_i18n('Delete')}
         </MenuItem>
         <DeleteDialog
