@@ -1890,9 +1890,13 @@ class DataTableToolBar extends Component {
           const promotionTypesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
 
+          const selectedTypesFiltered = selectedTypes.some((type) => type !== 'Stix-Domain-Object')
+            ? selectedTypes.filter((type) => type !== 'Stix-Domain-Object')
+            : selectedTypes;
+
           const isManualPromoteSelect = !selectAll
-            && selectedTypes.length > 0
-            && selectedTypes.some((type) => promotionTypes.includes(type));
+            && selectedTypesFiltered.length > 0
+            && selectedTypesFiltered.every((type) => promotionTypes.includes(type));
 
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
 
