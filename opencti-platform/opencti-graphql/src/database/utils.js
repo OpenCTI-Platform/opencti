@@ -11,9 +11,10 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { isStixRefRelationship } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
+import { INPUT_OBJECTS } from '../schema/general';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -329,8 +330,8 @@ export const extractIdsFromStoreObject = (instance) => {
 export const extractObjectsRestrictionsFromInputs = (inputs) => {
   const markings = [];
   inputs.forEach((input) => {
-    if (input && input.key === 'objects' && input.value?.length > 0) {
-      const objectMarking = input.value.flatMap((value) => value['object-marking'] ?? []);
+    if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
+      const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
       markings.push(...objectMarking);
     }
   });
