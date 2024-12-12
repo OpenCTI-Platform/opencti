@@ -252,6 +252,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  description: {
+    id: 'description',
+    label: 'Description',
+    percentWidth: 30,
+    isSortable: false,
+    render: ({ description }) => description || '-',
+  },
   entity_type: {
     id: 'entity_type',
     label: 'Type',
