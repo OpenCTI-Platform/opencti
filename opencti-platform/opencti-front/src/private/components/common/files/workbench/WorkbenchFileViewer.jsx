@@ -14,6 +14,8 @@ import { TEN_SECONDS } from '../../../../../utils/Time';
 import inject18n from '../../../../../components/i18n';
 import WorkbenchFileLine from './WorkbenchFileLine';
 import WorkbenchFileCreator from './WorkbenchFileCreator';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from "../../../../../utils/hooks/useGranted";
+import Security from "../../../../../utils/Security";
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -60,15 +62,17 @@ const WorkbenchFileViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}
         </Typography>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={() => setOpenCreate(true)}
-          classes={{ root: classes.createButton }}
-          size="large"
-        >
-          <Add fontSize="small" />
-        </IconButton>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+          <IconButton
+            color="primary"
+            aria-label="Add"
+            onClick={() => setOpenCreate(true)}
+            classes={{ root: classes.createButton }}
+            size="large"
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        </Security>
         <WorkbenchFileCreator
           handleCloseCreate={() => setOpenCreate(false)}
           openCreate={openCreate}

@@ -18,6 +18,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
 import { isValidStixBundle } from '../../../../utils/String';
+import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const freeTextUploaderGlobalMutation = graphql`
   mutation FreeTextUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
@@ -114,73 +116,75 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
   };
 
   return (
-    <>
-      <Tooltip title={t_i18n('Copy/paste text content')}>
-        <IconButton
-          color={color || 'primary'}
-          onClick={handleOpen}
-          size={size || 'large'}
-        >
-          <TextFieldsOutlined />
-        </IconButton>
-      </Tooltip>
-      <Formik<SubmittedValuesType>
-        enableReinitialize={true}
-        initialValues={{
-          content: '',
-          fileMarkings: [],
-        }}
-        onSubmit={handleSubmit}
-        validationSchema={freeTextValidation(t_i18n)}
-      >
-        {({ handleReset, isSubmitting, setFieldValue, submitForm }) => (
-          <Dialog
-            fullWidth={true}
-            onClose={handleClose}
-            open={isOpen}
-            PaperProps={{ elevation: 1 }}
+    <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+      <>
+        <Tooltip title={t_i18n('Copy/paste text content')}>
+          <IconButton
+            color={color || 'primary'}
+            onClick={handleOpen}
+            size={size || 'large'}
           >
-            <DialogTitle>{t_i18n('Free text import')}</DialogTitle>
-            <DialogContent>
-              <Field
-                component={TextField}
-                fullWidth={true}
-                label={t_i18n('Content')}
-                multiline={true}
-                name="content"
-                rows="8"
-                variant="standard"
-              />
-              <ObjectMarkingField
-                label={t_i18n('File marking definition levels')}
-                name="fileMarkings"
-                style={fieldSpacingContainerStyle}
-                onChange={() => {
+            <TextFieldsOutlined />
+          </IconButton>
+        </Tooltip>
+        <Formik<SubmittedValuesType>
+          enableReinitialize={true}
+          initialValues={{
+            content: '',
+            fileMarkings: [],
+          }}
+          onSubmit={handleSubmit}
+          validationSchema={freeTextValidation(t_i18n)}
+        >
+          {({ handleReset, isSubmitting, setFieldValue, submitForm }) => (
+            <Dialog
+              fullWidth={true}
+              onClose={handleClose}
+              open={isOpen}
+              PaperProps={{ elevation: 1 }}
+            >
+              <DialogTitle>{t_i18n('Free text import')}</DialogTitle>
+              <DialogContent>
+                <Field
+                  component={TextField}
+                  fullWidth={true}
+                  label={t_i18n('Content')}
+                  multiline={true}
+                  name="content"
+                  rows="8"
+                  variant="standard"
+                />
+                <ObjectMarkingField
+                  label={t_i18n('File marking definition levels')}
+                  name="fileMarkings"
+                  style={fieldSpacingContainerStyle}
+                  onChange={() => {
+                  }}
+                  setFieldValue={setFieldValue}
+                  required={false}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button disabled={isSubmitting} onClick={() => {
+                  handleReset();
+                  handleClose();
                 }}
-                setFieldValue={setFieldValue}
-                required={false}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button disabled={isSubmitting} onClick={() => {
-                handleReset();
-                handleClose();
-              }}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                color="secondary"
-                disabled={isSubmitting}
-                onClick={submitForm}
-              >
-                {t_i18n('Import')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        )}
-      </Formik>
-    </>
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  disabled={isSubmitting}
+                  onClick={submitForm}
+                >
+                  {t_i18n('Import')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </Formik>
+      </>
+    </Security>
   );
 };
 

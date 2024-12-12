@@ -11,6 +11,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { FileUploaderEntityMutation$data } from './__generated__/FileUploaderEntityMutation.graphql';
 import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlobalMutation.graphql';
 import FileImportMarkingSelectionPopup from './FileImportMarkingSelectionPopup';
+import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const fileUploaderGlobalMutation = graphql`
   mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
@@ -114,63 +116,65 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const hasSelectedFile = !!selectedFile;
 
   return (
-    <React.Fragment>
-      {accept ? (
-        <input
-          ref={uploadRef}
-          type="file"
-          style={{ display: 'none' }}
-          onChange={({ target: { validity, files } }) => {
-            const file = files?.item(0);
-            if (file && validity.valid) setSelectedFile(file);
-          }}
-          accept={accept}
-        />
-      ) : (
-        <input
-          ref={uploadRef}
-          type="file"
-          style={{ display: 'none' }}
-          onChange={({ target: { validity, files } }) => {
-            const file = files?.item(0);
-            if (file && validity.valid) setSelectedFile(file);
-          }}
-        />
-      )}
-      {hasSelectedFile && (
+    <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+      <React.Fragment>
+        {accept ? (
+          <input
+            ref={uploadRef}
+            type="file"
+            style={{ display: 'none' }}
+            onChange={({ target: { validity, files } }) => {
+              const file = files?.item(0);
+              if (file && validity.valid) setSelectedFile(file);
+            }}
+            accept={accept}
+          />
+        ) : (
+          <input
+            ref={uploadRef}
+            type="file"
+            style={{ display: 'none' }}
+            onChange={({ target: { validity, files } }) => {
+              const file = files?.item(0);
+              if (file && validity.valid) setSelectedFile(file);
+            }}
+          />
+        )}
+        {hasSelectedFile && (
         <FileImportMarkingSelectionPopup
           isOpen={hasSelectedFile}
           handleUpload={handleUpload}
           closePopup={closeFileImportMarkingSelectionPopup}
           entityId={entityId}
         />
-      )}
-      {upload ? (
-        <Tooltip
-          title={`Uploading ${upload}`}
-          aria-label={`Uploading ${upload}`}
-        >
-          <IconButton disabled={true} size={size || 'large'}>
-            <CircularProgress
-              size={24}
-              thickness={2}
-              color="primary"
-            />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title={t_i18n('Select your file')} aria-label="Select your file">
-          <IconButton
-            onClick={handleOpenUpload}
-            aria-haspopup="true"
-            color="primary"
-            size={size || 'large'}
+        )}
+        {upload ? (
+          <Tooltip
+            title={`Uploading ${upload}`}
+            aria-label={`Uploading ${upload}`}
           >
-            <CloudUploadOutlined />
-          </IconButton>
-        </Tooltip>
-      )}
-    </React.Fragment>
+            <IconButton disabled={true} size={size || 'large'}>
+              <CircularProgress
+                size={24}
+                thickness={2}
+                color="primary"
+              />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Tooltip title={t_i18n('Select your file')} aria-label="Select your file">
+            <IconButton
+              onClick={handleOpenUpload}
+              aria-haspopup="true"
+              color="primary"
+              size={size || 'large'}
+            >
+              <CloudUploadOutlined />
+            </IconButton>
+          </Tooltip>
+        )}
+      </React.Fragment>
+    </Security>
   );
 };
 
