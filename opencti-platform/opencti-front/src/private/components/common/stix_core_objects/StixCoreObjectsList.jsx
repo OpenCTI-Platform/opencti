@@ -258,7 +258,7 @@ const StixCoreObjectsList = ({
           types: dataSelectionTypes,
           first: selection.number ?? 10,
           orderBy: sortBy,
-          orderMode: selection.sort_mode ?? 'asc',
+          orderMode: selection.sort_mode ?? 'desc',
           filters,
         }}
         render={({ props }) => {
