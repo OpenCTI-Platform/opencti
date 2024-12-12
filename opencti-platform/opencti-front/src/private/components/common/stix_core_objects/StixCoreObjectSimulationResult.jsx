@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles, useTheme } from '@mui/styles';
 import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined, ErrorOutlined, LaunchOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,7 +19,6 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import { Autocomplete } from '@mui/material';
-import * as Yup from 'yup';
 import EEChip from '../entreprise_edition/EEChip';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
@@ -455,22 +454,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   };
 
   // Validation for Platforms
-  const platformValidation = () => Yup.object().shape({
-    platforms: Yup.array()
-      .min(1, t_i18n('This field should not be empty'))
-      .required(t_i18n('This field is required')),
-  });
-
-  const validate = () => {
-    platformValidation(t_i18n)
-      .validate({ platforms })
-      .then(() => {
-        setPlatformError('');
-      })
-      .catch((err) => {
-        setPlatformError(err.message);
-      });
-  };
+  useEffect(() => {
+    if (platforms.length === 0) {
+      setPlatformError(t_i18n('This field should not be empty'));
+    } else {
+      setPlatformError('');
+    }
+  }, [platforms]);
 
   const renderForm = () => {
     return (
@@ -508,7 +498,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                 onChange={(_event, newValue) => {
                   const newSelectedValues = newValue.map((platform) => platform.value);
                   setPlatforms(newSelectedValues);
-                  validate();
                 }}
                 getOptionLabel={(option) => option.label}
                 renderInput={(params) => (
