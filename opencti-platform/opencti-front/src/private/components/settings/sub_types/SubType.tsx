@@ -1,11 +1,12 @@
 import Typography from '@mui/material/Typography';
-import React, { CSSProperties, useMemo } from 'react';
+import React, { CSSProperties, Suspense, useMemo } from 'react';
 import Paper from '@mui/material/Paper';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import { useParams } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -19,6 +20,8 @@ import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useHelper from '../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader from '../../../../components/Loader';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -58,7 +61,7 @@ interface SubTypeProps {
   queryRef: PreloadedQuery<SubTypeQuery>
 }
 
-const SubType: React.FC<SubTypeProps> = ({ queryRef }) => {
+const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -173,6 +176,19 @@ const SubType: React.FC<SubTypeProps> = ({ queryRef }) => {
         />
       </Grid>
     </div>
+  );
+};
+
+const SubType = () => {
+  const { subTypeId } = useParams<{ subTypeId?: string }>();
+  if (!subTypeId) return <ErrorNotFound/>;
+
+  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, { id: subTypeId });
+
+  return (
+    <Suspense fallback={<Loader />}>
+      {subTypeRef && <SubTypeComponent queryRef={subTypeRef} />}
+    </Suspense>
   );
 };
 
