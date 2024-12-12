@@ -847,6 +847,7 @@ type Work {
   messages: [WorkMessage]
   errors: [WorkMessage]
   tracking: WorkTracking
+  draft_context: String
 }
 
 type WorkEdge {
@@ -8178,6 +8179,7 @@ type WorkEditMutations {
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
   addExpectations(expectations: Int): ID!
+  addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
   toProcessed(message: String, inError: Boolean): ID!
 }

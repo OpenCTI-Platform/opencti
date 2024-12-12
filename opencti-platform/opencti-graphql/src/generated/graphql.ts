@@ -30233,6 +30233,7 @@ export type Work = {
   completed_number?: Maybe<Scalars['Int']['output']>;
   completed_time?: Maybe<Scalars['DateTime']['output']>;
   connector?: Maybe<Connector>;
+  draft_context?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   event_source_id?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -30260,12 +30261,18 @@ export type WorkEdge = {
 
 export type WorkEditMutations = {
   __typename?: 'WorkEditMutations';
+  addDraftContext: Scalars['ID']['output'];
   addExpectations: Scalars['ID']['output'];
   delete: Scalars['ID']['output'];
   ping: Scalars['ID']['output'];
   reportExpectation: Scalars['ID']['output'];
   toProcessed: Scalars['ID']['output'];
   toReceived: Scalars['ID']['output'];
+};
+
+
+export type WorkEditMutationsAddDraftContextArgs = {
+  draftContext?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -41453,6 +41460,7 @@ export type WorkResolvers<ContextType = any, ParentType extends ResolversParentT
   completed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   completed_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType>;
+  draft_context?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   event_source_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -41480,6 +41488,7 @@ export type WorkEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type WorkEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkEditMutations'] = ResolversParentTypes['WorkEditMutations']> = ResolversObject<{
+  addDraftContext?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsAddDraftContextArgs>>;
   addExpectations?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsAddExpectationsArgs>>;
   delete?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ping?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
