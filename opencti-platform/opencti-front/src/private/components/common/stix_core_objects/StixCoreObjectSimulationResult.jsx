@@ -122,14 +122,8 @@ const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql
   }
 `;
 
-const platformOptions = [
-  { label: 'Windows', value: 'Windows' },
-  { label: 'Linux', value: 'Linux' },
-  { label: 'MacOS', value: 'MacOS' },
-];
-
-const stixCoreObjectSimulationResultAttackPatternForContainersQuery = graphql`
-  query StixCoreObjectSimulationResultAttackPatternForContainersQuery($id: String!) {
+const StixCoreObjectSimulationResultAttackPatternsForContainersQuery = graphql`
+  query StixCoreObjectSimulationResultAttackPatternsForContainersQuery($id: String!) {
     stixCoreObject(id: $id) {
       id    
       entity_type
@@ -150,7 +144,7 @@ const stixCoreObjectSimulationResultAttackPatternForContainersQuery = graphql`
 `;
 
 const stixCoreObjectSimulationResultAttackPatternsForThreatsQuery = graphql`
-  query StixCoreObjectSimulationResultAttackPatternForThreatsQuery($id: Any!) {
+  query StixCoreObjectSimulationResultAttackPatternsForThreatsQuery($id: Any!) {
     stixCoreRelationships(filters: {
       mode: and,
       filters: [
@@ -201,10 +195,16 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
 
+  const platformOptions = [
+    { label: 'Windows', value: 'Windows' },
+    { label: 'Linux', value: 'Linux' },
+    { label: 'MacOS', value: 'MacOS' },
+  ];
+
   // Determine the query based on the type
   let attackPatternsQuery;
   if (type === 'container') {
-    attackPatternsQuery = stixCoreObjectSimulationResultAttackPatternForContainersQuery;
+    attackPatternsQuery = StixCoreObjectSimulationResultAttackPatternsForContainersQuery;
   } else if (type === 'threat') {
     attackPatternsQuery = stixCoreObjectSimulationResultAttackPatternsForThreatsQuery;
   } else {
