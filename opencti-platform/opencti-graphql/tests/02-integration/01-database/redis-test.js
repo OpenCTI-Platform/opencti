@@ -1,7 +1,14 @@
 import { expect, it, describe } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
-import { delEditContext, delUserContext, fetchEditContext, getRedisVersion, lockResource, setEditContext } from '../../../src/database/redis';
+import {
+  delEditContext,
+  delUserContext,
+  fetchEditContext,
+  getRedisVersion,
+  lockResource,
+  setEditContext,
+} from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 describe('Redis basic and utils', () => {

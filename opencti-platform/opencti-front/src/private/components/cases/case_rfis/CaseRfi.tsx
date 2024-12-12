@@ -1,10 +1,11 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useRef } from 'react';
-import { useFragment } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import useHelper from 'src/utils/hooks/useHelper';
+import { CaseRfi_caseRfi$key } from '@components/cases/case_rfis/__generated__/CaseRfi_caseRfi.graphql';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -14,9 +15,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
-import { caseFragment } from '../CaseUtils';
 import CaseRfiDetails from './CaseRfiDetails';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useFormatter } from '../../../../components/i18n';
@@ -41,15 +40,65 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CaseRfiProps {
-  caseRfiData: CaseUtils_case$key;
+  caseRfiData: CaseRfi_caseRfi$key;
   enableReferences: boolean;
 }
+
+const caseRfiFragment = graphql`
+  fragment CaseRfi_caseRfi on CaseRfi {
+    id
+    name
+    description
+    created
+    information_types
+    priority
+    severity
+    entity_type
+    draftVersion {
+      draft_id
+      draft_operation
+    }
+    objectAssignee {
+      entity_type
+      id
+      name
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+    x_opencti_request_access
+    ...CaseRfiDetails_case
+    ...ContainerStixObjectsOrStixRelationships_container
+  }
+`;
 
 const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
-  const caseRfi = useFragment(caseFragment, caseRfiData);
+  const caseRfi = useFragment(caseRfiFragment, caseRfiData);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRfi.entity_type);
@@ -83,6 +132,7 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
     caseTasksLinesQuery,
     queryTaskPaginationOptions,
   );
+
   return (
     <>
       <Grid

@@ -15,8 +15,12 @@ export const MESSAGING$ = {
   messages: MESSENGER$,
   notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
   notifyRelayError: (error) => {
-    const message = (error.res.errors ?? []).map((e) => e.message).join('\r\n');
-    MESSENGER$.next([{ type: 'error', text: message }]);
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: e.message,
+      fullError: e,
+    }));
+    MESSENGER$.next(messages);
   },
   notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
   notifyNLQ: (text) => MESSENGER$.next([{ type: 'nlq', text }]),
@@ -196,7 +200,7 @@ export const handleError = (error) => {
     const messages = R.map(
       (e) => ({
         type: 'error',
-        text: R.pathOr(e.message, ['data', 'message'], e),
+        text: R.pathOr((e.message), ['data', 'message'], e),
       }),
       error.res.errors,
     );
