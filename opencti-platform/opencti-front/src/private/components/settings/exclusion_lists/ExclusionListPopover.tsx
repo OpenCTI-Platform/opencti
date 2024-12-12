@@ -104,11 +104,13 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
         deletion={deletion}
         submitDelete={submitDelete}
       />
-      <ExclusionListEdition
-        data={data}
-        isOpen={isEditionFormOpen}
-        onClose={handleCloseEditionForm}
-      />
+      {isEditionFormOpen && (
+        <ExclusionListEdition
+          data={data}
+          isOpen={isEditionFormOpen}
+          onClose={handleCloseEditionForm}
+        />
+      )}
     </>
   );
 };

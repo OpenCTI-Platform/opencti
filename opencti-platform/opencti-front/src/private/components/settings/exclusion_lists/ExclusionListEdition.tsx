@@ -1,13 +1,19 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
+import Axios from 'axios';
 import { Option } from '@components/common/form/ReferenceField';
 import ItemIcon from 'src/components/ItemIcon';
+import Loader from 'src/components/Loader';
 import Button from '@mui/material/Button';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
-import { handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import { now } from 'src/utils/Time';
+import { GetAppOutlined } from '@mui/icons-material';
+import InputAdornment from '@mui/material/InputAdornment';
+import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -38,7 +44,8 @@ interface ExclusionListEditionFormData {
   name: string;
   description?: string | null;
   exclusion_list_entity_types: Option[];
-  // file: File | null;
+  fileContent?: string;
+  file?: File | null;
 }
 
 const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps> = ({
@@ -49,7 +56,14 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
 
+  const [initialValues, setInitialValues] = useState<ExclusionListEditionFormData | null>(null);
+
   const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
+
+  const generateFileFromContent = (content: string, name: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    return new File([blob], `${now()}_${name}.txt`, { type: 'text/plain' });
+  };
 
   const onSubmit: FormikConfig<ExclusionListEditionFormData>['onSubmit'] = (
     values,
@@ -57,23 +71,31 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   ) => {
     setSubmitting(true);
 
-    const input = Object.entries(values).map(([key, value]) => {
-      if (key === 'exclusion_list_entity_types') {
+    const { file, fileContent, name } = values;
+    const selectedFile = fileContent && !file && fileContent !== initialValues?.fileContent
+      ? generateFileFromContent(fileContent, name)
+      : file;
+
+    const input = Object.entries(values)
+      .filter(([key, _]) => !['file', 'fileContent'].includes(key))
+      .map(([key, value]) => {
+        if (key === 'exclusion_list_entity_types') {
+          return {
+            key,
+            value: value.map((item) => item.value),
+          };
+        }
         return {
           key,
-          value: value.map((item) => item.value),
+          value,
         };
-      }
-      return {
-        key,
-        value,
-      };
-    });
+      });
 
     commitFieldPatch({
       variables: {
         id: data?.id,
         input,
+        selectedFile,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -84,22 +106,36 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
         setSubmitting(false);
       },
     });
-    //
-    // onClose();
   };
 
   const getExclusionListEntityTypes = (list: string[]): Option[] => list.map((item) => ({ value: item, label: item }));
-
-  const initialValues: ExclusionListEditionFormData = {
-    name: data.name,
-    description: data.description,
-    exclusion_list_entity_types: getExclusionListEntityTypes(data.exclusion_list_entity_types),
-  };
 
   const entityTypesOptions: Option[] = entityTypes.map((type) => ({
     value: type.id,
     label: type.label,
   }));
+
+  const handleSetInitialValues = (fileContent: string) => {
+    setInitialValues({
+      name: data.name,
+      description: data.description,
+      exclusion_list_entity_types: getExclusionListEntityTypes(data.exclusion_list_entity_types),
+      fileContent,
+    });
+  };
+
+  const loadFileContent = () => {
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(data.file_id)}`;
+    Axios.get(url).then((res) => {
+      handleSetInitialValues(res.data);
+    });
+  };
+
+  useEffect(() => {
+    loadFileContent();
+  }, []);
+
+  if (!initialValues) return <Loader />;
 
   return (
     <Drawer
@@ -145,13 +181,30 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                 option: Option,
               ) => (
                 <li key={option.value} {...props}>
-                  <ItemIcon type={option.type} />
+                  <ItemIcon type={option.value} />
                   <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
                 </li>
               )}
               textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
               required
             />
+            <Field
+              name="fileContent"
+              style={fieldSpacingContainerStyle}
+              component={TextField}
+              multiline
+              rows={10}
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <GetAppOutlined fontSize="small" />
+                    azS
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <CustomFileUploader setFieldValue={setFieldValue} />
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="contained"
