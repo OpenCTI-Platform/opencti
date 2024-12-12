@@ -18561,6 +18561,8 @@ export type PlatformEe = {
   license_lts: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
+  license_start_date: Scalars['DateTime']['output'];
+  license_valid_cert: Scalars['Boolean']['output'];
   license_validated: Scalars['Boolean']['output'];
 };
 
@@ -38060,6 +38062,8 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_lts?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_start_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  license_valid_cert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_validated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

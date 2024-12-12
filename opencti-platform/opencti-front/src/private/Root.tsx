@@ -67,7 +67,9 @@ const rootSettingsFragment = graphql`
       license_validated
       license_expired
       license_expiration_date
+      license_start_date
       license_expiration_prevention
+      license_valid_cert
       license_customer
       license_enterprise
       license_platform
