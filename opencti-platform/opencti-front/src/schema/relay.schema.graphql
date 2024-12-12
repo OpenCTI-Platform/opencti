@@ -8903,9 +8903,11 @@ type Mutation {
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
+  ingestionTaxiiResetState(id: ID!): IngestionTaxii
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
   ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult
   ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv
+  ingestionCsvResetState(id: ID!): IngestionCsv
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
   indicatorAdd(input: IndicatorAddInput!): Indicator

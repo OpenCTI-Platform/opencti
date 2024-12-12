@@ -160,7 +160,8 @@ StixCoreObjectOpinionsRadarDialogProps
     OPINION_TYPE,
     {
       id: myOpinion?.id,
-      opinion: myOpinion?.opinion ?? opinionOptions[Math.floor(opinionOptions.length / 2)].label,
+      opinion: myOpinion?.opinion
+        ?? (opinionOptions.length > 0 ? opinionOptions[Math.floor(opinionOptions.length / 2)].label : 'default'),
       explanation: myOpinion?.explanation ?? '',
       confidence: myOpinion?.confidence ?? 75,
     },

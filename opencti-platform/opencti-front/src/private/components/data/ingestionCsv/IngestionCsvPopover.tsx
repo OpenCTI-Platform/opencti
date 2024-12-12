@@ -1,5 +1,5 @@
 import { graphql, useQueryLoader } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import React, { Dispatch, FunctionComponent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
@@ -27,16 +27,26 @@ const ingestionCsvPopoverDeletionMutation = graphql`
   }
 `;
 
+const ingestionCsvPopoverResetStateMutation = graphql`
+    mutation IngestionCsvPopoverResetStateMutation($id: ID!) {
+        ingestionCsvResetState(id: $id) {
+            ...IngestionCsvLine_node
+        }
+    }
+`;
+
 interface IngestionCsvPopoverProps {
   ingestionCsvId: string;
   running?: boolean | null;
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  setStateHash: Dispatch<string>;
 }
 
 const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   ingestionCsvId,
   paginationOptions,
   running,
+  setStateHash,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -85,7 +95,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   // -- Deletion --
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commit] = useApiMutation(ingestionCsvPopoverDeletionMutation);
+  const [commitDelete] = useApiMutation(ingestionCsvPopoverDeletionMutation);
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
@@ -96,7 +106,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   };
   const submitDelete = () => {
     setDeleting(true);
-    commit({
+    commitDelete({
       variables: {
         id: ingestionCsvId,
       },
@@ -108,6 +118,33 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         handleCloseDelete();
       },
     });
+  };
+  // -- Reset state --
+  const [displayResetState, setDisplayResetState] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [commitResetState] = useApiMutation(ingestionCsvPopoverResetStateMutation);
+  const handleOpenResetState = () => {
+    setDisplayResetState(true);
+    handleClose();
+  };
+
+  const handleCloseResetState = () => {
+    setDisplayResetState(false);
+    setResetting(false);
+  };
+  const submitResetState = () => {
+    setResetting(true);
+    commitResetState({
+      variables: {
+        id: ingestionCsvId,
+      },
+      onCompleted: () => {
+        setResetting(false);
+        setStateHash('-'); // would be great to update relay store instead, I haven't find how.
+        handleCloseResetState();
+      },
+    });
+    handleCloseResetState();
   };
 
   // -- Running --
@@ -171,6 +208,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           <MenuItem onClick={handleOpenDuplicate}>
             {t_i18n('Duplicate')}
           </MenuItem>
+          <MenuItem onClick={handleOpenResetState}>
+            {t_i18n('Reset state')}
+          </MenuItem>
           <MenuItem onClick={handleOpenDelete}>
             {t_i18n('Delete')}
           </MenuItem>
@@ -218,6 +258,34 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
               disabled={deleting}
             >
               {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={displayResetState}
+          keepMounted
+          TransitionComponent={Transition}
+          onClose={handleCloseResetState}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to reset the state of this CSV ingester?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCloseResetState}
+              disabled={resetting}
+            >
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={submitResetState}
+              disabled={resetting}
+            >
+              {t_i18n('Reset state')}
             </Button>
           </DialogActions>
         </Dialog>

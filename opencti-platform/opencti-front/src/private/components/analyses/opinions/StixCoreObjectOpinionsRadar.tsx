@@ -77,6 +77,27 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
     }
   };
 
+  if (opinionOptions.length === 0) {
+    return (
+      <div style={{ pointerEvents: 'none', cursor: 'auto' }}>
+        <Chart
+          options={{
+            noData: {
+              text: t_i18n('No data available.'),
+              align: 'center',
+              verticalAlign: 'middle',
+              style: { color: '#888', fontSize: '14px' },
+            },
+          }}
+          series={[]}
+          type="radar"
+          width="100%"
+          height={height}
+        />
+      </div>
+    );
+  }
+
   return (
     <Chart
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
