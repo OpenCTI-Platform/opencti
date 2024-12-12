@@ -44,6 +44,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     { name: 'priority', label: 'Priority', type: 'string', format: 'vocabulary', vocabularyCategory: 'case_priority_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { ...authorizedMembers, editDefault: true },
     { ...authorizedMembersActivationDate },
+    { name: 'x_opencti_request_access', label: 'Request access data as json field', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'ORGA_SHARING_REQUEST_FF' },
   ],
   relations: [],
   relationsRefs: [createdBy, objectMarking, objectAssignee, objectParticipant],

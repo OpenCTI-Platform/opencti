@@ -19,6 +19,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
+import { declineRequestAccessMutation, validateRequestAccessMutation } from '../../cases/CaseUtils';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
@@ -34,13 +36,14 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemAssignees from '../../../../components/ItemAssignees';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -77,6 +80,9 @@ const StixDomainObjectOverview = ({
   const [openStixIds, setOpenStixIds] = useState(false);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
+
+  const { isFeatureEnable } = useHelper();
+  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const handleToggleOpenStixIds = () => {
     setOpenStixIds(!openStixIds);
@@ -161,25 +167,99 @@ const StixDomainObjectOverview = ({
     ? stixDomainObject.createdBy?.x_opencti_reliability
     : stixDomainObject.x_opencti_reliability;
 
+  let requestAccess = null;
+  if (stixDomainObject.x_opencti_request_access) {
+    requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
+  }
+
+  const onSubmitValidateRequestAccess = () => {
+    commitMutation({
+      mutation: validateRequestAccessMutation,
+      variables: {
+        id: stixDomainObject.id,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('This request for sharing has been approved'));
+      },
+    });
+  };
+
+  const onSubmitDeclineRequestAccess = () => {
+    commitMutation({
+      mutation: declineRequestAccessMutation,
+      variables: {
+        id: stixDomainObject.id,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('This request for sharing has been declined'));
+      },
+    });
+  };
+
   return (
     <>
       <Typography variant="h4">
         {t_i18n('Basic information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+        <Grid container={false} spacing={3}>
+          {isRequestAccessFeatureEnabled && requestAccess && (
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <Grid item sx={12} style={{ marginBottom: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: withPattern ? 20 : 0 }}
+                >
+                  {t_i18n('Processing status')}
+                </Typography>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+                >
+                  <ItemStatus
+                    status={stixDomainObject.status}
+                    disabled={!stixDomainObject.workflowEnabled}
+                  />
+                  <div>
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      style={{ marginRight: 10 }}
+                      onClick={onSubmitValidateRequestAccess}
+                    >
+                      {t_i18n('Validate')}
+                    </Button>
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      onClick={onSubmitDeclineRequestAccess}
+                    >
+                      {t_i18n('Decline')}
+                    </Button>
+                  </div>
+                </div>
+                <Divider style={{ marginTop: 20 }}/>
+              </Grid>
+            </Security>
+
+          )}
+        </Grid>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             {stixDomainObject.objectMarking && (
-              <>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Marking')}
-                </Typography>
-                <ItemMarkings
-                  markingDefinitions={
+            <>
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Marking')}
+              </Typography>
+              <ItemMarkings
+                markingDefinitions={
                     stixDomainObject.objectMarking ?? []
                   }
-                />
-              </>
+              />
+            </>
             )}
             <div>
               <Typography
@@ -200,45 +280,45 @@ const StixDomainObjectOverview = ({
               />
             </div>
             {(displayConfidence || displayReliability) && (
-              <Grid container={true} columnSpacing={1}>
-                {displayReliability && (
-                  <Grid item xs={6}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t_i18n('Reliability')}
-                      {isReliabilityOfSource && (
-                        <span style={{ fontStyle: 'italic' }}>
-                          {' '}
-                          ({t_i18n('of author')})
-                        </span>
-                      )}
-                    </Typography>
-                    <ItemOpenVocab
-                      displayMode="chip"
-                      type="reliability_ov"
-                      value={reliability?.toString()}
-                    />
-                  </Grid>
-                )}
-                {displayConfidence && (
-                  <Grid item xs={6}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t_i18n('Confidence level')}
-                    </Typography>
-                    <ItemConfidence
-                      confidence={stixDomainObject.confidence}
-                      entityType={stixDomainObject.entity_type}
-                    />
-                  </Grid>
-                )}
+            <Grid container={true} columnSpacing={1}>
+              {displayReliability && (
+              <Grid item xs={6}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t_i18n('Reliability')}
+                  {isReliabilityOfSource && (
+                  <span style={{ fontStyle: 'italic' }}>
+                    {' '}
+                    ({t_i18n('of author')})
+                  </span>
+                  )}
+                </Typography>
+                <ItemOpenVocab
+                  displayMode="chip"
+                  type="reliability_ov"
+                  value={reliability?.toString()}
+                />
               </Grid>
+              )}
+              {displayConfidence && (
+              <Grid item xs={6}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t_i18n('Confidence level')}
+                </Typography>
+                <ItemConfidence
+                  confidence={stixDomainObject.confidence}
+                  entityType={stixDomainObject.entity_type}
+                />
+              </Grid>
+              )}
+            </Grid>
             )}
             {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
             <Typography
@@ -267,17 +347,21 @@ const StixDomainObjectOverview = ({
                 <ItemPatternType label={stixDomainObject.pattern_type} />
               </>
             )}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: withPattern ? 20 : 0 }}
-            >
-              {t_i18n('Processing status')}
-            </Typography>
-            <ItemStatus
-              status={stixDomainObject.status}
-              disabled={!stixDomainObject.workflowEnabled}
-            />
+            {!requestAccess && (
+              <>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: withPattern ? 20 : 0 }}
+                >
+                  {t_i18n('Processing status')}
+                </Typography>
+                <ItemStatus
+                  status={stixDomainObject.status}
+                  disabled={!stixDomainObject.workflowEnabled}
+                />
+              </>
+            )}
             {displayAssignees && (
               <div data-testid='sdo-overview-assignees'>
                 <div style={{ display: 'flex', alignItems: 'center' }}>

@@ -684,6 +684,8 @@ type SubType {
   statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting # Simpler before moving workflow
+  requestAccessWorkflow: RequestAccessWorkflow
+  requestAccessStatus: RequestAccessStatus
 }
 
 ############## Statuses
@@ -1369,6 +1371,7 @@ type Settings implements InternalObject & BasicObject {
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String @auth
   playground_enabled: Boolean!
+  request_access_enabled: Boolean! @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
 }

@@ -115,6 +115,38 @@ export const caseMutationRelationDelete = graphql`
   }
 `;
 
+export const validateRequestAccessMutation = graphql`
+  mutation CaseUtilsValidateRequestAccessMutation($id: ID!) {
+    caseRfiApprove(id: $id) {
+      id
+      x_opencti_workflow_id
+      status {
+        id
+        template {
+          color
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const declineRequestAccessMutation = graphql`
+  mutation CaseUtilsDeclineRequestAccessMutation($id: ID!) {
+    caseRfiDecline(id: $id) {
+      id
+      x_opencti_workflow_id
+      status {
+        id
+        template {
+          color
+          name
+        }
+      }
+    }
+  }
+`;
+
 export const caseFragment = graphql`
   fragment CaseUtils_case on Case {
     id
@@ -177,6 +209,7 @@ export const caseFragment = graphql`
     ...FeedbackDetails_case
     ...CaseRftDetails_case
     ...CaseRfiDetails_case
+    ...CaseRfi_caseRfi
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container
   }

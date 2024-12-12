@@ -326,7 +326,7 @@ describe('Retention Manager tests ', () => {
       filterGroups: [],
     };
     const elementsToDelete = await getElementsToDelete(context, 'knowledge', before, JSON.stringify(filters));
-    expect(elementsToDelete.edges.length).toEqual(3);
+    expect(elementsToDelete.edges.length).toEqual(4);
     const adminIndividual = elementsToDelete.edges.find((e: any) => e.node.name === 'admin');
     expect(await canDeleteElement(context, ADMIN_USER, adminIndividual.node)).toBeFalsy();
     const otherIndividual = elementsToDelete.edges.find((e: any) => !e.node.contact_information);

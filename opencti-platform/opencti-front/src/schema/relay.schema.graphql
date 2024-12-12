@@ -723,6 +723,8 @@ type SubType {
   statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting
+  requestAccessWorkflow: RequestAccessWorkflow
+  requestAccessStatus: RequestAccessStatus
 }
 
 enum StatusTemplateOrdering {
@@ -1447,6 +1449,7 @@ type Settings implements InternalObject & BasicObject {
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
+  request_access_enabled: Boolean!
   editContext: [EditUserContext!]
 }
 
@@ -8934,6 +8937,8 @@ type Mutation {
   caseIncidentDelete(id: ID!): ID
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
+  caseRfiApprove(id: ID!): CaseRfi
+  caseRfiDecline(id: ID!): CaseRfi
   caseRftAdd(input: CaseRftAddInput!): CaseRft
   caseRftDelete(id: ID!): ID
   feedbackAdd(input: FeedbackAddInput!): Feedback
@@ -10638,6 +10643,8 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   information_types: [String!]
   severity: String
   priority: String
+  x_opencti_request_access: String
+  x_opencti_workflow_id: String
 }
 
 enum CaseRfisOrdering {
@@ -10696,6 +10703,7 @@ input CaseRfiAddInput {
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  x_opencti_request_access: String
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10994,6 +11002,8 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  request_access_workflow: RequestAccessWorkflow
+  requestAccessStatus: [StatusTemplate]
 }
 
 enum EntitySettingsOrdering {
@@ -12710,4 +12720,35 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String
+
+enum RequestAccessType {
+  organization_sharing
+}
+
+enum ActionStatus {
+  APPROVED
+  DECLINED
+  NEW
+  NOT_FOUND
+  MISSING_PARAMETERS
+}
+
+type RequestAccessWorkflow {
+  approved_workflow_id: String
+  declined_workflow_id: String
+  workflow: [String]
+  approval_admin: [ID]
+}
+
+type RequestAccessStatus {
+  id: ID!
+  template_id: String
+  statusTemplate: [StatusTemplate]
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
 }
