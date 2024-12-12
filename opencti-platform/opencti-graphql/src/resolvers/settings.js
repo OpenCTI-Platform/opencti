@@ -1,11 +1,9 @@
 import nconf from 'nconf';
-import forge from 'node-forge';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getApplicationDependencies,
   getApplicationInfo,
   getCriticalAlerts,
-  getEnterpriseEditionInfo,
   getMemoryStatistics,
   getMessagesFilteredByRecipients,
   getProtectedSensitiveConfig,
@@ -21,10 +19,9 @@ import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '..
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
-import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
+import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
-import { OPENCTI_CA } from '../enterprise-edition/opencti_ca';
-import { now } from '../utils/format';
+import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
 const settingsResolvers = {
   Query: {

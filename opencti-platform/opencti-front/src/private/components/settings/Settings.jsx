@@ -106,10 +106,13 @@ const settingsQuery = graphql`
       }
       platform_enterprise_edition {
         license_enterprise
+        license_valid_cert
         license_validated
         license_expiration_prevention
         license_customer
         license_expiration_date
+        license_start_date
+        license_platform_match
         license_expired
         license_lts
       }
@@ -160,8 +163,11 @@ export const settingsMutationFieldPatch = graphql`
           license_enterprise
           license_validated
           license_customer
+          license_valid_cert
           license_expiration_prevention
+          license_platform_match
           license_expiration_date
+          license_start_date
           license_expired
           license_lts
         }
@@ -405,18 +411,34 @@ const Settings = () => {
                           <ItemCopy content={settings.id} variant="inLine" />
                         </ListItem>
                       </list>
-                      { isEnterpriseEdition && settings.platform_enterprise_edition.license_validated
+                      { isEnterpriseEdition && settings.platform_enterprise_edition.license_valid_cert
                           && <List>
                             <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('License activated for')} />
+                              <ListItemText primary={t_i18n('Customer assignation')} />
                               <ItemBoolean
                                 variant="large"
-                                label={settings.platform_enterprise_edition.license_customer}
-                                status={true}
+                                neutralLabel={settings.platform_enterprise_edition.license_customer}
+                                status={null}
+                              />
+                            </ListItem>
+                            <ListItem divider={true}>
+                              <ListItemText primary={t_i18n('Valid identification')} />
+                              <ItemBoolean
+                                variant="large"
+                                label={settings.platform_enterprise_edition.license_platform_match ? 'YES' : 'NO'}
+                                status={settings.platform_enterprise_edition.license_platform_match}
+                              />
+                            </ListItem>
+                            <ListItem divider={true}>
+                              <ListItemText primary={t_i18n('Start date')} />
+                              <ItemBoolean
+                                variant="xlarge"
+                                label={fldt(settings.platform_enterprise_edition.license_start_date)}
+                                status={!settings.platform_enterprise_edition.license_expired}
                               />
                             </ListItem>
                             <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
-                              <ListItemText primary={t_i18n('License expiration date')} />
+                              <ListItemText primary={t_i18n('Expiration date')} />
                               <ItemBoolean
                                 variant="xlarge"
                                 label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
@@ -442,11 +464,22 @@ const Settings = () => {
                           </List>
                       }
                       { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
-                          && <List>
+                          && !settings.platform_enterprise_edition.license_valid_cert && <List>
                             <ListItem divider={false}>
                               <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                                You currently using OpenCTI enterprise edition<br/>
-                                Please contact Filigran to get your license - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
+                                {t_i18n('You currently using OpenCTI enterprise edition')}<br/>
+                                {t_i18n('This usage is limited to testing only')}<br/>
+                                {t_i18n('Please contact Filigran to get your license')} - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
+                              </Alert>
+                            </ListItem>
+                          </List>
+                      }
+                      { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
+                          && settings.platform_enterprise_edition.license_valid_cert && <List>
+                            <ListItem divider={false}>
+                              <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
+                                {t_i18n('You OpenCTI license is now expired')}<br/>
+                                {t_i18n('Please contact Filigran to get your new license')} - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
                               </Alert>
                             </ListItem>
                           </List>
