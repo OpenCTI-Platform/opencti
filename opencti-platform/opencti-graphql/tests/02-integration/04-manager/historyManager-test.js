@@ -133,7 +133,7 @@ const eventWithRelatedRestriction = {
       ],
       organization_ids: [],
       user_metadata: {},
-      referer: 'http://localhost:3000/dashboard/analyses/reports/e6babfee-aa64-4e3a-9c67-1a163c178ca0/knowledge/graph?zoom=%7B%22k%22%3A0.853929691647981%2C%22x%22%3A21.67720005607563%2C%22y%22%3A-0.5756976120699228%7D&mode3D=false&selectRectangleModeFree=false&selectModeFree=false&selectModeFreeReady=true&modeFixed=false&modeTree=&displayTimeRange=false&selectedTimeRangeInterval=Wed+Dec+04+2024+00%3A00%3A00+GMT%2B0100+%28heure+normale+d%E2%80%99Europe+centrale%29%2CSat+Dec+07+2024+09%3A00%3A00+GMT%2B0100+%28heure+normale+d%E2%80%99Europe+centrale%29&stixCoreObjectsTypes=&markedBy=&createdBy=&width=null&height=null&zoomed=false&keyword=&openCreatedRelation=false'
+      referer: 'http://localhost:3000/dashboard'
     },
     data: {
       id: 'report--50ddc6fe-2a84-5c9a-904d-f964a94d1ff7',
@@ -181,11 +181,6 @@ const eventWithRelatedRestriction = {
         'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb'
       ]
     },
-    relatedRestrictions: {
-      markings: [
-        '4584aeee-10b6-47a7-808e-603440642285'
-      ]
-    },
     context: {
       patch: [
         {
@@ -199,7 +194,12 @@ const eventWithRelatedRestriction = {
           op: 'remove',
           path: '/object_refs/7'
         }
-      ]
+      ],
+      relatedRestrictions: {
+        markings: [
+          '4584aeee-10b6-47a7-808e-603440642285'
+        ]
+      },
     }
   }
 };
