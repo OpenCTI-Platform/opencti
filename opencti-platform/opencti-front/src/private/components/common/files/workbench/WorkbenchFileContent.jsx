@@ -956,7 +956,6 @@ const WorkbenchFileContentComponent = ({
                 )}/${file.metaData.entity.id}`;
                 navigate(`${entityLink}/files`);
               } else {
-                console.log('Navigating here');
                 navigate('/dashboard/drafts');
               }
             },
