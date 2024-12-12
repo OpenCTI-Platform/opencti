@@ -1,7 +1,7 @@
 import CustomizationMenu from '@components/settings/CustomizationMenu';
 import React from 'react';
 import ExclusionListCreation from '@components/settings/exclusion_lists/ExclusionListCreation';
-import { graphql } from 'react-relay';
+import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import {
   ExclusionListsLinesPaginationQuery,
@@ -11,6 +11,8 @@ import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lis
 import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
 import Badge from '@mui/material/Badge';
 import Grid from '@mui/material/Grid';
+import ExclusionListsStatus, { exclusionListsStatusQuery } from '@components/settings/exclusion_lists/ExclusionListsStatus';
+import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemEntityType from '../../../../components/ItemEntityType';
@@ -22,6 +24,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
+import { environment } from '../../../../relay/environment';
 
 export const exclusionListsQuery = graphql`
   query ExclusionListsLinesPaginationQuery(
@@ -88,6 +91,12 @@ const exclusionListsLineFragment = graphql`
 `;
 
 const LOCAL_STORAGE_KEY = 'view-exclusion-lists';
+
+const queryRefStatus = loadQuery<ExclusionListsStatusQuery>(
+  environment,
+  exclusionListsStatusQuery,
+  {},
+);
 
 const ExclusionLists = () => {
   const { t_i18n } = useFormatter();
@@ -205,10 +214,18 @@ const ExclusionLists = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ExclusionListsLinesPaginationQuery>;
 
+  const statusData = usePreloadedQuery(
+    exclusionListsStatusQuery,
+    queryRefStatus,
+  );
+
   return (
     <div style={{ margin: 0, padding: '0 200px 0 0' }}>
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]} />
+      {queryRefStatus && (
+        <ExclusionListsStatus data={statusData} />
+      )}
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
