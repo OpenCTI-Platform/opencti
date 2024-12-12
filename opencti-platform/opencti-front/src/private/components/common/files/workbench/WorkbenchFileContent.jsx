@@ -65,6 +65,7 @@ import Transition from '../../../../../components/Transition';
 import { markingDefinitionsLinesSearchQuery } from '../../../settings/MarkingDefinitionsQuery';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -328,6 +329,8 @@ const WorkbenchFileContentComponent = ({
     vocabularyAttributes,
   } = useAttributes();
   const { fieldToCategory, getFieldDefinition } = useVocabularyCategory();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const classes = useStyles();
@@ -363,6 +366,7 @@ const WorkbenchFileContentComponent = ({
   const [relationshipId, setRelationshipId] = useState();
 
   const [displayValidate, setDisplayValidate] = useState(false);
+  const [displayConvertToDraft, setDisplayConvertToDraft] = useState(false);
 
   const [sortBy, setSortBy] = useState('default_value');
   const [orderAsc, setOrderAsc] = useState(true);
@@ -511,6 +515,9 @@ const WorkbenchFileContentComponent = ({
   // region control
   const handleOpenValidate = () => setDisplayValidate(true);
   const handleCloseValidate = () => setDisplayValidate(false);
+
+  const handleOpenConvertToDraft = () => setDisplayConvertToDraft(true);
+  const handleCloseConvertToDraft = () => setDisplayConvertToDraft(false);
 
   const handleChangeTab = (_, index) => {
     setCurrentTab(index);
@@ -886,6 +893,71 @@ const WorkbenchFileContentComponent = ({
                 navigate(`${entityLink}/files`);
               } else {
                 navigate('/dashboard/data/import');
+              }
+            },
+            onError: (error) => {
+              handleError(error);
+              setSubmitting(false);
+              resetForm();
+              setDisplayValidate(false);
+            },
+          });
+        }, 2000);
+      },
+    });
+  };
+
+  const onSubmitConvertToDraft = (values, { setSubmitting, resetForm }) => {
+    let currentEntityId = null;
+    if (file.metaData.entity_id && file.metaData.entity) {
+      currentEntityId = file.metaData.entity_id;
+    }
+    const data = {
+      id: `bundle--${uuid()}`,
+      type: 'bundle',
+      objects: [
+        ...stixDomainObjects,
+        ...stixCyberObservables,
+        ...stixCoreRelationships,
+        ...stixSightings,
+        ...containers,
+      ],
+    };
+    const json = JSON.stringify(data);
+    const blob = new Blob([json], { type: 'text/json' });
+    const fileToUpload = new File([blob], file.name, {
+      type: 'application/json',
+    });
+    commitMutation({
+      mutation: workbenchFileContentMutation,
+      variables: {
+        file: fileToUpload,
+        entityId: currentEntityId,
+        refreshEntity: values.refreshEntity,
+      },
+      onCompleted: () => {
+        setTimeout(() => {
+          commitMutation({
+            mutation: fileManagerAskJobImportMutation,
+            variables: {
+              fileName: file.id,
+              connectorId: values.connector_id,
+              bypassValidation: false,
+              validationMode: 'draft',
+            },
+            onCompleted: () => {
+              setSubmitting(false);
+              resetForm();
+              setDisplayValidate(false);
+              MESSAGING$.notifySuccess('Convertion to draft successfully asked');
+              if (file.metaData.entity) {
+                const entityLink = `${resolveLink(
+                  file.metaData.entity.entity_type,
+                )}/${file.metaData.entity.id}`;
+                navigate(`${entityLink}/files`);
+              } else {
+                console.log('Navigating here');
+                navigate('/dashboard/drafts');
               }
             },
             onError: (error) => {
@@ -4114,7 +4186,16 @@ const WorkbenchFileContentComponent = ({
         <WorkbenchFilePopover file={file} />
       </div>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <div style={{ float: 'right' }}>
+        <div style={{ float: 'right', display: 'flex', gap: 10 }}>
+          {isDraftFeatureEnabled && (
+          <Button
+            variant="contained"
+            onClick={handleOpenConvertToDraft}
+            size="small"
+          >
+            {t_i18n('Convert to draft')}
+          </Button>
+          )}
           <Button
             variant="contained"
             onClick={handleOpenValidate}
@@ -4183,13 +4264,88 @@ const WorkbenchFileContentComponent = ({
               <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
               <DialogContent>
                 {!!file.metaData.entity_id && !!file.metaData.entity && (
+                <>
+                  <Alert severity="info" variant="outlined">
+                    <Typography>
+                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                    </Typography>
+                    <Typography>
+                      {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                    </Typography>
+                  </Alert>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="refreshEntity"
+                    label={t_i18n('Refresh entity')}
+                  />
+                </>
+                )}
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="connector_id"
+                  label={t_i18n('Connector')}
+                  fullWidth
+                  containerstyle={{ width: '100%' }}
+                  disabled={connectors.filter((n) => n.active).length === 0}
+                >
+                  {connectors.map((connector) => (
+                    <MenuItem
+                      key={connector.id}
+                      value={connector.id}
+                      disabled={!connector.active}
+                    >
+                      {connector.name}
+                    </MenuItem>
+                  ))}
+                </Field>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleReset} disabled={isSubmitting}>
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting || connectors.filter((n) => n.active).length === 0}
+                >
+                  {t_i18n('Create')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Form>
+        )}
+      </Formik>
+      <Formik
+        enableReinitialize={true}
+        initialValues={{
+          refreshEntity: !!file.metaData.entity_id && !!file.metaData.entity,
+          connector_id: connectors.length > 0 ? connectors[0].id : '',
+        }}
+        validationSchema={importValidation(t_i18n)}
+        onSubmit={onSubmitConvertToDraft}
+        onReset={handleCloseConvertToDraft}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form style={{ margin: '0 0 20px 0' }}>
+            <Dialog
+              open={displayConvertToDraft}
+              PaperProps={{ elevation: 1 }}
+              keepMounted
+              onClose={handleCloseConvertToDraft}
+              fullWidth
+            >
+              <DialogTitle>{t_i18n('Convert this workbench to a draft')}</DialogTitle>
+              <DialogContent>
+                {!!file.metaData.entity_id && !!file.metaData.entity && (
                   <>
                     <Alert severity="info" variant="outlined">
                       <Typography>
-                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the convertion.')}
                       </Typography>
                       <Typography>
-                        {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                        {t_i18n('Because by default the draft won\'t include the updates made on the entity after the creation of the workbench.')}
                       </Typography>
                     </Alert>
                     <Field
