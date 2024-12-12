@@ -1,0 +1,49 @@
+type RequestAccess implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  # Request Access
+  name: String!
+  justification: String
+  created_at: DateTime!
+  creators: [Creator!]
+  target_entities: [String!]!
+  membership_request: [String!]!
+  request_type: [String!]!
+}
+
+# Relay connections
+type RequestAccessConnection {
+  pageInfo: PageInfo!
+  edges: [RequestAccessEdge!]!
+}
+
+type RequestAccessEdge {
+  cursor: String!
+  node: RequestAccess!
+}
+
+# Queries
+type Query {
+  requestAccess(id: String!): RequestAccess @auth(for: [KNOWLEDGE])
+  requestAccesses(
+    first: Int
+    after: ID
+    filters: FilterGroup
+    search: String
+  ): RequestAccessConnection @auth(for: [KNOWLEDGE])
+}
+
+input RequestAccessAddInput {
+  name: String!
+  justification: String
+  target_entities: [String!]!
+  membership_request: [String!]!
+  request_type: [String!]!
+}
+
+type Mutation {
+  requestAccessAdd(input: RequestAccessAddInput!): RequestAccess @auth(for: [KNOWLEDGE])
+  requestAccessValidate(id: ID!): RequestAccess @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+}
