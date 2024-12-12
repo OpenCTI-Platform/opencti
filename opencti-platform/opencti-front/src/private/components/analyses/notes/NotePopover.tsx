@@ -12,6 +12,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
+import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
@@ -56,6 +57,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
+  const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const { isFeatureEnable } = useHelper();
@@ -94,13 +96,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     setDisplayEdit(true);
     handleClose();
   };
-  const handleOpenEnroll = () => {
-    setDisplayEnroll(true);
-    handleClose();
-  };
-  const handleCloseEnroll = () => {
-    setDisplayEnroll(false);
-  };
   const handleCloseEdit = () => setDisplayEdit(false);
   const handleOpenRemove = () => {
     if (handleOpenRemoveExternal) {
@@ -108,6 +103,21 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     }
     handleClose();
   };
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+    handleClose();
+  };
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
+  };
+  const handleOpenEnroll = () => {
+    setDisplayEnroll(true);
+    handleClose();
+  };
+  const handleCloseEnroll = () => {
+    setDisplayEnroll(false);
+  };
+
   return isFABReplaced
     ? (<></>)
     : (
@@ -139,6 +149,11 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             </MenuItem>
           )}
           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnrichment}>
+              {t_i18n('Enrich')}
+            </MenuItem>
+          </Security>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
             <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
           </Security>
           <CollaborativeSecurity
@@ -148,6 +163,8 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </CollaborativeSecurity>
         </Menu>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
         <Dialog
           open={displayDelete}
           PaperProps={{ elevation: 1 }}
@@ -168,7 +185,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             </Button>
           </DialogActions>
         </Dialog>
-        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
         <QueryRenderer
           query={noteEditionQuery}
           variables={{ id }}
