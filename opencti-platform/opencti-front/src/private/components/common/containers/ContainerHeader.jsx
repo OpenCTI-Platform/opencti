@@ -789,6 +789,7 @@ const ContainerHeader = (props) => {
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
+  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
   return (
@@ -913,7 +914,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             {!knowledge && disableSharing !== true && (
-              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={container.authorized_members?.length > 0} />
+              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={disableOrgaSharingButton} />
             )}
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

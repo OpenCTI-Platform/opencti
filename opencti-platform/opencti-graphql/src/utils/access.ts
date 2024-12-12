@@ -574,6 +574,10 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
+  // if user is bypass, user has admin access (needed for data management usage)
+  if (isBypassUser(user)) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
   if (!foundAccessMembers.length) { // user has no access
     return null;
   }
