@@ -494,7 +494,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               <Alert
                 severity="warning"
                 variant="outlined"
-                style={{ marginTop: 2 }}
+                style={{ marginTop: 5 }}
               >
                 {t_i18n('Technical (payloads) require attack patterns in this entity.')}
               </Alert>
