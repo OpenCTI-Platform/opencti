@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -27,10 +26,8 @@ const useStyles = makeStyles((theme) => ({
 const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const stixCoreObjects = R.map(
-    (n) => n?.node,
-    externalReference.references?.edges ?? [],
-  );
+  const stixCoreObjects = (externalReference.references?.edges ?? [])
+    .map((n) => n?.node);
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>

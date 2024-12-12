@@ -188,6 +188,7 @@ ExternalReferenceFileImportViewerBaseProps
               }
             }}
             size={undefined}
+            placeholderIfNoRights={<div style={{ height: 47 }}/>}
           />
         </div>
         <div className="clearfix" />

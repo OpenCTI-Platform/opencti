@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactElement, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
@@ -50,6 +50,7 @@ interface FileUploaderProps {
   accept?: string;
   size: 'small' | 'large' | 'medium' | undefined;
   nameInCallback?: boolean;
+  placeholderIfNoRights?: ReactElement;
 }
 
 const FileUploader: FunctionComponent<FileUploaderProps> = ({
@@ -58,6 +59,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   accept,
   size,
   nameInCallback,
+  placeholderIfNoRights = <span />,
 }) => {
   const { t_i18n } = useFormatter();
   const uploadRef = useRef<HTMLInputElement | null>(null);
@@ -116,7 +118,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const hasSelectedFile = !!selectedFile;
 
   return (
-    <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+    <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={placeholderIfNoRights}>
       <React.Fragment>
         {accept ? (
           <input

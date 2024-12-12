@@ -14,8 +14,8 @@ import { TEN_SECONDS } from '../../../../../utils/Time';
 import inject18n from '../../../../../components/i18n';
 import WorkbenchFileLine from './WorkbenchFileLine';
 import WorkbenchFileCreator from './WorkbenchFileCreator';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from "../../../../../utils/hooks/useGranted";
-import Security from "../../../../../utils/Security";
+import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
+import Security from '../../../../../utils/Security';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -62,7 +62,7 @@ const WorkbenchFileViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 22 }}/>}>
           <IconButton
             color="primary"
             aria-label="Add"
