@@ -10,12 +10,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
+import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { groupingEditionQuery } from './GroupingEdition';
 import GroupingEditionContainer from './GroupingEditionContainer';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 import useHelper from '../../../../utils/hooks/useHelper';
 
@@ -31,6 +32,7 @@ const GroupingPopover = ({ id }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
+  const [displayEnroll, setDisplayEnroll] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [deleting, setDeleting] = useState(false);
@@ -58,6 +60,13 @@ const GroupingPopover = ({ id }) => {
     handleClose();
   };
   const handleCloseEdit = () => setDisplayEdit(false);
+  const handleOpenEnroll = () => {
+    setDisplayEnroll(true);
+    handleClose();
+  };
+  const handleCloseEnroll = () => {
+    setDisplayEnroll(false);
+  };
   return isFABReplaced
     ? (<></>)
     : (
@@ -71,6 +80,9 @@ const GroupingPopover = ({ id }) => {
         </ToggleButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
@@ -95,6 +107,7 @@ const GroupingPopover = ({ id }) => {
             </Button>
           </DialogActions>
         </Dialog>
+        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
         <QueryRenderer
           query={groupingEditionQuery}
           variables={{ id }}
