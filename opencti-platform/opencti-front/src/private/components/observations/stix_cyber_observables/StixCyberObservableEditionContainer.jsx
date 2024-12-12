@@ -55,12 +55,12 @@ const StixCyberObservableEditionContainer = (props) => {
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-          <StixCyberObservableEditionOverview
-            stixCyberObservable={stixCyberObservable}
-            enableReferences={useIsEnforceReference('Stix-Cyber-Observable')}
-            context={editContext}
-            handleClose={handleClose}
-          />
+        <StixCyberObservableEditionOverview
+          stixCyberObservable={stixCyberObservable}
+          enableReferences={useIsEnforceReference('Stix-Cyber-Observable')}
+          context={editContext}
+          handleClose={handleClose}
+        />
       </div>
     </div>
   );
