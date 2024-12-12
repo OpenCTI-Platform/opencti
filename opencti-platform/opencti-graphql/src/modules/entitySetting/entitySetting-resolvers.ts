@@ -4,6 +4,7 @@ import {
   findById,
   findByType,
   getOverviewLayoutCustomization,
+  getRequestAccessStatus,
   getTemplatesForSetting,
   queryDefaultValuesAttributesForSetting,
   queryEntitySettingSchemaAttributes,
@@ -30,6 +31,7 @@ const entitySettingResolvers: Resolvers = {
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
     overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),
     fintelTemplates: (entitySetting, args, context) => getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
+    requestAccessStatus: (entitySetting, _, context) => getRequestAccessStatus(context, context.user, entitySetting),
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {

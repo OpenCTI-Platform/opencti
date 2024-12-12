@@ -23,7 +23,7 @@ export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remo
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
 export const RAW_EVENTS_SIZE = 1164;
-export const SYNC_LIVE_EVENTS_SIZE = 612;
+export const SYNC_LIVE_EVENTS_SIZE = 613;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -213,7 +213,7 @@ export const GREEN_GROUP: GroupTestData = {
 };
 TESTING_GROUPS.push(GREEN_GROUP);
 
-export const AMBER_GROUP: GroupTestData = {
+export const AMBER_GROUP_EDITOR: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
   name: 'AMBER GROUP',
   markings: [MARKING_TLP_AMBER],
@@ -224,7 +224,7 @@ export const AMBER_GROUP: GroupTestData = {
   },
   max_shareable_markings: [MARKING_TLP_GREEN],
 };
-TESTING_GROUPS.push(AMBER_GROUP);
+TESTING_GROUPS.push(AMBER_GROUP_EDITOR);
 
 export const AMBER_STRICT_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER STRICT GROUP' }),
@@ -343,6 +343,7 @@ export const USER_PARTICIPATE: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
   password: 'participate',
+  organizations: [TEST_ORGANIZATION],
   groups: [GREEN_GROUP],
   client: createHttpClient('participate@opencti.io', 'participate')
 };
@@ -352,7 +353,7 @@ export const USER_EDITOR: UserTestData = {
   email: 'editor@opencti.io',
   password: 'editor',
   organizations: [TEST_ORGANIZATION],
-  groups: [AMBER_GROUP],
+  groups: [AMBER_GROUP_EDITOR],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
 TESTING_USERS.push(USER_EDITOR);
@@ -380,6 +381,7 @@ export const USER_DISINFORMATION_ANALYST: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
   email: 'anais@opencti.io',
   password: 'disinformation',
+  organizations: [PLATFORM_ORGANIZATION],
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
   client: createHttpClient('anais@opencti.io', 'disinformation')
 };
