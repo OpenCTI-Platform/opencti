@@ -478,7 +478,7 @@ const Settings = () => {
                           && settings.platform_enterprise_edition.license_valid_cert && <List>
                             <ListItem divider={false}>
                               <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                                {t_i18n('You OpenCTI license is now expired')}<br/>
+                                {t_i18n('You OpenCTI license is invalid')}<br/>
                                 {t_i18n('Please contact Filigran to get your new license')} - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
                               </Alert>
                             </ListItem>
