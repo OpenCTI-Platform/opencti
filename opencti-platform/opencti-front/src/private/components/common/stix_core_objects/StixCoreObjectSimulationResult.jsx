@@ -625,7 +625,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           {t_i18n('The scenario has been correctly generated in your OpenBAS platform.')}
         </Alert>
         {result.attackPatternsWithoutInjectorContracts && result.attackPatternsWithoutInjectorContracts.trim() !== '' && (
-          <Alert severity="warning" sx={{ marginTop: 1 }}>
+          <Alert severity="warning" sx={{ marginTop: 2 }}>
             {t_i18n('The following TTPs are not covered in the Openbas catalog : ')}
             {result.attackPatternsWithoutInjectorContracts}
           </Alert>
