@@ -209,7 +209,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   } else if (type === 'threat') {
     attackPatternsQuery = stixCoreObjectSimulationResultAttackPatternsForThreatsQuery;
   } else {
-    throw new Error('Type should be container or threat');
+    throw new Error('Type of the simulation should be container or threat');
   }
 
   // Fetch the attackPatterns using the selected query
