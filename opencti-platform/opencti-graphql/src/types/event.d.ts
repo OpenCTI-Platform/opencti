@@ -45,7 +45,6 @@ interface StreamDataEvent extends BaseEvent {
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject
-  relatedRestrictions?: { markings: string[] };
 }
 
 interface UpdateEvent extends StreamDataEvent {
@@ -54,6 +53,7 @@ interface UpdateEvent extends StreamDataEvent {
   context: {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
+    relatedRestrictions?: { markings: string[] };
   };
 }
 
