@@ -13,6 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 import FreeTextUploader from './FreeTextUploader';
 import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_entity.graphql';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
+import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -65,18 +67,20 @@ FileImportViewerComponentProps
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Uploaded files')}
         </Typography>
-        <div style={{ float: 'left', marginTop: -15 }}>
-          <FileUploader
-            entityId={id}
-            onUploadSuccess={() => relay.refetch({ id })}
-            size="medium"
-          />
-          <FreeTextUploader
-            entityId={id}
-            onUploadSuccess={() => relay.refetch({ id })}
-            size="medium"
-          />
-        </div>
+        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }} />}>
+          <div style={{ float: 'left', marginTop: -15 }}>
+            <FileUploader
+              entityId={id}
+              onUploadSuccess={() => relay.refetch({ id })}
+              size="medium"
+            />
+            <FreeTextUploader
+              entityId={id}
+              onUploadSuccess={() => relay.refetch({ id })}
+              size="medium"
+            />
+          </div>
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {importFiles?.edges?.length ? (

@@ -62,7 +62,7 @@ const WorkbenchFileViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 22 }}/>}>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }}/>}>
           <IconButton
             color="primary"
             aria-label="Add"

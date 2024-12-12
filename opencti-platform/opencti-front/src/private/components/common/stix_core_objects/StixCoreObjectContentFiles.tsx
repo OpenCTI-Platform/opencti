@@ -29,6 +29,8 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Template } from '../../../../utils/outcome_template/template';
 import { MESSAGING$ } from '../../../../relay/environment';
+import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 interface ContentBlocProps {
   title: ReactNode
@@ -257,12 +259,14 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       <ContentBloc
         title={t_i18n('Files')}
         actions={(<>
-          <FileUploader
-            entityId={stixCoreObjectId}
-            onUploadSuccess={onFileChange}
-            size="small"
-            nameInCallback={true}
-          />
+          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+            <FileUploader
+              entityId={stixCoreObjectId}
+              onUploadSuccess={onFileChange}
+              size="small"
+              nameInCallback={true}
+            />
+          </Security>
           <IconButton
             onClick={handleOpenCreate}
             color="primary"

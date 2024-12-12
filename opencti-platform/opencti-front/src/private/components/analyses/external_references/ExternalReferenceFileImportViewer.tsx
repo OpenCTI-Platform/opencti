@@ -34,6 +34,8 @@ import { FileLine_file$data } from '../../common/files/__generated__/FileLine_fi
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -179,18 +181,19 @@ ExternalReferenceFileImportViewerBaseProps
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Uploaded files')}
         </Typography>
-        <div style={{ float: 'left', marginTop: -17 }}>
-          <FileUploader
-            entityId={id}
-            onUploadSuccess={() => {
-              if (relay.refetch) {
-                relay.refetch({ id });
-              }
-            }}
-            size={undefined}
-            placeholderIfNoRights={<div style={{ height: 47 }}/>}
-          />
-        </div>
+        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 30 }} />}>
+          <div style={{ float: 'left', marginTop: -17 }}>
+            <FileUploader
+              entityId={id}
+              onUploadSuccess={() => {
+                if (relay.refetch) {
+                  relay.refetch({ id });
+                }
+              }}
+              size={undefined}
+            />
+          </div>
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           {importFiles?.edges?.length ? (

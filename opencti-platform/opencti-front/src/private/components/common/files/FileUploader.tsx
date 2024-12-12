@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement, useRef, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
@@ -11,8 +11,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { FileUploaderEntityMutation$data } from './__generated__/FileUploaderEntityMutation.graphql';
 import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlobalMutation.graphql';
 import FileImportMarkingSelectionPopup from './FileImportMarkingSelectionPopup';
-import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
 
 const fileUploaderGlobalMutation = graphql`
   mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
@@ -50,7 +48,6 @@ interface FileUploaderProps {
   accept?: string;
   size: 'small' | 'large' | 'medium' | undefined;
   nameInCallback?: boolean;
-  placeholderIfNoRights?: ReactElement;
 }
 
 const FileUploader: FunctionComponent<FileUploaderProps> = ({
@@ -59,7 +56,6 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   accept,
   size,
   nameInCallback,
-  placeholderIfNoRights = <span />,
 }) => {
   const { t_i18n } = useFormatter();
   const uploadRef = useRef<HTMLInputElement | null>(null);
@@ -118,65 +114,64 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const hasSelectedFile = !!selectedFile;
 
   return (
-    <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={placeholderIfNoRights}>
-      <React.Fragment>
-        {accept ? (
-          <input
-            ref={uploadRef}
-            type="file"
-            style={{ display: 'none' }}
-            onChange={({ target: { validity, files } }) => {
-              const file = files?.item(0);
-              if (file && validity.valid) setSelectedFile(file);
-            }}
-            accept={accept}
-          />
-        ) : (
-          <input
-            ref={uploadRef}
-            type="file"
-            style={{ display: 'none' }}
-            onChange={({ target: { validity, files } }) => {
-              const file = files?.item(0);
-              if (file && validity.valid) setSelectedFile(file);
-            }}
-          />
-        )}
-        {hasSelectedFile && (
+
+    <React.Fragment>
+      {accept ? (
+        <input
+          ref={uploadRef}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={({ target: { validity, files } }) => {
+            const file = files?.item(0);
+            if (file && validity.valid) setSelectedFile(file);
+          }}
+          accept={accept}
+        />
+      ) : (
+        <input
+          ref={uploadRef}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={({ target: { validity, files } }) => {
+            const file = files?.item(0);
+            if (file && validity.valid) setSelectedFile(file);
+          }}
+        />
+      )}
+      {hasSelectedFile && (
         <FileImportMarkingSelectionPopup
           isOpen={hasSelectedFile}
           handleUpload={handleUpload}
           closePopup={closeFileImportMarkingSelectionPopup}
           entityId={entityId}
         />
-        )}
-        {upload ? (
-          <Tooltip
-            title={`Uploading ${upload}`}
-            aria-label={`Uploading ${upload}`}
-          >
-            <IconButton disabled={true} size={size || 'large'}>
-              <CircularProgress
-                size={24}
-                thickness={2}
-                color="primary"
-              />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Tooltip title={t_i18n('Select your file')} aria-label="Select your file">
-            <IconButton
-              onClick={handleOpenUpload}
-              aria-haspopup="true"
+      )}
+      {upload ? (
+        <Tooltip
+          title={`Uploading ${upload}`}
+          aria-label={`Uploading ${upload}`}
+        >
+          <IconButton disabled={true} size={size || 'large'}>
+            <CircularProgress
+              size={24}
+              thickness={2}
               color="primary"
-              size={size || 'large'}
-            >
-              <CloudUploadOutlined />
-            </IconButton>
-          </Tooltip>
-        )}
-      </React.Fragment>
-    </Security>
+            />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <Tooltip title={t_i18n('Select your file')} aria-label="Select your file">
+          <IconButton
+            onClick={handleOpenUpload}
+            aria-haspopup="true"
+            color="primary"
+            size={size || 'large'}
+          >
+            <CloudUploadOutlined />
+          </IconButton>
+        </Tooltip>
+      )}
+    </React.Fragment>
   );
 };
 
