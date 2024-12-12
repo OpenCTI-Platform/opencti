@@ -19,6 +19,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ObservedDataDeletion from './ObservedDataDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -84,7 +86,8 @@ const observedDataMutationRelationDelete = graphql`
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     first_observed: Yup.date()
       .required(t_i18n('This field is required'))
@@ -301,16 +304,24 @@ const ObservedDataEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={observedData.id}
-              />
-            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+              {isFABReplaced
+                ? <ObservedDataDeletion
+                    id={observedData.id}
+                  />
+                : <div />
+              }
+              {enableReferences && (
+                <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting || !isValid || !dirty}
+                  setFieldValue={setFieldValue}
+                  open={false}
+                  values={values.references}
+                  id={observedData.id}
+                />
+              )}
+            </div>
           </Form>
         </div>
       )}
