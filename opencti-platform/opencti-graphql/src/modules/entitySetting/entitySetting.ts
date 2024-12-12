@@ -109,6 +109,7 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
       ] },
     { name: 'availableSettings', label: 'Available settings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'workflow_configuration', label: 'Workflow activated', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'request_access_workflow', label: 'Request access workflow', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'ORGA_SHARING_REQUEST_FF' },
   ],
   relations: [],
   validators: {
