@@ -7,9 +7,9 @@ import React, { FunctionComponent, useEffect } from 'react';
 import { EventRepeatOutlined, SyncDisabledOutlined, SyncOutlined, UpdateOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import { Theme } from 'src/components/Theme';
+import { interval } from 'rxjs';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { interval } from 'rxjs';
 import { TEN_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(TEN_SECONDS);
@@ -139,7 +139,6 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
     </>
   );
 };
-
 
 const ExclusionListsStatus = () => {
   const [queryRef, loadQuery] = useQueryLoader<ExclusionListsStatusQuery>(
