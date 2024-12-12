@@ -33,7 +33,6 @@ const useStyles = makeStyles((theme) => ({
 const StixCyberObservableEditionContainer = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-
   const { handleClose, stixCyberObservable } = props;
   const { editContext } = stixCyberObservable;
 
@@ -66,7 +65,6 @@ const StixCyberObservableEditionContainer = (props) => {
     </div>
   );
 };
-
 const StixCyberObservableEditionFragment = createFragmentContainer(
   StixCyberObservableEditionContainer,
   {
@@ -82,5 +80,4 @@ const StixCyberObservableEditionFragment = createFragmentContainer(
     `,
   },
 );
-
 export default StixCyberObservableEditionFragment;

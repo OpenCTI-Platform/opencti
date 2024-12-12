@@ -36,7 +36,6 @@ const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionCon
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const { infrastructure } = usePreloadedQuery(infrastructureEditionContainerQuery, queryRef);
 
   if (infrastructure) {
