@@ -258,24 +258,25 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       <ContentBloc
         title={t_i18n('Files')}
-        actions={(<>
+        actions={(
           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-            <FileUploader
-              entityId={stixCoreObjectId}
-              onUploadSuccess={onFileChange}
-              size="small"
-              nameInCallback={true}
-            />
-          </Security>
-          <IconButton
-            onClick={handleOpenCreate}
-            color="primary"
-            size="small"
-            aria-label={t_i18n('Add a file')}
-          >
-            <AddOutlined />
-          </IconButton>
-        </>)}
+            <>
+              <FileUploader
+                entityId={stixCoreObjectId}
+                onUploadSuccess={onFileChange}
+                size="small"
+                nameInCallback={true}
+              />
+              <IconButton
+                onClick={handleOpenCreate}
+                color="primary"
+                size="small"
+                aria-label={t_i18n('Add a file')}
+              >
+                <AddOutlined />
+              </IconButton>
+            </>
+          </Security>)}
       >
         <StixCoreObjectContentFilesList
           files={filesList}
