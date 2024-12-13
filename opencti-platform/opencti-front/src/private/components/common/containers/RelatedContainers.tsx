@@ -90,7 +90,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 
   return (
     <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
-      <Typography variant="h3" gutterBottom={true} style={{ }}>
+      <Typography variant="h3" gutterBottom={true}>
         {t_i18n('Correlated containers')}
         <Tooltip title={t_i18n('Go to correlation graph view')} placement="top">
           <IconButton
