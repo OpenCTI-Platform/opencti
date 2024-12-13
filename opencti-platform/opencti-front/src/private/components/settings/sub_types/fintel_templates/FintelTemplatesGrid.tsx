@@ -19,7 +19,6 @@ import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTab
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { resolveLink } from '../../../../../utils/Entity';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import { deleteNodeFromEdge } from '../../../../../utils/store';
 
 const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
@@ -119,10 +118,11 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
             {isEnterpriseEdition && (
               <DataTableWithoutFragment
                 dataColumns={{
-                  name: { percentWidth: 41 },
-                  description: { percentWidth: 41 },
+                  name: { percentWidth: 41, isSortable: false },
+                  description: { percentWidth: 41, isSortable: false },
                   start_date: {
                     percentWidth: 18,
+                    isSortable: false,
                     label: t_i18n('Published'),
                     render: ({ start_date }) => (
                       <ItemBoolean
@@ -142,14 +142,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 variant={DataTableVariant.inline}
                 actions={(template: TemplateType) => (
                   <FintelTemplatePopover
-                    deleteUpdater={(store) => {
-                      deleteNodeFromEdge(
-                        store,
-                        'fintelTemplates',
-                        entitySettingId,
-                        template.id,
-                      );
-                    }}
+                    entitySettingId={entitySettingId}
                     templateId={template.id}
                     onUpdate={() => onUpdate(template)}
                   />
