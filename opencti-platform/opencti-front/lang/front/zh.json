@@ -1467,7 +1467,7 @@
   "INTERNAL_IMPORT_FILE": "导入文件",
   "INTERNAL_INGESTION": "数据摄取",
   "Interval": "时间间隔",
-  "Interval between injections (in minute)": "注射间隔时间（分钟）",
+  "Interval between injections (in minutes)": "注射间隔时间（分钟）",
   "Intrusion set": "入侵集合",
   "Intrusion Sets": "入侵集合",
   "Intrusion sets": "入侵集合",
