@@ -14900,7 +14900,7 @@ __metadata:
     react-virtualized: "npm:9.22.5"
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
-    recharts: "npm:2.12.7"
+    recharts: "npm:2.15.0"
     relay-compiler: "npm:17.0.0"
     relay-runtime: "npm:17.0.0"
     relay-test-utils: "npm:17.0.0"
@@ -15757,17 +15757,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.10.2, react-is@npm:^16.13.1, react-is@npm:^16.7.0":
-  version: 16.13.1
-  resolution: "react-is@npm:16.13.1"
-  checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
-  languageName: node
-  linkType: hard
-
 "react-is@npm:^16.12.0 || ^17.0.0 || ^18.0.0, react-is@npm:^18.0.0, react-is@npm:^18.2.0, react-is@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
   checksum: 10/d5f60c87d285af24b1e1e7eaeb123ec256c3c8bdea7061ab3932e3e14685708221bf234ec50b21e10dd07f008f1b966a2730a0ce4ff67905b3872ff2042aec22
+  languageName: node
+  linkType: hard
+
+"react-is@npm:^16.13.1, react-is@npm:^16.7.0":
+  version: 16.13.1
+  resolution: "react-is@npm:16.13.1"
+  checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
   languageName: node
   linkType: hard
 
@@ -16281,22 +16281,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.12.7":
-  version: 2.12.7
-  resolution: "recharts@npm:2.12.7"
+"recharts@npm:2.15.0":
+  version: 2.15.0
+  resolution: "recharts@npm:2.15.0"
   dependencies:
     clsx: "npm:^2.0.0"
     eventemitter3: "npm:^4.0.1"
     lodash: "npm:^4.17.21"
-    react-is: "npm:^16.10.2"
+    react-is: "npm:^18.3.1"
     react-smooth: "npm:^4.0.0"
     recharts-scale: "npm:^0.4.4"
     tiny-invariant: "npm:^1.3.1"
     victory-vendor: "npm:^36.6.8"
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/dd2806978d025abf37ba6eda36fad9361968257c5224286f2881a9f79b18b6045bab520c9c44fd1dc5bb7e35e7ab51d5cde1669e44cb32610e7cb9c49fdd490f
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/a34d2b1d9b8f8c56691e2b0fbf1d1282753d8bcd4ea285e3f575d12e645729cc907617103b964129c82984fdaf6d26ba855729947b822ca1c423e9bc97af7c46
   languageName: node
   linkType: hard
 
