@@ -28,20 +28,7 @@ const createApolloServer = () => {
   };
   const constraintPlugin = createApollo4QueryValidationPlugin({ formats });
   schema = constraintDirectiveDocumentation()(schema);
-  const sandboxOptions = DEV_MODE
-    ? { target: 'test', initialState: { includeCookies: true } }
-    : {
-      target: 'test',
-      initialEndpoint: `${basePath}/static`,
-      endpointIsEditable: false,
-      initialState: {
-        includeCookies: true, // for { credentials: 'include' } for Sandbox's requests by default
-        headers: { authorization: 'OpenCTI Playground' },
-        faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`,
-      },
-    };
-  const sandBoxPlugin = new ApolloSandbox(sandboxOptions);
-  const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin, sandBoxPlugin];
+  const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
   // Protect batch graphql through alias usage
   const batchPermissions = {
     Query: {
@@ -83,7 +70,7 @@ const createApolloServer = () => {
     apolloValidationRules.push(...protection.validationRules);
   }
   // In production mode, we use static from the server
-  apolloPlugins.push(PLAYGROUND_ENABLED ? sandBoxPlugin : ApolloServerPluginLandingPageDisabled());
+  apolloPlugins.push(ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
   const secureIntrospectionPlugin = {
     requestDidStart: (requestContext) => {
