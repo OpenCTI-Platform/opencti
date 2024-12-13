@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import { v4 as uuidv4 } from 'uuid';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { activateEE, deactivateEE } from '../../utils/testEE';
 import { adminQueryWithError } from '../../utils/testQueryHelper';
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
+import { WidgetPerspective } from '../../../src/generated/graphql';
 
 const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
   query entitySettings(
@@ -60,6 +62,24 @@ const CREATE_QUERY = gql`
       id
       name
       description
+    }
+  }
+`;
+
+const EDIT_QUERY = gql`
+  mutation FintelTemplateEdit($id: ID!, $input: [EditInput!]!) {
+    fintelTemplateFieldPatch(id: $id, input: $input) {
+      id
+      name
+      description
+      fintel_template_widgets {
+        id
+        variable_name
+        widget {
+          id
+          type
+        }
+      }
     }
   }
 `;
@@ -120,6 +140,48 @@ describe('Fintel template resolver standard behavior', () => {
     const fintelTemplatesEdges2 = queryResult2.data?.entitySettings.edges[0].node.fintelTemplates.edges;
     expect(fintelTemplatesEdges2.length).toEqual(0);
   });
+  it('should fintel template edited', async () => {
+    const fintelTemplateWidget = {
+      id: uuidv4(),
+      variable_name: 'containerObservables',
+      widget: {
+        type: 'list',
+        id: uuidv4(),
+        perspective: WidgetPerspective.Entities,
+        dataSelection: [
+          {
+            perspective: WidgetPerspective.Entities,
+            filters: JSON.stringify({
+              mode: 'and',
+              filters: [
+                { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
+                { key: ['objects'], values: ['SELF_ID'] },
+              ],
+              filterGroups: [],
+            }),
+            columns: [
+              { label: 'Observable type', attribute: 'entity_type' },
+              { label: 'Value', attribute: 'representative.main' },
+            ],
+          },
+        ],
+        parameters: {
+          title: 'Observables contained in the container',
+        }
+      },
+    };
+    const queryResult = await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidget] }],
+      }
+    });
+    const fintelTemplateWidgets = queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets;
+    expect(fintelTemplateWidgets.length).toEqual(1);
+    expect(fintelTemplateWidgets[0].variable_name).toEqual('containerObservables');
+    expect(fintelTemplateWidgets[0].widget.type).toEqual('list');
+  });
   it('should fintel template deleted', async () => {
     const DELETE_QUERY = gql`
       mutation fintelTemplateDelete($id: ID!) {
@@ -134,12 +196,7 @@ describe('Fintel template resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult).not.toBeNull();
-    const queryResult2 = await queryAsAdmin({
-      query: FINTEL_TEMPLATE_SETTINGS_LIST_QUERY,
-      variables: { filters: addFilter(undefined, 'target_type', ['Report']) },
-    });
-    const fintelTemplatesEdges2 = queryResult2.data?.entitySettings.edges[0].node.fintelTemplates.edges;
-    expect(fintelTemplatesEdges2.length).toEqual(0);
+    expect(queryResult.data?.fintelTemplate).toBeNull();
     // Deactivate EE
     await deactivateEE();
   });
