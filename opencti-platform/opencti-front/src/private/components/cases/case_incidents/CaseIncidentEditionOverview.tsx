@@ -256,7 +256,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     severity: caseData.severity,
     response_types: caseData.response_types ?? [],
     confidence: caseData.confidence,
-    createdBy: convertCreatedBy(caseData),
+    createdBy: convertCreatedBy(caseData) as Option,
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
     objectParticipant: convertParticipants(caseData),

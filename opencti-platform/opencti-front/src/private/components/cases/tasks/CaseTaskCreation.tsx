@@ -51,7 +51,7 @@ interface FormikCaseTaskAddInput {
   description?: string;
   objectAssignee?: Option[];
   objectParticipant: Option[];
-  createdBy?: Option;
+  createdBy: Option | undefined;
   objectLabel?: Option[];
   objectMarking: Option[];
 }
@@ -61,7 +61,7 @@ interface CaseTaskCreationProps {
   onClose: () => void;
   paginationOptions: CaseTasksLinesQuery$variables;
   defaultMarkings?: { value: string; label: string }[];
-  defaultCreatedBy?: { value: string; label: string };
+  defaultCreatedBy?: Option;
 }
 
 const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
@@ -86,6 +86,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     objectAssignee: Yup.array(),
     objectParticipant: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    createdBy: Yup.object().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
