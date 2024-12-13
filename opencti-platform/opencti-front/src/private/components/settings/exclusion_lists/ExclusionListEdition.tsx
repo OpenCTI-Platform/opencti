@@ -85,7 +85,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
         if (key === 'exclusion_list_entity_types') {
           return {
             key,
-            value: value.map((item) => item.value),
+            value: value.map((item: Option) => item.value),
           };
         }
         return {
@@ -111,7 +111,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     });
   };
 
-  const getExclusionListEntityTypes = (list: string[]): Option[] => list.map((item) => ({ value: item, label: item }));
+  const getExclusionListEntityTypes = (list: readonly string[]): Option[] => list.map((item) => ({ value: item, label: item }));
 
   const entityTypesOptions: Option[] = entityTypes.map((type) => ({
     value: type.id,
