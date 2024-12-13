@@ -64,10 +64,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/google-analytics@npm:1.0.7":
-  version: 1.0.7
-  resolution: "@analytics/google-analytics@npm:1.0.7"
-  checksum: 10/22135095fa3ba57de84cd482803d6cc14c4bb7b34c24976eba8692cfc842ec489d942fc3bf6ae75675acd4d6a36932fc9a73402f144142cb8c4f7162a8022b90
+"@analytics/google-analytics@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@analytics/google-analytics@npm:1.1.0"
+  checksum: 10/71e93d5577fbb319ac58de782077df46938376cde33f807b96a144f3b8bfb2f1cf68673846e6839abd3933d806cfe4851a32ac329aa36eb7f964881866bc3b08
   languageName: node
   linkType: hard
 
@@ -14776,7 +14776,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-front@workspace:."
   dependencies:
-    "@analytics/google-analytics": "npm:1.0.7"
+    "@analytics/google-analytics": "npm:1.1.0"
     "@ckeditor/ckeditor5-react": "npm:9.4.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.0.0"
