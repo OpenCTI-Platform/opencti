@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, FintelTemplateAddInput } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
+import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
@@ -16,7 +16,7 @@ import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__inc
 // (don't forget to check the capa if it's not done via a @auth in graphql of your function)
 export const canCustomizeTemplate = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
+  const isFileFromTemplateEnabled = true; // isFeatureEnabled('FILE_FROM_TEMPLATE');
   if (!isEE || !isFileFromTemplateEnabled) {
     throw ForbiddenAccess();
   }
@@ -28,8 +28,8 @@ export const canViewTemplates = async (context: AuthContext) => {
   return !(!isEE || !isFileFromTemplateEnabled);
 };
 
-export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
-  await canCustomizeTemplate(context);
+export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelTemplate> => {
+  await canViewTemplates(context);
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
 };
 
@@ -37,9 +37,8 @@ export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
   input: FintelTemplateAddInput,
-  dontCheckCustomize = false,
 ) => {
-  if (!dontCheckCustomize) await canCustomizeTemplate(context);
+  await canCustomizeTemplate(context);
   const finalInput: FintelTemplateAddInput = {
     ...input,
     content: input.content ?? '',
