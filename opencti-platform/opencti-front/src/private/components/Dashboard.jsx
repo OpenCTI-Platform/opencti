@@ -478,7 +478,6 @@ const DefaultDashboard = ({ timeField }) => {
                 filterGroups: [],
               },
               date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
-              sort_by: timeField === 'functional' ? 'start_time' : 'created_at',
               sort_mode: 'desc',
             }]}
           />
