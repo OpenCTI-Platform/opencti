@@ -3,8 +3,8 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
+import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { FintelTemplateFormDrawerAddMutation } from './__generated__/FintelTemplateFormDrawerAddMutation.graphql';
-import { FintelTemplateFormDrawerEditMutation } from './__generated__/FintelTemplateFormDrawerEditMutation.graphql';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -15,20 +15,6 @@ import { insertNodeFromEdge } from '../../../../../utils/store';
 const fintelTemplateAddMutation = graphql`
   mutation FintelTemplateFormDrawerAddMutation($input: FintelTemplateAddInput!) {
     fintelTemplateAdd(input: $input) {
-      id
-      name
-      description
-      instance_filters
-      settings_types
-      start_date
-      entity_type
-    }
-  }
-`;
-
-const fintelTemplateEditMutation = graphql`
-  mutation FintelTemplateFormDrawerEditMutation($id: ID!, $input: [EditInput!]!) {
-    fintelTemplateFieldPatch(id: $id, input: $input) {
       id
       name
       description
@@ -61,7 +47,7 @@ const FintelTemplateFormDrawer = ({
   const editionTitle = t_i18n('Update a template');
 
   const [commitAddMutation] = useApiMutation<FintelTemplateFormDrawerAddMutation>(fintelTemplateAddMutation);
-  const [commitEditMutation] = useApiMutation<FintelTemplateFormDrawerEditMutation>(fintelTemplateEditMutation);
+  const commitEditMutation = useFintelTemplateEdit();
 
   const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
     values,
@@ -108,12 +94,7 @@ const FintelTemplateFormDrawer = ({
 
     let input: { key:string, value: [unknown] } = { key: field, value: [value] };
     if (field === 'published') input = { key: 'start_date', value: [value ? new Date() : null] };
-    commitEditMutation({
-      variables: {
-        id: template.id,
-        input: [input],
-      },
-    });
+    commitEditMutation({ id: template.id, input: [input] });
   };
 
   return (

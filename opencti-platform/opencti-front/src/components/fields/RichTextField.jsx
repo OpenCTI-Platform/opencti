@@ -8,8 +8,6 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import Tooltip from '@mui/material/Tooltip';
-import { FilePdfBox } from 'mdi-material-ui';
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../i18n';
 import CKEditor from '../CKEditor';
@@ -47,7 +45,6 @@ const RichTextField = (props) => {
     style,
     disabled,
     askAi,
-    handleDownloadPdf,
   } = props;
   const editorReference = useRef();
   const classes = useStyles();
@@ -167,19 +164,6 @@ const RichTextField = (props) => {
           variant="html"
           disabled={props.disabled}
         />
-      )}
-      {handleDownloadPdf && (
-        <div style={{ position: 'absolute', top: -7, right: askAi ? 57 : 30 }}>
-          <Tooltip title={t_i18n('Download in pdf')}>
-            <IconButton
-              color="primary"
-              onClick={handleDownloadPdf}
-              size="small"
-            >
-              <FilePdfBox fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </div>
       )}
     </div>
   );
