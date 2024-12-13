@@ -10,6 +10,8 @@ export interface BasicStoreEntityExclusionList extends BasicStoreEntity {
   exclusion_list_entity_types: string[]
   file_id: string
   enabled: boolean
+  exclusion_list_values_count: number
+  exclusion_list_file_size: number
 }
 
 export interface StoreEntityExclusionList extends StoreEntity {
@@ -18,6 +20,8 @@ export interface StoreEntityExclusionList extends StoreEntity {
   exclusion_list_entity_types: string[]
   file_id: string
   enabled: boolean
+  exclusion_list_values_count: number
+  exclusion_list_file_size: number
 }
 
 export interface StixExclusionList extends StixObject {

@@ -45,13 +45,17 @@ const refreshExclusionListStatus = async () => {
   await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
 };
 
-export const checkFileSize = async (createReadStream: () => Readable) => {
+const checkFileSize = async (createReadStream: () => Readable) => {
   const uploadStream = createReadStream();
   let byteLength = 0;
+  let linesNumber = 1;
   let fileTooHeavy = false;
   // eslint-disable-next-line no-restricted-syntax
   for await (const uploadChunk of uploadStream) {
     byteLength += (uploadChunk as Buffer).byteLength;
+    const chunkAsString = (uploadChunk as Buffer).toString('utf-8');
+    const newLinesNumber = chunkAsString.split(/\r\n|\n/).length - 1;
+    linesNumber += newLinesNumber;
 
     if (byteLength > MAX_FILE_SIZE) {
       fileTooHeavy = true;
@@ -63,26 +67,30 @@ export const checkFileSize = async (createReadStream: () => Readable) => {
   if (fileTooHeavy) {
     throw FunctionalError('Exclusion list file too large', { maxFileSize: MAX_FILE_SIZE });
   }
+
+  return { byteLength, linesNumber };
 };
 
 const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exclusionListId: string, file: FileUploadData) => {
   const fullFile = await file;
-  await checkFileSize(fullFile.createReadStream);
+  const { byteLength, linesNumber } = await checkFileSize(fullFile.createReadStream);
   const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
-  return upload;
+  return { upload, byteLength, linesNumber };
 };
 
 const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput | ExclusionListFileAddInput, file: FileUploadData) => {
   const exclusionListInternalId = generateInternalId();
-  const upload = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
+  const { upload, byteLength, linesNumber } = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
   const exclusionListToCreate = {
     name: input.name,
     description: input.description,
     enabled: true,
     exclusion_list_entity_types: input.exclusion_list_entity_types,
     file_id: upload.id,
-    internal_id: exclusionListInternalId
+    internal_id: exclusionListInternalId,
+    exclusion_list_file_size: byteLength,
+    exclusion_list_values_count: linesNumber
   };
   const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
   await refreshExclusionListStatus();
@@ -111,16 +119,21 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
     throw FunctionalError(`Exclusion list ${id} cannot be found`);
   }
 
+  let fileSize = exclusionList.exclusion_list_file_size;
+  let exclusionListCount = exclusionList.exclusion_list_values_count;
   if (file) {
-    await uploadExclusionListFile(context, user, exclusionList.internal_id, file);
+    const uploadResult = await uploadExclusionListFile(context, user, exclusionList.internal_id, file);
+    fileSize = uploadResult.byteLength;
+    exclusionListCount = uploadResult.linesNumber;
   }
   let updatedElement;
-  if (input) {
-    const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, input);
+  const fullInput = [...(input ?? []), { key: 'exclusion_list_file_size', value: [fileSize] }, { key: 'exclusion_list_values_count', value: [exclusionListCount] }];
+  if (fullInput) {
+    const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, fullInput);
     updatedElement = element;
   }
 
-  if (file || (input && input.some((i) => i.key === 'enabled'))) {
+  if (file || (fullInput && fullInput.some((i) => i.key === 'enabled'))) {
     await refreshExclusionListStatus();
   }
   if (updatedElement) {
