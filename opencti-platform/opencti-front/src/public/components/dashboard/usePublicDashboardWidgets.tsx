@@ -32,6 +32,8 @@ import PublicStixRelationshipsPolarArea from './stix_relationships/PublicStixRel
 import PublicStixCoreObjectsPolarArea from './stix_core_objects/PublicStixCoreObjectsPolarArea';
 import { useFormatter } from '../../../components/i18n';
 import type { Widget } from '../../../utils/widget/widget';
+import PublicStixCoreObjectsWordCloud from './stix_core_objects/PublicStixCoreObjectsWordCloud';
+import PublicStixRelationshipsWordCloud from './stix_relationships/PublicStixRelationshipsWordCloud';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const { t_i18n } = useFormatter();
@@ -158,6 +160,15 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
       case 'tree':
         return (
           <PublicStixCoreObjectsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'wordcloud':
+        return (
+          <PublicStixCoreObjectsWordCloud
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}
@@ -301,6 +312,15 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
       case 'map':
         return (
           <PublicStixRelationshipsMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'wordcloud':
+        return (
+          <PublicStixRelationshipsWordCloud
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}
