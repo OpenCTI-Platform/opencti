@@ -465,7 +465,6 @@ const DefaultDashboard = ({ timeField }) => {
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
             height={410}
-            parameters={{ number: 20 }}
             widgetId={'default_latest_reports_widget'}
             dataSelection={[{
               filters: {
