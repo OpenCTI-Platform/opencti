@@ -58,42 +58,26 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
             className={'paper-for-grid'}
           >
-            <div style={{ position: 'absolute', top: 25, right: 15 }}>
-              {isInProgress ? (
-                <SyncOutlined color="primary" sx={{ fontSize: 40 }} />
-              ) : (
-                <SyncDisabledOutlined color="primary" sx={{ fontSize: 40 }} />
-              )}
-            </div>
+            {isInProgress ? (
+              <SyncOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
+            ) : (
+              <SyncDisabledOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
+            )}
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
                 {t_i18n('Status')}
               </div>
-              {isInProgress ? (
-                <Chip
-                  style={{
-                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-                    color: '#4caf50',
-                    fontSize: 20,
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    borderRadius: 4,
-                  }}
-                  label={t_i18n('In progress')}
-                />
-              ) : (
-                <Chip
-                  style={{
-                    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-                    color: '#5c7bf5',
-                    fontSize: 20,
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    borderRadius: 4,
-                  }}
-                  label={t_i18n('Synchronized')}
-                />
-              )}
+              <Chip
+                sx={{
+                  backgroundColor: isInProgress ? 'rgba(76, 175, 80, 0.08)' : 'rgba(92, 123, 245, 0.08)',
+                  color: isInProgress ? '#4caf50' : '#5c7bf5',
+                  fontSize: 20,
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  borderRadius: 4,
+                }}
+                label={isInProgress ? t_i18n('In progress') : t_i18n('Synchronized')}
+              />
             </div>
           </Paper>
         </Grid>
@@ -103,16 +87,12 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
             className={'paper-for-grid'}
           >
-            <div style={{ position: 'absolute', top: 25, right: 15 }}>
-              <EventRepeatOutlined color="primary" sx={{ fontSize: 40 }} />
-            </div>
+            <EventRepeatOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
                 {t_i18n('Cache date')}
               </div>
-              <div>
-                {fldt(cacheDate)}
-              </div>
+              <div>{fldt(cacheDate)}</div>
             </div>
           </Paper>
         </Grid>
@@ -122,16 +102,12 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
             className={'paper-for-grid'}
           >
-            <div style={{ position: 'absolute', top: 25, right: 15 }}>
-              <UpdateOutlined color="primary" sx={{ fontSize: 40 }} />
-            </div>
+            <UpdateOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
                 {t_i18n('Refresh date')}
               </div>
-              <div>
-                {fldt(refreshDate)}
-              </div>
+              <div>{fldt(refreshDate)}</div>
             </div>
           </Paper>
         </Grid>
