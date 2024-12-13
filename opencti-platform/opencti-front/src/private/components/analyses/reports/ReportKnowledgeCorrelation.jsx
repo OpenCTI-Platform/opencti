@@ -245,7 +245,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       LOCAL_STORAGE_KEY,
     );
     this.zoom = R.propOr(null, 'zoom', params);
-    this.allGraphObjects = R.map((n) => n.node, props.report.objects.edges);
+    this.allGraphObjects = props.report.objects.edges.map((n) => n.node);
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),

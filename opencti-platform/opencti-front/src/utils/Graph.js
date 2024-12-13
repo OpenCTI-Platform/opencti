@@ -482,10 +482,12 @@ export const buildCorrelationData = (
     filterAdjust.markedBy,
     filterAdjust.createdBy,
   );
-  const thisContainerNodes = thisContainerOriginalNodes.map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
-  const thisContainerLinkNodes = R.filter(
+  const thisContainerNodes = thisContainerOriginalNodes.map((n) => ({
+    ...n,
+    disabled: filteredNodesIds.includes(n.id),
+  }));
+  const thisContainerLinkNodes = thisContainerNodes.filter(
     (n) => n[key] && n.parent_types && n[key].edges.length > 1,
-    thisContainerNodes,
   );
   const relatedContainerOriginalNodes = R.pipe(
     R.map((n) => n[key].edges),
@@ -524,7 +526,10 @@ export const buildCorrelationData = (
     filterAdjust.markedBy,
     filterAdjust.createdBy,
   );
-  const relatedContainerNodes = relatedContainerOriginalNodes.map((n) => R.assoc('disabled', relatedContainerFilteredNodeIds.includes(n.id), n));
+  const relatedContainerNodes = relatedContainerOriginalNodes.map((n) => ({
+    ...n,
+    disabled: relatedContainerFilteredNodeIds.includes(n.id),
+  }));
   const links = R.pipe(
     R.map((n) => R.map(
       (e) => ({
@@ -556,7 +561,7 @@ export const buildCorrelationData = (
     )),
     R.flatten,
   )(thisContainerLinkNodes);
-  const combinedNodes = R.concat(thisContainerLinkNodes, relatedContainerNodes);
+  const combinedNodes = [...thisContainerLinkNodes, ...relatedContainerNodes];
   const nodes = R.pipe(
     R.map((n) => ({
       id: n.id,

@@ -507,15 +507,13 @@ class GroupingKnowledgeGraphBar extends Component {
                           : t('Show all correlated entities')
                       }
                     >
-                      <span>
-                        <IconButton
-                          color={'secondary'}
-                          onClick={handleToggleQueryMode.bind(this)}
-                          size="large"
-                        >
-                          {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
-                        </IconButton>
-                      </span>
+                      <IconButton
+                        color={'secondary'}
+                        onClick={handleToggleQueryMode.bind(this)}
+                        size="large"
+                      >
+                        {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
+                      </IconButton>
                     </Tooltip>
                   )}
                   <Tooltip
