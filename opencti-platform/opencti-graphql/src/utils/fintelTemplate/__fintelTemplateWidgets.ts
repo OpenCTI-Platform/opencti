@@ -18,7 +18,7 @@ export const containerColumns = [
 
 export const widgetReportMultiAttributes: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'widgetReportMultiAttributesId',
+  variable_name: 'widgetReportMultiAttributes',
   widget: {
     type: 'attribute',
     id: uuidv4(),
@@ -41,7 +41,7 @@ export const widgetReportMultiAttributes: FintelTemplateWidget = {
 
 export const widgetGroupingMultiAttributes: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'widgetGroupingMultiAttributesId',
+  variable_name: 'widgetGroupingMultiAttributes',
   widget: {
     type: 'attribute',
     id: uuidv4(),
@@ -62,7 +62,7 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidget = {
 
 export const widgetRFIMultiAttributes: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'widgetRFIMultiAttributesId',
+  variable_name: 'widgetRFIMultiAttributes',
   widget: {
     type: 'attribute',
     id: uuidv4(),
@@ -83,7 +83,7 @@ export const widgetRFIMultiAttributes: FintelTemplateWidget = {
 
 export const widgetRFTMultiAttributes: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'widgetRFTMultiAttributesId',
+  variable_name: 'widgetRFTMultiAttributes',
   widget: {
     type: 'attribute',
     id: uuidv4(),
@@ -104,7 +104,7 @@ export const widgetRFTMultiAttributes: FintelTemplateWidget = {
 
 export const widgetIncidentResponseMultiAttributes: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'widgetIncidentResponseMultiAttributesId',
+  variable_name: 'widgetIncidentResponseMultiAttributes',
   widget: {
     type: 'attribute',
     id: uuidv4(),
@@ -126,7 +126,7 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidget = {
 
 export const widgetContainerObservables: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'containerObservablesId',
+  variable_name: 'containerObservables',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -148,64 +148,12 @@ export const widgetContainerObservables: FintelTemplateWidget = {
         ],
       },
     ],
-    parameters: {
-      title: 'containerObservables',
-    }
-  },
-};
-
-export const widgetLocationsList: FintelTemplateWidget = {
-  id: uuidv4(),
-  variable_name: 'locationsListId',
-  widget: {
-    id: uuidv4(),
-    type: 'list',
-    perspective: WidgetPerspective.Entities,
-    dataSelection: [
-      {
-        perspective: WidgetPerspective.Entities,
-        filters: JSON.stringify({
-          mode: 'and',
-          filters: [
-            { key: ['entity_type'], values: ['Country', 'City', 'Region', 'Position', 'Administrative-Area'] },
-            { key: ['objects'], values: ['SELF_ID'] },
-          ],
-          filterGroups: [],
-        }),
-      },
-    ],
-    parameters: {
-      title: 'Locations contained in the report',
-      description: 'List of the locations contained in a container',
-    }
-  },
-};
-
-export const widgetDonut: FintelTemplateWidget = {
-  id: uuidv4(),
-  variable_name: 'widgetGraphId',
-  widget: {
-    id: uuidv4(),
-    type: 'donut',
-    perspective: WidgetPerspective.Relationships,
-    dataSelection: [
-      {
-        attribute: 'entity_type',
-        date_attribute: 'created_at',
-        perspective: WidgetPerspective.Relationships,
-        isTo: false,
-        number: 100,
-      },
-    ],
-    parameters: {
-      title: 'widgetGraph',
-    },
   },
 };
 
 export const widgetIncidentIOC: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'incidentIOCId',
+  variable_name: 'incidentIOC',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -224,14 +172,14 @@ export const widgetIncidentIOC: FintelTemplateWidget = {
       },
     ],
     parameters: {
-      title: 'incidentIOC',
+      title: 'Indicators contained in the container',
     }
   },
 };
 
 export const widgetIndicators: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'indicatorsId',
+  variable_name: 'indicators',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -254,14 +202,14 @@ export const widgetIndicators: FintelTemplateWidget = {
       },
     ],
     parameters: {
-      title: 'indicators',
+      title: 'Indicators contained in the container',
     }
   },
 };
 
 export const widgetIncidentTasksActions: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'incidentTasksAndActionsId',
+  variable_name: 'incidentTasksAndActions',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -284,15 +232,12 @@ export const widgetIncidentTasksActions: FintelTemplateWidget = {
         ],
       },
     ],
-    parameters: {
-      title: 'incidentTasksAndActions',
-    }
   },
 };
 
 export const widgetAttackPatterns: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'attackPatternsId',
+  variable_name: 'attackPatterns',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -314,15 +259,12 @@ export const widgetAttackPatterns: FintelTemplateWidget = {
         ],
       },
     ],
-    parameters: {
-      title: 'attackPatterns',
-    }
   },
 };
 
 export const widgetThreats: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'threatsId',
+  variable_name: 'threats',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -346,14 +288,14 @@ export const widgetThreats: FintelTemplateWidget = {
       },
     ],
     parameters: {
-      title: 'threats',
+      title: 'Threats contained in the container',
     }
   },
 };
 
 export const widgetVictims: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'victimsId',
+  variable_name: 'victims',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -381,7 +323,7 @@ export const widgetVictims: FintelTemplateWidget = {
 
 export const widgetAllEntitiesAndObservables: FintelTemplateWidget = {
   id: uuidv4(),
-  variable_name: 'allEntitiesAndObservablesId',
+  variable_name: 'allEntitiesAndObservables',
   widget: {
     type: 'list',
     id: uuidv4(),
@@ -403,8 +345,5 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidget = {
         ],
       },
     ],
-    parameters: {
-      title: 'allEntitiesAndObservables',
-    }
   },
 };
