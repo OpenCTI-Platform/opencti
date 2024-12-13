@@ -1,7 +1,7 @@
 import CustomizationMenu from '@components/settings/CustomizationMenu';
 import React from 'react';
 import ExclusionListCreation from '@components/settings/exclusion_lists/ExclusionListCreation';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import {
   ExclusionListsLinesPaginationQuery,
@@ -11,6 +11,8 @@ import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lis
 import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
 import Badge from '@mui/material/Badge';
 import Grid from '@mui/material/Grid';
+import ExclusionListsStatus, { exclusionListsStatusQuery } from '@components/settings/exclusion_lists/ExclusionListsStatus';
+import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemEntityType from '../../../../components/ItemEntityType';
@@ -205,10 +207,19 @@ const ExclusionLists = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ExclusionListsLinesPaginationQuery>;
 
+  const [queryRefStatus, loadQueryStatus] = useQueryLoader<ExclusionListsStatusQuery>(
+    exclusionListsStatusQuery,
+  );
+
+  const refetchStatus = React.useCallback(() => {
+    loadQueryStatus({}, { fetchPolicy: 'store-and-network' });
+  }, [queryRefStatus]);
+
   return (
     <div style={{ margin: 0, padding: '0 200px 0 0' }}>
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]} />
+      <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -220,11 +231,11 @@ const ExclusionLists = () => {
           disableLineSelection
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} />}
+          actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
           message={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
         />
       )}
-      <ExclusionListCreation paginationOptions={queryPaginationOptions} />
+      <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />
     </div>
   );
 };

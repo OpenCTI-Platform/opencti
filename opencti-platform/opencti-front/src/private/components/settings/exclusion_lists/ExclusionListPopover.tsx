@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
@@ -22,7 +22,17 @@ export const exclusionListPopoverDeletionMutation = graphql`
   }
 `;
 
-const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionListsLine_node$data, paginationOptions?: ExclusionListsLinesPaginationQuery$variables }) => {
+interface ExclusionListPopoverProps {
+  data: ExclusionListsLine_node$data;
+  paginationOptions?: ExclusionListsLinesPaginationQuery$variables;
+  refetchStatus: () => void;
+}
+
+const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
+  data,
+  paginationOptions,
+  refetchStatus,
+}) => {
   const { t_i18n } = useFormatter();
   const [queryRef, loadQuery] = useQueryLoader<ExclusionListEditionQuery>(exclusionListEditionQuery);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -50,6 +60,7 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        refetchStatus();
       },
     });
   };
@@ -67,6 +78,9 @@ const ExclusionListPopover = ({ data, paginationOptions }: { data: ExclusionList
       variables: {
         id: data.id,
         input: [{ key: 'enabled', value: !data.enabled }],
+      },
+      onCompleted: () => {
+        refetchStatus();
       },
     });
     handleClose();
