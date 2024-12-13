@@ -7,6 +7,8 @@ import { graphql } from 'react-relay';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import ExclusionListEdition, { exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
+import { Link } from 'react-router-dom';
+import { APP_BASE_PATH } from 'src/relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -85,6 +87,8 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
 
   const handleCloseEditionForm = () => setIsEditionFormOpen(false);
 
+  const downloadFileLink = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.file_id)}`;
+
   return (
     <>
       <IconButton
@@ -97,6 +101,13 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEnable}>{data.enabled ? t_i18n('Disable') : t_i18n('Enable')}</MenuItem>
         <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
+        <MenuItem
+          component={Link}
+          to={downloadFileLink}
+          onClick={handleClose}
+          target="_blank"
+          rel="noopener noreferrer"
+        >{t_i18n('Download file')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
