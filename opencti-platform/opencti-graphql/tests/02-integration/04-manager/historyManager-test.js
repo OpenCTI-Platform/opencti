@@ -195,7 +195,7 @@ const eventWithRelatedRestriction = {
           path: '/object_refs/7'
         }
       ],
-      relatedRestrictions: {
+      related_restrictions: {
         markings: [
           '4584aeee-10b6-47a7-808e-603440642285'
         ]

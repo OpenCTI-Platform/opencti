@@ -19,7 +19,7 @@ interface CreateEventOpts extends EventOpts {
 
 interface UpdateEventOpts extends EventOpts {
   commit?: CommitContext | undefined;
-  relatedRestrictions?: { markings: string[] };
+  related_restrictions?: { markings: string[] };
 }
 
 interface RelationCreation {
@@ -53,7 +53,7 @@ interface UpdateEvent extends StreamDataEvent {
   context: {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
-    relatedRestrictions?: { markings: string[] };
+    related_restrictions?: { markings: string[] };
   };
 }
 
