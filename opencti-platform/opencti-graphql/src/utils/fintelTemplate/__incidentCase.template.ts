@@ -62,7 +62,7 @@ const content = `
   </div>
   
   <h3>4. Incident Response Tasks/Actions</h3>
-  <div>$incidentTasksAndActionsId</div>
+  <div>$incidentTasksAndActions</div>
   
   <h3>5. Recommendations</h3>
   <blockquote>
@@ -70,21 +70,21 @@ const content = `
   </blockquote>
   
   <h3>6. Indicators of Compromise (IoCs)</h3>
-  <div>$incidentIOCId</div>
+  <div>$incidentIOC</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
   
   <h3>7. Observables</h3>
-  <div>$containerObservablesId</div>
+  <div>$containerObservables</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
   
   <h3>8. Tactics, Techniques, and Procedures (TTPs)</h3>
-  <div>$attackPatternsId</div>
+  <div>$attackPatterns</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
