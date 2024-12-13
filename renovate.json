@@ -13,5 +13,11 @@
       "matchUpdateTypes": ["minor"],
       "prPriority": 5
     }
-  ]
+  ],
+  "timezone": "Europe/Paris",
+  "schedule": [
+    "after 10pm and before 5am every weekday",
+    "every weekend"
+  ],
+  "updateNotScheduled": false
 }
