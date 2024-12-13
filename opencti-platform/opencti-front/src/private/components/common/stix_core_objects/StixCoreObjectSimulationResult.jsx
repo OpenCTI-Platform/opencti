@@ -535,7 +535,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             </>
         )}
         <TextField
-          label={t_i18n('Interval between injections (in minute)')}
+          label={t_i18n('Interval between injections (in minutes)')}
           fullWidth
           type="number"
           value={interval}
