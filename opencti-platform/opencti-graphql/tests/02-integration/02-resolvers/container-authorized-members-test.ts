@@ -557,7 +557,7 @@ describe('Case Incident Response and organization sharing standard behavior with
   let caseIrId: string;
   let userEditorId: string;
   let settingsInternalId: string;
-  it('should plateform organization sharing and EE activated', async () => {
+  it('should platform organization sharing and EE activated', async () => {
     // Get organization id
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
 
@@ -649,13 +649,13 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
     expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
   });
-  it('should not list all restricted entities', async () => {
+  it('user without bypass should not be allowed list all auth member restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: LIST_RESTRICTED_ENTITIES,
       variables: { first: 10 }
     });
   });
-  it('should BYPASS user list all restricted entities', async () => {
+  it('should BYPASS user be allowed list all auth member restricted entities', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
     expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(1);
   });
@@ -720,7 +720,7 @@ describe('Restricted entities listing', () => {
   let caseIrId: string;
   let userEditorId: string;
   let reportId: string;
-  it('should plateform organization sharing and EE activated', async () => {
+  it('should platform organization sharing and EE activated', async () => {
     await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
   });
   it('should Case Incident Response created', async () => {
@@ -811,13 +811,13 @@ describe('Restricted entities listing', () => {
       }
     ]);
   }); // +1 update
-  it('should not list all restricted entities', async () => {
+  it('using platform org - user without bypass should not be allowed list all auth member restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: LIST_RESTRICTED_ENTITIES,
       variables: { first: 10 }
     });
   });
-  it('should BYPASS user list all restricted entities', async () => {
+  it('using platform org - should BYPASS user be allowed list all auth member restricted entities', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
     expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
   });

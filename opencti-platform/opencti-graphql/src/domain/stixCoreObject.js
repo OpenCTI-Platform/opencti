@@ -83,7 +83,7 @@ export const findAll = async (context, user, args) => {
   return listEntitiesPaginated(context, user, types, args);
 };
 
-export const findAllRestricted = async (context, user, args) => {
+export const findAllAuthMemberRestricted = async (context, user, args) => {
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
