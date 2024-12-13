@@ -233,6 +233,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on Malware {
           name
         }
+        ... on Task {
+          name
+        }
         ... on ThreatActor {
           name
         }
@@ -349,6 +352,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on Malware {
               name
             }
+            ... on Task {
+              name
+            }
             ... on ThreatActor {
               name
             }
@@ -438,6 +444,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on Malware {
+              name
+            }
+            ... on Task {
               name
             }
             ... on ThreatActor {
@@ -548,6 +557,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on Malware {
+              name
+            }
+            ... on Task {
               name
             }
             ... on ThreatActor {
