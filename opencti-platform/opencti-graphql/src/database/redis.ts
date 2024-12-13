@@ -526,7 +526,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
     context: {
       patch,
       reverse_patch: previousPatch,
-      relatedRestrictions: opts.relatedRestrictions,
+      related_restrictions: opts.related_restrictions,
     }
   };
 };

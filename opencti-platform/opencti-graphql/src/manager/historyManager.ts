@@ -123,8 +123,8 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         .filter((o) => isNotEmptyField(o)) as string[];
       eventMarkingRefs.push(...previousMarkingRefs);
       // Get related restrictions (e.g. markings of added objects in a container)
-      if (updateEvent.context.relatedRestrictions) {
-        const relatedMarkings = updateEvent.context.relatedRestrictions.markings ?? [];
+      if (updateEvent.context.related_restrictions) {
+        const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         eventMarkingRefs.push(...relatedMarkings);
       }
     }
