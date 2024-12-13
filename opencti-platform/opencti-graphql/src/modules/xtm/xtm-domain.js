@@ -96,7 +96,6 @@ export const resolveContent = async (context, user, stixCoreObject) => {
   }
 
   const result = [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
-  logApp.info('ANGIE - resolveContent', { result: result.toString() });
   return result;
 };
 const generateTechnicalAttackPattern = async (obasAttackPattern, selection, simulationType, obasScenario, dependsOnDuration, interval) => {
@@ -124,7 +123,7 @@ const generateTechnicalAttackPattern = async (obasAttackPattern, selection, simu
     }
   } else {
     // TODO
-    logApp.info(`[XTM] simulationType ${simulationType} not implemented yet.`);
+    logApp.info(`[OPENCTI-MODULE][XTM] simulationType ${simulationType} not implemented yet.`);
   }
 };
 
@@ -313,8 +312,8 @@ const generateKillChainEmail = async (killChainPhaseName, killChainPhasesListOfN
 };
 
 export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
-  logApp.info('[XTM] Starting to generate OBAS scenario', { useAI, simulationType });
-  const startingDate = new Date().getTime();
+  const startingTime = new Date().getTime();
+  logApp.info('[OPENCTI-MODULE][XTM] Starting to generate OBAS scenario', { useAI, simulationType });
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
@@ -357,7 +356,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
       dependsOnDuration += (interval * 60);
     }
   } else {
-    logApp.debug('[XTM] attack pattern found, no generation of kill chain phase email');
+    logApp.debug('[OPENCTI-MODULE][XTM] attack pattern found, no generation of kill chain phase email');
   }
   // Get contracts from OpenBAS related to found attack patterns
 
@@ -379,7 +378,6 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const sortByKillChainPhase = R.sortBy(R.path(['attack_pattern_kill_chain_phase', 'phase_order']));
   const sortedEnrichedFilteredObasAttackPatterns = sortByKillChainPhase(enrichedFilteredObasAttackPatterns);
 
-  const aiAttackPatterEmailStart = new Date().getTime();
   // Get the injector contracts
   // eslint-disable-next-line no-restricted-syntax
   for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
@@ -398,12 +396,14 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
       dependsOnDuration += (interval * 60);
     }
   } // end loop for
-  const aiAttackPatterEmailEnd = new Date().getTime();
-
   await Promise.all(createAndInjectScenarioPromises);
 
-  logApp.info(`[XTM][TIME] AI generated ${sortedEnrichedFilteredObasAttackPatterns.length} attack pattern email in ${aiAttackPatterEmailEnd - aiAttackPatterEmailStart} ms.`);
-  logApp.info(`[XTM][TIME] TOTAL everything processed and send to obas in ${aiAttackPatterEmailEnd - startingDate} ms`);
+  const endingTime = new Date().getTime();
+  const totalTime = endingTime - startingTime;
+  if (totalTime > 120000) {
+    logApp.warn(`[OPENCTI-MODULE][XTM] Long scenario generation time. Generating ${createAndInjectScenarioPromises.length} emails took ${totalTime} ms`, { useAI, simulationType });
+  }
+  logApp.info(`[OPENCTI-MODULE][XTM] Generating ${createAndInjectScenarioPromises.length} emails took ${totalTime} ms`, { useAI, simulationType });
   return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
 };
 
