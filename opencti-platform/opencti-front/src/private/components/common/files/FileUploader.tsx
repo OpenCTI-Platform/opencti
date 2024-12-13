@@ -114,6 +114,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   const hasSelectedFile = !!selectedFile;
 
   return (
+
     <React.Fragment>
       {accept ? (
         <input
