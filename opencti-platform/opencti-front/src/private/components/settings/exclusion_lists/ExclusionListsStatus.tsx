@@ -59,18 +59,18 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             className={'paper-for-grid'}
           >
             {isInProgress ? (
-              <SyncOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
+              <SyncOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
             ) : (
-              <SyncDisabledOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
+              <SyncDisabledOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
             )}
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
                 {t_i18n('Status')}
               </div>
               <Chip
-                sx={{
-                  backgroundColor: isInProgress ? 'rgba(76, 175, 80, 0.08)' : 'rgba(92, 123, 245, 0.08)',
-                  color: isInProgress ? '#4caf50' : '#5c7bf5',
+                style={{
+                  backgroundColor: isInProgress ? 'rgba(92, 123, 245, 0.08)' : 'rgba(76, 175, 80, 0.08)',
+                  color: isInProgress ? '#5c7bf5' : '#4caf50',
                   fontSize: 20,
                   fontWeight: 800,
                   textTransform: 'uppercase',
@@ -87,12 +87,12 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
             className={'paper-for-grid'}
           >
-            <EventRepeatOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
+            <UpdateOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
-                {t_i18n('Cache date')}
+                {t_i18n('Last modification date')}
               </div>
-              <div>{fldt(cacheDate)}</div>
+              <div>{fldt(refreshDate)}</div>
             </div>
           </Paper>
         </Grid>
@@ -102,12 +102,12 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
             className={'paper-for-grid'}
           >
-            <UpdateOutlined color="primary" sx={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
+            <EventRepeatOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
-                {t_i18n('Refresh date')}
+                {t_i18n('Current cache version date')}
               </div>
-              <div>{fldt(refreshDate)}</div>
+              <div>{fldt(cacheDate)}</div>
             </div>
           </Paper>
         </Grid>
