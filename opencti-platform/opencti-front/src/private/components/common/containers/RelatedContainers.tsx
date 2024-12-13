@@ -99,22 +99,34 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         </IconButton>
       </Typography>
       <div className="clearfix"/>
-      <DataTableWithoutFragment
-        dataColumns={{
-          entity_type: { percentWidth: 15 },
-          name: { percentWidth: 40 },
-          createdBy: { percentWidth: 15 },
-          modified: { percentWidth: 15 },
-          objectMarking: { percentWidth: 15 },
-        }}
-        data={containers}
-        globalCount={containersGlobalCount}
-        rootRef={ref}
-        disableNavigation={true}
-        storageKey={`related-containers-${entityType}-${containerId}`}
-        hideHeaders={true}
-        onLineClick={(row: RelatedContainerNode) => navigate(`${resolveLink(row?.entity_type)}/${row?.id}`)}
-      />
+      {containersGlobalCount > 0
+        ? <DataTableWithoutFragment
+            dataColumns={{
+              entity_type: { percentWidth: 15 },
+              name: { percentWidth: 40 },
+              createdBy: { percentWidth: 15 },
+              modified: { percentWidth: 15 },
+              objectMarking: { percentWidth: 15 },
+            }}
+            data={containers}
+            globalCount={containersGlobalCount}
+            rootRef={ref}
+            disableNavigation={true}
+            storageKey={`related-containers-${entityType}-${containerId}`}
+            hideHeaders={true}
+            onLineClick={(row: RelatedContainerNode) => navigate(`${resolveLink(row?.entity_type)}/${row?.id}`)}
+          />
+        : <div style={{ display: 'table', height: '100%', width: '100%' }}>
+          <span
+            style={{
+              display: 'table-cell',
+              verticalAlign: 'middle',
+              textAlign: 'center',
+            }}
+          >
+            {t_i18n('No correlated containers has been found.')}
+          </span>
+        </div>}
     </div>
   );
 };

@@ -1868,6 +1868,7 @@
   "No connectors are enabled on this platform.": "有効なコネクタがありません。",
   "No connectors for this type of entity": "このタイプのエンティティ用のコネクタがありません",
   "No containers about this entity.": "このエンティティに関するコンテナはありません。",
+  "No correlated containers has been found.": "関連する容器は見つかっていない。",
   "No creators accumulation": "クリエーターの蓄積がない",
   "No data available.": "データなし",
   "No default value set in Settings...": "エンティティ設定でこの属性にデフォルト値が設定されていません。上記の入力で指定できます。CSVファイルにデータがない場合、この値が使用されます。",

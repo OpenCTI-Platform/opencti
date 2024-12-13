@@ -1868,6 +1868,7 @@
   "No connectors are enabled on this platform.": "Aucun connecteur n'est actif sur cette plateforme",
   "No connectors for this type of entity": "Aucun connecteur pour ce type d'entité",
   "No containers about this entity.": "Pas de conteneurs pour cette entité.",
+  "No correlated containers has been found.": "Aucun contenant corrélé n'a été trouvé.",
   "No creators accumulation": "Pas d'accumulation de créateurs",
   "No data available.": "Pas de données disponibles.",
   "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV.",
