@@ -263,6 +263,8 @@
   "Exclusion list cache build manager": "キャッシュビルドマネージャーの除外リスト",
   "Exclusion list cache sync manager": "除外リストキャッシュ同期マネージャ",
   "Exclusion list entity types": "除外リストのエンティティタイプ",
+  "Exclusion list file size": "除外リストのファイルサイズ",
+  "Exclusion list values count": "除外リストの値数",
   "EXCLUSION_LIST_CACHE_BUILD_MANAGER": "キャッシュビルドマネージャーの除外リスト",
   "EXCLUSION_LIST_CACHE_SYNC_MANAGER": "除外リストキャッシュ同期マネージャ",
   "Expected import number": "インポート予定番号",

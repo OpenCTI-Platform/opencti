@@ -263,6 +263,8 @@
   "Exclusion list cache build manager": "排除列表缓存生成管理器",
   "Exclusion list cache sync manager": "排除列表缓存同步管理器",
   "Exclusion list entity types": "排除清单实体类型",
+  "Exclusion list file size": "排除名单文件大小",
+  "Exclusion list values count": "排除列表值计数",
   "EXCLUSION_LIST_CACHE_BUILD_MANAGER": "排除列表缓存生成管理器",
   "EXCLUSION_LIST_CACHE_SYNC_MANAGER": "排除列表缓存同步管理器",
   "Expected import number": "预期导入编号",
