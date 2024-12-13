@@ -16,7 +16,7 @@ import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__inc
 // (don't forget to check the capa if it's not done via a @auth in graphql of your function)
 export const canCustomizeTemplate = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = true; // isFeatureEnabled('FILE_FROM_TEMPLATE');
+  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
   if (!isEE || !isFileFromTemplateEnabled) {
     throw ForbiddenAccess();
   }
