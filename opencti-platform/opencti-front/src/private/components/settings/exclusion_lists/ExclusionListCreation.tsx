@@ -42,16 +42,14 @@ interface ExclusionListCreationFormProps {
   updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-}
-
-interface ExclusionListCreationProps {
-  paginationOptions: ExclusionListsLinesPaginationQuery$variables;
+  refetchStatus: () => void;
 }
 
 const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProps> = ({
   updater,
   onReset,
   onCompleted,
+  refetchStatus,
 }) => {
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
@@ -91,6 +89,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
         if (onCompleted) {
           onCompleted();
         }
+        refetchStatus();
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -207,8 +206,14 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   );
 };
 
+interface ExclusionListCreationProps {
+  paginationOptions: ExclusionListsLinesPaginationQuery$variables;
+  refetchStatus: () => void;
+}
+
 const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
   paginationOptions,
+  refetchStatus,
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
@@ -231,6 +236,7 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
             updater={updater}
             onCompleted={onClose}
             onReset={onClose}
+            refetchStatus={refetchStatus}
           />
         </>
       )}

@@ -1,5 +1,5 @@
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
+import { graphql, PreloadedQuery, usePreloadedQuery, UseQueryLoaderLoadQueryOptions } from 'react-relay';
+import { ExclusionListsStatusQuery, ExclusionListsStatusQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
@@ -140,17 +140,16 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
   );
 };
 
-const ExclusionListsStatus = () => {
-  const [queryRef, loadQuery] = useQueryLoader<ExclusionListsStatusQuery>(
-    exclusionListsStatusQuery,
-  );
+interface ExclusionListsStatusProps {
+  queryRef: PreloadedQuery<ExclusionListsStatusQuery> | null | undefined;
+  refetch: () => void;
+  loadQuery: (variables: ExclusionListsStatusQuery$variables, options?: UseQueryLoaderLoadQueryOptions) => void;
+}
+
+const ExclusionListsStatus: FunctionComponent<ExclusionListsStatusProps> = ({ refetch, queryRef, loadQuery }) => {
   useEffect(() => {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
   }, []);
-
-  const refetch = React.useCallback(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
 
   return (
     <>
