@@ -80,7 +80,7 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   let key = entityType;
   let value = indicatorName;
   if (isStixCyberObservableHashedObservable(entityType)) {
-    if (observable.hashes) { // TODO need to handle the case where observable.hashes has multiple keys
+    if (observable.hashes) {
       key = '';
       value = '';
       if (observable.hashes['SHA-256']) {
@@ -88,8 +88,8 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
         value = observable.hashes['SHA-256'];
       }
       if (observable.hashes['SHA-512']) {
-        key = `${entityType}_sha512`;
-        value = observable.hashes['SHA-512'];
+        key = key.length > 0 ? `${key}__${entityType}_sha512` : `${entityType}_sha512`;
+        value = value.length > 0 ? `${value}__${observable.hashes['SHA-512']}` : observable.hashes['SHA-512'];
       }
       if (observable.hashes['SHA-1']) {
         key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
@@ -117,17 +117,17 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   if (key.includes('Artifact')) {
     key = key.replaceAll('Artifact', 'File');
   }
-  return { key, value }; // TODO need to return a list of keys/values
+  return { key, value };
 };
 export const createIndicatorFromObservable = async (context, user, input, observable) => {
   try {
     let entityType = observable.entity_type;
     const indicatorName = observableValue(observable);
-    const { key, value } = generateKeyValueForIndicator(entityType, indicatorName, observable); // TODO should return a list
+    const { key, value } = generateKeyValueForIndicator(entityType, indicatorName, observable);
     if (key.includes('Artifact')) {
       entityType = 'StixFile';
     }
-    const pattern = await createStixPattern(context, user, key, value); // TODO how createStixPattern will handle a list of keys/values?
+    const pattern = await createStixPattern(context, user, key, value);
     if (pattern) {
       const indicatorToCreate = {
         pattern_type: STIX_PATTERN_TYPE,
