@@ -43,8 +43,8 @@ const fintelTemplateEditMutation = graphql`
 interface FintelTemplateFormDrawerProps {
   isOpen: boolean
   onClose: () => void
-  entityType: string
   entitySettingId: string
+  entityType?: string
   template?: { id: string } & FintelTemplateFormInputs
 }
 
@@ -67,6 +67,8 @@ const FintelTemplateFormDrawer = ({
     values,
     { setSubmitting, resetForm },
   ) => {
+    if (!entityType) return;
+
     commitAddMutation({
       variables: {
         input: {

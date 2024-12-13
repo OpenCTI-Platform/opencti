@@ -1,37 +1,49 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { FintelTemplateHeader_template$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateHeader_template.graphql';
 import Typography from '@mui/material/Typography';
 import FintelTemplatePopover from '@components/settings/sub_types/fintel_templates/FintelTemplatePopover';
+import { useTheme } from '@mui/styles';
+import FintelTemplateFormDrawer from '@components/settings/sub_types/fintel_templates/FintelTemplateFormDrawer';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import type { Theme } from '../../../../../components/Theme';
 
 const headerFragment = graphql`
   fragment FintelTemplateHeader_template on FintelTemplate {
     id
     name
+    description
+    start_date
   }
 `;
 
 interface FintelTemplateHeaderProps {
+  entitySettingId: string
   data: FintelTemplateHeader_template$key
 }
 
-const FintelTemplateHeader = ({ data }: FintelTemplateHeaderProps) => {
+const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderProps) => {
+  const theme = useTheme<Theme>();
+  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const { subTypeId } = useParams<{ subTypeId?: string }>();
-  if (!subTypeId) return <ErrorNotFound />;
+
+  const [isFormOpen, setFormOpen] = useState(false);
 
   const template = useFragment(headerFragment, data);
 
+  if (!subTypeId) return <ErrorNotFound />;
+
   const customizationLink = '/dashboard/settings/customization/entity_types';
+  const subTypeLink = `${customizationLink}/${subTypeId}`;
   const breadcrumb = [
     { label: t_i18n('Settings') },
     { label: t_i18n('Customization') },
     { label: t_i18n('Entity types'), link: customizationLink },
-    { label: subTypeId, link: `${customizationLink}/${subTypeId}` },
+    { label: subTypeId, link: subTypeLink },
     { label: t_i18n('FINTEL Templates') },
     { label: template.name },
   ];
@@ -40,12 +52,28 @@ const FintelTemplateHeader = ({ data }: FintelTemplateHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Typography variant="h1" gutterBottom={true}>
-        {template.name}
-      </Typography>
-      <FintelTemplatePopover
-        templateId={template.id}
-        onUpdate={console.log}
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+        <Typography variant="h1" sx={{ marginBottom: 0.5 }}>
+          {template.name}
+        </Typography>
+        <FintelTemplatePopover
+          entitySettingId={entitySettingId}
+          templateId={template.id}
+          onUpdate={() => setFormOpen(true)}
+          onDeleteComplete={() => navigate(subTypeLink)}
+        />
+      </div>
+
+      <FintelTemplateFormDrawer
+        entitySettingId={entitySettingId}
+        isOpen={isFormOpen}
+        template={{
+          id: template.id,
+          name: template.name,
+          description: template.description ?? null,
+          published: !!template.start_date,
+        }}
+        onClose={() => setFormOpen(false)}
       />
     </>
   );

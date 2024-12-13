@@ -10,7 +10,10 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../../components/Loader';
 
 export const fintelTemplateQuery = graphql`
-  query FintelTemplateQuery($id: ID!) {
+  query FintelTemplateQuery($id: ID!, $targetType: String!) {
+    entitySettingByType(targetType: $targetType) {
+      id 
+    }
     fintelTemplate(id: $id) {
       ...FintelTemplateHeader_template
     }
@@ -22,13 +25,16 @@ interface FintelTemplateProps {
 }
 
 const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
-  const { fintelTemplate } = usePreloadedQuery(fintelTemplateQuery, queryRef);
-  if (!fintelTemplate) return <ErrorNotFound/>;
+  const { fintelTemplate, entitySettingByType } = usePreloadedQuery(fintelTemplateQuery, queryRef);
+  if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound/>;
 
   return (
     <>
       <div style={{ marginRight: FINTEL_TEMPLATE_SIDEBAR_WIDTH }}>
-        <FintelTemplateHeader data={fintelTemplate} />
+        <FintelTemplateHeader
+          entitySettingId={entitySettingByType.id}
+          data={fintelTemplate}
+        />
       </div>
       <FintelTemplateSidebar />
     </>
@@ -40,12 +46,15 @@ const FintelTemplate = () => {
   const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
   if (!isFileFromTemplateEnabled) return null;
 
-  const { templateId } = useParams<{ templateId?: string }>();
-  if (!templateId) return <ErrorNotFound/>;
+  const { templateId, subTypeId } = useParams<{ templateId?: string, subTypeId?: string }>();
+  if (!templateId || !subTypeId) return <ErrorNotFound/>;
 
   const templateRef = useQueryLoading<FintelTemplateQuery>(
     fintelTemplateQuery,
-    { id: templateId },
+    {
+      id: templateId,
+      targetType: subTypeId,
+    },
   );
 
   return (
