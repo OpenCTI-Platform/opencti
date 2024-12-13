@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import { VectorLink } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -12,6 +13,7 @@ import {
   RelatedContainersFragment_container_connection$data,
 } from './__generated__/RelatedContainersFragment_container_connection.graphql';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
+import type { Theme } from '../../../../components/Theme';
 
 export const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
@@ -75,6 +77,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   entityType,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const relatedContainers = useFragment(
     RelatedContainersFragment,
@@ -93,7 +96,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
           <IconButton
             color="primary"
             component={Link}
-            style={{ marginBottom: 4 }}
+            style={{ marginBottom: theme.spacing(0.5) }}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
           >
             <VectorLink fontSize="small" />
