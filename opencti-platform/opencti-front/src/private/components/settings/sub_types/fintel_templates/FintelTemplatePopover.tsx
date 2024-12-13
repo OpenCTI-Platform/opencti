@@ -1,7 +1,7 @@
 import MoreVert from '@mui/icons-material/MoreVert';
 import React, { UIEvent, useState } from 'react';
 import { MenuItem, Menu, PopoverProps, IconButton } from '@mui/material';
-import { graphql, UseMutationConfig } from 'react-relay';
+import { graphql } from 'react-relay';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
@@ -13,6 +13,7 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import stopEvent from '../../../../../utils/domEvent';
+import { deleteNodeFromEdge } from '../../../../../utils/store';
 
 const fintelTemplatePopoverDeleteMutation = graphql`
   mutation FintelTemplatePopoverDeleteMutation($id: ID!) {
@@ -21,15 +22,17 @@ const fintelTemplatePopoverDeleteMutation = graphql`
 `;
 
 interface FintelTemplatePopoverProps {
+  entitySettingId: string
   templateId: string
   onUpdate: () => void
-  deleteUpdater?: UseMutationConfig<FintelTemplatePopoverDeleteMutation>['updater']
+  onDeleteComplete?: () => void
 }
 
 const FintelTemplatePopover = ({
+  entitySettingId,
   templateId,
   onUpdate,
-  deleteUpdater,
+  onDeleteComplete,
 }: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
@@ -70,10 +73,18 @@ const FintelTemplatePopover = ({
     setDeleting(true);
     commitDeleteMutation({
       variables: { id: templateId },
-      updater: deleteUpdater,
+      updater: (store) => {
+        deleteNodeFromEdge(
+          store,
+          'fintelTemplates',
+          entitySettingId,
+          templateId,
+        );
+      },
       onCompleted: () => {
         setDeleting(false);
         onCloseDelete(e);
+        onDeleteComplete?.();
       },
       onError: () => {
         setDeleting(false);
