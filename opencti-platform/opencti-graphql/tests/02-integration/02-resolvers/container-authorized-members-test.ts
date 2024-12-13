@@ -821,7 +821,7 @@ describe('Restricted entities listing', () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
     expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
   });
-  it('should plateform organization sharing and EE deactivated', async () => {
+  it('should platform organization sharing and EE deactivated', async () => {
     await enableCEAndUnSetOrganization();
   });
   it('should Case Incident Response deleted', async () => {

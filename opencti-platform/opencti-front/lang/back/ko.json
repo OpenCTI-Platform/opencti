@@ -723,6 +723,7 @@
   "Template widgets IDs": "템플릿 위젯 ID",
   "Templates": "템플릿",
   "Theme": "테마",
+  "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "이 목록에는 일부 액세스 제한이 설정된 모든 엔터티가 표시되며, 이는 일부 특정 사용자만 액세스할 수 있음을 의미합니다. 이 화면에서 이 액세스 제한을 제거할 수 있습니다.",
   "Threat actor types": "위협 행위자 유형",
   "Threat hunting": "위협 사냥",
   "Timestamp": "타임스탬프",

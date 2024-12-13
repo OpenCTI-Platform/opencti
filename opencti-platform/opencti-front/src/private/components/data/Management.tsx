@@ -124,7 +124,7 @@ const Management = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const isRuntimeSort = isRuntimeFieldEnable();
 
   const { isFeatureEnable } = useHelper();
   const isRightMenuManagementEnable = isFeatureEnable('NEW_MANAGEMENT_RIGHT_MENU');

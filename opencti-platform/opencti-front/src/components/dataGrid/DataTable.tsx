@@ -18,6 +18,7 @@ import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
+import { useFormatter } from '../i18n';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
@@ -51,7 +52,7 @@ const DataTableInternalFilters = ({
   message,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
-
+  const { t_i18n } = useFormatter();
   const {
     availableFilterKeys,
     useDataTablePaginationLocalStorage: {
@@ -114,7 +115,7 @@ const DataTableInternalFilters = ({
             variant="outlined"
             style={{ padding: '0px 10px 0px 10px' }}
           >
-            {('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+            {t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
           </Alert>
         </div>
       )}

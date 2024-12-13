@@ -224,6 +224,7 @@ const LeftBar = () => {
   } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const isNewManagementScreenEnable = isFeatureEnable('MANAGE_RESTRICTED_ENTITIES');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -914,7 +915,9 @@ const LeftBar = () => {
                   { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
                   { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },
-                  { granted: isGrantedToManage, link: '/dashboard/data/management', label: 'Management' },
+                  ...(isNewManagementScreenEnable
+                    ? [{ granted: isGrantedToManage, link: '/dashboard/data/management', label: 'Management' }]
+                    : []),
                 ],
               )}
             </Security>

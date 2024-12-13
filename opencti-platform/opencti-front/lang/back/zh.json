@@ -723,6 +723,7 @@
   "Template widgets IDs": "模板部件 ID",
   "Templates": "模板",
   "Theme": "主题",
+  "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "此列表显示启用了某些访问限制的所有实体，即只有某些特定用户才能访问这些实体。您可以在此屏幕上删除此访问限制。",
   "Threat actor types": "威胁行为者类型",
   "Threat hunting": "威胁狩猎",
   "Timestamp": "时间戳",
