@@ -58,17 +58,17 @@ const Notifications: FunctionComponent = () => {
       },
       message: {
         label: 'Message',
-        width: '45%',
+        width: '48%',
         isSortable: false,
       },
       created: {
         label: 'Original creation date',
-        width: '15%',
+        width: '20%',
         isSortable: true,
       },
       name: {
         label: 'Trigger name',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
     };
