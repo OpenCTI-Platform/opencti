@@ -13,6 +13,8 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { now } from 'src/utils/Time';
 import { GetAppOutlined } from '@mui/icons-material';
 import InputAdornment from '@mui/material/InputAdornment';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -56,6 +58,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
 
+  const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(false);
   const [initialValues, setInitialValues] = useState<ExclusionListEditionFormData | null>(null);
 
   const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
@@ -188,23 +191,39 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                   textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
                   required
                 />
-                <Field
-                  name="fileContent"
+                <FormControlLabel
                   style={fieldSpacingContainerStyle}
-                  component={TextField}
-                  multiline
-                  rows={10}
-                  fullWidth
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <GetAppOutlined fontSize="small" />
-                        azS
-                      </InputAdornment>
-                    ),
-                  }}
+                  control={
+                    <Switch
+                      defaultChecked
+                      onChange={(_, isChecked) => {
+                        setIsUploadFileChecked(isChecked);
+                      }}
+                    />
+                  }
+                  label={t_i18n('Upload file')}
                 />
-                <CustomFileUploader setFieldValue={setFieldValue} />
+                {isUploadFileChecked
+                  ? <CustomFileUploader setFieldValue={setFieldValue} />
+                  : (
+                    <Field
+                      name="fileContent"
+                      style={fieldSpacingContainerStyle}
+                      component={TextField}
+                      multiline
+                      rows={10}
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <GetAppOutlined fontSize="small" />
+                            azS
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )
+                }
                 <div style={{ marginTop: 20, textAlign: 'right' }}>
                   <Button
                     variant="contained"
