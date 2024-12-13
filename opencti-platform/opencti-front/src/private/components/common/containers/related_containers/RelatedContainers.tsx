@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { NorthEastOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { NorthEastOutlined } from '@mui/icons-material';
+import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
 import RelatedContainersDetails from '@components/common/containers/related_containers/RelatedContainersDetails';
 import Drawer from '@components/common/drawer/Drawer';
 import {
@@ -139,15 +141,16 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
     <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
       <Typography variant="h3" gutterBottom={true} style={{ }}>
         {t_i18n('Correlated containers')}
-        <IconButton
-          color="primary"
-          aria-label="Go to correlation graph view"
-          onClick={() => navigate(`${resolveLink(entityType)}/${containerId}/knowledge/correlation`)}
-          size="medium"
-          style={{ marginBottom: 4 }}
-        >
-          <OpenInNewOutlined fontSize="small"/>
-        </IconButton>
+        <Tooltip title={t_i18n('Go to correlation graph view')} placement="top">
+          <IconButton
+            color="primary"
+            component={Link}
+            style={{ marginBottom: 4 }}
+            to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
+          >
+            <VectorLink fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Typography>
       <div className="clearfix"/>
       {containersGlobalCount > 0
