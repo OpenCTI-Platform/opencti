@@ -242,7 +242,7 @@ const ReportDetails = ({ report }) => {
               const relatedContainer = relatedContainerEdge.node;
               return (
                 <ListItem
-                  key={reportData.id}
+                  key={relatedContainer.id}
                   dense={true}
                   button={true}
                   classes={{ root: classes.item }}
