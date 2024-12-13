@@ -199,6 +199,8 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     <Formik<FormikCaseRftAddInput>
       initialValues={initialValues}
       validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onClose}
     >

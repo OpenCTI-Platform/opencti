@@ -189,6 +189,10 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     x_opencti_workflow_id: Yup.object().nullable(),
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
+    objectAssignee: Yup.array().nullable(),
+    objectParticipant: Yup.array().nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -268,6 +272,8 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({

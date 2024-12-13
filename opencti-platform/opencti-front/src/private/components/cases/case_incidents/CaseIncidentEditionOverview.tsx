@@ -177,9 +177,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    CASE_INCIDENT_TYPE,
-  );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CASE_INCIDENT_TYPE);
 
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -190,6 +188,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     x_opencti_workflow_id: Yup.object().nullable(),
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
+    objectAssignee: Yup.array().nullable(),
+    objectParticipant: Yup.array().nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -268,8 +270,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   return (
     <Formik
       enableReinitialize={true}
-      initialValues={initialValues as never}
+      initialValues={initialValues}
       validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -373,6 +377,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
+
           <ObjectAssigneeField
             name="objectAssignee"
             required={(mandatoryAttributes.includes('objectAssignee'))}

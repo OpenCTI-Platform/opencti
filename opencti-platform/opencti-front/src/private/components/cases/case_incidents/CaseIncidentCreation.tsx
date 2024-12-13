@@ -203,6 +203,8 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       initialValues={initialValues}
       validationSchema={validator}
       onSubmit={onSubmit}
+      validateOnChange={true}
+      validateOnBlur={true}
       onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (

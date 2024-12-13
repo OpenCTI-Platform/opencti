@@ -245,6 +245,8 @@ FeedbackEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({

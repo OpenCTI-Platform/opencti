@@ -166,6 +166,8 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
+    objectParticipant: Yup.array().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -229,6 +231,8 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({ setFieldValue }) => (
