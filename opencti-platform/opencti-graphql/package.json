@@ -200,7 +200,7 @@
     "fast-glob": "3.3.2",
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.1",
-    "typescript": "5.5.4",
+    "typescript": "5.7.2",
     "vitest": "2.0.5"
   },
   "resolutions": {
