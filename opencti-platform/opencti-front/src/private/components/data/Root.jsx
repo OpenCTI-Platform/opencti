@@ -37,7 +37,7 @@ const Management = lazy(() => import('./Management'));
 
 const Root = () => {
   const { isFeatureEnable } = useHelper();
-  const isRightMenuManagementEnable = isFeatureEnable('NEW_MANAGEMENT_RIGHT_MENU');
+  const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
   const isNewManagementScreenEnable = isFeatureEnable('MANAGE_RESTRICTED_ENTITIES');
 
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);

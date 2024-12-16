@@ -127,7 +127,7 @@ const Management = () => {
   const isRuntimeSort = isRuntimeFieldEnable();
 
   const { isFeatureEnable } = useHelper();
-  const isRightMenuManagementEnable = isFeatureEnable('NEW_MANAGEMENT_RIGHT_MENU');
+  const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
 
   const initialValues = {
     filters: {
