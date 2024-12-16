@@ -152,7 +152,7 @@
     "source-map-support": "0.5.21",
     "tough-cookie": "5.0.0",
     "turndown": "7.2.0",
-    "unzipper": "0.10.14",
+    "unzipper": "0.12.3",
     "uuid": "11.0.3",
     "uuid-time": "1.0.0",
     "validator": "13.11.0",
