@@ -38,7 +38,7 @@ const FintelTemplateContentEditor = ({ data }: FintelTemplateContentEditorProps)
       initialValues={{ content: template.content }}
       onSubmit={console.log}
     >
-      {({ errors, values }) => (
+      {({ values }) => (
         <>
           <Button onClick={() => onSubmit(values.content)}>
             Save your changes
@@ -46,7 +46,6 @@ const FintelTemplateContentEditor = ({ data }: FintelTemplateContentEditorProps)
           <Field
             component={RichTextField}
             name="content"
-            meta={{ error: errors.content }}
             fullWidth={true}
             style={{ height: 'calc(100vh - 280px)' }}
           />
