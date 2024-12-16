@@ -8620,17 +8620,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-redis-subscriptions@npm:2.6.1":
-  version: 2.6.1
-  resolution: "graphql-redis-subscriptions@npm:2.6.1"
+"graphql-redis-subscriptions@npm:2.7.0":
+  version: 2.7.0
+  resolution: "graphql-redis-subscriptions@npm:2.7.0"
   dependencies:
     ioredis: "npm:^5.3.2"
   peerDependencies:
-    graphql-subscriptions: ^1.0.0 || ^2.0.0
+    graphql-subscriptions: ^1.0.0 || ^2.0.0 || ^3.0.0
   dependenciesMeta:
     ioredis:
       optional: true
-  checksum: 10/266b899683560510146350f8536eeb37e206177ce43737f940475c3b22568084982ac12eca94163e4fd77c126e74cdc4d80ef5f66cee51f157183b9003797a68
+  checksum: 10/99be85204d6e896dbad832043a08812e91fb518aa679642b5c882893a0b6c5d1c9d7802c613291a9185d9e6c2bff63fd92f7599d5ca6868f4676982f6e0fca72
   languageName: node
   linkType: hard
 
@@ -10934,7 +10934,7 @@ __metadata:
     graphql-constraint-directive: "npm:5.4.3"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.5"
-    graphql-redis-subscriptions: "npm:2.6.1"
+    graphql-redis-subscriptions: "npm:2.7.0"
     graphql-relay: "npm:0.10.2"
     graphql-scalars: "npm:1.23.0"
     graphql-subscriptions: "npm:2.0.0"
