@@ -13855,8 +13855,8 @@ export type Mutation = {
   registerConnector?: Maybe<Connector>;
   reportAdd?: Maybe<Report>;
   reportEdit?: Maybe<ReportEditMutations>;
-  requestAccessAdd?: Maybe<RequestAccess>;
-  requestAccessValidate?: Maybe<RequestAccess>;
+  requestAccessAdd?: Maybe<Scalars['ID']['output']>;
+  requestAccessValidate?: Maybe<Scalars['Boolean']['output']>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
   resetStateConnector?: Maybe<Connector>;
   retentionRuleAdd: RetentionRule;
@@ -19757,8 +19757,6 @@ export type Query = {
   reportsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   reportsNumber?: Maybe<Number>;
   reportsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
-  requestAccess?: Maybe<RequestAccess>;
-  requestAccesses?: Maybe<RequestAccessConnection>;
   retentionRule?: Maybe<RetentionRule>;
   retentionRules?: Maybe<RetentionRuleConnection>;
   role?: Maybe<Role>;
@@ -21427,19 +21425,6 @@ export type QueryReportsTimeSeriesArgs = {
   reportType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
-};
-
-
-export type QueryRequestAccessArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryRequestAccessesArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<FilterGroup>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -23273,40 +23258,16 @@ export type RepresentativeWithId = {
   value?: Maybe<Scalars['String']['output']>;
 };
 
-export type RequestAccess = BasicObject & InternalObject & {
-  __typename?: 'RequestAccess';
-  created_at: Scalars['DateTime']['output'];
-  creators?: Maybe<Array<Creator>>;
-  entity_type: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  justification?: Maybe<Scalars['String']['output']>;
-  membership_request: Array<Scalars['String']['output']>;
-  name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
-  request_type: Array<Scalars['String']['output']>;
-  standard_id: Scalars['String']['output'];
-  target_entities: Array<Scalars['String']['output']>;
-};
-
 export type RequestAccessAddInput = {
-  justification?: InputMaybe<Scalars['String']['input']>;
-  membership_request: Array<Scalars['String']['input']>;
-  name: Scalars['String']['input'];
-  request_type: Array<Scalars['String']['input']>;
-  target_entities: Array<Scalars['String']['input']>;
+  request_access_entities: Array<Scalars['ID']['input']>;
+  request_access_members: Array<Scalars['ID']['input']>;
+  request_access_reason?: InputMaybe<Scalars['String']['input']>;
+  request_access_type?: InputMaybe<RequestAccessType>;
 };
 
-export type RequestAccessConnection = {
-  __typename?: 'RequestAccessConnection';
-  edges: Array<RequestAccessEdge>;
-  pageInfo: PageInfo;
-};
-
-export type RequestAccessEdge = {
-  __typename?: 'RequestAccessEdge';
-  cursor: Scalars['String']['output'];
-  node: RequestAccess;
-};
+export enum RequestAccessType {
+  Organization = 'organization'
+}
 
 export type ResolvedInstanceFilter = {
   __typename?: 'ResolvedInstanceFilter';
@@ -31787,10 +31748,8 @@ export type ResolversTypes = ResolversObject<{
   ReportsOrdering: ReportsOrdering;
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
-  RequestAccess: ResolverTypeWrapper<RequestAccess>;
   RequestAccessAddInput: RequestAccessAddInput;
-  RequestAccessConnection: ResolverTypeWrapper<RequestAccessConnection>;
-  RequestAccessEdge: ResolverTypeWrapper<RequestAccessEdge>;
+  RequestAccessType: RequestAccessType;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -32585,10 +32544,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
-  RequestAccess: RequestAccess;
   RequestAccessAddInput: RequestAccessAddInput;
-  RequestAccessConnection: RequestAccessConnection;
-  RequestAccessEdge: RequestAccessEdge;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -37739,8 +37695,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   registerConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationRegisterConnectorArgs>>;
   reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
-  requestAccessAdd?: Resolver<Maybe<ResolversTypes['RequestAccess']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
-  requestAccessValidate?: Resolver<Maybe<ResolversTypes['RequestAccess']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
+  requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
+  requestAccessValidate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;
   retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;
@@ -39229,8 +39185,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   reportsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryReportsDistributionArgs, 'field' | 'operation'>>;
   reportsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryReportsNumberArgs>>;
   reportsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryReportsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
-  requestAccess?: Resolver<Maybe<ResolversTypes['RequestAccess']>, ParentType, ContextType, RequireFields<QueryRequestAccessArgs, 'id'>>;
-  requestAccesses?: Resolver<Maybe<ResolversTypes['RequestAccessConnection']>, ParentType, ContextType, Partial<QueryRequestAccessesArgs>>;
   retentionRule?: Resolver<Maybe<ResolversTypes['RetentionRule']>, ParentType, ContextType, RequireFields<QueryRetentionRuleArgs, 'id'>>;
   retentionRules?: Resolver<Maybe<ResolversTypes['RetentionRuleConnection']>, ParentType, ContextType, Partial<QueryRetentionRulesArgs>>;
   role?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<QueryRoleArgs, 'id'>>;
@@ -39607,33 +39561,6 @@ export type RepresentativeWithIdResolvers<ContextType = any, ParentType extends 
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type RequestAccessResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccess'] = ResolversParentTypes['RequestAccess']> = ResolversObject<{
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  justification?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  membership_request?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  request_type?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  target_entities?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type RequestAccessConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessConnection'] = ResolversParentTypes['RequestAccessConnection']> = ResolversObject<{
-  edges?: Resolver<Array<ResolversTypes['RequestAccessEdge']>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type RequestAccessEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessEdge'] = ResolversParentTypes['RequestAccessEdge']> = ResolversObject<{
-  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<ResolversTypes['RequestAccess'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42699,9 +42626,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReportEditMutations?: ReportEditMutationsResolvers<ContextType>;
   Representative?: RepresentativeResolvers<ContextType>;
   RepresentativeWithId?: RepresentativeWithIdResolvers<ContextType>;
-  RequestAccess?: RequestAccessResolvers<ContextType>;
-  RequestAccessConnection?: RequestAccessConnectionResolvers<ContextType>;
-  RequestAccessEdge?: RequestAccessEdgeResolvers<ContextType>;
   ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
