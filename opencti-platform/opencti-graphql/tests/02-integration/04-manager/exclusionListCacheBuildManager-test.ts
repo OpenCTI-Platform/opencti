@@ -53,7 +53,7 @@ describe('Exclusion list cache build manager tests ', () => {
         }
       }
     });
-    exclusionListIPId = exclusionListIP.data?.exclusionListContentAdd.id;
+    exclusionListIPId = exclusionListIP.data?.exclusionListFileAdd.id;
     const domainValuesUpload = createUploadFile('./tests/data/exclusionLists/', exclusionListDomainValuesFIle);
     const exclusionListDomain = await queryAsAdminWithSuccess({
       query: CREATE_FILE_MUTATION,
@@ -66,7 +66,7 @@ describe('Exclusion list cache build manager tests ', () => {
         }
       }
     });
-    exclusionListDomainId = exclusionListDomain.data?.exclusionListContentAdd.id;
+    exclusionListDomainId = exclusionListDomain.data?.exclusionListFileAdd.id;
   });
   afterAll(async () => {
     await queryAsAdminWithSuccess({
