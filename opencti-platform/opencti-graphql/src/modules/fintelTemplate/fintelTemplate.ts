@@ -2,11 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import {
-  ENTITY_TYPE_FINTEL_TEMPLATE,
-  type StixFintelTemplate,
-  type StoreEntityFintelTemplate
-} from './fintelTemplate-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE, type StixFintelTemplate, type StoreEntityFintelTemplate } from './fintelTemplate-types';
 import { convertFintelTemplateToStix } from './fintelTemplate-converter';
 
 export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTemplate, StixFintelTemplate> = {
