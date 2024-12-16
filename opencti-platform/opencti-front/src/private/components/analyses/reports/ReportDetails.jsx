@@ -19,6 +19,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     borderRadius: 4,
     position: 'relative',
+    display: 'flex',
+    flexFlow: 'column',
   },
   chip: {
     fontSize: 12,

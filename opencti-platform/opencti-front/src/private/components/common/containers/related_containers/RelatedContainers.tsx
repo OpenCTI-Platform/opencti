@@ -138,8 +138,14 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   };
 
   return (
-    <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
-      <Typography variant="h3" gutterBottom={true} style={{ }}>
+    <div style={{
+      marginTop: 20,
+      flex: 1,
+      display: 'flex',
+      flexFlow: 'column',
+    }}
+    >
+      <Typography variant="h3" gutterBottom={true} style={{}}>
         {t_i18n('Correlated containers')}
         <Tooltip title={t_i18n('Go to correlation graph view')} placement="top">
           <IconButton
@@ -148,13 +154,13 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             style={{ marginBottom: 4 }}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
           >
-            <VectorLink fontSize="small" />
+            <VectorLink fontSize="small"/>
           </IconButton>
         </Tooltip>
       </Typography>
-      <div className="clearfix"/>
-      {containersGlobalCount > 0
-        ? <DataTableWithoutFragment
+      <div style={{ height: '100%' }} ref={(r) => setRef(r ?? undefined)}>
+        {containersGlobalCount > 0 ? (
+          <DataTableWithoutFragment
             dataColumns={{
               entity_type: { percentWidth: 15 },
               name: { percentWidth: 40 },
@@ -169,17 +175,20 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             storageKey={`related-containers-${entityType}-${containerId}`}
             hideHeaders={true}
             onLineClick={(row: RelatedContainerNode) => handleOpenDetails(row)}
-          /> : <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
+          />) : (
+            <div style={{
+              display: 'flex',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             >
-              {t_i18n('No correlated containers has been found.')}
-            </span>
-          </div>}
+              <span>
+                {t_i18n('No correlated containers has been found.')}
+              </span>
+            </div>
+        )}
+      </div>
       <Drawer
         title={selectedContainer?.name ?? '-'}
         open={!!selectedContainer}
