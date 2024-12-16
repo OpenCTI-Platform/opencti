@@ -21,6 +21,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '15px',
     borderRadius: 4,
     position: 'relative',
+    display: 'flex',
+    flexFlow: 'column',
   },
   chip: {
     fontSize: 12,
