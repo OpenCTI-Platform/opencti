@@ -1,5 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
-import { type FintelTemplateWidget, WidgetPerspective } from '../../generated/graphql';
+import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../generated/graphql';
 
 // hardcoded widgets
 
@@ -16,12 +15,10 @@ export const containerColumns = [
   { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
 ];
 
-export const widgetReportMultiAttributes: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
   variable_name: 'widgetReportMultiAttributes',
   widget: {
     type: 'attribute',
-    id: uuidv4(),
     perspective: null,
     dataSelection: [{
       columns: [
@@ -39,12 +36,10 @@ export const widgetReportMultiAttributes: FintelTemplateWidget = {
   },
 };
 
-export const widgetGroupingMultiAttributes: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
   variable_name: 'widgetGroupingMultiAttributes',
   widget: {
     type: 'attribute',
-    id: uuidv4(),
     perspective: null,
     dataSelection: [{
       columns: [
@@ -60,12 +55,10 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidget = {
   }
 };
 
-export const widgetRFIMultiAttributes: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
   variable_name: 'widgetRFIMultiAttributes',
   widget: {
     type: 'attribute',
-    id: uuidv4(),
     perspective: null,
     dataSelection: [{
       columns: [
@@ -81,12 +74,10 @@ export const widgetRFIMultiAttributes: FintelTemplateWidget = {
   },
 };
 
-export const widgetRFTMultiAttributes: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
   variable_name: 'widgetRFTMultiAttributes',
   widget: {
     type: 'attribute',
-    id: uuidv4(),
     perspective: null,
     dataSelection: [{
       columns: [
@@ -102,12 +93,10 @@ export const widgetRFTMultiAttributes: FintelTemplateWidget = {
   },
 };
 
-export const widgetIncidentResponseMultiAttributes: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput = {
   variable_name: 'widgetIncidentResponseMultiAttributes',
   widget: {
     type: 'attribute',
-    id: uuidv4(),
     perspective: null,
     dataSelection: [{
       columns: [
@@ -124,12 +113,10 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidget = {
   },
 };
 
-export const widgetContainerObservables: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
   variable_name: 'containerObservables',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -151,12 +138,10 @@ export const widgetContainerObservables: FintelTemplateWidget = {
   },
 };
 
-export const widgetIncidentIOC: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
   variable_name: 'incidentIOC',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -177,12 +162,10 @@ export const widgetIncidentIOC: FintelTemplateWidget = {
   },
 };
 
-export const widgetIndicators: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetIndicators: FintelTemplateWidgetAddInput = {
   variable_name: 'indicators',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -207,12 +190,10 @@ export const widgetIndicators: FintelTemplateWidget = {
   },
 };
 
-export const widgetIncidentTasksActions: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
   variable_name: 'incidentTasksAndActions',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -235,12 +216,10 @@ export const widgetIncidentTasksActions: FintelTemplateWidget = {
   },
 };
 
-export const widgetAttackPatterns: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
   variable_name: 'attackPatterns',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -262,12 +241,10 @@ export const widgetAttackPatterns: FintelTemplateWidget = {
   },
 };
 
-export const widgetThreats: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetThreats: FintelTemplateWidgetAddInput = {
   variable_name: 'threats',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -293,12 +270,10 @@ export const widgetThreats: FintelTemplateWidget = {
   },
 };
 
-export const widgetVictims: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetVictims: FintelTemplateWidgetAddInput = {
   variable_name: 'victims',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
@@ -321,12 +296,10 @@ export const widgetVictims: FintelTemplateWidget = {
   },
 };
 
-export const widgetAllEntitiesAndObservables: FintelTemplateWidget = {
-  id: uuidv4(),
+export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
   variable_name: 'allEntitiesAndObservables',
   widget: {
     type: 'list',
-    id: uuidv4(),
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
