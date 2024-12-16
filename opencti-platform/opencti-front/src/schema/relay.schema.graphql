@@ -8974,6 +8974,8 @@ type Mutation {
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
+  requestAccessAdd(input: RequestAccessAddInput!): ID
+  requestAccessValidate(id: ID!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12401,4 +12403,15 @@ type DraftWorkspaceEdge {
 input DraftWorkspaceAddInput {
   name: String!
   entity_id: String
+}
+
+enum RequestAccessType {
+  organization
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
 }
