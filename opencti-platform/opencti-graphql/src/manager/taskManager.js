@@ -439,6 +439,23 @@ const executeShareMultiple = async (context, user, actionContext, element) => {
 const executeUnshareMultiple = async (context, user, actionContext, element) => {
   await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
 };
+const throwErrorInDraftContext = (context, user, actionType) => {
+  if (!getDraftContext(context, user)) {
+    return;
+  }
+  if (actionType === ACTION_TYPE_COMPLETE_DELETE
+      || actionType === ACTION_TYPE_RESTORE
+      || actionType === ACTION_TYPE_RULE_APPLY
+      || actionType === ACTION_TYPE_RULE_CLEAR
+      || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
+      || actionType === ACTION_TYPE_SHARE
+      || actionType === ACTION_TYPE_UNSHARE
+      || actionType === ACTION_TYPE_SHARE_MULTIPLE
+      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+    throw FunctionalError('Cannot execute this task type in draft', { actionType });
+  }
+};
+
 const executeProcessing = async (context, user, job, scope) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
@@ -491,15 +508,14 @@ const executeProcessing = async (context, user, job, scope) => {
       for (let elementIndex = 0; elementIndex < job.elements.length; elementIndex += 1) {
         const { element } = job.elements[elementIndex];
         try {
+          throwErrorInDraftContext(context, user, type);
           if (type === ACTION_TYPE_DELETE) {
             await executeDelete(context, user, element, scope);
           }
           if (type === ACTION_TYPE_COMPLETE_DELETE) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute complete delete task in draft');
             await executeCompleteDelete(context, user, element);
           }
           if (type === ACTION_TYPE_RESTORE) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute restore task in draft');
             await executeRestore(context, user, element);
           }
           if (type === ACTION_TYPE_ADD) {
@@ -521,31 +537,24 @@ const executeProcessing = async (context, user, job, scope) => {
             await executeEnrichment(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_APPLY) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute rule apply task in draft');
             await executeRuleApply(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_CLEAR) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute rule clear task in draft');
             await executeRuleClean(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute rule element rescan task in draft');
             await executeRuleElementRescan(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_SHARE) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute share task in draft');
             await executeShare(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_UNSHARE) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute unshare task in draft');
             await executeUnshare(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_SHARE_MULTIPLE) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute share multiple task in draft');
             await executeShareMultiple(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_UNSHARE_MULTIPLE) {
-            if (getDraftContext(context, user)) throw FunctionalError('Cannot execute unshare multiple task in draft');
             await executeUnshareMultiple(context, user, actionContext, element);
           }
         } catch (err) {
