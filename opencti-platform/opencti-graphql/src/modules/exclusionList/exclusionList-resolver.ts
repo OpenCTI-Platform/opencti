@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findAll, addExclusionListContent, addExclusionListFile, deleteExclusionList, fieldPatchExclusionList, getCacheStatus } from './exclusionList-domain';
+import { findById, findAll, addExclusionListFile, deleteExclusionList, fieldPatchExclusionList, getCacheStatus } from './exclusionList-domain';
 
 const exclusionListResolver: Resolvers = {
   Query: {
@@ -8,9 +8,6 @@ const exclusionListResolver: Resolvers = {
     exclusionListCacheStatus: () => getCacheStatus(),
   },
   Mutation: {
-    exclusionListContentAdd: (_, { input }, context) => {
-      return addExclusionListContent(context, context.user, input);
-    },
     exclusionListFileAdd: (_, { input }, context) => {
       return addExclusionListFile(context, context.user, input);
     },

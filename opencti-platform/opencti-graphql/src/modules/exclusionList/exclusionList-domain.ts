@@ -6,7 +6,7 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
-import { type ExclusionListContentAddInput, type ExclusionListFileAddInput, type MutationExclusionListFieldPatchArgs, type QueryExclusionListsArgs } from '../../generated/graphql';
+import { type ExclusionListFileAddInput, type MutationExclusionListFieldPatchArgs, type QueryExclusionListsArgs } from '../../generated/graphql';
 import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
 import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
@@ -79,7 +79,7 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   return { upload, byteLength, linesNumber };
 };
 
-const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput | ExclusionListFileAddInput, file: FileUploadData) => {
+const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData) => {
   const exclusionListInternalId = generateInternalId();
   const { upload, byteLength, linesNumber } = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
   const exclusionListToCreate = {
@@ -97,16 +97,6 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
   return createdExclusionList;
 };
 
-export const addExclusionListContent = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
-  const file = {
-    createReadStream: () => Readable.from(Buffer.from(input.content, 'utf-8')),
-    filename: `${input.name}.txt`,
-    mimetype: 'text/plain',
-  };
-
-  return storeAndCreateExclusionList(context, user, input, file);
-};
 export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
   if (!isExclusionListEnabled) throw new Error('Feature not yet available');
   return storeAndCreateExclusionList(context, user, input, input.file);
