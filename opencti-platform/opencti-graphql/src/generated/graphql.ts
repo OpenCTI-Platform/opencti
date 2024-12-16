@@ -7495,6 +7495,8 @@ export type ExclusionList = BasicObject & InternalObject & {
   enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   exclusion_list_entity_types: Array<Scalars['String']['output']>;
+  exclusion_list_file_size?: Maybe<Scalars['Int']['output']>;
+  exclusion_list_values_count?: Maybe<Scalars['Int']['output']>;
   file_id: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -34797,6 +34799,8 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exclusion_list_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  exclusion_list_file_size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  exclusion_list_values_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   file_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

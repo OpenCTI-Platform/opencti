@@ -263,6 +263,8 @@
   "Exclusion list cache build manager": "Exclusion list cache build manager",
   "Exclusion list cache sync manager": "Exclusion list cache sync manager",
   "Exclusion list entity types": "Exclusion list entity types",
+  "Exclusion list file size": "Exclusion list file size",
+  "Exclusion list values count": "Exclusion list values count",
   "EXCLUSION_LIST_CACHE_BUILD_MANAGER": "Exclusion list cache build manager",
   "EXCLUSION_LIST_CACHE_SYNC_MANAGER": "Exclusion list cache sync manager",
   "Expected import number": "Expected import number",

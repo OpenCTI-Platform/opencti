@@ -62,10 +62,32 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       isFilterable: true
     },
     {
+      name: 'exclusion_list_values_count',
+      label: 'Exclusion list values count',
+      type: 'numeric',
+      precision: 'long',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false
+    },
+    {
       name: 'file_id',
       label: 'File id',
       type: 'string',
       format: 'short',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false
+    },
+    {
+      name: 'exclusion_list_file_size',
+      label: 'Exclusion list file size',
+      type: 'numeric',
+      precision: 'long',
       mandatoryType: 'internal',
       editDefault: false,
       multiple: false,

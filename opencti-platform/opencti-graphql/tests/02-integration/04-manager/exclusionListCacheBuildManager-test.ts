@@ -1,57 +1,72 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import { testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
 import { buildCacheFromAllExclusionLists } from '../../../src/database/exclusionListCache';
 import { checkExclusionLists } from '../../../src/utils/exclusionLists';
+import { fileToReadStream } from '../../../src/database/file-storage-helper';
 
 describe('Exclusion list cache build manager tests ', () => {
   const context = testContext;
   let exclusionListIPId = '';
   let exclusionListDomainId = '';
-  const exclusionListIpValues = '127.0.0.1\n10.10.0.0/28\n2.2.2.2';
-  const exclusionListDomainValues = 'google.com\nfiligran.io\nwww.test.net';
+  const exclusionListIpValuesFile = 'exclusionListIPValues.txt';
+  const exclusionListDomainValuesFIle = 'exclusionListDomainValues.txt';
 
-  const CREATE_CONTENT_MUTATION = gql`
-        mutation exclusionListContentAdd($input: ExclusionListContentAddInput!) {
-            exclusionListContentAdd(input: $input) {
-                id
-                file_id
-            }
-        }
-    `;
+  const CREATE_FILE_MUTATION = gql`
+    mutation exclusionListFileAdd($input: ExclusionListFileAddInput!) {
+      exclusionListFileAdd(input: $input) {
+        id
+      }
+    }
+  `;
 
   const DELETE_MUTATION = gql`
         mutation exclusionListDelete($id: ID!) {
             exclusionListDelete(id: $id)
         }
     `;
+
+  const createUploadFile = (filePath: string, fileName: string) => {
+    const readStream = fileToReadStream(filePath, fileName, fileName, 'text/plain');
+    const fileUpload = { ...readStream, encoding: 'utf8' };
+    const upload = new Upload();
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
+    upload.file = fileUpload;
+
+    return upload;
+  };
   beforeAll(async () => {
+    const ipValuesUpload = createUploadFile('./tests/data/exclusionLists/', exclusionListIpValuesFile);
     const exclusionListIP = await queryAsAdminWithSuccess({
-      query: CREATE_CONTENT_MUTATION,
+      query: CREATE_FILE_MUTATION,
       variables: {
         input: {
           name: 'test_ip_list',
           description: 'test_description',
           exclusion_list_entity_types: [ENTITY_IPV4_ADDR],
-          content: exclusionListIpValues
+          file: ipValuesUpload
         }
       }
     });
-    exclusionListIPId = exclusionListIP.data?.exclusionListContentAdd.id;
+    exclusionListIPId = exclusionListIP.data?.exclusionListFileAdd.id;
+    const domainValuesUpload = createUploadFile('./tests/data/exclusionLists/', exclusionListDomainValuesFIle);
     const exclusionListDomain = await queryAsAdminWithSuccess({
-      query: CREATE_CONTENT_MUTATION,
+      query: CREATE_FILE_MUTATION,
       variables: {
         input: {
           name: 'test_domain_list',
           description: 'test_description',
           exclusion_list_entity_types: [ENTITY_DOMAIN_NAME],
-          content: exclusionListDomainValues
+          file: domainValuesUpload
         }
       }
     });
-    exclusionListDomainId = exclusionListDomain.data?.exclusionListContentAdd.id;
+    exclusionListDomainId = exclusionListDomain.data?.exclusionListFileAdd.id;
   });
   afterAll(async () => {
     await queryAsAdminWithSuccess({

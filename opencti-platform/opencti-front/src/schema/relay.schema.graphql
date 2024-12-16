@@ -12317,7 +12317,9 @@ type ExclusionList implements InternalObject & BasicObject {
   created_at: DateTime!
   enabled: Boolean!
   exclusion_list_entity_types: [String!]!
+  exclusion_list_values_count: Int
   file_id: String!
+  exclusion_list_file_size: Int
 }
 
 type ExclusionListConnection {

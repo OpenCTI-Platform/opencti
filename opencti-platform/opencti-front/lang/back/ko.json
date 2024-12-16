@@ -263,6 +263,8 @@
   "Exclusion list cache build manager": "제외 목록 캐시 빌드 관리자",
   "Exclusion list cache sync manager": "제외 목록 캐시 동기화 관리자",
   "Exclusion list entity types": "제외 목록 엔티티 유형",
+  "Exclusion list file size": "제외 목록 파일 크기",
+  "Exclusion list values count": "제외 목록 값 개수",
   "EXCLUSION_LIST_CACHE_BUILD_MANAGER": "제외 목록 캐시 빌드 관리자",
   "EXCLUSION_LIST_CACHE_SYNC_MANAGER": "제외 목록 캐시 동기화 관리자",
   "Expected import number": "예상 가져오기 수",

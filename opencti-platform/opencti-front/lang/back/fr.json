@@ -263,6 +263,8 @@
   "Exclusion list cache build manager": "Manager de construction de cache de liste d'exclusion",
   "Exclusion list cache sync manager": "Manager de synchronisation de cache de liste d'exclusion",
   "Exclusion list entity types": "Types d'entités de la liste d'exclusion",
+  "Exclusion list file size": "Taille du fichier de la liste d'exclusion",
+  "Exclusion list values count": "Nombre de valeurs de la liste d'exclusion",
   "EXCLUSION_LIST_CACHE_BUILD_MANAGER": "Manager de construction de cache de liste d'exclusion",
   "EXCLUSION_LIST_CACHE_SYNC_MANAGER": "Manager de synchronisation de cache de liste d'exclusion",
   "Expected import number": "Numéro d'importation attendu",

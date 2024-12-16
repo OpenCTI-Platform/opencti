@@ -8,7 +8,9 @@ type ExclusionList implements InternalObject & BasicObject {
   created_at: DateTime!
   enabled: Boolean!
   exclusion_list_entity_types: [String!]!
+  exclusion_list_values_count: Int
   file_id: String!
+  exclusion_list_file_size: Int
 }
 
 type ExclusionListConnection {
@@ -34,13 +36,6 @@ enum ExclusionListOrdering {
   _score
 }
 
-input ExclusionListContentAddInput {
-  name: String!
-  description: String
-  exclusion_list_entity_types: [String!]!
-  content: String!
-}
-
 input ExclusionListFileAddInput {
   name: String!
   description: String
@@ -62,7 +57,6 @@ type Query {
 }
 
 type Mutation {
-  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
