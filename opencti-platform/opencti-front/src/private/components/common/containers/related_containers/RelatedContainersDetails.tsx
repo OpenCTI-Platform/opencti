@@ -117,7 +117,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
   );
 
   return (
-    <Grid container rowSpacing={3}>
+    <Grid container rowSpacing={5}>
       {/* Left Column */}
       <Grid item xs={6}>
         <Grid container spacing={3}>
@@ -151,7 +151,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      {/* RightC olumn */}
+      {/* Right Column */}
       <Grid item xs={6}>
         <Grid container spacing={3}>
           <Grid item xs={12}>

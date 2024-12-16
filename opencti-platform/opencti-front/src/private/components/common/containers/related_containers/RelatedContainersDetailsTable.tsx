@@ -168,10 +168,9 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
   } as UsePreloadedPaginationFragment<RelatedContainersDetailsTableLinesPaginationQuery>;
 
   return (
-    <Grid item xs={12} >
+    <>
       <Typography
         variant="h4"
-        style={{ marginTop: 20 }}
       >
         {t_i18n('Correlated indicators and observables')}
       </Typography>
@@ -193,7 +192,7 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
         onLineClick={ (row) => navigate(`${resolveLink(row.entity_type)}/${row.id}`) }
       />
       )}
-    </Grid>
+    </>
   );
 };
 
