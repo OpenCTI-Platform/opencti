@@ -128,7 +128,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = () => {};
 
   return (
-    <Formik
+    <Formik<StreamCollectionCreationForm>
       onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}

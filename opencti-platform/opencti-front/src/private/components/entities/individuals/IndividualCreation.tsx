@@ -175,7 +175,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<IndividualAddInput>
       initialValues={initialValues}
       validationSchema={individualValidator}
       onSubmit={onSubmit}

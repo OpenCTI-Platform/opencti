@@ -236,7 +236,7 @@ FeedbackEditionOverviewProps
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
-    <Formik
+    <Formik<FeedbackEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={feedbackValidator}

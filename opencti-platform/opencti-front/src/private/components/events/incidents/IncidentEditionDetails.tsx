@@ -168,7 +168,7 @@ IncidentEditionDetailsProps
   };
 
   return (
-    <Formik
+    <Formik<IncidentEditionDetailsFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={incidentEditionDetailsValidation(t_i18n)}

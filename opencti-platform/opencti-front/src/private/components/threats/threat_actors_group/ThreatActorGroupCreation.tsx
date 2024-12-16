@@ -171,7 +171,7 @@ ThreatActorGroupFormProps
   });
 
   return (
-    <Formik
+    <Formik<ThreatActorGroupAddInput>
       initialValues={initialValues}
       validationSchema={threatActorGroupValidator}
       onSubmit={onSubmit}

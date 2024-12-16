@@ -190,7 +190,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     },
   );
   return (
-    <Formik
+    <Formik<AttackPatternAddInput>
       initialValues={initialValues}
       validationSchema={attackPatternValidator}
       onSubmit={onSubmit}

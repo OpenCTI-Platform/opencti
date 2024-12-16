@@ -182,7 +182,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   });
 
   return (
-    <Formik
+    <Formik<EventAddInput>
       initialValues={initialValues}
       validationSchema={eventValidator}
       onSubmit={onSubmit}

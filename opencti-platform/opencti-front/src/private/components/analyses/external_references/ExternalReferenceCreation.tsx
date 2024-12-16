@@ -218,7 +218,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         controlledDial={isFABReplaced ? CreateExternalReferenceControlledDial : undefined}
       >
         {({ onClose }) => (
-          <Formik
+          <Formik<ExternalReferenceAddInput>
             initialValues={{
               source_name: '',
               external_id: '',
@@ -318,7 +318,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           open={isFABReplaced || handleCloseContextual ? openContextual : open}
           onClose={isFABReplaced || handleCloseContextual ? handleCloseContextual : handleClose}
         >
-          <Formik
+          <Formik<ExternalReferenceAddInput>
             enableReinitialize={true}
             onSubmit={!creationCallback && (isFABReplaced || !handleCloseContextual) ? onSubmit : onSubmitContextual}
             initialValues={{

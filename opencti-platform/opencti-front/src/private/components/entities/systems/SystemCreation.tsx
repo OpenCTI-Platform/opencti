@@ -178,7 +178,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<SystemAddInput>
       initialValues={initialValues}
       validationSchema={systemValidator}
       onSubmit={onSubmit}

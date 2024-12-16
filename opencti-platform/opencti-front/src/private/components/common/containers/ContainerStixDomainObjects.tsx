@@ -253,7 +253,7 @@ const ContainerStixDomainObjects = ({
             warningMessage={t_i18n('Be careful, you are about to delete the selected entities (not the relationships)')}
           />
           <StixDomainObjectsRightBar
-            types={types}
+            types={types ?? []}
             handleToggle={storageHelpers.handleToggleTypes}
             handleClear={storageHelpers.handleClearTypes}
             openExports={openExports}

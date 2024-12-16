@@ -318,7 +318,7 @@ ThreatActorIndividualFormProps
   });
 
   return (
-    <Formik
+    <Formik<ThreatActorIndividualAddInput>
       initialValues={initialValues}
       validationSchema={threatActorIndividualValidator}
       onSubmit={onSubmit}

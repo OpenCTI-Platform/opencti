@@ -197,7 +197,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   );
 
   return (
-    <Formik
+    <Formik<InfrastructureAddInput>
       initialValues={initialValues}
       validationSchema={infrastructureValidator}
       onSubmit={onSubmit}

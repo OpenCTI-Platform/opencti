@@ -193,7 +193,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<SectorAddInput>
       initialValues={initialValues}
       validationSchema={sectorValidator}
       onSubmit={onSubmit}
