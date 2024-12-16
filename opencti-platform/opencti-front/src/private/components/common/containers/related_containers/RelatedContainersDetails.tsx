@@ -50,13 +50,15 @@ const RelatedContainersDetailsDistribution: React.FC<{
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 
-  return (<div style={{ height: 150 }}><WidgetHorizontalBars
-    series={series}
-    distributed={false}
-    stacked
-    stackType='100%'
-    legend={true}
-                                       /></div>);
+  return (<div style={{ height: 150 }}>
+    <WidgetHorizontalBars
+      series={series}
+      distributed={false}
+      stacked
+      stackType='100%'
+      legend={true}
+    />
+  </div>);
 };
 
 interface RelatedContainersDetailsProps {
@@ -115,96 +117,90 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
   );
 
   return (
-    <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+    <Grid container rowSpacing={3}>
+      {/* Left Column */}
       <Grid item xs={6}>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Entity type')}
-        </Typography>
-        <ItemEntityType entityType={relatedContainer.entity_type} />
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Entity type')}
+            </Typography>
+            <ItemEntityType entityType={relatedContainer.entity_type} />
+          </Grid>
 
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 40 }}
-        >
-          {t_i18n('Description')}
-        </Typography>
-        <ExpandableMarkdown source={relatedContainer.description} limit={300} />
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Description')}
+            </Typography>
+            <ExpandableMarkdown source={relatedContainer.description} limit={300} />
+          </Grid>
 
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Author')}
-        </Typography>
-        <ItemAuthor
-          createdBy={relatedContainer.createdBy}
-        />
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Author')}
+            </Typography>
+            <ItemAuthor createdBy={relatedContainer.createdBy} />
+          </Grid>
 
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Modification date')}
-        </Typography>
-        {fldt(relatedContainer.modified)}
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Modification date')}
+            </Typography>
+            {fldt(relatedContainer.modified)}
+          </Grid>
+        </Grid>
       </Grid>
+
+      {/* RightC olumn */}
       <Grid item xs={6}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Marking')}
+            </Typography>
+            <ItemMarkings markingDefinitions={relatedContainer.objectMarking} />
+          </Grid>
 
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Marking')}
-        </Typography>
-        <ItemMarkings markingDefinitions={relatedContainer.objectMarking}/>
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Processing status')}
+            </Typography>
+            <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} />
+          </Grid>
 
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Processing status')}
-        </Typography>
-        <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} />
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Assignees')}
+            </Typography>
+            <ItemAssignees
+              assignees={relatedContainer.objectAssignee ?? []}
+              stixDomainObjectId={relatedContainer.id}
+            />
+          </Grid>
 
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Assignees')}
-        </Typography>
-        <ItemAssignees assignees={relatedContainer.objectAssignee ?? []} stixDomainObjectId={relatedContainer.id}/>
-
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
-          {t_i18n('Creators')}
-        </Typography>
-        <ItemCreators creators={relatedContainer.creators ?? []} />
-
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom>
+              {t_i18n('Creators')}
+            </Typography>
+            <ItemCreators creators={relatedContainer.creators ?? []} />
+          </Grid>
+        </Grid>
       </Grid>
-      <Grid item xs={12}>
-        <Typography
-          variant="h4"
-          style={{ marginTop: 20 }}
-        >
+
+      {/* Related Containers Distribution */}
+      <Grid item xs={12} >
+        <Typography variant="h4" >
           {t_i18n('Correlated indicators and observables distribution')}
         </Typography>
         {queryRef && <RelatedContainersDetailsDistribution queryRef={queryRef} />}
       </Grid>
-      <RelatedContainersDetailsTable filters={queryFilters} />
+
+      {/* Related Containers Table */}
+      <Grid item xs={12}>
+        <RelatedContainersDetailsTable filters={queryFilters} />
+      </Grid>
     </Grid>
+
   );
 };
 

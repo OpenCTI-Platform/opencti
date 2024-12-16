@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { NorthEastOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
@@ -12,6 +12,8 @@ import {
   RelatedContainersFragment_container_connection$data,
   RelatedContainersFragment_container_connection$key,
 } from '@components/common/containers/related_containers/__generated__/RelatedContainersFragment_container_connection.graphql';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
@@ -119,7 +121,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   entityType,
 }) => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
+  const theme = useTheme<Theme>();
   const [selectedContainer, setSelectedContainer] = useState<RelatedContainerNode | undefined>();
   const relatedContainers = useFragment(
     RelatedContainersFragment,
@@ -145,13 +147,13 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
       flexFlow: 'column',
     }}
     >
-      <Typography variant="h3" gutterBottom={true} style={{}}>
+      <Typography variant="h3" gutterBottom={true}>
         {t_i18n('Correlated containers')}
         <Tooltip title={t_i18n('Go to correlation graph view')} placement="top">
           <IconButton
             color="primary"
             component={Link}
-            style={{ marginBottom: 4 }}
+            style={{ marginBottom: theme.spacing(0.5) }}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
           >
             <VectorLink fontSize="small"/>
@@ -194,15 +196,17 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         open={!!selectedContainer}
         onClose={() => setSelectedContainer(undefined)}
         header={
-          <IconButton
-            color="primary"
-            aria-label="Go to container"
-            onClick={() => navigate(`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`)}
-            size="medium"
-            style={{ position: 'absolute', right: 12 }}
-          >
-            <NorthEastOutlined/>
-          </IconButton>
+          <Tooltip title={t_i18n('Go to container')}>
+            <IconButton
+              color="primary"
+              component={Link}
+              to={`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`}
+              size="medium"
+              style={{ position: 'absolute', right: 12 }}
+            >
+              <NorthEastOutlined/>
+            </IconButton>
+          </Tooltip>
         }
       >
         {selectedContainer && (
