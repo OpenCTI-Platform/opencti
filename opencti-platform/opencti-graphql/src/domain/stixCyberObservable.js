@@ -88,8 +88,8 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
         value = observable.hashes['SHA-256'];
       }
       if (observable.hashes['SHA-512']) {
-        key = `${entityType}_sha512`;
-        value = observable.hashes['SHA-512'];
+        key = key.length > 0 ? `${key}__${entityType}_sha512` : `${entityType}_sha512`;
+        value = value.length > 0 ? `${value}__${observable.hashes['SHA-512']}` : observable.hashes['SHA-512'];
       }
       if (observable.hashes['SHA-1']) {
         key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
