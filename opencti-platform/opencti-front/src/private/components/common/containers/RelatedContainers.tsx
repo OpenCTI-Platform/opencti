@@ -89,7 +89,13 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   const containersGlobalCount = relatedContainers?.pageInfo?.globalCount ?? 0;
 
   return (
-    <div style={{ marginTop: 20, height: 300 }} ref={(r) => setRef(r ?? undefined)}>
+    <div style={{
+      marginTop: 20,
+      flex: 1,
+      display: 'flex',
+      flexFlow: 'column',
+    }}
+    >
       <Typography variant="h3" gutterBottom={true}>
         {t_i18n('Correlated containers')}
         <Tooltip title={t_i18n('Go to correlation graph view')} placement="top">
@@ -103,9 +109,9 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
           </IconButton>
         </Tooltip>
       </Typography>
-      <div className="clearfix"/>
-      {containersGlobalCount > 0
-        ? <DataTableWithoutFragment
+      <div style={{ height: '100%' }} ref={(r) => setRef(r ?? undefined)}>
+        {containersGlobalCount > 0 ? (
+          <DataTableWithoutFragment
             dataColumns={{
               entity_type: { percentWidth: 15 },
               name: { percentWidth: 40 },
@@ -121,17 +127,20 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             hideHeaders={true}
             onLineClick={(row: RelatedContainerNode) => navigate(`${resolveLink(row?.entity_type)}/${row?.id}`)}
           />
-        : <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
+        ) : (
+          <div style={{
+            display: 'flex',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
           >
-            {t_i18n('No correlated containers has been found.')}
-          </span>
-        </div>}
+            <span>
+              {t_i18n('No correlated containers has been found.')}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
