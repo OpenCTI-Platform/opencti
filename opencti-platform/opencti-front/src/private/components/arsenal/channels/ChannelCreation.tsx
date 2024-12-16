@@ -172,7 +172,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   });
 
   return (
-    <Formik
+    <Formik<ChannelAddInput>
       initialValues={initialValues}
       validationSchema={channelValidator}
       onSubmit={onSubmit}

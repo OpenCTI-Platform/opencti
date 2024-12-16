@@ -176,7 +176,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   });
 
   return (
-    <Formik
+    <Formik<GroupingAddInput>
       initialValues={initialValues}
       validationSchema={validator}
       validateOnChange={false} // Validation will occur on submission, required fields all have *'s

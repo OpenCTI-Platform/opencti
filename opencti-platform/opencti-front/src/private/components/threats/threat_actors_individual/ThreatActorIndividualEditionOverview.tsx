@@ -238,7 +238,7 @@ ThreatActorIndividualEditionOverviewProps
     references: [],
   };
   return (
-    <Formik
+    <Formik<ThreatActorIndividualEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={ThreatActorIndividualValidator}

@@ -195,7 +195,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<NarrativeAddInput>
       initialValues={initialValues}
       validationSchema={narrativeValidator}
       onSubmit={onSubmit}

@@ -188,7 +188,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   });
 
   return (
-    <Formik
+    <Formik<PositionAddInput>
       initialValues={initialValues}
       validationSchema={positionValidator}
       onSubmit={onSubmit}

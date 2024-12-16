@@ -308,7 +308,7 @@ ContainerStixCyberObservablesComponentProps
               warningMessage={t_i18n('Be careful, you are about to delete the selected observables (not the relationships)')}
             />
             <StixCyberObservablesRightBar
-              types={types}
+              types={types ?? []}
               handleToggle={handleToggle}
               handleClear={handleClear}
               openExports={openExports}

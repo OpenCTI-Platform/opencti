@@ -137,7 +137,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
 
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   return (
-    <Formik
+    <Formik<TaxiiCollectionCreationForm>
       onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}

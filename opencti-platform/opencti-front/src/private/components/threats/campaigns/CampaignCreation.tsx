@@ -166,7 +166,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   });
 
   return (
-    <Formik
+    <Formik<CampaignAddInput>
       initialValues={initialValues}
       validationSchema={campaignValidator}
       onSubmit={onSubmit}

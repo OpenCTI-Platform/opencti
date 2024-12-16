@@ -143,7 +143,7 @@ FileIndexingConfigurationProps
                           setFieldValue(
                             'accept_mime_types',
                             values.accept_mime_types.filter(
-                              (v) => v !== mimeType,
+                              (v: string) => v !== mimeType,
                             ),
                           );
                         } else {

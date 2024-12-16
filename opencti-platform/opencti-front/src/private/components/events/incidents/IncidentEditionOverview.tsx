@@ -246,7 +246,7 @@ IncidentEditionOverviewProps
     references: [],
   };
   return (
-    <Formik
+    <Formik<IncidentEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={incidentValidator}
