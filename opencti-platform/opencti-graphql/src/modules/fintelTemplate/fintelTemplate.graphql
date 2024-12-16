@@ -31,7 +31,7 @@ input FintelTemplateAddInput {
   instance_filters: String
   content: String
   start_date: DateTime
-  fintel_template_widgets: [FintelTemplateWidgetAddInput]
+  fintel_template_widgets: [FintelTemplateWidgetAddInput!]
 }
 
 # Relay connections

@@ -324,7 +324,7 @@ const StixCoreObjectFileExportComponent = ({
         });
       }
     } catch (e) {
-      MESSAGING$.notifyError(t_i18n('Error trying to export a PDF template'));
+      MESSAGING$.notifyError(t_i18n('Error trying to export the file'));
       throw e;
     }
   };

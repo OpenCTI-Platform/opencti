@@ -1,5 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FintelTemplateAddInput } from '../../generated/graphql';
+import type { EditInput, FintelTemplateAddInput, FintelTemplateWidgetAddInput } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -38,12 +39,19 @@ export const addFintelTemplate = async (
   user: AuthUser,
   input: FintelTemplateAddInput,
 ) => {
+  // check rights
   await canCustomizeTemplate(context);
+  // add id to fintel template widgets
   const finalInput: FintelTemplateAddInput = {
     ...input,
     content: input.content ?? '',
-    fintel_template_widgets: input.fintel_template_widgets ?? [],
+    fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
+      ...templateWidget,
+      id: uuidv4(),
+      widget: { ...templateWidget.widget, id: uuidv4() },
+    })),
   };
+  // create the fintel template
   const created = await createEntity(
     context,
     user,
@@ -59,13 +67,28 @@ export const fintelTemplateEditField = async (
   templateId: string,
   input: EditInput[],
 ) => {
+  // check rights
   await canCustomizeTemplate(context);
+  // add id to fintel template widgets
+  const formattedInput = input.map((i) => {
+    if (i.key === 'fintel_template_widgets') {
+      const values = i.value as FintelTemplateWidgetAddInput[];
+      const formattedValues = values.map((v) => ({
+        ...v,
+        id: uuidv4(), // add id to fintel template widgets
+        widget: { ...v.widget, id: uuidv4() }, // widget with id
+      }));
+      return { ...i, value: formattedValues };
+    }
+    return i;
+  });
+  // edit the fintel template
   const { element } = await updateAttribute(
     context,
     user,
     templateId,
     ENTITY_TYPE_FINTEL_TEMPLATE,
-    input,
+    formattedInput,
   );
 
   await publishUserAction({
@@ -74,7 +97,7 @@ export const fintelTemplateEditField = async (
     event_scope: 'update',
     event_access: 'administration',
     message: 'Update template',
-    context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input },
+    context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].EDIT_TOPIC, element, user);
@@ -114,6 +137,16 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     generateFintelTemplateExecutiveSummary('Case-Rfi'),
     generateFintelTemplateExecutiveSummary('Case-Rft')
   ];
-  await Promise.all(builtInTemplatesInputs
+  // add id to fintel template widgets
+  const finalInputs: FintelTemplateAddInput[] = builtInTemplatesInputs.map((input) => ({
+    ...input,
+    content: input.content ?? '',
+    fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
+      ...templateWidget,
+      id: uuidv4(),
+      widget: { ...templateWidget.widget, id: uuidv4() },
+    })),
+  }));
+  await Promise.all(finalInputs
     .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
 };
