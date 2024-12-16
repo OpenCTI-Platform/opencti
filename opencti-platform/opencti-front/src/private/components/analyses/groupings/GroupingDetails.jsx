@@ -20,6 +20,8 @@ const styles = (theme) => ({
     padding: '15px',
     borderRadius: 4,
     position: 'relative',
+    display: 'flex',
+    flexFlow: 'column',
   },
   chip: {
     fontSize: 12,
