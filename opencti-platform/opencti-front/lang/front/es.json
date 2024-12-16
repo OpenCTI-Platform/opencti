@@ -13,6 +13,8 @@
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
   "About": "Acerca de",
   "Abstract": "Resumen",
+  "Limitations applied, number of fully loaded containers: ": "Limitaciones aplicadas, número de contenedores completamente cargados:",
+  "Open this entity in an investigation to be able to see all objects.": "Abra esta entidad en una investigación para poder ver todos los objetos.",
   "Accent color": "Color de resalte",
   "Accept": "Aceptar",
   "Access administration": "Acceder a la administración",

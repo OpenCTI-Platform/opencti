@@ -13,6 +13,8 @@
   "A public dashboard is a snapshot...": "公共仪表盘是私人仪表盘在特定时间的快照。如果修改了私人仪表盘，则不会修改已创建的公共仪表盘。",
   "About": "关于",
   "Abstract": "摘要",
+  "Limitations applied, number of fully loaded containers: ": "限制条件，满载集装箱数量：",
+  "Open this entity in an investigation to be able to see all objects.": "在调查中打开此实体，以便查看所有对象。",
   "Accent color": "辅助色",
   "Accept": "接受",
   "Access administration": "访问管理",
