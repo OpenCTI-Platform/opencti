@@ -4,19 +4,12 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
+import RelatedContainers from '../../common/containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemIcon from '../../../../components/ItemIcon';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
@@ -26,6 +19,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     borderRadius: 4,
     position: 'relative',
+    display: 'flex',
+    flexFlow: 'column',
   },
   chip: {
     fontSize: 12,
@@ -36,121 +31,36 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 4,
     margin: '0 5px 5px 0',
   },
-  item: {
-    height: 50,
-    minHeight: 50,
-    maxHeight: 50,
-    paddingRight: 0,
-  },
-  itemText: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
-    },
-  },
-  itemAuthor: {
-    width: 120,
-    minWidth: 120,
-    maxWidth: 120,
-    marginRight: 24,
-    marginLeft: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemDate: {
-    width: 120,
-    minWidth: 120,
-    maxWidth: 120,
-    marginRight: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemMarking: {
-    width: 110,
-    paddingRight: 20,
-  },
-  relatedContainers: {
-    paddingTop: 0,
-  },
 }));
 
 const ReportDetailsFragment = graphql`
-    fragment ReportDetails_report on Report {
-        id
-        published
-        report_types
-        description
-        relatedContainers(
-            first: 10
-            orderBy: published
-            orderMode: desc
-            types: ["Report"]
-            viaTypes: ["Indicator", "Stix-Cyber-Observable"]
-        ) {
-            edges {
-                node {
-                    id
-                    entity_type
-                    ... on Report {
-                        name
-                        description
-                        published
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                        objectMarking {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                }
-            }
-        }
+  fragment ReportDetails_report on Report {
+    id
+    entity_type
+    published
+    report_types
+    description
+    relatedContainers(
+      first: 10
+      orderBy: modified
+      orderMode: desc
+      types: ["Case", "Report", "Grouping"]
+      viaTypes: ["Indicator", "Stix-Cyber-Observable"]
+    ) {
+      ...RelatedContainersFragment_container_connection
     }
+  }
 `;
 
 const ReportDetails = ({ report }) => {
   const classes = useStyles();
-  const { t_i18n, fldt, fsd } = useFormatter();
-  const [expanded, setExpanded] = useState(false);
+  const { t_i18n, fldt } = useFormatter();
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
   const reportData = useFragment(ReportDetailsFragment, report);
   useEffect(() => {
     setHeight(ref.current.clientHeight);
   });
-  const expandable = reportData.relatedContainers.edges.length > 5;
-  const relatedContainers = reportData.relatedContainers.edges
-    .filter((relatedContainerEdge) => relatedContainerEdge.node.id !== reportData.id)
-    .slice(0, expanded ? 200 : 5);
 
   const entitiesDistributionDataSelection = [
     {
@@ -233,76 +143,12 @@ const ReportDetails = ({ report }) => {
             />
           </Grid>
         </Grid>
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Correlated reports')}
-        </Typography>
-        <List classes={{ root: classes.relatedContainers }}>
-          {relatedContainers.length > 0
-            ? relatedContainers.map((relatedContainerEdge) => {
-              const relatedContainer = relatedContainerEdge.node;
-              return (
-                <ListItem
-                  key={reportData.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/analyses/reports/${relatedContainer.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    className={classes.itemText}
-                    primary={
-                      <div>
-                        {relatedContainer.name}
-                      </div>
-                    }
-                  />
-                  <ListItemText
-                    className={classes.itemAuthor}
-                    primary={
-                      <div>
-                        {relatedContainer.createdBy?.name ?? '-'}
-                      </div>
-                    }
-                  />
-                  <ListItemText
-                    className={classes.itemDate}
-                    primary={
-                      <div>
-                        {fsd(relatedContainer.published)}
-                      </div>
-                    }
-                  />
-                  <div className={classes.itemMarking}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitions={relatedContainer.objectMarking}
-                      limit={1}
-                    />
-                  </div>
-                </ListItem>
-              );
-            })
-            : '-'}
-        </List>
-        {expandable && (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => setExpanded(!expanded)}
-            classes={{ root: classes.buttonExpand }}
-          >
-            {expanded ? (
-              <ExpandLessOutlined fontSize="small" />
-            ) : (
-              <ExpandMoreOutlined fontSize="small" />
-            )}
-          </Button>
-        )}
+        <Divider style={{ marginTop: 30 }} />
+        <RelatedContainers
+          relatedContainers={reportData.relatedContainers}
+          containerId={reportData.id}
+          entityType={reportData.entity_type}
+        />
       </Paper>
     </div>
   );
