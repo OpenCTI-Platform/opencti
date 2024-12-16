@@ -15,6 +15,7 @@ const CREATE_CONTENT_MUTATION = gql`
       file_id
       exclusion_list_entity_types
       exclusion_list_values_count
+      exclusion_list_file_size
     }
   }
 `;
@@ -26,6 +27,7 @@ const CREATE_FILE_MUTATION = gql`
       file_id
       exclusion_list_entity_types
       exclusion_list_values_count
+      exclusion_list_file_size
     }
   }
 `;
@@ -37,6 +39,7 @@ const FIELD_PATCH_MUTATION = gql`
       file_id
       exclusion_list_entity_types
       exclusion_list_values_count
+      exclusion_list_file_size
     }
   }
 `;
@@ -79,6 +82,7 @@ type ExclusionListResponse = {
   id: string | null;
   file_id: string | null;
   exclusion_list_values_count: number | null;
+  exclusion_list_file_size: number | null;
 };
 
 const createUploadFile = (filePath: string, fileName: string) => {
@@ -94,8 +98,8 @@ const createUploadFile = (filePath: string, fileName: string) => {
 };
 
 describe('Exclusion list resolver', () => {
-  let exclusionListResponse: ExclusionListResponse = { id: null, file_id: null, exclusion_list_values_count: null };
-  let exclusionListFileResponse: ExclusionListResponse = { id: null, file_id: null, exclusion_list_values_count: null };
+  let exclusionListResponse: ExclusionListResponse = { id: null, file_id: null, exclusion_list_values_count: null, exclusion_list_file_size: null };
+  let exclusionListFileResponse: ExclusionListResponse = { id: null, file_id: null, exclusion_list_values_count: null, exclusion_list_file_size: null };
 
   describe('exclusionListValuesAdd', () => {
     describe('If I create an exclusion with a content', () => {
@@ -152,6 +156,7 @@ describe('Exclusion list resolver', () => {
         expect(exclusionListFileResponse.id).toBeDefined();
         expect(exclusionListFileResponse.file_id).toBe(`exclusionLists/${exclusionListFileResponse.id}.txt`);
         expect(exclusionListFileResponse.exclusion_list_values_count).toBe(3);
+        expect(exclusionListFileResponse.exclusion_list_file_size).toBe(27);
       });
 
       it('should create a file', async () => {
@@ -172,6 +177,7 @@ describe('Exclusion list resolver', () => {
           }
         });
         expect(fieldPatch?.data?.exclusionListFieldPatch.exclusion_list_values_count).toBe(4);
+        expect(fieldPatch?.data?.exclusionListFieldPatch.exclusion_list_file_size).toBe(37);
         // verify that file was modified
         const fileStream = await downloadFile(exclusionListFileResponse.file_id);
         expect(fileStream).not.toBeNull();
