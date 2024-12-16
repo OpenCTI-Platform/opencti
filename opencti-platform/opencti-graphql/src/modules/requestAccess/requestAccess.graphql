@@ -1,49 +1,15 @@
-type RequestAccess implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  # Request Access
-  name: String!
-  justification: String
-  created_at: DateTime!
-  creators: [Creator!]
-  target_entities: [String!]!
-  membership_request: [String!]!
-  request_type: [String!]!
-}
-
-# Relay connections
-type RequestAccessConnection {
-  pageInfo: PageInfo!
-  edges: [RequestAccessEdge!]!
-}
-
-type RequestAccessEdge {
-  cursor: String!
-  node: RequestAccess!
-}
-
-# Queries
-type Query {
-  requestAccess(id: String!): RequestAccess @auth(for: [KNOWLEDGE])
-  requestAccesses(
-    first: Int
-    after: ID
-    filters: FilterGroup
-    search: String
-  ): RequestAccessConnection @auth(for: [KNOWLEDGE])
+enum RequestAccessType {
+  organization
 }
 
 input RequestAccessAddInput {
-  name: String!
-  justification: String
-  target_entities: [String!]!
-  membership_request: [String!]!
-  request_type: [String!]!
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
 }
 
 type Mutation {
-  requestAccessAdd(input: RequestAccessAddInput!): RequestAccess @auth(for: [KNOWLEDGE])
-  requestAccessValidate(id: ID!): RequestAccess @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
+  requestAccessValidate(id: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }
