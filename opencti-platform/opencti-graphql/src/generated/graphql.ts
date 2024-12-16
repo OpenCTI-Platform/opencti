@@ -8210,7 +8210,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
 export type FintelTemplateAddInput = {
   content?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
-  fintel_template_widgets?: InputMaybe<Array<InputMaybe<FintelTemplateWidgetAddInput>>>;
+  fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   settings_types: Array<Scalars['String']['input']>;
