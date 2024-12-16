@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect } from 'react';
+import React, { FunctionComponent, ReactNode, Suspense, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -14,6 +14,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { SearchContainerQueryFilesCountQuery } from './__generated__/SearchContainerQueryFilesCountQuery.graphql';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import type { Theme } from '../../../components/Theme';
+import Loader from '../../../components/Loader';
 
 const searchContainerQueryFilesCountQuery = graphql`
   query SearchContainerQueryFilesCountQuery($search: String) {
@@ -65,7 +66,9 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
           />
         </Tabs>
       </Box>
-      {children}
+      <Suspense fallback={<Loader />}>
+        {children}
+      </Suspense>
     </ExportContextProvider>
   );
 };
@@ -107,17 +110,22 @@ const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
     }
   }, []);
 
-  if (queryRef) {
-    return (
-      <SearchContainerQueryWithRef queryRef={queryRef}>
-        {children}
-      </SearchContainerQueryWithRef>
-    );
-  }
   return (
-    <SearchContainer>
-      {children}
-    </SearchContainer>
+    <>
+      {(fileSearchEnabled) ? (
+        <>
+          {queryRef ? (
+            <SearchContainerQueryWithRef queryRef={queryRef}>
+              {children}
+            </SearchContainerQueryWithRef>
+          ) : (<Loader />) }
+        </>
+      ) : (
+        <SearchContainer>
+          {children}
+        </SearchContainer>
+      )}
+    </>
   );
 };
 
