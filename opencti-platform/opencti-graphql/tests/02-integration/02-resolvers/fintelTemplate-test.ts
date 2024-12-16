@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { v4 as uuidv4 } from 'uuid';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { activateEE, deactivateEE } from '../../utils/testEE';
 import { adminQueryWithError } from '../../utils/testQueryHelper';
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
-import { WidgetPerspective } from '../../../src/generated/graphql';
+import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 
 const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
   query entitySettings(
@@ -140,13 +139,11 @@ describe('Fintel template resolver standard behavior', () => {
     const fintelTemplatesEdges2 = queryResult2.data?.entitySettings.edges[0].node.fintelTemplates.edges;
     expect(fintelTemplatesEdges2.length).toEqual(0);
   });
-  it('should fintel template edited', async () => {
-    const fintelTemplateWidget = {
-      id: uuidv4(),
+  it('should fintel template widgets edited', async () => {
+    const fintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput = {
       variable_name: 'containerObservables',
       widget: {
         type: 'list',
-        id: uuidv4(),
         perspective: WidgetPerspective.Entities,
         dataSelection: [
           {
@@ -174,7 +171,7 @@ describe('Fintel template resolver standard behavior', () => {
       query: EDIT_QUERY,
       variables: {
         id: fintelTemplateInternalId,
-        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidget] }],
+        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidgetAddInput] }],
       }
     });
     const fintelTemplateWidgets = queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets;
