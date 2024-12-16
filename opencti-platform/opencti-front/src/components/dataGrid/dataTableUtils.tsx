@@ -255,7 +255,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   description: {
     id: 'description',
     label: 'Description',
-    percentWidth: 30,
+    percentWidth: 20,
     isSortable: false,
     render: ({ description }) => description || '-',
   },

@@ -60,6 +60,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
 
   const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(false);
   const [initialValues, setInitialValues] = useState<ExclusionListEditionFormData | null>(null);
+  const [isContentFieldDisable, setIsContentFieldDisable] = useState<boolean>(false);
 
   const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
 
@@ -82,15 +83,11 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     const input = Object.entries(values)
       .filter(([key, _]) => !['file', 'fileContent'].includes(key))
       .map(([key, value]) => {
-        if (key === 'exclusion_list_entity_types') {
-          return {
-            key,
-            value: value.map((item: Option) => item.value),
-          };
-        }
         return {
           key,
-          value,
+          value: key === 'exclusion_list_entity_types'
+            ? value.map((item: Option) => item.value)
+            : value,
         };
       });
 
@@ -118,7 +115,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     label: type.label,
   }));
 
-  const handleSetInitialValues = (fileContent: string) => {
+  const handleSetInitialValues = (fileContent?: string) => {
     setInitialValues({
       name: data.name,
       description: data.description,
@@ -135,7 +132,13 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   };
 
   useEffect(() => {
-    loadFileContent();
+    if (data.exclusion_list_file_size < 1000000) {
+      loadFileContent();
+    } else {
+      setIsContentFieldDisable(true);
+      setIsUploadFileChecked(true);
+      handleSetInitialValues();
+    }
   }, []);
 
   return (
@@ -191,18 +194,26 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                   textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
                   required
                 />
-                <FormControlLabel
-                  style={fieldSpacingContainerStyle}
-                  control={
-                    <Switch
-                      defaultChecked
-                      onChange={(_, isChecked) => {
-                        setIsUploadFileChecked(isChecked);
-                      }}
-                    />
+                <div style={{ display: 'flex' }}>
+                  <FormControlLabel
+                    style={fieldSpacingContainerStyle}
+                    control={
+
+                      <Switch
+                        checked={isUploadFileChecked}
+                        onChange={(_, isChecked) => {
+                          setIsUploadFileChecked(isChecked);
+                        }}
+                      />
+
                   }
-                  label={t_i18n('Upload file')}
-                />
+                    disabled={isContentFieldDisable}
+                    label={isContentFieldDisable
+                      ? t_i18n('This exclusion list is too large to be displayed')
+                      : t_i18n('Upload file')
+                  }
+                  />
+                </div>
                 {isUploadFileChecked
                   ? <CustomFileUploader setFieldValue={setFieldValue} />
                   : (
@@ -213,14 +224,6 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                       multiline
                       rows={10}
                       fullWidth
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <GetAppOutlined fontSize="small" />
-                            azS
-                          </InputAdornment>
-                        ),
-                      }}
                     />
                   )
                 }

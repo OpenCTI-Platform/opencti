@@ -2816,6 +2816,7 @@
   "This connector is active": "This connector is active",
   "This connector is disconnected": "This connector is disconnected",
   "This entity has several key fields, which is incompatible with bulk creation": "This entity has several key fields, which is incompatible with bulk creation",
+  "This exclusion list is too large to be displayed": "This exclusion list is too large to be displayed",
   "This feature is not available yet.": "This feature is not available yet.",
   "This feature is only available in OpenCTI Enterprise Edition.": "This feature is only available in OpenCTI Enterprise Edition.",
   "This field is required": "This field is required",

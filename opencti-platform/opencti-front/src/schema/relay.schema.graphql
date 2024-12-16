@@ -8958,7 +8958,6 @@ type Mutation {
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
   supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
   supportPackageDelete(id: ID!): ID
-  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
@@ -12343,13 +12342,6 @@ enum ExclusionListOrdering {
   created_at
   enabled
   _score
-}
-
-input ExclusionListContentAddInput {
-  name: String!
-  description: String
-  exclusion_list_entity_types: [String!]!
-  content: String!
 }
 
 input ExclusionListFileAddInput {

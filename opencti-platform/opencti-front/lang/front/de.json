@@ -2816,6 +2816,7 @@
   "This connector is active": "Dieser Konnektor ist aktiv",
   "This connector is disconnected": "Dieser Konnektor ist nicht verbunden",
   "This entity has several key fields, which is incompatible with bulk creation": "Diese Entität hat mehrere Schlüsselfelder, was mit der Massenerstellung nicht vereinbar ist",
+  "This exclusion list is too large to be displayed": "Diese Ausschlussliste ist zu groß, um angezeigt zu werden",
   "This feature is not available yet.": "Diese Funktion ist noch nicht verfügbar.",
   "This feature is only available in OpenCTI Enterprise Edition.": "Diese Funktion ist nur in OpenCTI Enterprise Edition verfügbar.",
   "This field is required": "Dieses Feld ist erforderlich",
