@@ -9,6 +9,8 @@ import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
+import DraftRelationships from '@components/drafts/DraftRelationships';
+import DraftSightings from '@components/drafts/DraftSightings';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { getCurrentTab } from '../../../utils/utils';
@@ -55,7 +57,7 @@ const RootDraftComponent = ({ draftId }) => {
         }}
       >
         <Tabs
-          value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts')}
+          value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts/entities')}
         >
           <Tab
             component={Link}
@@ -104,11 +106,11 @@ const RootDraftComponent = ({ draftId }) => {
         />
         <Route
           path="/relationships"
-          element={<DraftEntities/>}
+          element={<DraftRelationships/>}
         />
         <Route
           path="/sightings"
-          element={<DraftEntities/>}
+          element={<DraftSightings/>}
         />
         <Route
           path="/containers"
