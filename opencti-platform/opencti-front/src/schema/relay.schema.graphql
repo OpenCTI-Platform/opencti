@@ -8974,7 +8974,7 @@ type Mutation {
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
-  requestAccessAdd(input: RequestAccessAddInput!): Boolean
+  requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessValidate(id: ID!): Boolean
 }
 
