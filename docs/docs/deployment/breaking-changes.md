@@ -4,53 +4,63 @@ This section lists breaking changes introduced in OpenCTI, per version starting 
 
 Please follow the migration guides if you need to upgrade your platform. 
 
+## Breakdown per version
+
+This table regroups all the breaking changes introduced, with the corresponding version in which the change was implemented.
+
+| Change                                                           | Deprecated in | Changed in |
+|:-----------------------------------------------------------------|:--------------|:-----------|
+| [Removing bi-directional stream connectors](#removing-some-stream-connectors)  | 6.3           | 6.6        |
+| [Promote Observable API](#change-to-the-observable-promote-API)  | 6.2           | 6.5        |
+| [SAML authentication parameters](#change-to-SAML-authentication) |               | 6.2        |
+| [Major changes to Filtering API](#new-filtering-API)             |               | 5.12       |
+
+
+
+## OpenCTI 6.3
+
+### Deprecation
+
+<a id="removing-some-stream-connectors"></a>
+#### Removing some stream connectors  
+
+Some bi-directional stream connectors have been divided into two distinct connectors:
+
+- An **external import connector** that gathers information from external organizations, applications, or services into OpenCTI.
+- A **stream connector** that transfers OpenCTI data to third-party platforms.
+
+The existing connectors affected by this change will be removed and replaced with these two new connectors.
+
+For more details, see [this migration guide](./breaking-changes/6.3-removing-some-connectors.md)
+
 ## OpenCTI 6.2
 
-### Change to the observable "promote"  
+### Deprecation
+
+<a id="change-to-the-observable-promote-API"></a>
+#### Change to the observable promote API  
 
 The API calls that promote an Observable to Indicator now return the created Indicator instead of the original Observable.
 
-**GraphQL API**
+For more details, see [this migration guide](./breaking-changes/6.2-promote-to-indicator.md).
 
-* Mutation `StixCyberObservableEditMutations.promote` is now deprecated
-* New Mutation `StixCyberObservableEditMutations.promoteToIndicator` introduced
+### Breaking Changes
 
-
-**Client-Python API**
-
-* Client-python method `client.stix_cyber_observable.promote_to_indicator` is now deprecated
-* New Client-python method `client.stix_cyber_observable.promote_to_indicator_v2` introduced
-
-
-!!! warning "Discontinued Support"
-
-    Please note that the deprecated methods will be permanently removed in OpenCTI 6.5.
-
-#### How to migrate
-
-If you are using custom scripts that make use of the deprecated API methods, please update these scripts.
-
-The changes are straightforward: if you are using the return value of the method, you should now expect the new Indicator 
-instead of the Observable being promoted; adapt your code accordingly.
-
-
+<a id="change-to-SAML-authentication"></a>
 ### Change to SAML authentication
 
-When `want_assertions_signed` and `want_authn_response_signed` SAML parameter are not present in OpenCTI configuration, 
-the default is now set to `true` by the underlying library (passport-saml) when previously it was `false` by default.
+Upgrading `passport-saml` library introduced a breaking change with respect to the default SAML parameters regarding signing responses and assertions. 
 
-#### How to migrate
-
-If you have issues after upgrade, you can try with both parameters set to `false`.
+For more details, see [this migration guide](./breaking-changes/6.2-saml-authentication.md).
 
 ## OpenCTI 5.12
 
-### Major changes to the filtering APi
+### Breaking changes
+
+<a id="new-filtering-API"></a>
+#### Major changes to the filtering API
 
 OpenCTI 5.12 introduces a major rework of the **filter engine** with breaking changes to the model.
-
 A [dedicated blog post](https://blog.filigran.io/introducing-advanced-filtering-possibilities-in-opencti-552147565faf) describes the reasons behind these changes.
 
-#### How to migrate
-
-Please read the dedicated [migration guide](../reference/filters-migration.md).
+Please read the dedicated [migration guide](./breaking-changes/5.12-filters.md).

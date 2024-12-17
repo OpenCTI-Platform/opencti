@@ -64,6 +64,7 @@ If the missing dependency has been permanently deleted, the object cannot be rec
 ![restore error: a dependency is in the trash](assets/trash-error-dependency-missing.png)
 
 In other words:
+
 * **no partial restore**: the object and _all_ its relationships must be restored in one pass
 * **no "cascading" restore**: restoring one object does not restore automatically all linked objects in the trash
 
