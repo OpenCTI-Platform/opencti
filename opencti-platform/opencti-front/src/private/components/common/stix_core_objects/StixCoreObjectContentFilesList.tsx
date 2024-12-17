@@ -19,6 +19,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -176,27 +178,31 @@ const StixCoreObjectContentFilesList = ({
           </MenuItem>
         )}
         {canDownloadAsPdf && (
-          <StixCoreObjectFileExport
-            onClose={() => setAnchorEl(null)}
-            scoId={stixCoreObjectId}
-            scoName={stixCoreObjectName}
-            scoEntityType={stixCoreObjectType}
-            defaultValues={{
-              connector: BUILT_IN_HTML_TO_PDF.value,
-              format: 'application/pdf',
-              fileToExport: menuFile.id,
-            }}
-            onExportCompleted={onFileChange}
-            OpenFormComponent={({ onOpen }) => (
-              <MenuItem onClick={onOpen}>
-                {t_i18n('Generate a PDF export')}
-              </MenuItem>
-            )}
-          />
+          <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+            <StixCoreObjectFileExport
+              onClose={() => setAnchorEl(null)}
+              scoId={stixCoreObjectId}
+              scoName={stixCoreObjectName}
+              scoEntityType={stixCoreObjectType}
+              defaultValues={{
+                connector: BUILT_IN_HTML_TO_PDF.value,
+                format: 'application/pdf',
+                fileToExport: menuFile.id,
+              }}
+              onExportCompleted={onFileChange}
+              OpenFormComponent={({ onOpen }) => (
+                <MenuItem onClick={onOpen}>
+                  {t_i18n('Generate a PDF export')}
+                </MenuItem>
+              )}
+            />
+          </Security>
         )}
-        <MenuItem onClick={handleDelete}>
-          {t_i18n('Delete')}
-        </MenuItem>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]} matchAll>
+          <MenuItem onClick={handleDelete}>
+            {t_i18n('Delete')}
+          </MenuItem>
+        </Security>
         <DeleteDialog
           title={t_i18n('Are you sure you want to delete this file?')}
           deletion={deletion}
