@@ -36,6 +36,38 @@ You can do the same for all the relationships between entities that might be def
 
 ![New representation](assets/csv-mappers-rep-1.png)
 
+## Create a new reference representation (label, author, markings,..)
+
+ **Reference attributes** like author, markings, label, external references or kill chain phase, are modeled in the platform as entities. As such, they should be extracted from the CSV files through new entity representations in the mapper.
+
+
+At first, you shall see no options available in the list: 
+
+![csv](assets/csv-mapper-author-no-options.png)
+
+
+According to the reference, in this array, you will find the representation you need to configure corresponding to the appropriate attribute:
+
+| Attribute reference | Entity representation                | 
+|:--------------------|:-------------------------------------|
+| author              | Individual or System or Organization |
+| markings            | Marking definition                   |
+| label               | Label                                |
+| external references | External references                  |
+| kill chain phase    | Kill chain phase                     |
+
+
+For instance, if you want to add to an Attack Pattern an author, some markings, an external references and a kill chain phase, you need to add and to configure each new entity representations below the Attack pattern:
+
+![csv](assets/csv-mapper-ref-representation.png)
+
+
+After adding them, you can select those representations in your attack pattern.
+
+![csv](assets/csv-mapper-adding-reference.png)
+
+
+
 ### Entity dynamic mapping
 
 If your CSV file contains multiple entities in separate rows but in the same columns, you can enable "Entity dynamic mapping". 
