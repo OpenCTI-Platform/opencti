@@ -86,11 +86,11 @@ describe('Add Request Access to an entity and create an RFI', async () => {
       query: READ_QUERY,
       variables: { id: caseRfiId },
     });
-    const caseRequestforInformation = await findById(testContext, ADMIN_USER, caseRfiId);
+    const caseRequestForInformation = await findById(testContext, ADMIN_USER, caseRfiId);
     expect(queryResult?.data?.caseRfi).not.toBeNull();
-    expect(queryResult?.data?.caseRfi.id).toEqual(caseRequestforInformation.id);
-    expect(queryResult?.data?.caseRfi.name).toContain(caseRequestforInformation.name);
-    expect(caseRequestforInformation[RELATION_OBJECT_PARTICIPANT]).toContain(ADMIN_USER.id);
-    expect(caseRequestforInformation.object).toEqual([malware.data?.malwareAdd.id]);
+    expect(queryResult?.data?.caseRfi.id).toEqual(caseRequestForInformation.id);
+    expect(queryResult?.data?.caseRfi.name).toContain(caseRequestForInformation.name);
+    expect(caseRequestForInformation[RELATION_OBJECT_PARTICIPANT]).toContain(ADMIN_USER.id);
+    expect(caseRequestForInformation.object).toEqual([malware.data?.malwareAdd.id]);
   });
 });
