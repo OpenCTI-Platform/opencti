@@ -14,7 +14,9 @@ import {
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
+  HubOutlined,
   LinkOutlined,
+  PolylineOutlined,
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
@@ -333,6 +335,7 @@ class GroupingKnowledgeGraphBar extends Component {
     const {
       t,
       classes,
+      currentQueryMode,
       currentMode3D,
       currentModeTree,
       currentModeFixed,
@@ -341,6 +344,7 @@ class GroupingKnowledgeGraphBar extends Component {
       currentStixCoreObjectsTypes,
       currentSelectRectangleModeFree,
       currentSelectModeFree,
+      handleToggleQueryMode,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -495,6 +499,23 @@ class GroupingKnowledgeGraphBar extends Component {
                     display: 'flex',
                   }}
                 >
+                  {handleToggleQueryMode && (
+                    <Tooltip
+                      title={
+                        currentQueryMode === 'all-entities'
+                          ? t('Show only correlated observables and indicators')
+                          : t('Show all correlated entities')
+                      }
+                    >
+                      <IconButton
+                        color={'secondary'}
+                        onClick={handleToggleQueryMode.bind(this)}
+                        size="large"
+                      >
+                        {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <Tooltip
                     title={
                       currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -1240,6 +1261,8 @@ GroupingKnowledgeGraphBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   grouping: PropTypes.object,
+  handleToggleQueryMode: PropTypes.func,
+  currentQueryMode: PropTypes.string,
   handleToggle3DMode: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,

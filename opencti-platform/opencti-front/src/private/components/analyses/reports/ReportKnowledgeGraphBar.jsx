@@ -14,13 +14,15 @@ import {
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
+  HubOutlined,
   LinkOutlined,
+  PolylineOutlined,
   ScatterPlotOutlined,
-  VisibilityOutlined,
-  SwipeVertical,
   SwipeDown,
   SwipeUp,
+  SwipeVertical,
   TouchApp,
+  VisibilityOutlined,
 } from '@mui/icons-material';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -361,6 +363,7 @@ class ReportKnowledgeGraphBar extends Component {
     const {
       t,
       classes,
+      currentQueryMode,
       currentMode3D,
       currentModeTree,
       currentModeFixed,
@@ -370,6 +373,7 @@ class ReportKnowledgeGraphBar extends Component {
       currentSelectRectangleModeFree,
       currentSelectModeFree,
       selectModeFreeReady,
+      handleToggleQueryMode,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -524,6 +528,23 @@ class ReportKnowledgeGraphBar extends Component {
                     display: 'flex',
                   }}
                 >
+                  {handleToggleQueryMode && (
+                  <Tooltip
+                    title={
+                      currentQueryMode === 'all-entities'
+                        ? t('Show only correlated observables and indicators')
+                        : t('Show all correlated entities')
+                    }
+                  >
+                    <IconButton
+                      color={'secondary'}
+                      onClick={handleToggleQueryMode.bind(this)}
+                      size="large"
+                    >
+                      {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
+                    </IconButton>
+                  </Tooltip>
+                  )}
                   <Tooltip
                     title={
                       currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -1304,6 +1325,8 @@ ReportKnowledgeGraphBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   report: PropTypes.object,
+  handleToggleQueryMode: PropTypes.func,
+  currentQueryMode: PropTypes.string,
   handleToggle3DMode: PropTypes.func,
   handleToggleRectangleSelectModeFree: PropTypes.func,
   handleToggleSelectModeFree: PropTypes.func,
