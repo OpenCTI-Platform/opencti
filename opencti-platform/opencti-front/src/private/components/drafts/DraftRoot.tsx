@@ -6,76 +6,22 @@ import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-rou
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import Country from './Country';
-import CountryKnowledge from './CountryKnowledge';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import FileManager from '../../common/files/FileManager';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import { useFormatter } from '../../../../components/i18n';
-import CountryPopover from './CountryPopover';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab } from '../../../../utils/utils';
-import CountryEdition from './CountryEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { getPaddingRight } from '../../../utils/utils';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import StixCoreObjectContentRoot from "@components/common/stix_core_objects/StixCoreObjectContentRoot";
+import DraftEntities from "@components/drafts/DraftEntities";
 
 const RootDraftComponent = ({ draftId }) => {
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const paddingRight = getPaddingRight(location.pathname, draftId, '/dashboard/drafts');
   const { t_i18n } = useFormatter();
   return (
     <>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'regions',
-                'areas',
-                'cities',
-                'organizations',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'observables',
-              ]}
-              stixCoreObjectsDistribution={country.stixCoreObjectsDistribution}
-            />
-                            }
-        />
-      </Routes>
       <div style={{ paddingRight }}>
         <Breadcrumbs elements={[
-          { label: t_i18n('Locations') },
-          { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
-          { label: country.name, current: true },
+          { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
+          { label: draftId, current: true },
         ]}
-        />
-        <StixDomainObjectHeader
-          entityType="Country"
-          disableSharing={true}
-          stixDomainObject={country}
-          PopoverComponent={<CountryPopover id={country.id} />}
-          EditComponent={isFABReplaced && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <CountryEdition countryId={country.id} />
-          </Security>
-          )}
-          enableQuickSubscription={true}
-          isOpenctiAlias={true}
         />
         <Box
           sx={{
@@ -85,114 +31,64 @@ const RootDraftComponent = ({ draftId }) => {
           }}
         >
           <Tabs
-            value={getCurrentTab(location.pathname, country.id, '/dashboard/locations/countries')}
+            value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts')}
           >
             <Tab
               component={Link}
-              to={`/dashboard/locations/countries/${country.id}`}
-              value={`/dashboard/locations/countries/${country.id}`}
-              label={t_i18n('Overview')}
+              to={`/dashboard/drafts/${draftId}/entities`}
+              value={`/dashboard/drafts/${draftId}/entities`}
+              label={t_i18n('Entities')}
             />
             <Tab
               component={Link}
-              to={`/dashboard/locations/countries/${country.id}/knowledge/overview`}
-              value={`/dashboard/locations/countries/${country.id}/knowledge`}
-              label={t_i18n('Knowledge')}
+              to={`/dashboard/drafts/${draftId}/observables`}
+              value={`/dashboard/drafts/${draftId}/observables`}
+              label={t_i18n('Observables')}
             />
             <Tab
               component={Link}
-              to={`/dashboard/locations/countries/${country.id}/content`}
-              value={`/dashboard/locations/countries/${country.id}/content`}
-              label={t_i18n('Content')}
+              to={`/dashboard/drafts/${draftId}/relationships`}
+              value={`/dashboard/drafts/${draftId}/relationships`}
+              label={t_i18n('Relationships')}
             />
             <Tab
               component={Link}
-              to={`/dashboard/locations/countries/${country.id}/analyses`}
-              value={`/dashboard/locations/countries/${country.id}/analyses`}
-              label={t_i18n('Analyses')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/locations/countries/${country.id}/sightings`}
-              value={`/dashboard/locations/countries/${country.id}/sightings`}
+              to={`/dashboard/drafts/${draftId}/sightings`}
+              value={`/dashboard/drafts/${draftId}/sightings`}
               label={t_i18n('Sightings')}
             />
             <Tab
               component={Link}
-              to={`/dashboard/locations/countries/${country.id}/files`}
-              value={`/dashboard/locations/countries/${country.id}/files`}
-              label={t_i18n('Data')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/locations/countries/${country.id}/history`}
-              value={`/dashboard/locations/countries/${country.id}/history`}
-              label={t_i18n('History')}
+              to={`/dashboard/drafts/${draftId}/containers`}
+              value={`/dashboard/drafts/${draftId}/containers`}
+              label={t_i18n('Containers')}
             />
           </Tabs>
         </Box>
         <Routes>
           <Route
             path="/"
-            element={<Country countryData={country} />}
+            element={<Navigate to={`/dashboard/drafts/${draftId}/entities`} replace={true} />}
           />
           <Route
-            path="/knowledge"
-            element={
-              <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
-                                }
+            path="/entities"
+            element={<DraftEntities/>}
           />
           <Route
-            path="/knowledge/*"
-            element={
-              <div key={forceUpdate}>
-                <CountryKnowledge countryData={country} />
-              </div>
-                                }
+            path="/observables"
+            element={<DraftEntities/>}
           />
           <Route
-            path="/content/*"
-            element={
-              <StixCoreObjectContentRoot
-                stixCoreObject={country}
-              />
-                                }
-          />
-          <Route
-            path="/analyses"
-            element={
-              <StixCoreObjectOrStixCoreRelationshipContainers
-                stixDomainObjectOrStixCoreRelationship={country}
-              />
-                                }
+            path="/relationships"
+            element={<DraftEntities/>}
           />
           <Route
             path="/sightings"
-            element={
-              <EntityStixSightingRelationships
-                entityId={country.id}
-                entityLink={link}
-                noPadding={true}
-                isTo={true}
-              />
-                                }
+            element={<DraftEntities/>}
           />
           <Route
-            path="/files"
-            element={
-              <FileManager
-                id={countryId}
-                connectorsImport={connectorsForImport}
-                connectorsExport={connectorsForExport}
-                entity={country}
-              />
-                                }
-          />
-          <Route
-            path="/history"
-            element={
-              <StixCoreObjectHistory stixCoreObjectId={countryId} />
-                                }
+            path="/containers"
+            element={<DraftEntities/>}
           />
         </Routes>
       </div>
@@ -203,7 +99,7 @@ const RootDraftComponent = ({ draftId }) => {
 const RootDraft = () => {
   const { draftId } = useParams() as { draftId: string };
   return (
-      <RootDraftComponent draftId={draftId} />
+    <RootDraftComponent draftId={draftId} />
   );
 };
 
