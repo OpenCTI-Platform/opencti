@@ -7,90 +7,88 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
-import { getPaddingRight } from '../../../utils/utils';
+import { getCurrentTab } from '../../../utils/utils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { useFormatter } from '../../../components/i18n';
 
 const RootDraftComponent = ({ draftId }) => {
   const location = useLocation();
-  const paddingRight = getPaddingRight(location.pathname, draftId, '/dashboard/drafts');
   const { t_i18n } = useFormatter();
   return (
     <>
-      <div style={{ paddingRight }}>
-        <Breadcrumbs elements={[
-          { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
-          { label: draftId, current: true },
-        ]}
-        />
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            marginBottom: 3,
-          }}
+      <Breadcrumbs elements={[
+        { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
+        { label: draftId, current: true },
+      ]}
+      />
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+        }}
+      >
+        <Tabs
+          value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts')}
         >
-          <Tabs
-            value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts')}
-          >
-            <Tab
-              component={Link}
-              to={`/dashboard/drafts/${draftId}/entities`}
-              value={`/dashboard/drafts/${draftId}/entities`}
-              label={t_i18n('Entities')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/drafts/${draftId}/observables`}
-              value={`/dashboard/drafts/${draftId}/observables`}
-              label={t_i18n('Observables')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/drafts/${draftId}/relationships`}
-              value={`/dashboard/drafts/${draftId}/relationships`}
-              label={t_i18n('Relationships')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/drafts/${draftId}/sightings`}
-              value={`/dashboard/drafts/${draftId}/sightings`}
-              label={t_i18n('Sightings')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/drafts/${draftId}/containers`}
-              value={`/dashboard/drafts/${draftId}/containers`}
-              label={t_i18n('Containers')}
-            />
-          </Tabs>
-        </Box>
-        <Routes>
-          <Route
-            path="/"
-            element={<Navigate to={`/dashboard/drafts/${draftId}/entities`} replace={true} />}
+          <Tab
+            component={Link}
+            to={`/dashboard/drafts/${draftId}/entities`}
+            value={`/dashboard/drafts/${draftId}/entities`}
+            label={t_i18n('Entities')}
           />
-          <Route
-            path="/entities"
-            element={<DraftEntities/>}
+          <Tab
+            component={Link}
+            to={`/dashboard/drafts/${draftId}/observables`}
+            value={`/dashboard/drafts/${draftId}/observables`}
+            label={t_i18n('Observables')}
           />
-          <Route
-            path="/observables"
-            element={<DraftEntities/>}
+          <Tab
+            component={Link}
+            to={`/dashboard/drafts/${draftId}/relationships`}
+            value={`/dashboard/drafts/${draftId}/relationships`}
+            label={t_i18n('Relationships')}
           />
-          <Route
-            path="/relationships"
-            element={<DraftEntities/>}
+          <Tab
+            component={Link}
+            to={`/dashboard/drafts/${draftId}/sightings`}
+            value={`/dashboard/drafts/${draftId}/sightings`}
+            label={t_i18n('Sightings')}
           />
-          <Route
-            path="/sightings"
-            element={<DraftEntities/>}
+          <Tab
+            component={Link}
+            to={`/dashboard/drafts/${draftId}/containers`}
+            value={`/dashboard/drafts/${draftId}/containers`}
+            label={t_i18n('Containers')}
           />
-          <Route
-            path="/containers"
-            element={<DraftEntities/>}
-          />
-        </Routes>
-      </div>
+        </Tabs>
+      </Box>
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={`/dashboard/drafts/${draftId}/entities`} replace={true} />}
+        />
+        <Route
+          path="/entities"
+          element={<DraftEntities entitiesType={'Stix-Domain-Object'}/>}
+        />
+        <Route
+          path="/observables"
+          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'}/>}
+        />
+        <Route
+          path="/relationships"
+          element={<DraftEntities/>}
+        />
+        <Route
+          path="/sightings"
+          element={<DraftEntities/>}
+        />
+        <Route
+          path="/containers"
+          element={<DraftEntities entitiesType={'Container'}/>}
+        />
+      </Routes>
     </>
   );
 };

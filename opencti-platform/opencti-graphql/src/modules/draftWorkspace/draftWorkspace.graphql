@@ -60,6 +60,16 @@ type Query {
         filters: FilterGroup
         search: String
     ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
+    draftWorkspaceSightingRelationships(
+        draftId: String!,
+        types: [String]
+        first: Int
+        after: ID
+        orderBy: StixSightingRelationshipsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
 }
 
 input DraftWorkspaceAddInput {

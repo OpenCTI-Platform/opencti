@@ -30,7 +30,7 @@ import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
 import { notify } from '../../database/redis';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -63,6 +63,19 @@ export const listDraftRelations = (context: AuthContext, user: AuthUser, args: Q
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
+  }
+  const newArgs: EntityOptions<BasicStoreRelation> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
+  const draftContext = { ...context, draft_context: draftId };
+  return listRelationsPaginated<BasicStoreRelation>(draftContext, user, types, newArgs);
+};
+
+export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
+  let types: string[] = [];
+  const { draftId, ...listArgs } = args;
+  if (args.types) {
+    types = args.types.filter((t) => t && isStixSightingRelationship(t)) as string[];
+  }
+  if (types.length === 0) {
     types.push(STIX_SIGHTING_RELATIONSHIP);
   }
   const newArgs: EntityOptions<BasicStoreRelation> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };

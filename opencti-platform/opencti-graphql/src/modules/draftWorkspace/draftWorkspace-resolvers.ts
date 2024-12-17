@@ -1,6 +1,15 @@
 import { batchLoader } from '../../database/middleware';
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findAll, addDraftWorkspace, deleteDraftWorkspace, listDraftObjects, validateDraftWorkspace, listDraftRelations } from './draftWorkspace-domain';
+import {
+  findById,
+  findAll,
+  addDraftWorkspace,
+  deleteDraftWorkspace,
+  listDraftObjects,
+  validateDraftWorkspace,
+  listDraftRelations,
+  listDraftSightingRelations
+} from './draftWorkspace-domain';
 import { batchCreators } from '../../domain/user';
 
 const creatorsLoader = batchLoader(batchCreators);
@@ -11,6 +20,7 @@ const draftWorkspaceResolvers: Resolvers = {
     draftWorkspaces: (_, args, context) => findAll(context, context.user, args),
     draftWorkspaceEntities: (_, args, context) => listDraftObjects(context, context.user, args),
     draftWorkspaceRelationships: (_, args, context) => listDraftRelations(context, context.user, args),
+    draftWorkspaceSightingRelationships: (_, args, context) => listDraftSightingRelations(context, context.user, args),
   },
   DraftWorkspace: {
     creators: (draft, _, context) => creatorsLoader.load(draft.creator_id, context, context.user),

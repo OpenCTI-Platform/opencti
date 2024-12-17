@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
@@ -10,7 +10,6 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
@@ -106,7 +105,13 @@ export const draftEntitiesLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draft_entities';
 
-const DraftEntities = () => {
+interface DraftEntitiesProps {
+  entitiesType?: string;
+}
+
+const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
+  entitiesType = 'Stix-Core-Object',
+}) => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
   const {
@@ -132,7 +137,7 @@ const DraftEntities = () => {
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -208,7 +213,6 @@ const DraftEntities = () => {
 
   return (
     <span data-testid="draft-entities-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Draft') }, { label: t_i18n('Entities'), current: true }]}/>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
