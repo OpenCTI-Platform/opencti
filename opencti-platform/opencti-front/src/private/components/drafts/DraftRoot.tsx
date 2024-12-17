@@ -6,10 +6,9 @@ import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-rou
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import DraftEntities from '@components/drafts/DraftEntities';
 import { getPaddingRight } from '../../../utils/utils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import StixCoreObjectContentRoot from "@components/common/stix_core_objects/StixCoreObjectContentRoot";
-import DraftEntities from "@components/drafts/DraftEntities";
 
 const RootDraftComponent = ({ draftId }) => {
   const location = useLocation();
