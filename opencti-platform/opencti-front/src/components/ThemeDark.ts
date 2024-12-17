@@ -136,6 +136,15 @@ const ThemeDark = (
           [`&.${buttonClasses.outlined}.${buttonClasses.sizeSmall}`]: {
             padding: '4px 9px',
           },
+          '&.icon-outlined': {
+            borderColor: hexToRGB('#ffffff', 0.15),
+            padding: 7,
+            minWidth: 0,
+            '&:hover': {
+              borderColor: hexToRGB('#ffffff', 0.15),
+              backgroundColor: hexToRGB('#ffffff', 0.05),
+            },
+          },
         },
       },
     },
