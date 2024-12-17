@@ -128,7 +128,7 @@ const createHttpServer = async () => {
         try {
           const user = await authenticateUserFromRequest(executeContext, req, res);
           if (user) {
-            if (isFeatureEnabled('DRAFT_WORKSPACE') && !executeContext.draft_context) {
+            if (isFeatureEnabled('DRAFT_WORKSPACE') && !Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
               executeContext.draft_context = user.draft_context;
             }
             executeContext.user = userWithOrigin(req, user);

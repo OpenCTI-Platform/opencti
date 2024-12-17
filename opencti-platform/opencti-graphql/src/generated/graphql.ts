@@ -13943,6 +13943,7 @@ export type MutationAskJobImportArgs = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   connectorId?: InputMaybe<Scalars['String']['input']>;
   fileName: Scalars['ID']['input'];
+  validationMode?: InputMaybe<ValidationMode>;
 };
 
 
@@ -29343,6 +29344,11 @@ export enum UsersOrdering {
   UserEmail = 'user_email'
 }
 
+export enum ValidationMode {
+  Draft = 'draft',
+  Workbench = 'workbench'
+}
+
 export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Vocabulary';
   aliases?: Maybe<Array<Scalars['String']['output']>>;
@@ -31564,6 +31570,7 @@ export type ResolversTypes = ResolversObject<{
   UserSession: ResolverTypeWrapper<UserSession>;
   UserStatus: ResolverTypeWrapper<UserStatus>;
   UsersOrdering: UsersOrdering;
+  ValidationMode: ValidationMode;
   Vocabulary: ResolverTypeWrapper<BasicStoreEntityVocabulary>;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyCategory: VocabularyCategory;

@@ -284,7 +284,6 @@ const authorizedMembersForTask = (user, scope) => {
 };
 
 export const createListTask = async (context, user, input) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot create background task in draft');
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);
@@ -292,6 +291,7 @@ export const createListTask = async (context, user, input) => {
     ...task,
     actions,
     task_ids: ids,
+    draft_context: getDraftContext(context, user),
   };
   await publishUserAction({
     user,

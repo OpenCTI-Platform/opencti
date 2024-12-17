@@ -80,6 +80,7 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { getDraftContext } from '../utils/draftContext';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -438,6 +439,23 @@ const executeShareMultiple = async (context, user, actionContext, element) => {
 const executeUnshareMultiple = async (context, user, actionContext, element) => {
   await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
 };
+const throwErrorInDraftContext = (context, user, actionType) => {
+  if (!getDraftContext(context, user)) {
+    return;
+  }
+  if (actionType === ACTION_TYPE_COMPLETE_DELETE
+      || actionType === ACTION_TYPE_RESTORE
+      || actionType === ACTION_TYPE_RULE_APPLY
+      || actionType === ACTION_TYPE_RULE_CLEAR
+      || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
+      || actionType === ACTION_TYPE_SHARE
+      || actionType === ACTION_TYPE_UNSHARE
+      || actionType === ACTION_TYPE_SHARE_MULTIPLE
+      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+    throw FunctionalError('Cannot execute this task type in draft', { actionType });
+  }
+};
+
 const executeProcessing = async (context, user, job, scope) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
@@ -490,6 +508,7 @@ const executeProcessing = async (context, user, job, scope) => {
       for (let elementIndex = 0; elementIndex < job.elements.length; elementIndex += 1) {
         const { element } = job.elements[elementIndex];
         try {
+          throwErrorInDraftContext(context, user, type);
           if (type === ACTION_TYPE_DELETE) {
             await executeDelete(context, user, element, scope);
           }
@@ -574,6 +593,8 @@ export const taskHandler = async () => {
       return;
     }
     // endregion
+    const draftID = task.draft_context ?? '';
+    const fullContext = { ...context, draft_context: draftID };
     const startPatch = { last_execution_date: now() };
     await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
@@ -582,20 +603,20 @@ export const taskHandler = async () => {
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     let jobToExecute;
     if (isQueryTask) {
-      jobToExecute = await computeQueryTaskElements(context, user, task);
+      jobToExecute = await computeQueryTaskElements(fullContext, user, task);
     }
     if (isListTask) {
-      jobToExecute = await computeListTaskElements(context, user, task);
+      jobToExecute = await computeListTaskElements(fullContext, user, task);
     }
     if (isRuleTask) {
-      jobToExecute = await computeRuleTaskElements(context, user, task);
+      jobToExecute = await computeRuleTaskElements(fullContext, user, task);
     }
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
-      const errors = await executeProcessing(context, user, jobToExecute, task.scope);
+      const errors = await executeProcessing(fullContext, user, jobToExecute, task.scope);
       await appendTaskErrors(task, errors);
     }
     // Update the task

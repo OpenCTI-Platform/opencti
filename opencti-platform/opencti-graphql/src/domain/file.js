@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Readable } from 'stream';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { logApp } from '../config/conf';
-import { deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
+import { defaultValidationMode, deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
 import { internalLoadById, listAllEntities } from '../database/middleware-loader';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
@@ -75,12 +75,12 @@ export const filesMetrics = async (context, user) => {
 };
 
 export const askJobImport = async (context, user, args) => {
-  const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false } = args;
+  const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false, validationMode = defaultValidationMode } = args;
   logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(context, user, fileName);
   logApp.info('[JOBS] ask import, file found:', file);
   const entityId = bypassEntityId || file.metaData.entity_id;
-  const opts = { manual: true, connectorId, configuration, bypassValidation };
+  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode };
   const entity = await internalLoadById(context, user, entityId);
   // This is a manual request for import, we have to check confidence and throw on error
   if (entity) {
