@@ -11,8 +11,6 @@ import Button from '@mui/material/Button';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { now } from 'src/utils/Time';
-import { GetAppOutlined } from '@mui/icons-material';
-import InputAdornment from '@mui/material/InputAdornment';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
