@@ -245,7 +245,7 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
   };
 };
 
-const createSharingTask = async (context, type, containerId, organizationId) => {
+export const generateFiltersForSharingTask = (containerId) => {
   const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
     .filter((s) => {
       if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
@@ -266,10 +266,20 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     ],
     filterGroups: [],
   };
+  return filters;
+};
+
+const createSharingTask = async (context, type, containerId, organizationId) => {
+  const filters = generateFiltersForSharingTask(containerId);
+
+  // orderMode is on created_at, see buildQueryFilters in backgroundTask
+  // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
+  // containerId required to send an event after all container content is shared.
   const input = {
     filters: JSON.stringify(filters),
-    actions: [{ type, context: { values: [organizationId] } }],
+    actions: [{ type, context: { values: [organizationId] }, containerId }],
     scope: 'KNOWLEDGE',
+    orderMode: 'asc'
   };
   await createQueryTask(context, context.user, input);
 };
