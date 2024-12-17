@@ -155,7 +155,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
             validationSchema={exclusionListValidation(t_i18n)}
             onSubmit={onSubmit}
           >
-            {({ submitForm, isSubmitting, setFieldValue, errors }) => (
+            {({ submitForm, isSubmitting, setFieldValue }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
