@@ -530,12 +530,6 @@ const ContainerHeader = (props) => {
       localStorage.getItem(`suggestions-rules-${container.id}`) || '[]',
     );
   };
-  const handleCloseEnrichment = () => {
-    setDisplayEnrichment(false);
-  };
-  const handleOpenEnrichment = () => {
-    setDisplayEnrichment(true);
-  };
   const handleExportCompleted = (fileName) => {
     // navigate with fileName in query params to select the created file
     const fileParams = { currentFileId: fileName, contentSelected: false };
