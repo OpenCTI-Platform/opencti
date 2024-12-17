@@ -167,7 +167,7 @@ const ExclusionLists = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 20,
+      percentWidth: 15,
     },
     description: {
       id: 'description',
@@ -178,7 +178,7 @@ const ExclusionLists = () => {
     lineNumber: {
       id: 'NumberOfElements',
       label: t_i18n('Number of elements'),
-      percentWidth: 10,
+      percentWidth: 15,
       isSortable: true,
       render: (node: ExclusionListsLine_node$data) => node.exclusion_list_values_count || '-',
     },

@@ -38,8 +38,9 @@ const exclusionListValidation = (t: (n: string) => string) => Yup.object().shape
 
 interface ExclusionListEditionComponentProps {
   data: ExclusionListsLine_node$data;
-  onClose: () => void;
   isOpen: boolean;
+  refetchStatus: () => void,
+  onClose: () => void;
 }
 
 interface ExclusionListEditionFormData {
@@ -52,8 +53,9 @@ interface ExclusionListEditionFormData {
 
 const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps> = ({
   data,
-  onClose,
   isOpen,
+  refetchStatus,
+  onClose,
 }) => {
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
@@ -99,6 +101,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
       },
       onCompleted: () => {
         setSubmitting(false);
+        if (selectedFile) refetchStatus();
         onClose();
       },
       onError: (error: Error) => {
@@ -197,14 +200,12 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                   <FormControlLabel
                     style={fieldSpacingContainerStyle}
                     control={
-
                       <Switch
                         checked={isUploadFileChecked}
                         onChange={(_, isChecked) => {
                           setIsUploadFileChecked(isChecked);
                         }}
                       />
-
                   }
                     disabled={isContentFieldDisable}
                     label={isContentFieldDisable

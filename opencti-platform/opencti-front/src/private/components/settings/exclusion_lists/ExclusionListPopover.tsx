@@ -119,6 +119,7 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
         <ExclusionListEdition
           data={data}
           isOpen={isEditionFormOpen}
+          refetchStatus={refetchStatus}
           onClose={handleCloseEditionForm}
         />
       )}
