@@ -5,13 +5,14 @@ import {
   FilterMode,
   type QueryDraftWorkspaceEntitiesArgs,
   type QueryDraftWorkspaceRelationshipsArgs,
-  type QueryDraftWorkspacesArgs
+  type QueryDraftWorkspacesArgs,
+  type QueryDraftWorkspaceSightingRelationshipsArgs
 } from '../../generated/graphql';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
@@ -21,7 +22,7 @@ import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { usersSessionRefresh } from '../../domain/user';
-import { elList } from '../../database/engine';
+import { elAggregationCount, elList } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
@@ -32,6 +33,9 @@ import { isStixRefRelationship } from '../../schema/stixRefRelationship';
 import { notify } from '../../database/redis';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -39,6 +43,31 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+};
+
+export const getObjectsCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {
+  const opts = {
+    // types: ['Stix-Object'],
+    field: 'entity_type',
+    includeDeletedInDraft: true,
+    normalizeLabel: false
+  };
+  const draftContext = { ...context, draft_context: draft.id };
+  const distributionResult = await elAggregationCount(draftContext, context.user, READ_INDEX_DRAFT_OBJECTS, opts);
+  const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
+  const entitiesCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label)).map((r: { count: number }) => r.count));
+  const observablesCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count));
+  const relationshipsCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count));
+  const sightingsCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixSightingRelationship(r.label)).map((r: { count: number }) => r.count));
+  const containersCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count));
+  return {
+    totalCount,
+    entitiesCount,
+    observablesCount,
+    relationshipsCount,
+    sightingsCount,
+    containersCount,
+  };
 };
 
 export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
@@ -69,7 +98,7 @@ export const listDraftRelations = (context: AuthContext, user: AuthUser, args: Q
   return listRelationsPaginated<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
-export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
+export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
   if (args.types) {

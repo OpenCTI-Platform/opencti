@@ -5,6 +5,7 @@ import {
   findAll,
   addDraftWorkspace,
   deleteDraftWorkspace,
+  getObjectsCount,
   listDraftObjects,
   validateDraftWorkspace,
   listDraftRelations,
@@ -24,6 +25,7 @@ const draftWorkspaceResolvers: Resolvers = {
   },
   DraftWorkspace: {
     creators: (draft, _, context) => creatorsLoader.load(draft.creator_id, context, context.user),
+    objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
   },
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {
