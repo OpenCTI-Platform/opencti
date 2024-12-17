@@ -159,7 +159,8 @@ export const createInjectInScenario = async (
   title: string,
   dependsDuration: number,
   content: string | null,
-  tags: Label[]
+  tags: Label[],
+  enabled: boolean,
 ) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
@@ -178,6 +179,7 @@ export const createInjectInScenario = async (
         inject_depends_duration: dependsDuration,
         inject_content: content,
         inject_tags: obasTagsIds,
+        inject_enabled: enabled,
       }
     );
     return inject;

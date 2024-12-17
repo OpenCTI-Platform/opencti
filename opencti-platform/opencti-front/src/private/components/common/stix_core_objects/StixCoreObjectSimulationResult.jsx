@@ -617,6 +617,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           <Alert severity="warning" sx={{ marginTop: 2 }}>
             {t_i18n('The following TTPs are not covered in the Openbas catalog : ')}
             {result.attackPatternsWithoutInjectorContracts}
+            <br />
+            {t_i18n('In response, we have created placeholders for these TTPs.')}
           </Alert>
         )}
         <Box textAlign="center" style={{ marginTop: 20 }}>
