@@ -161,6 +161,7 @@ export const createInjectInScenario = async (
   content: string | null,
   tags: Label[],
   enabled: boolean,
+  description: string,
 ) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
@@ -180,6 +181,7 @@ export const createInjectInScenario = async (
         inject_content: content,
         inject_tags: obasTagsIds,
         inject_enabled: enabled,
+        inject_description: description,
       }
     );
     return inject;
