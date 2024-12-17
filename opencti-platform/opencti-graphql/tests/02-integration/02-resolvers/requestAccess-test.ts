@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, TEST_ORGANIZATION } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { findById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
+import { RELATION_OBJECT_PARTICIPANT } from '../../../src/schema/stixRefRelationship';
 
 const CREATE_QUERY = gql`
   mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -84,14 +86,11 @@ describe('Add Request Access to an entity and create an RFI', async () => {
       query: READ_QUERY,
       variables: { id: caseRfiId },
     });
-    const caseRfi = queryResult?.data?.caseRfi;
-    console.log('caseRfi', caseRfi);
-    expect(caseRfi).not.toBeNull();
-    expect(caseRfi.id).toEqual(caseRfiId);
-    expect(caseRfi.name).toContain(queryResult.data?.caseRfi.name);
-    console.log('adminUser', ADMIN_USER);
-    console.log('objectParticipant', caseRfi.objectParticipant);
-    expect(caseRfi.objectParticipant).toContain(ADMIN_USER.id);
-    expect(caseRfi.objects).toEqual([malware.data?.malwareAdd.id]);
+    const caseRequestforInformation = await findById(testContext, ADMIN_USER, caseRfiId);
+    expect(queryResult?.data?.caseRfi).not.toBeNull();
+    expect(queryResult?.data?.caseRfi.id).toEqual(caseRequestforInformation.id);
+    expect(queryResult?.data?.caseRfi.name).toContain(caseRequestforInformation.name);
+    expect(caseRequestforInformation[RELATION_OBJECT_PARTICIPANT]).toContain(ADMIN_USER.id);
+    expect(caseRequestforInformation.object).toEqual([malware.data?.malwareAdd.id]);
   });
 });
