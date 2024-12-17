@@ -1882,6 +1882,7 @@ class DataTableToolBar extends Component {
           // endregion
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
+          const stixDomainObjectTypes = schema.sdos.map((sdo) => sdo.id).concat('Stix-Domain-Object');
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
 
           const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
@@ -1890,13 +1891,16 @@ class DataTableToolBar extends Component {
           const promotionTypesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
 
-          const cleanedSelectedTypes = selectedTypes.some((type) => type !== 'Stix-Domain-Object')
+          const isStixDomainObject = entityTypeFilterValues.length > 0
+            && selectedTypes.every((id) => stixDomainObjectTypes.includes(id));
+
+          const cleanedSelectedTypes = isStixDomainObject
             ? selectedTypes.filter((type) => type !== 'Stix-Domain-Object')
             : selectedTypes;
 
           const isManualPromoteSelect = !selectAll
-            && selectedTypesFiltered.length > 0
-            && selectedTypesFiltered.every((type) => promotionTypes.includes(type));
+            && cleanedSelectedTypes.length > 0
+            && cleanedSelectedTypes.every((type) => promotionTypes.includes(type));
 
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
 
