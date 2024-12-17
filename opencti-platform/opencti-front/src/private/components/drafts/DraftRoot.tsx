@@ -1,19 +1,45 @@
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
+import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
+import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useAuth from '../../../utils/hooks/useAuth';
 import { getCurrentTab } from '../../../utils/utils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import { MESSAGING$ } from '../../../relay/environment';
+import { RelayError } from '../../../relay/relayTypes';
 
 const RootDraftComponent = ({ draftId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
+  // switch to draft
+  const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
+  useEffect(() => {
+    if (!me.draftContext || me.draftContext.id !== draftId) {
+      commitSwitchToDraft({
+        variables: {
+          input: [{ key: 'draft_context', value: [draftId] }],
+        },
+        onCompleted: () => {
+          MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
+        },
+        onError: (error) => {
+          const { errors } = (error as unknown as RelayError).res;
+          MESSAGING$.notifyError(errors.at(0)?.message);
+        },
+      });
+    }
+  }, [commitSwitchToDraft]);
+
   return (
     <>
       <Breadcrumbs elements={[

@@ -1,18 +1,12 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
-import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
-import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import { graphql } from 'react-relay';
 import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import { useFormatter } from '../../../components/i18n';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { MESSAGING$ } from '../../../relay/environment';
-import { RelayError } from '../../../relay/relayTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -113,11 +107,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
 }) => {
   const { draftId } = useParams() as { draftId: string };
-  const { t_i18n } = useFormatter();
-  const {
-    me,
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -192,24 +182,6 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
       percentWidth: 8,
     },
   };
-
-  const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
-  useEffect(() => {
-    if (!me.draftContext || me.draftContext.id !== draftId) {
-      commitSwitchToDraft({
-        variables: {
-          input: [{ key: 'draft_context', value: [draftId] }],
-        },
-        onCompleted: () => {
-          MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
-        },
-        onError: (error) => {
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
-        },
-      });
-    }
-  }, [commitSwitchToDraft]);
 
   return (
     <span data-testid="draft-entities-page">
