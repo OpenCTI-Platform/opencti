@@ -21,6 +21,8 @@ import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useSchema from '../../../../utils/hooks/useSchema';
 
+const MAX_FILE_SIZE = 1000000;
+
 export const exclusionListMutationFieldPatch = graphql`
   mutation ExclusionListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!, $file: Upload) {
     exclusionListFieldPatch(id: $id, input: $input, file: $file) {
@@ -130,7 +132,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   };
 
   useEffect(() => {
-    if (data.exclusion_list_file_size < 1000000) {
+    if (data.exclusion_list_file_size && data.exclusion_list_file_size < MAX_FILE_SIZE) {
       loadFileContent();
     } else {
       setIsContentFieldDisable(true);
@@ -152,7 +154,6 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
             initialValues={initialValues}
             validationSchema={exclusionListValidation(t_i18n)}
             onSubmit={onSubmit}
-            onClose={onClose}
           >
             {({ submitForm, isSubmitting, setFieldValue, errors }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
