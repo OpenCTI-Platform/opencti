@@ -963,7 +963,6 @@ type WidgetLayout {
 }
 
 type Widget {
-  id: ID!
   type: String!
   perspective: WidgetPerspective
   dataSelection: [WidgetDataSelection!]!
@@ -12383,7 +12382,6 @@ input DraftWorkspaceAddInput {
 }
 
 type FintelTemplateWidget {
-  id: ID!
   variable_name: String!
   widget: Widget!
 }
