@@ -25,6 +25,7 @@ import {
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import { PaginationOptions } from 'src/components/list_lines';
 import Drawer from '@components/common/drawer/Drawer';
+import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -711,7 +712,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
       id: item.id,
       entity_type: item.entity_type ?? '',
-      name: item.name ?? item.observable_value ?? item.representative?.main.toString() ?? '',
+      name: getMainRepresentative(item),
     }));
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
