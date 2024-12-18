@@ -227,6 +227,7 @@ const ImportContentComponent = (props) => {
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking, validation_mode } = values;
+    console.log(values);
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
@@ -243,7 +244,7 @@ const ImportContentComponent = (props) => {
         fileName: fileToImport.id,
         connectorId: connector_id,
         configuration: config,
-        validation_mode,
+        validationMode: validation_mode,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -555,7 +556,6 @@ const ImportContentComponent = (props) => {
                     label={t_i18n('Validation mode')}
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
-                    onChange={handleSelectConnector}
                   >
                     <MenuItem
                       key={'workbench'}
