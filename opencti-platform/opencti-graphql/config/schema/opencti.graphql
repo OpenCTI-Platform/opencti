@@ -13795,6 +13795,9 @@ type Query {
     filters: FilterGroup
     toStix: Boolean
   ): StixRefRelationshipConnection @auth(for: [KNOWLEDGE])
+  stixNestedRefRelationshipFromEntityType(
+    id: String
+  ): [String] @auth(for: [KNOWLEDGE])
   stixSchemaRefRelationships(
     id: String
     toType: String

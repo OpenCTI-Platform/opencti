@@ -30,6 +30,8 @@ import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -133,7 +135,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   }
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {individual ? (
         <>
           <Routes>
@@ -178,6 +180,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                   <IndividualEdition individualId={individual.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
@@ -328,7 +331,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

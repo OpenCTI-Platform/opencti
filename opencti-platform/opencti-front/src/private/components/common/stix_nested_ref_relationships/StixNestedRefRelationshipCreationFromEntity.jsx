@@ -167,7 +167,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const stixNestedRefRelationshipResolveTypes = graphql`
+export const stixNestedRefRelationshipResolveTypes = graphql`
   query StixNestedRefRelationshipCreationFromEntityResolveQuery($id: String!, $toType: String!) {
     stixSchemaRefRelationships(id: $id, toType: $toType) {
       entity {
@@ -278,7 +278,7 @@ const stixNestedRefRelationshipResolveTypes = graphql`
   }
 `;
 
-const stixNestedRefRelationshipCreationFromEntityMutation = graphql`
+export const stixNestedRefRelationshipCreationFromEntityMutation = graphql`
   mutation StixNestedRefRelationshipCreationFromEntityMutation(
     $input: StixRefRelationshipAddInput!
   ) {
@@ -505,7 +505,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
 
   const renderSelectEntity = () => {
     const searchPaginationOptions = {
-      searchTerm,
+      search: searchTerm,
       filters: removeIdFromFilterGroupObject(filters),
       orderBy: searchTerm.length > 0 ? null : 'created_at',
       orderMode: searchTerm.length > 0 ? null : 'desc',
