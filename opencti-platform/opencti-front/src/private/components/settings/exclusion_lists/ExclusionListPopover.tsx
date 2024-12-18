@@ -3,18 +3,17 @@ import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Drawer from '@components/common/drawer/Drawer';
-import { graphql, useQueryLoader } from 'react-relay';
+import { graphql } from 'react-relay';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
-import ExclusionListEdition, { exclusionListEditionQuery, exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
-import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
+import ExclusionListEdition, { exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
+import { Link } from 'react-router-dom';
+import { APP_BASE_PATH } from 'src/relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 export const exclusionListPopoverDeletionMutation = graphql`
   mutation ExclusionListPopoverDeletionMutation($id: ID!) {
@@ -34,9 +33,10 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
   refetchStatus,
 }) => {
   const { t_i18n } = useFormatter();
-  const [queryRef, loadQuery] = useQueryLoader<ExclusionListEditionQuery>(exclusionListEditionQuery);
+
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [displayEdit, setDisplayEdit] = useState<boolean>(false);
+  const [isEditionFormOpen, setIsEditionFormOpen] = useState<boolean>(false);
+
   const [commit] = useApiMutation(exclusionListPopoverDeletionMutation);
   const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
 
@@ -67,8 +67,7 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
 
   // edition
   const handleDisplayEdit = () => {
-    loadQuery({ id: data.id }, { fetchPolicy: 'store-and-network' });
-    setDisplayEdit(true);
+    setIsEditionFormOpen(true);
     handleClose();
   };
 
@@ -85,6 +84,11 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
     });
     handleClose();
   };
+
+  const handleCloseEditionForm = () => setIsEditionFormOpen(false);
+
+  const downloadFileLink = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.file_id)}`;
+
   return (
     <>
       <IconButton
@@ -96,7 +100,14 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleEnable}>{data.enabled ? t_i18n('Disable') : t_i18n('Enable')}</MenuItem>
-        <MenuItem onClick={handleDisplayEdit} disabled>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
+        <MenuItem
+          component={Link}
+          to={downloadFileLink}
+          onClick={handleClose}
+          target="_blank"
+          rel="noopener noreferrer"
+        >{t_i18n('Download file')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
@@ -104,17 +115,14 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
         deletion={deletion}
         submitDelete={submitDelete}
       />
-      <Drawer
-        title={t_i18n('Update an exclusion list')}
-        open={displayEdit}
-        onClose={() => setDisplayEdit(false)}
-      >
-        {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <ExclusionListEdition queryRef={queryRef} onClose={() => setDisplayEdit(false)} />
-          </React.Suspense>
-        )}
-      </Drawer>
+      {isEditionFormOpen && (
+        <ExclusionListEdition
+          data={data}
+          isOpen={isEditionFormOpen}
+          refetchStatus={refetchStatus}
+          onClose={handleCloseEditionForm}
+        />
+      )}
     </>
   );
 };

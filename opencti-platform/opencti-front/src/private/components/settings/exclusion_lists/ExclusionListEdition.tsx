@@ -1,11 +1,19 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
+import Drawer from '@components/common/drawer/Drawer';
+import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
-import { ExclusionListEditionQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListEditionQuery.graphql';
-import { ExclusionListEdition_edition$key } from '@components/settings/exclusion_lists/__generated__/ExclusionListEdition_edition.graphql';
+import Axios from 'axios';
 import { Option } from '@components/common/form/ReferenceField';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ItemIcon from 'src/components/ItemIcon';
+import Loader from 'src/components/Loader';
+import Button from '@mui/material/Button';
+import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import { now } from 'src/utils/Time';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -13,28 +21,12 @@ import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useSchema from '../../../../utils/hooks/useSchema';
 
+const MAX_FILE_SIZE = 1000000;
+
 export const exclusionListMutationFieldPatch = graphql`
-  mutation ExclusionListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
-    exclusionListFieldPatch(id: $id, input: $input) {
+  mutation ExclusionListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!, $file: Upload) {
+    exclusionListFieldPatch(id: $id, input: $input, file: $file) {
       ...ExclusionListsLine_node
-      ...ExclusionListEdition_edition
-    }
-  }
-`;
-
-const exclusionListEditionFragment = graphql`
-  fragment ExclusionListEdition_edition on ExclusionList {
-    id
-    name
-    description
-    exclusion_list_entity_types
-  }
-`;
-
-export const exclusionListEditionQuery = graphql`
-  query ExclusionListEditionQuery($id: String!) {
-    exclusionList(id: $id) {
-      ...ExclusionListEdition_edition
     }
   }
 `;
@@ -45,97 +37,222 @@ const exclusionListValidation = (t: (n: string) => string) => Yup.object().shape
 });
 
 interface ExclusionListEditionComponentProps {
-  queryRef: PreloadedQuery<ExclusionListEditionQuery>;
+  data: ExclusionListsLine_node$data;
+  isOpen: boolean;
+  refetchStatus: () => void,
   onClose: () => void;
 }
 
-interface ExclusionListEditionValues {
+interface ExclusionListEditionFormData {
   name: string;
   description?: string | null;
   exclusion_list_entity_types: Option[];
+  fileContent?: string;
+  file?: File | null;
 }
 
 const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps> = ({
-  queryRef,
+  data,
+  isOpen,
+  refetchStatus,
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
   const { schema: { scos: entityTypes } } = useSchema();
-  const { exclusionList } = usePreloadedQuery<ExclusionListEditionQuery>(exclusionListEditionQuery, queryRef);
-  const data = useFragment<ExclusionListEdition_edition$key>(exclusionListEditionFragment, exclusionList);
+
+  const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(false);
+  const [initialValues, setInitialValues] = useState<ExclusionListEditionFormData | null>(null);
+  const [isContentFieldDisable, setIsContentFieldDisable] = useState<boolean>(false);
+
   const [commitFieldPatch] = useApiMutation(exclusionListMutationFieldPatch);
-  const onSubmit = (name: string, value: string[]) => {
-    // TODO : Use useFormEditor ?
+
+  const generateFileFromContent = (content: string, name: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    return new File([blob], `${now()}_${name}.txt`, { type: 'text/plain' });
+  };
+
+  const onSubmit: FormikConfig<ExclusionListEditionFormData>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors },
+  ) => {
+    setSubmitting(true);
+
+    const { file, fileContent, name } = values;
+    const selectedFile = fileContent && !file && fileContent !== initialValues?.fileContent
+      ? generateFileFromContent(fileContent, name)
+      : file;
+
+    const input = Object.entries(values)
+      .filter(([key, _]) => !['file', 'fileContent'].includes(key))
+      .map(([key, value]) => {
+        return {
+          key,
+          value: key === 'exclusion_list_entity_types'
+            ? value.map((item: Option) => item.value)
+            : value,
+        };
+      });
+
     commitFieldPatch({
       variables: {
         id: data?.id,
-        input: [{ key: name, value }],
+        input,
+        file: selectedFile,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        if (selectedFile) refetchStatus();
+        onClose();
+      },
+      onError: (error: Error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
     });
   };
 
-  const initialValues: ExclusionListEditionValues = {
-    name: data?.name ?? '',
-    description: data?.description,
-    exclusion_list_entity_types: (data?.exclusion_list_entity_types ?? []).map((type) => ({
-      value: type,
-      label: type,
-    })),
-  };
+  const getExclusionListEntityTypes = (list: readonly string[]): Option[] => list.map((item) => ({ value: item, label: item }));
 
   const entityTypesOptions: Option[] = entityTypes.map((type) => ({
     value: type.id,
     label: type.label,
   }));
 
+  const handleSetInitialValues = (fileContent?: string) => {
+    setInitialValues({
+      name: data.name,
+      description: data.description,
+      exclusion_list_entity_types: getExclusionListEntityTypes(data.exclusion_list_entity_types),
+      fileContent,
+    });
+  };
+
+  const loadFileContent = () => {
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(data.file_id)}`;
+    Axios.get(url).then((res) => {
+      handleSetInitialValues(res.data);
+    });
+  };
+
+  useEffect(() => {
+    if (data.exclusion_list_file_size && data.exclusion_list_file_size < MAX_FILE_SIZE) {
+      loadFileContent();
+    } else {
+      setIsContentFieldDisable(true);
+      setIsUploadFileChecked(true);
+      handleSetInitialValues();
+    }
+  }, []);
+
   return (
-    <Formik
-      enableReinitialize={true}
-      initialValues={initialValues}
-      validationSchema={exclusionListValidation(t_i18n)}
-      onSubmit={() => {
-      }}
+    <Drawer
+      title={t_i18n('Update an exclusion list')}
+      open={isOpen}
       onClose={onClose}
     >
-      <Form>
-        <Field
-          component={TextField}
-          name="name"
-          label={t_i18n('Name')}
-          fullWidth={true}
-          onSubmit={onSubmit}
-        />
-        <Field
-          component={MarkdownField}
-          name="description"
-          label={t_i18n('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows={2}
-          style={{ marginTop: 20 }}
-          onSubmit={onSubmit}
-        />
-        <Field
-          component={AutocompleteField}
-          name="exclusion_list_entity_types"
-          fullWidth={true}
-          multiple
-          style={fieldSpacingContainerStyle}
-          options={entityTypesOptions}
-          renderOption={(
-            props: React.HTMLAttributes<HTMLLIElement>,
-            option: Option,
-          ) => <li key={option.value} {...props}>{option.label}</li>}
-          textfieldprops={{ label: t_i18n('Entity types') }}
-          onChange={(name: string, value: { value: string; label: string }[]) => {
-            onSubmit(
-              name,
-              value.map((n) => n.label),
-            );
-          }}
-        />
-      </Form>
-    </Formik>
+      {initialValues
+        ? (
+          <Formik<ExclusionListEditionFormData>
+            enableReinitialize={true}
+            initialValues={initialValues}
+            validationSchema={exclusionListValidation(t_i18n)}
+            onSubmit={onSubmit}
+          >
+            {({ submitForm, isSubmitting, setFieldValue }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  name="name"
+                  label={t_i18n('Name')}
+                  fullWidth={true}
+                  required
+                />
+                <Field
+                  component={MarkdownField}
+                  controlledSelectedTab='write'
+                  name="description"
+                  label={t_i18n('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={2}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={AutocompleteField}
+                  name="exclusion_list_entity_types"
+                  fullWidth={true}
+                  multiple
+                  style={fieldSpacingContainerStyle}
+                  options={entityTypesOptions}
+                  renderOption={(
+                    props: React.HTMLAttributes<HTMLLIElement>,
+                    option: Option,
+                  ) => (
+                    <li key={option.value} {...props}>
+                      <ItemIcon type={option.value} />
+                      <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
+                    </li>
+                  )}
+                  textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
+                  required
+                />
+                <div style={{ display: 'flex' }}>
+                  <FormControlLabel
+                    style={fieldSpacingContainerStyle}
+                    control={
+                      <Switch
+                        checked={isUploadFileChecked}
+                        onChange={(_, isChecked) => {
+                          setIsUploadFileChecked(isChecked);
+                        }}
+                      />
+                  }
+                    disabled={isContentFieldDisable}
+                    label={isContentFieldDisable
+                      ? t_i18n('This exclusion list is too large to be displayed')
+                      : t_i18n('Upload file')
+                  }
+                  />
+                </div>
+                {isUploadFileChecked
+                  ? <CustomFileUploader setFieldValue={setFieldValue} />
+                  : (
+                    <Field
+                      name="fileContent"
+                      style={fieldSpacingContainerStyle}
+                      component={TextField}
+                      multiline
+                      rows={10}
+                      fullWidth
+                    />
+                  )
+                }
+                <div style={{ marginTop: 20, textAlign: 'right' }}>
+                  <Button
+                    variant="contained"
+                    disabled={isSubmitting}
+                    style={{ marginLeft: 16 }}
+                  >
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    style={{ marginLeft: 16 }}
+                  >
+                    {t_i18n('Update')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )
+        : <Loader />
+      }
+
+    </Drawer>
   );
 };
 

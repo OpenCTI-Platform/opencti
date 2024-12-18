@@ -86,6 +86,9 @@ const exclusionListsLineFragment = graphql`
     enabled
     created_at
     exclusion_list_entity_types
+    file_id
+    exclusion_list_values_count
+    exclusion_list_file_size 
   }
 `;
 
@@ -164,13 +167,20 @@ const ExclusionLists = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 20,
+      percentWidth: 15,
     },
     description: {
       id: 'description',
       label: t_i18n('Description'),
-      percentWidth: 30,
+      percentWidth: 20,
       isSortable: false,
+    },
+    lineNumber: {
+      id: 'NumberOfElements',
+      label: t_i18n('Number of elements'),
+      percentWidth: 15,
+      isSortable: true,
+      render: (node: ExclusionListsLine_node$data) => node.exclusion_list_values_count || '-',
     },
     created_at: {
       label: t_i18n('Creation date'),

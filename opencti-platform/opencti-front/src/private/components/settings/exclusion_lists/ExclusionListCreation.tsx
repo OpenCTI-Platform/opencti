@@ -149,10 +149,12 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             renderOption={(
               props: React.HTMLAttributes<HTMLLIElement>,
               option: Option,
-            ) => <li key={option.value} {...props}>
-              <ItemIcon type={option.type} />
-              <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
-            </li>}
+            ) => (
+              <li key={option.value} {...props}>
+                <ItemIcon type={option.type} />
+                <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
+              </li>
+            )}
             textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
             required
           />
