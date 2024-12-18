@@ -1,5 +1,5 @@
 enum RequestAccessType {
-  organization
+  organization_sharing
 }
 
 input RequestAccessAddInput {
