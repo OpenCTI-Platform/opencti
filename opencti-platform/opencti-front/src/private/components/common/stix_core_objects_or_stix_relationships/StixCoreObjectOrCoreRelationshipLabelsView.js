@@ -181,9 +181,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
-              <Tooltip title={label.value}>
+              <Tooltip key={label.id} title={label.value}>
                 <Chip
-                  key={label.id}
                   variant="outlined"
                   classes={{ root: classes.label }}
                   label={truncate(label.value, 25)}
@@ -229,9 +228,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             <DialogContent>
               {map(
                 (label) => (
-                  <Tooltip title={label.value}>
+                  <Tooltip key={label.id} title={label.value}>
                     <Chip
-                      key={label.id}
                       variant="outlined"
                       classes={{ root: classes.label }}
                       label={truncate(label.value, 25)}
