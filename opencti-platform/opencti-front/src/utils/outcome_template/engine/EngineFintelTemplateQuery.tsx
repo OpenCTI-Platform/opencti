@@ -8,10 +8,8 @@ const engineFintelTemplateQuery = graphql`
         content
         instance_filters
         fintel_template_widgets {
-          id
           variable_name
           widget {
-            id
             type
             perspective
             parameters {
