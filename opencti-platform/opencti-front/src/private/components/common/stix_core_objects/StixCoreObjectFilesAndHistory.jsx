@@ -156,8 +156,6 @@ const StixCoreObjectFilesAndHistory = ({
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking, validation_mode } = values;
-    console.log(values);
-    console.log(validation_mode);
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
