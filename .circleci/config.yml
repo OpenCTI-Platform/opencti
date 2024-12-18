@@ -289,7 +289,7 @@ jobs:
             LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
             TAGS="-t opencti/worker:${CIRCLE_TAG}"
             [ "$CIRCLE_TAG" = "LATEST_SEMANTIC_VERSION" ] && TAGS="$TAGS -t opencti/worker:latest"
-            docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci $TAGS --push .
+            docker buildx build --platform $BUILDX_PLATFORMS $TAGS --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
