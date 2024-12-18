@@ -153,9 +153,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
               {t_i18n('Enrich')}
             </MenuItem>
           </Security>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
-          </Security>
+          <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
           <CollaborativeSecurity
             data={note}
             needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
