@@ -15,6 +15,7 @@ import IndicatorCreation from '../indicators/IndicatorCreation';
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
+    width: '50%',
     position: 'fixed',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
