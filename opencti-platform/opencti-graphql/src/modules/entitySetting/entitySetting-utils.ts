@@ -8,7 +8,7 @@ import {
   INPUT_MARKINGS
 } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
@@ -80,16 +80,19 @@ export const availableSettings: Record<string, Array<string>> = {
   // add templates for containers
   [ENTITY_TYPE_CONTAINER]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'templates'],
   // enforce_reference not available on specific entities
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'templates'],
-  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'templates'],
-  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'templates'],
-  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'templates'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
+  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
+  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
+  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
 };
 
 export const getAvailableSettings = (targetType: string) => {
   let settings;
   if (isStixDomainObject(targetType)) {
-    settings = availableSettings[targetType] ?? availableSettings[ABSTRACT_STIX_DOMAIN_OBJECT];
+    const defaultSetting = isStixDomainObjectContainer(targetType)
+      ? availableSettings[ENTITY_TYPE_CONTAINER]
+      : availableSettings[ABSTRACT_STIX_DOMAIN_OBJECT];
+    settings = availableSettings[targetType] ?? defaultSetting;
   } else if (isStixCyberObservable(targetType)) {
     settings = availableSettings[targetType] ?? availableSettings[ABSTRACT_STIX_CYBER_OBSERVABLE];
   } else {
