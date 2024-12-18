@@ -76,7 +76,7 @@ const FeedbackCreation: FunctionComponent<{
   const basicShape = yupShapeConditionalRequired({
     description: Yup.string().nullable(),
     confidence: Yup.number(),
-    rating: Yup.number(),
+    rating: Yup.number().min(1).max(5),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
@@ -88,7 +88,7 @@ const FeedbackCreation: FunctionComponent<{
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
-      rating: parseInt(String(values.rating), 6),
+      rating: parseInt(String(values.rating), 5),
       objects: values.objects.map((o) => o.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       file: values.file,
@@ -130,6 +130,8 @@ const FeedbackCreation: FunctionComponent<{
         initialValues={initialValues}
         validationSchema={validator}
         onSubmit={onSubmit}
+        validateOnChange={true}
+        validateOnBlur={true}
         onReset={handleCloseDrawer}
       >
         {({
@@ -156,11 +158,15 @@ const FeedbackCreation: FunctionComponent<{
             />
             <RatingField
               label={t_i18n('Rating')}
+              readOnly={false}
               required={(mandatoryAttributes.includes('rating'))}
               rating={values.rating}
               size="small"
               handleOnChange={(newValue) => {
-                setFieldValue('rating', newValue);
+                // Cannot remove the rating, always required and not customizable, and can only be 1-5 in value
+                if (newValue != null && newValue >= 1 && newValue <= 5) {
+                  setFieldValue('rating', newValue);
+                }
               }}
               style={fieldSpacingContainerStyle}
             />

@@ -162,7 +162,7 @@ FeedbackEditionOverviewProps
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
-    rating: Yup.number(),
+    rating: Yup.number().min(1).max(5),
     confidence: Yup.number(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
@@ -301,8 +301,12 @@ FeedbackEditionOverviewProps
             rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}
-            handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
-            }
+            handleOnChange={(newValue) => {
+              // Cannot remove the rating, always required and not customizable, and can only be 1-5 in value
+              if (newValue != null && newValue >= 1 && newValue <= 5) {
+                handleSubmitField('rating', String(newValue));
+              }
+            }}
           />
           <ObjectAssigneeField
             name="objectAssignee"
