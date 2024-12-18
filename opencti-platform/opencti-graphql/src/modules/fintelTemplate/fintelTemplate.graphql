@@ -1,5 +1,4 @@
 type FintelTemplateWidget {
-  id: ID!
   variable_name: String!
   widget: Widget!
 }

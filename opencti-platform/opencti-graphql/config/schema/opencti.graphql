@@ -907,7 +907,6 @@ type WidgetLayout {
   static: Boolean
 }
 type Widget {
-  id: ID!
   type: String!
   perspective: WidgetPerspective
   dataSelection: [WidgetDataSelection!]!

@@ -45,10 +45,16 @@ const READ_QUERY = gql`
       settings_types
       start_date
       fintel_template_widgets {
-        id
         variable_name
         widget {
-          id
+          type
+          dataSelection {
+            perspective
+            filters
+          }
+          parameters {
+            title
+          }
         }
       }
     }
@@ -72,11 +78,12 @@ const EDIT_QUERY = gql`
       name
       description
       fintel_template_widgets {
-        id
         variable_name
         widget {
-          id
           type
+          parameters {
+            title
+          }
         }
       }
     }
@@ -139,7 +146,20 @@ describe('Fintel template resolver standard behavior', () => {
     const fintelTemplatesEdges2 = queryResult2.data?.entitySettings.edges[0].node.fintelTemplates.edges;
     expect(fintelTemplatesEdges2.length).toEqual(0);
   });
-  it('should fintel template widgets edited', async () => {
+  it('should fintel template edited', async () => {
+    const queryResult = await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [{ key: 'description', value: ['new description'] }],
+      }
+    });
+    const fintelTemplateDescription = queryResult.data?.fintelTemplateFieldPatch.description;
+    expect(fintelTemplateDescription).toEqual('new description');
+    const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(queryResult2.data?.fintelTemplate.description).toEqual('new description');
+  });
+  it('should add a fintel template widgets', async () => {
     const fintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput = {
       variable_name: 'containerObservables',
       widget: {
@@ -162,9 +182,6 @@ describe('Fintel template resolver standard behavior', () => {
             ],
           },
         ],
-        parameters: {
-          title: 'Observables contained in the container',
-        }
       },
     };
     const queryResult = await queryAsAdmin({
@@ -178,6 +195,59 @@ describe('Fintel template resolver standard behavior', () => {
     expect(fintelTemplateWidgets.length).toEqual(1);
     expect(fintelTemplateWidgets[0].variable_name).toEqual('containerObservables');
     expect(fintelTemplateWidgets[0].widget.type).toEqual('list');
+    const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(queryResult2).not.toBeNull();
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1);
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].variable_name).toEqual('containerObservables');
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.type).toEqual('list');
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.dataSelection[0].perspective).toEqual(WidgetPerspective.Entities);
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.dataSelection[0].columns.length).toEqual(2);
+  });
+  it('should fintel template widget edited via object_path', async () => {
+    const newWidget = {
+      type: 'list',
+      perspective: WidgetPerspective.Entities,
+      dataSelection: [
+        {
+          perspective: WidgetPerspective.Entities,
+          filters: JSON.stringify({
+            mode: 'and',
+            filters: [
+              { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
+              { key: ['objects'], values: ['SELF_ID'] },
+            ],
+            filterGroups: [],
+          }),
+          columns: [
+            { label: 'Observable type', attribute: 'entity_type' },
+            { label: 'Value', attribute: 'representative.main' },
+            { label: 'Markings', attribute: 'objectMarking.definition' },
+          ],
+        },
+      ],
+      parameters: {
+        title: 'Observables contained in the container',
+      }
+    };
+    const queryResult = await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [{
+          key: 'fintel_template_widgets',
+          object_path: '/fintel_template_widgets/0/widget/',
+          value: [newWidget]
+        }],
+      }
+    });
+    expect(queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets.length).toEqual(1);
+    expect(queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets[0].widget.parameters.title).toEqual('Observables contained in the container');
+    const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(queryResult2).not.toBeNull();
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1);
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.type).toEqual('list');
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.parameters.title).toEqual('Observables contained in the container');
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.dataSelection[0].columns.length).toEqual(3);
   });
   it('should fintel template deleted', async () => {
     const DELETE_QUERY = gql`

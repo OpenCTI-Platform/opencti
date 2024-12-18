@@ -8237,7 +8237,6 @@ export enum FintelTemplateOrdering {
 
 export type FintelTemplateWidget = {
   __typename?: 'FintelTemplateWidget';
-  id: Scalars['ID']['output'];
   variable_name: Scalars['String']['output'];
   widget: Widget;
 };
@@ -29804,7 +29803,6 @@ export type VulnerabilityEditMutationsRelationDeleteArgs = {
 export type Widget = {
   __typename?: 'Widget';
   dataSelection: Array<WidgetDataSelection>;
-  id: Scalars['ID']['output'];
   layout?: Maybe<WidgetLayout>;
   parameters?: Maybe<WidgetParameters>;
   perspective?: Maybe<WidgetPerspective>;
@@ -35178,7 +35176,6 @@ export type FintelTemplateEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type FintelTemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateWidget'] = ResolversParentTypes['FintelTemplateWidget']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   variable_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   widget?: Resolver<ResolversTypes['Widget'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -41376,7 +41373,6 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
 
 export type WidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['Widget'] = ResolversParentTypes['Widget']> = ResolversObject<{
   dataSelection?: Resolver<Array<ResolversTypes['WidgetDataSelection']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   layout?: Resolver<Maybe<ResolversTypes['WidgetLayout']>, ParentType, ContextType>;
   parameters?: Resolver<Maybe<ResolversTypes['WidgetParameters']>, ParentType, ContextType>;
   perspective?: Resolver<Maybe<ResolversTypes['WidgetPerspective']>, ParentType, ContextType>;
