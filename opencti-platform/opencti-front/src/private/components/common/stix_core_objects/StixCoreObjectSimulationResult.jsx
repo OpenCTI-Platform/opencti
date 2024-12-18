@@ -616,8 +616,16 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         {result.attackPatternsWithoutInjectorContracts && result.attackPatternsWithoutInjectorContracts.trim() !== '' && (
           <Alert severity="warning" sx={{ marginTop: 2 }}>
             {t_i18n('The following TTPs are not covered in your OpenBAS catalog : ')}
-            {result.attackPatternsWithoutInjectorContracts}
-            <br />
+            <ul
+              style={{
+                columnCount: Math.min(Math.ceil(result.attackPatternsWithoutInjectorContracts.split(',').length / 10), 20),
+                paddingLeft: 20,
+              }}
+            >
+              {result.attackPatternsWithoutInjectorContracts.split(',').map((ttp, index) => (
+                <li key={index}>{ttp}</li>
+              ))}
+            </ul>
             {t_i18n('In response, we have created placeholders for these TTPs.')}
           </Alert>
         )}
