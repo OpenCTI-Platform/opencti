@@ -2,9 +2,9 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
-import StixCyberObservablePopoverFABReplaced from './StixCyberObservablePopoverFABReplaced';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
@@ -31,7 +31,6 @@ const useStyles = makeStyles(() => ({
 const StixCyberObservableHeaderComponent = ({
   stixCyberObservable,
   isArtifact,
-  disableSharing,
 }) => {
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
@@ -49,27 +48,24 @@ const StixCyberObservableHeaderComponent = ({
       </Typography>
       <div className={classes.actions}>
         <div className={classes.actionButtons}>
-          {disableSharing !== true && (
-            <StixCoreObjectSharing
-              elementId={stixCyberObservable.id}
-              variant="header"
-            />
-          )}
+          <StixCoreObjectSharing
+            elementId={stixCyberObservable.id}
+            variant="header"
+          />
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
           )}
           {isKnowledgeEnricher && (
             <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
           )}
-          {isFABReplaced && (<StixCyberObservablePopoverFABReplaced
-            stixCyberObservableId={stixCyberObservable.id}
-            isArtifact={isArtifact}
-                             />
+          {isFABReplaced && (
+            <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixCyberObservable.id} />
           )}
-          {!isFABReplaced && (<StixCyberObservablePopover
-            stixCyberObservableId={stixCyberObservable.id}
-            isArtifact={isArtifact}
-                              />
+          {!isFABReplaced && (
+            <StixCyberObservablePopover
+              stixCyberObservableId={stixCyberObservable.id}
+              isArtifact={isArtifact}
+            />
           )}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCyberObservableEdition
