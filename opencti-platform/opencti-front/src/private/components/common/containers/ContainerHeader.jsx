@@ -1099,6 +1099,16 @@ const ContainerHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
+            {isFABReplaced && enableEnricher && (
+              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                <StixCoreObjectEnrichment
+                  stixCoreObjectId={container.id}
+                />
+              </Security>
+            )}
+            {isFABReplaced && enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
+            )}
             {enableAskAi && (
               <StixCoreObjectAskAI
                 instanceId={container.id}
@@ -1112,16 +1122,6 @@ const ContainerHeader = (props) => {
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>
-            )}
-            {isFABReplaced && enableEnricher && (
-              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                <StixCoreObjectEnrichment
-                  stixCoreObjectId={container.id}
-                />
-              </Security>
-            )}
-            {isFABReplaced && enableEnrollPlaybook && (
-              <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
             )}
             {EditComponent}
           </div>
