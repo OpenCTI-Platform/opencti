@@ -1,5 +1,5 @@
 import { IconButton, List, Typography } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -10,6 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
 import { StixDomainObjectNestedEntitiesLines_data$data } from './__generated__/StixDomainObjectNestedEntitiesLines_data.graphql';
 import StixNestedRefRelationshipCreationFromEntityFabless from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityFabless';
+import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
 
 interface StixDomainObjectNestedEntitiesProps {
   entityId: string,
@@ -25,19 +26,20 @@ StixDomainObjectNestedEntitiesProps
   targetStixCoreObjectTypes,
 }) => {
   const { t_i18n } = useFormatter();
+  const { setState } = useContext(CreateRelationshipContext);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [sortBy, setSortBy] = useState(null);
-  const [orderAsc, setOrderAsc] = useState<boolean>(false);
-
   const paginationOptions = {
     fromOrToId: entityId,
-    search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
+    search: '',
+    orderBy: null,
+    orderMode: 'desc',
   };
+
+  useEffect(() => setState({
+    paginationOptions,
+  }), []);
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -52,7 +54,6 @@ StixDomainObjectNestedEntitiesProps
           ? (
             <StixNestedRefRelationshipCreationFromEntityFabless
               id={entityId}
-              entityType={entityType}
               targetStixCoreObjectTypes={targetStixCoreObjectTypes}
               controlledDial={({ onOpen }) => (
                 <IconButton

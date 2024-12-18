@@ -1,7 +1,9 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { ChevronRightOutlined } from '@mui/icons-material';
 import { Fab } from '@mui/material';
 import { v4 as uuid } from 'uuid';
+import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik';
 import { PaginationOptions } from '../../../../components/list_lines';
 import Drawer from '../drawer/Drawer';
 import CreateRelationshipControlledDial from '../stix_core_relationships/CreateRelationshipControlledDial';
@@ -26,6 +28,12 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../components/i18n';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import StixNestedRefRelationshipCreationForm, { StixNestedRefRelationshipCreationFormValues } from './StixNestedRefRelationshipCreationForm';
+import { StixNestedRefRelationshipCreationFromEntityResolveQuery$data } from './__generated__/StixNestedRefRelationshipCreationFromEntityResolveQuery.graphql';
+import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { formatDate } from '../../../../utils/Time';
+import { stixNestedRefRelationshipCreationFromEntityMutation, stixNestedRefRelationshipResolveTypes } from './StixNestedRefRelationshipCreationFromEntity';
 
 interface SelectEntityProps {
   setTargetEntities: React.Dispatch<TargetEntity[]>,
@@ -155,9 +163,138 @@ const SelectEntity: FunctionComponent<SelectEntityProps> = ({
   );
 };
 
+interface RenderFormProps {
+  data: StixNestedRefRelationshipCreationFromEntityResolveQuery$data,
+  targetEntities: TargetEntity[],
+  handleClose: () => void,
+  handleBack: () => void,
+  isReversable?: boolean
+  defaultStartTime?: string,
+  defaultStopTime?: string,
+}
+
+const RenderForm: FunctionComponent<RenderFormProps> = ({
+  data,
+  targetEntities,
+  handleClose,
+  handleBack,
+  isReversable,
+  defaultStartTime,
+  defaultStopTime,
+}) => {
+  if (data?.stixSchemaRefRelationships === null || data?.stixSchemaRefRelationships === undefined) return <></>;
+  const { state: {
+    reversed: initiallyReversed,
+    onCreate,
+    paginationOptions,
+  } } = useContext(CreateRelationshipContext);
+  const [reversed, setReversed] = useState<boolean>(initiallyReversed ?? false);
+
+  const handleReverse = () => setReversed(!reversed);
+
+  const sourceEntity = data.stixSchemaRefRelationships.entity as TargetEntity;
+  let fromEntities = [sourceEntity];
+  let toEntities = targetEntities;
+  if (reversed) {
+    fromEntities = targetEntities;
+    toEntities = [sourceEntity];
+  }
+  let relationshipTypes: string[] = [];
+  if ((!data.stixSchemaRefRelationships.from
+    || data.stixSchemaRefRelationships.from.length === 0)
+    && (!data.stixSchemaRefRelationships.to
+      || data.stixSchemaRefRelationships.to.length !== 0)) {
+    if (reversed) {
+      relationshipTypes = data.stixSchemaRefRelationships.to as string[] ?? [];
+    }
+  } else {
+    relationshipTypes = data.stixSchemaRefRelationships.from as string[] ?? [];
+  }
+  const startTime = defaultStartTime ?? (new Date()).toISOString();
+  const stopTime = defaultStopTime ?? (new Date()).toISOString();
+
+  const commit = (finalValues: object) => {
+    return new Promise((resolve, reject) => {
+      commitMutation({
+        mutation: stixNestedRefRelationshipCreationFromEntityMutation,
+        variables: { input: finalValues },
+        updater: (store: RecordSourceSelectorProxy) => {
+          if (typeof onCreate !== 'function') {
+            const payload = store.getRootField('stixRefRelationshipAdd');
+            const container = store.getRoot();
+            const userProxy = store.get(container.getDataID());
+            if (userProxy != null && payload != null && paginationOptions != null) {
+              const newEdge = payload.setLinkedRecord(payload, 'node');
+              const conn = ConnectionHandler.getConnection(
+                userProxy,
+                'Pagination_stixNestedRefRelationships',
+                paginationOptions,
+              );
+              if (conn != null) {
+                ConnectionHandler.insertEdgeBefore(conn, newEdge);
+              }
+            }
+          }
+        },
+        optimisticUpdater: undefined,
+        setSubmitting: undefined,
+        optimisticResponse: undefined,
+        onError: (error: Error) => {
+          reject(error);
+        },
+        onCompleted: (response: Response) => {
+          resolve(response);
+        },
+      });
+    });
+  };
+
+  const onSubmit: FormikConfig<StixNestedRefRelationshipCreationFormValues>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
+    setSubmitting(true);
+    for (const targetEntity of targetEntities) {
+      const fromEntityId = reversed ? targetEntity.id : sourceEntity.id;
+      const toEntityId = reversed ? sourceEntity.id : targetEntity.id;
+      const finalValues = {
+        fromId: fromEntityId,
+        toId: toEntityId,
+        relationship_type: values.relationship_type,
+        start_time: formatDate(values.start_time),
+        stop_time: formatDate(values.stop_time),
+      };
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await commit(finalValues);
+      } catch (error) {
+        setSubmitting(false);
+        return handleErrorInForm(error, setErrors);
+      }
+    }
+    setSubmitting(false);
+    resetForm();
+    handleClose();
+    if (typeof onCreate === 'function') {
+      onCreate();
+    }
+    return true;
+  };
+
+  return (
+    <StixNestedRefRelationshipCreationForm
+      sourceEntity={fromEntities[0]}
+      targetEntities={toEntities}
+      relationshipTypes={relationshipTypes}
+      defaultStartTime={startTime}
+      defaultStopTime={stopTime}
+      onSubmit={onSubmit}
+      handleClose={handleClose}
+      handleBack={handleBack}
+      handleReverse={isReversable ? handleReverse : undefined}
+    />
+  );
+};
+
 interface StixNestedRefRelationshipCreationFromEntityFablessProps {
   id: string,
-  entityType: string,
   targetStixCoreObjectTypes: string[],
   controlledDial?: ({ onOpen }: { onOpen: () => void }) => React.ReactElement,
 }
@@ -166,7 +303,6 @@ const StixNestedRefRelationshipCreationFromEntityFabless: FunctionComponent<
 StixNestedRefRelationshipCreationFromEntityFablessProps
 > = ({
   id,
-  entityType,
   targetStixCoreObjectTypes,
   controlledDial,
 }) => {
@@ -221,10 +357,12 @@ StixNestedRefRelationshipCreationFromEntityFablessProps
       title={''} // Defined in custom header prop
       controlledDial={controlledDial ?? CreateRelationshipControlledDial}
       onClose={reset}
-      header={<CreateRelationshipHeader
-        showCreates={step === 0}
-        searchPaginationOptions={searchPaginationOptions}
-              />}
+      header={(
+        <CreateRelationshipHeader
+          showCreates={step === 0}
+          searchPaginationOptions={searchPaginationOptions}
+        />
+      )}
       containerStyle={{
         minHeight: '100vh',
         position: 'fixed',
@@ -232,24 +370,53 @@ StixNestedRefRelationshipCreationFromEntityFablessProps
         width: '50%',
       }}
     >
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-      }}
-      >
-        {step === 0 && (
-          <SelectEntity
-            setTargetEntities={setTargetEntities}
-            handleNextStep={() => setStep(1)}
-            searchPaginationOptions={searchPaginationOptions}
-            localStorageKey={localStorageKey}
-            helpers={helpers}
-            types={targetStixCoreObjectTypes}
-          />
-        )}
-        {step === 1 && (<Loader />)}
-      </div>
+      {({ onClose }) => (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+        }}
+        >
+          {step === 0 && (
+            <SelectEntity
+              setTargetEntities={setTargetEntities}
+              handleNextStep={() => setStep(1)}
+              searchPaginationOptions={searchPaginationOptions}
+              localStorageKey={localStorageKey}
+              helpers={helpers}
+              types={targetStixCoreObjectTypes}
+            />
+          )}
+          {step === 1 && (
+            <QueryRenderer
+              query={stixNestedRefRelationshipResolveTypes}
+              variables={{
+                id,
+                toType: targetEntities[0].entity_type,
+              }}
+              render={({ props }: { props: StixNestedRefRelationshipCreationFromEntityResolveQuery$data }) => {
+                if (props && props.stixSchemaRefRelationships) {
+                  return (
+                    <div>
+                      {/* {renderForm(props.stixSchemaRefRelationships)} */}
+                      <RenderForm
+                        data={props}
+                        targetEntities={targetEntities}
+                        handleClose={() => {
+                          reset();
+                          onClose();
+                        }}
+                        handleBack={() => setStep(0)}
+                      />
+                    </div>
+                  );
+                }
+                return (<Loader />);
+              }}
+            />
+          )}
+        </div>
+      )}
     </Drawer>
   );
 };
