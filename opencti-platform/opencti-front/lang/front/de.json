@@ -2667,7 +2667,7 @@
   "The dashboard has been duplicated. You can manage it": "Das Dashboard wurde dupliziert. Sie können es verwalten",
   "the dedicated page": "der entsprechenden Seite",
   "The following groups require your attention:": "Die folgenden Gruppen erfordern Ihre Aufmerksamkeit:",
-  "The following TTPs are not covered in this OpenBAS catalog : ": "Die folgenden TTPs sind in diesem OpenBAS-Katalog nicht enthalten:",
+  "The following TTPs are not covered in your OpenBAS catalog : ": "Die folgenden TTPs sind in Ihrem OpenBAS-Katalog nicht enthalten:",
   "The importation of the file has been started": "Das Importieren der Datei wurde gestartet",
   "The main object and the ... relationships/references linked to it will be deleted permanently.": "Das Hauptobjekt und die mit ihm verknüpften {count} Beziehungen/Referenzen werden dauerhaft gelöscht.",
   "The main object and the ... relationships/references linked to it will be restored.": "Das Hauptobjekt und die mit ihm verknüpften {count} Beziehungen/Referenzen werden wiederhergestellt.",

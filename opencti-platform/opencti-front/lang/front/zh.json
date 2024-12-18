@@ -2667,7 +2667,7 @@
   "The dashboard has been duplicated. You can manage it": "仪表板已被复制。你可以管理它",
   "the dedicated page": "专用页面",
   "The following groups require your attention:": "请您关注以下群体：",
-  "The following TTPs are not covered in this OpenBAS catalog : ": "本 OpenBAS 目录不包括以下 TTP：",
+  "The following TTPs are not covered in your OpenBAS catalog : ": "OpenBAS 目录中不包括以下 TTP：",
   "The importation of the file has been started": "已开始导入文件",
   "The main object and the ... relationships/references linked to it will be deleted permanently.": "将永久删除主对象及其链接的 {count} 关系/引用。",
   "The main object and the ... relationships/references linked to it will be restored.": "将还原主对象和与之关联的 {count} 关系/引用。",

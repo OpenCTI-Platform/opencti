@@ -615,7 +615,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         </Alert>
         {result.attackPatternsWithoutInjectorContracts && result.attackPatternsWithoutInjectorContracts.trim() !== '' && (
           <Alert severity="warning" sx={{ marginTop: 2 }}>
-            {t_i18n('The following TTPs are not covered in this OpenBAS catalog : ')}
+            {t_i18n('The following TTPs are not covered in your OpenBAS catalog : ')}
             {result.attackPatternsWithoutInjectorContracts}
             <br />
             {t_i18n('In response, we have created placeholders for these TTPs.')}

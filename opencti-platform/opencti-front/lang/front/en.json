@@ -2667,7 +2667,7 @@
   "The dashboard has been duplicated. You can manage it": "The dashboard has been duplicated. You can manage it",
   "the dedicated page": "the dedicated page",
   "The following groups require your attention:": "The following groups require your attention:",
-  "The following TTPs are not covered in this OpenBAS catalog : ": "The following TTPs are not covered in this OpenBAS catalog : ",
+  "The following TTPs are not covered in your OpenBAS catalog : ": "The following TTPs are not covered in your OpenBAS catalog : ",
   "The importation of the file has been started": "The importation of the file has been started",
   "The main object and the ... relationships/references linked to it will be deleted permanently.": "The main object and the {count} relationships/references linked to it will be deleted permanently.",
   "The main object and the ... relationships/references linked to it will be restored.": "The main object and the {count} relationships/references linked to it will be restored.",
