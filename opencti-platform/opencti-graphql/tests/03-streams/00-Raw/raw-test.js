@@ -77,12 +77,12 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['opinion'].length).toBe(6);
       expect(updateEventsByTypes['report'].length).toBe(13);
       expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
-      expect(updateEventsByTypes['tool'].length).toBe(7);
+      expect(updateEventsByTypes['tool'].length).toBe(9);
       expect(updateEventsByTypes['sighting'].length).toBe(4);
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(175);
+      expect(updateEvents.length).toBe(177);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;

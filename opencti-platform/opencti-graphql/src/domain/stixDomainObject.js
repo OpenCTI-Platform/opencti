@@ -25,7 +25,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -240,8 +240,13 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     }
     return file;
   });
+  const nonResolvedFiles = files.map((f) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
+    return nonResolvedFile;
+  });
 
-  const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(context, user, stixDomainObject, { key: 'x_opencti_files', value: files });
+  const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(context, user, stixDomainObject, { key: 'x_opencti_files', value: nonResolvedFiles });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
 
