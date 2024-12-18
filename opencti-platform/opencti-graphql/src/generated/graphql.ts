@@ -13663,6 +13663,8 @@ export type Mutation = {
   registerConnector?: Maybe<Connector>;
   reportAdd?: Maybe<Report>;
   reportEdit?: Maybe<ReportEditMutations>;
+  requestAccessAdd?: Maybe<Scalars['ID']['output']>;
+  requestAccessValidate?: Maybe<Scalars['Boolean']['output']>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
   resetStateConnector?: Maybe<Connector>;
   retentionRuleAdd: RetentionRule;
@@ -15115,6 +15117,16 @@ export type MutationReportAddArgs = {
 
 
 export type MutationReportEditArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRequestAccessAddArgs = {
+  input: RequestAccessAddInput;
+};
+
+
+export type MutationRequestAccessValidateArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -22874,6 +22886,17 @@ export type RepresentativeWithId = {
   id: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
 };
+
+export type RequestAccessAddInput = {
+  request_access_entities: Array<Scalars['ID']['input']>;
+  request_access_members: Array<Scalars['ID']['input']>;
+  request_access_reason?: InputMaybe<Scalars['String']['input']>;
+  request_access_type?: InputMaybe<RequestAccessType>;
+};
+
+export enum RequestAccessType {
+  Organization = 'organization'
+}
 
 export type ResolvedInstanceFilter = {
   __typename?: 'ResolvedInstanceFilter';
@@ -31322,6 +31345,8 @@ export type ResolversTypes = ResolversObject<{
   ReportsOrdering: ReportsOrdering;
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
+  RequestAccessAddInput: RequestAccessAddInput;
+  RequestAccessType: RequestAccessType;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -32095,6 +32120,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
+  RequestAccessAddInput: RequestAccessAddInput;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -37100,6 +37126,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   registerConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationRegisterConnectorArgs>>;
   reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
+  requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
+  requestAccessValidate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;
   retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;

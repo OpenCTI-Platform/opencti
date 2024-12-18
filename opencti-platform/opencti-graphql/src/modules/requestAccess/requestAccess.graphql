@@ -1,0 +1,15 @@
+enum RequestAccessType {
+  organization_sharing
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
+}
+
+type Mutation {
+  requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
+  requestAccessValidate(id: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+}
