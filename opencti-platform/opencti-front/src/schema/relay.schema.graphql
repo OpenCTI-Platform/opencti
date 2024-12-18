@@ -1061,6 +1061,7 @@ enum BackgroundTaskActionType {
   UNSHARE
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
+  REMOVE_AUTH_MEMBERS
 }
 
 enum BackgroundTaskContextType {

@@ -748,8 +748,10 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 };
 
+const notCleanableFilterKeys = ['entity_type', 'authorized_members.id'];
+
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat('entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
   if (!filters) {
     return undefined;
   }

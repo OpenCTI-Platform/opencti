@@ -136,6 +136,7 @@ const DataTableInternalFilters = ({
 type DataTableInternalToolbarProps = Pick<DataTableProps,
 | 'toolbarFilters'
 | 'handleCopy'
+| 'removeAuthMembersEnabled'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -146,6 +147,7 @@ const DataTableInternalToolbar = ({
   handleCopy,
   toolbarFilters,
   globalSearch,
+  removeAuthMembersEnabled,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -180,6 +182,7 @@ const DataTableInternalToolbar = ({
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
         handleCopy={handleCopy}
+        removeAuthMembersEnabled={removeAuthMembersEnabled}
       />
     </div>
   );
@@ -237,6 +240,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     taskScope,
     message,
     storageKey,
+    removeAuthMembersEnabled,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -289,6 +293,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           taskScope={taskScope}
           toolbarFilters={toolbarFilters}
           globalSearch={globalSearch}
+          removeAuthMembersEnabled={removeAuthMembersEnabled}
         />
       )}
     />

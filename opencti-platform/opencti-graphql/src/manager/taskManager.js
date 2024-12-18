@@ -2,6 +2,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { buildCreateEvent, lockResource } from '../database/redis';
@@ -46,7 +47,7 @@ import {
   INPUT_OBJECTS,
   RULE_PREFIX
 } from '../schema/general';
-import { executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
@@ -61,6 +62,7 @@ import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../sch
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
@@ -439,6 +441,15 @@ const executeShareMultiple = async (context, user, actionContext, element) => {
 const executeUnshareMultiple = async (context, user, actionContext, element) => {
   await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
 };
+export const executeRemoveAuthMembers = async (context, user, element) => {
+  await editAuthorizedMembers(context, user, {
+    entityId: element.id,
+    entityType: element.entity_type,
+    requiredCapabilities: [BYPASS],
+    input: null
+  });
+};
+
 const throwErrorInDraftContext = (context, user, actionType) => {
   if (!getDraftContext(context, user)) {
     return;
@@ -556,6 +567,9 @@ const executeProcessing = async (context, user, job, scope) => {
           }
           if (type === ACTION_TYPE_UNSHARE_MULTIPLE) {
             await executeUnshareMultiple(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
+            await executeRemoveAuthMembers(context, user, element);
           }
         } catch (err) {
           logApp.error(err);
