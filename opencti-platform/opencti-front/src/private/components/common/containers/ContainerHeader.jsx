@@ -482,7 +482,6 @@ const ContainerHeader = (props) => {
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);
   const [applied, setApplied] = useState([]);
-  const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   // Suggestions
   const resolveThreats = (objects) => objects.filter(
@@ -1113,18 +1112,15 @@ const ContainerHeader = (props) => {
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>
             )}
-            {isFABReplaced && (
+            {isFABReplaced && enableEnricher && (
               <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                 <StixCoreObjectEnrichment
                   stixCoreObjectId={container.id}
-                  displayEnrichment={displayEnrichment}
-                  handleOpenEnrichment={handleOpenEnrichment}
-                  handleClose={handleCloseEnrichment}
-                />
-                <StixCoreObjectEnrollPlaybook
-                  stixCoreObjectId={container.id}
                 />
               </Security>
+            )}
+            {isFABReplaced && enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
             )}
             {EditComponent}
           </div>
