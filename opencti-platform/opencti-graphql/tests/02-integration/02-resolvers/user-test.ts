@@ -11,6 +11,7 @@ import {
   getGroupIdByName,
   getOrganizationIdByName,
   getUserIdByEmail,
+  GREEN_GROUP,
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
   TEST_ORGANIZATION,
@@ -140,6 +141,14 @@ const CREATE_QUERY = gql`
         overrides {
           entity_type
           max_confidence
+        }
+      }
+      groups {
+        edges {
+          node {
+            id
+            name
+          }
         }
       }
       effective_confidence_level {
@@ -613,6 +622,40 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data?.user).not.toBeNull();
     expect(queryResult.data?.user.capabilities.length).toEqual(1);
     expect(queryResult.data?.user.capabilities[0].name).toEqual('KNOWLEDGE');
+  });
+  it('Created user should not be assigned to default group if groups are specified in the new user input', async () => {
+    const USER_TO_CREATE = {
+      input: {
+        name: 'UserWithGroupsSpecified',
+        password: 'UserWithGroupsSpecified',
+        user_email: 'UserWithGroupsSpecified@mail.com',
+        groups: [GREEN_GROUP.id],
+      },
+    };
+    const userAddResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE,
+    });
+    expect(userAddResult.data?.userAdd.groups.edges.length).toEqual(1);
+    expect(userAddResult.data?.userAdd.groups.edges[0].node.name).toEqual(GREEN_GROUP.name);
+    userToDeleteIds.push(userAddResult.data?.userAdd.id);
+  });
+  it('Created user should be assigned to default group if no groups are specified in the new user input', async () => {
+    const USER_TO_CREATE = {
+      input: {
+        name: 'UserWithNoGroupsSpecified',
+        password: 'UserWithNoGroupsSpecified',
+        user_email: 'UserWithNoGroupsSpecified@mail.com',
+        groups: [],
+      },
+    };
+    const userAddResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE,
+    });
+    expect(userAddResult.data?.userAdd.groups.edges.length).toEqual(1);
+    expect(userAddResult.data?.userAdd.groups.edges[0].node.name).toEqual('Default');
+    userToDeleteIds.push(userAddResult.data?.userAdd.id);
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
