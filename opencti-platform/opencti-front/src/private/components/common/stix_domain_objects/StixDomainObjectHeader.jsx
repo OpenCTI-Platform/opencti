@@ -251,8 +251,6 @@ const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     stixDomainObject,
     isOpenctiAlias,
