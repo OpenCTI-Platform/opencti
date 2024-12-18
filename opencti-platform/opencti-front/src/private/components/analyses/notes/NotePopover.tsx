@@ -13,6 +13,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
@@ -26,6 +27,7 @@ import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const NotePopoverDeletionMutation = graphql`
   mutation NotePopoverDeletionMutation($id: ID!) {
@@ -62,6 +64,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const [deleting, setDeleting] = useState<boolean>(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isEnterpriseEdition = useEnterpriseEdition();
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
@@ -153,7 +156,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
               {t_i18n('Enrich')}
             </MenuItem>
           </Security>
-          <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
+          <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}{!isEnterpriseEdition && <EEChip />}</MenuItem>
           <CollaborativeSecurity
             data={note}
             needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
