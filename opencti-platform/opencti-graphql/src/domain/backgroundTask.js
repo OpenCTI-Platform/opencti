@@ -20,6 +20,7 @@ import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
 import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -32,6 +33,7 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ENTITY_TYPE_DELETE_OPERATION,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_INTERNAL_FILE,
+  ENTITY_TYPE_DRAFT_WORKSPACE,
 ];
 
 export const MAX_TASK_ELEMENTS = 500;

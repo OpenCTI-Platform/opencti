@@ -847,6 +847,7 @@ type Work {
   messages: [WorkMessage]
   errors: [WorkMessage]
   tracking: WorkTracking
+  draft_context: String
 }
 
 type WorkEdge {
@@ -8145,6 +8146,7 @@ type Query {
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
+  draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
 }
 
 type Subscription {
@@ -8178,6 +8180,7 @@ type WorkEditMutations {
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
   addExpectations(expectations: Int): ID!
+  addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
   toProcessed(message: String, inError: Boolean): ID!
 }
@@ -12367,6 +12370,16 @@ type DraftWorkspace implements InternalObject & BasicObject {
   created_at: DateTime!
   creators: [Creator!]
   entity_id: String
+  objectsCount: DraftObjectsCount
+}
+
+type DraftObjectsCount {
+  totalCount: Int
+  entitiesCount: Int
+  observablesCount: Int
+  relationshipsCount: Int
+  sightingsCount: Int
+  containersCount: Int
 }
 
 enum DraftWorkspacesOrdering {

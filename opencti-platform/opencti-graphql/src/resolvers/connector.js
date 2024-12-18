@@ -21,6 +21,7 @@ import {
   testSync
 } from '../domain/connector';
 import {
+  addDraftContext,
   createWork,
   deleteWork,
   deleteWorkForConnector,
@@ -86,6 +87,7 @@ const connectorResolvers = {
       ping: () => pingWork(context, context.user, id),
       reportExpectation: ({ error }) => reportExpectation(context, context.user, id, error),
       addExpectations: ({ expectations }) => updateExpectationsNumber(context, context.user, id, expectations),
+      addDraftContext: ({ draftContext }) => addDraftContext(context, context.user, id, draftContext),
       toReceived: ({ message }) => updateReceivedTime(context, context.user, id, message),
       toProcessed: ({ message, inError }) => updateProcessedTime(context, context.user, id, message, inError),
     }),

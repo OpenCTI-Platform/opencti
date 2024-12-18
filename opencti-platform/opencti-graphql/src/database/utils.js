@@ -305,8 +305,12 @@ export const pascalize = (s) => {
   });
 };
 
+export const computeSumOfList = (numbers) => {
+  return numbers.reduce((a, b) => a + b, 0);
+};
+
 export const computeAverage = (numbers) => {
-  const sum = numbers.reduce((a, b) => a + b, 0);
+  const sum = computeSumOfList(numbers);
   return Math.round(sum / numbers.length || 0);
 };
 

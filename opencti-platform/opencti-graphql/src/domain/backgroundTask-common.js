@@ -18,6 +18,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -66,17 +67,17 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     // 2.3. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
-      const deleteOperationTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION);
+      const acceptedInternalTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION || type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));
-      const isNotKnowledge = (!deleteOperationTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
+      const isNotKnowledge = (!acceptedInternalTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
-      const deleteOperationTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION);
+      const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
-        || (!deleteOperationTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
+        || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
