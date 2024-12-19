@@ -94,7 +94,7 @@
     "unified": "11.0.4",
     "use-analytics": "1.1.0",
     "uuid": "11.0.3",
-    "yup": "1.4.0"
+    "yup": "1.6.1"
   },
   "devDependencies": {
     "@playwright/test": "1.49.1",
