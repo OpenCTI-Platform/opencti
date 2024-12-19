@@ -1,24 +1,26 @@
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import { Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
-import FintelTemplatePreviewForm from './FintelTemplatePreviewForm';
+import FintelTemplatePreviewForm, { FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
 
 interface FintelTemplatePreviewProps {
   content: string
+  isTabActive: boolean
 }
 
-const FintelTemplatePreview = ({ content }: FintelTemplatePreviewProps) => {
+const FintelTemplatePreview = ({ content, isTabActive }: FintelTemplatePreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
 
   const [pdf, setPdf] = useState<File>();
+  const [formValues, setFormValues] = useState<FintelTemplatePreviewFormInputs>();
 
   const paperStyle: CSSProperties = {
     padding: theme.spacing(2),
@@ -46,6 +48,17 @@ const FintelTemplatePreview = ({ content }: FintelTemplatePreviewProps) => {
     });
   };
 
+  useEffect(() => {
+    const { fileMarkings, entity, contentMaxMarkings } = formValues ?? {};
+    if (!entity || !isTabActive) return;
+    buildPreview(
+      entity.value,
+      entity.label,
+      (contentMaxMarkings ?? []).map((m) => m.label),
+      (fileMarkings ?? []).map((m) => m.label),
+    );
+  }, [formValues, content, isTabActive]);
+
   return (
     <div style={{
       height: 'calc(100vh - 280px)',
@@ -59,15 +72,7 @@ const FintelTemplatePreview = ({ content }: FintelTemplatePreviewProps) => {
         </Typography>
         <Paper style={paperStyle} variant="outlined">
           <FintelTemplatePreviewForm
-            onChange={({ entity, contentMaxMarkings, fileMarkings }) => {
-              if (!entity) return;
-              buildPreview(
-                entity.value,
-                entity.label,
-                contentMaxMarkings.map((m) => m.label),
-                fileMarkings.map((m) => m.label),
-              );
-            }}
+            onChange={(values) => setFormValues(values)}
           />
         </Paper>
       </div>

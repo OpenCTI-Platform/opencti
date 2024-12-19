@@ -5,9 +5,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import Loader from './Loader';
 import { APP_BASE_PATH } from '../relay/environment';
 
-if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-  pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
-}
+pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
 interface PdfViewerProps {
   pdf: File

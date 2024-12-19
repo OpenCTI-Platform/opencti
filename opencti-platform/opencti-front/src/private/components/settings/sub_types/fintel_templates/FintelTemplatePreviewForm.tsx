@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
 
-interface FintelTemplatePreviewFormInputs {
+export interface FintelTemplatePreviewFormInputs {
   entity: EntityOption | null;
   contentMaxMarkings: Option[];
   fileMarkings: Option[];
