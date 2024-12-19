@@ -47,7 +47,7 @@ const FintelTemplateFormDrawer = ({
   const editionTitle = t_i18n('Update a template');
 
   const [commitAddMutation] = useApiMutation<FintelTemplateFormDrawerAddMutation>(fintelTemplateAddMutation);
-  const commitEditMutation = useFintelTemplateEdit();
+  const [commitEditMutation] = useFintelTemplateEdit();
 
   const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
     values,

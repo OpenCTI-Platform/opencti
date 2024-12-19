@@ -252,20 +252,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
-  description: {
-    id: 'description',
-    label: 'Description',
-    percentWidth: 20,
-    isSortable: false,
-    render: ({ description }) => description || '-',
-  },
-  entity_type: {
-    id: 'entity_type',
-    label: 'Type',
-    percentWidth: 10,
-    isSortable: false,
-    render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
-  },
   definition: {
     id: 'definition',
     label: 'Definition',
@@ -286,6 +272,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 25,
     isSortable: true,
     render: ({ description }) => defaultRender(description),
+  },
+  entity_type: {
+    id: 'entity_type',
+    label: 'Type',
+    percentWidth: 10,
+    isSortable: false,
+    render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
   },
   event_types: {
     id: 'event_types',
