@@ -224,7 +224,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             name="content"
             label={t_i18n('Content')}
             required={mandatoryAttributes.includes('content')}
-            meta={{ error: errors.content }}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,

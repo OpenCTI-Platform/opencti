@@ -1,3 +1,17 @@
+import {
+  widgetAllEntitiesAndObservables,
+  widgetAttackPatterns,
+  widgetGroupingMultiAttributes,
+  widgetIncidentResponseMultiAttributes,
+  widgetIndicators,
+  widgetReportMultiAttributes,
+  widgetRFIMultiAttributes,
+  widgetRFTMultiAttributes,
+  widgetThreats,
+  widgetVictims
+} from './__fintelTemplateWidgets';
+import type { FintelTemplateAddInput } from '../../generated/graphql';
+
 const executiveSummaryContent = (containerType: string) => {
   let typeLabel = 'Types';
   let typeWidget = '$types';
@@ -67,9 +81,9 @@ const executiveSummaryContent = (containerType: string) => {
         <ul>
           <li>The timeline of the incident/risk </li>
           <li>The attribution of the incident/risk: pick the main threats from this list.</li>
-          <div>$threatsId</div>
+          <div>$threats</div>
           <li>The main victims of the incident/risk: pick the main form the list.</li>
-          <div>$victimsId</div>
+          <div>$victims</div>
         </ul>
       </blockquote>
       
@@ -86,7 +100,7 @@ const executiveSummaryContent = (containerType: string) => {
           <li>The security posture of the company against that risk/incident in regards of the attack patterns used</li>
         </ul>
       </blockquote>
-      <div>$attackPatternsId</div>
+      <div>$attackPatterns</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
@@ -96,7 +110,7 @@ const executiveSummaryContent = (containerType: string) => {
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all entities & observables in your container.</p>
       </blockquote>
-      <div>$allEntitiesAndObservablesId</div>
+      <div>$allEntitiesAndObservables</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
@@ -106,7 +120,7 @@ const executiveSummaryContent = (containerType: string) => {
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all indicators in your container.</p>
       </blockquote>
-      <div>$indicatorsId</div>
+      <div>$indicators</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
@@ -126,33 +140,34 @@ const executiveSummaryContent = (containerType: string) => {
 const getMultiAttributesWidget = (containerType: string) => {
   switch (containerType) {
     case 'Report':
-      return 'widgetReportMultiAttributesId';
+      return widgetReportMultiAttributes;
     case 'Grouping':
-      return 'widgetGroupingMultiAttributesId';
+      return widgetGroupingMultiAttributes;
     case 'Case-Incident':
-      return 'widgetIncidentResponseMultiAttributesId';
+      return widgetIncidentResponseMultiAttributes;
     case 'Case-Rfi':
-      return 'widgetRFIMultiAttributesId';
+      return widgetRFIMultiAttributes;
     case 'Case-Rft':
-      return 'widgetRFTMultiAttributesId';
+      return widgetRFTMultiAttributes;
     default:
-      return 'widgetReportMultiAttributesId';
+      return widgetReportMultiAttributes;
   }
 };
 
-export const generateTemplateExecutiveSummary = (containerType: string) => {
+export const generateFintelTemplateExecutiveSummary = (containerType: string): FintelTemplateAddInput => {
   const multiAttributesWidget = getMultiAttributesWidget(containerType);
   return {
     name: 'Executive Summary',
-    id: 'executiveSummary-id',
     content: executiveSummaryContent(containerType),
-    template_widgets_ids: [
+    settings_types: [containerType],
+    start_date: '1970-01-01T00:00:00Z',
+    fintel_template_widgets: [
       multiAttributesWidget,
-      'indicatorsId',
-      'attackPatternsId',
-      'threatsId',
-      'victimsId',
-      'allEntitiesAndObservablesId',
+      widgetIndicators,
+      widgetAttackPatterns,
+      widgetThreats,
+      widgetVictims,
+      widgetAllEntitiesAndObservables,
     ],
   };
 };

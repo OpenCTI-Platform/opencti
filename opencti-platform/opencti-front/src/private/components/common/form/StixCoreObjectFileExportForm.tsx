@@ -263,7 +263,7 @@ const StixCoreObjectFileExportForm = ({
                         ) => <li {...props}>{option.label}</li>}
                         textfieldprops={{
                           label: t_i18n('File to export'),
-                          helperText: t_i18n('A Fintel export will contain extra information like markings and creation date'),
+                          helperText: t_i18n('A FINTEL export will contain extra information like markings and creation date'),
                         }}
                         optionLength={80}
                       />

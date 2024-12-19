@@ -1,4 +1,5 @@
-import type { Template } from '../../generated/graphql';
+import type { FintelTemplateAddInput } from '../../generated/graphql';
+import { widgetAttackPatterns, widgetContainerObservables, widgetIncidentIOC, widgetIncidentResponseMultiAttributes, widgetIncidentTasksActions } from './__fintelTemplateWidgets';
 
 const content = `
 <div>
@@ -61,7 +62,7 @@ const content = `
   </div>
   
   <h3>4. Incident Response Tasks/Actions</h3>
-  <div>$incidentTasksAndActionsId</div>
+  <div>$incidentTasksAndActions</div>
   
   <h3>5. Recommendations</h3>
   <blockquote>
@@ -69,21 +70,21 @@ const content = `
   </blockquote>
   
   <h3>6. Indicators of Compromise (IoCs)</h3>
-  <div>$incidentIOCId</div>
+  <div>$incidentIOC</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
   
   <h3>7. Observables</h3>
-  <div>$containerObservablesId</div>
+  <div>$containerObservables</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
   
   <h3>8. Tactics, Techniques, and Procedures (TTPs)</h3>
-  <div>$attackPatternsId</div>
+  <div>$attackPatterns</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
@@ -94,15 +95,16 @@ const content = `
 </div>
 `;
 
-export const templateIncidentResponse: Template = {
+export const fintelTemplateIncidentResponse: FintelTemplateAddInput = {
   name: 'Incident Response Report',
-  id: 'templateIncidentCase-id',
   content,
-  template_widgets_ids: [
-    'containerObservablesId',
-    'incidentIOCId',
-    'incidentTasksAndActionsId',
-    'attackPatternsId',
-    'widgetIncidentResponseMultiAttributesId',
+  start_date: '1970-01-01T00:00:00Z',
+  settings_types: ['Case-Incident'],
+  fintel_template_widgets: [
+    widgetContainerObservables,
+    widgetIncidentIOC,
+    widgetIncidentTasksActions,
+    widgetAttackPatterns,
+    widgetIncidentResponseMultiAttributes,
   ],
 };
