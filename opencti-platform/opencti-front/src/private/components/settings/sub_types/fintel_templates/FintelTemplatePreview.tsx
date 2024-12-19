@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
@@ -7,6 +7,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import FintelTemplatePreviewForm from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
+import PdfViewer from '../../../../../components/PdfViewer';
 
 interface FintelTemplatePreviewProps {
   content: string
@@ -17,9 +18,12 @@ const FintelTemplatePreview = ({ content }: FintelTemplatePreviewProps) => {
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
 
+  const [pdf, setPdf] = useState<File>();
+
   const paperStyle: CSSProperties = {
     padding: theme.spacing(2),
-    height: '100%',
+    flex: 1,
+    overflow: 'hidden',
   };
 
   const buildPreview = async (
@@ -36,7 +40,10 @@ const FintelTemplatePreview = ({ content }: FintelTemplatePreviewProps) => {
       instance_filters: null,
     });
     const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings);
-    PDF.open();
+    PDF.getBlob((blob) => {
+      const file = new File([blob], 'Preview.pdf', { type: blob.type });
+      setPdf(file);
+    });
   };
 
   return (
@@ -70,7 +77,19 @@ const FintelTemplatePreview = ({ content }: FintelTemplatePreviewProps) => {
           {t_i18n('Preview')}
         </Typography>
         <Paper style={paperStyle} variant="outlined">
-          <p>pouet</p>
+          {pdf ? (
+            <PdfViewer pdf={pdf} />
+          ) : (
+            <div style={{
+              display: 'flex',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            >
+              {t_i18n('Please select an entity on the left form to preview the template')}
+            </div>
+          )}
         </Paper>
       </div>
     </div>
