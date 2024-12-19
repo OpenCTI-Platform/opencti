@@ -194,7 +194,7 @@ export const getScenarioResult = async (id: string) => {
       human,
     };
   } catch (err) {
-    logApp.info('Scenario not found in OpenBAS', { err });
+    logApp.debug('Scenario not found in OpenBAS', { err });
     return noResult;
   }
 };
