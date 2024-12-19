@@ -62,7 +62,7 @@ describe('Hook: useFileFromTemplate', () => {
       });
     });
 
-    const content = await buildFileFromTemplate('aaaID', 'testTemplate', []);
+    const content = await buildFileFromTemplate('aaaID', [], 'testTemplate');
     expect(content).toEqual('Hello, I am container Super report of type Report');
   });
 
@@ -97,7 +97,7 @@ describe('Hook: useFileFromTemplate', () => {
       });
     });
 
-    const content = await buildFileFromTemplate('aaaID', 'testTemplate', []);
+    const content = await buildFileFromTemplate('aaaID', [], 'testTemplate');
     expect(content).toEqual('Hello, I have: my super list of elements');
   });
 });
