@@ -20,7 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -138,6 +138,8 @@ const incidentEditionOverviewFragment = graphql`
   }
 `;
 
+const INCIDENT_TYPE = 'Incident';
+
 interface IncidentEditionOverviewProps {
   incidentRef: IncidentEditionOverview_incident$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -163,16 +165,17 @@ IncidentEditionOverviewProps
   const theme = useTheme<Theme>();
 
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     references: Yup.array(),
-  };
-  const incidentValidator = useSchemaEditionValidation('Incident', basicShape);
+  }, mandatoryAttributes);
+  const incidentValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: incidentMutationFieldPatch,
     relationAdd: incidentMutationRelationAdd,
@@ -254,6 +257,8 @@ IncidentEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={incidentValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -271,6 +276,7 @@ IncidentEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             disabled={isInferred}
             onFocus={editor.changeFocus}
@@ -292,6 +298,7 @@ IncidentEditionOverviewProps
             label={t_i18n('Incident type')}
             type="incident-type-ov"
             name="incident_type"
+            required={(mandatoryAttributes.includes('incident_type'))}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
@@ -304,6 +311,7 @@ IncidentEditionOverviewProps
             label={t_i18n('Severity')}
             type="incident-severity-ov"
             name="severity"
+            required={(mandatoryAttributes.includes('severity'))}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
@@ -316,6 +324,7 @@ IncidentEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             disabled={isInferred}
@@ -329,6 +338,7 @@ IncidentEditionOverviewProps
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
@@ -337,6 +347,7 @@ IncidentEditionOverviewProps
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
@@ -358,6 +369,7 @@ IncidentEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -367,6 +379,7 @@ IncidentEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             disabled={isInferred}
             helpertext={
