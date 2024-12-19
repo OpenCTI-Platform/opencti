@@ -626,7 +626,7 @@ const elCreateLifecyclePolicy = async () => {
     });
   }
 };
-const elCreateCoreSettings = async () => {
+const updateCoreSettings = async () => {
   await engine.cluster.putComponentTemplate({
     name: `${ES_INDEX_PREFIX}-core-settings`,
     create: false,
@@ -1023,13 +1023,15 @@ const elCreateIndexTemplate = async (index, mappingProperties) => {
   // Create / update template
   const componentTemplateExist = await engine.cluster.existsComponentTemplate({ name: `${ES_INDEX_PREFIX}-core-settings` });
   if (!componentTemplateExist) {
-    await elCreateCoreSettings();
+    await updateCoreSettings();
   }
   return updateIndexTemplate(index, mappingProperties);
 };
 const sortMappingsKeys = (o) => (Object(o) !== o || Array.isArray(o) ? o
   : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
 export const elUpdateIndicesMappings = async () => {
+  // Update core settings
+  await updateCoreSettings();
   // Reset the templates
   const mappingProperties = engineMappingGenerator();
   const templates = await elPlatformTemplates();
@@ -1115,7 +1117,7 @@ export const elCreateIndex = async (index, mappingProperties) => {
   return null;
 };
 export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
-  await elCreateCoreSettings();
+  await updateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
   const mappingProperties = engineMappingGenerator();
