@@ -261,6 +261,8 @@ const stixNestedRefRelationshipCreationMutation = graphql`
 const stixNestedRefRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   confidence: Yup.number()
+    .min(0, t('The value must be greater than or equal to 0'))
+    .max(100, t('The value must be less than or equal to 100'))
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number')),
   start_time: Yup.date()

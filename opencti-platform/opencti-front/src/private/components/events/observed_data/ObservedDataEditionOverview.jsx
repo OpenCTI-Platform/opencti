@@ -93,7 +93,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
       .required(t_i18n('This field is required'))
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     number_observed: Yup.number(),
-    confidence: Yup.number(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
