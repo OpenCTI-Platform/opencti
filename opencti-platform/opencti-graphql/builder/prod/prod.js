@@ -9,6 +9,7 @@ esbuild.build({
     plugins: [importGlobPlugin(), graphqlLoaderPlugin(), nativeNodePlugin()],
     entryPoints: [
         'src/back.js',
+        'src/pyroscope.js',
         'script/script-clean-relations.js'
     ],
     entryNames: "[name]",
@@ -16,8 +17,10 @@ esbuild.build({
     loader: {'.js': 'jsx'},
     platform: 'node',
     target: ['node14'],
-    minify: true,
-    keepNames: true,
+    minifyWhitespace: true,
+    minifyIdentifiers: false,
+    minifySyntax: true,
+    keepNames: false,
     sourcemap: true,
     sourceRoot: 'src',
     sourcesContent: false,

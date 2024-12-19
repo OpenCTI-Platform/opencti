@@ -56,6 +56,11 @@
       }
     },
     "telemetry": {
+      "pyroscope": {
+        "enabled": false,
+        "node": "OpenCTI",
+        "exporter": ""
+      },
       "tracing": {
         "enabled": false,
         "exporter_otlp": "",
