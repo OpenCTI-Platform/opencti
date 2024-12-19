@@ -303,7 +303,7 @@ const StixNestedRefRelationshipCreationFromEntityFabless: FunctionComponent<
 StixNestedRefRelationshipCreationFromEntityFablessProps
 > = ({
   id,
-  targetStixCoreObjectTypes,
+  targetStixCoreObjectTypes = [],
   controlledDial,
 }) => {
   const [step, setStep] = useState<number>(0);

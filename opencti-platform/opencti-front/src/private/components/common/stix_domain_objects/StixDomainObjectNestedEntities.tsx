@@ -23,7 +23,7 @@ StixDomainObjectNestedEntitiesProps
 > = ({
   entityId,
   entityType,
-  targetStixCoreObjectTypes,
+  targetStixCoreObjectTypes = [],
 }) => {
   const { t_i18n } = useFormatter();
   const { setState } = useContext(CreateRelationshipContext);
