@@ -217,7 +217,7 @@ class StixCoreObjectContentComponent extends Component {
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
-      markdownSelectedTab: 'write',
+      markdownSelectedTab: 'preview',
       initialContent: isContentCompatible ? stixCoreObject.contentField : props.t('Write something awesome...'),
       currentContent: isContentCompatible ? stixCoreObject.contentField : props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
