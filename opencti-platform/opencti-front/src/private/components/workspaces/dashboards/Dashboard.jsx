@@ -65,6 +65,7 @@ import {
   serializeDashboardManifestForBackend,
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -87,6 +88,7 @@ const COL_WIDTH = 30;
 const DashboardComponent = ({ workspace, noToolbar }) => {
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
   useEffect(() => {
     const timeout = setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
@@ -798,6 +800,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     >
       {!noToolbar && (
         <WorkspaceHeader
+          handleAddWidget={handleAddWidget}
           workspace={workspace}
           config={manifest.config}
           handleDateChange={handleDateChange}
@@ -906,7 +909,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           })}
         </ReactGridLayout>
       )}
-      {!noToolbar && userCanEdit && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
+      {!noToolbar && userCanEdit && !isFeatureEnable('FAB_REPLACEMENT') && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
     </div>
   );
 };
