@@ -31,7 +31,6 @@ if (AI_ENABLED && AI_TOKEN) {
 }
 
 export const queryMistralAi = async (busId: string | null, question: string, user: AuthUser) => {
-  // const startingTime = new Date().getTime();
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
