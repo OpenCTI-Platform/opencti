@@ -13,11 +13,12 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import CreatedByField from '../../common/form/CreatedByField';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -43,12 +44,14 @@ const caseTaskAddMutation = graphql`
   }
 `;
 
+const TASK_TYPE = 'Task';
 interface FormikCaseTaskAddInput {
   name: string;
   due_date?: Date | null;
   description?: string;
   objectAssignee?: Option[];
   objectParticipant: Option[];
+  createdBy: Option | undefined;
   objectLabel?: Option[];
   objectMarking: Option[];
 }
@@ -58,6 +61,7 @@ interface CaseTaskCreationProps {
   onClose: () => void;
   paginationOptions: CaseTasksLinesQuery$variables;
   defaultMarkings?: { value: string; label: string }[];
+  defaultCreatedBy?: Option;
 }
 
 const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
@@ -65,12 +69,16 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   onClose,
   paginationOptions,
   defaultMarkings,
+  defaultCreatedBy,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    TASK_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),
@@ -78,8 +86,9 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     objectAssignee: Yup.array(),
     objectParticipant: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const taskValidator = useSchemaEditionValidation('Task', basicShape);
+    createdBy: Yup.object().nullable(),
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const [addTask] = useApiMutation(
     caseTaskAddMutation,
@@ -103,6 +112,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           objectParticipant: values.objectParticipant.map(({ value }) => value),
           objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
           objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+          createdBy: values.createdBy?.value,
           objects: [caseId],
         },
       },
@@ -127,10 +137,13 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
         objectAssignee: [],
         objectParticipant: [],
         objectMarking: defaultMarkings ?? [],
+        createdBy: defaultCreatedBy,
       }}
       onSubmit={onSubmit}
       onReset={onClose}
-      validationSchema={taskValidator}
+      validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
     >
       {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form>
@@ -140,6 +153,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth
           />
           <Field
@@ -153,18 +167,28 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
+          />
+          <CreatedByField
+            name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
@@ -172,6 +196,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth
             multiline
             rows="4"
