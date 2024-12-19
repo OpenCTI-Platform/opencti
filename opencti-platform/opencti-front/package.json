@@ -115,7 +115,7 @@
     "@types/react-relay": "16.0.6",
     "@types/react-router-dom": "5.3.3",
     "@types/react-syntax-highlighter": "15.5.13",
-    "@types/react-test-renderer": "18.3.0",
+    "@types/react-test-renderer": "18.3.1",
     "@types/relay-runtime": "17.0.4",
     "@types/relay-test-utils": "17.0.0",
     "@vitejs/plugin-react": "4.3.1",
