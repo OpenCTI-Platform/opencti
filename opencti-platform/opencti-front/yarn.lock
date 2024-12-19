@@ -7373,17 +7373,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.7.7":
-  version: 1.7.7
-  resolution: "axios@npm:1.7.7"
-  dependencies:
-    follow-redirects: "npm:^1.15.6"
-    form-data: "npm:^4.0.0"
-    proxy-from-env: "npm:^1.1.0"
-  checksum: 10/7f875ea13b9298cd7b40fd09985209f7a38d38321f1118c701520939de2f113c4ba137832fe8e3f811f99a38e12c8225481011023209a77b0c0641270e20cde1
-  languageName: node
-  linkType: hard
-
 "axios@npm:1.7.8":
   version: 1.7.8
   resolution: "axios@npm:1.7.8"
@@ -7392,6 +7381,17 @@ __metadata:
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
   checksum: 10/7ddcde188041ac55090186254b4025eb2af842be3cf615ce45393fd7f543c1eab0ad2fdd2017a5f6190695e3ecea73ee5e9c37f204854aec2698f9579046efdf
+  languageName: node
+  linkType: hard
+
+"axios@npm:1.7.9":
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/b7a5f660ea53ba9c2a745bf5ad77ad8bf4f1338e13ccc3f9f09f810267d6c638c03dac88b55dae8dc98b79c57d2d6835be651d58d2af97c174f43d289a9fd007
   languageName: node
   linkType: hard
 
@@ -11837,12 +11837,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-auto-translation@npm:1.8.2":
-  version: 1.8.2
-  resolution: "i18n-auto-translation@npm:1.8.2"
+"i18n-auto-translation@npm:1.10.0":
+  version: 1.10.0
+  resolution: "i18n-auto-translation@npm:1.10.0"
   dependencies:
     "@google-cloud/translate": "npm:8.5.0"
-    axios: "npm:1.7.7"
+    axios: "npm:1.7.9"
     deep-object-diff: "npm:1.1.9"
     glob: "npm:11.0.0"
     html-entities: "npm:2.5.2"
@@ -11850,7 +11850,7 @@ __metadata:
     yargs: "npm:17.7.2"
   bin:
     i18n-auto-translation: dist/index.js
-  checksum: 10/97b37718697555c21de55490e11196ad5f45c426555106f3f80c8749cff40799c94c5c5999994c86b05daf89e4bca9a9ffd62779ed3bd7e3bf1eef3e49439f53
+  checksum: 10/2ba374991ad00b72ad61e5d9453eeabb933a50b0cdb5b975f5b6aae5734be9e118b706068dfc0329e3c7f46467b69242f4841cf16df8f6f31fe55682ce9e6bb8
   languageName: node
   linkType: hard
 
@@ -14925,7 +14925,7 @@ __metadata:
     html-to-image: "npm:1.11.11"
     html-to-pdfmake: "npm:2.5.13"
     http-proxy-middleware: "npm:3.0.3"
-    i18n-auto-translation: "npm:1.8.2"
+    i18n-auto-translation: "npm:1.10.0"
     invert-color: "npm:2.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
