@@ -2,7 +2,7 @@ import { ApolloServer } from '@apollo/server';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
-import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
+import { ApolloSandbox } from '@apollo/sandbox';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
@@ -70,14 +70,7 @@ const createApolloServer = () => {
     apolloValidationRules.push(...protection.validationRules);
   }
   // In production mode, we use static from the server
-  const playgroundOptions = DEV_MODE ? { settings: { 'request.credentials': 'include' } } : {
-    cdnUrl: `${basePath}/static`,
-    title: 'OpenCTI Playground',
-    faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`,
-    settings: { 'request.credentials': 'include' }
-  };
-  const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
-  apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
+  apolloPlugins.push(ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
   const secureIntrospectionPlugin = {
     requestDidStart: (requestContext) => {
@@ -103,6 +96,10 @@ const createApolloServer = () => {
     csrfPrevention: false, // CSRF is handled by helmet
     tracing: DEV_MODE,
     plugins: apolloPlugins,
+    cors: {
+      origin: '', // TODO frontend url
+      credentials: true,
+    },
     formatError: (formattedError) => {
       let error = formattedError;
       // For constraint lib user input failure, replace the lib error by the opencti validation one.
