@@ -6486,6 +6486,16 @@ export type DomainNameAddInput = {
   value: Scalars['String']['input'];
 };
 
+export type DraftObjectsCount = {
+  __typename?: 'DraftObjectsCount';
+  containersCount?: Maybe<Scalars['Int']['output']>;
+  entitiesCount?: Maybe<Scalars['Int']['output']>;
+  observablesCount?: Maybe<Scalars['Int']['output']>;
+  relationshipsCount?: Maybe<Scalars['Int']['output']>;
+  sightingsCount?: Maybe<Scalars['Int']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export enum DraftOperation {
   Create = 'create',
   Delete = 'delete',
@@ -6506,6 +6516,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  objectsCount?: Maybe<DraftObjectsCount>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
@@ -19334,6 +19345,7 @@ export type Query = {
   draftWorkspace?: Maybe<DraftWorkspace>;
   draftWorkspaceEntities?: Maybe<StixCoreObjectConnection>;
   draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
+  draftWorkspaceSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
   draftWorkspaces?: Maybe<DraftWorkspaceConnection>;
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
   enrichmentConnectors?: Maybe<Array<Maybe<Connector>>>;
@@ -20047,6 +20059,18 @@ export type QueryDraftWorkspaceRelationshipsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryDraftWorkspaceSightingRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  draftId: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixSightingRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -30233,6 +30257,7 @@ export type Work = {
   completed_number?: Maybe<Scalars['Int']['output']>;
   completed_time?: Maybe<Scalars['DateTime']['output']>;
   connector?: Maybe<Connector>;
+  draft_context?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   event_source_id?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -30260,12 +30285,18 @@ export type WorkEdge = {
 
 export type WorkEditMutations = {
   __typename?: 'WorkEditMutations';
+  addDraftContext: Scalars['ID']['output'];
   addExpectations: Scalars['ID']['output'];
   delete: Scalars['ID']['output'];
   ping: Scalars['ID']['output'];
   reportExpectation: Scalars['ID']['output'];
   toProcessed: Scalars['ID']['output'];
   toReceived: Scalars['ID']['output'];
+};
+
+
+export type WorkEditMutationsAddDraftContextArgs = {
+  draftContext?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -30956,6 +30987,7 @@ export type ResolversTypes = ResolversObject<{
   DocsMetrics: ResolverTypeWrapper<DocsMetrics>;
   DomainName: ResolverTypeWrapper<Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   DomainNameAddInput: DomainNameAddInput;
+  DraftObjectsCount: ResolverTypeWrapper<DraftObjectsCount>;
   DraftOperation: DraftOperation;
   DraftVersion: ResolverTypeWrapper<DraftVersion>;
   DraftWorkspace: ResolverTypeWrapper<BasicStoreEntityDraftWorkspace>;
@@ -31781,6 +31813,7 @@ export type ResolversParentTypes = ResolversObject<{
   DocsMetrics: DocsMetrics;
   DomainName: Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   DomainNameAddInput: DomainNameAddInput;
+  DraftObjectsCount: DraftObjectsCount;
   DraftVersion: DraftVersion;
   DraftWorkspace: BasicStoreEntityDraftWorkspace;
   DraftWorkspaceAddInput: DraftWorkspaceAddInput;
@@ -34476,6 +34509,16 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type DraftObjectsCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftObjectsCount'] = ResolversParentTypes['DraftObjectsCount']> = ResolversObject<{
+  containersCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  entitiesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  observablesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  relationshipsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  sightingsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type DraftVersionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftVersion'] = ResolversParentTypes['DraftVersion']> = ResolversObject<{
   draft_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   draft_operation?: Resolver<ResolversTypes['DraftOperation'], ParentType, ContextType>;
@@ -34489,6 +34532,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectsCount?: Resolver<Maybe<ResolversTypes['DraftObjectsCount']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -38423,6 +38467,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
   draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
   draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;
+  draftWorkspaceSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceSightingRelationshipsArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;
@@ -41453,6 +41498,7 @@ export type WorkResolvers<ContextType = any, ParentType extends ResolversParentT
   completed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   completed_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType>;
+  draft_context?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   event_source_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -41480,6 +41526,7 @@ export type WorkEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type WorkEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkEditMutations'] = ResolversParentTypes['WorkEditMutations']> = ResolversObject<{
+  addDraftContext?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsAddDraftContextArgs>>;
   addExpectations?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsAddExpectationsArgs>>;
   delete?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ping?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -41756,6 +41803,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Distribution?: DistributionResolvers<ContextType>;
   DocsMetrics?: DocsMetricsResolvers<ContextType>;
   DomainName?: DomainNameResolvers<ContextType>;
+  DraftObjectsCount?: DraftObjectsCountResolvers<ContextType>;
   DraftVersion?: DraftVersionResolvers<ContextType>;
   DraftWorkspace?: DraftWorkspaceResolvers<ContextType>;
   DraftWorkspaceConnection?: DraftWorkspaceConnectionResolvers<ContextType>;

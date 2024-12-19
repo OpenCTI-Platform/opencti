@@ -911,10 +911,10 @@ const LeftBar = () => {
                 [
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
-                  { granted: isGrantedToIngestion, link: '/dashboard/data/ingestion', label: 'Ingestion' },
-                  { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
-                  { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
-                  { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },
+                  { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: 'Ingestion' },
+                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: 'Import' },
+                  { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
+                  { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
                   ...(isNewManagementScreenEnable
                     ? [{ granted: isGrantedToManage, link: '/dashboard/data/management', label: 'Management' }]
                     : []),

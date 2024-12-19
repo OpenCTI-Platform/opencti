@@ -51,12 +51,14 @@ export const fileManagerAskJobImportMutation = graphql`
     $connectorId: String
     $configuration: String
     $bypassValidation: Boolean
+    $validationMode: ValidationMode
   ) {
     askJobImport(
       fileName: $fileName
       connectorId: $connectorId
       configuration: $configuration
       bypassValidation: $bypassValidation
+      validationMode: $validationMode
     ) {
       ...FileLine_file
     }

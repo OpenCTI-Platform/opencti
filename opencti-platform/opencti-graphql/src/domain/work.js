@@ -247,6 +247,23 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
   return redisUpdateActionExpectation(user, workId, expectations);
 };
 
+/**
+ * Called by worker to link a work to a specific draft context.
+ * @param context
+ * @param user
+ * @param workId
+ * @param draftContext
+ * @returns {Promise<string>}
+ */
+export const addDraftContext = async (context, user, workId, draftContext) => {
+  const currentWork = await loadWorkById(context, user, workId);
+  const params = { updated_at: now(), draft_context: draftContext };
+  let source = 'ctx._source.updated_at = params.updated_at;';
+  source += 'ctx._source["draft_context"] =  params.draft_context;';
+  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  return workId;
+};
+
 export const updateReceivedTime = async (context, user, workId, message) => {
   const currentWork = await loadWorkById(context, user, workId);
   const params = { received_time: now(), message };
