@@ -93,7 +93,7 @@ const FintelTemplateFormDrawer = ({
     if (!template) return;
 
     let input: { key:string, value: [unknown] } = { key: field, value: [value] };
-    if (field === 'published') input = { key: 'start_date', value: [value ? new Date() : null] };
+    if (field === 'published') input = { key: 'start_date', value: [value === 'true' ? new Date() : null] };
     commitEditMutation({ id: template.id, input: [input] });
   };
 
