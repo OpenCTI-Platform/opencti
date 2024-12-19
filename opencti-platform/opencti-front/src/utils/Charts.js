@@ -506,6 +506,9 @@ export const horizontalBarsChartOptions = (
   },
   tooltip: {
     theme: theme.palette.mode,
+    x: {
+      show: stackType !== '100%',
+    },
   },
   xaxis: {
     categories: categories ?? [],
@@ -518,6 +521,9 @@ export const horizontalBarsChartOptions = (
     },
     axisBorder: {
       show: false,
+    },
+    axisTicks: {
+      show: stackType !== '100%',
     },
     tickAmount: adjustTicks ? 1 : undefined,
   },
