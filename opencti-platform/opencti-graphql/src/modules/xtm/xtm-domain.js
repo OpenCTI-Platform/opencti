@@ -408,7 +408,6 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
 };
 
 export const generateContainerScenario = async (context, user, args) => {
-  // ici
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
