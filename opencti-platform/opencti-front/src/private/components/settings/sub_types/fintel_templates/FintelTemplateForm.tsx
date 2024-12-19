@@ -4,6 +4,8 @@ import { Field, Form, Formik } from 'formik';
 import React from 'react';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/styles';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
@@ -80,8 +82,16 @@ const FintelTemplateForm = ({
               component={SwitchField}
               type="checkbox"
               name="published"
-              label={t_i18n('Template published')}
-              helpertext={t_i18n('If false, the template won\'t be available to generate files')}
+              label={<>
+                <span>{t_i18n('Template published')}</span>
+                <Tooltip title={t_i18n('If false, the template won\'t be available to generate files')}>
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ margin: '0 0 -5px 10px' }}
+                  />
+                </Tooltip>
+              </>}
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />
