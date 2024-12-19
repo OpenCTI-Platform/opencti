@@ -14,17 +14,25 @@ const useFileFromTemplate = () => {
   const { buildAttributesOutcome } = useBuildAttributesOutcome();
   const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
 
+  type Template = EngineFintelTemplateQuery$data['fintelTemplate'];
+
   const buildFileFromTemplate = async (
     containerId: string,
-    templateId: string,
     maxContentMarkings: string[],
+    templateId?: string,
+    template?: Template,
   ) => {
-    // fetch template and useful widgets
-    const variables = { id: templateId };
-    const { fintelTemplate } = await fetchQuery(
-      engineFintelTemplateQuery,
-      variables,
-    ).toPromise() as EngineFintelTemplateQuery$data;
+    let fintelTemplate: Template;
+    if (template) {
+      fintelTemplate = template;
+    } else if (templateId) {
+      const variables = { id: templateId };
+      const data = await fetchQuery(
+        engineFintelTemplateQuery,
+        variables,
+      ).toPromise() as EngineFintelTemplateQuery$data;
+      fintelTemplate = data.fintelTemplate;
+    }
 
     if (!fintelTemplate) {
       throw Error('No fintel template found');

@@ -270,8 +270,8 @@ const StixCoreObjectFileExportComponent = ({
         const maxContentMarkings = values.contentMaxMarkings.map(({ value }) => value);
         const templateContent = await buildFileFromTemplate(
           scoId,
-          templateId,
           maxContentMarkings,
+          templateId,
         );
 
         if (values.format === 'text/html') {

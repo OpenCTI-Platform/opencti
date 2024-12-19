@@ -17,6 +17,7 @@ const tabsFragment = graphql`
 
 interface ChildrenProps {
   index: number
+  editorValue: string
   setEditorValue: Dispatch<SetStateAction<string>>
 }
 
@@ -33,7 +34,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
   const { content, id } = useFragment(tabsFragment, data);
   const [editorValue, setEditorValue] = useState(content);
 
-  const commitEditMutation = useFintelTemplateEdit();
+  const [commitEditMutation, editOnGoing] = useFintelTemplateEdit();
 
   const onSubmit = () => {
     const input = { key: 'content', value: [editorValue] };
@@ -68,7 +69,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
                 variant="outlined"
                 className="icon-outlined"
                 onClick={onSubmit}
-                disabled={editorValue === content}
+                disabled={editorValue === content || editOnGoing}
               >
                 <Save fontSize="small" />
               </Button>
@@ -77,7 +78,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         </div>
       </Box>
 
-      {children({ index, setEditorValue })}
+      {children({ index, setEditorValue, editorValue })}
     </>
   );
 };

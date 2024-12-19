@@ -28,7 +28,6 @@ const FintelTemplateContentEditor = ({
 
   return (
     <Formik<{ content: string }>
-      enableReinitialize={true}
       validationSchema={validation}
       initialValues={{ content: template.content }}
       onSubmit={() => {}}
