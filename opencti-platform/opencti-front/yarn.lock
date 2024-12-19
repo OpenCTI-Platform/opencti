@@ -13466,7 +13466,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:7.5.0, markdown-to-jsx@npm:^7.4.1":
+"markdown-to-jsx@npm:7.7.2":
+  version: 7.7.2
+  resolution: "markdown-to-jsx@npm:7.7.2"
+  peerDependencies:
+    react: ">= 0.14.0"
+  checksum: 10/4f9bdfb209158dc03a973d4ee23f51a5df4711ff334780e20af5717c083bcda9e3dc2d686497d4d280e066cc9bafd99c426f60efa102277a19b88b426423c740
+  languageName: node
+  linkType: hard
+
+"markdown-to-jsx@npm:^7.4.1":
   version: 7.5.0
   resolution: "markdown-to-jsx@npm:7.5.0"
   peerDependencies:
@@ -14933,7 +14942,7 @@ __metadata:
     json5: "npm:2.2.3"
     leaflet: "npm:1.9.4"
     lodash: "npm:4.17.21"
-    markdown-to-jsx: "npm:7.5.0"
+    markdown-to-jsx: "npm:7.7.2"
     mdi-material-ui: "npm:7.9.1"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.45"
