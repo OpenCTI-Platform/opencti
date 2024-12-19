@@ -4105,6 +4105,7 @@ input ReportAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  authorized_members: [MemberAccessInput!]
 }
 
 ############## CoursesOfAction

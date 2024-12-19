@@ -85,7 +85,7 @@ const AuthorizedMembersField = ({
   // Require to use a state in addition to the Formik field because
   // we use the value outside the scope of the internal Formik form.
   const [applyAccesses, setApplyAccesses] = useState(
-    value !== null && value.length > 0,
+    value && Array.isArray(value) && value.length > 0,
   );
 
   const accessForAllMembers = (value ?? []).find(
@@ -258,7 +258,7 @@ const AuthorizedMembersField = ({
         validateOnChange={false}
         validateOnBlur={false}
         initialValues={{
-          applyAccesses,
+          applyAccesses: applyAccesses ?? false,
           newAccessMember: null,
           newAccessRight: 'view',
           allAccessRight: accessForAllMembers?.accessRight ?? 'none',
@@ -279,7 +279,7 @@ const AuthorizedMembersField = ({
             {canDeactivate && (
               <Field
                 component={SwitchField}
-                containerstyle={{ marginTop: 15 }}
+                containerstyle={{ marginTop: 15, paddingLeft: 2 }}
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
