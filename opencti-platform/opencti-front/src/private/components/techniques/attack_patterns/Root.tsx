@@ -27,6 +27,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -101,7 +103,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {attackPattern ? (
         <>
           <Routes>
@@ -143,6 +145,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
             />
             <Box
               sx={{
@@ -250,7 +253,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
