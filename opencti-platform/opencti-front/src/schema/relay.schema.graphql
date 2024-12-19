@@ -11440,6 +11440,7 @@ type IngestionRss implements InternalObject & BasicObject {
   defaultMarkingDefinitions: [MarkingDefinition]
   report_types: [String!]
   current_state_date: DateTime
+  last_execution_date: DateTime
   ingestion_running: Boolean
 }
 
@@ -11560,6 +11561,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   ingestion_running: Boolean
   current_state_hash: String
   current_state_date: DateTime
+  last_execution_date: DateTime
   markings: [String!]
 }
 
