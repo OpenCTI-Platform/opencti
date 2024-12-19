@@ -8949,9 +8949,9 @@ type Mutation {
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
-  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
-  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
-  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
+  obasContainerGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
+  obasThreatGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
+  obasVictimGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
@@ -12208,6 +12208,30 @@ enum SimulationType {
   technical
   simulated
   mixed
+}
+
+enum Platform {
+  Windows
+  Linux
+  MacOS
+}
+
+enum Architecture {
+  x86_64
+  arm64
+}
+
+input SimulationConfig {
+  interval: Int
+  selection: Selection
+  simulationType: SimulationType!
+  platforms: [Platform]
+  architecture: Architecture
+}
+
+type GenerationResponse {
+  urlResponse: String
+  attackPatternsWithoutInjectorContracts: String
 }
 
 type SimulationsResult {
