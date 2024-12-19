@@ -8046,6 +8046,7 @@ type Query {
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NarrativeConnection
   triggerKnowledge(id: String!): Trigger
   triggersKnowledge(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): TriggerConnection
+  triggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): TriggerConnection
   triggersKnowledgeCount(filters: FilterGroup, includeAuthorities: Boolean, search: String): Int
   triggerActivity(id: String!): Trigger
   triggersActivity(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): TriggerConnection
