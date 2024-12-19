@@ -69,6 +69,7 @@ import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
+import useHelper from '../../../../utils/hooks/useHelper';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -357,6 +358,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     initialStep = 2;
   }
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [open, setOpen] = useState(false);
@@ -1435,6 +1438,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         return 'Go away!';
     }
   };
+
   return (
     <>
       {!widget && (
@@ -1443,6 +1447,28 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             onChange={handleWidgetImport}
           />
           <Security needs={[EXPLORE_EXUPDATE]}>
+            {FAB_REPLACED && (
+            <div>
+              <Button
+                variant='outlined'
+                disableElevation
+                style={{ marginTop: '2.5px', marginLeft: '4px' }}
+                onClick={() => inputRef.current?.click()}
+              >
+                {t_i18n('Import Widget')}
+              </Button>
+              <Button
+                variant='contained'
+                disableElevation
+                style={{ marginTop: '2.5px', marginLeft: '2px' }}
+                onClick={() => setOpen(true)}
+              >
+                {t_i18n('Create Widget')}
+              </Button>
+            </div>
+            )
+          }
+            {!FAB_REPLACED && (
             <SpeedDial
               className={classes.createButton}
               ariaLabel="Create"
@@ -1464,6 +1490,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
             </SpeedDial>
+            )
+          }
           </Security>
         </>
       )}
@@ -1533,6 +1561,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               || (getCurrentAvailableParameters().includes('attribute')
                 && !isDataSelectionAttributesValid())
             }
+            data-testid="widget-submit-button"
           >
             {widget ? t_i18n('Update') : t_i18n('Create')}
           </Button>
