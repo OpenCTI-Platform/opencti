@@ -3421,6 +3421,9 @@ export const elBulk = async (args) => {
       throw DatabaseError('Bulk indexing fail', { errors });
     }
     return data;
+  }).catch((err) => {
+    logApp.error('Error during bulk indexing', { error: err });
+    throw DatabaseError('Bulk indexing fail', { cause: err });
   });
 };
 /* v8 ignore next */
@@ -4057,6 +4060,9 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
+    if (elementsToUpdate.length >= 5000) {
+      logApp.warn('Updating rels of more than 5000 elements');
+    }
     const bodyUpdate = elementsToUpdate.flatMap((doc) => [
       { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       R.dissoc('_index', doc.data),
