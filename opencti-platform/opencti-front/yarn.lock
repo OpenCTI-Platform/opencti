@@ -14986,7 +14986,7 @@ __metadata:
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:2.2.0"
     vitest: "npm:2.0.5"
-    yup: "npm:1.4.0"
+    yup: "npm:1.6.1"
   languageName: unknown
   linkType: soft
 
@@ -19426,15 +19426,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yup@npm:1.4.0":
-  version: 1.4.0
-  resolution: "yup@npm:1.4.0"
+"yup@npm:1.6.1":
+  version: 1.6.1
+  resolution: "yup@npm:1.6.1"
   dependencies:
     property-expr: "npm:^2.0.5"
     tiny-case: "npm:^1.0.3"
     toposort: "npm:^2.0.2"
     type-fest: "npm:^2.19.0"
-  checksum: 10/3d1277e5e1fff4d8130e525c7361f54874ca848ebd427a0aa66606952e3370b9947d84a1ea0b943f389649e886d26b1349930889727489460d6f2f86c2a26e77
+  checksum: 10/19dba13403160a8739a9e57c8b816254842f3a9e01672846a980d8230cee8763783c089ded88662b30158d1479cf6bce0b51dce7f19ae7d0477be0c981024bc0
   languageName: node
   linkType: hard
 
