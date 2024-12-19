@@ -212,7 +212,7 @@
     "jose": "5.9.6",
     "json5": "2.2.3",
     "lodash": "4.17.21",
-    "@xmldom/xmldom": "0.8.10",
+    "@xmldom/xmldom": "0.9.6",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.9.1#./patch/node-calls-python-1.9.1.patch",

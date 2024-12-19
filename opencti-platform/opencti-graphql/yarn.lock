@@ -5214,10 +5214,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:0.8.10":
-  version: 0.8.10
-  resolution: "@xmldom/xmldom@npm:0.8.10"
-  checksum: 10/62400bc5e0e75b90650e33a5ceeb8d94829dd11f9b260962b71a784cd014ddccec3e603fe788af9c1e839fa4648d8c521ebd80d8b752878d3a40edabc9ce7ccf
+"@xmldom/xmldom@npm:0.9.6":
+  version: 0.9.6
+  resolution: "@xmldom/xmldom@npm:0.9.6"
+  checksum: 10/2e4d33c118c31f0d22b868099bf0650f4d20560b14791721bd053cec210a7b1ab32e40b4977a5d890dcbde96e8c877f7a53750dd7d9fad717e1151eacdcd1079
   languageName: node
   linkType: hard
 
