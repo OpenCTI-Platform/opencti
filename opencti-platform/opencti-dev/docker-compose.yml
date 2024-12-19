@@ -128,7 +128,7 @@ services:
       - "4318:4318"
   opencti-dev-telemetry-otlp: ## docker compose --profile telemetry up -d (launch everything + telemetry)
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.99.0
+    image: otel/opentelemetry-collector-contrib:0.116.1
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
