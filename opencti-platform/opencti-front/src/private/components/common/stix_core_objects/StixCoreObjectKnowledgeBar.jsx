@@ -36,7 +36,7 @@ const StixCoreObjectKnowledgeBar = ({
   stixCoreObjectLink,
   availableSections,
   stixCoreObjectsDistribution,
-  attribution = [],
+  attribution,
 }) => {
   const { t_i18n, n } = useFormatter();
   const classes = useStyles();
@@ -48,7 +48,7 @@ const StixCoreObjectKnowledgeBar = ({
   const statisticsThreats = R.sum(R.values(R.pick(['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident'], statistics)).map((o) => o.value));
   const statisticsThreatActors = R.sum(R.values(R.pick(['Threat-Actor-Individual', 'Threat-Actor-Group'], statistics)).map((o) => o.value));
   const statisticsVictims = R.sum(R.values(R.pick(['Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area'], statistics)).map((o) => o.value));
-  const statisticsAttributions = R.sum(R.values(R.pick(attribution, statistics)).map((o) => o.value));
+  const statisticsAttributions = R.sum(R.values(R.pick((attribution ?? []), statistics)).map((o) => o.value));
   const statisticsLocations = R.sum(R.values(R.pick(['Region', 'Country', 'City', 'Position', 'Administrative-Area'], statistics)).map((o) => o.value));
   const statisticsObservables = R.sum(R.values(R.pick([...schema.scos.map((s) => s.id), 'Ipv4-Addr', 'Ipv6-Addr'], statistics)).map((o) => o.value));
   return (
@@ -756,6 +756,7 @@ StixCoreObjectKnowledgeBar.propTypes = {
   id: PropTypes.string,
   stixCoreObjectLink: PropTypes.string,
   availableSections: PropTypes.array,
+  attribution: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default StixCoreObjectKnowledgeBar;

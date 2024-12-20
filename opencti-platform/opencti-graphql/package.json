@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.4.4",
+  "version": "6.4.5",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -97,8 +97,8 @@
     "ejs": "3.1.10",
     "eventsource": "2.0.2",
     "express": "4.21.0",
-    "express-rate-limit": "7.4.0",
-    "express-session": "1.18.0",
+    "express-rate-limit": "7.4.1",
+    "express-session": "1.18.1",
     "fast-json-patch": "3.1.1",
     "file-type": "19.6.0",
     "github-api": "3.4.0",
@@ -106,7 +106,7 @@
     "graphql-constraint-directive": "5.4.3",
     "graphql-no-alias": "3.0.3",
     "graphql-rate-limit-directive": "2.0.5",
-    "graphql-redis-subscriptions": "2.6.1",
+    "graphql-redis-subscriptions": "2.7.0",
     "graphql-relay": "0.10.2",
     "graphql-scalars": "1.23.0",
     "graphql-subscriptions": "2.0.0",
@@ -152,7 +152,7 @@
     "source-map-support": "0.5.21",
     "tough-cookie": "5.0.0",
     "turndown": "7.2.0",
-    "unzipper": "0.10.14",
+    "unzipper": "0.12.3",
     "uuid": "11.0.3",
     "uuid-time": "1.0.0",
     "validator": "13.11.0",
@@ -200,7 +200,7 @@
     "fast-glob": "3.3.2",
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.1",
-    "typescript": "5.5.4",
+    "typescript": "5.7.2",
     "vitest": "2.0.5"
   },
   "resolutions": {
@@ -218,7 +218,8 @@
     "node-calls-python": "patch:node-calls-python@1.9.1#./patch/node-calls-python-1.9.1.patch",
     "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch",
     "graphql": "patch:graphql@16.9.0#./patch/graphql-16.8.1.patch",
-    "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch"
+    "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
+    "path-to-regexp": "0.1.12"
   },
   "packageManager": "yarn@4.5.0"
 }

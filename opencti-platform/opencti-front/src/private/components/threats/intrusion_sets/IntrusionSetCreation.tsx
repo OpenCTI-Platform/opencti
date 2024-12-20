@@ -167,7 +167,7 @@ IntrusionSetFormProps
   });
 
   return (
-    <Formik
+    <Formik<IntrusionSetAddInput>
       initialValues={initialValues}
       validationSchema={intrusionSetValidator}
       onSubmit={onSubmit}

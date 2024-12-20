@@ -179,7 +179,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     },
   );
 
-  return <Formik
+  return <Formik<OrganizationAddInput>
     initialValues={initialValues}
     validationSchema={organizationValidator}
     onSubmit={onSubmit}

@@ -189,7 +189,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   };
 
   return (
-    <Formik
+    <Formik<OrganizationEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={organizationValidator}

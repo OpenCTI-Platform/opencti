@@ -14,6 +14,8 @@
   "A public dashboard is a snapshot...": "パブリック・ダッシュボードは、特定の時刻におけるプライベート・ダッシュボードのスナップショットです。プライベートダッシュボードを変更しても、すでに作成されたパブリックダッシュボードは変更されません。",
   "About": "OpenCTIについて",
   "Abstract": "要旨",
+  "Limitations applied, number of fully loaded containers: ": "制限あり、満載コンテナ数：",
+  "Open this entity in an investigation to be able to see all objects.": "すべてのオブジェクトを見ることができるようにするには、調査でこのエンティティを開きます。",
   "Accent color": "アクセントカラー",
   "Accept": "受け入れる",
   "Access administration": "管理にアクセス",

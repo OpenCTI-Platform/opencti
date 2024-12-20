@@ -14,6 +14,8 @@
   "A public dashboard is a snapshot...": "Un tableau de bord public est un instantané d'un tableau de bord privé à un moment précis. Si vous modifiez le tableau de bord privé, les tableaux de bord publics déjà créés ne seront pas modifiés.",
   "About": "A propos",
   "Abstract": "Résumé",
+  "Limitations applied, number of fully loaded containers: ": "Limitations appliquées, nombre de conteneurs entièrement chargés :",
+  "Open this entity in an investigation to be able to see all objects.": "Ouvrir cette entité dans le cadre d'une enquête pour pouvoir voir tous les objets.",
   "Accent color": "Couleur d'accentuation",
   "Accept": "Accepter",
   "Access administration": "Accéder à l'administration",

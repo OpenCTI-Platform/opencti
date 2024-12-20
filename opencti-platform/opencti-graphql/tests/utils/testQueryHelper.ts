@@ -40,7 +40,7 @@ export const queryAsAdminWithSuccess = async (request: { query: any, variables: 
   if (requestResult.errors) {
     logApp.info('Unexpected error; requestResult:', { requestResult });
   }
-  expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
+  expect(requestResult.errors, `This errors should not be there: ${JSON.stringify(requestResult.errors)}`).toBeUndefined();
   return requestResult;
 };
 
@@ -53,7 +53,7 @@ export const adminQueryWithSuccess = async (request: { query: any, variables: an
   if (requestResult.errors) {
     logApp.info('Unexpected error; requestResult:', { requestResult });
   }
-  expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
+  expect(requestResult.errors, `This errors should not be there: ${JSON.stringify(requestResult.errors)}`).toBeUndefined();
   return requestResult;
 };
 

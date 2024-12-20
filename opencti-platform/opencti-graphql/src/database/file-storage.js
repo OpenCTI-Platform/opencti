@@ -16,10 +16,18 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
+import {
+  deleteDocumentIndex,
+  EXPORT_STORAGE_PATH,
+  findById as documentFindById,
+  FROM_TEMPLATE_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  indexFileToDocument,
+  SUPPORT_STORAGE_PATH
+} from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { isUserHasCapability, SETTINGS_SUPPORT } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
@@ -260,8 +268,22 @@ export const getFileSize = async (user, fileS3Path) => {
  */
 export const loadFile = async (context, user, fileS3Path, opts = {}) => {
   try {
+    if (!fileS3Path) {
+      throw FunctionalError('File path not specified');
+    }
     // 01. Check if user as enough capability to get support packages
-    if (fileS3Path && (fileS3Path.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT))) {
+    if (fileS3Path.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 01.1. Check if user as enough capability to load import / export / template knowledge files
+    if ((fileS3Path.startsWith(IMPORT_STORAGE_PATH)
+        || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
+        || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
+      && !isUserHasCapability(user, KNOWLEDGE)) {
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 01.2. Check if user as enough capability to load import/global files
+    if (fileS3Path.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 02. Check if the referenced document is accessible
@@ -272,7 +294,10 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
     // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
     const { metaData, name, size, lastModified, lastModifiedSinceMin } = document;
     if (metaData.entity_id) {
-      const instance = await internalLoadById(context, user, metaData.entity_id, { type: metaData.entity_type });
+      if (!isUserHasCapability(user, KNOWLEDGE)) {
+        throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      }
+      const instance = await internalLoadById(context, user, metaData.entity_id);
       if (!instance) {
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }

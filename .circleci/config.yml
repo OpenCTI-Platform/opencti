@@ -59,7 +59,7 @@ jobs:
           template: basic_fail_1
       - ms-teams/report:
           only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL          
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
       - persist_to_workspace:
           root: ~/
           paths:
@@ -74,7 +74,7 @@ jobs:
       - run:
           command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
       - run:
-          command: npm install -g node-gyp          
+          command: npm install -g node-gyp
       - attach_workspace:
           at: ~/
       - run:
@@ -130,7 +130,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl         
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
@@ -240,7 +240,11 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:latest -t opencti/platform:${CIRCLE_TAG} --push .
+          command: |
+            LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+            TAGS="-t opencti/platform:${CIRCLE_TAG}"
+            [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && TAGS="$TAGS -t opencti/platform:latest"
+            docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci $TAGS --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -260,7 +264,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl       
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Install buildx
           command: |
@@ -281,7 +285,11 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest -t opencti/worker:${CIRCLE_TAG} --push .
+          command: |
+            LATEST_SEMANTIC_VERSION=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+            TAGS="-t opencti/worker:${CIRCLE_TAG}"
+            [ "$CIRCLE_TAG" = "$LATEST_SEMANTIC_VERSION" ] && TAGS="$TAGS -t opencti/worker:latest"
+            docker buildx build --platform $BUILDX_PLATFORMS $TAGS --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -341,7 +349,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl       
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Install buildx
           command: |
@@ -368,7 +376,7 @@ jobs:
           template: basic_fail_1
       - ms-teams/report:
           only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL          
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_platform_rolling:
     working_directory: ~/opencti_docker
@@ -381,10 +389,10 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl        
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
-          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;      
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;
       - run:
           name: Install buildx
           command: |
@@ -412,7 +420,7 @@ jobs:
           template: basic_fail_1
       - ms-teams/report:
           only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL          
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_worker_rolling:
     working_directory: ~/opencti_docker
@@ -555,7 +563,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl        
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Install buildx
           command: |
@@ -653,7 +661,7 @@ jobs:
     docker:
       - image: "cimg/base:stable"
     steps:
-      - run: sudo apt-get update -qq && sudo apt install curl      
+      - run: sudo apt-get update -qq && sudo apt install curl
       - slack/notify:
           event: pass
           template: basic_success_1
@@ -664,7 +672,7 @@ jobs:
     docker:
       - image: "cimg/base:stable"
     steps:
-      - run: sudo apt-get update -qq && sudo apt install curl   
+      - run: sudo apt-get update -qq && sudo apt install curl
       - slack/notify:
           event: pass
           template: basic_success_1
@@ -762,7 +770,7 @@ workflows:
           filters:
             branches:
               only:
-                - master       
+                - master
       - docker_build_platform:
           requires:
             - build_frontend
@@ -794,7 +802,7 @@ workflows:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              ignore: /.*/              
+              ignore: /.*/
       - deploy_testing:
           requires:
             - docker_build_platform_rolling
@@ -813,7 +821,7 @@ workflows:
             - deploy_prerelease
             - deploy_dev
             - docker_build_platform_fips_rolling
-            - docker_build_worker_fips_rolling              
+            - docker_build_worker_fips_rolling
             - package_rolling
             - package_rolling_musl
       - notify:

@@ -258,7 +258,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     references: [],
   };
   return (
-    <Formik
+    <Formik<InfrastructureEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={infrastructureValidator}

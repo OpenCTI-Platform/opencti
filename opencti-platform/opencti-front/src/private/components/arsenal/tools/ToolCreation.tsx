@@ -175,7 +175,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<ToolAddInput>
       initialValues={initialValues}
       validationSchema={toolValidator}
       onSubmit={onSubmit}

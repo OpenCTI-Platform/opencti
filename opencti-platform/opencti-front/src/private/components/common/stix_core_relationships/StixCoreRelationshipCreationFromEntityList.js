@@ -240,10 +240,6 @@ const StixCoreRelationshipCreationFromEntityList = ({
   updaterOptions,
   isRelationReversed,
 }) => {
-  if (!availableDatas) {
-    return <StixCoreRelationshipCreationFromEntityDummyList />;
-  }
-
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -327,6 +323,10 @@ const StixCoreRelationshipCreationFromEntityList = ({
     });
     handleCloseForm();
   };
+
+  if (!availableDatas) {
+    return <StixCoreRelationshipCreationFromEntityDummyList />;
+  }
 
   const existingIds = existingDatas?.map((n) => n.node.id) ?? [];
   const nodes = availableDatas.edges

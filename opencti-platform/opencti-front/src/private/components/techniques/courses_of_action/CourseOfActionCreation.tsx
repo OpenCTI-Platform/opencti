@@ -183,7 +183,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
   );
 
   return (
-    <Formik
+    <Formik<CourseOfActionAddInput>
       initialValues={initialValues}
       validationSchema={courseOfActionValidator}
       onSubmit={onSubmit}

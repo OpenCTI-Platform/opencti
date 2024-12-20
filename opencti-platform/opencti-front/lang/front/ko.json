@@ -14,6 +14,8 @@
   "A public dashboard is a snapshot...": "공개 대시보드는 특정 시점에서 개인 대시보드의 스냅샷입니다. 개인 대시보드를 수정해도 이미 생성된 공개 대시보드는 수정되지 않습니다.",
   "About": "정보",
   "Abstract": "요약",
+  "Limitations applied, number of fully loaded containers: ": "제한 사항 적용, 완전히 로드된 컨테이너 수:",
+  "Open this entity in an investigation to be able to see all objects.": "조사에서 이 엔티티를 열면 모든 개체를 볼 수 있습니다.",
   "Accent color": "강조 색상",
   "Accept": "수락",
   "Access administration": "액세스 관리",

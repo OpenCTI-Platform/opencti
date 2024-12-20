@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StixCyberObservablesRightBar = ({
-  types = [],
+  types,
   handleToggle,
   handleClear,
 }) => {
@@ -113,7 +113,7 @@ const StixCyberObservablesRightBar = ({
 };
 
 StixCyberObservablesRightBar.propTypes = {
-  types: PropTypes.array,
+  types: PropTypes.arrayOf(PropTypes.string),
   handleToggle: PropTypes.func,
   handleClear: PropTypes.func,
   openExports: PropTypes.bool,

@@ -227,7 +227,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<IndicatorAddInput>
       initialValues={initialValues}
       validationSchema={indicatorValidator}
       onSubmit={onSubmit}

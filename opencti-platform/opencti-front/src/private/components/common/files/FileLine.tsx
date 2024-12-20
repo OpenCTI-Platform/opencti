@@ -32,6 +32,8 @@ import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
@@ -367,43 +369,45 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             </>
           )}
           {!isExternalReferenceAttachment && (
-            <>
-              {isFail || isOutdated ? (
-                <Tooltip title={t_i18n('Delete this file')}>
-                  <span>
-                    <IconButton
-                      disabled={isProgress}
-                      color={nested ? 'inherit' : 'primary'}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        handleOpenRemove();
-                      }}
-                      size="small"
-                    >
-                      <DeleteOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              ) : (
-                <Tooltip title={t_i18n('Delete this file')}>
-                  <span>
-                    <IconButton
-                      disabled={isProgress}
-                      color={nested ? 'inherit' : 'primary'}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        handleOpenDelete();
-                      }}
-                      size="small"
-                    >
-                      <DeleteOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              )}
-            </>
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+              <>
+                {isFail || isOutdated ? (
+                  <Tooltip title={t_i18n('Delete this file')}>
+                    <span>
+                      <IconButton
+                        disabled={isProgress}
+                        color={nested ? 'inherit' : 'primary'}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleOpenRemove();
+                        }}
+                        size="small"
+                      >
+                        <DeleteOutlined fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <Tooltip title={t_i18n('Delete this file')}>
+                    <span>
+                      <IconButton
+                        disabled={isProgress}
+                        color={nested ? 'inherit' : 'primary'}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleOpenDelete();
+                        }}
+                        size="small"
+                      >
+                        <DeleteOutlined fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+              </>
+            </Security>
           )}
         </ListItemSecondaryAction>
       </ListItemButton>

@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = `
     query stixCyberObservables(
@@ -295,6 +296,131 @@ describe('StixCyberObservable resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
     expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
+  });
+});
+
+describe('StixCyberObservable resolver promote to indicator behavior', () => {
+  let stixCyberObservableInternalId;
+  let indicatorInternalId;
+  it('should stixCyberObservable created', async () => { // 1 create
+    const CREATE_QUERY = gql`
+      mutation StixCyberObservableCreationMutation(
+        $type: String!
+        $x_opencti_score: Int
+        $x_opencti_description: String
+        $Artifact: ArtifactAddInput
+      ) {
+        stixCyberObservableAdd(
+          type: $type, 
+          x_opencti_score: $x_opencti_score, 
+          x_opencti_description: $x_opencti_description, 
+          Artifact: $Artifact
+        ) {
+          id
+          standard_id
+          observable_value
+          ... on Software {
+            name
+          }
+        }
+      }
+    `;
+    // Create the stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'Artifact',
+      x_opencti_score: 50,
+      x_opencti_description: 'Artifact uploaded',
+      Artifact: {
+        decryption_key: '',
+        encryption_algorithm: '',
+        mime_type: 'application/xml',
+        payload_bin: '',
+        url: '',
+        x_opencti_additional_names: [
+          '[Content_Types].xml'
+        ],
+        hashes: [
+          {
+            algorithm: 'MD5',
+            hash: '46c293d9de7b32344e041857515944a6'
+          },
+          {
+            algorithm: 'SHA-1',
+            hash: 'dfe5e1bcc496efac6012e26f013c7b6a6d7c9803'
+          },
+          {
+            algorithm: 'SHA-256',
+            hash: 'bfa02ea1994b73dca866ea3b6596340fe00063d19eab5957c7d8e6a5fa10599a'
+          },
+          {
+            algorithm: 'SHA-512',
+            hash: '0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba'
+          }
+        ]
+      },
+    };
+    const stixCyberObservable = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba');
+    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
+  });
+  it('should promote observable to indicator', async () => { // + 1 create
+    const PROMOTE_QUERY = gql`
+      mutation StixCyberObservableIndicatorsPromoteMutation(
+        $id: ID!
+      ) {
+        stixCyberObservableEdit(id: $id) {
+          promoteToIndicator {
+            id
+            name
+            pattern
+          }
+        }
+      }
+    `;
+    // Create the indicator
+    const indicator = await queryAsAdminWithSuccess({
+      query: PROMOTE_QUERY,
+      variables: { id: stixCyberObservableInternalId },
+    });
+    const expectedPattern = "[file:hashes.'SHA-256' = 'bfa02ea1994b73dca866ea3b6596340fe00063d19eab5957c7d8e6a5fa10599a' OR file:hashes.'SHA-512' = '0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba' OR file:hashes.'SHA-1' = 'dfe5e1bcc496efac6012e26f013c7b6a6d7c9803' OR file:hashes.MD5 = '46c293d9de7b32344e041857515944a6']";
+    expect(indicator.data.stixCyberObservableEdit.promoteToIndicator.name).toEqual('0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba');
+    expect(indicator.data.stixCyberObservableEdit.promoteToIndicator.pattern).toEqual(expectedPattern);
+    indicatorInternalId = indicator.data.stixCyberObservableEdit.promoteToIndicator.id;
+  });
+  it('should indicators be deleted', async () => { // +1 delete
+    const DELETE_QUERY = gql`
+      mutation indicatorDelete($id: ID!) {
+        indicatorDelete(id: $id)
+      }
+    `;
+    // Delete the indicator
+    const deleteIndicator = await queryAsAdminWithSuccess({
+      query: DELETE_QUERY,
+      variables: { id: indicatorInternalId },
+    });
+
+    expect(deleteIndicator.data?.indicatorDelete).toEqual(indicatorInternalId);
+  });
+  it('should stixCyberObservable deleted', async () => { // +1 delete
+    const DELETE_QUERY = gql`
+      mutation stixCyberObservableDelete($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    // Delete the stixCyberObservable
+    await queryAsAdminWithSuccess({
+      query: DELETE_QUERY,
+      variables: { id: stixCyberObservableInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
     expect(queryResult.data.stixCyberObservable).toBeNull();
   });
 });

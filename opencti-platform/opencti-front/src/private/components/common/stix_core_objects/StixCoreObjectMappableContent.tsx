@@ -178,7 +178,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
       }}
       variant="outlined"
     >
-      <Formik
+      <Formik<StixCoreObjectMappableContentValues>
         enableReinitialize
         initialValues={initialValues}
         validationSchema={validator}

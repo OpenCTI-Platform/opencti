@@ -250,7 +250,7 @@ IncidentEditionOverviewProps
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
-    <Formik
+    <Formik<IncidentEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={incidentValidator}

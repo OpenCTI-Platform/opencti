@@ -505,7 +505,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
 
   const renderSelectEntity = () => {
     const searchPaginationOptions = {
-      searchTerm,
+      search: searchTerm,
       filters: removeIdFromFilterGroupObject(filters),
       orderBy: searchTerm.length > 0 ? null : 'created_at',
       orderMode: searchTerm.length > 0 ? null : 'desc',

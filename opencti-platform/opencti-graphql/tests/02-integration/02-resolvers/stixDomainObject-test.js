@@ -1,6 +1,9 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { fileToReadStream } from '../../../src/database/file-storage-helper';
+import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const LIST_QUERY = gql`
   query stixDomainObjects(
@@ -45,6 +48,19 @@ const READ_QUERY = gql`
       ... on Tool {
         name
         description
+      }
+      importFiles{
+        edges {
+          node{
+            id
+            objectMarking {
+              standard_id
+            }
+            metaData {
+              description
+            }
+          }
+        }
       }
     }
   }
@@ -227,6 +243,55 @@ describe('StixDomainObject resolver standard behavior', () => {
       variables: { id: stixDomainObjectInternalId, input: { focusOn: 'description' } },
     });
     expect(queryResult.data.stixDomainObjectEdit.contextPatch.id).toEqual(stixDomainObjectInternalId);
+  });
+  it('should add and edit file on stixDomainObject', async () => {
+    // Start by adding a file to stixDomainObject with importPush
+    const IMPORT_FILE_QUERY = gql`
+      mutation StixDomainObjectImportPush($id: ID!, $file: Upload!, $fileMarkings: [String]) {
+        stixDomainObjectEdit(id: $id) {
+          importPush(file: $file, fileMarkings: $fileMarkings) {
+            id
+          }
+        }
+      }
+    `;
+    const readStream = fileToReadStream('./tests/data/', 'test-file-to-index.txt', 'test-file-to-index.txt', 'text/plain');
+    const fileUpload = { ...readStream, encoding: 'utf8' };
+    const upload = new Upload();
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
+    upload.file = fileUpload;
+    const importPushQueryResult = await queryAsAdmin({
+      query: IMPORT_FILE_QUERY,
+      variables: { id: stixDomainObjectInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
+    });
+    expect(importPushQueryResult.data.stixDomainObjectEdit.importPush.id).toBeDefined();
+    const fileId = importPushQueryResult.data.stixDomainObjectEdit.importPush.id;
+    // Edit this file with a description in stixDomainObject with a stixDomainObjectFileEdit mutation
+    const EDIT_FILE_QUERY = gql`
+      mutation StixDomainObjectFileEdit($id: ID!, $input: StixDomainObjectFileEditInput) {
+        stixDomainObjectEdit(id: $id) {
+          stixDomainObjectFileEdit(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const fileDescription = 'TestDescription';
+    const editFileQueryResult = await queryAsAdmin({
+      query: EDIT_FILE_QUERY,
+      variables: { id: stixDomainObjectInternalId, input: { id: fileId, description: fileDescription } }
+    });
+    expect(editFileQueryResult.data.stixDomainObjectEdit.stixDomainObjectFileEdit.id).toBeDefined();
+    // Read the stixDomainObject and check that importFiles contain the added and edited file
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectInternalId } });
+    expect(queryResult.data.stixDomainObject.importFiles.edges.length).toBe(1);
+    const importedFile = queryResult.data.stixDomainObject.importFiles.edges[0].node;
+    expect(importedFile.id).toBe(fileId);
+    expect(importedFile.objectMarking.length).toBe(1);
+    expect(importedFile.objectMarking[0].standard_id).toBe(MARKING_TLP_GREEN);
+    expect(importedFile.metaData.description).toBe(fileDescription);
   });
   it('should stixDomainObject editContext to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectInternalId } });

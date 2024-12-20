@@ -159,13 +159,13 @@ const emptyResult = {
 
 const extractExerciseResultByType = (exerciseGlobalScore: any, type: string) => {
   const resultType = exerciseGlobalScore.filter((n: { type: string, value: number }) => n.type === type).at(0);
-  return resultType.avgResult === 'UNKNOWN' ? {
-    emptyResult
-  } : {
-    unknown: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'PENDING').at(0)?.value,
-    success: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'SUCCESS').at(0)?.value,
-    failure: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'FAILED').at(0)?.value
-  };
+  return resultType.avgResult === 'UNKNOWN'
+    ? emptyResult
+    : {
+      unknown: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'PENDING').at(0)?.value,
+      success: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'SUCCESS').at(0)?.value,
+      failure: resultType.distribution?.filter((n: { id: string, value: number }) => n.id === 'FAILED').at(0)?.value
+    };
 };
 
 export const getScenarioResult = async (id: string) => {

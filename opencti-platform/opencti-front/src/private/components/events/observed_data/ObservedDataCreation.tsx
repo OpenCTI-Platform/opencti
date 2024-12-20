@@ -167,7 +167,7 @@ ObservedDataFormProps
     file: undefined,
   });
   return (
-    <Formik
+    <Formik<ObservedDataAddInput>
       initialValues={initialValues}
       validationSchema={observedDataValidator}
       onSubmit={onSubmit}

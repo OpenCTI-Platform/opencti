@@ -14,6 +14,8 @@
   "A public dashboard is a snapshot...": "Ein öffentliches Dashboard ist ein Schnappschuss eines privaten Dashboards zu einem bestimmten Zeitpunkt. Wenn Sie das private Dashboard ändern, werden die bereits erstellten öffentlichen Dashboards nicht geändert.",
   "About": "Über",
   "Abstract": "Zusammenfassung",
+  "Limitations applied, number of fully loaded containers: ": "Begrenzt, Anzahl der voll beladenen Container:",
+  "Open this entity in an investigation to be able to see all objects.": "Öffnen Sie diese Entität in einer Untersuchung, um alle Objekte sehen zu können.",
   "Accent color": "Akzentfarbe",
   "Accept": "Akzeptieren Sie",
   "Access administration": "Zugriff auf die Verwaltung",
