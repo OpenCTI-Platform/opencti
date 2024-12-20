@@ -69,6 +69,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   dangerZone: Partial<ExtendedColor>
   primary: Partial<ExtendedColor>
   error: Partial<ExtendedColor>
+  warn: Partial<ExtendedColor>
   success: Partial<ExtendedColor>
   chip: Partial<ExtendedColor>
   pagination: Partial<ExtendedColor>

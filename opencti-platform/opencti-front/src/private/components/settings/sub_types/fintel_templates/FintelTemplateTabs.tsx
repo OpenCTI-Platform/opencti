@@ -7,6 +7,8 @@ import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplateTabs_template$key } from './__generated__/FintelTemplateTabs_template.graphql';
 import type { Theme } from '../../../../../components/Theme';
+import { KNOWLEDGE } from '../../../../../utils/hooks/useGranted';
+import Security from '../../../../../utils/Security';
 
 const tabsFragment = graphql`
   fragment FintelTemplateTabs_template on FintelTemplate {
@@ -54,12 +56,14 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
       >
         <Tabs value={index} onChange={(_, i) => setIndex(i)}>
           <Tab label={t_i18n('Content Editor')} />
-          <Tab label={t_i18n('Content Preview')} />
+          <Security needs={[KNOWLEDGE]}>
+            <Tab label={t_i18n('Content Preview')} />
+          </Security>
         </Tabs>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           {editorValue !== content && (
-            <span style={{ color: theme.palette.dangerZone.main }}>
+            <span style={{ color: theme.palette.warn.main }}>
               {t_i18n('You have unsaved changes')}
             </span>
           )}

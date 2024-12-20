@@ -142,8 +142,6 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 variant={DataTableVariant.inline}
                 actions={(template: TemplateType) => (
                   <FintelTemplatePopover
-                    entitySettingId={entitySettingId}
-                    templateId={template.id}
                     onUpdate={() => onUpdate(template)}
                   />
                 )}
@@ -163,6 +161,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
             setDrawerOpen(false);
             setTemplateToEdit(undefined);
           }}
+          onDeleteComplete={() => setDrawerOpen(false)}
         />
       )}
     </>
