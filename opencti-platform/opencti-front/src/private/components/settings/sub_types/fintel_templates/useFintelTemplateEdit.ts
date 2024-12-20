@@ -1,7 +1,7 @@
 import { graphql } from 'react-relay';
 import { useState } from 'react';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { useFintelTemplateEditMutation, useFintelTemplateEditMutation$variables } from './__generated__/useFintelTemplateEditMutation.graphql';
+import { useFintelTemplateEditMutation } from './__generated__/useFintelTemplateEditMutation.graphql';
 
 const fintelTemplateEditMutation = graphql`
   mutation useFintelTemplateEditMutation($id: ID!, $input: [EditInput!]!) {
@@ -22,12 +22,18 @@ const useFintelTemplateEdit = () => {
   const [mutating, setMutating] = useState(false);
   const [commitEditMutation] = useApiMutation<useFintelTemplateEditMutation>(fintelTemplateEditMutation);
 
-  const mutation = (variables: useFintelTemplateEditMutation$variables) => {
+  const mutation: typeof commitEditMutation = ({ variables, onCompleted, onError }) => {
     setMutating(true);
     commitEditMutation({
       variables,
-      onError: () => setMutating(false),
-      onCompleted: () => setMutating(false),
+      onError: (error) => {
+        setMutating(false);
+        onError?.(error);
+      },
+      onCompleted: (...args) => {
+        setMutating(false);
+        onCompleted?.(...args);
+      },
     });
   };
 
