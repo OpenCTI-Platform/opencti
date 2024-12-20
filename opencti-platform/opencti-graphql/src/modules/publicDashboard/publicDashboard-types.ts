@@ -37,6 +37,7 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
 
 // region cache type
 export interface PublicDashboardCachedWidget {
+  id: string
   perspective: 'entities' | 'relationships' | 'audits' | null
   type: string,
   layout: {

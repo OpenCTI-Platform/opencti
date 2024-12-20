@@ -40,7 +40,9 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
 
   const onSubmit = () => {
     const input = { key: 'content', value: [editorValue] };
-    commitEditMutation({ id, input: [input] });
+    commitEditMutation({
+      variables: { id, input: [input] },
+    });
   };
 
   return (
