@@ -56,12 +56,17 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         justifyContent: 'space-between',
       }}
       >
-        <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-          <Tab label={t_i18n('Content Editor')} />
-          <Security needs={[KNOWLEDGE]}>
+        <Security needs={[KNOWLEDGE]} placeholder={(
+          <Tabs value={index} onChange={(_, i) => setIndex(i)}>
+            <Tab label={t_i18n('Content Editor')} />
+          </Tabs>
+        )}
+        >
+          <Tabs value={index} onChange={(_, i) => setIndex(i)}>
+            <Tab label={t_i18n('Content Editor')} />
             <Tab label={t_i18n('Content Preview')} />
-          </Security>
-        </Tabs>
+          </Tabs>
+        </Security>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           {editorValue !== content && (
