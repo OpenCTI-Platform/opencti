@@ -75,9 +75,9 @@ describe('Hook: useFileFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        FintelTemplateAndUtils() {
+        FintelTemplate() {
           return {
-            template: {
+            fintelTemplate: {
               id: 'testTemplate',
               name: 'Test template',
               fintel_template_widgets: [{
