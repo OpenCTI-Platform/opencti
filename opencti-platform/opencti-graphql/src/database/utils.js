@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
@@ -327,14 +327,16 @@ export const extractIdsFromStoreObject = (instance) => {
   return ids;
 };
 
-export const extractObjectsRestrictionsFromInputs = (inputs) => {
+export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
   const markings = [];
-  inputs.forEach((input) => {
-    if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-      const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
-      markings.push(...objectMarking);
-    }
-  });
+  if (isStixDomainObjectContainer(entityType)) {
+    inputs.forEach((input) => {
+      if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
+        const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
+        markings.push(...objectMarking);
+      }
+    });
+  }
   return {
     markings
   };
