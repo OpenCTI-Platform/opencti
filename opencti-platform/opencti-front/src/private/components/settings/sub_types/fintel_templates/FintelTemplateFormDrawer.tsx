@@ -1,47 +1,23 @@
 import Drawer from '@components/common/drawer/Drawer';
-import React, { UIEvent } from 'react';
-import { graphql } from 'react-relay';
+import React from 'react';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
-import { FintelTemplateFormDrawerDeleteMutation } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateFormDrawerDeleteMutation.graphql';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/styles';
+import useFintelTemplateAdd from '@components/settings/sub_types/fintel_templates/useFintelTemplateAdd';
+import useFintelTemplateDelete from '@components/settings/sub_types/fintel_templates/useFintelTemplateDelete';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
-import { FintelTemplateFormDrawerAddMutation } from './__generated__/FintelTemplateFormDrawerAddMutation.graphql';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
 import { useFormatter } from '../../../../../components/i18n';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
-import { deleteNodeFromEdge, insertNodeFromEdge } from '../../../../../utils/store';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
-import stopEvent from '../../../../../utils/domEvent';
 import Transition from '../../../../../components/Transition';
 import type { Theme } from '../../../../../components/Theme';
-
-const fintelTemplateAddMutation = graphql`
-  mutation FintelTemplateFormDrawerAddMutation($input: FintelTemplateAddInput!) {
-    fintelTemplateAdd(input: $input) {
-      id
-      name
-      description
-      instance_filters
-      settings_types
-      start_date
-      entity_type
-    }
-  }
-`;
-
-const fintelTemplateFormDrawerDeleteMutation = graphql`
-  mutation FintelTemplateFormDrawerDeleteMutation($id: ID!) {
-    fintelTemplateDelete(id: $id)
-  }
-`;
 
 interface FintelTemplateFormDrawerProps {
   isOpen: boolean
@@ -66,40 +42,26 @@ const FintelTemplateFormDrawer = ({
   const createTitle = t_i18n('Create a template');
   const editionTitle = t_i18n('Update a template');
 
-  const [commitAddMutation] = useApiMutation<FintelTemplateFormDrawerAddMutation>(fintelTemplateAddMutation);
-  const [commitDeleteMutation] = useApiMutation<FintelTemplateFormDrawerDeleteMutation>(fintelTemplateFormDrawerDeleteMutation);
+  const [commitAddMutation] = useFintelTemplateAdd(entitySettingId);
   const [commitEditMutation] = useFintelTemplateEdit();
+  const [commitDeleteMutation, deleting] = useFintelTemplateDelete(entitySettingId);
 
   const {
-    deleting,
     handleOpenDelete,
     displayDelete,
     handleCloseDelete,
-    setDeleting,
   } = useDeletion({});
 
-  const onDelete = (e: UIEvent) => {
+  const onDelete = () => {
     if (!template) return;
 
-    stopEvent(e);
-    setDeleting(true);
-    commitDeleteMutation({
+    commitDeleteMutation(template.id, {
       variables: { id: template.id },
-      updater: (store) => {
-        deleteNodeFromEdge(
-          store,
-          'fintelTemplates',
-          entitySettingId,
-          template.id,
-        );
-      },
       onCompleted: () => {
-        setDeleting(false);
         handleCloseDelete();
         onDeleteComplete?.();
       },
       onError: () => {
-        setDeleting(false);
         handleCloseDelete();
       },
     });
@@ -119,14 +81,6 @@ const FintelTemplateFormDrawer = ({
           start_date: values.published ? new Date() : null,
           settings_types: [entityType],
         },
-      },
-      updater: (store) => {
-        insertNodeFromEdge(
-          store,
-          entitySettingId,
-          'fintelTemplates',
-          'fintelTemplateAdd',
-        );
       },
       onCompleted: (response) => {
         setSubmitting(false);
@@ -150,7 +104,9 @@ const FintelTemplateFormDrawer = ({
 
     let input: { key:string, value: [unknown] } = { key: field, value: [value] };
     if (field === 'published') input = { key: 'start_date', value: [value === 'true' ? new Date() : null] };
-    commitEditMutation({ id: template.id, input: [input] });
+    commitEditMutation({
+      variables: { id: template.id, input: [input] },
+    });
   };
 
   return (
