@@ -2201,7 +2201,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
-      const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs);
+      const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
       const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit, relatedRestrictions });
       return { element: updatedInstance, event, isCreation: false };
     }

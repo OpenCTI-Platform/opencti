@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 
 const inputs = [
   {
@@ -135,13 +136,18 @@ const relInputs = [
 
 describe('extractObjectsRestrictionsFromInputs testing', () => {
   it('should add inputs object-marking in stream when adding entity to a report', () => {
-    const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs);
+    const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs, ENTITY_TYPE_CONTAINER_REPORT);
     const expected = { markings: ['fa7fa933-7b65-463f-ac5e-aa33b2a36ce8', '056276ff-26dc-4774-a439-a36253a96939'] };
     expect(relatedRestrictions).toEqual(expected);
   });
   it('should add inputs object-marking in stream when adding relationship to a report', () => {
-    const relatedRestrictions = extractObjectsRestrictionsFromInputs(relInputs);
+    const relatedRestrictions = extractObjectsRestrictionsFromInputs(relInputs, ENTITY_TYPE_CONTAINER_REPORT);
     const expected = { markings: ['eaccd139-ec2e-48d9-b2ef-a17ba6e7e938'] };
+    expect(relatedRestrictions).toEqual(expected);
+  });
+  it('should not add inputs object-marking in stream if entity is not container', () => {
+    const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs, ENTITY_TYPE_MALWARE);
+    const expected = { markings: [] };
     expect(relatedRestrictions).toEqual(expected);
   });
 });
