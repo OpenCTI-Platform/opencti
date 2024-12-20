@@ -47,6 +47,7 @@ interface WidgetLayout {
 }
 
 export interface Widget {
+  id: string;
   type: string;
   perspective?: WidgetPerspective | null
   dataSelection: WidgetDataSelection[]
