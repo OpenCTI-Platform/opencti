@@ -34,6 +34,9 @@ const ThemeDark = (
       main: '#f44336',
       dark: '#c62828',
     },
+    warn: {
+      main: '#ffa726',
+    },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: 'black', text: { primary: '#fbc2be' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },

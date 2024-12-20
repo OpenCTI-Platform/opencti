@@ -11,6 +11,8 @@ import useHelper from '../../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../../components/Loader';
+import Security from '../../../../../utils/Security';
+import { KNOWLEDGE } from '../../../../../utils/hooks/useGranted';
 
 export const fintelTemplateQuery = graphql`
   query FintelTemplateQuery($id: ID!, $targetType: String!) {
@@ -50,12 +52,14 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
                   onChange={setEditorValue}
                 />
               </div>
-              <div role="tabpanel" hidden={index !== 1}>
-                <FintelTemplatePreview
-                  content={editorValue}
-                  isTabActive={index === 1}
-                />
-              </div>
+              <Security needs={[KNOWLEDGE]}>
+                <div role="tabpanel" hidden={index !== 1}>
+                  <FintelTemplatePreview
+                    content={editorValue}
+                    isTabActive={index === 1}
+                  />
+                </div>
+              </Security>
             </>
           )}
         </FintelTemplateTabs>

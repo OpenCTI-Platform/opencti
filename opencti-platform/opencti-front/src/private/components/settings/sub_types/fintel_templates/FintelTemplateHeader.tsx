@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { FintelTemplateHeader_template$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateHeader_template.graphql';
-import Typography from '@mui/material/Typography';
-import FintelTemplatePopover from '@components/settings/sub_types/fintel_templates/FintelTemplatePopover';
+import { Typography, Button } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import FintelTemplateFormDrawer from '@components/settings/sub_types/fintel_templates/FintelTemplateFormDrawer';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -53,15 +52,13 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
       <Breadcrumbs elements={breadcrumb} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-        <Typography variant="h1" sx={{ marginBottom: 0.5 }}>
+        <Typography variant="h1" sx={{ marginBottom: 0.5, flex: 1 }}>
           {template.name}
         </Typography>
-        <FintelTemplatePopover
-          entitySettingId={entitySettingId}
-          templateId={template.id}
-          onUpdate={() => setFormOpen(true)}
-          onDeleteComplete={() => navigate(subTypeLink)}
-        />
+
+        <Button variant="outlined" onClick={() => setFormOpen(true)}>
+          {t_i18n('Update')}
+        </Button>
       </div>
 
       <FintelTemplateFormDrawer
@@ -74,6 +71,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           published: !!template.start_date,
         }}
         onClose={() => setFormOpen(false)}
+        onDeleteComplete={() => navigate(subTypeLink)}
       />
     </>
   );

@@ -95,7 +95,7 @@ const RichTextField = ({
             flex: 1,
             textAlign: 'center',
             marginBottom: theme.spacing(0.5),
-            color: theme.palette.dangerZone.main,
+            color: theme.palette.warn.main,
           }}
           >
             {lastSavedValue !== undefined && lastSavedValue !== value && (

@@ -50,7 +50,7 @@ enum FintelTemplateOrdering {
 }
 
 type Query {
-  fintelTemplate(id: ID!): FintelTemplate @auth(for: [KNOWLEDGE])
+  fintelTemplate(id: ID!): FintelTemplate @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
 }
 
 # Mutations
