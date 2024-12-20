@@ -47,7 +47,6 @@ export const addFintelTemplate = async (
     content: input.content ?? '',
     fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
       ...templateWidget,
-      id: uuidv4(),
       widget: { ...templateWidget.widget, id: uuidv4() },
     })),
   };
@@ -71,6 +70,7 @@ export const fintelTemplateEditField = async (
   await canCustomizeTemplate(context);
   // add id to fintel template widgets
   const formattedInput = input.map((i) => {
+    // TODO use field path
     if (i.key === 'fintel_template_widgets') {
       const values = i.value as FintelTemplateWidgetAddInput[];
       const formattedValues = values.map((v) => ({
@@ -143,7 +143,6 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     content: input.content ?? '',
     fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
       ...templateWidget,
-      id: uuidv4(),
       widget: { ...templateWidget.widget, id: uuidv4() },
     })),
   }));
