@@ -204,7 +204,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       onSubmit={onSubmit}
       onReset={onClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form>
           <Field
             component={TextField}

@@ -89,7 +89,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   );
   const { searchTerm } = viewStorage;
 
-  const hasTemplates = subType.settings?.availableSettings.includes('templates') && isFileFromTemplateEnabled
+  const hasTemplates = subType.settings?.availableSettings.includes('templates') && isFileFromTemplateEnabled;
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),

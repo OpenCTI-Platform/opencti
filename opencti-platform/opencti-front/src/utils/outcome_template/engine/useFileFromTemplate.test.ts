@@ -44,19 +44,17 @@ describe('Hook: useFileFromTemplate', () => {
       return MockPayloadGenerator.generate(op, {
         FintelTemplate() {
           return {
-            fintelTemplate: {
-              id: 'testTemplate',
-              name: 'Test template',
-              fintel_template_widgets: [{
-                id: 'XXXX',
-                variable_name: 'myAttributes',
-                widget: {
-                  type: 'attribute',
-                  dataSelection: [{}],
-                },
-              }],
-              content: 'Hello, I am container $containerName of type $containerType',
-            },
+            id: 'testTemplate',
+            name: 'Test template',
+            fintel_template_widgets: [{
+              id: 'XXXX',
+              variable_name: 'myAttributes',
+              widget: {
+                type: 'attribute',
+                dataSelection: [{}],
+              },
+            }],
+            content: 'Hello, I am container $containerName of type $containerType',
           };
         },
       });
@@ -75,23 +73,21 @@ describe('Hook: useFileFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        FintelTemplateAndUtils() {
+        FintelTemplate() {
           return {
-            template: {
-              id: 'testTemplate',
-              name: 'Test template',
-              fintel_template_widgets: [{
-                id: 'YYY',
-                variable_name: 'containerList',
-                widget: {
-                  type: 'list',
-                  dataSelection: [{
-                    filters: null,
-                  }],
-                },
-              }],
-              content: 'Hello, I have: $containerList',
-            },
+            id: 'testTemplate',
+            name: 'Test template',
+            fintel_template_widgets: [{
+              id: 'YYY',
+              variable_name: 'containerList',
+              widget: {
+                type: 'list',
+                dataSelection: [{
+                  filters: null,
+                }],
+              },
+            }],
+            content: 'Hello, I have: $containerList',
           };
         },
       });

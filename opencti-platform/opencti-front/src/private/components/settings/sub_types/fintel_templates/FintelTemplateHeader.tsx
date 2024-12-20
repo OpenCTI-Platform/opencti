@@ -9,6 +9,7 @@ import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
+import ItemBoolean from '../../../../../components/ItemBoolean';
 
 const headerFragment = graphql`
   fragment FintelTemplateHeader_template on FintelTemplate {
@@ -52,11 +53,27 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
       <Breadcrumbs elements={breadcrumb} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-        <Typography variant="h1" sx={{ marginBottom: 0.5, flex: 1 }}>
+        <Typography variant="h1" sx={{ float: 'left' }}>
           {template.name}
         </Typography>
 
-        <Button variant="outlined" onClick={() => setFormOpen(true)}>
+        <div
+          style={{
+            float: 'left',
+            margin: '0 0 0 5px',
+          }}
+        >
+          <ItemBoolean
+            status={!!template.start_date}
+            label={template.start_date ? t_i18n('Published') : t_i18n('Not published')}
+          />
+        </div>
+
+        <Button
+          variant="outlined"
+          style={{ marginLeft: 'auto' }}
+          onClick={() => setFormOpen(true)}
+        >
           {t_i18n('Update')}
         </Button>
       </div>

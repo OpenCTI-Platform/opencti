@@ -963,6 +963,7 @@ type WidgetLayout {
 }
 
 type Widget {
+  id: ID!
   type: String!
   perspective: WidgetPerspective
   dataSelection: [WidgetDataSelection!]!

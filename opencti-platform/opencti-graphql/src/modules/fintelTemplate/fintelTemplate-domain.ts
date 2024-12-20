@@ -70,7 +70,7 @@ export const fintelTemplateEditField = async (
   await canCustomizeTemplate(context);
   // add id to fintel template widgets
   const formattedInput = input.map((i) => {
-    // TODO use field path
+    // TODO implement case with object_path
     if (i.key === 'fintel_template_widgets') {
       const values = i.value as FintelTemplateWidgetAddInput[];
       const formattedValues = values.map((v) => ({
