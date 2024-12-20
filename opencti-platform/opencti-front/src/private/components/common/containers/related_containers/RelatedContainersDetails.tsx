@@ -117,73 +117,67 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
   );
 
   return (
-    <Grid container rowSpacing={5}>
-      {/* Left Column */}
-      <Grid item xs={6}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Entity type')}
-            </Typography>
-            <ItemEntityType entityType={relatedContainer.entity_type} />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Description')}
-            </Typography>
-            <ExpandableMarkdown source={relatedContainer.description} limit={300} />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Author')}
-            </Typography>
-            <ItemAuthor createdBy={relatedContainer.createdBy} />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Modification date')}
-            </Typography>
-            {fldt(relatedContainer.modified)}
-          </Grid>
+    <Grid container rowSpacing={3}>
+      <Grid container item xs={12}>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Entity type')}
+          </Typography>
+          <ItemEntityType entityType={relatedContainer.entity_type} />
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Marking')}
+          </Typography>
+          <ItemMarkings markingDefinitions={relatedContainer.objectMarking} />
         </Grid>
       </Grid>
 
-      {/* Right Column */}
-      <Grid item xs={6}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Marking')}
-            </Typography>
-            <ItemMarkings markingDefinitions={relatedContainer.objectMarking} />
-          </Grid>
+      <Grid container item xs={12}>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Description')}
+          </Typography>
+          <ExpandableMarkdown source={relatedContainer.description} limit={300} />
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Processing status')}
+          </Typography>
+          <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} />
+        </Grid>
+      </Grid>
 
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Processing status')}
-            </Typography>
-            <ItemStatus status={relatedContainer.status} disabled={!relatedContainer.workflowEnabled} />
-          </Grid>
+      <Grid container item xs={12}>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Author')}
+          </Typography>
+          <ItemAuthor createdBy={relatedContainer.createdBy} />
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Assignees')}
+          </Typography>
+          <ItemAssignees
+            assignees={relatedContainer.objectAssignee ?? []}
+            stixDomainObjectId={relatedContainer.id}
+          />
+        </Grid>
+      </Grid>
 
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Assignees')}
-            </Typography>
-            <ItemAssignees
-              assignees={relatedContainer.objectAssignee ?? []}
-              stixDomainObjectId={relatedContainer.id}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Creators')}
-            </Typography>
-            <ItemCreators creators={relatedContainer.creators ?? []} />
-          </Grid>
+      <Grid container item xs={12}>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Modification date')}
+          </Typography>
+          {fldt(relatedContainer.modified)}
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Creators')}
+          </Typography>
+          <ItemCreators creators={relatedContainer.creators ?? []} />
         </Grid>
       </Grid>
 
