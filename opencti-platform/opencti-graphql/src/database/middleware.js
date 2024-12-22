@@ -2061,7 +2061,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } else {
         // Special access check for RELATION_GRANTED_TO meta
         // If not supported, update must be rejected
-        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
         if (relType === RELATION_GRANTED_TO && !isUserCanManipulateGrantedRefs) {
           throw ForbiddenAccess();
         }
@@ -2623,7 +2623,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           const targetData = (patchInputData ?? []).map((n) => n.internal_id);
           // Specific case for organization restriction, has EE must be activated.
           // If not supported, upsert of organization is not applied
-          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
           const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
           // If expected data is different from current data
           if (allowedOperation && R.symmetricDifference(currentData, targetData).length > 0) {

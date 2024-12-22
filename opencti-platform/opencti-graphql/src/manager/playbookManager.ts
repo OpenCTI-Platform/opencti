@@ -31,7 +31,7 @@ import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfigu
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { isNotEmptyField, READ_STIX_INDICES } from '../database/utils';
+import { READ_STIX_INDICES } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
@@ -530,7 +530,7 @@ const initPlaybookManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'PLAYBOOK_MANAGER',
-        enable: isNotEmptyField(settings?.enterprise_edition) && booleanConf('playbook_manager:enabled', false),
+        enable: settings?.valid_enterprise_edition === true && booleanConf('playbook_manager:enabled', false),
         running,
       };
     },

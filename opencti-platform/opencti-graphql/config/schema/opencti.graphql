@@ -1240,7 +1240,7 @@ type PlatformEE {
   license_start_date: DateTime!
   license_expiration_date: DateTime!
   license_platform: String!
-  license_lts: Boolean!
+  license_type: String!
   license_platform_match: Boolean!
 }
 

@@ -114,7 +114,7 @@ const settingsQuery = graphql`
         license_start_date
         license_platform_match
         license_expired
-        license_lts
+        license_type
       }
       otp_mandatory
       ...SettingsMessages_settingsMessages
@@ -169,7 +169,7 @@ export const settingsMutationFieldPatch = graphql`
           license_expiration_date
           license_start_date
           license_expired
-          license_lts
+          license_type
         }
         platform_login_message
         platform_banner_text
@@ -322,7 +322,8 @@ const Settings = () => {
             )(settings);
             const modules = settings.platform_modules;
             const { version, dependencies } = about;
-            const isEnterpriseEdition = settings.platform_enterprise_edition.license_enterprise;
+            const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
+            const isEnterpriseEditionValid = settings.platform_enterprise_edition.license_validated;
             return (
               <>
                 <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
@@ -332,14 +333,12 @@ const Settings = () => {
                       {t_i18n('Enterprise Edition')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
-                      <EnterpriseEditionButton disabled={!isAllowed} title={isEnterpriseEdition ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'} inLine/>
-                      {isEnterpriseEdition && <div style={{ float: 'right' }}>
-                        <DangerZoneBlock
-                          type={'ce_ee_toggle'}
-                          sx={{
-                            root: { border: 'none', padding: 0, margin: 0 },
-                            title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                          }}
+                      <EnterpriseEditionButton disabled={!isAllowed} title={isEnterpriseEditionActivated ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'} inLine/>
+                      {isEnterpriseEditionActivated && <div style={{ float: 'right' }}>
+                        <DangerZoneBlock type={'ce_ee_toggle'} sx={{
+                          root: { border: 'none', padding: 0, paddingTop: 0, margin: 0 },
+                          title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                        }}
                         >
                           {({ disabled }) => (
                             <>
@@ -356,7 +355,7 @@ const Settings = () => {
                                   }
                                   : undefined}
                               >
-                                {t_i18n('Disable Enterprise Edition')}
+                                {t_i18n('Disable')}
                               </Button>
                               <Dialog
                                 PaperProps={{ elevation: 1 }}
@@ -411,10 +410,10 @@ const Settings = () => {
                           <ItemCopy content={settings.id} variant="inLine" />
                         </ListItem>
                       </list>
-                      { isEnterpriseEdition && settings.platform_enterprise_edition.license_valid_cert
+                      { isEnterpriseEditionActivated && settings.platform_enterprise_edition.license_valid_cert
                           && <List>
                             <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('Customer assignation')} />
+                              <ListItemText primary={t_i18n('Assignation')} />
                               <ItemBoolean
                                 variant="large"
                                 neutralLabel={settings.platform_enterprise_edition.license_customer}
@@ -422,7 +421,7 @@ const Settings = () => {
                               />
                             </ListItem>
                             <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('Valid identification')} />
+                              <ListItemText primary={t_i18n('Identification')} />
                               <ItemBoolean
                                 variant="large"
                                 label={settings.platform_enterprise_edition.license_platform_match ? 'YES' : 'NO'}
@@ -451,34 +450,21 @@ const Settings = () => {
                                     Your license will expire in less than 3 months, please contact Filigran to renew your license
                                   </Alert>
                                 </ListItem>}
-                            { /**
                             <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('LTS Support')} />
+                              <ListItemText primary={t_i18n('License type')} />
                               <ItemBoolean
                                 variant="large"
-                                label={settings.platform_enterprise_edition.license_lts ? 'YES' : 'NO'}
-                                status={settings.platform_enterprise_edition.license_lts}
+                                neutralLabel={settings.platform_enterprise_edition.license_type}
+                                status={null}
                               />
                             </ListItem>
-                                * */ }
                           </List>
                       }
-                      { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
-                          && !settings.platform_enterprise_edition.license_valid_cert && <List>
-                            <ListItem divider={false}>
-                              <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                                {t_i18n('You currently using OpenCTI enterprise edition')}<br/>
-                                {t_i18n('This usage is limited to testing only')}<br/>
-                                {t_i18n('Please contact Filigran to get your license')} - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
-                              </Alert>
-                            </ListItem>
-                          </List>
-                      }
-                      { isEnterpriseEdition && !settings.platform_enterprise_edition.license_validated
+                      { isEnterpriseEditionActivated && !settings.platform_enterprise_edition.license_validated
                           && settings.platform_enterprise_edition.license_valid_cert && <List>
                             <ListItem divider={false}>
                               <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                                {t_i18n('You OpenCTI license is invalid')}<br/>
+                                {t_i18n('Your OpenCTI license is expired')}<br/>
                                 {t_i18n('Please contact Filigran to get your new license')} - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
                               </Alert>
                             </ListItem>
@@ -637,7 +623,7 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={
-                                    isEnterpriseEdition
+                                    isEnterpriseEditionValid
                                       ? t_i18n('Enterprise')
                                       : t_i18n('Community')
                                   }
@@ -698,10 +684,10 @@ const Settings = () => {
                                   component={Switch}
                                   variant="standard"
                                   name="platform_whitemark"
-                                  disabled={!isEnterpriseEdition}
+                                  disabled={!isEnterpriseEditionValid}
                                   checked={
                                     settings.platform_whitemark
-                                    && isEnterpriseEdition
+                                    && isEnterpriseEditionValid
                                   }
                                   onChange={(event, value) => handleSubmitField(
                                     id,
@@ -725,7 +711,7 @@ const Settings = () => {
                       settings={settings}
                       handleChangeFocus={handleChangeFocus}
                       handleSubmitField={handleSubmitField}
-                      isEnterpriseEdition={isEnterpriseEdition}
+                      isEnterpriseEdition={isEnterpriseEditionValid}
                     />
                   </Grid>
                   <Grid item xs={4}>
@@ -1151,7 +1137,7 @@ const Settings = () => {
                         {modules.map((module) => {
                           const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);
                           let status = module.enable;
-                          if (!isEnterpriseEdition && isEeModule) {
+                          if (!isEnterpriseEditionActivated && isEeModule) {
                             status = 'ee';
                           }
                           return (

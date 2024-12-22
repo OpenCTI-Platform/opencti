@@ -12,13 +12,13 @@ import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { now } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { markAllSessionsForRefresh } from '../database/session';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -118,9 +118,11 @@ export const getProtectedSensitiveConfig = async (context, user) => {
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
+  const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
+    valid_enterprise_edition: eeInfo.license_validated,
     platform_providers: PROVIDERS.filter((p) => p.name !== INTERNAL_SECURITY_PROVIDER),
     platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({ status: k, message: v })),
     platform_cluster: clusterInfo.info,
@@ -174,8 +176,19 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
+  const settings = await getSettings(context);
+  const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
+  if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
+    const license = enterpriseLicense.value[0];
+    if (isNotEmptyField(license)) {
+      const info = getEnterpriseEditionInfoFromPem(settings.internal_id, license);
+      if (!info.license_validated) {
+        throw UnsupportedError('Invalid license');
+      }
+    }
+  }
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
-  if (input.some((i) => i.key === 'platform_organization')) {
+  if (data.some((i) => i.key === 'platform_organization')) {
     // if we change platform_organization, we need to refresh all sessions
     await markAllSessionsForRefresh();
   }
@@ -184,30 +197,36 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for \`platform settings\``,
-    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input }
+    message: `updates \`${data.map((i) => i.key).join(', ')}\` for \`platform settings\``,
+    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: data }
   });
   const updatedSettings = await getSettings(context);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
 
+const buildEEMessageHeader = (message, error = true) => {
+  return {
+    id: 'license-message',
+    message,
+    activated: true,
+    dismissible: false,
+    updated_at: now(),
+    color: error ? '#d0021b' : undefined,
+    recipients: []
+  };
+};
+
 export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.platform_messages ?? '[]');
-  const enterpriseEditionInfo = getEnterpriseEditionInfo(settings);
-  const isInvalidLicense = enterpriseEditionInfo.license_enterprise && !enterpriseEditionInfo.license_validated;
-  if (isInvalidLicense) {
-    const message = enterpriseEditionInfo.license_valid_cert
-      ? 'Your currently using an invalid OpenCTI enterprise edition license, please contact Filigran to get a new one'
-      : 'You currently using OpenCTI enterprise edition without any valid license, please contact Filigran to get one';
-    messages.push({
-      id: 'license-message',
-      message,
-      activated: true,
-      dismissible: false,
-      updated_at: now(),
-      color: '#d0021b',
-      recipients: []
-    });
+  const ee = getEnterpriseEditionInfo(settings);
+  if (ee.license_enterprise) {
+    if (!ee.license_validated) {
+      messages.push(buildEEMessageHeader(`Your current ${ee.license_type} license has expired. Enterprise edition is no longer active`));
+    } else if (ee.license_extra_expiration) {
+      messages.push(buildEEMessageHeader(`Your current ${ee.license_type} license has expired. Enterprise edition will be disabled in ${ee.license_extra_expiration_days} days`));
+    } else if (ee.license_type === LICENSE_OPTION_TRIAL) {
+      messages.push(buildEEMessageHeader(`Your currently use an enterprise edition trial license, valid until ${utcDate(ee.license_expiration_date).format('DD/MM/YYYY')}`, false));
+    }
   }
   return messages.filter(({ recipients }) => {
     // eslint-disable-next-line max-len
