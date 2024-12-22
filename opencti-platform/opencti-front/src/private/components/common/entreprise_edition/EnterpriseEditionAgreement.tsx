@@ -1,17 +1,16 @@
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import TextField from '@mui/material/TextField';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { isNotEmptyField } from '../../../../utils/utils';
+import { isEmptyField } from '../../../../utils/utils';
 
 const EnterpriseEditionAgreementMutationFieldPatch = graphql`
   mutation EnterpriseEditionAgreementMutation($id: ID!, $input: [EditInput]!) {
@@ -34,7 +33,6 @@ const EnterpriseEditionAgreement: FunctionComponent<
 EnterpriseEditionAgreementProps
 > = ({ open, onClose, settingsId }) => {
   const { t_i18n } = useFormatter();
-  const [enterpriseEditionConsent, setEnterpriseEditionConsent] = useState(false);
   const [enterpriseLicense, setEnterpriseLicense] = useState('');
   const [commitMutation] = useApiMutation(
     EnterpriseEditionAgreementMutationFieldPatch,
@@ -48,8 +46,10 @@ EnterpriseEditionAgreementProps
           value: enterpriseLicense,
         }],
       },
+      onCompleted: () => {
+        onClose();
+      },
     });
-    onClose();
   };
   return (
     <Dialog
@@ -64,60 +64,33 @@ EnterpriseEditionAgreementProps
       </DialogTitle>
       <DialogContent>
         <span>
-          {t_i18n(
-            'By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:',
-          )}
+          {t_i18n('By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental ')}
+          <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE" target="_blank" rel="noreferrer">{t_i18n('license terms and conditions of usage')}</a>
         </span>
-        <ul>
-          <li>
-            {t_i18n(
-              'OpenCTI EE is free-to-use for development, testing and research purposes as well as for charity organizations with NGO status.',
-            )}
-          </li>
-          <li>
-            {t_i18n(
-              'OpenCTI EE is included for all Filigran SaaS customers without additional fee.',
-            )}
-          </li>
-          <li>
-            {t_i18n(
-              'For all other usages, you (and your organization) should have entered in a',
-            )}{' '}
-            <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">
-              {t_i18n('Filigran Enterprise agreement')}
+        <Alert severity="error" style={{ marginTop: 16 }}>
+          {t_i18n('OpenCTI EE required an annual subscription. However the license will be granted for free to development, testing and research purposes and charity organizations with NGO status.')}
+          <br/><br/>
+          <b>
+            {t_i18n(' Please contact Filigran to get your license at ')}
+            <a href="mailto:sales@filigran.io" target="_blank" rel="noreferrer">
+              sales@filigran.io
             </a>
-            .
-          </li>
-        </ul>
-        <FormGroup>
+          </b>
+        </Alert>
+        <Alert severity="info" style={{ marginTop: 16 }}>
+          {t_i18n('If you simply want to try the OpenCTI Enterprise edition, get your license at ')}
+          <a href="https://filigran.io/ee-trial" target="_blank" rel="noreferrer">
+            {'https://filigran.io/ee-trial'}
+          </a>
+        </Alert>
+        <FormGroup style={{ marginTop: 16 }}>
           <TextField
             onChange={(event) => setEnterpriseLicense(event.target.value)}
             multiline={true}
             fullWidth={true}
             minRows={20}
-            placeholder={t_i18n('Please paste your Filigran license or anything to activate testing')}
+            placeholder={t_i18n('Paste your Filigran license')}
             variant="outlined"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={enterpriseEditionConsent}
-                disabled={false}
-                onChange={(event) => setEnterpriseEditionConsent(event.target.checked)}
-              />
-            }
-            label={
-              <>
-                <span>{t_i18n('I have read and agree to the')}</span>{' '}
-                <a
-                  href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE"
-                  target="_blank" rel="noreferrer"
-                >
-                  {t_i18n('OpenCTI EE license terms')}
-                </a>
-                .
-              </>
-            }
           />
         </FormGroup>
       </DialogContent>
@@ -126,7 +99,7 @@ EnterpriseEditionAgreementProps
         <Button
           color="secondary"
           onClick={enableEnterpriseEdition}
-          disabled={!(enterpriseEditionConsent && isNotEmptyField((enterpriseLicense)))}
+          disabled={isEmptyField((enterpriseLicense))}
         >
           {t_i18n('Enable')}
         </Button>

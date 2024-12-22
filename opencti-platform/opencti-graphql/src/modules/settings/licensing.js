@@ -19,67 +19,78 @@ import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 
 const GLOBAL_LICENSE_OPTION = 'global';
+export const LICENSE_OPTION_TRIAL = 'trial';
 const LICENSE_OPTION_PRODUCT = 'opencti';
-const LICENSE_OPTION_LTS_IDENTIFIER = '1.2.3.4.5.6.7.8.9';
+const LICENSE_OPTION_TYPE = '1.2.3.4.5.6.7.8.9';
 const LICENSE_OPTION_PRODUCT_IDENTIFIER = '1.2.3.4.5.6.7.8.11';
 
 const getExtensionValue = (clientCrt, extension) => {
   return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
 };
 
-export const getEnterpriseEditionInfo = (settings) => {
-  if (isNotEmptyField(settings.enterprise_license)) {
-    let license_customer = 'Trial';
-    let license_validated = false;
-    let license_expired = true;
-    let license_valid_cert = false;
-    let license_platform_match = false;
-    let license_expiration_date = now();
-    let license_start_date = now();
-    let license_platform = settings.internal_id;
-    let license_expiration_prevention = false;
-    let license_lts = false;
+export const getEnterpriseEditionInfoFromPem = (platformInstanceId, pem) => {
+  if (isNotEmptyField(pem)) {
     try {
-      const clientCrt = forge.pki.certificateFromPem(settings.enterprise_license);
-      license_valid_cert = OPENCTI_CA.verify(clientCrt);
-      license_lts = getExtensionValue(clientCrt, LICENSE_OPTION_LTS_IDENTIFIER) === '1';
+      const clientCrt = forge.pki.certificateFromPem(pem);
+      const license_valid_cert = OPENCTI_CA.verify(clientCrt);
+      const license_type = getExtensionValue(clientCrt, LICENSE_OPTION_TYPE);
       const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT_IDENTIFIER) === LICENSE_OPTION_PRODUCT;
-      license_customer = clientCrt.subject.getField('O').value;
-      license_platform = clientCrt.subject.getField('OU').value;
-      license_platform_match = valid_product && (license_platform === GLOBAL_LICENSE_OPTION || settings.internal_id === license_platform);
-      license_expired = new Date() > clientCrt.validity.notAfter || new Date() < clientCrt.validity.notBefore;
-      license_start_date = clientCrt.validity.notBefore;
-      license_expiration_date = clientCrt.validity.notAfter;
-      license_expiration_prevention = utcDate(clientCrt.validity.notAfter).diff(now(), 'months') < 3;
-      license_validated = license_valid_cert && license_platform_match && !license_expired;
+      const license_customer = clientCrt.subject.getField('O').value;
+      const license_platform = clientCrt.subject.getField('OU').value;
+      const license_platform_match = valid_product && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
+      const license_expired = new Date() > clientCrt.validity.notAfter || new Date() < clientCrt.validity.notBefore;
+      const license_start_date = clientCrt.validity.notBefore;
+      const license_expiration_date = clientCrt.validity.notAfter;
+      const license_expiration_prevention = utcDate(clientCrt.validity.notAfter).diff(now(), 'months') < 3;
+      let license_validated = license_valid_cert && license_platform_match;
+      let license_extra_expiration = false;
+      let license_extra_expiration_days = 0;
+      if (license_validated && license_expired) {
+        // If trial license, deactivation for expiration is direct
+        if (license_type !== LICENSE_OPTION_TRIAL) {
+          // If standard or lts license, a 3 months safe period is granted
+          const license_extra_expiration_date = utcDate(clientCrt.validity.notBefore).add(3, 'months');
+          license_extra_expiration_days = license_extra_expiration_date.diff(utcDate(), 'days');
+          license_extra_expiration = new Date() < license_extra_expiration_date.toDate();
+          license_validated = license_extra_expiration;
+        }
+      }
+      return {
+        license_enterprise: true, // If EE activated
+        license_validated, // If EE license is ok (identifier, dates, ...)
+        license_valid_cert,
+        license_customer,
+        license_expired,
+        license_extra_expiration,
+        license_extra_expiration_days,
+        license_expiration_date,
+        license_start_date,
+        license_expiration_prevention,
+        license_platform,
+        license_type,
+        license_platform_match
+      };
     } catch {
       // Nothing to do here
     }
-    return {
-      license_enterprise: true, // If EE activated
-      license_validated, // If EE license is ok (identifier, dates, ...)
-      license_valid_cert, // If EE license is Filigran generated
-      license_customer,
-      license_expired,
-      license_expiration_date,
-      license_start_date,
-      license_expiration_prevention,
-      license_platform,
-      license_lts,
-      license_platform_match
-    };
   }
   return {
     license_enterprise: false,
     license_validated: false,
     license_valid_cert: false,
+    license_extra_expiration: false,
+    license_extra_expiration_days: 0,
     license_customer: 'invalid',
     license_expired: true,
-    license_expiration_date: now(),
-    license_start_date: now(),
+    license_expiration_date: new Date(),
+    license_start_date: new Date(),
     license_platform: 'invalid',
-    license_lts: false,
+    license_type: 'trial',
     license_expiration_prevention: false,
     license_platform_match: true
   };
+};
+
+export const getEnterpriseEditionInfo = (settings) => {
+  return getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
 };
