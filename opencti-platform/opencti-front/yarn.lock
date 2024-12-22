@@ -44,14 +44,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/core@npm:^0.12.15":
-  version: 0.12.15
-  resolution: "@analytics/core@npm:0.12.15"
+"@analytics/core@npm:^0.12.17":
+  version: 0.12.17
+  resolution: "@analytics/core@npm:0.12.17"
   dependencies:
     "@analytics/global-storage-utils": "npm:^0.1.7"
     "@analytics/type-utils": "npm:^0.6.2"
-    analytics-utils: "npm:^1.0.12"
-  checksum: 10/d999ea5c79287a68acfa3dc9ff32805611cdedc0375a69bc61079084fd41d1e512839eebcf33616e68b887c28cc5baa8c9a44d92e4c84d468b452b2cccaa2095
+    analytics-utils: "npm:^1.0.14"
+  checksum: 10/7e8026ffd225269c1bfeb0ff67e979234c264bdc01d84a460b74ce3b8b27663877499064098ed9008ea05071f901fde54d4aeca97d4d67e30b251857c10f6300
   languageName: node
   linkType: hard
 
@@ -7272,25 +7272,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"analytics-utils@npm:^1.0.12":
-  version: 1.0.12
-  resolution: "analytics-utils@npm:1.0.12"
+"analytics-utils@npm:^1.0.14":
+  version: 1.0.14
+  resolution: "analytics-utils@npm:1.0.14"
   dependencies:
     "@analytics/type-utils": "npm:^0.6.2"
     dlv: "npm:^1.1.3"
   peerDependencies:
     "@types/dlv": ^1.0.0
-  checksum: 10/563a8f4ad3d2a98164806122fc16b4937a6189acf109627737c1c27fa8fc8854f57b3f5f767791390c49e6ddfe43a2646d9a48bce099d41525af7d41f7717cd5
+  checksum: 10/0c07c18b680aca86bb871fe1ef81f4166e9c462a9db104828113f93892e6f38ae00f9ce4005a48b6dfa6ebfe87ffca0f0b7557306db06547873f9c9a5c0f07f4
   languageName: node
   linkType: hard
 
-"analytics@npm:0.8.14":
-  version: 0.8.14
-  resolution: "analytics@npm:0.8.14"
+"analytics@npm:0.8.16":
+  version: 0.8.16
+  resolution: "analytics@npm:0.8.16"
   dependencies:
-    "@analytics/core": "npm:^0.12.15"
+    "@analytics/core": "npm:^0.12.17"
     "@analytics/storage-utils": "npm:^0.4.2"
-  checksum: 10/10a1d8ac2fe98c99898643ffc0ca2e7a5b613b06821ccf846b48815831f11ec8f059151e8b0dacefbbd4dcecb26f4f7b16beff6c7ce45d72378544056e9c6e75
+  checksum: 10/855ddec523e650fe2bc365a2d1b1627c3e64bbd9585ea97c0d639353f139ec5009efd07c487d9eaaab89171e222490381f0994a5f37fdfdc52c59b47d19cca1a
   languageName: node
   linkType: hard
 
@@ -15186,7 +15186,7 @@ __metadata:
     "@types/relay-runtime": "npm:17.0.4"
     "@types/relay-test-utils": "npm:17.0.0"
     "@vitejs/plugin-react": "npm:4.3.4"
-    analytics: "npm:0.8.14"
+    analytics: "npm:0.8.16"
     apexcharts: "npm:3.54.1"
     axios: "npm:1.7.8"
     babel-plugin-relay: "npm:17.0.0"
