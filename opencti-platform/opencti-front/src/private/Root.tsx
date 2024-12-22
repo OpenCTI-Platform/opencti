@@ -74,7 +74,7 @@ const rootSettingsFragment = graphql`
       license_enterprise
       license_platform
       license_platform_match
-      license_lts
+      license_type
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings

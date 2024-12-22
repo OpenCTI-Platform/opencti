@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
+import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
@@ -120,7 +120,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
   if (events.length > 0) {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     // If no events or enterprise edition is not activated
-    if (isEmptyField(settings.enterprise_edition) || isEmptyField(events) || events.length === 0) {
+    if (settings.valid_enterprise_edition !== true || isEmptyField(events) || events.length === 0) {
       return;
     }
     // Handle alerting and indexing
@@ -209,7 +209,7 @@ const initActivityManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'ACTIVITY_MANAGER',
-        enable: isNotEmptyField(settings?.enterprise_edition) && booleanConf('activity_manager:enabled', false),
+        enable: settings?.valid_enterprise_edition === true && booleanConf('activity_manager:enabled', false),
         running,
       };
     },

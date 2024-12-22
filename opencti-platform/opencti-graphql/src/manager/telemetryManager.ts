@@ -5,10 +5,8 @@ import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelem
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
 import conf, { DEV_MODE, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
-import { executionContext, TELEMETRY_MANAGER_USER } from '../utils/access';
-import { isNotEmptyField } from '../database/utils';
-import type { Settings } from '../generated/graphql';
-import { getClusterInformation, getSettings } from '../domain/settings';
+import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
+import { getClusterInformation } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
@@ -91,13 +89,13 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   }
   // endregion
   // Meter Provider creation
-  const settings = await getSettings(context) as Settings;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const platformId = settings.id;
   const filigranResource = new Resource({
     [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
     [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
-    'service.instance.creation': settings.created_at
+    'service.instance.creation': settings.created_at as unknown as string
   });
   const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
@@ -111,7 +109,7 @@ const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const context = executionContext('telemetry_manager');
     // region Settings information
     const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
-    manager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
+    manager.setIsEEActivated(settings.valid_enterprise_edition === true ? 1 : 0);
     // endregion
     // region Cluster information
     const clusterInfo = await getClusterInformation();
