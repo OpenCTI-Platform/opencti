@@ -7,7 +7,7 @@
     "@analytics/google-analytics": "1.0.7",
     "@ckeditor/ckeditor5-react": "9.4.0",
     "@date-fns/upgrade": "1.0.3",
-    "@date-io/date-fns": "3.0.0",
+    "@date-io/date-fns": "3.2.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@fontsource/geologica": "5.1.0",
