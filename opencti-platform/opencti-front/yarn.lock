@@ -5543,9 +5543,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.18.1":
-  version: 5.18.1
-  resolution: "@rjsf/core@npm:5.18.1"
+"@rjsf/core@npm:5.23.2":
+  version: 5.23.2
+  resolution: "@rjsf/core@npm:5.23.2"
   dependencies:
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
@@ -5553,30 +5553,30 @@ __metadata:
     nanoid: "npm:^3.3.7"
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@rjsf/utils": ^5.18.x
+    "@rjsf/utils": ^5.23.x
     react: ^16.14.0 || >=17
-  checksum: 10/a708ea895c042e4fcbb9f9b0d7c4bf4827920e8a13b463031e2744ae514f4629ca829224b70b54048f21ad9a37d8bb9ee8416c1b69ec0fdf2cd504d5a20f51b0
+  checksum: 10/a49cbd41bb8b499ad2ed521417f53bf3fa65c09bedbf0e02ce0f00a5287a3ae4df774e74f89a8dcb8a24359d382a585ea4d20c3a6e109f4aaad2cd74b7db2b01
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.18.1":
-  version: 5.18.1
-  resolution: "@rjsf/mui@npm:5.18.1"
+"@rjsf/mui@npm:5.23.2":
+  version: 5.23.2
+  resolution: "@rjsf/mui@npm:5.23.2"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
-    "@mui/icons-material": ^5.2.0
-    "@mui/material": ^5.2.2
-    "@rjsf/core": ^5.18.x
-    "@rjsf/utils": ^5.18.x
+    "@mui/icons-material": ^5.2.0 || ^6.0.0
+    "@mui/material": ^5.2.2 || ^6.0.0
+    "@rjsf/core": ^5.23.x
+    "@rjsf/utils": ^5.23.x
     react: ">=17"
-  checksum: 10/0357ce3e65e21ab7adf6e9d6c9166d8c69af094a4ce4baeac11844ab97df028b095b8a25edbe2c0cf242510e8f25773e4d41e853a48efd53123e50fea544d64e
+  checksum: 10/647ba185a6f3cefa729e7af0b24e40994fd8d40383194b5c854bc53631656c5d1bc42b9f77fc96c29dc5b653076d3801529aa1518837bc2b512d13ac8cc06550
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.18.1":
-  version: 5.18.1
-  resolution: "@rjsf/utils@npm:5.18.1"
+"@rjsf/utils@npm:5.23.2":
+  version: 5.23.2
+  resolution: "@rjsf/utils@npm:5.23.2"
   dependencies:
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
@@ -5585,7 +5585,7 @@ __metadata:
     react-is: "npm:^18.2.0"
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 10/06ec5f299225629262122baf5cb598c1d4830c9cbb9f268bd2f924a6fe36bfa94e16eaf1da39a5d41d149e4d238d30852758b30e5f22fbd274f97a976d80ff98
+  checksum: 10/739a65a40dede96dd1d202ad0c0df96ffe4c75cd3ebcf035da9589eecf2875100c9e28066e135ececa4c188abee436b9ccaa1536992ab5d8417bb6c9e43bd156
   languageName: node
   linkType: hard
 
@@ -15053,9 +15053,9 @@ __metadata:
     "@mui/utils": "npm:5.16.6"
     "@mui/x-date-pickers": "npm:6.20.2"
     "@playwright/test": "npm:1.49.1"
-    "@rjsf/core": "npm:5.18.1"
-    "@rjsf/mui": "npm:5.18.1"
-    "@rjsf/utils": "npm:5.18.1"
+    "@rjsf/core": "npm:5.23.2"
+    "@rjsf/mui": "npm:5.23.2"
+    "@rjsf/utils": "npm:5.23.2"
     "@rollup/plugin-graphql": "npm:2.0.4"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
