@@ -9132,7 +9132,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.4.1, ioredis@npm:^5.3.2":
+"ioredis@npm:5.4.2":
+  version: 5.4.2
+  resolution: "ioredis@npm:5.4.2"
+  dependencies:
+    "@ioredis/commands": "npm:^1.1.1"
+    cluster-key-slot: "npm:^1.1.0"
+    debug: "npm:^4.3.4"
+    denque: "npm:^2.1.0"
+    lodash.defaults: "npm:^4.2.0"
+    lodash.isarguments: "npm:^3.1.0"
+    redis-errors: "npm:^1.2.0"
+    redis-parser: "npm:^3.0.0"
+    standard-as-callback: "npm:^2.1.0"
+  checksum: 10/1ba306dfb5ec03b07f797e7c55da99207448ce5f733ffd46b03a215ec4db73bd572adb7cf20c993e04f437e80ba4ebe261077d0fc98ed14162cd1b09aa4b8634
+  languageName: node
+  linkType: hard
+
+"ioredis@npm:^5.3.2":
   version: 5.4.1
   resolution: "ioredis@npm:5.4.1"
   dependencies:
@@ -11037,7 +11054,7 @@ __metadata:
     helmet: "npm:7.2.0"
     http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.6"
-    ioredis: "npm:5.4.1"
+    ioredis: "npm:5.4.2"
     ipaddr.js: "npm:2.2.0"
     iterall: "npm:1.3.0"
     js-deep-equals: "npm:2.1.1"
