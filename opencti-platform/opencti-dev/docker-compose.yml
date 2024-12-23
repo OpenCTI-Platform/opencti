@@ -144,7 +144,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
       profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:26.0.6
+      image: quay.io/keycloak/keycloak:26.0.7
       volumes:
         - keycloakdata:/opt/keycloak/data
       container_name: opencti-dev-keycloak
