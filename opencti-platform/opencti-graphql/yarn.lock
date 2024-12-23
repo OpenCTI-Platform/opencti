@@ -8690,14 +8690,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-rate-limit-directive@npm:2.0.5":
-  version: 2.0.5
-  resolution: "graphql-rate-limit-directive@npm:2.0.5"
+"graphql-rate-limit-directive@npm:2.0.6":
+  version: 2.0.6
+  resolution: "graphql-rate-limit-directive@npm:2.0.6"
   peerDependencies:
     "@graphql-tools/utils": ^8.0.0 || ^9.0.0 || ^10.0.0
     graphql: ^16.0.0
-    rate-limiter-flexible: ^2.0.0 || ^3.0.0 || ^4.0.0
-  checksum: 10/b7358a6aa994e72e88c117aa9e76a8ae2ddf6bac0518815ca2054052bb5ba46911404d0a0aea0667684aabbe4ce61c4e42b3f39ff629f381b4b014eecc4c0c2e
+    rate-limiter-flexible: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
+  checksum: 10/3dd86594497bf6a26357c9b1ba8c839e2f1d0d587db298531845933f303e696d3c1bfa394de8e2bd2dd6561d49f0d9f4d8002721c074526cf241fd242a5398ed
   languageName: node
   linkType: hard
 
@@ -11026,7 +11026,7 @@ __metadata:
     graphql: "npm:16.9.0"
     graphql-constraint-directive: "npm:5.4.3"
     graphql-no-alias: "npm:3.0.3"
-    graphql-rate-limit-directive: "npm:2.0.5"
+    graphql-rate-limit-directive: "npm:2.0.6"
     graphql-redis-subscriptions: "npm:2.7.0"
     graphql-relay: "npm:0.10.2"
     graphql-scalars: "npm:1.23.0"
