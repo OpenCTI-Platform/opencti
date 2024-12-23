@@ -1983,16 +1983,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor-block-field-suggestions@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@escape.tech/graphql-armor-block-field-suggestions@npm:2.2.0"
+"@escape.tech/graphql-armor-block-field-suggestions@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@escape.tech/graphql-armor-block-field-suggestions@npm:3.0.0"
   dependencies:
     "@envelop/core": "npm:^5.0.0"
     graphql: "npm:^16.0.0"
   dependenciesMeta:
     "@envelop/core":
       optional: true
-  checksum: 10/7a096b2213edc1663487ba2692db08367808db9f6e99a821bf1bb791e65975eaeca5130081ea26173e10f8c0e40a3f428a501da834709912159e4f1ebff15003
+  checksum: 10/6e63d994aa83be81955fecf155ad92c956dcd540877c798e84fd721fb20c8b3fe5c7b270744f3ad6a47a396a0e8eef4e64393651ce0c9e000f91e015fe26153e
   languageName: node
   linkType: hard
 
@@ -2085,11 +2085,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor@npm:3.1.1":
-  version: 3.1.1
-  resolution: "@escape.tech/graphql-armor@npm:3.1.1"
+"@escape.tech/graphql-armor@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@escape.tech/graphql-armor@npm:3.1.2"
   dependencies:
-    "@escape.tech/graphql-armor-block-field-suggestions": "npm:2.2.0"
+    "@escape.tech/graphql-armor-block-field-suggestions": "npm:3.0.0"
     "@escape.tech/graphql-armor-cost-limit": "npm:2.4.0"
     "@escape.tech/graphql-armor-max-aliases": "npm:2.6.0"
     "@escape.tech/graphql-armor-max-depth": "npm:2.4.0"
@@ -2107,7 +2107,7 @@ __metadata:
       optional: true
     "@escape.tech/graphql-armor-types":
       optional: true
-  checksum: 10/281985d22232611c24393c12f983f7aadd45e0c519874ca51ff073a1b08e8619baebe017944a19f0afaac609680b39e0b8a49100e55d0861f870ea98ca69b48f
+  checksum: 10/cb372749900812a982b13af8c7fb49013465ba16a0239ae294bdea86c4d40ff4063f0bc2a1eef20f72f85f7bd38ad1a63890049e686afd3a412059690bc3635d
   languageName: node
   linkType: hard
 
@@ -10934,7 +10934,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.679.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
     "@elastic/elasticsearch": "npm:8.17.0"
-    "@escape.tech/graphql-armor": "npm:3.1.1"
+    "@escape.tech/graphql-armor": "npm:3.1.2"
     "@graphql-codegen/cli": "npm:5.0.2"
     "@graphql-codegen/client-preset": "npm:4.3.3"
     "@graphql-codegen/introspection": "npm:4.0.3"
