@@ -1818,6 +1818,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.25.0":
+  version: 7.26.0
+  resolution: "@babel/runtime@npm:7.26.0"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/9f4ea1c1d566c497c052d505587554e782e021e6ccd302c2ad7ae8291c8e16e3f19d4a7726fb64469e057779ea2081c28b7dbefec6d813a22f08a35712c0f699
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.24.7, @babel/template@npm:^7.25.0, @babel/template@npm:^7.3.3":
   version: 7.25.0
   resolution: "@babel/template@npm:7.25.0"
@@ -6590,13 +6599,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-relay@npm:*, @types/react-relay@npm:16.0.6":
+"@types/react-relay@npm:*":
   version: 16.0.6
   resolution: "@types/react-relay@npm:16.0.6"
   dependencies:
     "@types/react": "npm:*"
     "@types/relay-runtime": "npm:*"
   checksum: 10/a8f370e4a4fe8728eb80939b16ae0c8e056b6e9019b3b1e75fe2c60797bb27db76cc4b84a5e3f6b7036449ed3925110ddc7d0d8ebcd838d56e15b4133e4a38b2
+  languageName: node
+  linkType: hard
+
+"@types/react-relay@npm:18.2.0":
+  version: 18.2.0
+  resolution: "@types/react-relay@npm:18.2.0"
+  dependencies:
+    "@types/react": "npm:*"
+    "@types/relay-runtime": "npm:*"
+  checksum: 10/fb5642274314dd64bf2e02ea680088fc771ade9623339f2935f32e00d36b1a0e0dcd0b0ee6ee9ea115658594ba3bfb6b3cb50aea213d8bc9994fd5bf06fe710d
   languageName: node
   linkType: hard
 
@@ -15168,7 +15187,7 @@ __metadata:
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:18.3.0"
     "@types/react-grid-layout": "npm:1.3.5"
-    "@types/react-relay": "npm:16.0.6"
+    "@types/react-relay": "npm:18.2.0"
     "@types/react-router-dom": "npm:5.3.3"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-test-renderer": "npm:18.3.1"
@@ -15251,7 +15270,7 @@ __metadata:
     react-otp-input: "npm:3.1.1"
     react-pdf: "npm:9.1.1"
     react-rectangle-selection: "npm:1.0.4"
-    react-relay: "npm:17.0.0"
+    react-relay: "npm:18.2.0"
     react-relay-network-modern: "npm:6.2.2"
     react-router-dom: "npm:6.28.0"
     react-syntax-highlighter: "npm:15.6.1"
@@ -16328,18 +16347,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-relay@npm:17.0.0":
-  version: 17.0.0
-  resolution: "react-relay@npm:17.0.0"
+"react-relay@npm:18.2.0":
+  version: 18.2.0
+  resolution: "react-relay@npm:18.2.0"
   dependencies:
-    "@babel/runtime": "npm:^7.0.0"
+    "@babel/runtime": "npm:^7.25.0"
     fbjs: "npm:^3.0.2"
     invariant: "npm:^2.2.4"
     nullthrows: "npm:^1.1.1"
-    relay-runtime: "npm:17.0.0"
+    relay-runtime: "npm:18.2.0"
   peerDependencies:
     react: ^16.9.0 || ^17 || ^18
-  checksum: 10/5f4c3f1e99145c33fba239b0c1e584491f842c5186534fd1156ab25eff014dc82800236d86a63fea28865d2427f47b253504e9f35d8aa0f387cd2e5e9c4a0437
+  checksum: 10/9f6c908bb38e4aa03ebfd8597906d38967d120c857fdcd7a4d631a3b260b842026520915fcee81caeac6db5f8361e51481068d3d994e4dc0e3b318eb6fda095c
   languageName: node
   linkType: hard
 
@@ -16811,6 +16830,17 @@ __metadata:
     fbjs: "npm:^3.0.2"
     invariant: "npm:^2.2.4"
   checksum: 10/33e0d88a56604a254753bb9a1f2bbd9e7c59bed105d274c82f3ab28086e7a1e6f5308976c4be0bf8ef9f9281c551b5b6ddd26409293613f37b5f1ec9aad47240
+  languageName: node
+  linkType: hard
+
+"relay-runtime@npm:18.2.0":
+  version: 18.2.0
+  resolution: "relay-runtime@npm:18.2.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.25.0"
+    fbjs: "npm:^3.0.2"
+    invariant: "npm:^2.2.4"
+  checksum: 10/cfa7d4af0a13526c89c39f6b392647d33ce38435a9d5de95ca89e8ccf01612e682bca5defb1767f7ffc8896811e2acb90e2c73e577498efa37a7b050f31dcf64
   languageName: node
   linkType: hard
 
