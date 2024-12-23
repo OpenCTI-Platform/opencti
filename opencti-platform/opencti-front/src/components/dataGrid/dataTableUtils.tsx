@@ -99,7 +99,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const defaultRender: DataTableColumn['render'] = (data, { column: { size } }, displayDraftChip = false) => {
   return (<Tooltip title={data}>
     <div>
-      {truncate(data, size * MAGICAL_SIZE)}
+      {data && data.length > 0 ? truncate(data, size * MAGICAL_SIZE) : '-'}
       {displayDraftChip && (<DraftChip/>)}
     </div>
   </Tooltip>);

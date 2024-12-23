@@ -16,7 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
 import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -159,10 +159,11 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.notifiers.width }}
             >
-              {data.notifiers
-                && data.notifiers.length > 0
-                && data.notifiers
+              {(data.notifiers
+                && data.notifiers.length > 0)
+                ? data.notifiers
                   .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
+                : '-'
               }
             </div>
             <div
@@ -195,7 +196,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 className={classes.filtersItem}
                 style={{ width: dataColumns.filters.width }}
               >
-                {filters && (
+                {isFilterGroupNotEmpty(filters) ? (
                   <FilterIconButton
                     filters={filters}
                     dataColumns={dataColumns}
@@ -203,7 +204,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     redirection
                     entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object', 'Stix-Filtering']}
                   />
-                )}
+                ) : '-'}
               </div>
             )}
             {data.trigger_type === 'digest' && (
