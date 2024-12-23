@@ -3186,17 +3186,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensearch-project/opensearch@npm:2.12.0":
-  version: 2.12.0
-  resolution: "@opensearch-project/opensearch@npm:2.12.0"
+"@opensearch-project/opensearch@npm:2.13.0":
+  version: 2.13.0
+  resolution: "@opensearch-project/opensearch@npm:2.13.0"
   dependencies:
     aws4: "npm:^1.11.0"
     debug: "npm:^4.3.1"
     hpagent: "npm:^1.2.0"
-    json11: "npm:^1.1.2"
+    json11: "npm:^2.0.0"
     ms: "npm:^2.1.3"
     secure-json-parse: "npm:^2.4.0"
-  checksum: 10/2f73dd051ff161af9f3c27d07ec7b071b4d34c1cbae0df4e98d1a40041b0c264b3dc290506b7005a77037d6ba073f08f69aa0ba96b1f259a2646f5d5c951712b
+  checksum: 10/83ba3575d0edcdc1ff3a6efd5d60b35fd624abb6db2b95bf2473a2029a7a407d3a077caaf58b1b9789ac884b3a24083972cbcb85b0e72a099a38b5b33ce6ca86
   languageName: node
   linkType: hard
 
@@ -9779,12 +9779,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json11@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "json11@npm:1.1.2"
+"json11@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "json11@npm:2.0.0"
   bin:
     json11: dist/cli.mjs
-  checksum: 10/ec9dbba4fc3c45effe3d37431e8fe1aa74d5d8e5e0cd0d9d761bb512cdd6d43cb2172e39d244816fd717718671de308ed9f19173ee0cae04785c9f7c9f36b3b5
+  checksum: 10/497cd4e5f35120160f4258aace56102ffd408a40125a9861eb3bdc9e0ba45514cf18c2fa84ee51e0cea9b3e289ca5c9de2a2aa742343d50ef41bdd77dd052fae
   languageName: node
   linkType: hard
 
@@ -10948,7 +10948,7 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:0.5.0"
     "@node-saml/passport-saml": "npm:5.0.0"
-    "@opensearch-project/opensearch": "npm:2.12.0"
+    "@opensearch-project/opensearch": "npm:2.13.0"
     "@opentelemetry/api": "npm:1.9.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"
     "@opentelemetry/core": "npm:1.25.1"
