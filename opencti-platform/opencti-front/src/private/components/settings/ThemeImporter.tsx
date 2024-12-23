@@ -3,6 +3,7 @@ import React, { CSSProperties, FormEvent, FunctionComponent } from 'react';
 import * as Yup from 'yup';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { TextField } from 'formik-mui';
+import { Disposable } from 'relay-runtime';
 import { useFormatter } from '../../../components/i18n';
 import CustomFileUploader from '../common/files/CustomFileUploader';
 import { handleErrorInForm } from '../../../relay/environment';
@@ -53,11 +54,13 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
 interface ThemeImporterProps {
   open: boolean,
   handleClose: () => void,
+  refetch: () => Disposable;
 }
 
 const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
   open,
   handleClose,
+  refetch,
 }) => {
   const { t_i18n } = useFormatter();
   const dialogContentStyle: CSSProperties = {
@@ -144,6 +147,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
           onCompleted: () => {
             setSubmitting(false);
             resetForm();
+            refetch();
           },
         }))
         .catch((err) => handleErrorInForm(err, setErrors));

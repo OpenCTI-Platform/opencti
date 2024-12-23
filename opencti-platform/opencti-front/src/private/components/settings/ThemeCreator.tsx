@@ -1,4 +1,4 @@
-import { graphql } from 'react-relay';
+import { Disposable, graphql } from 'react-relay';
 import React, { CSSProperties, FunctionComponent } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import * as Yup from 'yup';
@@ -6,7 +6,8 @@ import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { TextField } from 'formik-mui';
 import { useFormatter } from '../../../components/i18n';
 import ColorPickerField from '../../../components/ColorPickerField';
-import { commitMutation, defaultCommitMutation } from '../../../relay/environment';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { ThemeCreatorCreateMutation } from './__generated__/ThemeCreatorCreateMutation.graphql';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreatorCreateMutation($input: ThemeAddInput!) {
@@ -34,19 +35,21 @@ export type CustomThemeBaseType = {
   theme_primary: string;
   theme_secondary: string;
   theme_accent: string;
-  theme_logo: string;
-  theme_logo_collapsed: string;
-  theme_logo_login: string;
+  theme_logo?: string;
+  theme_logo_collapsed?: string;
+  theme_logo_login?: string;
 };
 
 interface ThemeCreatorProps {
   open: boolean;
   onClose: () => void;
+  refetch: () => Disposable;
 }
 
 const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
   open,
   onClose,
+  refetch,
 }) => {
   const { t_i18n } = useFormatter();
   const dialogContentStyle: CSSProperties = {
@@ -83,6 +86,12 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
     theme_logo_login: Yup.string().nullable(),
   });
 
+  const [commit] = useApiMutation<ThemeCreatorCreateMutation>(
+    createThemeMutation,
+    undefined,
+    { successMessage: `${t_i18n('Theme')} ${t_i18n('successfully created')}` },
+  );
+
   const handleSubmit = (
     values: CustomThemeBaseType,
     {
@@ -91,20 +100,19 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
     }: FormikHelpers<CustomThemeBaseType>,
   ) => {
     themeValidator.validate(values).then(() => {
-      commitMutation({
-        ...defaultCommitMutation,
-        mutation: createThemeMutation,
+      commit({
         variables: { input: values },
         onCompleted: () => {
           setSubmitting(false);
           resetForm();
+          refetch();
         },
       });
     });
     onClose();
   };
 
-  const initialValues = {
+  const initialValues: CustomThemeBaseType = {
     name: '',
     theme_background: '#070d19',
     theme_paper: '#09101e',
