@@ -11220,17 +11220,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"formik-mui@npm:5.0.0-alpha.0":
-  version: 5.0.0-alpha.0
-  resolution: "formik-mui@npm:5.0.0-alpha.0"
+"formik-mui@npm:5.0.0-alpha.1":
+  version: 5.0.0-alpha.1
+  resolution: "formik-mui@npm:5.0.0-alpha.1"
   peerDependencies:
-    "@emotion/react": ">=11.5.0"
-    "@emotion/styled": ">=11.3.0"
-    "@mui/material": ">=5.2.3"
+    "@mui/material": ">5.6.0"
     formik: ">=2.2.9"
     react: ">=17.0.2"
     tiny-warning: ">=1.0.3"
-  checksum: 10/d1e95e9e9c068ba5205a0e0884a9c8456218315dd72ff66b8760e9bbe0cd77bada4704ec5327c965e7b7562a5c57b9cce9620f649b28a78d13de12ab10a82ed1
+  checksum: 10/1495096c56cf05d4145d55a041b89b3ecfd35a924cc08a356386b11a6580676c78c5411f25032c03ed55836e566ea2566ee414dbec8ed8bf60f548be1f4c7a90
   languageName: node
   linkType: hard
 
@@ -15207,7 +15205,7 @@ __metadata:
     filigran-icon: "npm:0.9.0"
     filigran-ui: "npm:0.23.1"
     formik: "npm:2.4.6"
-    formik-mui: "npm:5.0.0-alpha.0"
+    formik-mui: "npm:5.0.0-alpha.1"
     formik-mui-lab: "npm:1.0.0"
     fs-extra: "npm:11.2.0"
     graphql: "npm:16.9.0"
