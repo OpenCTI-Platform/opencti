@@ -2683,24 +2683,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-io/core@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@date-io/core@npm:3.0.0"
-  checksum: 10/0dcd44db8fcb5f2fd2c3de895bd3316edd25447ead83572c322801c94e5de36ea96b5b2d14b8224398308425f6320378ff198921b8159cc89ec8c61cb7af652f
+"@date-io/core@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@date-io/core@npm:3.2.0"
+  checksum: 10/cd86785e3241d40fce12f80cd32cdd1a22b5f5e4d221285c4f5685d7fd3f2869c9dea508fe8b3acb671a85f53d70b8e2d86be489648f595a04f43dc5bb170bec
   languageName: node
   linkType: hard
 
-"@date-io/date-fns@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@date-io/date-fns@npm:3.0.0"
+"@date-io/date-fns@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@date-io/date-fns@npm:3.2.0"
   dependencies:
-    "@date-io/core": "npm:^3.0.0"
+    "@date-io/core": "npm:^3.2.0"
   peerDependencies:
     date-fns: ^3.2.0
   peerDependenciesMeta:
     date-fns:
       optional: true
-  checksum: 10/3747421bfae96d2ab8b6a48c20c59dba267839ef7bd5eb2b0c2b8aa5e1f3696c864444db4e0712c6e7a4c1996a71289fbb870b902920cd06de629fc678c09824
+  checksum: 10/a1d49b5b70357684cd36cec67887c84b0ecefa298c536f62750e2ffc18027aea86846ae7de8ed3da59a195ffb2ece4cc162061512ed147464769d000a5694465
   languageName: node
   linkType: hard
 
@@ -15138,7 +15138,7 @@ __metadata:
     "@analytics/google-analytics": "npm:1.0.7"
     "@ckeditor/ckeditor5-react": "npm:9.4.0"
     "@date-fns/upgrade": "npm:1.0.3"
-    "@date-io/date-fns": "npm:3.0.0"
+    "@date-io/date-fns": "npm:3.2.0"
     "@emotion/react": "npm:11.14.0"
     "@emotion/styled": "npm:11.14.0"
     "@fontsource/geologica": "npm:5.1.0"
