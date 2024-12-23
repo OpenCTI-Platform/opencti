@@ -2,7 +2,7 @@ import { Button, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { graphql } from 'react-relay';
+import { Disposable, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../components/i18n';
 import AutocompleteField from '../../../components/AutocompleteField';
@@ -13,6 +13,30 @@ import { commitMutation, defaultCommitMutation } from '../../../relay/environmen
 import type { Theme } from '../../../components/Theme';
 import ThemeCreator, { CustomThemeBaseType } from './ThemeCreator';
 import ThemeImporter from './ThemeImporter';
+import { ThemesEditor_themes$data } from './__generated__/ThemesEditor_themes.graphql';
+
+export const refetchableThemesQuery = graphql`
+  fragment ThemesEditor_themes on Query
+  @refetchable(queryName: "ThemesEditorRefetchQuery") {
+    themes {
+      edges {
+        node {
+          id
+          name
+          theme_background
+          theme_paper
+          theme_nav
+          theme_primary
+          theme_secondary
+          theme_accent
+          theme_logo
+          theme_logo_collapsed
+          theme_logo_login
+        }
+      }
+    }
+  }
+`;
 
 const editThemeMutation = graphql`
   mutation ThemesEditorEditMutation(
@@ -39,22 +63,18 @@ export interface ThemeType extends CustomThemeBaseType {
   id: string;
 }
 
-type Themes = {
-  edges: [{
-    node: ThemeType
-  }]
-};
-
 interface ThemesEditorProps {
-  themes: Themes;
-  editContext: {
+  themes: ThemesEditor_themes$data['themes'];
+  refetch: () => Disposable;
+  editContext?: {
     name: string,
-    focusOn: string,
-  };
+    focusOn?: string,
+  }[];
 }
 
 const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   themes,
+  refetch,
   editContext,
 }) => {
   const theme = useTheme<Theme>();
@@ -62,7 +82,9 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   const [open, setOpen] = useState<boolean>(false);
   const [openImport, setOpenImport] = useState<boolean>(false);
 
-  const themeOptions = themes.edges.map((node) => ({ ...node.node }));
+  const themeOptions = themes?.edges
+    ?.filter((node) => !!node)
+    .map((node) => ({ ...node.node })) ?? [];
 
   const themeValidator = Yup.object().shape({
     name: Yup.string()
@@ -120,7 +142,7 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
     URL.revokeObjectURL(href);
   };
 
-  const initialValues = {
+  const initialValues: ThemeType = {
     id: themeOptions[0].id,
     name: themeOptions[0].name,
     theme_background: themeOptions[0].theme_background,
@@ -129,9 +151,9 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
     theme_primary: themeOptions[0].theme_primary,
     theme_secondary: themeOptions[0].theme_secondary,
     theme_accent: themeOptions[0].theme_accent,
-    theme_logo: themeOptions[0].theme_logo,
-    theme_logo_collapsed: themeOptions[0].theme_logo_collapsed,
-    theme_logo_login: themeOptions[0].theme_logo_login,
+    theme_logo: themeOptions[0].theme_logo ?? undefined,
+    theme_logo_collapsed: themeOptions[0].theme_logo_collapsed ?? undefined,
+    theme_logo_login: themeOptions[0].theme_logo_login ?? undefined,
   };
 
   return (
@@ -176,6 +198,8 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
                 variant: 'standard',
                 label: t_i18n('Theme'),
               }}
+              getOptionDisabled={(option: ThemeType) => option.id === values.id
+              }
               renderOption={(
                 { key, ...props }: { key: string },
                 option: ThemeType,
@@ -370,8 +394,16 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
           </Form>
         )}
       </Formik>
-      <ThemeCreator open={open} onClose={() => setOpen(false)} />
-      <ThemeImporter open={openImport} handleClose={handleCloseImport} />
+      <ThemeCreator
+        open={open}
+        onClose={() => setOpen(false)}
+        refetch={refetch}
+      />
+      <ThemeImporter
+        open={openImport}
+        handleClose={handleCloseImport}
+        refetch={refetch}
+      />
     </Paper>
   );
 };
