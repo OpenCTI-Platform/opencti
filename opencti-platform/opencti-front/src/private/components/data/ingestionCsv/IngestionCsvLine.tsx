@@ -61,6 +61,7 @@ const ingestionCsvLineFragment = graphql`
     uri
     ingestion_running
     current_state_hash
+    last_execution_date
   }
 `;
 
@@ -70,7 +71,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
@@ -106,6 +107,11 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.current_state_hash.width }}
+            >
+              {fldt(data.last_execution_date) || '-'}
+            </div>
+            <div
+              className={classes.bodyItem}
             >
               {stateHash}
             </div>
@@ -185,11 +191,21 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
                 height="100%"
               />
             </div>
+            <div
+              className={classes.bodyItem}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
           </div>
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <MoreVert/>
       </ListItemSecondaryAction>
     </ListItem>
   );
