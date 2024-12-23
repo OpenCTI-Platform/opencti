@@ -95,7 +95,7 @@
     "dot-object": "2.1.5",
     "ejs": "3.1.10",
     "eventsource": "2.0.2",
-    "express": "4.21.0",
+    "express": "4.21.2",
     "express-rate-limit": "7.4.1",
     "express-session": "1.18.1",
     "fast-json-patch": "3.1.1",
