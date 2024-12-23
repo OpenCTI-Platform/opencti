@@ -3,7 +3,6 @@ import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
 import type { ConvertFn, RepresentativeFn } from '../database/stix-converter';
 import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-converter';
-// import { registerGraphqlSchema } from '../graphql/schema';
 import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
