@@ -139,7 +139,7 @@
     "http-proxy-middleware": "3.0.3",
     "i18n-auto-translation": "1.10.0",
     "jsdom": "25.0.1",
-    "monocart-reporter": "2.4.5",
+    "monocart-reporter": "2.9.12",
     "react-test-renderer": "18.3.1",
     "relay-compiler": "17.0.0",
     "relay-test-utils": "17.0.0",

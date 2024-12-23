@@ -1891,13 +1891,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bcoe/v8-coverage@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "@bcoe/v8-coverage@npm:0.2.3"
-  checksum: 10/1a1f0e356a3bb30b5f1ced6f79c413e6ebacf130421f15fac5fcd8be5ddf98aedb4404d7f5624e3285b700e041f9ef938321f3ca4d359d5b716f96afa120d88d
-  languageName: node
-  linkType: hard
-
 "@ckeditor/ckeditor5-adapter-ckfinder@npm:43.3.1":
   version: 43.3.1
   resolution: "@ckeditor/ckeditor5-adapter-ckfinder@npm:43.3.1"
@@ -7196,16 +7189,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-walk@npm:^8.3.3":
-  version: 8.3.3
-  resolution: "acorn-walk@npm:8.3.3"
+"acorn-walk@npm:^8.3.4":
+  version: 8.3.4
+  resolution: "acorn-walk@npm:8.3.4"
   dependencies:
     acorn: "npm:^8.11.0"
-  checksum: 10/59701dcb7070679622ba8e9c7f37577b4935565747ca0fd7c1c3ad30b3f1b1b008276282664e323b5495eb49f77fa12d3816fd06dc68e18f90fbebe759f71450
+  checksum: 10/871386764e1451c637bb8ab9f76f4995d408057e9909be6fb5ad68537ae3375d85e6a6f170b98989f44ab3ff6c74ad120bc2779a3d577606e7a0cd2b4efcaf77
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.11.0, acorn@npm:^8.12.1, acorn@npm:^8.8.2, acorn@npm:^8.9.0":
+"acorn@npm:^8.11.0, acorn@npm:^8.8.2, acorn@npm:^8.9.0":
   version: 8.12.1
   resolution: "acorn@npm:8.12.1"
   bin:
@@ -9718,10 +9711,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eight-colors@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "eight-colors@npm:1.3.0"
-  checksum: 10/33db17b2b72a931141eef4598c09d5b7cca7bac28a9c35dc095f52f225ed40e876987aecf3709bbbc2c0978642212d40a82ec3db281668be536718eb1a9b9bad
+"eight-colors@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "eight-colors@npm:1.3.1"
+  checksum: 10/a6f7174d535ad718de9aaa70e6276a693b7d4145046328e1bb2f4a295a096e7ae883bf645ff16ef1090bb69314a79cb88143a23687b945c89c90d8d41c122042
   languageName: node
   linkType: hard
 
@@ -13433,7 +13426,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koa@npm:^2.15.1":
+"koa@npm:^2.15.3":
   version: 2.15.3
   resolution: "koa@npm:2.15.3"
   dependencies:
@@ -13656,7 +13649,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lz-utils@npm:^2.0.2, lz-utils@npm:^2.1.0":
+"lz-utils@npm:^2.1.0":
   version: 2.1.0
   resolution: "lz-utils@npm:2.1.0"
   checksum: 10/61c4c43d08770b8d71342f76a5a629dd7073d80bf2417201d7e41e0a11f98faf7e9ac68d3b61e9ee1b21c4c9966f3840d06c2f6d41e4bf259b038d4c262d15cb
@@ -14631,18 +14624,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:^2.7.4":
-  version: 2.10.3
-  resolution: "monocart-coverage-reports@npm:2.10.3"
+"monocart-coverage-reports@npm:^2.11.3":
+  version: 2.11.5
+  resolution: "monocart-coverage-reports@npm:2.11.5"
   dependencies:
-    "@bcoe/v8-coverage": "npm:^0.2.3"
-    "@jridgewell/sourcemap-codec": "npm:^1.5.0"
-    acorn: "npm:^8.12.1"
+    acorn: "npm:^8.14.0"
     acorn-loose: "npm:^8.4.0"
-    acorn-walk: "npm:^8.3.3"
+    acorn-walk: "npm:^8.3.4"
     commander: "npm:^12.1.0"
     console-grid: "npm:^2.2.2"
-    eight-colors: "npm:^1.3.0"
+    eight-colors: "npm:^1.3.1"
     foreground-child: "npm:^3.3.0"
     istanbul-lib-coverage: "npm:^3.2.2"
     istanbul-lib-report: "npm:^3.0.1"
@@ -14651,14 +14642,7 @@ __metadata:
     monocart-locator: "npm:^1.0.2"
   bin:
     mcr: lib/cli.js
-  checksum: 10/a87b6636c27b116cf54dfb8a77f91fe1086f0cb5c58776781158f897ea0f5229588cf93a32272a89502e7933c7a7a9971722549b048ed16ecc60e421bbd837d3
-  languageName: node
-  linkType: hard
-
-"monocart-formatter@npm:^2.3.2":
-  version: 2.3.3
-  resolution: "monocart-formatter@npm:2.3.3"
-  checksum: 10/29233c58922c70e07e7aed3bcab5fc0444d4efbeb73ae85cd0f7c01e94b591b1e002e0c298ccad1812238448e2d21a13c8c2707379208f4bf7e94b2ae9429d80
+  checksum: 10/59f42b74beace4a30303d19cb6c8bdb5fdc710e59f2c77611259a6f0147ae3a2f206227fb90043bc9bafd5e3ca1407033298ff8d07c007e7669af22e469e7f77
   languageName: node
   linkType: hard
 
@@ -14669,22 +14653,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.4.5":
-  version: 2.4.5
-  resolution: "monocart-reporter@npm:2.4.5"
+"monocart-reporter@npm:2.9.12":
+  version: 2.9.12
+  resolution: "monocart-reporter@npm:2.9.12"
   dependencies:
     console-grid: "npm:^2.2.2"
-    eight-colors: "npm:^1.3.0"
-    koa: "npm:^2.15.1"
+    eight-colors: "npm:^1.3.1"
+    koa: "npm:^2.15.3"
     koa-static-resolver: "npm:^1.0.6"
-    lz-utils: "npm:^2.0.2"
-    monocart-coverage-reports: "npm:^2.7.4"
-    monocart-formatter: "npm:^2.3.2"
-    nodemailer: "npm:^6.9.12"
-    turbogrid: "npm:^3.0.13"
+    lz-utils: "npm:^2.1.0"
+    monocart-coverage-reports: "npm:^2.11.3"
+    monocart-locator: "npm:^1.0.2"
+    nodemailer: "npm:^6.9.16"
   bin:
     monocart: lib/cli.js
-  checksum: 10/85f21b3c9b2066229e13fd71b71cb53c64b708c6b882459fa7d00f6bba1ce22030e76b3b01ec3a50d95067d8ea725ec6cd021aa1b2ee246c24b290347d4fd8b1
+  checksum: 10/68338be6e86c1cc2d328e9188f2a34931c081757338ec4c749963c106e9efd73ec803c7079c86dc584c8920222a420179d0d29d6afd68a3f30c54d45545887e0
   languageName: node
   linkType: hard
 
@@ -14877,10 +14860,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^6.9.12":
-  version: 6.9.14
-  resolution: "nodemailer@npm:6.9.14"
-  checksum: 10/749d1a3ef440d6147c37ad850f5be065d55d87cd46a4470372d4e443593838a5ddd78c69623817a804ddede3212fa28ac069b5b8266e892b27e1dcff75103def
+"nodemailer@npm:^6.9.16":
+  version: 6.9.16
+  resolution: "nodemailer@npm:6.9.16"
+  checksum: 10/f131888d3111238fde4ee03539e62f1764b99365ff31d556dde0367dfefcee1f2eb8948558f35ba84fe5cd805f2d01294eee63a5675d3aa501e7df548a2518ce
   languageName: node
   linkType: hard
 
@@ -15227,7 +15210,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.1"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.45"
-    monocart-reporter: "npm:2.4.5"
+    monocart-reporter: "npm:2.9.12"
     pdfmake: "npm:0.2.13"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
@@ -18434,13 +18417,6 @@ __metadata:
   peerDependencies:
     typescript: ">=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta"
   checksum: 10/ea036bec1dd024e309939ffd49fda7a351c0e87a1b8eb049570dd119d447250e2c56e0e6c00554e8205760e7417793fdebff752a46e573fbe07d4f375502a5b2
-  languageName: node
-  linkType: hard
-
-"turbogrid@npm:^3.0.13":
-  version: 3.2.0
-  resolution: "turbogrid@npm:3.2.0"
-  checksum: 10/4d1fc119d727a70eb08955703a60844b8ea04d820f9f9051c92dd6d2ed1a410861e91638c5ede27640545f0248d75a1ce7e4d6fc737eda71ef6f9955c52fe58d
   languageName: node
   linkType: hard
 
