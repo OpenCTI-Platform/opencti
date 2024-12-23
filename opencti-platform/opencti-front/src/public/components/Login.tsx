@@ -182,7 +182,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
   const loginLogo = themes?.edges?.filter((node) => !!node)
     .map(({ node }) => ({ ...node }))
     .filter(({ name }) => name === settings.platform_theme)?.[0]
-    .theme_logo_login
+    .theme_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const authSSOs = providers.filter((p) => p.type === 'SSO');
