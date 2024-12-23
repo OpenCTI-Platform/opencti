@@ -10999,9 +10999,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-ui@npm:0.23.1":
-  version: 0.23.1
-  resolution: "filigran-ui@npm:0.23.1"
+"filigran-icon@npm:^0.10.0":
+  version: 0.10.1
+  resolution: "filigran-icon@npm:0.10.1"
+  checksum: 10/e95b5e406d169e5774c1021c31ead9743c3de5795a25937240964363d9d70ef864526d234ce05014ee5324efab4c5880223ee4ef215b163696091bc860db6226
+  languageName: node
+  linkType: hard
+
+"filigran-ui@npm:0.24.7":
+  version: 0.24.7
+  resolution: "filigran-ui@npm:0.24.7"
   dependencies:
     "@dnd-kit/core": "npm:6.1.0"
     "@dnd-kit/modifiers": "npm:7.0.0"
@@ -11024,16 +11031,16 @@ __metadata:
     class-variance-authority: "npm:0.7.0"
     clsx: "npm:2.1.1"
     cmdk: "npm:1.0.0"
-    lucide-react: "npm:0.399.0"
+    filigran-icon: "npm:^0.10.0"
     react-easy-sort: "npm:1.6.0"
     react-hook-form: "npm:7.52.0"
     tailwind-merge: "npm:2.3.0"
     tailwindcss-animate: "npm:1.0.7"
     zod: "npm:3.23.8"
   peerDependencies:
-    react: 18.2.0
-    react-dom: 18.2.0
-  checksum: 10/9b35a372db99c555ac4f74c8e5f7db06664ffc100adbf743dabb1bab9fbc3ccb3daa6e2549eb406604e2ef5279ed96df65685058f894d1f3381b188c5cc3a3dc
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0
+  checksum: 10/138383ad91974b20b7368c5af3cf1222d73f978a9a2f10b975e8cfa8b86ee27e47257a7696a95f5c1b69cb1230be954f22133cba5ea1bd4857b08dfc04326f1f
   languageName: node
   linkType: hard
 
@@ -13638,15 +13645,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:0.399.0":
-  version: 0.399.0
-  resolution: "lucide-react@npm:0.399.0"
-  peerDependencies:
-    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/89212e54dc58c99f6d7593fc4ac5020771ec57bf334a4f5c1280df131cfb99b2c2ffabcf44a7c26670bee29979d687e7b4318b5d8681d404714faa1e9cc2a6ce
-  languageName: node
-  linkType: hard
-
 "lz-string@npm:^1.5.0":
   version: 1.5.0
   resolution: "lz-string@npm:1.5.0"
@@ -15205,7 +15203,7 @@ __metadata:
     express: "npm:4.21.0"
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.9.0"
-    filigran-ui: "npm:0.23.1"
+    filigran-ui: "npm:0.24.7"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
