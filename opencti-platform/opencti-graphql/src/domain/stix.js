@@ -264,10 +264,13 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     ],
     filterGroups: [],
   };
+  // orderMode is on created_at, see buildQueryFilters in backgroundTask
+  // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
   const input = {
     filters: JSON.stringify(filters),
     actions: [{ type, context: { values: [organizationId] } }],
     scope: 'KNOWLEDGE',
+    orderMode: 'desc'
   };
   await createQueryTask(context, context.user, input);
 };

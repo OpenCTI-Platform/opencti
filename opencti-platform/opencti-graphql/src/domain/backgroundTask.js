@@ -54,7 +54,7 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (context, user, filters, search, taskPosition, scope) => {
+const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
   let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));
@@ -95,15 +95,15 @@ const buildQueryFilters = async (context, user, filters, search, taskPosition, s
   return {
     types,
     first: MAX_TASK_ELEMENTS,
-    orderMode: 'desc',
+    orderMode: orderMode || 'desc',
     orderBy: 'created_at',
     after: taskPosition,
     filters: inputFilters,
     search: search && search.length > 0 ? search : null,
   };
 };
-export const executeTaskQuery = async (context, user, filters, search, scope, start = null) => {
-  const options = await buildQueryFilters(context, user, filters, search, start, scope);
+export const executeTaskQuery = async (context, user, filters, search, scope, orderMode, start = null) => {
+  const options = await buildQueryFilters(context, user, filters, search, start, scope, orderMode);
   return elPaginate(context, user, READ_DATA_INDICES, options);
 };
 
@@ -130,7 +130,7 @@ export const createQueryTask = async (context, user, input) => {
   if (getDraftContext(context, user)) throw new Error('Cannot create background task in draft');
   const { actions, filters, excluded_ids = [], search = null, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
-  const queryData = await executeTaskQuery(context, user, filters, search, scope);
+  const queryData = await executeTaskQuery(context, user, filters, search, scope, 'desc');
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected, scope);
   const queryTask = {
