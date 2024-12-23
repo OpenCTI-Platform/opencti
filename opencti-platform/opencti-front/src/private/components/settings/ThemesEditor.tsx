@@ -1,4 +1,4 @@
-import { Paper } from '@mui/material';
+import { Button, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
@@ -12,6 +12,7 @@ import TextField from '../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../relay/environment';
 import type { Theme } from '../../../components/Theme';
 import ThemeCreator, { CustomThemeBaseType } from './ThemeCreator';
+import ThemeImporter from './ThemeImporter';
 
 const editThemeMutation = graphql`
   mutation ThemesEditorEditMutation(
@@ -59,6 +60,7 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
+  const [openImport, setOpenImport] = useState<boolean>(false);
 
   const themeOptions = themes.edges.map((node) => ({ ...node.node }));
 
@@ -98,6 +100,25 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
       });
     });
   };
+  const handleImport = () => setOpenImport(true);
+  const handleCloseImport = () => setOpenImport(false);
+  const handleExport = (exportTheme: CustomThemeBaseType) => {
+    // create file in browser
+    const json = JSON.stringify(exportTheme, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const href = URL.createObjectURL(blob);
+
+    // create "a" HTLM element with href to file
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = `${exportTheme.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+    document.body.appendChild(link);
+    link.click();
+
+    // clean up "a" element & remove ObjectURL
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
+  };
 
   const initialValues = {
     id: themeOptions[0].id,
@@ -118,6 +139,7 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
       style={{
         marginTop: theme.spacing(1),
         padding: 20,
+        paddingTop: 10,
         borderRadius: 4,
       }}
       variant="outlined"
@@ -132,6 +154,20 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
           setValues,
         }) => (
           <Form>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+            >
+              <Button onClick={handleImport}>{t_i18n('Import')}</Button>
+              <Button onClick={() => {
+                const { id: _, ...exportValues } = values;
+                handleExport(exportValues);
+              }}
+              >
+                {t_i18n('Export')}
+              </Button>
+            </div>
             <Field
               component={AutocompleteField}
               name="name"
@@ -335,6 +371,7 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
         )}
       </Formik>
       <ThemeCreator open={open} onClose={() => setOpen(false)} />
+      <ThemeImporter open={openImport} handleClose={handleCloseImport} />
     </Paper>
   );
 };

@@ -8,7 +8,7 @@ import { useFormatter } from '../../../components/i18n';
 import ColorPickerField from '../../../components/ColorPickerField';
 import { commitMutation, defaultCommitMutation } from '../../../relay/environment';
 
-const createThemeMutation = graphql`
+export const createThemeMutation = graphql`
   mutation ThemeCreatorCreateMutation($input: ThemeAddInput!) {
     themeAdd(input: $input) {
       id
