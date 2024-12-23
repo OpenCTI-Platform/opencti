@@ -8802,17 +8802,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.9.0":
-  version: 16.9.0
-  resolution: "graphql@npm:16.9.0"
-  checksum: 10/5833f82bb6c31bec120bbf9cd400eda873e1bb7ef5c17974fa262cd82dc68728fda5d4cb859dc8aaa4c4fe4f6fe1103a9c47efc01a12c02ae5cb581d8e4029e2
+"graphql@npm:16.10.0":
+  version: 16.10.0
+  resolution: "graphql@npm:16.10.0"
+  checksum: 10/d42cf81ddcf3a61dfb213217576bf33c326f15b02c4cee369b373dc74100cbdcdc4479b3b797e79b654dabd8fddf50ef65ff75420e9ce5596c02e21f24c9126a
   languageName: node
   linkType: hard
 
-"graphql@patch:graphql@16.9.0#./patch/graphql-16.8.1.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 16.9.0
-  resolution: "graphql@patch:graphql@npm%3A16.9.0#./patch/graphql-16.8.1.patch::version=16.9.0&hash=d71f2e&locator=opencti-graphql%40workspace%3A."
-  checksum: 10/006510f17028f7ba50d8cd2083ddec013ad85a97078c356a44a07b3317682ee6d5d9ac3e1659e91fa47414c653e6465a957d148cd0e90640b8dc759177a2ae5d
+"graphql@patch:graphql@16.10.0#./patch/graphql-16.8.1.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 16.10.0
+  resolution: "graphql@patch:graphql@npm%3A16.10.0#./patch/graphql-16.8.1.patch::version=16.10.0&hash=d71f2e&locator=opencti-graphql%40workspace%3A."
+  checksum: 10/2b70e91af54d1dc01a92e56937338f4abc6f2e10b8696a5d04eb360f1a8f8277d2dd4e27867946eac08d6460b524455adadc7d9a143120d6df095dec1b29bdad
   languageName: node
   linkType: hard
 
@@ -11023,7 +11023,7 @@ __metadata:
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:19.6.0"
     github-api: "npm:3.4.0"
-    graphql: "npm:16.9.0"
+    graphql: "npm:16.10.0"
     graphql-constraint-directive: "npm:5.4.3"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.5"

@@ -101,7 +101,7 @@
     "fast-json-patch": "3.1.1",
     "file-type": "19.6.0",
     "github-api": "3.4.0",
-    "graphql": "16.9.0",
+    "graphql": "16.10.0",
     "graphql-constraint-directive": "5.4.3",
     "graphql-no-alias": "3.0.3",
     "graphql-rate-limit-directive": "2.0.5",
@@ -217,7 +217,7 @@
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.9.1#./patch/node-calls-python-1.9.1.patch",
     "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch",
-    "graphql": "patch:graphql@16.9.0#./patch/graphql-16.8.1.patch",
+    "graphql": "patch:graphql@16.10.0#./patch/graphql-16.8.1.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
     "path-to-regexp": "0.1.12"
   },
