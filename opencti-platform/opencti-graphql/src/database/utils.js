@@ -4,16 +4,17 @@ import { Promise } from 'bluebird';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { isStixRefRelationship } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
+import { INPUT_OBJECTS } from '../schema/general';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -324,6 +325,21 @@ export const extractIdsFromStoreObject = (instance) => {
     ids.push(instance.standard_id);
   }
   return ids;
+};
+
+export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
+  const markings = [];
+  if (isStixDomainObjectContainer(entityType)) {
+    inputs.forEach((input) => {
+      if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
+        const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
+        markings.push(...objectMarking);
+      }
+    });
+  }
+  return {
+    markings
+  };
 };
 
 export const isObjectPathTargetMultipleAttribute = (instance, object_path) => {
