@@ -11,7 +11,7 @@ import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, isFeatureEnabled, logApp
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
-import { isNotEmptyField } from './utils';
+import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
@@ -296,7 +296,7 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       if (!isUserHasCapability(user, KNOWLEDGE)) {
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
-      const instance = await internalLoadById(context, user, metaData.entity_id);
+      const instance = await internalLoadById(context, user, metaData.entity_id, { indices: [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS] });
       if (!instance) {
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
