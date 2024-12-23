@@ -205,7 +205,7 @@
   },
   "resolutions": {
     "axios": "1.7.9",
-    "cross-spawn": "7.0.5",
+    "cross-spawn": "7.0.6",
     "body-parser": "1.20.3",
     "cookie": "0.7.2",
     "cross-fetch": "4.0.0",
