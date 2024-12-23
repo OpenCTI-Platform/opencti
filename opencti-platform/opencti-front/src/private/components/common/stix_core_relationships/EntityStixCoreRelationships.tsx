@@ -51,9 +51,7 @@ EntityStixCoreRelationshipsProps
   handleChangeView,
 }) => {
   const classes = useStyles();
-  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join(
-    '-',
-  )}-${relationshipTypes?.join('-')}`;
+  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join('-')}-${relationshipTypes?.join('-')}`;
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
     LOCAL_STORAGE_KEY,
     {
