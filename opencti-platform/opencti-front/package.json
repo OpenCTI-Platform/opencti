@@ -35,7 +35,7 @@
     "dagre": "0.8.5",
     "date-fns": "3.6.0",
     "extract-files": "13.0.0",
-    "filigran-icon": "0.9.0",
+    "filigran-icon": "0.10.1",
     "filigran-ui": "0.23.1",
     "formik": "2.4.6",
     "formik-mui": "5.0.0-alpha.0",
