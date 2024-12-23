@@ -186,7 +186,7 @@
     "@vitest/coverage-v8": "2.0.5",
     "apollo-server-errors": "3.3.1",
     "cross-env": "7.0.3",
-    "esbuild": "0.24.0",
+    "esbuild": "0.24.2",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "8.57.1",
     "eslint-config-airbnb": "19.0.4",
