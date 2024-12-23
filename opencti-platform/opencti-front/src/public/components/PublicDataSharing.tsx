@@ -45,7 +45,7 @@ const PublicDataSharing = () => {
   const loginLogo = themes?.edges?.filter((node) => !!node)
     .map(({ node }) => ({ ...node }))
     .filter(({ name }) => name === settings.platform_theme)?.[0]
-    .theme_logo_login
+    .theme_logo_login;
 
   return (
     <>

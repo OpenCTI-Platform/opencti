@@ -13,12 +13,12 @@ import { CustomThemeBaseType } from '../private/components/settings/ThemeCreator
 interface AppThemeProviderProps {
   children: React.ReactNode;
   settings: AppThemeProvider_settings$data;
-  themes: RootPrivateQuery$data["themes"];
+  themes: RootPrivateQuery$data['themes'];
 }
 
 interface AppThemeType extends Omit<
-  CustomThemeBaseType,
-  "theme_logo"|"theme_logo_collapsed"|"theme_logo_login"
+CustomThemeBaseType,
+'theme_logo' | 'theme_logo_collapsed' | 'theme_logo_login'
 > {
   theme_logo: string | null | undefined;
   theme_logo_collapsed: string | null | undefined;
