@@ -5,16 +5,16 @@ __metadata:
   version: 8
   cacheKey: 10
 
-"3d-force-graph@npm:^1.73":
-  version: 1.73.3
-  resolution: "3d-force-graph@npm:1.73.3"
+"3d-force-graph@npm:^1.74":
+  version: 1.74.5
+  resolution: "3d-force-graph@npm:1.74.5"
   dependencies:
     accessor-fn: "npm:1"
-    kapsule: "npm:1"
+    kapsule: "npm:^1.16"
     three: "npm:>=0.118 <1"
     three-forcegraph: "npm:1"
-    three-render-objects: "npm:^1.29"
-  checksum: 10/804424140e5f4c2a8faf8059d8f1d3aff239e5ae79dcbee3111114b94a5248310b8fcf430150a32a63faf7ff9a97edaa6b769fdf1b6b51122cef0c1d700ecfc1
+    three-render-objects: "npm:^1.32"
+  checksum: 10/edd2fdac0139344015d588643176d4943f9f476aab5cb2b8b64b280324a2667d95811287b12eef14be4e796a282ef228182664e88c960353b5b14bf0631327f9
   languageName: node
   linkType: hard
 
@@ -5942,13 +5942,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tweenjs/tween.js@npm:18 - 23":
-  version: 23.1.3
-  resolution: "@tweenjs/tween.js@npm:23.1.3"
-  checksum: 10/10ecaf311c975162459bd016ef7eb1f3118a257050c4886de9737dee823fc829100a0887f3fc298f7a5577140eac054f9609b823eb0748ca7b653ec85ffba75e
-  languageName: node
-  linkType: hard
-
 "@tweenjs/tween.js@npm:18 - 25":
   version: 25.0.0
   resolution: "@tweenjs/tween.js@npm:25.0.0"
@@ -11304,13 +11297,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fromentries@npm:^1.3.2":
-  version: 1.3.2
-  resolution: "fromentries@npm:1.3.2"
-  checksum: 10/10d6e07d289db102c0c1eaf5c3e3fa55ddd6b50033d7de16d99a7cd89f1e1a302dfadb26457031f9bb5d2ed95a179aaf0396092dde5abcae06e8a2f0476826be
-  languageName: node
-  linkType: hard
-
 "fs-extra@npm:11.2.0, fs-extra@npm:^11.1.0":
   version: 11.2.0
   resolution: "fs-extra@npm:11.2.0"
@@ -15241,7 +15227,7 @@ __metadata:
     react-dom: "npm:18.3.1"
     react-draggable: "npm:4.4.6"
     react-force-graph-2d: "npm:1.26.1"
-    react-force-graph-3d: "npm:1.24.4"
+    react-force-graph-3d: "npm:1.25.1"
     react-grid-layout: "npm:1.5.0"
     react-intl: "npm:6.8.9"
     react-leaflet: "npm:4.2.1"
@@ -16053,16 +16039,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-3d@npm:1.24.4":
-  version: 1.24.4
-  resolution: "react-force-graph-3d@npm:1.24.4"
+"react-force-graph-3d@npm:1.25.1":
+  version: 1.25.1
+  resolution: "react-force-graph-3d@npm:1.25.1"
   dependencies:
-    3d-force-graph: "npm:^1.73"
+    3d-force-graph: "npm:^1.74"
     prop-types: "npm:15"
-    react-kapsule: "npm:2"
+    react-kapsule: "npm:^2.5"
   peerDependencies:
     react: "*"
-  checksum: 10/63175b9533d1ff9aeaee7d6cfef2d249b217350557cefa9ca3b6484312eadd38e0239935c9702ef3eba9ee3706f82fd511751ddac7efb53b22990cbb9a1cc32e
+  checksum: 10/ff2c659409aa9be2616f4e72030146e449247f018a453068413a30854f7bef10c0ab6943d1db060bdf663ae3a27f88bb1f23975c8f2ad46a5d904a1c1d59d656
   languageName: node
   linkType: hard
 
@@ -16134,18 +16120,6 @@ __metadata:
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 10/73b36281e58eeb27c9cc6031301b6ae19ecdc9f18ae2d518bdb39b0ac564e65c5779405d623f1df9abf378a13858b79442480244bd579968afc1faf9a2ce5e05
-  languageName: node
-  linkType: hard
-
-"react-kapsule@npm:2":
-  version: 2.4.0
-  resolution: "react-kapsule@npm:2.4.0"
-  dependencies:
-    fromentries: "npm:^1.3.2"
-    jerrypick: "npm:^1.1.1"
-  peerDependencies:
-    react: ">=16.13.1"
-  checksum: 10/af90547420f875e5aa82bbf14caba9e39ccde009c8004038e1e29853abaa8bbfea0b96f677be658eb0b51b95809cf13a0f4762cdb9710a60b72eded7ff9f625f
   languageName: node
   linkType: hard
 
@@ -18145,17 +18119,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three-render-objects@npm:^1.29":
-  version: 1.29.4
-  resolution: "three-render-objects@npm:1.29.4"
+"three-render-objects@npm:^1.32":
+  version: 1.32.1
+  resolution: "three-render-objects@npm:1.32.1"
   dependencies:
-    "@tweenjs/tween.js": "npm:18 - 23"
+    "@tweenjs/tween.js": "npm:18 - 25"
     accessor-fn: "npm:1"
-    kapsule: "npm:1"
+    kapsule: "npm:^1.16"
     polished: "npm:4"
   peerDependencies:
-    three: "*"
-  checksum: 10/3f172b69e146b77a4f884ec37619e747c2467258d435e35a15d0ee12cb9d95555bdbb14722dfdfa00451740f8b84ed5c2f3f15dec76208e54dba1d23150ea0ab
+    three: ">=0.168"
+  checksum: 10/bd83312aad8efc0f35bff5995f80f70d19012c0207becb88b9342d8edf22efb1df9f52e409137ad4e0fd3dc53f9908742bd42532515d76e48d24dbcc59da0de2
   languageName: node
   linkType: hard
 
