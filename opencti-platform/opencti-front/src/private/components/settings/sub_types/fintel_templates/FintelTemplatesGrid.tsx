@@ -143,6 +143,8 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 actions={(template: TemplateType) => (
                   <FintelTemplatePopover
                     onUpdate={() => onUpdate(template)}
+                    entitySettingId={entitySettingId}
+                    templateId={template.id}
                   />
                 )}
               />
