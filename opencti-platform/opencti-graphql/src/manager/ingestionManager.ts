@@ -246,11 +246,13 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Update the state
     lastPubDate = R.last(items)?.pubDate;
+    logApp.info('[OPENCTI-MODULE] lastPubDate:', { lastPubDate });
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate, last_execution_date: now() });
     // Patch the related connector
     const state = { current_state_date: lastPubDate };
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   } else {
+    logApp.info('[OPENCTI-MODULE] Rss ingestion execution done, but no new item to ingest.');
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   }
@@ -272,6 +274,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
     const { last_execution_date } = ingestion;
     const shouldExecuteIngestion = !last_execution_date || sinceNowInMinutes(last_execution_date) > RSS_FEED_MIN_INTERVAL_MINUTES;
+    logApp.info('ANGIE - ', { last_execution_date, RSS_FEED_MIN_INTERVAL_MINUTES, diff: sinceNowInMinutes(last_execution_date), messages_number });
     if (messages_number === 0 && shouldExecuteIngestion) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
