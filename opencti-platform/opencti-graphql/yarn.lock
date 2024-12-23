@@ -11080,7 +11080,7 @@ __metadata:
     unzipper: "npm:0.12.3"
     uuid: "npm:11.0.3"
     uuid-time: "npm:1.0.0"
-    validator: "npm:13.11.0"
+    validator: "npm:13.12.0"
     vitest: "npm:2.0.5"
     winston: "npm:3.14.2"
     winston-daily-rotate-file: "npm:5.0.0"
@@ -13569,14 +13569,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"validator@npm:13.11.0":
-  version: 13.11.0
-  resolution: "validator@npm:13.11.0"
-  checksum: 10/4bf094641eb71729c06a42d669840e7189597ba655a8264adabac9bf03f95cd6fde5fbc894b0a13ee861bd4a852f56d2afdc9391aeaeb3fc0f9633a974140e12
-  languageName: node
-  linkType: hard
-
-"validator@npm:^13.6.0":
+"validator@npm:13.12.0, validator@npm:^13.6.0":
   version: 13.12.0
   resolution: "validator@npm:13.12.0"
   checksum: 10/db6eb0725e2b67d60d30073ae8573982713b5903195d031dc3c7db7e82df8b74e8c13baef8e2106d146d979599fd61a06cde1fec5c148e4abd53d52817ff0fd9
