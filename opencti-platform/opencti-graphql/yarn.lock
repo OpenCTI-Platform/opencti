@@ -1609,6 +1609,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@datadog/pprof@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "@datadog/pprof@npm:5.4.1"
+  dependencies:
+    delay: "npm:^5.0.0"
+    node-gyp: "npm:latest"
+    node-gyp-build: "npm:<4.0"
+    p-limit: "npm:^3.1.0"
+    pprof-format: "npm:^2.1.0"
+    source-map: "npm:^0.7.4"
+  checksum: 10/3ba460a19de87f7d07c917b07019d64ee26850f8c835f041c9ce9e2247a2fa313957782a120b8d96a942515e94560993a4af686c7be9b6bcf968a22130602892
+  languageName: node
+  linkType: hard
+
 "@elastic/elasticsearch@npm:8.17.0":
   version: 8.17.0
   resolution: "@elastic/elasticsearch@npm:8.17.0"
@@ -3676,6 +3690,21 @@ __metadata:
   version: 1.1.0
   resolution: "@protobufjs/utf8@npm:1.1.0"
   checksum: 10/131e289c57534c1d73a0e55782d6751dd821db1583cb2f7f7e017c9d6747addaebe79f28120b2e0185395d990aad347fb14ffa73ef4096fa38508d61a0e64602
+  languageName: node
+  linkType: hard
+
+"@pyroscope/nodejs@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@pyroscope/nodejs@npm:0.4.3"
+  dependencies:
+    "@datadog/pprof": "npm:^5.4.1"
+    axios: "npm:^0.28.0"
+    debug: "npm:^4.3.3"
+    form-data: "npm:^4.0.0"
+    p-limit: "npm:^3.1.0"
+    regenerator-runtime: "npm:^0.13.11"
+    source-map: "npm:^0.7.3"
+  checksum: 10/a67c983e5bec780421581b7202775ebc5c3af9b5e81504781a07978553e3b3c50538ae04008141f2f34c8b588f266adf80f9e7451ff60d6ae8bf413d994f1b56
   languageName: node
   linkType: hard
 
@@ -6857,6 +6886,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"debug@npm:^4.3.3":
+  version: 4.4.0
+  resolution: "debug@npm:4.4.0"
+  dependencies:
+    ms: "npm:^2.1.3"
+  peerDependenciesMeta:
+    supports-color:
+      optional: true
+  checksum: 10/1847944c2e3c2c732514b93d11886575625686056cd765336212dc15de2d2b29612b6cd80e1afba767bb8e1803b778caf9973e98169ef1a24a7a7009e1820367
+  languageName: node
+  linkType: hard
+
 "decamelize@npm:^1.2.0":
   version: 1.2.0
   resolution: "decamelize@npm:1.2.0"
@@ -6906,6 +6947,13 @@ __metadata:
     has-property-descriptors: "npm:^1.0.0"
     object-keys: "npm:^1.1.1"
   checksum: 10/b4ccd00597dd46cb2d4a379398f5b19fca84a16f3374e2249201992f36b30f6835949a9429669ee6b41b6e837205a163eadd745e472069e70dfc10f03e5fcc12
+  languageName: node
+  linkType: hard
+
+"delay@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "delay@npm:5.0.0"
+  checksum: 10/62f151151ecfde0d9afbb8a6be37a6d103c4cb24f35a20ef3fe56f920b0d0d0bb02bc9c0a3084d0179ef669ca332b91155f2ee4d9854622cd2cdba5fc95285f9
   languageName: node
   linkType: hard
 
@@ -10668,6 +10716,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-gyp-build@npm:<4.0":
+  version: 3.9.0
+  resolution: "node-gyp-build@npm:3.9.0"
+  bin:
+    node-gyp-build: ./bin.js
+    node-gyp-build-optional: ./optional.js
+    node-gyp-build-test: ./build-test.js
+  checksum: 10/c94f1fc077852ff9b830f8f8f6bcb350441bf5ec5187cad46981eb5f4faad08a17c5fe9fa3450f346361d93c0984fde0e87c9615e52bc69ad4fb4ebf5e26259c
+  languageName: node
+  linkType: hard
+
 "node-gyp@npm:latest":
   version: 10.2.0
   resolution: "node-gyp@npm:10.2.0"
@@ -10989,6 +11048,7 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:1.25.1"
     "@opentelemetry/sdk-trace-node": "npm:1.25.1"
     "@opentelemetry/semantic-conventions": "npm:1.25.1"
+    "@pyroscope/nodejs": "npm:0.4.3"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@types/archiver": "npm:6.0.3"
     "@types/bcryptjs": "npm:2.4.6"
@@ -11192,7 +11252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-limit@npm:3.1.0, p-limit@npm:^3.0.2":
+"p-limit@npm:3.1.0, p-limit@npm:^3.0.2, p-limit@npm:^3.1.0":
   version: 3.1.0
   resolution: "p-limit@npm:3.1.0"
   dependencies:
@@ -11569,6 +11629,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pprof-format@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "pprof-format@npm:2.1.0"
+  checksum: 10/1bfdf4cf9ccb612eaad33dcf9a1fc42f6514e0cf9c4f373473d126cd64bbab9e8cdf0241ba005d4c8f56007968c0e7c7272db96bec7a520ef59413b3fbc85346
+  languageName: node
+  linkType: hard
+
 "precond@npm:0.2":
   version: 0.2.3
   resolution: "precond@npm:0.2.3"
@@ -11889,6 +11956,13 @@ __metadata:
     globalthis: "npm:^1.0.3"
     which-builtin-type: "npm:^1.1.3"
   checksum: 10/518f6457e4bb470c9b317d239c62d4b4a05678b7eae4f1c3f4332fad379b3ea6d2d8999bfad448547fdba8fb77e4725cfe8c6440d0168ff387f16b4f19f759ad
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.13.11":
+  version: 0.13.11
+  resolution: "regenerator-runtime@npm:0.13.11"
+  checksum: 10/d493e9e118abef5b099c78170834f18540c4933cedf9bfabc32d3af94abfb59a7907bd7950259cbab0a929ebca7db77301e8024e5121e6482a82f78283dfd20c
   languageName: node
   linkType: hard
 
@@ -12597,7 +12671,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map@npm:^0.7.4":
+"source-map@npm:^0.7.3, source-map@npm:^0.7.4":
   version: 0.7.4
   resolution: "source-map@npm:0.7.4"
   checksum: 10/a0f7c9b797eda93139842fd28648e868a9a03ea0ad0d9fa6602a0c1f17b7fb6a7dcca00c144476cccaeaae5042e99a285723b1a201e844ad67221bf5d428f1dc
