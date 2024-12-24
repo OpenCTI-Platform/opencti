@@ -105,7 +105,7 @@ const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
     search: searchTerm,
   };
   useEffect(() => {
-    if (fileSearchEnabled && searchTerm) {
+    if (fileSearchEnabled) {
       loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
     }
   }, []);
