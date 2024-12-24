@@ -1,3 +1,5 @@
+import './instrumentation';
+
 import 'source-map-support/register';
 import blocked from 'blocked-at';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
