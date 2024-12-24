@@ -58,7 +58,7 @@
     "telemetry": {
       "pyroscope": {
         "enabled": false,
-        "node": "OpenCTI",
+        "identifier": "OpenCTI",
         "exporter": ""
       },
       "tracing": {
