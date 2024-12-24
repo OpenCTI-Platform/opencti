@@ -9,7 +9,6 @@ esbuild.build({
     plugins: [importGlobPlugin(), graphqlLoaderPlugin(), nativeNodePlugin()],
     entryPoints: [
         'src/back.js',
-        'src/pyroscope.js',
         'script/script-clean-relations.js'
     ],
     entryNames: "[name]",

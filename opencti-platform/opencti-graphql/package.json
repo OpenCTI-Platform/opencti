@@ -47,6 +47,7 @@
     "@aws-sdk/credential-provider-node": "3.679.0",
     "@aws-sdk/lib-storage": "3.679.0",
     "@aws-sdk/property-provider": "3.374.0",
+    "@datadog/pprof": "5.4.1",
     "@elastic/elasticsearch": "8.17.0",
     "@escape.tech/graphql-armor": "3.1.2",
     "@graphql-tools/import": "7.0.1",
@@ -219,6 +220,7 @@
     "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch",
     "graphql": "patch:graphql@16.9.0#./patch/graphql-16.8.1.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
+    "@datadog/pprof": "patch:@datadog/pprof@5.4.1#./patch/@datadog-pprof-5.4.1.patch",
     "path-to-regexp": "0.1.12"
   },
   "packageManager": "yarn@4.5.3"
