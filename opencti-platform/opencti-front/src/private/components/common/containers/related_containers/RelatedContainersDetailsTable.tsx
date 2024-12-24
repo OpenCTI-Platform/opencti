@@ -14,6 +14,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import { resolveLink } from '../../../../../utils/Entity';
+import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'RelatedContainersDetailsTable';
 
@@ -184,6 +185,7 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
         entityTypes={['Stix-Cyber-Observable', 'Indicator']}
         searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable', 'Indicator'] }}
         availableEntityTypes={['Stix-Cyber-Observable', 'Indicator']}
+        variant={DataTableVariant.inline}
         disableNavigation
         disableToolBar
         disableSelectAll
