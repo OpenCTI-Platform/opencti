@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NorthEastOutlined } from '@mui/icons-material';
+import LoupeOutlinedIcon from '@mui/icons-material/LoupeOutlined';
 import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -17,6 +18,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
+import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 
 export const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
@@ -164,19 +166,36 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
         {containersGlobalCount > 0 ? (
           <DataTableWithoutFragment
             dataColumns={{
-              entity_type: { percentWidth: 15 },
-              name: { percentWidth: 40 },
-              createdBy: { percentWidth: 15 },
-              modified: { percentWidth: 15 },
-              objectMarking: { percentWidth: 15 },
+              entity_type: { percentWidth: 20 },
+              name: { percentWidth: 20 },
+              createdBy: { percentWidth: 20 },
+              modified: { percentWidth: 20 },
+              objectMarking: { percentWidth: 20 },
             }}
             data={containers}
             globalCount={containersGlobalCount}
             rootRef={ref}
-            disableNavigation={true}
             storageKey={`related-containers-${entityType}-${containerId}`}
-            hideHeaders={true}
-            onLineClick={(row: RelatedContainerNode) => handleOpenDetails(row)}
+            hideHeaders
+            variant={DataTableVariant.inline}
+            actions={(row) => (
+              <div>
+                <Tooltip title={t_i18n('Open correlation details')} placement="top">
+                  <IconButton
+                    color="primary"
+                    aria-haspopup="true"
+                    style={{ marginTop: 3 }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      event.preventDefault();
+                      handleOpenDetails(row);
+                    }}
+                  >
+                    <LoupeOutlinedIcon fontSize="small"/>
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )}
           />) : (
             <div style={{
               display: 'flex',
