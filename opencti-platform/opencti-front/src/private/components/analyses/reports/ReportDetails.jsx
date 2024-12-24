@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
-import RelatedContainers from '../../common/containers/RelatedContainers';
+import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
