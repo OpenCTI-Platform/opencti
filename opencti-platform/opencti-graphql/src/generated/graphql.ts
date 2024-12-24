@@ -18617,6 +18617,7 @@ export enum PlatformCriticalAlertType {
 
 export type PlatformEe = {
   __typename?: 'PlatformEE';
+  license_by_configuration: Scalars['Boolean']['output'];
   license_customer: Scalars['String']['output'];
   license_enterprise: Scalars['Boolean']['output'];
   license_expiration_date: Scalars['DateTime']['output'];
@@ -38177,6 +38178,7 @@ export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType 
 }>;
 
 export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformEE'] = ResolversParentTypes['PlatformEE']> = ResolversObject<{
+  license_by_configuration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_customer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_enterprise?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_expiration_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

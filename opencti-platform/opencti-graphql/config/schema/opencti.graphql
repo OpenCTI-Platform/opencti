@@ -1233,6 +1233,7 @@ type SettingsMessage {
 
 type PlatformEE {
   license_enterprise: Boolean!
+  license_by_configuration: Boolean!
   license_customer: String!
   license_validated: Boolean!
   license_valid_cert: Boolean!

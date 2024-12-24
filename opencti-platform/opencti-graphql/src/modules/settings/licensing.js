@@ -17,6 +17,7 @@ import forge from 'node-forge';
 import { isNotEmptyField } from '../../database/utils';
 import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
+import conf from '../../config/conf';
 
 const GLOBAL_LICENSE_OPTION = 'global';
 export const LICENSE_OPTION_TRIAL = 'trial';
@@ -28,7 +29,8 @@ const getExtensionValue = (clientCrt, extension) => {
   return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
 };
 
-export const getEnterpriseEditionInfoFromPem = (platformInstanceId, pem) => {
+export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
+  const pem = rawPem ?? conf.get('app:enterprise_edition_license');
   if (isNotEmptyField(pem)) {
     try {
       const clientCrt = forge.pki.certificateFromPem(pem);
@@ -57,6 +59,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, pem) => {
       }
       return {
         license_enterprise: true, // If EE activated
+        license_by_configuration: isNotEmptyField(conf.get('app:enterprise_edition_license')),
         license_validated, // If EE license is ok (identifier, dates, ...)
         license_valid_cert,
         license_customer,
@@ -77,6 +80,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, pem) => {
   return {
     license_enterprise: false,
     license_validated: false,
+    license_by_configuration: false,
     license_valid_cert: false,
     license_extra_expiration: false,
     license_extra_expiration_days: 0,
