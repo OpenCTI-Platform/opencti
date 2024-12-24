@@ -634,8 +634,3 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
   }
   return true;
 };
-
-export const findUsersThatCanShareWithOrganization = async (context: AuthContext, user: AuthUser, organizationId: string) => {
-  const allUserInOrg = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
-  return allUserInOrg;
-};
