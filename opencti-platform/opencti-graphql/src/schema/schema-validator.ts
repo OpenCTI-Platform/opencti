@@ -200,10 +200,14 @@ export const validateInputCreation = async (
 
 export const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
   const invalidKeys: string[] = [];
+  console.log('INPUT', input);
   Object.entries(input).forEach(([key]) => {
+    console.log('instanceTYPE', instanceType);
+    console.log('key', key);
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
     const reference = schemaRelationsRefDefinition.getRelationRef(instanceType, key);
     const schemaAttribute = attribute || reference;
+    console.log('schemaAttribute', schemaAttribute);
     if (!schemaAttribute || schemaAttribute.update === false) {
       invalidKeys.push(key);
     }
@@ -223,6 +227,7 @@ export const validateInputUpdate = async (
     if (R.isEmpty(editInputs) || !Array.isArray(editInputs)) {
       throw UnsupportedError('Cannot validate an empty or invalid input', { input: editInputs });
     }
+
     // Convert input to record
     const instanceFromInputs: Record<string, unknown> = {};
     editInputs.forEach((obj) => { instanceFromInputs[obj.key] = obj.value; });
@@ -230,9 +235,14 @@ export const validateInputUpdate = async (
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);
     const errors = validateUpdatableAttribute(instanceType, instanceFromInputs);
+
+    // console.log('InstanceType:', instanceType);
+    // console.log('InstanceFromInputs:', instanceFromInputs);
+    console.log('Errors returned by validateUpdatableAttribute:', errors);
     if (errors.length > 0) {
       throw ValidationError('You cannot update incompatible attribute', errors.at(0));
     }
+
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {

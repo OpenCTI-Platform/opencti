@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
+import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
@@ -55,6 +56,11 @@ export const findAll = (context, user, args) => {
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
+  const filtersItem = input.find((item) => item.key === 'filters');
+  if (filtersItem?.value) {
+    // our stix matching is currently limited, we need to validate the input filters
+    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value));
+  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === 'authorized_members') {
@@ -62,8 +68,9 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
     }
     return item;
   });
-
+  console.log('collectionId TAXII', collectionId);
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
+  console.log('ELEMENT TAXII', element);
   await publishUserAction({
     user,
     event_type: 'mutation',

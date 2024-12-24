@@ -16,7 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { useAvailableFilterKeysForEntityTypes, deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -60,8 +60,8 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
-  include_inferences: Yup.bool().nullable(),
-  score_to_confidence: Yup.bool().nullable(),
+  // include_inferences: Yup.bool().nullable(),
+  // score_to_confidence: Yup.bool().nullable(),
 });
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
@@ -136,6 +136,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = () => {};
 
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  console.log('initialValues.taxii_public', initialValues.taxii_public);
   return (
     <Formik<TaxiiCollectionCreationForm>
       onSubmit={onSubmit}

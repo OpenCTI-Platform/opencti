@@ -73,7 +73,11 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
     }
     return item;
   });
+  console.log('collectionId STREAM', collectionId);
+
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, finalInput);
+  console.log('ELEMENT STREAM', element);
+
   await publishUserAction({
     user,
     event_type: 'mutation',
