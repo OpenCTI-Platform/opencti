@@ -14,6 +14,7 @@ import {
 } from '../../utils/testQuery';
 import { adminQueryWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
+import conf from '../../../src/config/conf';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -86,16 +87,19 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
 
 const PLATFORM_ORGANIZATION_QUERY = gql`
   mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        platform_organization {
-          id
-          name
-        }
-        enterprise_edition
-        id
+      settingsEdit(id: $id) {
+          fieldPatch(input: $input) {
+              id
+              platform_organization {
+                  id
+                  name
+              }
+              platform_enterprise_edition {
+                  license_enterprise
+                  license_validated
+              }
+          }
       }
-    }
   }
 `;
 
@@ -454,11 +458,11 @@ describe('Case Incident Response and organization sharing standard behavior with
       variables: {
         id: settingsInternalId,
         input: [
-          { key: 'enterprise_edition', value: new Date().getTime() },
+          { key: 'enterprise_license', value: conf.get('app:enterprise_edition_license') },
         ]
       }
     });
-    expect(EEqueryResult?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
+    expect(EEqueryResult?.data?.settingsEdit.fieldPatch.platform_enterprise_edition.license_validated).toBeTruthy();
   });
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
@@ -499,9 +503,9 @@ describe('Case Incident Response and organization sharing standard behavior with
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
-        input: [{ key: 'enterprise_edition', value: [] }] },
+        input: [{ key: 'enterprise_license', value: [] }] },
     });
-    expect(EEDeactivationQuery?.data?.settingsEdit.fieldPatch.enterprise_edition).toBeNull();
+    expect(EEDeactivationQuery?.data?.settingsEdit.fieldPatch.platform_enterprise_edition.license_enterprise).toBeFalsy();
   });
 });
 
@@ -530,19 +534,19 @@ describe('Case Incident Response and organization sharing standard behavior with
     const queryResult = await adminQuery({ query: SETTINGS_READ_QUERY, variables: {} });
     settingsInternalId = queryResult.data?.settings?.id;
 
-    // Set plateform organization
+    // Set platform organization
     const platformOrganization = await adminQueryWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
         input: [
           { key: 'platform_organization', value: platformOrganizationId },
-          { key: 'enterprise_edition', value: new Date().getTime() },
+          { key: 'enterprise_license', value: conf.get('app:enterprise_edition_license') },
         ]
       }
     });
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).not.toBeUndefined();
-    expect(platformOrganization?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
+    expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_enterprise_edition.license_validated).toBeTruthy();
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization.name).toEqual(PLATFORM_ORGANIZATION.name);
   });
   it('should Case Incident Response created', async () => {
@@ -633,15 +637,15 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
   });
-  it('should plateform organization sharing and EE deactivated', async () => {
-    // Remove plateform organization
+  it('should platform organization sharing and EE deactivated', async () => {
+    // Remove platform organization
     const platformOrganization = await adminQueryWithSuccess({
       query: PLATFORM_ORGANIZATION_QUERY,
       variables: {
         id: settingsInternalId,
         input: [
           { key: 'platform_organization', value: [] },
-          { key: 'enterprise_edition', value: [] },
+          { key: 'enterprise_license', value: [] },
         ]
       }
     });

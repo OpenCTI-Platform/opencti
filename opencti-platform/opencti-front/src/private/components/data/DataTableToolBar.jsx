@@ -92,7 +92,6 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 import ItemMarkings from '../../../components/ItemMarkings';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 
 const styles = (theme) => ({
