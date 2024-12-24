@@ -6,7 +6,7 @@ import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
@@ -20,6 +20,8 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
+import { type ListAllEntitiesThroughRelation, listAllEntitiesThroughRelations, listAllFromEntitiesThroughRelations } from '../database/middleware-loader';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -631,4 +633,9 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
     throw FunctionalError('Restricted to delete this element (not the technical creator)', { user_id: user.id, element_id: existingElement.id });
   }
   return true;
+};
+
+export const findUsersThatCanShareWithOrganization = async (context: AuthContext, user: AuthUser, organizationId: string) => {
+  const allUserInOrg = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
+  return allUserInOrg;
 };
