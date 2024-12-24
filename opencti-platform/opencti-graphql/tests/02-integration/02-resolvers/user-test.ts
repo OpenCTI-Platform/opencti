@@ -6,7 +6,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../
 import {
   ADMIN_USER,
   adminQuery,
-  AMBER_GROUP,
+  AMBER_GROUP_EDITOR,
   editorQuery,
   getGroupIdByName,
   getOrganizationIdByName,
@@ -858,7 +858,7 @@ describe('User has no settings capability and is organization admin query behavi
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
-    amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
+    amberGroupId = await getGroupIdByName(AMBER_GROUP_EDITOR.name);
 
     const USER_TO_CREATE = {
       input: {
