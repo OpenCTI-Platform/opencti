@@ -10,7 +10,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
-import EEChip from '../../common/entreprise_edition/EEChip';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import { useFormatter } from '../../../../components/i18n';
@@ -21,7 +20,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 import useHelper from '../../../../utils/hooks/useHelper';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const GroupingPopoverDeletionMutation = graphql`
   mutation GroupingPopoverDeletionMutation($id: ID!) {
@@ -32,14 +30,13 @@ const GroupingPopoverDeletionMutation = graphql`
 const GroupingPopover = ({ id }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const isEnterpriseEdition = useEnterpriseEdition();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [deleting, setDeleting] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -98,7 +95,7 @@ const GroupingPopover = ({ id }) => {
               {t_i18n('Enrich')}
             </MenuItem>
           </Security>
-          <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}{!isEnterpriseEdition && <EEChip />}</MenuItem>
+          <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
