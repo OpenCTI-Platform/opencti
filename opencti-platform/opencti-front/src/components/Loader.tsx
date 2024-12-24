@@ -3,7 +3,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
 import { FiligranLoader } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
-import { isNotEmptyField } from '../utils/utils';
 import { UserContext } from '../utils/hooks/useAuth';
 import type { Theme } from './Theme';
 

@@ -106,6 +106,7 @@ const settingsQuery = graphql`
       }
       platform_enterprise_edition {
         license_enterprise
+        license_by_configuration
         license_valid_cert
         license_validated
         license_expiration_prevention
@@ -323,6 +324,7 @@ const Settings = () => {
             const modules = settings.platform_modules;
             const { version, dependencies } = about;
             const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
+            const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
             const isEnterpriseEditionValid = settings.platform_enterprise_edition.license_validated;
             return (
               <>
@@ -333,8 +335,8 @@ const Settings = () => {
                       {t_i18n('Enterprise Edition')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
-                      <EnterpriseEditionButton disabled={!isAllowed} title={isEnterpriseEditionActivated ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'} inLine/>
-                      {isEnterpriseEditionActivated && <div style={{ float: 'right' }}>
+                      {!isEnterpriseEditionByConfig && <EnterpriseEditionButton disabled={!isAllowed} title={isEnterpriseEditionActivated ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'} inLine/>}
+                      {!isEnterpriseEditionByConfig && isEnterpriseEditionActivated && <div style={{ float: 'right' }}>
                         <DangerZoneBlock type={'ce_ee_toggle'} sx={{
                           root: { border: 'none', padding: 0, paddingTop: 0, margin: 0 },
                           title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
@@ -436,7 +438,7 @@ const Settings = () => {
                                 status={!settings.platform_enterprise_edition.license_expired}
                               />
                             </ListItem>
-                            <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
+                            <ListItem divider={true}>
                               <ListItemText primary={t_i18n('Expiration date')} />
                               <ItemBoolean
                                 variant="xlarge"
@@ -444,13 +446,7 @@ const Settings = () => {
                                 status={!settings.platform_enterprise_edition.license_expired}
                               />
                             </ListItem>
-                            { !settings.platform_enterprise_edition.license_expired
-                                && settings.platform_enterprise_edition.license_expiration_prevention && <ListItem divider={true}>
-                                  <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
-                                    Your license will expire in less than 3 months, please contact Filigran to renew your license
-                                  </Alert>
-                                </ListItem>}
-                            <ListItem divider={true}>
+                            <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
                               <ListItemText primary={t_i18n('License type')} />
                               <ItemBoolean
                                 variant="large"
@@ -458,6 +454,12 @@ const Settings = () => {
                                 status={null}
                               />
                             </ListItem>
+                            { !settings.platform_enterprise_edition.license_expired
+                                && settings.platform_enterprise_edition.license_expiration_prevention && <ListItem divider={false}>
+                                  <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
+                                    Your license will expire in less than 3 months, please contact Filigran to renew your license
+                                  </Alert>
+                                </ListItem>}
                           </List>
                       }
                       { isEnterpriseEditionActivated && !settings.platform_enterprise_edition.license_validated
