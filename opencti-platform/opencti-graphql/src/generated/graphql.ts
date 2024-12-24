@@ -23256,7 +23256,7 @@ export type RequestAccessAddInput = {
 };
 
 export enum RequestAccessType {
-  Organization = 'organization'
+  OrganizationSharing = 'organization_sharing'
 }
 
 export type ResolvedInstanceFilter = {
