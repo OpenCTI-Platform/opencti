@@ -122,6 +122,7 @@ export const getSettings = async (context) => {
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
+    platform_enterprise_edition: eeInfo,
     valid_enterprise_edition: eeInfo.license_validated,
     platform_providers: PROVIDERS.filter((p) => p.name !== INTERNAL_SECURITY_PROVIDER),
     platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({ status: k, message: v })),
