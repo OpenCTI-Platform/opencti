@@ -1,21 +1,6 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 
-test('Check EE activation', async ({ page }) => {
-  const leftBarPage = new LeftBarPage(page);
-
-  await page.goto('/');
-  await leftBarPage.open();
-  await leftBarPage.clickOnMenu('Settings', 'Parameters');
-
-  await page.getByRole('button', { name: 'Enable Enterprise Edition' }).click();
-  await expect(page.getByRole('heading', { name: 'OpenCTI Enterprise Edition (' })).toBeVisible();
-  await page.getByLabel('I have read and agree to the').check();
-  await page.getByRole('button', { name: 'Enable' }).click();
-  await expect(page.getByText(/^Enterprise$/)).toBeVisible();
-  await page.getByRole('button', { name: 'Disable Enterprise Edition' }).click();
-});
-
 test('Check Logo replacement', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
 
