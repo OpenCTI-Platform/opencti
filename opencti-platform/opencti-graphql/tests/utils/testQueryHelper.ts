@@ -166,7 +166,7 @@ export const enableEEAndSetOrganization = async (organization: Organization) => 
   const platformSettings: any = await getSettings(testContext);
 
   const input = [
-    { key: 'enterprise_license', value: conf.get('app:enterprise_edition_license') },
+    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
     { key: 'platform_organization', value: [platformOrganizationId] }
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
