@@ -505,7 +505,8 @@ describe('Case Incident Response and organization sharing standard behavior with
         id: settingsInternalId,
         input: [{ key: 'enterprise_license', value: [] }] },
     });
-    expect(EEDeactivationQuery?.data?.settingsEdit.fieldPatch.platform_enterprise_edition.license_enterprise).toBeFalsy();
+    // EE cant be disabled as setup by configuration
+    expect(EEDeactivationQuery?.data?.settingsEdit.fieldPatch.platform_enterprise_edition.license_enterprise).toBeTruthy();
   });
 });
 
