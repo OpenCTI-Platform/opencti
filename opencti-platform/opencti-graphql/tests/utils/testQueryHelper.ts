@@ -188,7 +188,8 @@ export const enableCEAndUnSetOrganization = async () => {
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
   expect(settingsResult.platform_organization).toBeUndefined();
-  expect(settingsResult.platform_enterprise_edition.license_enterprise).toBeFalsy();
+  // EE cant be disabled as setup by configuration
+  expect(settingsResult.platform_enterprise_edition.license_enterprise).toBeTruthy();
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
