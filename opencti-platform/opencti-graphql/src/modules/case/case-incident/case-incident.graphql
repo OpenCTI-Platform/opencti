@@ -242,6 +242,7 @@ input CaseIncidentAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
+  authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {
