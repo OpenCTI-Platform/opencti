@@ -126,6 +126,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
     });
   }, [filters]);
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = () => {};
+
   return (
     <Formik<StreamCollectionCreationForm>
       onSubmit={onSubmit}

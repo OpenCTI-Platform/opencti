@@ -60,8 +60,8 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
-  // include_inferences: Yup.bool().nullable(),
-  // score_to_confidence: Yup.bool().nullable(),
+  include_inferences: Yup.bool().nullable(),
+  score_to_confidence: Yup.bool().nullable(),
 });
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {

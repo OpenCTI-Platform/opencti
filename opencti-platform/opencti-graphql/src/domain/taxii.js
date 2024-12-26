@@ -62,6 +62,7 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
     }
     return item;
   });
+
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
   await publishUserAction({
     user,
