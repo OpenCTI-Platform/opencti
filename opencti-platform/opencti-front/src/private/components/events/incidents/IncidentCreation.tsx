@@ -26,7 +26,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -103,16 +103,17 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
   );
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     source: Yup.string().nullable(),
     description: Yup.string().nullable(),
-  };
-  const incidentValidator = useSchemaCreationValidation(
-    INCIDENT_TYPE,
+  }, mandatoryAttributes);
+  const incidentValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (
@@ -178,6 +179,8 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     <Formik<IncidentAddInput>
       initialValues={initialValues}
       validationSchema={incidentValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -188,6 +191,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Incident']}
           />
@@ -199,6 +203,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             label={t_i18n('Incident type')}
             type="incident-type-ov"
             name="incident_type"
+            required={(mandatoryAttributes.includes('incident_type'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -207,6 +212,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             label={t_i18n('Severity')}
             type="incident-severity-ov"
             name="severity"
+            required={(mandatoryAttributes.includes('severity'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -215,6 +221,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -225,35 +232,42 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             variant="standard"
             name="source"
             label={t_i18n('Source')}
+            required={(mandatoryAttributes.includes('source'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
           />
           <ObjectParticipantField
             name="objectParticipant"
+            required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
