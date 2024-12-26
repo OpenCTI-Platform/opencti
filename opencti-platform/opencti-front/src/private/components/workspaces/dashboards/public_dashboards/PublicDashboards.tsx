@@ -16,6 +16,7 @@ import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted'
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from './__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from './__generated__/PublicDashboardsFragment.graphql';
+import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboards_PublicDashboard on PublicDashboard {
@@ -102,6 +103,9 @@ const LOCAL_STORAGE_KEY = 'PublicDashboard';
 const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Public dashboards'));
 
   const initialValues = {
     searchTerm: '',

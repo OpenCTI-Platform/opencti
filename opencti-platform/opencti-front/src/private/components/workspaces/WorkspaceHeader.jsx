@@ -295,7 +295,7 @@ const WorkspaceHeader = ({
             needs={[EXPLORE_EXUPDATE]}
             hasAccess={canEdit}
           >
-            <div style={{ marginTop: '-8px', float: 'right' }}>
+            <div style={{ marginTop: '-6px', float: 'right' }}>
               <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace}></WorkspaceWidgetConfig>
             </div>
           </Security>
