@@ -443,6 +443,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
+      googleStrategy.logout_remote = mappedConfig.logout_remote;
       passport.use(providerRef, googleStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
@@ -473,6 +474,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done({ message: 'Restricted access, ask your administrator' });
         }
       });
+      githubStrategy.logout_remote = mappedConfig.logout_remote;
       passport.use(providerRef, githubStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
@@ -488,6 +490,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           providerLoginHandler({ email, name }, done);
         }
       );
+      auth0Strategy.logout_remote = mappedConfig.logout_remote;
       passport.use(providerRef, auth0Strategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
