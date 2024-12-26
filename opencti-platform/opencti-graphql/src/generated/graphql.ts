@@ -19589,6 +19589,7 @@ export type Query = {
   tools?: Maybe<ToolConnection>;
   triggerActivity?: Maybe<Trigger>;
   triggerKnowledge?: Maybe<Trigger>;
+  triggers?: Maybe<TriggerConnection>;
   triggersActivity?: Maybe<TriggerConnection>;
   triggersKnowledge?: Maybe<TriggerConnection>;
   triggersKnowledgeCount?: Maybe<Scalars['Int']['output']>;
@@ -22063,6 +22064,17 @@ export type QueryTriggerActivityArgs = {
 
 export type QueryTriggerKnowledgeArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryTriggersArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
+  orderBy?: InputMaybe<TriggersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -38711,6 +38723,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
   triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;
   triggerKnowledge?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerKnowledgeArgs, 'id'>>;
+  triggers?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersArgs>>;
   triggersActivity?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersActivityArgs>>;
   triggersKnowledge?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeArgs>>;
   triggersKnowledgeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeCountArgs>>;
