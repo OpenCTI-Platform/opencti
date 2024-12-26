@@ -117,6 +117,7 @@ const WorkspaceHeader = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const openTagsCreate = false;
   const [openTag, setOpenTag] = useState(false);
   const [newTag, setNewTag] = useState('');
@@ -221,81 +222,10 @@ const WorkspaceHeader = ({
             <WorkspacePopover workspace={workspace} />
           </div>
         </Security>
-        {variant === 'dashboard' && (
+        {variant === 'dashboard' && !isFABReplaced && (
           <Security
             needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
             hasAccess={canEdit}
-            placeholder={
-              <div
-                style={{
-                  display: 'flex',
-                  margin: '-5px 0 0 5px',
-                  float: 'left',
-                }}
-              >
-                <FormControl
-                  variant="outlined"
-                  size="small"
-                  style={{ width: 194, marginRight: 20 }}
-                >
-                  <InputLabel id="relative" variant="outlined">
-                    {t_i18n('Relative time')}
-                  </InputLabel>
-                  <Select
-                    labelId="relative"
-                    value={relativeDate ?? ''}
-                    onChange={(value) => handleDateChange('relativeDate', value)}
-                    disabled={true}
-                    variant="outlined"
-                    aria-label="date"
-                  >
-                    <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                    <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
-                    <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
-                    <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
-                    <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
-                    <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
-                    <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
-                  </Select>
-                </FormControl>
-                <DatePicker
-                  value={R.propOr(null, 'startDate', config)}
-                  disableToolbar={true}
-                  autoOk={true}
-                  label={t_i18n('Start date')}
-                  clearable={true}
-                  disableFuture={true}
-                  disabled={true}
-                  aria-label="start picker"
-                  onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
-                  slotProps={{
-                    textField: {
-                      style: { marginRight: 20 },
-                      variant: 'outlined',
-                      size: 'small',
-                    },
-                  }}
-                />
-                <DatePicker
-                  value={R.propOr(null, 'endDate', config)}
-                  disableToolbar={true}
-                  autoOk={true}
-                  label={t_i18n('End date')}
-                  clearable={true}
-                  disabled={true}
-                  disableFuture={true}
-                  aria-label="end picker"
-                  onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
-                  slotProps={{
-                    textField: {
-                      style: { marginRight: 20 },
-                      variant: 'outlined',
-                      size: 'small',
-                    },
-                  }}
-                />
-              </div>
-            }
           >
             <div
               style={{ display: 'flex', margin: '-5px 0 0 5px', float: 'left' }}
@@ -360,7 +290,7 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
-        {variant === 'dashboard' && isFeatureEnable('FAB_REPLACEMENT') && (
+        {variant === 'dashboard' && isFABReplaced && (
           <Security
             needs={[EXPLORE_EXUPDATE]}
             hasAccess={canEdit}
