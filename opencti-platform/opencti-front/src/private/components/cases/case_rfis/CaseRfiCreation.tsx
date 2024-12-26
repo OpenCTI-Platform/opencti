@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Alert from '@mui/material/Alert';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -79,6 +81,7 @@ interface FormikCaseRfiAddInput {
   severity: string;
   priority: string;
   caseTemplates?: Option[];
+  authorizedMembers: Option[];
 }
 
 interface CaseRfiFormProps {
@@ -111,6 +114,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
   };
   const caseRfiValidator = useSchemaCreationValidation(
     CASE_RFI_TYPE,
@@ -142,6 +146,10 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
+      authorized_members: values.authorizedMembers.map(({ value }) => ({
+        id: value,
+        access_right: '',
+      })),
     };
     commit({
       variables: {
@@ -188,6 +196,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    authorizedMembers: [],
   });
 
   return (
@@ -258,6 +267,22 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             style={fieldSpacingContainerStyle}
             askAi={true}
           />
+          <Alert
+            icon={false}
+            classes={{ root: classes.alert, message: classes.message }}
+            severity="warning"
+            variant="outlined"
+            style={fieldSpacingContainerStyle}
+          >
+            <Field
+              name={'authorizedMembers'}
+              component={AuthorizedMembersField}
+              showAllMembersLine
+              showCreatorLine
+              canDeactivate
+              disabled={isSubmitting}
+            />
+          </Alert>
           <Field
             component={RichTextField}
             name="content"

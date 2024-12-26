@@ -241,6 +241,7 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {

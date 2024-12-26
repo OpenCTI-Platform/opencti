@@ -242,6 +242,7 @@ input CaseRftAddInput {
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {
