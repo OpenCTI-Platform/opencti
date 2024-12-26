@@ -10,6 +10,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
 import useHelper from 'src/utils/hooks/useHelper';
 import { GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Alert from '@mui/material/Alert';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -71,6 +73,7 @@ interface GroupingAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
+  authorizedMembers: Option[];
 }
 
 interface GroupingFormProps {
@@ -108,6 +111,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
     file: Yup.mixed().nullable(),
+    authorized_members: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -133,6 +137,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
+      authorized_members: values.authorizedMembers.map(({ value }) => ({
+        id: value,
+        access_right: '',
+      })),
     };
     commit({
       variables: {
@@ -173,6 +181,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    authorizedMembers: [],
   });
 
   return (
@@ -219,6 +228,22 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             style={{ marginTop: 20 }}
             askAi={true}
           />
+          <Alert
+            icon={false}
+            classes={{ root: classes.alert, message: classes.message }}
+            severity="warning"
+            variant="outlined"
+            style={fieldSpacingContainerStyle}
+          >
+            <Field
+              name={'authorizedMembers'}
+              component={AuthorizedMembersField}
+              showAllMembersLine
+              showCreatorLine
+              canDeactivate
+              disabled={isSubmitting}
+            />
+          </Alert>
           <Field
             component={RichTextField}
             name="content"
