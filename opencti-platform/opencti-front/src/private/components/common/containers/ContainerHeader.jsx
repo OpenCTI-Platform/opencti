@@ -1022,42 +1022,45 @@ const ContainerHeader = (props) => {
                                       ))}
                                     </Select>
                                     <ListItemSecondaryAction>
-                                      <IconButton
-                                        edge="end"
-                                        aria-label="apply"
-                                        onClick={() => applySuggestion(
-                                          suggestion.type,
-                                          containerProps.container.objects.edges.map(
-                                            (o) => ({
-                                              ...o.node,
-                                              types: o.types,
-                                            }),
-                                          ),
-                                        )
+                                      <Tooltip title={t_i18n('Apply the suggestion')}>
+                                        <IconButton
+                                          edge="end"
+                                          aria-label="apply"
+                                          onClick={() => applySuggestion(
+                                            suggestion.type,
+                                            containerProps.container.objects.edges.map(
+                                              (o) => ({
+                                                ...o.node,
+                                                types: o.types,
+                                              }),
+                                            ),
+                                          )
                                         }
-                                        size="large"
-                                        color={
+                                          size="large"
+                                          color={
                                           applied.some(
                                             (a) => a[suggestion.type]
                                               === selectedEntity[suggestion.type],
                                           )
                                             ? 'success'
-                                            : 'secondary'
+                                            : 'primary'
                                         }
-                                        disabled={
+                                          disabled={
                                           applying.includes(suggestion.type)
                                           || !selectedEntity[suggestion.type]
                                         }
-                                      >
-                                        {applying.includes(suggestion.type) ? (
-                                          <CircularProgress
-                                            size={20}
-                                            color="inherit"
-                                          />
-                                        ) : (
-                                          <AddTaskOutlined />
-                                        )}
-                                      </IconButton>
+                                        >
+
+                                          {applying.includes(suggestion.type) ? (
+                                            <CircularProgress
+                                              size={20}
+                                              color="inherit"
+                                            />
+                                          ) : (
+                                            <AddTaskOutlined />
+                                          )}
+                                        </IconButton>
+                                      </Tooltip>
                                     </ListItemSecondaryAction>
                                   </ListItem>
                                 ))}
