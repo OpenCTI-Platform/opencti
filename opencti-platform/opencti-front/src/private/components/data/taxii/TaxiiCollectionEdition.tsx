@@ -136,7 +136,6 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = () => {};
 
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
-  console.log('initialValues.taxii_public', initialValues.taxii_public);
   return (
     <Formik<TaxiiCollectionCreationForm>
       onSubmit={onSubmit}

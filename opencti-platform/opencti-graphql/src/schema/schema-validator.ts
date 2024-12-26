@@ -200,14 +200,10 @@ export const validateInputCreation = async (
 
 export const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
   const invalidKeys: string[] = [];
-  console.log('INPUT', input);
   Object.entries(input).forEach(([key]) => {
-    console.log('instanceTYPE', instanceType);
-    console.log('key', key);
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
     const reference = schemaRelationsRefDefinition.getRelationRef(instanceType, key);
     const schemaAttribute = attribute || reference;
-    console.log('schemaAttribute', schemaAttribute);
     if (!schemaAttribute || schemaAttribute.update === false) {
       invalidKeys.push(key);
     }
