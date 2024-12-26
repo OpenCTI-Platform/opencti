@@ -25,7 +25,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -100,13 +100,14 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
-  };
-  const dataSourceValidator = useSchemaCreationValidation(
-    DATA_SOURCE_TYPE,
+  }, mandatoryAttributes);
+  const dataSourceValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -188,6 +189,8 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     <Formik<DataSourceAddInput>
       initialValues={initialValues}
       validationSchema={dataSourceValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -218,11 +221,12 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           >
             <BulkResult variablesToString={(v) => v.input.name} />
           </ProgressBar>
-          <Form>
+          <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Data-Source']}
             />
@@ -234,6 +238,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -241,6 +246,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -249,6 +255,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -258,6 +265,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -266,6 +274,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -287,6 +296,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               label={t_i18n('Platforms')}
               type="platforms_ov"
               name="x_mitre_platforms"
+              required={(mandatoryAttributes.includes('x_mitre_platforms'))}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
@@ -295,6 +305,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               label={t_i18n('Layers')}
               type="collection_layers_ov"
               name="collection_layers"
+              required={(mandatoryAttributes.includes('collection_layers'))}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
