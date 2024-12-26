@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { buildCreateEvent, lockResource, storeUpdateEvent } from '../database/redis';
+import { buildCreateEvent, lockResource, storeCreateEntityEvent } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_ENRICHMENT,
@@ -160,7 +160,6 @@ const computeRuleTaskElements = async (context, user, task) => {
 
 export const computeQueryTaskElements = async (context, user, task) => {
   const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
-  logApp.info(`taskManager - computeQueryTaskElements, orderMode:${task_order_mode}`);
   const processingElements = [];
   // Fetch the information
   // note that the query is filtered to allow only elements with matching confidence level
@@ -177,7 +176,7 @@ export const computeQueryTaskElements = async (context, user, task) => {
   return { actions, elements: processingElements };
 };
 const computeListTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_ids, scope/* , task_ordering */ } = task;
+  const { actions, task_position, task_ids, scope, task_order_mode } = task;
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
@@ -193,7 +192,7 @@ const computeListTaskElements = async (context, user, task) => {
   }
   const options = {
     type,
-    orderMode: /* task_ordering || */ 'desc',
+    orderMode: task_order_mode || 'desc',
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
   };
   const elements = await internalFindByIds(context, user, ids, options);
@@ -404,8 +403,6 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
   }
 };
 const executeShare = async (context, user, actionContext, element, containerId) => {
-  logApp.info('ANGIE - executeShare on ', { base_type: element.base_type, entity_type: element.entity_type, standard_id: element.standard_id });
-  logApp.info('ANGIE - executeShare actionContext ', { actionContext, containerId });
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
@@ -415,17 +412,13 @@ const executeShare = async (context, user, actionContext, element, containerId) 
     }
   }
   if (containerId) {
-    logApp.info('ANGIE - Need to push update on container', { containerId });
     const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
-    logApp.info('ANGIE - storeObject', { objectStoreBase });
-    // FIXME what to update ??
-    const newObject = { ...objectStoreBase, description: objectStoreBase.description ? `${objectStoreBase.description}.` : '.' };
     const message = `Updating share on parent ${containerId} after sharing all content.`;
-    await storeUpdateEvent(context, user, objectStoreBase, newObject, message, {});
+    // simulate a create event to update downstream openCTI
+    await storeCreateEntityEvent(context, user, objectStoreBase, message, {});
   }
 };
 const executeUnshare = async (context, user, actionContext, element, containerId) => {
-  logApp.info('ANGIE - executeUnshare on ', { base_type: element.base_type, entity_type: element.entity_type, standard_id: element.standard_id, containerId });
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
@@ -446,12 +439,9 @@ const executeUnshare = async (context, user, actionContext, element, containerId
   }
 
   if (containerId) {
-    logApp.info('ANGIE - Need to push update on container', { containerId });
     const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
-    // FIXME what to update ??
-    const newObject = { ...objectStoreBase, description: objectStoreBase.description ? `${objectStoreBase.description}.` : '.' };
-    const message = `Updating share on parent ${containerId} after sharing all content.`;
-    await storeUpdateEvent(context, user, objectStoreBase, newObject, message, {});
+    const message = `Updating share on parent ${containerId} after unsharing all content.`;
+    await storeCreateEntityEvent(context, user, objectStoreBase, message, {});
   }
 };
 const executeShareMultiple = async (context, user, actionContext, element) => {
@@ -577,12 +567,11 @@ export const taskHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY], { retryCount: 0 });
-    logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
+    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
     running = true;
     const startingTime = new Date().getMilliseconds();
     const context = executionContext('task_manager', SYSTEM_USER);
     const task = await findTaskToExecute(context);
-    logApp.info('[OPENCTI-MODULE][TASK-MANAGER] task=>', { task });
     // region Task checking
     if (!task) {
       // Nothing to execute.
@@ -602,7 +591,7 @@ export const taskHandler = async () => {
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
-    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
+    logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     let jobToExecute;
     if (isQueryTask) {
       jobToExecute = await computeQueryTaskElements(context, user, task);
@@ -615,7 +604,7 @@ export const taskHandler = async () => {
     }
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
-    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
+    logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
     if (processingElements.length > 0) {
       lock.signal.throwIfAborted();
       const errors = await executeProcessing(context, user, jobToExecute, task.scope);
