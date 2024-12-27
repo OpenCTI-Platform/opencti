@@ -8976,6 +8976,7 @@ type Mutation {
   draftWorkspaceDelete(id: ID!): ID
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessValidate(id: ID!): Boolean
+  requestAccessReject(id: ID!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
