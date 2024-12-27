@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
 import { ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -34,6 +36,8 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -79,6 +83,7 @@ interface ReportAddInput {
   objectParticipant: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
+  authorizedMembers: Option[];
 }
 
 interface ReportFormProps {
@@ -122,6 +127,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     objectMarking: Yup.array().nullable(),
     externalReferences: Yup.array().nullable(),
     file: Yup.mixed().nullable(),
+    authorized_members: Yup.array().nullable(),
   }, mandatoryAttributes);
   const reportValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -151,6 +157,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
+      authorized_members: values.authorizedMembers.map(({ value }) => ({
+        id: value,
+        access_right: '',
+      })),
     };
     commit({
       variables: {
@@ -194,6 +204,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    authorizedMembers: [],
   });
   return (
     <Formik<ReportAddInput>
@@ -259,6 +270,26 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             style={{ marginTop: 20 }}
             askAi={true}
           />
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <Alert
+              icon={false}
+              classes={{ root: classes.alert, message: classes.message }}
+              severity="warning"
+              variant="outlined"
+              style={fieldSpacingContainerStyle}
+            >
+              <Field
+                name={'authorizedMembers'}
+                component={AuthorizedMembersField}
+                showAllMembersLine
+                showCreatorLine
+                canDeactivate
+                disabled={isSubmitting}
+              />
+            </Alert>
+          </Security>
           <Field
             component={RichTextField}
             name="content"

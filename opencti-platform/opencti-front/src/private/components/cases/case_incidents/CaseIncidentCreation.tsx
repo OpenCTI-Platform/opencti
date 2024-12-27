@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Alert from '@mui/material/Alert';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -35,6 +37,8 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -80,6 +84,7 @@ interface FormikCaseIncidentAddInput {
   created: Date | null;
   response_types: string[];
   caseTemplates?: Option[];
+  authorizedMembers: Option[];
 }
 
 interface IncidentFormProps {
@@ -113,6 +118,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
   };
   const caseIncidentValidator = useSchemaCreationValidation(
     CASE_INCIDENT_TYPE,
@@ -144,6 +150,10 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
+      authorized_members: values.authorizedMembers.map(({ value }) => ({
+        id: value,
+        access_right: '',
+      })),
     };
     commit({
       variables: {
@@ -192,6 +202,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: [],
       externalReferences: [],
       file: undefined,
+      authorizedMembers: [],
     },
   );
 
@@ -263,6 +274,26 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             style={fieldSpacingContainerStyle}
             askAi={true}
           />
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <Alert
+              icon={false}
+              classes={{ root: classes.alert, message: classes.message }}
+              severity="warning"
+              variant="outlined"
+              style={fieldSpacingContainerStyle}
+            >
+              <Field
+                name={'authorizedMembers'}
+                component={AuthorizedMembersField}
+                showAllMembersLine
+                showCreatorLine
+                canDeactivate
+                disabled={isSubmitting}
+              />
+            </Alert>
+          </Security>
           <Field
             component={RichTextField}
             name="content"
