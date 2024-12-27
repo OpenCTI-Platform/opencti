@@ -192,4 +192,13 @@ describe('Add Request Access to an entity and create an RFI', async () => {
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject);
     await enableCEAndUnSetOrganization();
   });
+
+  it.skip('should accept the created Case RFI first time be ok', async () => {
+    // FIXME why ?? it's forbidden XD
+    const queryResult = await queryAsUser(USER_EDITOR.client, {
+      query: VALIDATE_RFI_QUERY,
+      variables: { id: caseRfiId },
+    });
+    expect(queryResult?.data?.caseRfi).not.toBeNull();
+  });
 });
