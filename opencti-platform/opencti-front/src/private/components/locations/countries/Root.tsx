@@ -54,10 +54,7 @@ const countryQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Country_country
       ...CountryKnowledge_country
       ...FileImportViewer_entity
@@ -120,7 +117,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={country.stixCoreObjectsDistribution}
+                  queryRef={country}
                 />
               }
             />
