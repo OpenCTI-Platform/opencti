@@ -8,6 +8,10 @@ import { MoreVert } from '@mui/icons-material';
 import { AccessPoint } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import { IngestionTaxiiCollectionLine_node$key } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLine_node.graphql';
+import {
+  IngestionTaxiiCollectionLinesPaginationQuery$variables,
+} from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
@@ -17,12 +21,6 @@ import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import IngestionTaxiiCollectionPopover from './IngestionTaxiiCollectionPopover';
 import { APP_BASE_PATH } from '../../../../relay/environment';
-import {
-    IngestionTaxiiCollectionLine_node$key
-} from "@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLine_node.graphql";
-import {
-    IngestionTaxiiCollectionLinesPaginationQuery$variables
-} from "@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
