@@ -7,10 +7,15 @@ import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const StixCoreObjectEnrollPlaybook = (props) => {
   const { t, stixCoreObjectId, handleClose, open } = props;
   const [openDrawer, setOpenDrawer] = useState(false);
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const handleOpenEnrollPlaybook = () => {
     setOpenDrawer(true);
   };
@@ -19,7 +24,7 @@ const StixCoreObjectEnrollPlaybook = (props) => {
   };
   return (
     <>
-      {!handleClose && (
+      {(isFABReplaced || !handleClose) && (
         <EETooltip title={t('Enroll in playbook')}>
           <ToggleButton
             onClick={handleOpenEnrollPlaybook}
