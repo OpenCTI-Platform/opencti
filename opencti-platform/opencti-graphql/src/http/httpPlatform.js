@@ -362,7 +362,7 @@ const createApp = async (app) => {
                 logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
                 req.user = user; // Needed for passport
                 strategy.logout(req, (error, request) => {
-                  // When logout is implemented for strategy by passeport
+                  // When logout is implemented for strategy
                   if (error) {
                     setCookieError(res, 'Error generating logout uri');
                     res.status(503).send({ status: 'error', error: error.message });
@@ -376,7 +376,7 @@ const createApp = async (app) => {
                 res.redirect(referer);
               }
             } else {
-              logApp.info('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
+              logApp.debug('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
           } else {
