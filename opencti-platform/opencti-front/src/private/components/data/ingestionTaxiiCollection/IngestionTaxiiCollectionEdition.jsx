@@ -64,7 +64,6 @@ const IngestionTaxiiCollectionEditionContainer = ({
       'confidence_to_score',
     ]),
   )(ingestionTaxiiCollection);
-  console.log(ingestionTaxiiCollection);
   return (
     <Drawer
       title={t('Update a TAXII Push ingester')}
