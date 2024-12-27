@@ -256,6 +256,7 @@ const StixDomainObjectHeader = (props) => {
     isOpenctiAlias,
     PopoverComponent,
     EditComponent,
+    RelateComponent,
     viewAs,
     onViewAs,
     disablePopover,
@@ -629,6 +630,9 @@ const StixDomainObjectHeader = (props) => {
               </div>
             )}
             {EditComponent}
+            {isFABReplaced && RelateComponent && (
+              <RelateComponent id={stixDomainObject.id} />
+            )}
           </div>
         </div>
       </div>

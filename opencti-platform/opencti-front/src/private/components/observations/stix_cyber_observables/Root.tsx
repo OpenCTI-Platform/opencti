@@ -24,6 +24,7 @@ import FileManager from '../../common/files/FileManager';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -93,7 +94,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
   const link = `/dashboard/observations/observables/${observableId}/knowledge`;
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {stixCyberObservable ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
@@ -259,7 +260,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
