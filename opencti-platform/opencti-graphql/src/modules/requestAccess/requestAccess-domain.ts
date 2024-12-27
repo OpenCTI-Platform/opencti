@@ -43,10 +43,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   return requestForInformation.id;
 };
 
-/*
 export const validateRequestAccess = (context: AuthContext, user: AuthUser, id: string) => {
-  // TODO: return the validation of request
+  logApp.info(`Validation for RFI ${id}`);
   return true;
 };
-
- */
