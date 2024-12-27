@@ -8104,6 +8104,8 @@ type Query {
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
+  ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   indicator(id: String!): Indicator
@@ -8904,6 +8906,9 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionTaxiiCollectionAdd(input: IngestionTaxiiCollectionAddInput!): IngestionTaxiiCollection
+  ingestionTaxiiCollectionDelete(id: ID!): ID
+  ingestionTaxiiCollectionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxiiCollection
   ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult
   ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv
   ingestionCsvResetState(id: ID!): IngestionCsv
@@ -11539,6 +11544,43 @@ input IngestionTaxiiAddInput {
   added_after_start: DateTime
   ingestion_running: Boolean
   confidence_to_score: Boolean
+  user_id: String
+}
+
+type IngestionTaxiiCollection implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  created_at: DateTime
+  updated_at: DateTime
+  name: String!
+  ingestion_running: Boolean
+  description: String
+  user_id: String
+  user: Creator
+}
+
+enum IngestionTaxiiCollectionOrdering {
+  name
+  created_at
+  updated_at
+  _score
+}
+
+type IngestionTaxiiCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [IngestionTaxiiCollectionEdge!]!
+}
+
+type IngestionTaxiiCollectionEdge {
+  cursor: String!
+  node: IngestionTaxiiCollection!
+}
+
+input IngestionTaxiiCollectionAddInput {
+  name: String!
+  description: String
   user_id: String
 }
 
