@@ -7,7 +7,7 @@ index d6d3f23..b7da0d7 100644
  const path_1 = require("path");
  const findBinding = require('node-gyp-build');
 -const profiler = findBinding((0, path_1.join)(__dirname, '..', '..'));
-+const profiler = findBinding((0, path_1.join)(__dirname, '..', 'pprof'));
++const profiler = findBinding((0, path_1.join)(__dirname, '..', 'build'));
  exports.TimeProfiler = profiler.TimeProfiler;
  exports.constants = profiler.constants;
  exports.getNativeThreadId = profiler.getNativeThreadId;
@@ -20,7 +20,7 @@ index 25157fb..8838bec 100644
  const path = __importStar(require("path"));
  const findBinding = require('node-gyp-build');
 -const profiler = findBinding(path.join(__dirname, '..', '..'));
-+const profiler = findBinding(path.join(__dirname, '..', 'pprof'));
++const profiler = findBinding(path.join(__dirname, '..', 'build'));
  // Wrappers around native heap profiler functions.
  function startSamplingHeapProfiler(heapIntervalBytes, heapStackDepth) {
      profiler.heapProfiler.startSamplingHeapProfiler(heapIntervalBytes, heapStackDepth);

@@ -75,7 +75,6 @@ RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt \
 COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/static ./static
-COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/pprof ./pprof
 COPY --from=front-builder /opt/opencti-build/opencti-front/builder/prod/build ./public
 COPY opencti-graphql/src ./src
 COPY opencti-graphql/config ./config
