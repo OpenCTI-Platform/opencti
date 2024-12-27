@@ -8,16 +8,12 @@ import { Add as AddIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { graphql, useFragment } from 'react-relay';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import { FintelTemplatesGrid_templates$data, FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
-import FintelTemplatePopover from './FintelTemplatePopover';
+import FintelTemplatesLines, { TemplateType } from '@components/settings/sub_types/fintel_templates/FintelTemplatesLines';
+import { FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
 import { FintelTemplateFormInputs } from './FintelTemplateForm';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
-import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
-import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
-import ItemBoolean from '../../../../../components/ItemBoolean';
-import { resolveLink } from '../../../../../utils/Entity';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 const fintelTemplatesFragment = graphql`
@@ -39,8 +35,6 @@ const fintelTemplatesFragment = graphql`
     }
   }
 `;
-
-type TemplateType = NonNullable<FintelTemplatesGrid_templates$data['fintelTemplates']>['edges'][0]['node'];
 
 interface FintelTemplatesGridProps {
   data: FintelTemplatesGrid_templates$key
@@ -115,40 +109,14 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 {t_i18n('FINTEL templates are available with an Enterprise Edition subscription')}
               </div>
             )}
-            {isEnterpriseEdition && (
-              <DataTableWithoutFragment
-                dataColumns={{
-                  name: { percentWidth: 41, isSortable: false },
-                  description: { percentWidth: 41, isSortable: false },
-                  start_date: {
-                    percentWidth: 18,
-                    isSortable: false,
-                    label: t_i18n('Published'),
-                    render: ({ start_date }) => (
-                      <ItemBoolean
-                        status={!!start_date}
-                        label={start_date ? t_i18n('Yes') : t_i18n('No')}
-                      />
-                    ),
-                  },
-                }}
-                storageKey={`fintel-templates-${target_type}`}
-                useComputeLink={(t: TemplateType) => {
-                  return `${resolveLink(t.entity_type)}/${target_type}/templates/${t.id}`;
-                }}
-                globalCount={fintelTemplates?.edges.length ?? 0}
-                data={(fintelTemplates?.edges ?? []).map((e) => e.node)}
-                rootRef={dataTableRef ?? undefined}
-                variant={DataTableVariant.inline}
-                actions={(template: TemplateType) => (
-                  <FintelTemplatePopover
-                    onUpdate={() => onUpdate(template)}
-                    entitySettingId={entitySettingId}
-                    templateId={template.id}
-                  />
-                )}
-              />
-            )}
+            {isEnterpriseEdition
+              && <FintelTemplatesLines
+                fintelTemplates={fintelTemplates}
+                dataTableRef={dataTableRef}
+                onUpdate={onUpdate}
+                entitySettingId={entitySettingId}
+                targetType={target_type}
+                 ></FintelTemplatesLines>}
           </div>
         </Paper>
       </Grid>
