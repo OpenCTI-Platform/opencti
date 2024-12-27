@@ -13856,6 +13856,7 @@ export type Mutation = {
   reportAdd?: Maybe<Report>;
   reportEdit?: Maybe<ReportEditMutations>;
   requestAccessAdd?: Maybe<Scalars['ID']['output']>;
+  requestAccessReject?: Maybe<Scalars['Boolean']['output']>;
   requestAccessValidate?: Maybe<Scalars['Boolean']['output']>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
   resetStateConnector?: Maybe<Connector>;
@@ -15378,6 +15379,11 @@ export type MutationReportEditArgs = {
 
 export type MutationRequestAccessAddArgs = {
   input: RequestAccessAddInput;
+};
+
+
+export type MutationRequestAccessRejectArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -37696,6 +37702,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
   requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
+  requestAccessReject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestAccessRejectArgs, 'id'>>;
   requestAccessValidate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;

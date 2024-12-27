@@ -39,7 +39,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['ipv4-addr'].length).toBe(1);
       expect(createEventsByTypes['data-component'].length).toBe(5);
       expect(createEventsByTypes['data-source'].length).toBe(1);
-      expect(createEventsByTypes.malware.length).toBe(45);
+      expect(createEventsByTypes.malware.length).toBe(46);
       expect(createEventsByTypes.software.length).toBe(1);
       expect(createEventsByTypes.file.length).toBe(4);
       expect(createEventsByTypes.campaign.length).toBe(5);
@@ -97,7 +97,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(157);
+      expect(deleteEvents.length).toBe(158);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
