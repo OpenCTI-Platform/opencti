@@ -4,7 +4,7 @@ import { createEntity, loadEntity, updateAttribute } from '../../database/middle
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql';
+import type { EditInput, EntitySettingFintelTemplatesArgs, QueryEntitySettingsArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
@@ -104,13 +104,14 @@ export const getTemplatesForSetting = async (
   context: AuthContext,
   user: AuthUser,
   targetType: string,
+  opts: EntitySettingFintelTemplatesArgs,
 ): Promise<StoreEntityConnection<BasicStoreEntityFintelTemplate>> => {
   const canGetTemplates = await canViewTemplates(context);
   if (!canGetTemplates) {
     return emptyPaginationResult();
   }
   const filters = addFilter(undefined, 'settings_types', [targetType]);
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
