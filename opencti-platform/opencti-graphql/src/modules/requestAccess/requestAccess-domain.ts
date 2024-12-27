@@ -1,4 +1,3 @@
-import { meta } from 'eslint-plugin-react/lib/rules/jsx-props-no-spread-multi';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { CaseRfiAddInput, EditInput, RequestAccessAddInput } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
@@ -6,7 +5,7 @@ import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../util
 import { listAllFromEntitiesThroughRelations } from '../../database/middleware-loader';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { bookmarks, findById as findUserById } from '../../domain/user';
+import { findById as findUserById } from '../../domain/user';
 import { logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { updateAttribute } from '../../database/middleware';
