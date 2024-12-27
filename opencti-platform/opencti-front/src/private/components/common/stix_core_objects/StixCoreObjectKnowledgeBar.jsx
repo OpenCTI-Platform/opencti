@@ -67,7 +67,7 @@ const StixCoreObjectKnowledgeBar = ({
   stixCoreObjectLink,
   availableSections,
   queryRef,
-  attribution = [],
+  attribution,
 }) => {
   const { t_i18n, n } = useFormatter();
   const classes = useStyles();
