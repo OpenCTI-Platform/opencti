@@ -140,7 +140,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    console.log('VALUES', values);
     const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
