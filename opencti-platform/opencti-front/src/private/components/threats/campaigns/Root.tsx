@@ -53,10 +53,7 @@ const campaignQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Campaign_campaign
       ...CampaignKnowledge_campaign
       ...FileImportViewer_entity
@@ -127,7 +124,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                     'infrastructures',
                     'sightings',
                   ]}
-                  stixCoreObjectsDistribution={campaign.stixCoreObjectsDistribution}
+                  queryRef={campaign}
                   attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
               }

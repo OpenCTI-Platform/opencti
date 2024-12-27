@@ -54,10 +54,7 @@ const organizationQuery = graphql`
       entity_type
       name
       x_opencti_aliases
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Organization_organization
       ...OrganizationKnowledge_organization
       ...FileImportViewer_entity
@@ -153,7 +150,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                     'vulnerabilities',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={organization.stixCoreObjectsDistribution}
+                  queryRef={organization}
                 />
               )}
             />
