@@ -20513,7 +20513,7 @@ export type QueryIngestionTaxiiCollectionsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
-  orderBy?: InputMaybe<IngestionTaxiiOrdering>;
+  orderBy?: InputMaybe<IngestionTaxiiCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };

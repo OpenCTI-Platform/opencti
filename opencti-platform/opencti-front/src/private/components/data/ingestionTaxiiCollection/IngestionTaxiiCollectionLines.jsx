@@ -62,7 +62,7 @@ export const IngestionTaxiiCollectionLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: IngestionTaxiiOrdering
+    $orderBy: IngestionTaxiiCollectionOrdering
     $orderMode: OrderingMode
   ) {
     ...IngestionTaxiiCollectionLines_data

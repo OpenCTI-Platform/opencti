@@ -32,7 +32,7 @@ type Query {
     ingestionTaxiiCollections(
         first: Int
         after: ID
-        orderBy: IngestionTaxiiOrdering
+        orderBy: IngestionTaxiiCollectionOrdering
         orderMode: OrderingMode
         filters: FilterGroup
         includeAuthorities: Boolean
