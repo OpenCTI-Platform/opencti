@@ -171,7 +171,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableSelectAll'
 | 'selectOnLineClick'
 | 'createButton'
-| 'message'
+| 'canToggleLine'
 | 'useComputeLink'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode

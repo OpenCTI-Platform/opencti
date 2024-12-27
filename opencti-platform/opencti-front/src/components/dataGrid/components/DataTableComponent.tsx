@@ -7,7 +7,7 @@ import { DataTableColumn, DataTableColumns, DataTableProps, DataTableVariant, Lo
 import DataTableHeaders from './DataTableHeaders';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { DataTableProvider } from './DataTableContext';
-import { useComputeLink, useDataCellHelpers, useDataTableFormatter, useDataTableLocalStorage, useDataTablePaginationLocalStorage, useDataTableToggle } from '../dataTableHooks';
+import { useDataTableComputeLink, useDataCellHelpers, useDataTableFormatter, useDataTableLocalStorage, useDataTablePaginationLocalStorage, useDataTableToggle } from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 
 type DataTableComponentProps = Pick<DataTableProps,
@@ -34,6 +34,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'canToggleLine'
+| 'useComputeLink'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({
@@ -60,6 +61,7 @@ const DataTableComponent = ({
   disableSelectAll,
   selectOnLineClick,
   onLineClick,
+  useComputeLink,
   canToggleLine = true,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
@@ -135,7 +137,7 @@ const DataTableComponent = ({
         useDataTable: useDataTable(dataQueryArgs),
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink,
+        useComputeLink: useComputeLink ?? useDataTableComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),

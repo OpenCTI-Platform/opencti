@@ -156,13 +156,13 @@ const Playbooks: FunctionComponent = () => {
     },
     playbook_running: {
       id: 'playbook_running',
-      label: 'Status',
+      label: 'Playbook running',
       percentWidth: 25,
       isSortable: true,
       render: ({ playbook_running }) => (
         <ItemBoolean
           variant="inList"
-          label={playbook_running ? t_i18n('Active') : t_i18n('Inactive')}
+          label={playbook_running ? t_i18n('Yes') : t_i18n('No')}
           status={playbook_running}
         />
       ),
