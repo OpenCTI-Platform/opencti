@@ -37,6 +37,8 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -272,22 +274,26 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             style={fieldSpacingContainerStyle}
             askAi={true}
           />
-          <Alert
-            icon={false}
-            classes={{ root: classes.alert, message: classes.message }}
-            severity="warning"
-            variant="outlined"
-            style={fieldSpacingContainerStyle}
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
           >
-            <Field
-              name={'authorizedMembers'}
-              component={AuthorizedMembersField}
-              showAllMembersLine
-              showCreatorLine
-              canDeactivate
-              disabled={isSubmitting}
-            />
-          </Alert>
+            <Alert
+              icon={false}
+              classes={{ root: classes.alert, message: classes.message }}
+              severity="warning"
+              variant="outlined"
+              style={fieldSpacingContainerStyle}
+            >
+              <Field
+                name={'authorizedMembers'}
+                component={AuthorizedMembersField}
+                showAllMembersLine
+                showCreatorLine
+                canDeactivate
+                disabled={isSubmitting}
+              />
+            </Alert>
+          </Security>
           <Field
             component={RichTextField}
             name="content"
