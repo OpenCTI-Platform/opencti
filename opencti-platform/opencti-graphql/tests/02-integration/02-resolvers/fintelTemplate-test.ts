@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
-import { activateEE, deactivateEE } from '../../utils/testEE';
-import { adminQueryWithError } from '../../utils/testQueryHelper';
+import { adminQueryWithError, disableEE, enableEE } from '../../utils/testQueryHelper';
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 
@@ -51,6 +50,11 @@ const READ_QUERY = gql`
           dataSelection {
             perspective
             filters
+            columns {
+              variableName
+              label
+              attribute
+            }
           }
           parameters {
             title
@@ -81,6 +85,15 @@ const EDIT_QUERY = gql`
         variable_name
         widget {
           type
+          dataSelection {
+            perspective
+            filters
+            columns {
+              variableName
+              label
+              attribute
+            }
+          }
           parameters {
             title
           }
@@ -112,7 +125,7 @@ describe('Fintel template resolver standard behavior', () => {
   });
   it('should fintel template created', async () => {
     // Activate EE
-    await activateEE();
+    await enableEE();
     // Create the fintel template
     const fintelTemplate = await queryAsAdmin({
       query: CREATE_QUERY,
@@ -241,7 +254,6 @@ describe('Fintel template resolver standard behavior', () => {
       }
     });
     expect(queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets.length).toEqual(1);
-    expect(queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets[0].widget.parameters.title).toEqual('Observables contained in the container');
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult2).not.toBeNull();
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1);
@@ -265,6 +277,6 @@ describe('Fintel template resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.fintelTemplate).toBeNull();
     // Deactivate EE
-    await deactivateEE();
+    await disableEE();
   });
 });
