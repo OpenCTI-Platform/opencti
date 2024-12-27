@@ -126,6 +126,7 @@ export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEnti
   name: string
   description: string
   user_id: string | undefined
+  confidence_to_score: boolean
   ingestion_running: boolean
 }
 
@@ -139,6 +140,7 @@ export interface StixIngestionTaxiiCollection extends StixObject {
   name: string
   description: string
   ingestion_running: boolean
+  confidence_to_score: boolean
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }

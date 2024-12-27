@@ -41,7 +41,7 @@ const IngestionTaxiiCollections = () => {
       isSortable: true,
     },
     id: {
-      label: 'Push Collection ID',
+      label: 'Push Collection URI',
       width: '65%',
       isSortable: false,
     },

@@ -13,6 +13,7 @@ import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const styles = (theme) => ({
   buttons: {
@@ -36,14 +37,16 @@ const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
+  confidence_to_score: Yup.bool().nullable(),
 });
 
-const IngestionTaxiiCreation = (props) => {
+const IngestionTaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const input = {
       name: values.name,
       description: values.description,
+      confidence_to_score: values.confidence_to_score,
       user_id: values.user_id?.value,
     };
     commitMutation({
@@ -68,16 +71,14 @@ const IngestionTaxiiCreation = (props) => {
   };
 
   return (
-    <Drawer
-      title={t('Create a TAXII Push ingester')}
-      variant={DrawerVariant.createWithPanel}
-    >
+    <Drawer title={t('Create a TAXII Push ingester')} variant={DrawerVariant.createWithPanel}>
       {({ onClose }) => (
         <Formik
           initialValues={{
             name: '',
             description: '',
             user_id: '',
+            confidence_to_score: false,
           }}
           validationSchema={ingestionTaxiiCollectionCreationValidation(t)}
           onSubmit={onSubmit}
@@ -106,6 +107,13 @@ const IngestionTaxiiCreation = (props) => {
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="confidence_to_score"
+                label={t('Copy confidence level to OpenCTI scores for indicators')}
+                containerstyle={fieldSpacingContainerStyle}
+              />
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -133,7 +141,7 @@ const IngestionTaxiiCreation = (props) => {
   );
 };
 
-IngestionTaxiiCreation.propTypes = {
+IngestionTaxiiCollectionCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -143,4 +151,4 @@ IngestionTaxiiCreation.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IngestionTaxiiCreation);
+)(IngestionTaxiiCollectionCreation);

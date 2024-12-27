@@ -11,7 +11,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix, getCollectionById } from '../domain/taxii';
 import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
-import { pushBundleToConnectorQueue } from '../manager/ingestionManager';
+import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 
@@ -212,8 +212,9 @@ const initTaxiiApi = (app) => {
       if (ingestion.ingestion_running !== true) {
         throw UnsupportedError('Ingestion is not running');
       }
+      const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
       // Push the bundle in queue, return the job id
-      const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
+      const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };
       // Push the bundle to absorption queue
       const workId = await pushBundleToConnectorQueue(context, ingestion, bundle);
       sendJsonResponse(res, {

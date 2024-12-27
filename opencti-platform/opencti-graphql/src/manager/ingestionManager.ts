@@ -350,33 +350,37 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
 
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
 
+export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntityIngestionTaxii | BasicStoreEntityIngestionTaxiiCollection, objects: StixObject[]) => {
+  if (ingestion.confidence_to_score === true) {
+    return objects.map((o) => {
+      if (o.type === 'indicator') {
+        const indicator = o as StixIndicator;
+        if (isNotEmptyField(indicator.confidence)) {
+          if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
+            indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
+          } else if (indicator.extensions) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
+          } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
+          }
+          return indicator;
+        }
+      }
+      return o;
+    });
+  }
+  return objects;
+};
+
 export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-    let { objects } = data;
-    if (ingestion.confidence_to_score === true) {
-      objects = objects.map((o) => {
-        if (o.type === 'indicator') {
-          const indicator = o as StixIndicator;
-          if (isNotEmptyField(indicator.confidence)) {
-            if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
-              indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
-            } else if (indicator.extensions) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
-            } else {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
-            }
-            return indicator;
-          }
-        }
-        return o;
-      });
-    }
+    const objects = handleConfidenceToScoreTransformation(ingestion, data.objects);
     const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
     // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);

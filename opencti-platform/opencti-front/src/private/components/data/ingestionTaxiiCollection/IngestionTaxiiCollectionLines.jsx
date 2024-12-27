@@ -11,7 +11,7 @@ const nbOfRowsToLoad = 50;
 
 const interval$ = interval(FIVE_SECONDS);
 
-class IngestionTaxiiLines extends Component {
+class IngestionTaxiiCollectionLines extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetchConnection(200);
@@ -46,7 +46,7 @@ class IngestionTaxiiLines extends Component {
   }
 }
 
-IngestionTaxiiLines.propTypes = {
+IngestionTaxiiCollectionLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   refetchPaginationOptions: PropTypes.object,
@@ -77,7 +77,7 @@ export const IngestionTaxiiCollectionLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  IngestionTaxiiLines,
+  IngestionTaxiiCollectionLines,
   {
     data: graphql`
       fragment IngestionTaxiiCollectionLines_data on Query

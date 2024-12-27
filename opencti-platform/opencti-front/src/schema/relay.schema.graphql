@@ -11556,6 +11556,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   ingestion_running: Boolean
+  confidence_to_score: Boolean
   description: String
   user_id: String
   user: Creator
@@ -11582,6 +11583,7 @@ input IngestionTaxiiCollectionAddInput {
   name: String!
   description: String
   user_id: String
+  confidence_to_score: Boolean
 }
 
 type IngestionCsv implements InternalObject & BasicObject {

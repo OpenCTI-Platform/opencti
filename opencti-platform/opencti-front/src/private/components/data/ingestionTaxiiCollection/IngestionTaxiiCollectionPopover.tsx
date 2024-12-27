@@ -197,7 +197,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           if (props) {
             return (
               <IngestionTaxiiCollectionEdition
-                ingestionTaxii={props.ingestionTaxiiCollection}
+                ingestionTaxiiCollection={props.ingestionTaxiiCollection}
                 handleClose={handleCloseUpdate}
                 open={displayUpdate}
               />

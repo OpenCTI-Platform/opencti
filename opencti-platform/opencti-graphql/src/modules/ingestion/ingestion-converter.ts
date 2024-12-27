@@ -1,6 +1,14 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { buildStixObject, cleanObject } from '../../database/stix-converter';
-import type { StixIngestionCsv, StixIngestionRss, StixIngestionTaxii, StoreEntityIngestionCsv, StoreEntityIngestionRss, StoreEntityIngestionTaxii } from './ingestion-types';
+import type {
+  StixIngestionCsv,
+  StixIngestionRss,
+  StixIngestionTaxii,
+  StixIngestionTaxiiCollection,
+  StoreEntityIngestionCsv,
+  StoreEntityIngestionRss,
+  StoreEntityIngestionTaxii
+} from './ingestion-types';
 
 export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): StixIngestionRss => {
   const stixObject = buildStixObject(instance);
@@ -27,6 +35,23 @@ export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionTaxii)
     name: instance.name,
     description: instance.description,
     uri: instance.uri,
+    ingestion_running: instance.ingestion_running,
+    confidence_to_score: instance.confidence_to_score,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...stixObject.extensions[STIX_EXT_OCTI],
+        extension_type: 'new-sdo',
+      })
+    }
+  };
+};
+
+export const convertIngestionTaxiiCollectionToStix = (instance: StoreEntityIngestionTaxii): StixIngestionTaxiiCollection => {
+  const stixObject = buildStixObject(instance);
+  return {
+    ...stixObject,
+    name: instance.name,
+    description: instance.description,
     ingestion_running: instance.ingestion_running,
     confidence_to_score: instance.confidence_to_score,
     extensions: {

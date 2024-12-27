@@ -44,7 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IngestionTaxiiLineProps {
+interface IngestionTaxiiCollectionLineProps {
   node: IngestionTaxiiCollectionLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: (
@@ -56,7 +56,7 @@ interface IngestionTaxiiLineProps {
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables;
 }
 
-const ingestionTaxiiLineFragment = graphql`
+const ingestionTaxiiCollectionLineFragment = graphql`
     fragment IngestionTaxiiCollectionLine_node on IngestionTaxiiCollection {
         id
         name
@@ -65,14 +65,14 @@ const ingestionTaxiiLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<IngestionTaxiiLineProps> = ({
+export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const data = useFragment(ingestionTaxiiLineFragment, node);
+  const data = useFragment(ingestionTaxiiCollectionLineFragment, node);
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -135,10 +135,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"

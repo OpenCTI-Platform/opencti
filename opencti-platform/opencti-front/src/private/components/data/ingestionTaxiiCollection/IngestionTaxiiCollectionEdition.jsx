@@ -11,6 +11,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
 import { convertUser } from '../../../../utils/edition';
 import Drawer from '../../common/drawer/Drawer';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const ingestionTaxiiCollectionMutationFieldPatch = graphql`
   mutation IngestionTaxiiCollectionEditionFieldPatchMutation(
@@ -23,20 +24,21 @@ export const ingestionTaxiiCollectionMutationFieldPatch = graphql`
   }
 `;
 
-const ingestionTaxiiValidation = (t) => Yup.object().shape({
+const ingestionTaxiiCollectionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   user_id: Yup.mixed().nullable(),
+  confidence_to_score: Yup.bool().nullable(),
 });
 
-const IngestionTaxiiEditionContainer = ({
+const IngestionTaxiiCollectionEditionContainer = ({
   t,
   open,
   handleClose,
-  ingestionTaxii,
+  ingestionTaxiiCollection,
 }) => {
   const handleSubmitField = (name, value) => {
-    ingestionTaxiiValidation(t)
+    ingestionTaxiiCollectionValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         let finalValue = value;
@@ -46,7 +48,7 @@ const IngestionTaxiiEditionContainer = ({
         commitMutation({
           mutation: ingestionTaxiiCollectionMutationFieldPatch,
           variables: {
-            id: ingestionTaxii.id,
+            id: ingestionTaxiiCollection.id,
             input: { key: name, value: finalValue || '' },
           },
         });
@@ -54,14 +56,15 @@ const IngestionTaxiiEditionContainer = ({
       .catch(() => false);
   };
   const initialValues = R.pipe(
-    R.assoc('user_id', convertUser(ingestionTaxii, 'user')),
+    R.assoc('user_id', convertUser(ingestionTaxiiCollection, 'user')),
     R.pick([
       'name',
       'description',
       'user_id',
+      'confidence_to_score',
     ]),
-  )(ingestionTaxii);
-
+  )(ingestionTaxiiCollection);
+  console.log(ingestionTaxiiCollection);
   return (
     <Drawer
       title={t('Update a TAXII Push ingester')}
@@ -71,7 +74,7 @@ const IngestionTaxiiEditionContainer = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={ingestionTaxiiValidation(t)}
+        validationSchema={ingestionTaxiiCollectionValidation(t)}
       >
         {() => (
           <Form>
@@ -99,6 +102,14 @@ const IngestionTaxiiEditionContainer = ({
               containerStyle={fieldSpacingContainerStyle}
               showConfidence
             />
+            <Field
+              component={SwitchField}
+              onChange={handleSubmitField}
+              type="checkbox"
+              name="confidence_to_score"
+              label={t('Copy confidence level to OpenCTI scores for indicators')}
+              containerstyle={fieldSpacingContainerStyle}
+            />
           </Form>
         )}
       </Formik>
@@ -106,22 +117,23 @@ const IngestionTaxiiEditionContainer = ({
   );
 };
 
-IngestionTaxiiEditionContainer.propTypes = {
+IngestionTaxiiCollectionEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  ingestionTaxii: PropTypes.object,
+  ingestionTaxiiCollection: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const IngestionTaxiiEditionFragment = createFragmentContainer(
-  IngestionTaxiiEditionContainer,
+const IngestionTaxiiCollectionEditionFragment = createFragmentContainer(
+  IngestionTaxiiCollectionEditionContainer,
   {
-    ingestionTaxii: graphql`
+    ingestionTaxiiCollection: graphql`
       fragment IngestionTaxiiCollectionEdition_ingestionTaxii on IngestionTaxiiCollection {
         id
         name
         description
+        confidence_to_score
         user {
           id
           entity_type
@@ -134,4 +146,4 @@ const IngestionTaxiiEditionFragment = createFragmentContainer(
 
 export default R.compose(
   inject18n,
-)(IngestionTaxiiEditionFragment);
+)(IngestionTaxiiCollectionEditionFragment);

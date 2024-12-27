@@ -3,7 +3,8 @@ import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxii, type StoreEntityIngestionTaxii } from './ingestion-types';
-import { convertIngestionTaxiiToStix } from './ingestion-converter';
+import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
   type: {
@@ -26,12 +27,25 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'ingestion_running', label: 'Ingestion running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'confidence_to_score', label: 'Copy confidence level to OpenCTI scores for indicators', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
+    {
+      name: 'user_id',
+      label: 'User ID',
+      type: 'string',
+      format: 'id',
+      entityTypes: [ENTITY_TYPE_USER],
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      isFilterable: true
+    },
   ],
   relations: [],
   representative: (stix: StixIngestionTaxii) => {
     return stix.name;
   },
-  converter: convertIngestionTaxiiToStix
+  converter: convertIngestionTaxiiCollectionToStix
 };
 
 registerDefinition(INGESTION_DEFINITION);

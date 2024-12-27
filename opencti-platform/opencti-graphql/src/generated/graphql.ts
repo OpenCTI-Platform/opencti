@@ -11090,6 +11090,7 @@ export type IngestionTaxiiAddInput = {
 
 export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   __typename?: 'IngestionTaxiiCollection';
+  confidence_to_score?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
@@ -11104,6 +11105,7 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
 };
 
 export type IngestionTaxiiCollectionAddInput = {
+  confidence_to_score?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -36031,6 +36033,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxiiCollection'] = ResolversParentTypes['IngestionTaxiiCollection']> = ResolversObject<{
+  confidence_to_score?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
