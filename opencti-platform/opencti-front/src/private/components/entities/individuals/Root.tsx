@@ -55,10 +55,7 @@ const individualQuery = graphql`
       entity_type
       name
       x_opencti_aliases
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Individual_individual
       ...IndividualKnowledge_individual
       ...FileImportViewer_entity
@@ -155,7 +152,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={individual.stixCoreObjectsDistribution}
+                  queryRef={individual}
                 />
               )}
             />

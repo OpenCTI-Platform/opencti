@@ -52,10 +52,7 @@ const channelQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }   
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Channel_channel
       ...ChannelKnowledge_channel
       ...FileImportViewer_entity
@@ -124,7 +121,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                     'sightings',
                     'channels',
                   ]}
-                  stixCoreObjectsDistribution={channel.stixCoreObjectsDistribution}
+                  queryRef={channel}
                 />
               }
             />
