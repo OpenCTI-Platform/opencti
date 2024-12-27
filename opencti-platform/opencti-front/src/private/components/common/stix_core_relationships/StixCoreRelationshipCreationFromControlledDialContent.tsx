@@ -220,7 +220,7 @@ const RenderForm = ({
   const location = useLocation();
   const [reversed, setReversed] = useState<boolean>(initiallyReversed ?? false);
   const isRelatedTo = location.pathname.includes('/knowledge/related');
-  const isObservable = location.pathname.includes('/observations/observables');
+  const isObservable = location.pathname.includes('/observables');
 
   let fromEntities = [sourceEntity];
   let toEntities = targetEntities;

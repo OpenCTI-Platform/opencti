@@ -180,7 +180,10 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                   <IndividualEdition individualId={individual.id} />
                 </Security>
               )}
-              RelateComponent={CreateRelationshipButtonComponent}
+              RelateComponent={viewAs === 'knowledge'
+                ? CreateRelationshipButtonComponent
+                : undefined
+              }
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
