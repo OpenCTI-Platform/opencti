@@ -5,7 +5,7 @@ import { print } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
-import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../src/utils/access';
+import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
@@ -22,7 +22,7 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1149;
+export const RAW_EVENTS_SIZE = 1154;
 export const SYNC_LIVE_EVENTS_SIZE = 608;
 
 export const PYTHON_PATH = './src/python/testing';
@@ -114,7 +114,7 @@ export const ROLE_EDITOR: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration and edit/delete' }),
   name: 'Access knowledge/exploration and edit/delete',
   description: 'Knowledge/exploration edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE_PUBLISH', KNOWLEDGE_ORGANIZATION_RESTRICT]
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE_PUBLISH', 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT']
 };
 TESTING_ROLES.push(ROLE_EDITOR);
 
