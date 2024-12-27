@@ -11057,7 +11057,6 @@ __metadata:
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
     passport: "npm:0.7.0"
-    passport-auth0: "npm:1.4.4"
     passport-facebook: "npm:3.0.0"
     passport-github: "npm:1.1.0"
     passport-google-oauth: "npm:2.0.0"
@@ -11287,17 +11286,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-auth0@npm:1.4.4":
-  version: 1.4.4
-  resolution: "passport-auth0@npm:1.4.4"
-  dependencies:
-    axios: "npm:^1.6.0"
-    passport-oauth: "npm:^1.0.0"
-    passport-oauth2: "npm:^1.6.0"
-  checksum: 10/307d2d8d687a29dbe2fc98fbee1cc948f76e936c6ae7ffeb28076c98b558a942be1cbc0eedb58d9003285bf4e816f6e971b0edb7a604d290272b1ba8e731006d
-  languageName: node
-  linkType: hard
-
 "passport-facebook@npm:3.0.0":
   version: 3.0.0
   resolution: "passport-facebook@npm:3.0.0"
@@ -11374,7 +11362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-oauth2@npm:1.x.x, passport-oauth2@npm:^1.6.0":
+"passport-oauth2@npm:1.x.x":
   version: 1.8.0
   resolution: "passport-oauth2@npm:1.8.0"
   dependencies:
@@ -11384,16 +11372,6 @@ __metadata:
     uid2: "npm:0.0.x"
     utils-merge: "npm:1.x.x"
   checksum: 10/31af6c59686bdc0460f3099a857ae4243952b44ad1afc5a12779524711ea97266491e97f83671120f84575b2c6202f3cf0bb8500fdc5a6414e10ff45617454ca
-  languageName: node
-  linkType: hard
-
-"passport-oauth@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "passport-oauth@npm:1.0.0"
-  dependencies:
-    passport-oauth1: "npm:1.x.x"
-    passport-oauth2: "npm:1.x.x"
-  checksum: 10/e6d908ac6c305db1f4040538360c29ca1427b27772c74abaa75db24647db7ee1ccd9c6ccc1bb74649bca090f31f3225540539219b4a97b31c0c1434f4a9ee7b3
   languageName: node
   linkType: hard
 
