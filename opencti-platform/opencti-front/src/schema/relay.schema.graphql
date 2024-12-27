@@ -3404,6 +3404,7 @@ input ReportAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  authorized_members: [MemberAccessInput!]
 }
 
 enum CoursesOfActionOrdering {
@@ -9445,6 +9446,7 @@ input GroupingAddInput {
   x_opencti_workflow_id: String
   update: Boolean
   file: Upload
+  authorized_members: [MemberAccessInput!]
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -10531,6 +10533,7 @@ input CaseIncidentAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
+  authorized_members: [MemberAccessInput!]
 }
 
 type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10655,6 +10658,7 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10780,6 +10784,7 @@ input CaseRftAddInput {
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
