@@ -54,10 +54,7 @@ const ThreatActorIndividualQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
       ...FileImportViewer_entity
@@ -144,7 +141,7 @@ const RootThreatActorIndividualComponent = ({
                     'sightings',
                     'countries',
                   ]}
-                  stixCoreObjectsDistribution={threatActorIndividual.stixCoreObjectsDistribution}
+                  queryRef={threatActorIndividual}
                 />
              }
             />

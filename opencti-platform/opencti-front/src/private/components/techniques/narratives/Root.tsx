@@ -52,10 +52,7 @@ const narrativeQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Narrative_narrative
       ...NarrativeKnowledge_narrative
       ...FileImportViewer_entity
@@ -118,7 +115,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                     'observables',
                     'sightings',
                   ]}
-                  stixCoreObjectsDistribution={narrative.stixCoreObjectsDistribution}
+                  queryRef={narrative}
                 />
               }
             />

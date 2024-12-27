@@ -22,10 +22,7 @@ const infrastructureKnowledgeFragment = graphql`
     aliases
     first_seen
     last_seen
-    stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-      label
-      value
-    }
+    ...StixCoreObjectKnowledgeBar_stixCoreObject
   }
 `;
 
@@ -39,7 +36,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
     <>
       <StixCoreObjectKnowledgeBar
         stixCoreObjectLink={link}
-        stixCoreObjectsDistribution={infrastructureData.stixCoreObjectsDistribution}
+        queryRef={infrastructureData}
         availableSections={[
           'threats',
           'threat_actors',
