@@ -9,6 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
+import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
@@ -32,25 +33,59 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
+const stixCoreObjectKnowledgeBarFragment = graphql`
+  fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject {
+    distributionWithoutRelatedEntities: stixCoreRelationshipsDistribution(
+      field: "entity_type"
+      operation: count
+      relationship_type: [
+        "part-of"
+        "cooperates-with"
+        "employed-by"
+        "derived-from"
+        "attributed-to"
+        "participates-in"
+        "uses"
+        "authored-by"
+        "targets"
+        "compromises"
+      ]
+    ) {
+      label
+      value
+    }
+    relatedEntities: stixCoreRelationships(relationship_type: "related-to") {
+      pageInfo {
+        globalCount
+      }
+    }
+  }
+`;
+
 const StixCoreObjectKnowledgeBar = ({
   stixCoreObjectLink,
   availableSections,
-  stixCoreObjectsDistribution,
-  attribution,
+  queryRef,
+  attribution = [],
 }) => {
   const { t_i18n, n } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
   const { bannerSettings, schema } = useAuth();
   const isInAvailableSection = (sections) => R.any((filter) => R.includes(filter, sections), availableSections);
+  const { distributionWithoutRelatedEntities, relatedEntities } = useFragment(
+    stixCoreObjectKnowledgeBarFragment,
+    queryRef,
+  );
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const statistics = stixCoreObjectsDistribution ? R.indexBy(R.prop('label'), stixCoreObjectsDistribution) : {};
+  const statistics = distributionWithoutRelatedEntities ? R.indexBy(R.prop('label'), distributionWithoutRelatedEntities) : {};
   const statisticsThreats = R.sum(R.values(R.pick(['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident'], statistics)).map((o) => o.value));
   const statisticsThreatActors = R.sum(R.values(R.pick(['Threat-Actor-Individual', 'Threat-Actor-Group'], statistics)).map((o) => o.value));
   const statisticsVictims = R.sum(R.values(R.pick(['Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area'], statistics)).map((o) => o.value));
   const statisticsAttributions = R.sum(R.values(R.pick((attribution ?? []), statistics)).map((o) => o.value));
   const statisticsLocations = R.sum(R.values(R.pick(['Region', 'Country', 'City', 'Position', 'Administrative-Area'], statistics)).map((o) => o.value));
   const statisticsObservables = R.sum(R.values(R.pick([...schema.scos.map((s) => s.id), 'Ipv4-Addr', 'Ipv6-Addr'], statistics)).map((o) => o.value));
+  const statisticsRelatedEntities = relatedEntities ? relatedEntities.pageInfo.globalCount : 0;
   return (
     <Drawer
       variant="permanent"
@@ -745,7 +780,7 @@ const StixCoreObjectKnowledgeBar = ({
           <ListItemIcon style={{ minWidth: 28 }}>
             <ItemIcon size="small" type="related" />
           </ListItemIcon>
-          <ListItemText primary={t_i18n('Related entities')} />
+          <ListItemText primary={`${t_i18n('Related entities')}${statisticsRelatedEntities > 0 ? ` (${n(statisticsRelatedEntities)}` : ''})`} />
         </MenuItem>
       </MenuList>
     </Drawer>
