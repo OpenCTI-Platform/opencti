@@ -24,7 +24,7 @@ const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
     id
     target_type
-    fintelTemplates {
+    fintelTemplates (orderBy: name, orderMode: asc) {
       edges {
         node {
           id
