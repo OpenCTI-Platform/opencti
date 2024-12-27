@@ -2041,6 +2041,7 @@
   "Only contextual": "Seulement contextuel",
   "Only successful tests allow the ingestion creation.": "Seuls les tests réussis permettent la création de l'ingestion.",
   "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion.",
+  "Open correlation details": "Détails de la corrélation ouverte",
   "Open export panel": "Ouvrir le volet d'export",
   "Open last execution traces": "Ouvrir les dernières traces d'exécution",
   "Open Settings": "Ouvrir les paramètres",

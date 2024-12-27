@@ -2041,6 +2041,7 @@
   "Only contextual": "맥락에만",
   "Only successful tests allow the ingestion creation.": "성공적인 테스트만 인게스트 생성을 허용합니다.",
   "Only successful tests allow the ingestion edition.": "성공적인 테스트만 인게스트 에디션을 허용합니다.",
+  "Open correlation details": "상관관계 세부 정보 열기",
   "Open export panel": "내보내기 패널 열기",
   "Open last execution traces": "마지막 실행 흔적 열기",
   "Open Settings": "설정 열기",

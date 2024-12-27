@@ -2041,6 +2041,7 @@
   "Only contextual": "条件に応じて起動",
   "Only successful tests allow the ingestion creation.": "成功したテストのみが取り込みの作成を許可します。",
   "Only successful tests allow the ingestion edition.": "成功したテストのみがインジェスト版を許可します。",
+  "Open correlation details": "相関関係の詳細を開く",
   "Open export panel": "出力画面を開く",
   "Open last execution traces": "最後の実行トレースを開く",
   "Open Settings": "設定を開く",
