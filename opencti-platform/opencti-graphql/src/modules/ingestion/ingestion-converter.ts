@@ -7,7 +7,8 @@ import type {
   StixIngestionTaxiiCollection,
   StoreEntityIngestionCsv,
   StoreEntityIngestionRss,
-  StoreEntityIngestionTaxii
+  StoreEntityIngestionTaxii,
+  StoreEntityIngestionTaxiiCollection
 } from './ingestion-types';
 
 export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): StixIngestionRss => {
@@ -46,7 +47,7 @@ export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionTaxii)
   };
 };
 
-export const convertIngestionTaxiiCollectionToStix = (instance: StoreEntityIngestionTaxii): StixIngestionTaxiiCollection => {
+export const convertIngestionTaxiiCollectionToStix = (instance: StoreEntityIngestionTaxiiCollection): StixIngestionTaxiiCollection => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,

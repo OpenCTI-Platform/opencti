@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxii, type StoreEntityIngestionTaxii } from './ingestion-types';
+import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxiiCollection, type StoreEntityIngestionTaxiiCollection } from './ingestion-types';
 import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
+const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
   type: {
     id: 'ingestion-taxii-collection',
     name: ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
@@ -42,7 +42,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     },
   ],
   relations: [],
-  representative: (stix: StixIngestionTaxii) => {
+  representative: (stix: StixIngestionTaxiiCollection) => {
     return stix.name;
   },
   converter: convertIngestionTaxiiCollectionToStix

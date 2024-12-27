@@ -134,6 +134,7 @@ export interface StoreEntityIngestionTaxiiCollection extends StoreEntity {
   name: string
   description: string
   ingestion_running: boolean
+  confidence_to_score: boolean
 }
 
 export interface StixIngestionTaxiiCollection extends StixObject {
