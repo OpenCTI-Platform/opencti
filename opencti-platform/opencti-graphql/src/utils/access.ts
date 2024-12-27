@@ -20,8 +20,6 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
-import { type ListAllEntitiesThroughRelation, listAllEntitiesThroughRelations, listAllFromEntitiesThroughRelations } from '../database/middleware-loader';
-import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
