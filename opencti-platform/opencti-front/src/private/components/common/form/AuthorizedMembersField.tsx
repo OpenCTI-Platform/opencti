@@ -279,7 +279,7 @@ const AuthorizedMembersField = ({
             {canDeactivate && (
               <Field
                 component={SwitchField}
-                containerstyle={{ marginTop: 15, paddingLeft: 2 }}
+                containerstyle={{ marginTop: 15, paddingLeft: 10 }}
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
