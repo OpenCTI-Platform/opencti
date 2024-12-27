@@ -490,7 +490,20 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           providerLoginHandler({ email, name }, done);
         }
       );
+
+      // https://www.passportjs.org/tutorials/auth0/logout/
+      const authDomain = mappedConfig.domain;
       auth0Strategy.logout_remote = mappedConfig.logout_remote;
+      auth0Strategy.logout = (req, callback) => {
+        logApp.info('[AUTH0] Remote logout');
+        const params = {
+          client_id: mappedConfig.clientID,
+          returnTo: mappedConfig.baseURL
+        };
+        const URLParams = new URLSearchParams(params).toString();
+        const endpointUri = `https://${authDomain}/v2/logout?${URLParams}`;
+        callback(null, endpointUri);
+      };
       passport.use(providerRef, auth0Strategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }

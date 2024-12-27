@@ -357,19 +357,26 @@ const createApp = async (app) => {
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);
           if (strategy) {
-            if (strategy.logout_remote === true && strategy.logout) {
-              logApp.debug('Logout: requesting remote logout using authentication strategy parameters.');
-              req.user = user; // Needed for passport
-              strategy.logout(req, (error, request) => {
-                if (error) {
-                  setCookieError(res, 'Error generating logout uri');
-                  res.status(503).send({ status: 'error', error: error.message });
-                } else {
-                  res.redirect(request);
-                }
-              });
+            if (strategy.logout_remote === true) {
+              if (strategy.logout) {
+                logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
+                req.user = user; // Needed for passport
+                strategy.logout(req, (error, request) => {
+                  // When logout is implemented for strategy by passeport
+                  if (error) {
+                    setCookieError(res, 'Error generating logout uri');
+                    res.status(503).send({ status: 'error', error: error.message });
+                  } else {
+                    logApp.debug('[LOGOUT] Remote logout ok');
+                    res.redirect(request);
+                  }
+                });
+              } else {
+                logApp.info('[LOGOUT] No remote logout implementation found in strategy.');
+                res.redirect(referer);
+              }
             } else {
-              logApp.debug('Logout: OpenCTI logout only, remote logout on IDP not requested.');
+              logApp.info('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
           } else {
