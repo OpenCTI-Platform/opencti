@@ -49,6 +49,7 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
         "authored-by"
         "targets"
         "compromises"
+        "located-at"
       ]
     ) {
       label
@@ -780,7 +781,7 @@ const StixCoreObjectKnowledgeBar = ({
           <ListItemIcon style={{ minWidth: 28 }}>
             <ItemIcon size="small" type="related" />
           </ListItemIcon>
-          <ListItemText primary={`${t_i18n('Related entities')}${statisticsRelatedEntities > 0 ? ` (${n(statisticsRelatedEntities)}` : ''})`} />
+          <ListItemText primary={`${t_i18n('Related entities')}${statisticsRelatedEntities > 0 ? ` (${n(statisticsRelatedEntities)})` : ''}`} />
         </MenuItem>
       </MenuList>
     </Drawer>
@@ -791,6 +792,7 @@ StixCoreObjectKnowledgeBar.propTypes = {
   id: PropTypes.string,
   stixCoreObjectLink: PropTypes.string,
   availableSections: PropTypes.array,
+  queryRef: PropTypes.object,
   attribution: PropTypes.arrayOf(PropTypes.string),
 };
 
