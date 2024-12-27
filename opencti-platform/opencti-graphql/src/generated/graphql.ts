@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -34,6 +34,7 @@ import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreEntityExclusionList } from '../modules/exclusionList/exclusionList-types';
+
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -2423,6 +2424,7 @@ export type CaseIncidentTemplateAndUtilsArgs = {
 };
 
 export type CaseIncidentAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -2731,6 +2733,7 @@ export type CaseRfiTemplateAndUtilsArgs = {
 };
 
 export type CaseRfiAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -3038,6 +3041,7 @@ export type CaseRftTemplateAndUtilsArgs = {
 };
 
 export type CaseRftAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -8579,6 +8583,7 @@ export type GroupingTemplateAndUtilsArgs = {
 };
 
 export type GroupingAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -22788,6 +22793,7 @@ export type ReportTemplateAndUtilsArgs = {
 };
 
 export type ReportAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
