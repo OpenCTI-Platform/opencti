@@ -167,7 +167,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
     setCreateRelationshipContext({
       paginationOptions,
     });
-  }, []);
+  }, [localStorage]);
 
   return (
     <>

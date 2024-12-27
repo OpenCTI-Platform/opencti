@@ -179,7 +179,10 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                   <OrganizationEdition organizationId={organization.id} />
                 </Security>
               )}
-              RelateComponent={CreateRelationshipButtonComponent}
+              RelateComponent={viewAs === 'knowledge'
+                ? CreateRelationshipButtonComponent
+                : undefined
+              }
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
