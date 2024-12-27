@@ -16,6 +16,8 @@ import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
+export const fintelTemplatesFragmentParams = { orderBy: 'name', orderMode: 'asc' };
+
 const fintelTemplatesFragment = graphql`
   fragment FintelTemplatesGrid_templates on EntitySetting {
     id

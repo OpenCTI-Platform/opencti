@@ -1,5 +1,6 @@
 import { graphql, UseMutationConfig } from 'react-relay';
 import { useState } from 'react';
+import { fintelTemplatesFragmentParams } from '@components/settings/sub_types/fintel_templates/FintelTemplatesGrid';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFintelTemplateDeleteMutation } from './__generated__/useFintelTemplateDeleteMutation.graphql';
 import { deleteNodeFromEdge } from '../../../../../utils/store';
@@ -27,6 +28,7 @@ const useFintelTemplateFormDelete = (entitySettingId: string) => {
           'fintelTemplates',
           entitySettingId,
           id,
+          fintelTemplatesFragmentParams,
         );
       },
       onError: (error) => {

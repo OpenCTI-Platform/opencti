@@ -13,9 +13,8 @@ import {
   USER_EDITOR,
   USER_SECURITY
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, disableEE, enableCEAndUnSetOrganization, enableEE, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
-import { activateEE, deactivateEE } from '../../utils/testEE';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -480,7 +479,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
   it('should EE activated', async () => {
-    await activateEE();
+    await enableEE();
   });
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
@@ -517,7 +516,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
   it('should EE deactivated', async () => {
-    await deactivateEE();
+    await disableEE();
   });
 });
 
