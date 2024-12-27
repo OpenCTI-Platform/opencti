@@ -479,31 +479,29 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       // Auth0 is a specific implementation of OpenID
       // note maybe one day it will be removed to keep only STRATEGY_OPENID.
       const providerRef = identifier || 'auth0';
-      const authDomain = mappedConfig.domain;
+      const authDomain = config.domain;
       const auth0Issuer = `https://${authDomain}/`;
+
       const auth0OpenIDConfiguration = {
         issuer: auth0Issuer,
         authorizationURL: `https://${authDomain}/authorize`,
         tokenURL: `https://${authDomain}/oauth/token`,
         userInfoURL: `https://${authDomain}/userinfo`,
-        client_id: mappedConfig.clientID,
-        client_secret: mappedConfig.clientSecret,
-        redirect_uri: mappedConfig.callback_url
+        client_id: config.clientID,
+        client_secret: config.clientSecret,
+        redirect_uri: config.callback_url
       };
       const auth0config = { ...config, ...auth0OpenIDConfiguration };
-      logApp.error('[AUTH0] Configuration', { auth0config });
 
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
       const openIdClient = auth0config.use_proxy ? getPlatformHttpProxyAgent(auth0Issuer) : undefined;
       OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
       OpenIDIssuer.discover(auth0Issuer).then((issuer) => {
-        logApp.info('[AUTH0] Configuration issuer', { issuer });
         const { Client } = issuer;
         const client = new Client(auth0config);
         const openIdScope = mappedConfig.scope ?? 'openid email profile';
         const options = { ...auth0OpenIDConfiguration, logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true, params: { scope: openIdScope } };
-        logApp.info('[AUTH0] Configuration options', { options });
         const debugCallback = (message, meta) => logApp.info(message, meta);
         const auth0Strategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logApp.info('[AUTH0] Successfully logged', { userinfo });
