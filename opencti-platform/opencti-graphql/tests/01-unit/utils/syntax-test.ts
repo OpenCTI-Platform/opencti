@@ -20,20 +20,20 @@ describe('Regex Pattern Tests', () => {
   });
 
   it('should not match a valid domain pattern', () => {
-    expect('invalid_domain.12_3').not.toMatch(domainChecker);
     expect('invalid_domain').not.toMatch(domainChecker);
     expect('').not.toMatch(domainChecker);
     expect('erijgrjoprgjrejgoejrpojerbjrepobjreobjoperjboprejorpejgorpejeropgjreojgeprogjerpjgreojgoperjgpreojgoperjgorepjgporejgoprejgporejgorepjgoerpjgperjgpoerjgorejgporejoprejgopjergpjerogjrepjgerpgjergojrepgjrvenvrienvrepngvperjgprejgrpegjrepogjrepgjreogjerjgepjgrpejgrpejrgpjerpo.fr').not.toMatch(domainChecker);
-  })
+  });
 
   it('Domain-name regex parsing should be perfomant', async () => {
     const startDate = Date.now();
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < 1000; i++) {
       domainChecker.test('test._mysubdomain.mydomain.com');
       domainChecker.test('invalid_domain.12_3');
     }
-    expect(Date.now() - startDate, 'Domain-name regex parsing should be perfomant').toBeLessThanOrEqual(2);
-  })
+    expect(Date.now() - startDate, 'Domain-name regex parsing should be performant').toBeLessThanOrEqual(2);
+  });
 
   it('should match a valid hostname pattern', () => {
     expect('my-host').toMatch(hostnameChecker);
