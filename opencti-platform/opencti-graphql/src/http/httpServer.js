@@ -93,12 +93,25 @@ const createHttpServer = async () => {
       throw ForbiddenAccess('User must be authenticated');
     },
   }, wsServer);
+
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
     async serverWillStart() {
       return {
         async drainServer() {
           serverCleanup.dispose();
+        },
+        async renderLandingPage() {
+          const html = `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                </head>
+                <body>
+                  <h1>Vive OpenCTI</h1>
+                </body>
+              </html>`;
+          return { html };
         },
       };
     },
