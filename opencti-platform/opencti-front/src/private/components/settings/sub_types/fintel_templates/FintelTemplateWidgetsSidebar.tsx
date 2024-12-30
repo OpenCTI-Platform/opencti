@@ -13,9 +13,13 @@ import IconButton from '@mui/material/IconButton';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
+import FilterIconButton from '../../../../../components/FilterIconButton';
+import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
+import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
 export const FINTEL_TEMPLATE_SIDEBAR_WIDTH = 350;
 
@@ -54,9 +58,19 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { id, content, fintel_template_widgets: fintelTemplates } = useFragment(widgetsFragment, data);
 
-  const availableVariableNames = fintelTemplates.map((template) => (template.widget.type === 'attribute'
-    ? (template.widget.dataSelection[0].columns ?? []).map((c) => c.variableName)
-    : template.variable_name)).flat() as string[];
+  const availableWidgets = fintelTemplates
+    .map((template) => (template.widget.type === 'attribute'
+      ? (template.widget.dataSelection[0].columns ?? []).map((c) => ({
+        variableName: c.variableName,
+        type: template.widget.type,
+        attribute: c.attribute,
+      }))
+      : {
+        variableName: template.variable_name,
+        type: template.widget.type,
+        filters: template.widget.dataSelection[0].filters,
+      }))
+    .flat() as { variableName: string, type: string, filters?: string, attribute?: string }[];
   const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
 
   const paperStyle: SxProps = {
@@ -95,14 +109,15 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       <Toolbar />
       {t_i18n('Template widgets')}
       <List>
-        {availableVariableNames.map((variableName) => {
+        {availableWidgets.map((widget) => {
+          const { variableName } = widget;
           const isNotExpanded = expandedLines[variableName] === undefined || expandedLines[variableName] === false;
           return (
             <>
               <ListItem
                 key={id}
                 value={variableName}
-                dense={true}
+                style={{ marginLeft: -25, marginBottom: -10 }}
               >
                 <Checkbox
                   size="small"
@@ -126,7 +141,24 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
               <Collapse
                 in={!isNotExpanded}
               >
-                test
+                <div style={{ marginLeft: 30 }}>
+                  {`${t_i18n('Type')}: `}
+                  <Chip
+                    label={t_i18n(widget.type).toUpperCase()}
+                  />
+                  {widget.type === 'attribute'
+                    ? <div>
+                      {`${t_i18n('Attribute')}: `}
+                      {widget.attribute}
+                    </div>
+                    : <div>
+                      {`${t_i18n('Filters')}: `}
+                      <FieldOrEmpty source={widget.filters}>
+                        <FilterIconButton filters={widget.filters ? JSON.parse(widget.filters) : emptyFilterGroup}/>
+                      </FieldOrEmpty>
+                    </div>
+                  }
+                </div>
               </Collapse>
             </>
           );
