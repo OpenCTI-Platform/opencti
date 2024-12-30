@@ -10,10 +10,13 @@ import useFintelTemplateEdit from '@components/settings/sub_types/fintel_templat
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import IconButton from '@mui/material/IconButton';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, MoreVert } from '@mui/icons-material';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
 import Chip from '@mui/material/Chip';
+import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
+import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
@@ -72,6 +75,8 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       }))
     .flat() as { variableName: string, type: string, filters?: string, attribute?: string }[];
   const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
+  const [openedPopover, setOpenedPopover] = useState<string | null>(null);
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
 
   const paperStyle: SxProps = {
     '.MuiDrawer-paper': {
@@ -89,6 +94,24 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
           ? !expandedLines[lineKey]
           : true,
     });
+  };
+
+  const handleOpenPopover = (event: React.SyntheticEvent, lineKey: string) => {
+    setAnchorEl(event.currentTarget);
+    setOpenedPopover(lineKey);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+    setOpenedPopover(null);
+  };
+
+  const handleOpenUpdate = () => {
+    handleClosePopover();
+  };
+
+  const handleOpenDelete = () => {
+    handleClosePopover();
   };
 
   const [commitEditMutation] = useFintelTemplateEdit();
@@ -111,6 +134,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       <List>
         {availableWidgets.map((widget) => {
           const { variableName } = widget;
+          const isChecked = content.includes(`${variableName}`);
           const isNotExpanded = expandedLines[variableName] === undefined || expandedLines[variableName] === false;
           return (
             <>
@@ -121,21 +145,41 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
               >
                 <Checkbox
                   size="small"
-                  checked={content.includes(`${variableName}`)}
+                  checked={isChecked}
                   onClick={() => handleWidgetClick(variableName)}
                 />
                 <ListItemText primary={variableName}/>
                 <ListItemSecondaryAction>
                   <IconButton
                     aria-haspopup="true"
-                    size="large"
+                    size="medium"
                     onClick={() => handleToggleLine(variableName)}
                   >
                     {isNotExpanded
                       ? (<ExpandMore />)
                       : (<ExpandLess />)
-                  }
+                    }
                   </IconButton>
+                  <IconButton
+                    aria-haspopup="true"
+                    color="primary"
+                    size="small"
+                    onClick={(event) => handleOpenPopover(event, variableName)}
+                  >
+                    <MoreVert />
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={openedPopover === variableName}
+                    onClose={handleClosePopover}
+                  >
+                    <MenuItem onClick={handleOpenUpdate}>
+                      {t_i18n('Update')}
+                    </MenuItem>
+                    <MenuItem disabled={isChecked} onClick={handleOpenDelete}>
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  </Menu>
                 </ListItemSecondaryAction>
               </ListItem>
               <Collapse
