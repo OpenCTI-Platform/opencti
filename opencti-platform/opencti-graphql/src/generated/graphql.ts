@@ -23507,6 +23507,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
   platform_whitemark?: Maybe<Scalars['Boolean']['output']>;
+  playground_enabled: Scalars['Boolean']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -39329,6 +39330,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
   platform_whitemark?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  playground_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
