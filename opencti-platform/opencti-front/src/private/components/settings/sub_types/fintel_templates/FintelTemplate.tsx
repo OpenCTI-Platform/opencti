@@ -6,7 +6,7 @@ import FintelTemplateContentEditor from './FintelTemplateContentEditor';
 import FintelTemplateTabs from './FintelTemplateTabs';
 import FintelTemplateHeader from './FintelTemplateHeader';
 import { FintelTemplateQuery } from './__generated__/FintelTemplateQuery.graphql';
-import FintelTemplateSidebar, { FINTEL_TEMPLATE_SIDEBAR_WIDTH } from './FintelTemplateSidebar';
+import FintelTemplateWidgetsSidebar, { FINTEL_TEMPLATE_SIDEBAR_WIDTH } from './FintelTemplateWidgetsSidebar';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
@@ -23,6 +23,7 @@ export const fintelTemplateQuery = graphql`
       ...FintelTemplateTabs_template
       ...FintelTemplateHeader_template
       ...FintelTemplateContentEditor_template
+      ...FintelTemplateWidgetsSidebar_template
     }
   }
 `;
@@ -65,7 +66,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
         </FintelTemplateTabs>
       </div>
 
-      <FintelTemplateSidebar />
+      <FintelTemplateWidgetsSidebar data={fintelTemplate} />
     </>
   );
 };
