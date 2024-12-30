@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 
-const PublicTopBar = () => {
+const PublicTopBar = ({ title }: { title: string }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
@@ -36,7 +36,7 @@ const PublicTopBar = () => {
               pointerEvents: 'none',
             }}
           >
-            {t_i18n('Public dashboard')}
+            {t_i18n(title)}
           </Button>
         </div>
       </Toolbar>
