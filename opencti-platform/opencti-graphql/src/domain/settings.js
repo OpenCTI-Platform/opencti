@@ -246,7 +246,7 @@ export const getMessagesFilteredByRecipients = (user, settings) => {
 
 export const isPlaygroundEnabled = () => {
   return PLAYGROUND_ENABLED;
-}
+};
 
 export const settingEditMessage = async (context, user, settingsId, message) => {
   const messageToStore = {
