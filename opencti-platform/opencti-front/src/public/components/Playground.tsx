@@ -8,7 +8,6 @@ import PublicTopBar from './PublicTopBar';
 const fetcher = createGraphiQLFetcher({ url: `${APP_BASE_PATH}/graphql` });
 
 const Playground: React.FC = () => {
-  console.log('playground');
   return (
     <>
       <PublicTopBar title={'GraphQL playground'} />

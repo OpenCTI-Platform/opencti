@@ -1436,6 +1436,7 @@ type Settings implements InternalObject & BasicObject {
   platform_messages: [SettingsMessage!]
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
+  playground_enabled: Boolean!
   editContext: [EditUserContext!]
 }
 

@@ -1358,6 +1358,7 @@ type Settings implements InternalObject & BasicObject {
   platform_messages: [SettingsMessage!] @auth
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String @auth
+  playground_enabled: Boolean!
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
 }

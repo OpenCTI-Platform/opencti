@@ -26,7 +26,6 @@ const PublicRoot = () => {
     rootPublicQuery,
     queryRef,
   );
-  console.log('in public');
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
