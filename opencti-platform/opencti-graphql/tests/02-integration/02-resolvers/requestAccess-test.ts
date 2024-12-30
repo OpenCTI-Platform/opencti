@@ -201,4 +201,9 @@ describe('Add Request Access to an entity and create an RFI', async () => {
     });
     expect(queryResult?.data?.caseRfi).not.toBeNull();
   });
+
+  it('should delete malware and RFI created by test', async () => {
+    await internalDeleteElementById(testContext, ADMIN_USER, malwareId);
+    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiId);
+  });
 });
