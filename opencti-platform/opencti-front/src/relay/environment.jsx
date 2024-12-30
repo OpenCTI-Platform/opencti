@@ -172,12 +172,20 @@ export const fetchQuery = (query, args) => FQ(environment, query, args);
 export const commitLocalUpdate = (updater) => CLU(environment, updater);
 
 export const handleErrorInForm = (error, setErrors) => {
+  console.log('coucou le res error', error.res.errors);
   const formattedError = R.head(error.res.errors);
   if (formattedError.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
       formattedError.data.message || formattedError.data.reason,
     });
+  } else if (formattedError.extensions.code === 'ACCESS_REQUIRED') {
+    console.log('COUCOU JE SUIS PASSEE');
+    const messages = [{
+        type: 'restricted_error',
+        text: 'restricted access required',
+      }];
+    MESSAGING$.messages.next(messages);
   } else {
     const messages = R.map(
       (e) => ({

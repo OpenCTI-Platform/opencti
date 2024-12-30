@@ -9,19 +9,20 @@ import inject18n from './i18n';
 class Message extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, error: false, text: '' };
+    this.state = { open: false, error: false, text: '', type: '' };
   }
 
   componentDidMount() {
     this.subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         const firstMessage = head(messages);
+        console.log('firstMessage ==>', firstMessage);
         if (firstMessage) {
           const text = firstMessage.text instanceof String
             ? this.props.t(firstMessage.text)
             : firstMessage.text;
           const error = firstMessage.type === 'error';
-          this.setState({ open: true, error, text });
+          this.setState({ open: true, error, text, type: firstMessage.type });
         }
       },
     });
@@ -38,6 +39,7 @@ class Message extends Component {
   }
 
   render() {
+    console.log('RES ERROR IN MESSAGING ==> ', this.state.type);
     return (
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -47,7 +49,7 @@ class Message extends Component {
       >
         {this.state.error ? (
           <Alert severity="error" onClose={this.handleCloseMessage.bind(this)}>
-            {this.state.text}
+            {(this.state.text)}
           </Alert>
         ) : (
           <Alert
