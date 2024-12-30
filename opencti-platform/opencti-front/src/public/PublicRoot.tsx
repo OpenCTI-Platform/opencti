@@ -13,6 +13,7 @@ import PublicDataSharing from './components/PublicDataSharing';
 import PublicDashboard from './components/PublicDashboard';
 import PublicSettingsProvider from './PublicSettingsProvider';
 import Message from '../components/Message';
+import Playground from './components/Playground';
 
 const queryRef = loadQuery<LoginRootPublicQuery>(
   environment,
@@ -25,6 +26,7 @@ const PublicRoot = () => {
     rootPublicQuery,
     queryRef,
   );
+  console.log('in public');
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
@@ -35,6 +37,7 @@ const PublicRoot = () => {
             <Routes>
               <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
               <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
+              <Route path="/graphiql/" element={boundaryWrapper(Playground)} />
             </Routes>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
