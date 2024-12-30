@@ -24,7 +24,7 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import PlaybookCreation from './playbooks/PlaybookCreation';
-import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './playbooks/__generated__/PlaybooksLinesPaginationQuery.graphql';
+import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './__generated__/PlaybooksLinesPaginationQuery.graphql';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
