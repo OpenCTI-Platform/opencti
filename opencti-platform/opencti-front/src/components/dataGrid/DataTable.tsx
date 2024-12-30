@@ -172,7 +172,6 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'selectOnLineClick'
 | 'createButton'
 | 'canToggleLine'
-| 'useComputeLink'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,

@@ -33,7 +33,6 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemBoolean from '../../../components/ItemBoolean';
-import { resolveLink } from '../../../utils/Entity';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
@@ -41,6 +40,7 @@ const playbookFragment = graphql`
   fragment PlaybooksLine_node on Playbook {
     id
     name
+    entity_type
     description
     playbook_running
     queue_messages
@@ -89,6 +89,7 @@ const playbooksLinesFragment = graphql`
     ) @connection(key: "Pagination_playbooks") {
       edges {
         node {
+          entity_type
           id
           name
           description
@@ -186,9 +187,6 @@ const Playbooks: FunctionComponent = () => {
               dataColumns={dataColumns}
               resolvePath={(data: PlaybooksLines_data$data) => {
                 return data.playbooks?.edges?.map((m) => m?.node);
-              }}
-              useComputeLink={(p) => {
-                return `${resolveLink('Playbook')}/${p.id}`;
               }}
               storageKey={LOCAL_STORAGE_KEY_PLAYBOOKS}
               initialValues={initialValues}
