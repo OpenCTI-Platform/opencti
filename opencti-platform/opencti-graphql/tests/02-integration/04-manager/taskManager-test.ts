@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { addIndicator, promoteIndicatorToObservables } from '../../../src/modules/indicator/indicator-domain';
 import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
-import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace } from '../../../src/manager/taskManager';
+import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace, executeRemoveAuthMembers } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
-import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
 import { addReport, findById as findReportById } from '../../../src/domain/report';
 import { findById as findMarkingById } from '../../../src/domain/markingDefinition';
@@ -13,6 +13,8 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { type OrganizationAddInput } from '../../../src/generated/graphql';
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { promoteObservableInput, promoteIndicatorInput, promoteReportInput } from './taskManager-promote-values/promoteValues';
+import { editAuthorizedMembers } from '../../../src/utils/authorizedMembers';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../src/utils/access';
 
 describe('TaskManager executeReplace tests ', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
@@ -370,5 +372,57 @@ describe('TaskManager executePromote tests', () => {
       expect(createdObservables.length).greaterThan(0);
       createdObservableId = createdObservables.map(({ id }) => id);
     });
+  });
+});
+
+describe('TaskManager executeRemoveAuthMembers tests', () => {
+  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
+  let reportId: string;
+  afterAll(async () => {
+    await stixDomainObjectDelete(adminContext, adminContext.user, reportId); // + 1 delete
+    const report = await findReportById(adminContext, adminContext.user, reportId);
+    expect(report).toBeUndefined();
+  });
+  it('Should REMOVE authorized members', async () => {
+    // Create Report + 1 create
+    const reportInput = {
+      name: 'test report remove authorized members',
+      published: '2023-10-06T22:00:00.000Z',
+    };
+    const report = await addReport(adminContext, adminContext.user, reportInput);
+    expect(report.id).toBeDefined();
+    reportId = report.id;
+
+    // Add authorized members : + 1 update
+    const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    if (adminContext.user) {
+      await editAuthorizedMembers(adminContext, adminContext.user, {
+        entityType: report.entityType,
+        requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS],
+        entityId: report.id,
+        input: [
+          {
+            id: userEditorId,
+            access_right: 'admin'
+          }
+        ]
+      });
+    }
+
+    // Verify authorized members
+    const reportWithAuthorizedMembers = await findReportById(adminContext, adminContext.user, reportId);
+    expect(reportWithAuthorizedMembers.authorized_members).toEqual([
+      {
+        id: userEditorId,
+        access_right: 'admin'
+      }
+    ]);
+
+    // Admin user removes authorized members: + 1 update
+    await executeRemoveAuthMembers(adminContext, adminContext.user, report);
+
+    // Verify there are no authorized
+    const reportAfterRemove = await findReportById(adminContext, adminContext.user, reportId);
+    expect(reportAfterRemove.authorized_members).toBeUndefined();
   });
 });

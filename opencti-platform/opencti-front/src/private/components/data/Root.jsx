@@ -59,7 +59,7 @@ const Root = () => {
   } else if (isGrantedToSharing) {
     redirect = 'sharing';
   } else if (isGrantedToManage) {
-    redirect = 'management';
+    redirect = 'restriction';
   }
 
   const isConnectorReader = useGranted([MODULES]);
@@ -193,13 +193,13 @@ const Root = () => {
         />
         {isRightMenuManagementEnable && (
         <Route
-          path="/management"
-          element={<Navigate to="/dashboard/data/management/restricted" replace={true} />}
+          path="/restriction"
+          element={<Navigate to="/dashboard/data/restriction/restricted" replace={true} />}
         />
         )}
         {isNewManagementScreenEnable && (
         <Route
-          path="/management/*"
+          path="/restriction/*"
           element={boundaryWrapper(Management)}
         />
         )}

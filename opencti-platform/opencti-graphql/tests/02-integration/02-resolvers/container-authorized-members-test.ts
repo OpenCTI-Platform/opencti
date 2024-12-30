@@ -10,7 +10,8 @@ import {
   PLATFORM_ORGANIZATION,
   securityQuery,
   TEST_ORGANIZATION,
-  USER_EDITOR
+  USER_EDITOR,
+  USER_SECURITY
 } from '../../utils/testQuery';
 import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -189,7 +190,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIncident.id);
     expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('admin');
   });
-  it('should Editor user not edit authorized members because missing capa', async () => {
+  it('should SECURITY user not edit authorized members because missing capa', async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
     const authorizedMembers = {
       id: caseIncident.id,
@@ -200,7 +201,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
         },
       ]
     };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
       variables: authorizedMembers,
     });

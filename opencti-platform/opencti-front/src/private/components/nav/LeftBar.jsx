@@ -916,7 +916,7 @@ const LeftBar = () => {
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
                   ...(isNewManagementScreenEnable
-                    ? [{ granted: isGrantedToManage, link: '/dashboard/data/management', label: 'Management' }]
+                    ? [{ granted: isGrantedToManage, link: '/dashboard/data/restriction', label: 'Restriction' }]
                     : []),
                 ],
               )}
