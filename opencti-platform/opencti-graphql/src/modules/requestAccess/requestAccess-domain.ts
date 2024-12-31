@@ -36,11 +36,11 @@ export const findUsersThatCanShareWithOrganizations = async (context: AuthContex
 };
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
-  logApp.warn('ANGIE - addRequestAccess', { input });
+  logApp.warn('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   const allAssignees = await findUsersThatCanShareWithOrganizations(context, user, input.request_access_members);
   const allAssigneeIds: string[] = allAssignees.map((member) => member.id);
-  if (allAssigneeIds.length) {
-    logApp.warn('[OPENCTI-MODULE] Cannot set Assignee in Request Access RFI', { input });
+  if (allAssigneeIds.length < 1) {
+    logApp.warn('[OPENCTI-MODULE][Request access] Cannot set Assignee in Request Access RFI', { input });
   }
   const requestedEntities = input.request_access_entities;
 
@@ -64,14 +64,15 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
 };
 
 export const validateRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
-  logApp.info(`Validation for RFI ${id}`);
-
+  logApp.info(`'[OPENCTI-MODULE][Request access] 1 - Validation for RFI ${id}`);
   const rfi = await findRFIById(context, user, id);
-  if (rfi) {
+  logApp.info(`'[OPENCTI-MODULE][Request access] 2 -Validation for RFI ${id}`, { rfiFound: rfi });
+  if (rfi.description) {
     // Get data in description for now, will be somewhere else at the end.
     const actionData = rfi.description;
+    logApp.info('[OPENCTI-MODULE][Request access] 3 Action data', { actionData });
     const action: RequestAccessAction = JSON.parse(actionData);
-    logApp.info(`Action on RFI ${id}`, action);
+    logApp.info(`'[OPENCTI-MODULE][Request access] 4 Action parsed on RFI ${id}`, action);
 
     if (!action.burned) {
       if (action.entities && action.members) {
