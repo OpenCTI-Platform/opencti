@@ -16,7 +16,7 @@ import ItemIcon from '../../../components/ItemIcon';
 import Security from '../../../utils/Security';
 import { EXPLORE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import ItemBoolean from '../../../components/ItemBoolean';
-import FieldOrEmpty from "../../../components/FieldOrEmpty";
+import FieldOrEmpty from '../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
