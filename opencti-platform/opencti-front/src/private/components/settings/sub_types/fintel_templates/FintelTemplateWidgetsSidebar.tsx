@@ -17,6 +17,8 @@ import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { PopoverProps } from '@mui/material/Popover';
+import Button from '@mui/material/Button';
+import FintelTemplateWidgetCreation from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetCreation';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
@@ -76,6 +78,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     .flat() as { variableName: string, type: string, filters?: string, attribute?: string }[];
   const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
   const [openedPopover, setOpenedPopover] = useState<string | null>(null);
+  const [isWidgetCreationFormOpen, setIsWidgetCreationFormOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
 
   const paperStyle: SxProps = {
@@ -127,88 +130,108 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     });
   };
 
+  const handleOpenCreateWidget = () => {
+    setIsWidgetCreationFormOpen(true);
+  };
+
   return (
-    <Drawer variant="permanent" anchor="right" sx={paperStyle}>
-      <Toolbar />
-      {t_i18n('Template widgets')}
-      <List>
-        {availableWidgets.map((widget) => {
-          const { variableName } = widget;
-          const isChecked = content.includes(`${variableName}`);
-          const isNotExpanded = expandedLines[variableName] === undefined || expandedLines[variableName] === false;
-          return (
-            <>
-              <ListItem
-                key={id}
-                value={variableName}
-                style={{ marginLeft: -25, marginBottom: -10 }}
-              >
-                <Checkbox
-                  size="small"
-                  checked={isChecked}
-                  onClick={() => handleWidgetClick(variableName)}
-                />
-                <ListItemText primary={variableName}/>
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-haspopup="true"
-                    size="medium"
-                    onClick={() => handleToggleLine(variableName)}
-                  >
-                    {isNotExpanded
-                      ? (<ExpandMore />)
-                      : (<ExpandLess />)
-                    }
-                  </IconButton>
-                  <IconButton
-                    aria-haspopup="true"
-                    color="primary"
+    <>
+      <Drawer variant="permanent" anchor="right" sx={paperStyle}>
+        <Toolbar />
+        <span>
+          {t_i18n('Template widgets')}
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ float: 'right' }}
+            onClick={handleOpenCreateWidget}
+          >
+            {t_i18n('Create widget')}
+          </Button>
+        </span>
+        <List>
+          {availableWidgets.map((widget) => {
+            const { variableName } = widget;
+            const isChecked = content.includes(`${variableName}`);
+            const isNotExpanded = expandedLines[variableName] === undefined || expandedLines[variableName] === false;
+            return (
+              <>
+                <ListItem
+                  key={id}
+                  value={variableName}
+                  style={{ marginLeft: -25, marginBottom: -10 }}
+                >
+                  <Checkbox
                     size="small"
-                    onClick={(event) => handleOpenPopover(event, variableName)}
-                  >
-                    <MoreVert />
-                  </IconButton>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={openedPopover === variableName}
-                    onClose={handleClosePopover}
-                  >
-                    <MenuItem onClick={handleOpenUpdate}>
-                      {t_i18n('Update')}
-                    </MenuItem>
-                    <MenuItem disabled={isChecked} onClick={handleOpenDelete}>
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  </Menu>
-                </ListItemSecondaryAction>
-              </ListItem>
-              <Collapse
-                in={!isNotExpanded}
-              >
-                <div style={{ marginLeft: 30 }}>
-                  {`${t_i18n('Type')}: `}
-                  <Chip
-                    label={t_i18n(widget.type).toUpperCase()}
+                    checked={isChecked}
+                    onClick={() => handleWidgetClick(variableName)}
                   />
-                  {widget.type === 'attribute'
-                    ? <div>
-                      {`${t_i18n('Attribute')}: `}
-                      {widget.attribute}
-                    </div>
-                    : <div>
-                      {`${t_i18n('Filters')}: `}
-                      <FieldOrEmpty source={widget.filters}>
-                        <FilterIconButton filters={widget.filters ? JSON.parse(widget.filters) : emptyFilterGroup}/>
-                      </FieldOrEmpty>
-                    </div>
+                  <ListItemText primary={variableName}/>
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      aria-haspopup="true"
+                      size="medium"
+                      onClick={() => handleToggleLine(variableName)}
+                    >
+                      {isNotExpanded
+                        ? (<ExpandMore />)
+                        : (<ExpandLess />)
+                    }
+                    </IconButton>
+                    <IconButton
+                      aria-haspopup="true"
+                      color="primary"
+                      size="small"
+                      onClick={(event) => handleOpenPopover(event, variableName)}
+                    >
+                      <MoreVert />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={openedPopover === variableName}
+                      onClose={handleClosePopover}
+                    >
+                      <MenuItem onClick={handleOpenUpdate}>
+                        {t_i18n('Update')}
+                      </MenuItem>
+                      <MenuItem disabled={isChecked} onClick={handleOpenDelete}>
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    </Menu>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                <Collapse
+                  in={!isNotExpanded}
+                >
+                  <div style={{ marginLeft: 30 }}>
+                    {`${t_i18n('Type')}: `}
+                    <Chip
+                      label={t_i18n(widget.type).toUpperCase()}
+                    />
+                    {widget.type === 'attribute'
+                      ? <div>
+                        {`${t_i18n('Attribute')}: `}
+                        {widget.attribute}
+                      </div>
+                      : <div>
+                        {`${t_i18n('Filters')}: `}
+                        <FieldOrEmpty source={widget.filters}>
+                          <FilterIconButton filters={widget.filters ? JSON.parse(widget.filters) : emptyFilterGroup}/>
+                        </FieldOrEmpty>
+                      </div>
                   }
-                </div>
-              </Collapse>
-            </>
-          );
-        })}
-      </List>
-    </Drawer>
+                  </div>
+                </Collapse>
+              </>
+            );
+          })}
+        </List>
+      </Drawer>
+      <FintelTemplateWidgetCreation
+        isOpen={isWidgetCreationFormOpen}
+        onClose={() => setIsWidgetCreationFormOpen(false)}
+      />
+    </>
   );
 };
 
