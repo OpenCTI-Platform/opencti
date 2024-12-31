@@ -11,6 +11,6 @@ input RequestAccessAddInput {
 
 type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
-  requestAccessValidate(id: ID!): Boolean @auth
+  requestAccessValidate(id: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   requestAccessReject(id: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }
