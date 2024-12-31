@@ -12,10 +12,10 @@ import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import WidgetPopover from './WidgetPopover';
+import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
-import WidgetConfig from './WidgetConfig';
-import WidgetText from './WidgetText';
+import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
+import WidgetText from '../../widgets/WidgetText';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
@@ -838,7 +838,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               variant="outlined"
                    >
               {!noToolbar && (
-              <WidgetPopover
+              <WorkspaceWidgetPopover
                 widget={widget}
                 manifest={manifest}
                 workspace={workspace}
@@ -906,7 +906,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           })}
         </ReactGridLayout>
       )}
-      {!noToolbar && userCanEdit && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
+      {!noToolbar && userCanEdit && <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
     </div>
   );
 };

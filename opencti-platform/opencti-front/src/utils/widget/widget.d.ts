@@ -1,5 +1,4 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
-import { WidgetPerspective } from '../outcome_template/engine/__generated__/TemplateAndUtilsContainerQuery.graphql';
 
 interface WidgetColumn {
   attribute: string | null
@@ -8,7 +7,13 @@ interface WidgetColumn {
   variableName?: string | null
 }
 
-interface WidgetDataSelection {
+export enum WidgetPerspective {
+  entities,
+  relationships,
+  audits,
+}
+
+export interface WidgetDataSelection {
   label?: string | null
   number?: number | null
   attribute?: string | null
@@ -17,12 +22,14 @@ interface WidgetDataSelection {
   centerLng?: number | null
   zoom?: number | null
   isTo?: boolean | null
-  perspective?: WidgetPerspective | null
+  perspective?: string | null
   filters?: FilterGroup | null
   dynamicFrom?: FilterGroup | null
   dynamicTo?: FilterGroup | null
   columns?: readonly WidgetColumn[] | null
   instance_id?: string | null
+  sort_by?: string | null
+  sort_mode?: string | null
 }
 
 interface WidgetParameters {
@@ -31,6 +38,7 @@ interface WidgetParameters {
   stacked?: boolean | null
   legend?: boolean | null
   distributed?: boolean | null
+  content?: string | null
 }
 
 interface WidgetLayout {
@@ -46,7 +54,7 @@ interface WidgetLayout {
 export interface Widget {
   id: string;
   type: string;
-  perspective?: WidgetPerspective
+  perspective?: string | null
   dataSelection: WidgetDataSelection[]
   parameters?: WidgetParameters
   layout?: WidgetLayout
