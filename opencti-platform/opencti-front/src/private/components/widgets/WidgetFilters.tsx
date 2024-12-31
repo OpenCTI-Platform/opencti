@@ -1,13 +1,14 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
-import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { useAvailableFilterKeysForEntityTypes, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import { useFormatter } from '../../../../components/i18n';
-import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useFiltersState from '../../../utils/filters/useFiltersState';
+import { useAvailableFilterKeysForEntityTypes, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import FilterIconButton from '../../../components/FilterIconButton';
+import { useFormatter } from '../../../components/i18n';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import type { WidgetDataSelection } from '../../../utils/widget/widget';
 
-interface DataSelection {
+export interface DataSelection {
   label: string;
   attribute: string;
   date_attribute: string;
@@ -20,8 +21,8 @@ interface DataSelection {
 interface WidgetFiltersProps {
   perspective: string;
   type: string;
-  dataSelection: DataSelection;
-  setDataSelection: (data: DataSelection) => void;
+  dataSelection: WidgetDataSelection;
+  setDataSelection: (data: WidgetDataSelection) => void;
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
