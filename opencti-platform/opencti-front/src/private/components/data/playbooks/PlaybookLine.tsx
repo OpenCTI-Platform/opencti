@@ -13,6 +13,7 @@ import { PlaybookLine_node$key } from './__generated__/PlaybookLine_node.graphql
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,7 +92,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.description.width }}
             >
-              {data.description}
+              <FieldOrEmpty source={data.description}>{data.description}</FieldOrEmpty>
             </div>
             <div
               className={classes.bodyItem}
