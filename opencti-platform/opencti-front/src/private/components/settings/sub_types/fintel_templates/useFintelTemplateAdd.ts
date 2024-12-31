@@ -1,5 +1,6 @@
 import { graphql } from 'react-relay';
 import { useState } from 'react';
+import { fintelTemplatesFragmentParams } from '@components/settings/sub_types/fintel_templates/FintelTemplatesGrid';
 import { useFintelTemplateAddMutation } from './__generated__/useFintelTemplateAddMutation.graphql';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { insertNodeFromEdge } from '../../../../../utils/store';
@@ -32,6 +33,7 @@ const useFintelTemplateAdd = (entitySettingId: string) => {
           entitySettingId,
           'fintelTemplates',
           'fintelTemplateAdd',
+          fintelTemplatesFragmentParams,
         );
       },
       onError: (error) => {
