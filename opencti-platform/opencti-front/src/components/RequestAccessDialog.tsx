@@ -6,11 +6,13 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
-import { Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import MarkdownField from './fields/MarkdownField';
 import { useFormatter } from './i18n';
+import useApiMutation from '../utils/hooks/useApiMutation';
 import Transition from './Transition';
+import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -21,12 +23,38 @@ const requestAccessDialogMutation = graphql`
 interface RequestAccessDialogProps {
   open: boolean;
   onClose: () => void;
+  entitiesIds: string[];
 }
 
-const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose }) => {
+const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
-  const submitRequestAccess = () => {
-    return console.log('SubmittedRequestAccess ! ');
+
+  const initialValues = {
+    request_access_reason: '',
+    organizations: '',
+    request_access_entities: [],
+    request_access_type: 'organization_sharing',
+  };
+  const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
+    successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
+  });
+  const onSubmit = (values, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
+    console.log('values ==>', values);
+    const input: RequestAccessDialogMutation$variables['input'] = {
+      request_access_reason: values.request_access_reason,
+      request_access_entities: entitiesIds,
+      request_access_members: values.organizations.value,
+      request_access_type: 'organization_sharing',
+    };
+
+    commit({
+      variables: { input },
+      onError: () => setSubmitting(false),
+      onCompleted: () => {
+        setSubmitting(false);
+        onClose();
+      },
+    });
   };
   return (
     <Dialog
@@ -42,33 +70,48 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
         <DialogContentText>
           {t_i18n('Your account/organization does not have permission to create/update this entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.')}
         </DialogContentText>
-        <Form>
-          <Field
-            component={MarkdownField}
-            name="justification"
-            label={t_i18n('Enter justification for requesting this entity')}
-            fullWidth={true}
-            multiline={true}
-            style={{ marginTop: 20 }}
-            askAi={false}
-          />
-          <ObjectOrganizationField
-            name="objectOrganization"
-            style={{ width: '100%', paddingTop: '16px' }}
-            label={t_i18n('Organization')}
-            multiple={false}
-            alert={false}
-          />
-        </Form>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={onSubmit}
+        >
+          {({ isSubmitting, submitForm }) => (
+            <Form>
+              <DialogContent>
+                <DialogContentText>
+                  {t_i18n(
+                    'Your account/organization does not have permission to create/update this entity as it already exists in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
+                  )}
+                </DialogContentText>
+                <Field
+                  component={MarkdownField}
+                  name="request_access_reason"
+                  label={t_i18n('Enter justification for requesting this entity')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 20 }}
+                  askAi={false}
+                />
+                <ObjectOrganizationField
+                  name="organizations"
+                  style={{ width: '100%', paddingTop: '16px' }}
+                  label={t_i18n('Organization')}
+                  multiple={false}
+                  alert={false}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={onClose} disabled={isSubmitting}>
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+                  {t_i18n('Request Access')}
+                </Button>
+              </DialogActions>
+            </Form>
+          )}
+        </Formik>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>
-          {t_i18n('Cancel')}
-        </Button>
-        <Button color="secondary" onClick={submitRequestAccess}>
-          {t_i18n('Request Access')}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

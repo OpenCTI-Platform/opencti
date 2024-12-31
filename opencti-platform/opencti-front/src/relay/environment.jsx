@@ -15,8 +15,12 @@ export const MESSAGING$ = {
   messages: MESSENGER$,
   notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
   notifyRelayError: (error) => {
-    const message = (error.res.errors ?? []).map((e) => e.message).join('\r\n');
-    MESSENGER$.next([{ type: 'error', text: message }]);
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: e.message,
+      fullError: e,
+    }));
+    MESSENGER$.next(messages);
   },
   notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
   toggleNav: new Subject(),
@@ -172,20 +176,12 @@ export const fetchQuery = (query, args) => FQ(environment, query, args);
 export const commitLocalUpdate = (updater) => CLU(environment, updater);
 
 export const handleErrorInForm = (error, setErrors) => {
-  console.log('coucou le res error', error.res.errors);
   const formattedError = R.head(error.res.errors);
   if (formattedError.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
       formattedError.data.message || formattedError.data.reason,
     });
-  } else if (formattedError.extensions.code === 'ACCESS_REQUIRED') {
-    console.log('COUCOU JE SUIS PASSEE');
-    const messages = [{
-        type: 'restricted_error',
-        text: 'restricted access required',
-      }];
-    MESSAGING$.messages.next(messages);
   } else {
     const messages = R.map(
       (e) => ({
@@ -203,7 +199,7 @@ export const handleError = (error) => {
     const messages = R.map(
       (e) => ({
         type: 'error',
-        text: R.pathOr(e.message, ['data', 'message'], e),
+        text: R.pathOr((e.message), ['data', 'message'], e),
       }),
       error.res.errors,
     );
