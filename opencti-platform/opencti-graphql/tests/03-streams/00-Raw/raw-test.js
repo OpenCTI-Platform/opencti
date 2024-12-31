@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
 import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '../../utils/testStream';
-import { PORT } from '../../../src/config/conf';
+import { logApp, PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
 
