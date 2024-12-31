@@ -378,7 +378,6 @@ describe('TaskManager executePromote tests', () => {
 describe('TaskManager computeQueryTaskElements', () => {
   let observable1;
   let observable2;
-  let relationShip;
   let createdReport: StoreEntityReport;
 
   it('Create data for test', async () => {
@@ -405,12 +404,11 @@ describe('TaskManager computeQueryTaskElements', () => {
       fromId: observable1.id,
       toId: observable2.id
     };
-    relationShip = await addStixCoreRelationship(testContext, ADMIN_USER, relationShipAddInput);
+    await addStixCoreRelationship(testContext, ADMIN_USER, relationShipAddInput);
   });
 
   it('When order mode is set to asc it should be taken', async () => {
-    // await waitInSec(300);
-    const filters = generateFiltersForSharingTask(createdReport.internal_id); // Report from initial test data
+    const filters = generateFiltersForSharingTask(createdReport.internal_id);
     const task = {
       task_filters: JSON.stringify(filters),
       task_excluded_ids: [],
@@ -425,12 +423,10 @@ describe('TaskManager computeQueryTaskElements', () => {
   });
 
   it('When order mode is not set, default desc should be taken', async () => {
-    // await waitInSec(300);
-    const filters = generateFiltersForSharingTask(createdReport.internal_id); // Report from initial test data
+    const filters = generateFiltersForSharingTask(createdReport.internal_id);
     const task = {
       task_filters: JSON.stringify(filters),
       task_excluded_ids: [],
-      task_order_mode: 'asc',
       actions: [{ type: 'SHARE', context: { values: [TEST_ORGANIZATION.id] } }],
       scope: 'KNOWLEDGE',
     };
