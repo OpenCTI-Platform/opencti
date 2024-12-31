@@ -14,7 +14,7 @@ describe('Raw streams tests', () => {
     async () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
-      writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.log');
+      writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');
       // Check the number of events
       // 01 - CHECK CREATE EVENTS.
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
