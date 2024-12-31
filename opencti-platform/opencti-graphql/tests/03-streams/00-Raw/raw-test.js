@@ -82,7 +82,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(179);
+      expect(updateEvents.length).toBe(182);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;
