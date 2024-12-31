@@ -7,7 +7,7 @@ interface FintelTemplateWidgetCreationProps {
   isOpen: boolean,
 }
 
-export const FintelTemplateWidgetCreation: FunctionComponent<FintelTemplateWidgetCreationProps> = ({ onClose, isOpen }) => {
+const FintelTemplateWidgetCreation: FunctionComponent<FintelTemplateWidgetCreationProps> = ({ onClose, isOpen }) => {
   const { t_i18n } = useFormatter();
   return (
     <Drawer

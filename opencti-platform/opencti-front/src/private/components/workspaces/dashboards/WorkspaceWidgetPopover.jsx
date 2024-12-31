@@ -9,11 +9,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import handleWidgetExportJson from './widgetExportHandler';
+import handleWidgetExportJson from '../../widgets/widgetExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import WidgetConfig from './WidgetConfig';
+import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
 import Transition from '../../../../components/Transition';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -27,7 +27,7 @@ const useStyles = makeStyles({
   },
 });
 
-const WidgetPopover = ({
+const WorkspaceWidgetPopover = ({
   onUpdate,
   onDuplicate,
   widget,
@@ -74,7 +74,7 @@ const WidgetPopover = ({
         className="noDrag"
       >
         <Security needs={[EXPLORE_EXUPDATE]}>
-          <WidgetConfig
+          <WorkspaceWidgetConfig
             closeMenu={() => setAnchorEl(null)}
             onComplete={onUpdate}
             widget={widget}
@@ -137,4 +137,4 @@ const WidgetPopover = ({
   );
 };
 
-export default WidgetPopover;
+export default WorkspaceWidgetPopover;

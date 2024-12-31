@@ -2874,6 +2874,7 @@
   "This user does not inherit a Max Confidence Level from their group. Configure user's groups with a Max Confidence Level.": "이 사용자는 그룹에서 최대 신뢰 수준을 상속받지 않습니다. 사용자 그룹을 최대 신뢰 수준으로 구성하십시오.",
   "This user has no effective confidence level from the groups assigned.": "이 사용자는 할당된 그룹에서 유효한 신뢰 수준이 없습니다.",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "이 사용자는 최대 신뢰 수준이 없으며 그룹에서 상속받지 않습니다. 이 사용자를 그룹에 추가하여 문제를 해결하십시오.",
+  "This value cannot be null": "이 값은 null일 수 없습니다",
   "This value is overridden for the following entity types": "이 값은 다음 엔터티 유형에 대해 재정의됩니다",
   "Threat actor": "위협 행위자",
   "Threat actor types": "위협 행위자 유형",

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import MarkdownDisplay from '../../../components/MarkdownDisplay';
+import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 
 const WidgetText = ({ variant, height = undefined, parameters = {} }) => {
   const theme = useTheme();
