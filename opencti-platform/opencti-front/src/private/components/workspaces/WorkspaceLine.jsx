@@ -16,6 +16,7 @@ import ItemIcon from '../../../components/ItemIcon';
 import Security from '../../../utils/Security';
 import { EXPLORE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import ItemBoolean from '../../../components/ItemBoolean';
+import FieldOrEmpty from "../../../components/FieldOrEmpty";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -82,10 +83,10 @@ const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.tags.width }}
             >
-              {node.tags
+              <FieldOrEmpty source={node.tags}>{node.tags
                 && node.tags.map((tag) => (
                   <Chip className={classes.chip} key={tag} label={tag} />
-                ))}
+                ))}</FieldOrEmpty>
             </div>
             <div
               className={classes.bodyItem}
