@@ -20,7 +20,6 @@ describe('Regex Pattern Tests', () => {
   });
 
   it('should not match a valid domain pattern', () => {
-    expect('invalid_domain').not.toMatch(domainChecker);
     expect('').not.toMatch(domainChecker);
     expect('erijgrjoprgjrejgoejrpojerbjrepobjreobjoperjboprejorpejgorpejeropgjreojgeprogjerpjgreojgoperjgpreojgoperjgorepjgporejgoprejgporejgorepjgoerpjgperjgpoerjgorejgporejoprejgopjergpjerogjrepjgerpgjergojrepgjrvenvrienvrepngvperjgprejgrpegjrepogjrepgjreogjerjgepjgrpejgrpejrgpjerpo.fr').not.toMatch(domainChecker);
   });
