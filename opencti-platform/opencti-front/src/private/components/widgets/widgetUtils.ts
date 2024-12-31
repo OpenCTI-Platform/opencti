@@ -171,6 +171,7 @@ export const widgetVisualizationTypes = [
     isAudits: true,
   },
 ];
+
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
 
 export const getCurrentCategory = (type: string | null) => {

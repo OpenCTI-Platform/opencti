@@ -68,7 +68,7 @@ const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
       case 'wordcloud':
         return <ViewQuiltOutlined fontSize="large" color="primary"/>;
       default:
-        return 'Go away';
+        return <div>${t_i18n('This widget type is not implemented')}</div>;
     }
   };
 

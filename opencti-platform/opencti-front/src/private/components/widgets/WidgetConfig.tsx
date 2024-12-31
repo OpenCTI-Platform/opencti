@@ -145,7 +145,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
           type={type as string}
                />;
       default:
-        return 'Go away!';
+        return <div>${t_i18n('This step is not implemented')}</div>;
     }
   };
   return (
