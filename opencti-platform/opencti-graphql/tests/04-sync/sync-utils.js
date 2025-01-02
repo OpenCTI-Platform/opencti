@@ -85,7 +85,7 @@ export const checkPreSyncContent = async () => {
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
-  expect(relMap.get('Object')).toEqual(191);
+  expect(relMap.get('Object')).toEqual(193);
   expect(relMap.get('Indicates')).toEqual(59);
   expect(relMap.get('Uses')).toEqual(28);
   // Report content
