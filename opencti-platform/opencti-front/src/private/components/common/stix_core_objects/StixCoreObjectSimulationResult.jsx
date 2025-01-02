@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { makeStyles, useTheme } from '@mui/styles';
 import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined, ErrorOutlined, LaunchOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
@@ -18,7 +14,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import { Autocomplete } from '@mui/material';
+import { Field, Form, Formik } from 'formik';
+import * as Yup from 'yup';
 import EEChip from '../entreprise_edition/EEChip';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
@@ -36,6 +33,10 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
 import useXTM from '../../../../utils/hooks/useXTM';
+import SelectField from '../../../../components/fields/SelectField';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import TextField from '../../../../components/TextField';
+import { useDynamicSchemaCreationValidation, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
@@ -184,9 +185,9 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const { enabled, configured } = useAI();
   const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
   const [simulationType, setSimulationType] = useState('technical');
-  const [platforms, setPlatforms] = useState(['Windows']);
-  const [architecture, setArchitecture] = useState('x86_64');
-  const [selection, setSelection] = useState('random');
+  const [platforms, setPlatforms] = useState([{ label: 'Windows', value: 'Windows' }]);
+  const architecture = 'x86_64';
+  const selection = 'random';
   const [interval, setInterval] = useState(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -194,13 +195,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const [platformError, setPlatformError] = useState('');
-
-  const platformOptions = [
-    { label: 'Windows', value: 'Windows' },
-    { label: 'Linux', value: 'Linux' },
-    { label: 'MacOS', value: 'MacOS' },
-  ];
 
   // Determine the query based on the type
   let attackPatternsQuery;
@@ -216,12 +210,10 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const attackPatterns = useLazyLoadQuery(attackPatternsQuery, { id });
 
   // Check if there are attack patterns in the entity
-  let hasAttackPatterns = false;
-  if (type === 'container' && attackPatterns?.stixCoreObject?.objects?.edges?.length > 0) {
-    hasAttackPatterns = true;
-  } else if (type === 'threat' && attackPatterns?.stixCoreRelationships?.edges?.length > 0) {
-    hasAttackPatterns = true;
-  }
+  const hasAttackPatterns = (
+    (type === 'container' && attackPatterns?.stixCoreObject?.objects?.edges?.length > 0)
+    || (type === 'threat' && attackPatterns?.stixCoreRelationships?.edges?.length > 0)
+  );
 
   const canGenerateScenario = () => {
     return (
@@ -331,6 +323,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       // do nothing
     }
   };
+
   const renderCharts = () => {
     return (
       <QueryRenderer
@@ -453,131 +446,162 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     );
   };
 
-  // Validation for Platforms
-  useEffect(() => {
-    if (platforms.length === 0) {
-      setPlatformError(t_i18n('This field should not be empty'));
-    } else {
-      setPlatformError('');
-    }
-  }, [platforms]);
+  const initialValues = {
+    simulationType,
+    platforms,
+    architecture,
+    interval,
+    selection,
+  };
+
+  const mandatoryAttributes = ['simulationtype', 'interval', 'selection'];
+  const basicShape = yupShapeConditionalRequired({
+    simulationType: Yup.string().required(t_i18n('This field is required')),
+    platforms: Yup.array().min(1, t_i18n('Minimum one platform')).required(t_i18n('This field is required')),
+    architecture: Yup.string().required(t_i18n('This field is required')),
+    interval: Yup.number().required(t_i18n('This field is required')).positive(t_i18n('Interval must be a positive number')).integer(t_i18n('Interval must be an integer')),
+    selection: Yup.string().required(t_i18n('This field is required')),
+  }, mandatoryAttributes);
+
+  const simulationGenerationValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
+
+  const platformOptions = [
+    { label: 'Windows', value: 'Windows' },
+    { label: 'Linux', value: 'Linux' },
+    { label: 'MacOS', value: 'MacOS' },
+  ];
 
   const renderForm = () => {
     return (
-      <>
-        <FormControl style={{ width: '100%' }}>
-          <InputLabel id="simulationType">{t_i18n('Simulation type')}</InputLabel>
-          <Select
-            labelId="simulationType"
-            value={simulationType}
-            onChange={(event) => setSimulationType(event.target.value)}
-            fullWidth
-          >
-            <MenuItem value="technical" disabled={!hasAttackPatterns}>{t_i18n('Technical (payloads)')}</MenuItem>
-            <MenuItem value="simulated" disabled={!isSimulatedEmailsAvailable}>{t_i18n('Simulated emails (generated by AI)')} <EEChip /></MenuItem>
-            <MenuItem value="mixed" disabled>{t_i18n('Mixed (both)')} <EEChip /></MenuItem>
-          </Select>
-        </FormControl>
-        {(simulationType !== 'simulated') && (
-          <>
-            {!hasAttackPatterns && (
-              <Alert
-                severity="warning"
-                variant="outlined"
-                style={{ marginTop: 5 }}
-              >
-                {t_i18n('Technical (payloads) require attack patterns in this entity.')}
-              </Alert>
-            )}
-            <FormControl style={fieldSpacingContainerStyle} error={!!platformError}>
-              <Autocomplete
-                id="simulationPlatforms"
-                multiple
-                options={platformOptions}
-                value={platformOptions.filter((platform) => platforms.includes(platform.value))}
-                onChange={(_event, newValue) => {
-                  const newSelectedValues = newValue.map((platform) => platform.value);
-                  setPlatforms(newSelectedValues);
-                }}
-                getOptionLabel={(option) => option.label}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={t_i18n('Targeted platforms')}
-                    variant="standard"
-                    required
-                    error={!!platformError}
-                    helperText={platformError}
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props}>
-                    <div className={classes.text}>{option.label ?? ''}</div>
-                  </li>
-                )}
-                disabled={!hasAttackPatterns}
-              />
-            </FormControl>
-            <FormControl style={fieldSpacingContainerStyle}>
-              <InputLabel id="simulationArchitecture">{t_i18n('Targeted architecture')}</InputLabel>
-              <Select
-                labelId="simulationArchitecture"
-                value={architecture}
-                onChange={(event) => setArchitecture(event.target.value)}
+      <Formik
+        initialValues={initialValues}
+        validationSchema={simulationGenerationValidator}
+        onSubmit={(values) => {
+          handleGenerate(values);
+        }}
+      >
+        {({ values }) => (
+          <Form>
+            <div style={{ width: '100%' }}>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="simulationType"
+                label={t_i18n('Simulation type')}
                 fullWidth
-                required
-                disabled={!hasAttackPatterns}
+                containerstyle={{ width: '100%', marginTop: 20 }}
               >
-                <MenuItem value="x86_64">{'x86_64'}</MenuItem>
-                <MenuItem value="arm64" >{'arm64'}</MenuItem>
-              </Select>
-            </FormControl>
-            </>
+                <MenuItem value="technical" disabled={!hasAttackPatterns}>
+                  {t_i18n('Technical (payloads)')}
+                </MenuItem>
+                <MenuItem value="simulated" disabled={!isSimulatedEmailsAvailable}>
+                  {t_i18n('Simulated emails (generated by AI)')} <EEChip />
+                </MenuItem>
+                <MenuItem value="mixed" disabled>
+                  {t_i18n('Mixed (both)')} <EEChip />
+                </MenuItem>
+              </Field>
+            </div>
+
+            {values.simulationType !== 'simulated' && (
+              <>
+                {!hasAttackPatterns && (
+                  <Alert severity="warning" variant="outlined" style={{ marginTop: 5 }}>
+                    {t_i18n('Technical (payloads) require attack patterns in this entity.')}
+                  </Alert>
+                )}
+
+                <div style={fieldSpacingContainerStyle}>
+                  <Field
+                    component={AutocompleteField}
+                    name="platforms"
+                    textfieldprops={{
+                      variant: 'standard',
+                      label: t_i18n('Targeted platforms'),
+                    }}
+                    multiple
+                    options={platformOptions}
+                    onChange={(_event, newValue) => setPlatforms(newValue)}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        <div className={classes.text}>{option.label ?? ''}</div>
+                      </li>
+                    )}
+                    disabled={!hasAttackPatterns}
+                  />
+                </div>
+
+                <div style={fieldSpacingContainerStyle}>
+                  <Field
+                    component={SelectField}
+                    label={t_i18n('Targeted architecture')}
+                    name="architecture"
+                    fullWidth
+                    disabled={!hasAttackPatterns}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    <MenuItem value="x86_64">x86_64</MenuItem>
+                    <MenuItem value="arm64">arm64</MenuItem>
+                  </Field>
+                </div>
+              </>
+            )}
+
+            <div style={fieldSpacingContainerStyle}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="interval"
+                label={t_i18n('Interval between injections (in minutes)')}
+                type="number"
+                disabled={!canGenerateScenario()}
+                fullWidth
+              />
+            </div>
+
+            <div style={fieldSpacingContainerStyle}>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="selection"
+                label={t_i18n('Number of injects generated by attack pattern and platform')}
+                fullWidth
+                disabled={!canGenerateScenario()}
+                containerstyle={{ width: '100%' }}
+              >
+                <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
+                <MenuItem value="random">{t_i18n('One (random)')}</MenuItem>
+              </Field>
+            </div>
+
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                onClick={handleClose}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                type="submit"
+                disabled={isSubmitting || !canGenerateScenario()}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Generate')}
+              </Button>
+            </div>
+          </Form>
         )}
-        <TextField
-          label={t_i18n('Interval between injections (in minutes)')}
-          fullWidth
-          type="number"
-          value={interval}
-          onChange={(event) => setInterval(Number.isNaN(parseInt(event.target.value, 10)) ? 1 : parseInt(event.target.value, 10))}
-          style={fieldSpacingContainerStyle}
-          disabled={!canGenerateScenario()}
-        />
-        <FormControl style={fieldSpacingContainerStyle}>
-          <InputLabel id="simulationNumberInjects">{t_i18n('Number of injects generated by attack pattern and platform')}</InputLabel>
-          <Select
-            labelId="selection"
-            value={selection}
-            onChange={(event) => setSelection(event.target.value)}
-            fullWidth
-            disabled={!canGenerateScenario()}
-          >
-            <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
-            <MenuItem value="random">{t_i18n('One (random)')}</MenuItem>
-          </Select>
-        </FormControl>
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleGenerate}
-            disabled={isSubmitting || !canGenerateScenario()}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Generate')}
-          </Button>
-        </div>
-      </>
+      </Formik>
     );
   };
+
   const renderCooking = () => {
     return (
       <div style={{ margin: '0 auto', width: 200, height: 230 }}>
@@ -607,6 +631,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       </div>
     );
   };
+
   const renderResult = () => {
     return (
       <>
@@ -637,15 +662,15 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       </>
     );
   };
+
   const renderResultError = () => {
     return (
-      <>
-        <Alert icon={<ErrorOutlined fontSize="inherit" />} severity="error">
-          {resultError}
-        </Alert>
-      </>
+      <Alert icon={<ErrorOutlined fontSize="inherit" />} severity="error">
+        {resultError}
+      </Alert>
     );
   };
+
   return (
     <>
       {!oBasDisableDisplay && (
