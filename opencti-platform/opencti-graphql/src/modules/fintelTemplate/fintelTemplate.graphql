@@ -1,0 +1,61 @@
+type FintelTemplateWidget {
+  variable_name: String!
+  widget: Widget!
+}
+
+type FintelTemplate implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  ## Fintel
+  name: String!
+  settings_types: [String!]!
+  description: String
+  instance_filters: String
+  content: String!
+  start_date: DateTime
+  fintel_template_widgets: [FintelTemplateWidget!]!
+}
+
+# Mutation
+input FintelTemplateWidgetAddInput {
+  variable_name: String!
+  widget: Any!
+}
+input FintelTemplateAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  settings_types: [String!]!
+  instance_filters: String
+  content: String
+  start_date: DateTime
+  fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+}
+
+# Relay connections
+type FintelTemplateEdge {
+  cursor: String!
+  node: FintelTemplate!
+}
+
+type FintelTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [FintelTemplateEdge!]!
+}
+
+enum FintelTemplateOrdering {
+  name
+  start_date
+}
+
+type Query {
+  fintelTemplate(id: ID!): FintelTemplate @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+}
+
+# Mutations
+type Mutation {
+  fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

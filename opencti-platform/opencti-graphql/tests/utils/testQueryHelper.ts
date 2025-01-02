@@ -204,6 +204,31 @@ export const enableCEAndUnSetOrganization = async () => {
   expect(settingsResult.enterprise_edition).toBeUndefined();
 };
 
+/**
+ * Enable Enterprise edition
+ */
+export const enableEE = async () => {
+  const platformSettings: any = await getSettings(testContext);
+  const input = [
+    { key: 'enterprise_edition', value: [new Date().getTime()] },
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+  expect(settingsResult.enterprise_edition).not.toBeUndefined();
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+};
+
+/**
+ * Go back to community edition.
+ */
+export const disableEE = async () => {
+  const platformSettings: any = await getSettings(testContext);
+  const input = [
+    { key: 'enterprise_edition', value: [] },
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+  expect(settingsResult.enterprise_edition).toBeUndefined();
+};
+
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
   const file = fs.createReadStream(
     path.resolve(__dirname, `../data/${filePathRelativeFromData}`),

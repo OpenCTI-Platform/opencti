@@ -12,7 +12,7 @@ import {
   TEST_ORGANIZATION,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, disableEE, enableCEAndUnSetOrganization, enableEE, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 
 const CREATE_QUERY = gql`
@@ -462,7 +462,6 @@ describe('Case Incident Response standard behavior with authorized_members activ
 describe('Case Incident Response and organization sharing standard behavior without platform organization', () => {
   let caseIrId: string;
   let organizationId: string;
-  let settingsInternalId: string;
   it('should Case Incident Response created', async () => {
     // Create Case Incident Response
     const caseIRCreateQueryResult = await adminQuery({
@@ -479,32 +478,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
   it('should EE activated', async () => {
-    // Get settings ID
-    const SETTINGS_READ_QUERY = gql`
-      query settings {
-        settings {
-          id
-          platform_organization {
-            id
-            name
-          }
-        }
-      }
-    `;
-    const queryResult = await adminQuery({ query: SETTINGS_READ_QUERY, variables: {} });
-    settingsInternalId = queryResult.data?.settings?.id;
-
-    // Set EE
-    const EEqueryResult = await adminQueryWithSuccess({
-      query: PLATFORM_ORGANIZATION_QUERY,
-      variables: {
-        id: settingsInternalId,
-        input: [
-          { key: 'enterprise_edition', value: new Date().getTime() },
-        ]
-      }
-    });
-    expect(EEqueryResult?.data?.settingsEdit.fieldPatch.enterprise_edition).not.toBeUndefined();
+    await enableEE();
   });
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
@@ -541,13 +515,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(queryResult?.data?.caseIncident).toBeNull();
   });
   it('should EE deactivated', async () => {
-    const EEDeactivationQuery = await adminQueryWithSuccess({
-      query: PLATFORM_ORGANIZATION_QUERY,
-      variables: {
-        id: settingsInternalId,
-        input: [{ key: 'enterprise_edition', value: [] }] },
-    });
-    expect(EEDeactivationQuery?.data?.settingsEdit.fieldPatch.enterprise_edition).toBeNull();
+    await disableEE();
   });
 });
 

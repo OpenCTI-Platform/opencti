@@ -29,7 +29,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { isNilField } from '../../../../utils/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 interface ContentBlocProps {
@@ -193,19 +193,21 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 primary={t_i18n('Description & Main content')}
                 secondary={t_i18n('Description and content of the entity')}
               />
-              <ListItemSecondaryAction>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setAnchorEl(e.currentTarget);
-                  }}
-                  aria-haspopup="true"
-                  color="primary"
-                  size="small"
-                >
-                  <MoreVert />
-                </IconButton>
-              </ListItemSecondaryAction>
+              <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+                <ListItemSecondaryAction>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAnchorEl(e.currentTarget);
+                    }}
+                    aria-haspopup="true"
+                    color="primary"
+                    size="small"
+                  >
+                    <MoreVert />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </Security>
             </ListItemButton>
           </List>
 
@@ -285,7 +287,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                   />
                 </Tooltip>}
             </>
-        }
+          }
           actions={isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}
@@ -297,16 +299,18 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               }}
               onExportCompleted={onFileChange}
               OpenFormComponent={({ onOpen }) => (
-                <Tooltip title={t_i18n('Generate an export based on a template')}>
-                  <IconButton
-                    onClick={onOpen}
-                    color="primary"
-                    size="small"
-                    aria-label={t_i18n('Generate an export based on a template')}
-                  >
-                    <FileExportOutline />
-                  </IconButton>
-                </Tooltip>
+                <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+                  <Tooltip title={t_i18n('Generate an export based on a template')}>
+                    <IconButton
+                      onClick={onOpen}
+                      color="primary"
+                      size="small"
+                      aria-label={t_i18n('Generate an export based on a template')}
+                    >
+                      <FileExportOutline />
+                    </IconButton>
+                  </Tooltip>
+                </Security>
               )}
             />
           )}

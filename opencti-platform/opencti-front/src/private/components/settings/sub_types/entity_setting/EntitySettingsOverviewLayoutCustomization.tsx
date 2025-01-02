@@ -7,7 +7,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import Switch from '@mui/material/Switch';
-import DragIndicatorOutlinedIcon from '@mui/icons-material/DragIndicatorOutlined';
+import { DragIndicatorOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import { EntitySettingSettings_entitySetting$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
 import { useTheme } from '@mui/styles';
@@ -163,7 +163,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                                 }}
                                 {...providedDrag.dragHandleProps}
                               >
-                                <DragIndicatorOutlinedIcon />
+                                <DragIndicatorOutlined />
                               </TableCell>
                               <TableCell>
                                 {t_i18n(label)}

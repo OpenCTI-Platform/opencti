@@ -42,25 +42,25 @@ describe('Hook: useFileFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        TemplateAndUtils() {
+        FintelTemplate() {
           return {
-            template: {
-              id: 'testTemplate',
-              name: 'Test template',
-              template_widgets_ids: ['myAttributes'],
-              content: 'Hello, I am container $containerName of type $containerType',
-            },
-            template_widgets: [{
-              id: 'myAttributes',
-              type: 'attribute',
-              dataSelection: [{}],
+            id: 'testTemplate',
+            name: 'Test template',
+            fintel_template_widgets: [{
+              id: 'XXXX',
+              variable_name: 'myAttributes',
+              widget: {
+                type: 'attribute',
+                dataSelection: [{}],
+              },
             }],
+            content: 'Hello, I am container $containerName of type $containerType',
           };
         },
       });
     });
 
-    const content = await buildFileFromTemplate('aaaID', 'testTemplate', []);
+    const content = await buildFileFromTemplate('aaaID', [], 'testTemplate');
     expect(content).toEqual('Hello, I am container Super report of type Report');
   });
 
@@ -73,27 +73,27 @@ describe('Hook: useFileFromTemplate', () => {
     // Fake data returned by the query.
     relayEnv.mock.queueOperationResolver((op) => {
       return MockPayloadGenerator.generate(op, {
-        TemplateAndUtils() {
+        FintelTemplate() {
           return {
-            template: {
-              id: 'testTemplate',
-              name: 'Test template',
-              template_widgets_ids: ['containerList'],
-              content: 'Hello, I have: $containerList',
-            },
-            template_widgets: [{
-              id: 'containerList',
-              type: 'list',
-              dataSelection: [{
-                filters: null,
-              }],
+            id: 'testTemplate',
+            name: 'Test template',
+            fintel_template_widgets: [{
+              id: 'YYY',
+              variable_name: 'containerList',
+              widget: {
+                type: 'list',
+                dataSelection: [{
+                  filters: null,
+                }],
+              },
             }],
+            content: 'Hello, I have: $containerList',
           };
         },
       });
     });
 
-    const content = await buildFileFromTemplate('aaaID', 'testTemplate', []);
+    const content = await buildFileFromTemplate('aaaID', [], 'testTemplate');
     expect(content).toEqual('Hello, I have: my super list of elements');
   });
 });
