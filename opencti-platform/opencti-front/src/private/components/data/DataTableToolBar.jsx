@@ -1284,7 +1284,7 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values || []}
+            value={actionsInputs[i]?.values[0] || []}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1319,7 +1319,7 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values || []}
+            value={actionsInputs[i]?.values[0] || []}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1507,7 +1507,7 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values || []}
+            value={actionsInputs[i]?.values[0] || []}
             renderInput={(params) => (
               <TextField
                 {...params}
