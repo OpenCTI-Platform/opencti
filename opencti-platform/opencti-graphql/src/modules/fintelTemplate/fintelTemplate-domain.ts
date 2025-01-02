@@ -75,8 +75,7 @@ export const fintelTemplateEditField = async (
       const values = i.value as FintelTemplateWidgetAddInput[];
       const formattedValues = values.map((v) => ({
         ...v,
-        id: uuidv4(), // add id to fintel template widgets
-        widget: { ...v.widget, id: uuidv4() }, // widget with id
+        widget: { ...v.widget, id: v.widget.id ?? uuidv4() }, // ensure widget has an id
       }));
       return { ...i, value: formattedValues };
     }

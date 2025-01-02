@@ -33,7 +33,7 @@ import WorkspaceShareButton from './WorkspaceShareButton';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import WidgetConfig from './dashboards/WidgetConfig';
+import WidgetConfig from '../widgets/WidgetConfig';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';

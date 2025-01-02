@@ -18,13 +18,15 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { PopoverProps } from '@mui/material/Popover';
 import Button from '@mui/material/Button';
-import FintelTemplateWidgetCreation from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetCreation';
+import type { EditOperation } from '@components/__generated__/DashboardSettingsMutation.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
-import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, serializeFintelTemplateWidgetForBackend } from '../../../../../utils/filters/filtersUtils';
+import WidgetConfig from '../../../widgets/WidgetConfig';
+import type { Widget } from '../../../../../utils/widget/widget';
 
 export const FINTEL_TEMPLATE_SIDEBAR_WIDTH = 350;
 
@@ -119,6 +121,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
   const [commitEditMutation] = useFintelTemplateEdit();
 
+  const handleUpsertWidget = (widget: Widget) => {
+    console.log('widget', widget);
+  };
   const handleWidgetClick = (variableName: string) => {
     const newContent = content.concat(`$${variableName}`);
     const input = { key: 'content', value: [newContent] };
@@ -227,9 +232,10 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
           })}
         </List>
       </Drawer>
-      <FintelTemplateWidgetCreation
-        isOpen={isWidgetCreationFormOpen}
-        onClose={() => setIsWidgetCreationFormOpen(false)}
+      <WidgetConfig
+        open={isWidgetCreationFormOpen}
+        setOpen={setIsWidgetCreationFormOpen}
+        onComplete={handleUpsertWidget}
       />
     </>
   );
