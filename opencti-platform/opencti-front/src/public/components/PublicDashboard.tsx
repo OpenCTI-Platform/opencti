@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary } from '@components/Error';
 import Paper from '@mui/material/Paper';
+import { WidgetPerspective } from '@components/widgets/widgetUtils';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
@@ -12,7 +13,6 @@ import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
-import { WidgetPerspective } from '@components/widgets/widgetUtils';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
