@@ -17,6 +17,8 @@ describe('Regex Pattern Tests', () => {
     expect('test-test.com').toMatch(domainChecker);
     expect('test-test.mytest.com').toMatch(domainChecker);
     expect('observableTestPromote.com').toMatch(domainChecker);
+    expect('mvix.온라인.한국').toMatch(domainChecker);
+    expect('mvix.xn--oi2b61z32a.xn--3e0b707e').toMatch(domainChecker);
   });
 
   it('should not match a valid domain pattern', () => {
