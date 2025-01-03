@@ -133,7 +133,7 @@
     "eslint-plugin-custom-rules": "link:packages/eslint-plugin-custom-rules",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-import-newlines": "1.4.0",
-    "eslint-plugin-react": "7.37.2",
+    "eslint-plugin-react": "7.37.3",
     "express": "4.21.0",
     "fs-extra": "11.2.0",
     "http-proxy-middleware": "3.0.3",
