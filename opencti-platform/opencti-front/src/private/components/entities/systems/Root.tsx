@@ -53,10 +53,7 @@ const systemQuery = graphql`
       entity_type
       name
       x_opencti_aliases
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...System_system
       ...SystemKnowledge_system
       ...FileImportViewer_entity
@@ -148,7 +145,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                     'observables',
                     'vulnerabilities',
                   ]}
-                  stixCoreObjectsDistribution={system.stixCoreObjectsDistribution}
+                  queryRef={system}
                 />
               )}
             />

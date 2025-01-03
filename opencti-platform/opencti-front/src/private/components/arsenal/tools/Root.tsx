@@ -53,10 +53,7 @@ const toolQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Tool_tool
       ...ToolKnowledge_tool
       ...FileImportViewer_entity
@@ -125,7 +122,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                     'observables',
                     'sightings',
                   ]}
-                  stixCoreObjectsDistribution={tool.stixCoreObjectsDistribution}
+                  queryRef={tool}
                 />
               }
             />

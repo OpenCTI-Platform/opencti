@@ -54,10 +54,7 @@ const ThreatActorGroupQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...ThreatActorGroup_ThreatActorGroup
       ...ThreatActorGroupKnowledge_ThreatActorGroup
       ...FileImportViewer_entity
@@ -131,7 +128,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     'infrastructures',
                     'sightings',
                   ]}
-                  stixCoreObjectsDistribution={threatActorGroup.stixCoreObjectsDistribution}
+                  queryRef={threatActorGroup}
                 />
               }
             />
