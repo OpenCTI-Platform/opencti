@@ -31,18 +31,22 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
 
   const initialValues = {
     request_access_reason: '',
-    organizations: '',
-    request_access_entities: [],
+    organizations: [],
+    request_access_entities: '',
     request_access_type: 'organization_sharing',
   };
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
   const onSubmit = (values: any, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
+    const organizations = Array.isArray(values.organizations)
+      ? values.organizations.map((org) => org.value)
+      : [values.organizations.value];
+
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
-      request_access_entities: entitiesIds,
-      request_access_members: values.organizations.value,
+      request_access_entities: [entitiesIds[0]],
+      request_access_members: organizations,
       request_access_type: 'organization_sharing',
     };
 
@@ -70,40 +74,44 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
           initialValues={initialValues}
           onSubmit={onSubmit}
         >
-          {({ isSubmitting, submitForm }) => (
-            <Form>
-              <DialogContent style={{ padding: 0 }}>
-                <DialogContentText>
-                  {t_i18n('Your account/organization does not have permission to create/update this entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.')}
-                </DialogContentText>
-                <Field
-                  component={MarkdownField}
-                  name="request_access_reason"
-                  label={t_i18n('Enter justification for requesting this entity')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                  askAi={false}
-                />
-                <ObjectOrganizationField
-                  name="organizations"
-                  style={{ width: '100%', paddingTop: '16px' }}
-                  label={t_i18n('Organization')}
-                  multiple={false}
-                  alert={false}
-                />
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={onClose} disabled={isSubmitting}>
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
-                  {t_i18n('Request Access')}
-                </Button>
-              </DialogActions>
-            </Form>
-          )}
+          {({ isSubmitting, submitForm }) => {
+            return (
+              <Form>
+                <DialogContent style={{ padding: 0 }}>
+                  <DialogContentText>
+                    {t_i18n(
+                      'Your account/organization does not have permission to create/update this entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
+                    )}
+                  </DialogContentText>
+                  <Field
+                    component={MarkdownField}
+                    name="request_access_reason"
+                    label={t_i18n('Enter justification for requesting this entity')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                    style={{ marginTop: 20 }}
+                    askAi={false}
+                  />
+                  <ObjectOrganizationField
+                    name="organizations"
+                    style={{ width: '100%', paddingTop: '16px' }}
+                    label={t_i18n('Organization')}
+                    multiple={true}
+                    alert={false}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={onClose} disabled={isSubmitting}>
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+                    {t_i18n('Request Access')}
+                  </Button>
+                </DialogActions>
+              </Form>
+            );
+          }}
         </Formik>
       </DialogContent>
     </Dialog>
