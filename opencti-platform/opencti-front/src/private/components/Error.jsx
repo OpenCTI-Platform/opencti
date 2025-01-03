@@ -77,12 +77,10 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   render() {
-    console.log('render !!!')
     if (this.state.error) {
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
-      console.log('types ===> ', types);
 
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, getUserIdByEmail, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
 import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../src/schema/stixRefRelationship';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
@@ -63,14 +63,24 @@ export const REJECT_RFI_QUERY = gql`
         requestAccessReject(id: $id)
     }`;
 
-describe('Add Request Access to an entity and create an RFI', async () => {
+describe('Add Request Access to an entity and create an RFI.'
+  + 'USER_EDITOR is used as platform admin (in TEST_ORGANIZATION org),'
+  + 'USER_DISINFORMATION_ANALYST is used as user that request access to knowledge.', async () => {
   let caseRfiIdForApproval: string;
   let caseRfiIdForReject: string;
   let malwareId: string;
   let testOrgId: string;
+  let userEditorId: string;
+  let userAnalystId: string;
 
   it('should enable platform organization', async () => {
     await enableEEAndSetOrganization(TEST_ORGANIZATION);
+    userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    userAnalystId = await getUserIdByEmail(USER_DISINFORMATION_ANALYST.email);
+
+    // Verify initial data required for tests.
+    expect(USER_EDITOR.organizations?.some((organization) => organization.name === TEST_ORGANIZATION.name));
+    expect(USER_DISINFORMATION_ANALYST.organizations?.some((organization) => organization.name === PLATFORM_ORGANIZATION.name));
   });
 
   it('should create malware with restricted access', async () => {
@@ -93,7 +103,7 @@ describe('Add Request Access to an entity and create an RFI', async () => {
     testOrgId = testOrgEntity.id;
   });
   it('should create a Request Access and associated Case RFI (For accept use case)', async () => {
-    const requestAccessData = await queryAsAdminWithSuccess({
+    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
         input: {
@@ -110,7 +120,6 @@ describe('Add Request Access to an entity and create an RFI', async () => {
   });
 
   it('should retrieve the created Case RFI with correct participant and objects', async () => {
-    const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
     const queryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
@@ -119,7 +128,7 @@ describe('Add Request Access to an entity and create an RFI', async () => {
     expect(queryResult?.data?.caseRfi).not.toBeNull();
     expect(queryResult?.data?.caseRfi.id).toEqual(caseRequestForInformation.id);
     expect(queryResult?.data?.caseRfi.name).toContain(caseRequestForInformation.name);
-    expect(caseRequestForInformation[RELATION_OBJECT_PARTICIPANT]).toContain(ADMIN_USER.id);
+    expect(caseRequestForInformation[RELATION_OBJECT_PARTICIPANT]).toContain(userAnalystId);
     expect(caseRequestForInformation[RELATION_OBJECT_ASSIGNEE]).toContain(userEditorId);
     expect(caseRequestForInformation.object).toEqual([malwareId]);
 
@@ -149,7 +158,7 @@ describe('Add Request Access to an entity and create an RFI', async () => {
   });
 
   it('should create a new Request Access and associated Case RFI (For reject use case)', async () => {
-    const requestAccessData = await queryAsAdminWithSuccess({
+    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
         input: {

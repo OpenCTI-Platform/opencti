@@ -385,6 +385,7 @@ export const USER_DISINFORMATION_ANALYST: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
   email: 'anais@opencti.io',
   password: 'disinformation',
+  organizations: [PLATFORM_ORGANIZATION],
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
   client: createHttpClient('anais@opencti.io', 'disinformation')
 };
