@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { CaseRfiAddInput, EditInput, RequestAccessAddInput } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
-import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../utils/access';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../../utils/access';
 import { listAllFromEntitiesThroughRelations } from '../../database/middleware-loader';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -36,8 +36,8 @@ export const findUsersThatCanShareWithOrganizations = async (context: AuthContex
 };
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
-  logApp.warn('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
-  const allAssignees = await findUsersThatCanShareWithOrganizations(context, user, input.request_access_members);
+  logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
+  const allAssignees = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members);
   const allAssigneeIds: string[] = allAssignees.map((member) => member.id);
   if (allAssigneeIds.length < 1) {
     logApp.warn('[OPENCTI-MODULE][Request access] Cannot set Assignee in Request Access RFI', { input });
@@ -59,7 +59,8 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     objectAssignee: allAssigneeIds,
     description: `${JSON.stringify(action)}`
   };
-  const requestForInformation = await addCaseRfi(context, user, rfiInput);
+  logApp.info('[OPENCTI-MODULE][Request access] - rfiInput', { rfiInput });
+  const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   return requestForInformation.id;
 };
 
