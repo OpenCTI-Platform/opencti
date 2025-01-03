@@ -3,10 +3,17 @@ import { FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined 
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
-  ChartBar, ChartBubble,
-  ChartDonut, ChartLine,
-  ChartTimeline, ChartTree, Counter, FormatListNumberedRtl, Radar, StarSettingsOutline,
-  ViewListOutline
+  ChartBar,
+  ChartBubble,
+  ChartDonut,
+  ChartLine,
+  ChartTimeline,
+  ChartTree,
+  Counter,
+  FormatListNumberedRtl,
+  Radar,
+  StarSettingsOutline,
+  ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
 
@@ -245,6 +252,6 @@ export const renderIcon = (key: string) => {
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize="large" color="primary"/>;
     default:
-      return <div>${t_i18n('This widget type is not implemented')}</div>;
+      return <div />;
   }
 };
