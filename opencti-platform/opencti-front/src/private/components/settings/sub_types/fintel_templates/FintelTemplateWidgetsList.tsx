@@ -1,0 +1,86 @@
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import { MoreVert } from '@mui/icons-material';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import React, { FunctionComponent } from 'react';
+import { PopoverProps } from '@mui/material/Popover';
+import { useFormatter } from '../../../../../components/i18n';
+
+interface FintelTemplateWidgetsListProps {
+  widgets: { id: string, variableName: string, type: string, filters?: string, attribute?: string }[],
+  content: string,
+  handleWidgetClick: (variableName: string) => void,
+  openedPopover: string | null,
+  handleOpenDelete: () => void,
+  handleOpenPopover: (event: React.SyntheticEvent, lineKey: string) => void,
+  handleClosePopover: () => void,
+  anchorEl: PopoverProps['anchorEl'],
+  handleOpenUpdate: () => void,
+}
+
+const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({
+  widgets,
+  content,
+  handleWidgetClick,
+  openedPopover,
+  handleOpenDelete,
+  handleOpenPopover,
+  handleClosePopover,
+  anchorEl,
+  handleOpenUpdate,
+}) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <List>
+      {widgets.map((widget) => {
+        const { variableName } = widget;
+        const isChecked = content.includes(`$${variableName}`);
+        return (
+          <>
+            <ListItem
+              key={widget.id}
+              value={variableName}
+              style={{ marginLeft: -25, marginBottom: -10 }}
+            >
+              <Checkbox
+                size="small"
+                checked={isChecked}
+                onClick={() => handleWidgetClick(variableName)}
+              />
+              <ListItemText primary={variableName}/>
+              <ListItemSecondaryAction>
+                <IconButton
+                  aria-haspopup="true"
+                  color="primary"
+                  size="small"
+                  onClick={(event) => handleOpenPopover(event, variableName)}
+                >
+                  <MoreVert />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={openedPopover === variableName}
+                  onClose={handleClosePopover}
+                >
+                  <MenuItem onClick={handleOpenUpdate}>
+                    {t_i18n('Update')}
+                  </MenuItem>
+                  <MenuItem disabled={isChecked} onClick={handleOpenDelete}>
+                    {t_i18n('Delete')}
+                  </MenuItem>
+                </Menu>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </>
+        );
+      })}
+    </List>
+  );
+};
+
+export default FintelTemplateWidgetsList;

@@ -4,27 +4,13 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
 import { FintelTemplateWidgetsSidebar_template$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateWidgetsSidebar_template.graphql';
-import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
 import useFintelTemplateEdit from '@components/settings/sub_types/fintel_templates/useFintelTemplateEdit';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import IconButton from '@mui/material/IconButton';
-import { ExpandLess, ExpandMore, MoreVert } from '@mui/icons-material';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import Collapse from '@mui/material/Collapse';
-import Chip from '@mui/material/Chip';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
 import { PopoverProps } from '@mui/material/Popover';
 import Button from '@mui/material/Button';
-import type { EditOperation } from '@components/__generated__/DashboardSettingsMutation.graphql';
+import FintelTemplateWidgetsList from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
-import FilterIconButton from '../../../../../components/FilterIconButton';
-import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
-import { emptyFilterGroup, serializeFintelTemplateWidgetForBackend } from '../../../../../utils/filters/filtersUtils';
 import WidgetConfig from '../../../widgets/WidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
 
@@ -37,6 +23,7 @@ const widgetsFragment = graphql`
     fintel_template_widgets {
       variable_name
       widget {
+        id
         type
         dataSelection {
           perspective
@@ -65,20 +52,24 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { id, content, fintel_template_widgets: fintelTemplates } = useFragment(widgetsFragment, data);
 
-  const availableWidgets = fintelTemplates
+  const fintelTemplateWidgets = fintelTemplates
     .map((template) => (template.widget.type === 'attribute'
       ? (template.widget.dataSelection[0].columns ?? []).map((c) => ({
+        id: template.widget.id,
         variableName: c.variableName,
         type: template.widget.type,
         attribute: c.attribute,
       }))
       : {
+        id: template.widget.id,
         variableName: template.variable_name,
         type: template.widget.type,
         filters: template.widget.dataSelection[0].filters,
       }))
-    .flat() as { variableName: string, type: string, filters?: string, attribute?: string }[];
-  const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
+    .flat() as { id: string, variableName: string, type: string, filters?: string, attribute?: string }[];
+  const usedWidgets = fintelTemplateWidgets.filter((w) => content.includes(`$${w.variableName}`));
+  const availableWidgets = fintelTemplateWidgets.filter((w) => !usedWidgets.includes(w));
+
   const [openedPopover, setOpenedPopover] = useState<string | null>(null);
   const [isWidgetCreationFormOpen, setIsWidgetCreationFormOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -89,16 +80,6 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       padding: theme.spacing(2),
       marginTop: `${settingsMessagesBannerHeight}px`,
     },
-  };
-
-  const handleToggleLine = (lineKey: string) => {
-    setExpandedLines({
-      ...expandedLines,
-      [lineKey]:
-        expandedLines[lineKey] !== undefined
-          ? !expandedLines[lineKey]
-          : true,
-    });
   };
 
   const handleOpenPopover = (event: React.SyntheticEvent, lineKey: string) => {
@@ -142,95 +123,39 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   return (
     <>
       <Drawer variant="permanent" anchor="right" sx={paperStyle}>
-        <Toolbar />
-        <span>
-          {t_i18n('Template widgets')}
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ float: 'right' }}
-            onClick={handleOpenCreateWidget}
-          >
-            {t_i18n('Create widget')}
-          </Button>
-        </span>
-        <List>
-          {availableWidgets.map((widget) => {
-            const { variableName } = widget;
-            const isChecked = content.includes(`${variableName}`);
-            const isNotExpanded = expandedLines[variableName] === undefined || expandedLines[variableName] === false;
-            return (
-              <>
-                <ListItem
-                  key={id}
-                  value={variableName}
-                  style={{ marginLeft: -25, marginBottom: -10 }}
-                >
-                  <Checkbox
-                    size="small"
-                    checked={isChecked}
-                    onClick={() => handleWidgetClick(variableName)}
-                  />
-                  <ListItemText primary={variableName}/>
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      aria-haspopup="true"
-                      size="medium"
-                      onClick={() => handleToggleLine(variableName)}
-                    >
-                      {isNotExpanded
-                        ? (<ExpandMore />)
-                        : (<ExpandLess />)
-                    }
-                    </IconButton>
-                    <IconButton
-                      aria-haspopup="true"
-                      color="primary"
-                      size="small"
-                      onClick={(event) => handleOpenPopover(event, variableName)}
-                    >
-                      <MoreVert />
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={openedPopover === variableName}
-                      onClose={handleClosePopover}
-                    >
-                      <MenuItem onClick={handleOpenUpdate}>
-                        {t_i18n('Update')}
-                      </MenuItem>
-                      <MenuItem disabled={isChecked} onClick={handleOpenDelete}>
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    </Menu>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Collapse
-                  in={!isNotExpanded}
-                >
-                  <div style={{ marginLeft: 30 }}>
-                    {`${t_i18n('Type')}: `}
-                    <Chip
-                      label={t_i18n(widget.type).toUpperCase()}
-                    />
-                    {widget.type === 'attribute'
-                      ? <div>
-                        {`${t_i18n('Attribute')}: `}
-                        {widget.attribute}
-                      </div>
-                      : <div>
-                        {`${t_i18n('Filters')}: `}
-                        <FieldOrEmpty source={widget.filters}>
-                          <FilterIconButton filters={widget.filters ? JSON.parse(widget.filters) : emptyFilterGroup}/>
-                        </FieldOrEmpty>
-                      </div>
-                  }
-                  </div>
-                </Collapse>
-              </>
-            );
-          })}
-        </List>
+        <Toolbar/>
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ float: 'right', width: '100%' }}
+          onClick={handleOpenCreateWidget}
+        >
+          {t_i18n('Create widget')}
+        </Button>
+        <span style={{ marginTop: 20 }}>{t_i18n('Used template widgets')}</span>
+        <FintelTemplateWidgetsList
+          widgets={usedWidgets}
+          content={content}
+          handleWidgetClick={handleWidgetClick}
+          openedPopover={openedPopover}
+          handleOpenDelete={handleOpenDelete}
+          handleOpenPopover={handleOpenPopover}
+          handleClosePopover={handleClosePopover}
+          anchorEl={anchorEl}
+          handleOpenUpdate={handleOpenUpdate}
+        />
+        <span style={{ marginTop: 20 }}>{t_i18n('Available template widgets')}</span>
+        <FintelTemplateWidgetsList
+          widgets={availableWidgets}
+          content={content}
+          handleWidgetClick={handleWidgetClick}
+          openedPopover={openedPopover}
+          handleOpenDelete={handleOpenDelete}
+          handleOpenPopover={handleOpenPopover}
+          handleClosePopover={handleClosePopover}
+          anchorEl={anchorEl}
+          handleOpenUpdate={handleOpenUpdate}
+        />
       </Drawer>
       <WidgetConfig
         open={isWidgetCreationFormOpen}
