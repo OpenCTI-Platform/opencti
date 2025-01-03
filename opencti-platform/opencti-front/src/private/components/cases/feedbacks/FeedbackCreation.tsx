@@ -72,7 +72,10 @@ const FeedbackCreation: FunctionComponent<{
 
   const basicShape = {
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     rating: Yup.number(),
   };
   const feedbackValidator = useSchemaCreationValidation(FEEDBACK_TYPE, basicShape);

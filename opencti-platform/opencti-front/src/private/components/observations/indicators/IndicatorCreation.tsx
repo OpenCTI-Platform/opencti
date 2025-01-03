@@ -123,7 +123,10 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     indicator_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     pattern: Yup.string().trim().required(t_i18n('This field is required')),
     pattern_type: Yup.string().trim().required(t_i18n('This field is required')),
     x_opencti_main_observable_type: Yup.string().trim().required(

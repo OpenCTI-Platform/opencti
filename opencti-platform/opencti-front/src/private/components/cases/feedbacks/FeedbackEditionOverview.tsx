@@ -158,7 +158,10 @@ FeedbackEditionOverviewProps
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     rating: Yup.number(),
-    confidence: Yup.number(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
   };
   const feedbackValidator = useSchemaEditionValidation('Feedback', basicShape);
 
@@ -284,7 +287,6 @@ FeedbackEditionOverviewProps
             entityType="Feedback"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
-            variant="edit"
           />
           <RatingField
             label={t_i18n('Rating')}
