@@ -9,10 +9,11 @@ import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
-import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
+import conf, { basePath, DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
+import tracingPlugin from './tracingPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 
 const createApolloServer = () => {
@@ -93,6 +94,9 @@ const createApolloServer = () => {
   };
   apolloPlugins.push(secureIntrospectionPlugin);
   if (ENABLED_TRACING) {
+    apolloPlugins.push(tracingPlugin);
+  }
+  if (ENABLED_METRICS) {
     apolloPlugins.push(telemetryPlugin);
   }
   const apolloServer = new ApolloServer({
