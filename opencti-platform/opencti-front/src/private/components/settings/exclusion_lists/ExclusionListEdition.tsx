@@ -13,6 +13,7 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { now } from 'src/utils/Time';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { availableEntityTypes } from '@components/settings/exclusion_lists/ExclusionListUtils';
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -58,7 +59,8 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const { schema: { scos: entityTypes } } = useSchema();
+  const { schema: { scos } } = useSchema();
+  const entityTypes = scos.filter((item) => availableEntityTypes.includes(item.id));
 
   const [isUploadFileChecked, setIsUploadFileChecked] = useState<boolean>(false);
   const [initialValues, setInitialValues] = useState<ExclusionListEditionFormData | null>(null);

@@ -1,6 +1,9 @@
 import * as Yup from 'yup';
 
-const exclusionListValidator = (t: (value: string) => string, isCreatedWithFile: boolean) => {
+export const ipAddrEntityTypes = ['IPv4-Addr', 'IPv6-Addr'];
+export const availableEntityTypes = ['Artifact', 'Domain-Name', 'Hostname', 'Url', 'StixFile', 'Email-Addr', ...ipAddrEntityTypes];
+
+export const exclusionListValidator = (t: (value: string) => string, isCreatedWithFile: boolean) => {
   return Yup.object().shape({
     name: Yup.string().trim().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -9,5 +12,3 @@ const exclusionListValidator = (t: (value: string) => string, isCreatedWithFile:
     content: isCreatedWithFile ? Yup.string().nullable() : Yup.string().required(t('This field is required')),
   });
 };
-
-export default exclusionListValidator;
