@@ -13,10 +13,12 @@ import {
   FormatListNumberedRtl,
   Radar,
   StarSettingsOutline,
+  TagTextOutline,
   ViewListOutline,
-  NoteTextOutline, TagTextOutline,
 } from 'mdi-material-ui';
 import React from 'react';
+
+export type WidgetContext = 'workspace' | 'fintelTemplate';
 
 export enum WidgetPerspective {
   entities,

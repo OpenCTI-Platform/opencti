@@ -50,9 +50,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const { id, content, fintel_template_widgets: fintelTemplates } = useFragment(widgetsFragment, data);
+  const { id, content, fintel_template_widgets: fintelTemplateWidgets } = useFragment(widgetsFragment, data);
 
-  const fintelTemplateWidgets = fintelTemplates
+  const formattedFintelTemplateWidgets = fintelTemplateWidgets
     .map((template) => (template.widget.type === 'attribute'
       ? (template.widget.dataSelection[0].columns ?? []).map((c) => ({
         id: template.widget.id,
@@ -67,12 +67,13 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         filters: template.widget.dataSelection[0].filters,
       }))
     .flat() as { id: string, variableName: string, type: string, filters?: string, attribute?: string }[];
-  const usedWidgets = fintelTemplateWidgets.filter((w) => content.includes(`$${w.variableName}`));
-  const availableWidgets = fintelTemplateWidgets.filter((w) => !usedWidgets.includes(w));
+  const usedWidgets = formattedFintelTemplateWidgets.filter((w) => content.includes(`$${w.variableName}`));
+  const availableWidgets = formattedFintelTemplateWidgets.filter((w) => !usedWidgets.includes(w));
 
   const [openedPopover, setOpenedPopover] = useState<string | null>(null);
   const [isWidgetCreationFormOpen, setIsWidgetCreationFormOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
+  const [variableName, setVariableName] = useState<string | null>(null);
 
   const paperStyle: SxProps = {
     '.MuiDrawer-paper': {
@@ -103,10 +104,16 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const [commitEditMutation] = useFintelTemplateEdit();
 
   const handleUpsertWidget = (widget: Widget) => {
+    if (!variableName) {
+      MESSAGING$.notifyError(t_i18n('You should provide a variable name'));
+    } else if (variableName.includes(' ')) {
+      MESSAGING$.notifyError(t_i18n('The variable name should not contain blanks'));
+    }
     console.log('widget', widget);
+    console.log('variableName', variableName);
   };
-  const handleAddWidget = (variableName: string) => {
-    const newContent = content.concat(`$${variableName}`);
+  const handleAddWidget = (varName: string) => {
+    const newContent = content.concat(`$${varName}`);
     const input = { key: 'content', value: [newContent] };
     commitEditMutation({
       variables: { id, input: [input] },
@@ -135,10 +142,8 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         <span style={{ marginTop: 20 }}>{t_i18n('Used template widgets')}</span>
         <FintelTemplateWidgetsList
           widgets={usedWidgets}
-          content={content}
           handleAddWidget={handleAddWidget}
           openedPopover={openedPopover}
-          handleOpenDelete={handleOpenDelete}
           handleOpenPopover={handleOpenPopover}
           handleClosePopover={handleClosePopover}
           anchorEl={anchorEl}
@@ -147,7 +152,6 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         <span style={{ marginTop: 20 }}>{t_i18n('Available template widgets')}</span>
         <FintelTemplateWidgetsList
           widgets={availableWidgets}
-          content={content}
           handleAddWidget={handleAddWidget}
           openedPopover={openedPopover}
           handleOpenDelete={handleOpenDelete}
@@ -161,6 +165,10 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         open={isWidgetCreationFormOpen}
         setOpen={setIsWidgetCreationFormOpen}
         onComplete={handleUpsertWidget}
+        context={'fintelTemplate'}
+        widget={openedPopover ? fintelTemplateWidgets.find((t) => t.variable_name === openedPopover)?.widget as Widget : undefined}
+        variableName={openedPopover}
+        handleChangeVariableName={(n) => setVariableName(n)}
       />
     </>
   );

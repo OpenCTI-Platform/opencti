@@ -14,10 +14,9 @@ import { useFormatter } from '../../../../../components/i18n';
 
 interface FintelTemplateWidgetsListProps {
   widgets: { id: string, variableName: string, type: string, filters?: string, attribute?: string }[],
-  content: string,
   handleAddWidget: (variableName: string) => void,
   openedPopover: string | null,
-  handleOpenDelete: () => void,
+  handleOpenDelete?: () => void,
   handleOpenPopover: (event: React.SyntheticEvent, lineKey: string) => void,
   handleClosePopover: () => void,
   anchorEl: PopoverProps['anchorEl'],
@@ -26,7 +25,6 @@ interface FintelTemplateWidgetsListProps {
 
 const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({
   widgets,
-  content,
   handleAddWidget,
   openedPopover,
   handleOpenDelete,
@@ -40,7 +38,6 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
     <List>
       {widgets.map((widget) => {
         const { variableName } = widget;
-        const isChecked = content.includes(`$${variableName}`);
         return (
           <>
             <ListItem
@@ -79,9 +76,9 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
                   <MenuItem onClick={handleOpenUpdate}>
                     {t_i18n('Update')}
                   </MenuItem>
-                  <MenuItem disabled={isChecked} onClick={handleOpenDelete}>
+                  {handleOpenDelete && <MenuItem onClick={handleOpenDelete}>
                     {t_i18n('Delete')}
-                  </MenuItem>
+                  </MenuItem>}
                 </Menu>
               </ListItemSecondaryAction>
             </ListItem>

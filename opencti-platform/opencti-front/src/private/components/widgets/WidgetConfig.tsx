@@ -9,7 +9,7 @@ import WidgetUpsert from '@components/widgets/WidgetUpsert';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Widget } from '../../../utils/widget/widget';
-import { WidgetPerspective } from './widgetUtils';
+import { WidgetPerspective, WidgetContext } from './widgetUtils';
 
 interface WidgetConfigProps {
   onComplete: (value: Widget) => void,
@@ -17,7 +17,9 @@ interface WidgetConfigProps {
   setOpen: (open: boolean) => void,
   closeMenu?: () => void,
   widget?: Widget,
-  context: 'workspace' | 'fintelTemplate',
+  context: WidgetContext,
+  variableName?: string | null,
+  handleChangeVariableName?: (n: string) => void,
 }
 
 const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
@@ -27,6 +29,8 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   setOpen,
   open,
   context,
+  variableName,
+  handleChangeVariableName,
 }) => {
   let initialStep = 0;
   if (widget?.type === 'text') {
@@ -146,6 +150,9 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
           parameters={parameters}
           setParameters={setParameters}
           type={type as string}
+          context={context}
+          variableName={variableName}
+          handleChangeVariableName={handleChangeVariableName}
                />;
       default:
         return <div>${t_i18n('This step is not implemented')}</div>;

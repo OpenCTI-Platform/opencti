@@ -4,12 +4,12 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent } from 'react';
-import { workspacesWidgetVisualizationTypes, fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon } from './widgetUtils';
+import { workspacesWidgetVisualizationTypes, fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, WidgetContext } from './widgetUtils';
 import { useFormatter } from '../../../components/i18n';
 
 interface WidgetCreationTypesProps {
   handleSelectType: (type: string) => void,
-  context: 'workspace' | 'fintelTemplate',
+  context: WidgetContext,
 }
 const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
   handleSelectType,
