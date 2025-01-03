@@ -9,6 +9,7 @@ import WidgetUpsert from '@components/widgets/WidgetUpsert';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Widget } from '../../../utils/widget/widget';
+import { WidgetPerspective } from './widgetUtils';
 
 interface WidgetConfigProps {
   onComplete: (value: Widget) => void,
@@ -101,7 +102,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
       setStepIndex(1);
     }
   };
-  const handleSelectPerspective = (selectedPerspective: string) => {
+  const handleSelectPerspective = (selectedPerspective: WidgetPerspective) => {
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective: selectedPerspective,
@@ -132,7 +133,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
         return <WidgetCreationDataSelection
           dataSelection={dataSelection}
           setDataSelection={setDataSelection}
-          perspective={perspective as string}
+          perspective={perspective as WidgetPerspective}
           type={type as string}
           setStepIndex={setStepIndex}
                />;
