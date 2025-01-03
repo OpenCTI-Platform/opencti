@@ -1,6 +1,6 @@
-import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, useLocation, useParams } from 'react-router-dom';
-import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import React, { Suspense, useMemo } from 'react';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -199,7 +199,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                   entityId={indicatorId}
                   entityLink={link}
                   noPadding={true}
-                  isTo={true}
+                  isTo={false}
                   stixCoreObjectTypes={[
                     'Region',
                     'Country',
