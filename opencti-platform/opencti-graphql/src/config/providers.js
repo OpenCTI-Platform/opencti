@@ -6,7 +6,6 @@ import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
-import Auth0Strategy from 'passport-auth0';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
@@ -403,7 +402,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           passport.use(providerRef, openIDStrategy);
           providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
         }).catch((err) => {
-          logApp.error(UnsupportedError('Error initializing authentication provider', { cause: err, provider: providerRef }));
+          logApp.error(UnsupportedError('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef }));
         });
       });
     }
@@ -477,19 +476,52 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
     if (strategy === STRATEGY_AUTH0) {
+      // Auth0 is a specific implementation of OpenID
+      // note maybe one day it will be removed to keep only STRATEGY_OPENID.
       const providerRef = identifier || 'auth0';
-      const auth0Options = { passReqToCallback: true, ...mappedConfig };
-      const auth0Strategy = new Auth0Strategy(
-        auth0Options,
-        (_, __, ___, ____, profile, done) => {
-          logApp.info('[AUTH0] Successfully logged', { profile });
-          const email = R.head(profile.emails).value;
-          const name = profile.displayName;
+      const authDomain = config.domain;
+      const auth0Issuer = `https://${authDomain}/`;
+
+      const auth0OpenIDConfiguration = {
+        issuer: auth0Issuer,
+        authorizationURL: `https://${authDomain}/authorize`,
+        tokenURL: `https://${authDomain}/oauth/token`,
+        userInfoURL: `https://${authDomain}/userinfo`,
+        client_id: config.clientID,
+        client_secret: config.clientSecret,
+        redirect_uri: config.callback_url
+      };
+      const auth0config = { ...config, ...auth0OpenIDConfiguration };
+
+      // Here we use directly the config and not the mapped one.
+      // All config of openid lib use snake case.
+      const openIdClient = auth0config.use_proxy ? getPlatformHttpProxyAgent(auth0Issuer) : undefined;
+      OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
+      OpenIDIssuer.discover(auth0Issuer).then((issuer) => {
+        const { Client } = issuer;
+        const client = new Client(auth0config);
+        const openIdScope = mappedConfig.scope ?? 'openid email profile';
+        const options = { ...auth0OpenIDConfiguration, logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true, params: { scope: openIdScope } };
+        const debugCallback = (message, meta) => logApp.info(message, meta);
+        const auth0Strategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+          logApp.info('[AUTH0] Successfully logged', { userinfo });
+          const { email, name } = userinfo;
           providerLoginHandler({ email, name }, done);
-        }
-      );
-      passport.use(providerRef, auth0Strategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+        });
+        auth0Strategy.logout_remote = options.logout_remote;
+        auth0Strategy.logout = (_, callback) => {
+          logApp.info('[AUTH0] Remote logout');
+          const params = {
+            client_id: mappedConfig.clientID,
+            returnTo: mappedConfig.baseURL
+          };
+          const URLParams = new URLSearchParams(params).toString();
+          const endpointUri = `https://${authDomain}/v2/logout?${URLParams}`;
+          callback(null, endpointUri);
+        };
+        passport.use(providerRef, auth0Strategy);
+        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      });
     }
     // CERT Strategies
     if (strategy === STRATEGY_CERT) {
