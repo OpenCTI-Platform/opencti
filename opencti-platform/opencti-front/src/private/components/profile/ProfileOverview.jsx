@@ -670,7 +670,7 @@ const ProfileOverviewComponent = (props) => {
             variant="contained"
             color="primary"
             component={Link}
-            to="/graphql"
+            to="/public/graphql"
             target="_blank"
           >
             {t('Playground')}
