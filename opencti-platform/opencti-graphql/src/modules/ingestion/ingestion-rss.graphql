@@ -13,6 +13,7 @@ type IngestionRss implements InternalObject & BasicObject {
     defaultMarkingDefinitions: [MarkingDefinition]
     report_types: [String!]
     current_state_date: DateTime
+    last_execution_date: DateTime
     ingestion_running: Boolean
 }
 enum IngestionRssOrdering {
