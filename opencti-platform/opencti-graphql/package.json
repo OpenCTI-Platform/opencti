@@ -207,6 +207,7 @@
   },
   "resolutions": {
     "axios": "1.7.9",
+    "chokidar": "4.0.3",
     "cross-spawn": "7.0.6",
     "body-parser": "1.20.3",
     "cookie": "0.7.2",
