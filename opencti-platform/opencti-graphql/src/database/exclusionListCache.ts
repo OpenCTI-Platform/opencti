@@ -1,5 +1,5 @@
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
-import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../schema/stixCyberObservable';
+import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import { checkExclusionLists, convertIpAddr } from '../utils/exclusionLists';
 import type { AuthContext } from '../types/user';
 import { listAllEntities } from './middleware-loader';
@@ -94,12 +94,24 @@ export const syncExclusionListCache = async (cacheDate: string) => {
 };
 
 export const checkObservableValue = async (observableValue: any) => {
-  const { type, value } = observableValue;
-  if (!type || !value) {
+  const { type, value, hashes } = observableValue;
+  if (!type || (!value && !hashes)) {
     return null;
   }
   if (!exclusionListCache) {
     throw FunctionalError('Failed to load exclusion list cache.', { exclusionListCache });
   }
+
+  if (isStixCyberObservableHashedObservable(type)) {
+    const hashesValues = Object.values(hashes) as string[];
+    for (let i = 0; i < hashesValues.length; i += 1) {
+      const hashCheck = checkExclusionLists(hashesValues[i], type, exclusionListCache);
+      if (hashCheck) {
+        return hashCheck;
+      }
+    }
+    return null;
+  }
+
   return checkExclusionLists(value, type, exclusionListCache);
 };
