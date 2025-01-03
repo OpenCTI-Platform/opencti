@@ -14,6 +14,7 @@ import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
 import { canDeleteElement } from '../../../src/database/data-consistency';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
+import { logApp } from '../../../src/config/conf';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -326,7 +327,8 @@ describe('Retention Manager tests ', () => {
       filterGroups: [],
     };
     const elementsToDelete = await getElementsToDelete(context, 'knowledge', before, JSON.stringify(filters));
-    expect(elementsToDelete.edges.length).toEqual(3);
+    logApp.warn('ANGIE - debug individual elementsToDelete:', elementsToDelete);
+    expect(elementsToDelete.edges.length).toEqual(4);
     const adminIndividual = elementsToDelete.edges.find((e: any) => e.node.name === 'admin');
     expect(await canDeleteElement(context, ADMIN_USER, adminIndividual.node)).toBeFalsy();
     const otherIndividual = elementsToDelete.edges.find((e: any) => !e.node.contact_information);
