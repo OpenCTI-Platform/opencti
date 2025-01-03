@@ -4,7 +4,6 @@ import Upload from 'graphql-upload/Upload.mjs';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { fileToReadStream } from '../../../src/database/file-storage-helper';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
-import { mapCountPerEntityType } from '../../utils/domainQueryHelper';
 
 const LIST_QUERY = gql`
   query stixDomainObjects(
