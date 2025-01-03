@@ -408,7 +408,7 @@ class OpenCTIApiClient:
             self.app_logger.info("Health check (platform version)...")
             test = self.query(
                 """
-                  query {
+                  query healthCheck {
                     about {
                       version
                     }
