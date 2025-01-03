@@ -6,7 +6,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../
 import {
   ADMIN_USER,
   adminQuery,
-  AMBER_GROUP,
+  AMBER_GROUP_EDITOR,
   editorQuery,
   getGroupIdByName,
   getOrganizationIdByName,
@@ -851,14 +851,14 @@ describe('User has no settings capability and is organization admin query behavi
     const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
     expect(editorUserQueryResult).not.toBeNull();
     expect(editorUserQueryResult.data.user).not.toBeNull();
-    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(5);
+    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(6);
     const { capabilities } = editorUserQueryResult.data.user;
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
-    amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
+    amberGroupId = await getGroupIdByName(AMBER_GROUP_EDITOR.name);
 
     const USER_TO_CREATE = {
       input: {
