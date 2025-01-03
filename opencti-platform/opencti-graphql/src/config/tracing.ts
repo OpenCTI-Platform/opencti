@@ -61,12 +61,13 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Counts total number of errors'
     });
-    // - Gauges
+    // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
       valueType: ValueType.INT,
       description: 'Latency computing per query',
-      advice: { explicitBucketBoundaries: [0, 10, 100, 500, 2000] }
+      advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000] }
     });
+    // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
       valueType: ValueType.INT,
       description: 'Size of bulks for direct absorption'
