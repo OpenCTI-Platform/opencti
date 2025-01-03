@@ -72,10 +72,13 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   render() {
+    console.log('render !!!')
     if (this.state.error) {
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
+      console.log('types ===> ', types);
+
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
         return <DedicatedWarning title={'Complex search'} description={'Your search have too much terms to be executed. Please limit the number of words or the complexity'}/>;
@@ -84,6 +87,9 @@ class ErrorBoundaryComponent extends React.Component {
       if (includes('FORBIDDEN_ACCESS', types) || includes('AUTH_REQUIRED', types)) {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
+      }
+      if (includes('ACCESS_REQUIRED', types)) {
+        return <DedicatedWarning title={'Request Access !'} description={`${JSON.stringify(this.state.error)}`} />;
       }
       const DisplayComponent = this.props.display || SimpleError;
       return <DisplayComponent />;
