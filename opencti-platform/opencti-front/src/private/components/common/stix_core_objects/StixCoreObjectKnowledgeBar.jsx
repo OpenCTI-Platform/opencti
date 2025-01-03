@@ -124,7 +124,7 @@ const StixCoreObjectKnowledgeBar = ({
               </ListSubheader>
             }
           >
-            {R.includes('sectors', availableSections) && (
+            {availableSections.includes('sectors') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/sectors`}
@@ -138,7 +138,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Sectors')}${statistics.Sector && statistics.Sector.value > 0 ? ` (${n(statistics.Sector.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('regions', availableSections) && (
+            {availableSections.includes('regions') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/regions`}
@@ -152,7 +152,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Regions')}${statistics.Region && statistics.Region.value > 0 ? ` (${n(statistics.Region.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('countries', availableSections) && (
+            {availableSections.includes('countries') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/countries`}
@@ -168,7 +168,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Countries')}${statistics.Country && statistics.Country.value > 0 ? ` (${n(statistics.Country.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('areas', availableSections) && (
+            {availableSections.includes('areas') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/areas`}
@@ -182,7 +182,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Areas')}${statistics['Administrative-Area'] && statistics['Administrative-Area'].value > 0 ? ` (${n(statistics['Administrative-Area'].value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('cities', availableSections) && (
+            {availableSections.includes('cities') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/cities`}
@@ -196,7 +196,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Cities')}${statistics.City && statistics.City.value > 0 ? ` (${n(statistics.City.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('organizations', availableSections) && (
+            {availableSections.includes('organizations') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/organizations`}
@@ -212,7 +212,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Organizations')}${statistics.Organization && statistics.Organization.value > 0 ? ` (${n(statistics.Organization.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('individuals', availableSections) && (
+            {availableSections.includes('individuals') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/individuals`}
@@ -228,7 +228,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Individuals')}${statistics.Individual && statistics.Individual.value > 0 ? ` (${n(statistics.Individual.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('locations', availableSections) && (
+            {availableSections.includes('locations') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/locations`}
@@ -244,7 +244,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Locations')}${statisticsLocations > 0 ? ` (${n(statisticsLocations)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('used_tools', availableSections) && (
+            {availableSections.includes('used_tools') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/used_tools`}
@@ -263,7 +263,7 @@ const StixCoreObjectKnowledgeBar = ({
           </MenuList>
         ) : (
           <>
-            {R.includes('sectors', availableSections) && (
+            {availableSections.includes('sectors') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/sectors`}
@@ -277,7 +277,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Sectors')}${statistics.Sector && statistics.Sector.value > 0 ? ` (${n(statistics.Sector.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('regions', availableSections) && (
+            {availableSections.includes('regions') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/regions`}
@@ -291,7 +291,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Regions')}${statistics.Region && statistics.Region.value > 0 ? ` (${n(statistics.Region.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('countries', availableSections) && (
+            {availableSections.includes('countries') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/countries`}
@@ -307,7 +307,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Countries')}${statistics.Country && statistics.Country.value > 0 ? ` (${n(statistics.Country.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('areas', availableSections) && (
+            {availableSections.includes('areas') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/areas`}
@@ -321,7 +321,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Areas')}${statistics['Administrative-Area'] && statistics['Administrative-Area'].value > 0 ? ` (${n(statistics['Administrative-Area'].value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('cities', availableSections) && (
+            {availableSections.includes('cities') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/cities`}
@@ -335,7 +335,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Cities')}${statistics.City && statistics.City.value > 0 ? ` (${n(statistics.City.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('locations', availableSections) && (
+            {availableSections.includes('locations') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/locations`}
@@ -351,7 +351,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Locations')}${statisticsLocations > 0 ? ` (${n(statisticsLocations)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('organizations', availableSections) && (
+            {availableSections.includes('organizations') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/organizations`}
@@ -367,7 +367,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Organizations')}${statistics.Organization && statistics.Organization.value > 0 ? ` (${n(statistics.Organization.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('individuals', availableSections) && (
+            {availableSections.includes('individuals') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/individuals`}
@@ -383,7 +383,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemText primary={`${t_i18n('Individuals')}${statistics.Individual && statistics.Individual.value > 0 ? ` (${n(statistics.Individual.value)})` : ''}`} />
               </MenuItem>
             )}
-            {R.includes('used_tools', availableSections) && (
+            {availableSections.includes('used_tools') && (
               <MenuItem
                 component={Link}
                 to={`${stixCoreObjectLink}/used_tools`}
@@ -416,7 +416,7 @@ const StixCoreObjectKnowledgeBar = ({
             <ListSubheader style={{ height: 35 }}>{t_i18n('Threats')}</ListSubheader>
           }
         >
-          {R.includes('threats', availableSections) && (
+          {availableSections.includes('threats') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/threats`}
@@ -430,7 +430,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('All threats')}${statisticsThreats > 0 ? ` (${n(statisticsThreats)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('attribution', availableSections) && (
+          {availableSections.includes('attribution') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/attribution`}
@@ -446,7 +446,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Attribution')}${statisticsAttributions > 0 ? ` (${n(statisticsAttributions)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('victimology', availableSections) && (
+          {availableSections.includes('victimology') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/victimology`}
@@ -462,7 +462,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Victimology')}${statisticsVictims > 0 ? ` (${n(statisticsVictims)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('threat_actors', availableSections) && (
+          {availableSections.includes('threat_actors') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/threat_actors`}
@@ -478,7 +478,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Threat actors')}${statisticsThreatActors > 0 ? ` (${n(statisticsThreatActors)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('intrusion_sets', availableSections) && (
+          {availableSections.includes('intrusion_sets') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/intrusion_sets`}
@@ -494,7 +494,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Intrusion sets')}${statistics['Intrusion-Set'] && statistics['Intrusion-Set'].value > 0 ? ` (${n(statistics['Intrusion-Set'].value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('campaigns', availableSections) && (
+          {availableSections.includes('campaigns') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/campaigns`}
@@ -526,7 +526,7 @@ const StixCoreObjectKnowledgeBar = ({
             <ListSubheader style={{ height: 35 }}>{t_i18n('Arsenal')}</ListSubheader>
           }
         >
-          {R.includes('variants', availableSections) && (
+          {availableSections.includes('variants') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/variants`}
@@ -540,7 +540,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Variants')}${statistics.Malware && statistics.Malware.value > 0 ? ` (${n(statistics.Malware.value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('malwares', availableSections) && (
+          {availableSections.includes('malwares') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/malwares`}
@@ -554,7 +554,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Malwares')}${statistics.Malware && statistics.Malware.value > 0 ? ` (${n(statistics.Malware.value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('channels', availableSections) && (
+          {availableSections.includes('channels') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/channels`}
@@ -568,7 +568,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Channels')}${statistics.Channel && statistics.Channel.value > 0 ? ` (${n(statistics.Channel.value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('tools', availableSections) && (
+          {availableSections.includes('tools') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/tools`}
@@ -582,7 +582,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Tools')}${statistics.Tool && statistics.Tool.value > 0 ? ` (${n(statistics.Tool.value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('vulnerabilities', availableSections) && (
+          {availableSections.includes('vulnerabilities') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/vulnerabilities`}
@@ -610,7 +610,7 @@ const StixCoreObjectKnowledgeBar = ({
             </ListSubheader>
           }
         >
-          {R.includes('attack_patterns', availableSections) && (
+          {availableSections.includes('attack_patterns') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/attack_patterns`}
@@ -626,7 +626,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Attack patterns')}${statistics['Attack-Pattern'] && statistics['Attack-Pattern'].value > 0 ? ` (${n(statistics['Attack-Pattern'].value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('narratives', availableSections) && (
+          {availableSections.includes('narratives') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/narratives`}
@@ -659,7 +659,7 @@ const StixCoreObjectKnowledgeBar = ({
             </ListSubheader>
           }
         >
-          {R.includes('indicators', availableSections) && (
+          {availableSections.includes('indicators') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/indicators`}
@@ -675,7 +675,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Indicators')}${statistics.Indicator && statistics.Indicator.value > 0 ? ` (${n(statistics.Indicator.value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('observables', availableSections) && (
+          {availableSections.includes('observables') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/observables`}
@@ -691,7 +691,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Observables')}${statisticsObservables > 0 ? ` (${n(statisticsObservables)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('infrastructures', availableSections) && (
+          {availableSections.includes('infrastructures') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/infrastructures`}
@@ -717,7 +717,7 @@ const StixCoreObjectKnowledgeBar = ({
             <ListSubheader style={{ height: 35 }}>{t_i18n('Events')}</ListSubheader>
           }
         >
-          {R.includes('incidents', availableSections) && (
+          {availableSections.includes('incidents') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/incidents`}
@@ -731,7 +731,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Incidents')}${statistics.Incident && statistics.Incident.value > 0 ? ` (${n(statistics.Incident.value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('observed_data', availableSections) && (
+          {availableSections.includes('observed_data') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/observed_data`}
@@ -747,7 +747,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemText primary={`${t_i18n('Observed data')}${statistics['Observed-Data'] && statistics['Observed-Data'].value > 0 ? ` (${n(statistics['Observed-Data'].value)})` : ''}`} />
             </MenuItem>
           )}
-          {R.includes('sightings', availableSections) && (
+          {availableSections.includes('sightings') && (
             <MenuItem
               component={Link}
               to={`${stixCoreObjectLink}/sightings`}
