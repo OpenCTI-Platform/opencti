@@ -225,7 +225,7 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 // region syncs
 interface ConnectorIngestionInput {
   id: string,
-  type: 'RSS' | 'CSV' | 'TAXII',
+  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH',
   name: string,
   connector_user_id?: string | null,
   is_running: boolean

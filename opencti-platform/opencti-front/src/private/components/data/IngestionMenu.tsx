@@ -15,6 +15,10 @@ const IngestionMenu = () => {
       label: 'TAXII Feeds',
     },
     {
+      path: '/dashboard/data/ingestion/collection',
+      label: 'TAXII Push',
+    },
+    {
       path: '/dashboard/data/ingestion/rss',
       label: 'RSS Feeds',
     },

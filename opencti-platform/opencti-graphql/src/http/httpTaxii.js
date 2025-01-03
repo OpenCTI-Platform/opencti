@@ -1,11 +1,19 @@
 /* eslint-disable camelcase */
+// noinspection ExceptionCaughtLocallyJS
+
 import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
+import { findById as findWorkById } from '../domain/work';
 import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix, getCollectionById } from '../domain/taxii';
 import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
+import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
+import { now } from '../utils/format';
+import { computeWorkStatus } from '../domain/connector';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -187,17 +195,71 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  // Unsupported api
-  app.get(`${basePath}/taxii2/root/status/:status_id`, async (req, res) => {
-    const e = UnsupportedError('Unsupported operation');
-    const errorDetail = errorConverter(e);
-    res.status(errorDetail.http_status).send(errorDetail);
-  });
   app.post(`${basePath}/taxii2/root/collections/:id/objects`, async (req, res) => {
-    const e = UnsupportedError('Unsupported operation');
-    const errorDetail = errorConverter(e);
-    res.status(errorDetail.http_status).send(errorDetail);
+    const { id } = req.params;
+    const { objects = [] } = req.body;
+    try {
+      if (objects.length === 0) {
+        throw UnsupportedError('Objects required');
+      }
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
+      // Find and validate the collection
+      const ingestion = await findTaxiiCollection(context, user, id);
+      if (!ingestion) {
+        throw UnsupportedError('Ingestion not found');
+      }
+      if (ingestion.ingestion_running !== true) {
+        throw UnsupportedError('Ingestion is not running');
+      }
+      const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
+      // Push the bundle in queue, return the job id
+      const bundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: stixObjects };
+      // Push the bundle to absorption queue
+      const workId = await pushBundleToConnectorQueue(context, ingestion, bundle);
+      sendJsonResponse(res, {
+        id: workId,
+        status: 'pending',
+        request_timestamp: now(),
+        total_count: objects.length,
+        success_count: 0,
+        failure_count: 0,
+        pending_count: objects.length
+      });
+    } catch (e) {
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
+    }
   });
+  // Status api
+  app.get(`${basePath}/taxii2/root/status/:status_id`, async (req, res) => {
+    const { status_id } = req.params;
+    try {
+      const context = executionContext('taxii');
+      const user = await extractUserFromRequest(context, req, res);
+      const work = await findWorkById(context, user, status_id);
+      if (!work) throw UnsupportedError('Work not found');
+      const stats = await computeWorkStatus(work);
+      if (!stats) throw UnsupportedError('Work not found');
+      const failure_count = (work.errors ?? []).length;
+      const total_count = stats.import_expected_number;
+      const success_count = (stats.import_processed_number ?? 0) - failure_count;
+      const pending_count = (stats.import_processed_number ?? 0) - stats.import_processed_number;
+      sendJsonResponse(res, {
+        id: status_id,
+        status: work.status === 'complete' ? 'complete' : 'pending',
+        request_timestamp: work.created_at,
+        total_count,
+        success_count,
+        failure_count,
+        pending_count
+      });
+    } catch (e) {
+      const errorDetail = errorConverter(e);
+      res.status(errorDetail.http_status).send(errorDetail);
+    }
+  });
+  // Unsupported api (delete)
   app.delete(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (req, res) => {
     const e = UnsupportedError('Unsupported operation');
     const errorDetail = errorConverter(e);

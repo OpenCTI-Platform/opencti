@@ -53,6 +53,7 @@ import './playbook/playbook';
 import './ingestion/ingestion-rss';
 import './ingestion/ingestion-taxii';
 import './ingestion/ingestion-csv';
+import './ingestion/ingestion-taxii-collection';
 import './indicator/indicator';
 import './decayRule/decayRule';
 import './organization/organization';
@@ -109,6 +110,7 @@ import './threatActorIndividual/threatActorIndividual-graphql';
 import './playbook/playbook-graphql';
 import './ingestion/ingestion-rss-graphql';
 import './ingestion/ingestion-taxii-graphql';
+import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './indicator/indicator-graphql';
 import './decayRule/decayRule-graphql';
@@ -121,5 +123,4 @@ import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
-// import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

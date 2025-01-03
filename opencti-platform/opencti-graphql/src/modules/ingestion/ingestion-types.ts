@@ -118,3 +118,32 @@ export interface StixIngestionCsv extends StixObject {
   }
 }
 // endregion
+
+// region Taxii ingestion
+export const ENTITY_TYPE_INGESTION_TAXII_COLLECTION = 'IngestionTaxiiCollection';
+
+export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEntity {
+  name: string
+  description: string
+  user_id: string | undefined
+  confidence_to_score: boolean
+  ingestion_running: boolean
+}
+
+export interface StoreEntityIngestionTaxiiCollection extends StoreEntity {
+  name: string
+  description: string
+  ingestion_running: boolean
+  confidence_to_score: boolean
+}
+
+export interface StixIngestionTaxiiCollection extends StixObject {
+  name: string
+  description: string
+  ingestion_running: boolean
+  confidence_to_score: boolean
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+  }
+}
+// endregion
