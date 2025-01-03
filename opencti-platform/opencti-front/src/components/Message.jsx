@@ -45,60 +45,64 @@ class Message extends Component {
   };
 
   handleDialogOpen = () => {
-    this.setState({ dialogOpen: true });
+    this.setState({ dialogOpen: true, open: false });
   };
 
   render() {
     const entityIds = this.state.fullError?.extensions?.data?.entityIds || [];
     return (
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={this.state.open}
-        onClose={this.handleCloseMessage.bind(this)}
-        autoHideDuration={this.state.error ? 8000 : 4000}
-        sx={{ display: 'flex', alignItems: 'center' }}
-      >
-        {this.state.text === 'Restricted entity already exists, user can request access' ? (
-          <Alert
-            severity="error"
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+      <>
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={this.state.open}
+          onClose={this.handleCloseMessage.bind(this)}
+          autoHideDuration={this.state.error ? 8000 : 4000}
+          sx={{ display: 'flex', alignItems: 'center' }}
+        >
+          {/* eslint-disable-next-line no-nested-ternary */}
+          {this.state.text === 'Restricted entity already exists, user can request access' ? (
+            <Alert
+              severity="error"
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {this.state.text}
+                {this.state.fullError && (
+                <Formik>
+                  <Form>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ marginLeft: 2 }}
+                      onClick={this.handleDialogOpen}
+                    >
+                      Request Access
+                    </Button>
+
+                  </Form>
+                </Formik>
+                )}
+              </div>
+            </Alert>
+          ) : this.state.error ? (
+            <Alert severity="error" onClose={this.handleCloseMessage.bind(this)}>
               {this.state.text}
-              {this.state.fullError && (
-              <Formik>
-                <Form>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ marginLeft: 2 }}
-                    onClick={this.handleDialogOpen}
-                  >
-                    Request Access
-                  </Button>
-                  <RequestAccessDialog
-                    open={this.state.dialogOpen}
-                    onClose={this.handleDialogClose}
-                    entitiesIds={entityIds}
-                  />
-                </Form>
-              </Formik>
-              )}
-            </div>
-          </Alert>
-        ) : this.state.error ? (
-          <Alert severity="error" onClose={this.handleCloseMessage.bind(this)}>
-            {this.state.text}
-          </Alert>
-        ) : (
-          <Alert
-            severity="success"
-            onClose={this.handleCloseMessage.bind(this)}
-          >
-            {this.state.text}
-          </Alert>
-        )}
-      </Snackbar>
+            </Alert>
+          ) : (
+            <Alert
+              severity="success"
+              onClose={this.handleCloseMessage.bind(this)}
+            >
+              {this.state.text}
+            </Alert>
+          )}
+        </Snackbar>
+        <RequestAccessDialog
+          open={this.state.dialogOpen}
+          onClose={this.handleDialogClose}
+          entitiesIds={entityIds}
+        />
+      </>
     );
   }
 }

@@ -38,8 +38,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
-  const onSubmit = (values, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
-    console.log('values ==>', values);
+  const onSubmit = (values: any, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
       request_access_entities: entitiesIds,
@@ -67,20 +66,15 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
     >
       <DialogContent>
         <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access for entity')}</DialogTitle>
-        <DialogContentText>
-          {t_i18n('Your account/organization does not have permission to create/update this entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.')}
-        </DialogContentText>
         <Formik
           initialValues={initialValues}
           onSubmit={onSubmit}
         >
           {({ isSubmitting, submitForm }) => (
             <Form>
-              <DialogContent>
+              <DialogContent style={{ padding: 0 }}>
                 <DialogContentText>
-                  {t_i18n(
-                    'Your account/organization does not have permission to create/update this entity as it already exists in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
-                  )}
+                  {t_i18n('Your account/organization does not have permission to create/update this entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.')}
                 </DialogContentText>
                 <Field
                   component={MarkdownField}
