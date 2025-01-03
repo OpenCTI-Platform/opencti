@@ -26,6 +26,16 @@ interface RequestAccessDialogProps {
   entitiesIds: string[];
 }
 
+interface OrganizationForm {
+  value: string;
+  label: string
+}
+
+interface RequestAccessType {
+  organizations: OrganizationForm[];
+  request_access_reason: string;
+}
+
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
 
@@ -38,10 +48,8 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
-  const onSubmit = (values: any, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
-    const organizations = Array.isArray(values.organizations)
-      ? values.organizations.map((org: any) => org.value)
-      : [values.organizations.value];
+  const onSubmit = (values: RequestAccessType, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
+    const organizations = values.organizations.map((org: OrganizationForm) => org.value);
 
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
