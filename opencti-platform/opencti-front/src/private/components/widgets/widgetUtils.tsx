@@ -3,10 +3,18 @@ import { FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined 
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
-  ChartBar, ChartBubble,
-  ChartDonut, ChartLine,
-  ChartTimeline, ChartTree, Counter, FormatListNumberedRtl, Radar, StarSettingsOutline,
-  ViewListOutline
+  ChartBar,
+  ChartBubble,
+  ChartDonut,
+  ChartLine,
+  ChartTimeline,
+  ChartTree,
+  Counter,
+  FormatListNumberedRtl,
+  Radar,
+  StarSettingsOutline,
+  ViewListOutline,
+  NoteTextOutline, TagTextOutline,
 } from 'mdi-material-ui';
 import React from 'react';
 
@@ -16,7 +24,16 @@ export enum WidgetPerspective {
   audits,
 }
 
-export const widgetVisualizationTypes = [
+const widgetVisualizationTypes = [
+  {
+    key: 'attribute',
+    name: 'Attribute',
+    category: 'text',
+    availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
+    isAudits: false,
+  },
   {
     key: 'text',
     name: 'Text',
@@ -187,6 +204,8 @@ export const widgetVisualizationTypes = [
     isAudits: true,
   },
 ];
+export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
+export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['attribute', 'list'].includes(w.key));
 
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
 
@@ -208,43 +227,45 @@ export const isWidgetListOrTimeline = (type: string) => {
   return indexedVisualizationTypes[type]?.key === 'list' || indexedVisualizationTypes[type]?.key === 'timeline';
 };
 
-export const renderIcon = (key: string) => {
+export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {
+    case 'attribute':
+      return <TagTextOutline fontSize={fontSize} color="primary"/>;
     case 'map':
-      return <MapOutlined fontSize="large" color="primary"/>;
+      return <MapOutlined fontSize={fontSize} color="primary"/>;
     case 'horizontal-bar':
-      return <AlignHorizontalLeft fontSize="large" color="primary"/>;
+      return <AlignHorizontalLeft fontSize={fontSize} color="primary"/>;
     case 'vertical-bar':
-      return <ChartBar fontSize="large" color="primary"/>;
+      return <ChartBar fontSize={fontSize} color="primary"/>;
     case 'donut':
-      return <ChartDonut fontSize="large" color="primary"/>;
+      return <ChartDonut fontSize={fontSize} color="primary"/>;
     case 'area':
-      return <ChartAreasplineVariant fontSize="large" color="primary"/>;
+      return <ChartAreasplineVariant fontSize={fontSize} color="primary"/>;
     case 'timeline':
-      return <ChartTimeline fontSize="large" color="primary"/>;
+      return <ChartTimeline fontSize={fontSize} color="primary"/>;
     case 'list':
-      return <ViewListOutline fontSize="large" color="primary"/>;
+      return <ViewListOutline fontSize={fontSize} color="primary"/>;
     case 'distribution-list':
-      return <FormatListNumberedRtl fontSize="large" color="primary"/>;
+      return <FormatListNumberedRtl fontSize={fontSize} color="primary"/>;
     case 'number':
-      return <Counter fontSize="large" color="primary"/>;
+      return <Counter fontSize={fontSize} color="primary"/>;
     case 'text':
-      return <FormatShapesOutlined fontSize="large" color="primary"/>;
+      return <FormatShapesOutlined fontSize={fontSize} color="primary"/>;
     case 'heatmap':
-      return <ChartBubble fontSize="large" color="primary"/>;
+      return <ChartBubble fontSize={fontSize} color="primary"/>;
     case 'line':
-      return <ChartLine fontSize="large" color="primary"/>;
+      return <ChartLine fontSize={fontSize} color="primary"/>;
     case 'radar':
-      return <Radar fontSize="large" color="primary"/>;
+      return <Radar fontSize={fontSize} color="primary"/>;
     case 'polar-area':
-      return <PieChartOutlined fontSize="large" color="primary"/>;
+      return <PieChartOutlined fontSize={fontSize} color="primary"/>;
     case 'tree':
-      return <ChartTree fontSize="large" color="primary"/>;
+      return <ChartTree fontSize={fontSize} color="primary"/>;
     case 'bookmark':
-      return <StarSettingsOutline fontSize="large" color="primary"/>;
+      return <StarSettingsOutline fontSize={fontSize} color="primary"/>;
     case 'wordcloud':
-      return <ViewQuiltOutlined fontSize="large" color="primary"/>;
+      return <ViewQuiltOutlined fontSize={fontSize} color="primary"/>;
     default:
-      return <div>${t_i18n('This widget type is not implemented')}</div>;
+      return <div />;
   }
 };

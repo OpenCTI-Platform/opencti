@@ -4,16 +4,19 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent } from 'react';
-import { renderIcon, widgetVisualizationTypes } from './widgetUtils';
+import { workspacesWidgetVisualizationTypes, fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon } from './widgetUtils';
 import { useFormatter } from '../../../components/i18n';
 
 interface WidgetCreationTypesProps {
   handleSelectType: (type: string) => void,
+  context: 'workspace' | 'fintelTemplate',
 }
 const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
   handleSelectType,
+  context,
 }) => {
   const { t_i18n } = useFormatter();
+  const visualizationTypes = context === 'workspace' ? workspacesWidgetVisualizationTypes : fintelTemplatesWidgetVisualizationTypes;
 
   return (
     <Grid
@@ -21,7 +24,7 @@ const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
       spacing={3}
       style={{ marginTop: 20, marginBottom: 20 }}
     >
-      {widgetVisualizationTypes.map((visualizationType) => (
+      {visualizationTypes.map((visualizationType) => (
         <Grid key={visualizationType.key} item xs={4}>
           <Card
             variant="outlined"
@@ -36,7 +39,7 @@ const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
               aria-label={t_i18n(visualizationType.name)}
             >
               <CardContent>
-                {renderIcon(visualizationType.key)}
+                {renderWidgetIcon(visualizationType.key, 'large')}
                 <Typography
                   gutterBottom
                   variant="body1"

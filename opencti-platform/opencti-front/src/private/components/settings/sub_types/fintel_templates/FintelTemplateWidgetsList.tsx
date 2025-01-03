@@ -1,20 +1,21 @@
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { MoreVert } from '@mui/icons-material';
+import { MoreVert, AddOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import React, { FunctionComponent } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
+import { renderWidgetIcon } from '@components/widgets/widgetUtils';
+import { Tooltip } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface FintelTemplateWidgetsListProps {
   widgets: { id: string, variableName: string, type: string, filters?: string, attribute?: string }[],
   content: string,
-  handleWidgetClick: (variableName: string) => void,
+  handleAddWidget: (variableName: string) => void,
   openedPopover: string | null,
   handleOpenDelete: () => void,
   handleOpenPopover: (event: React.SyntheticEvent, lineKey: string) => void,
@@ -26,7 +27,7 @@ interface FintelTemplateWidgetsListProps {
 const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({
   widgets,
   content,
-  handleWidgetClick,
+  handleAddWidget,
   openedPopover,
   handleOpenDelete,
   handleOpenPopover,
@@ -47,13 +48,21 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
               value={variableName}
               style={{ marginLeft: -25, marginBottom: -10 }}
             >
-              <Checkbox
-                size="small"
-                checked={isChecked}
-                onClick={() => handleWidgetClick(variableName)}
-              />
-              <ListItemText primary={variableName}/>
+              {renderWidgetIcon(widget.type, 'medium')}
+              <ListItemText style={{ marginLeft: 5 }} primary={variableName}/>
               <ListItemSecondaryAction>
+                <Tooltip
+                  title={t_i18n('Add the widget at the end of the content')}
+                >
+                  <IconButton
+                    onClick={() => handleAddWidget(variableName)}
+                    color="primary"
+                    size="small"
+                    aria-label={t_i18n('Add a widget')}
+                  >
+                    <AddOutlined />
+                  </IconButton>
+                </Tooltip>
                 <IconButton
                   aria-haspopup="true"
                   color="primary"

@@ -105,7 +105,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const handleUpsertWidget = (widget: Widget) => {
     console.log('widget', widget);
   };
-  const handleWidgetClick = (variableName: string) => {
+  const handleAddWidget = (variableName: string) => {
     const newContent = content.concat(`$${variableName}`);
     const input = { key: 'content', value: [newContent] };
     commitEditMutation({
@@ -136,7 +136,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         <FintelTemplateWidgetsList
           widgets={usedWidgets}
           content={content}
-          handleWidgetClick={handleWidgetClick}
+          handleAddWidget={handleAddWidget}
           openedPopover={openedPopover}
           handleOpenDelete={handleOpenDelete}
           handleOpenPopover={handleOpenPopover}
@@ -148,7 +148,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         <FintelTemplateWidgetsList
           widgets={availableWidgets}
           content={content}
-          handleWidgetClick={handleWidgetClick}
+          handleAddWidget={handleAddWidget}
           openedPopover={openedPopover}
           handleOpenDelete={handleOpenDelete}
           handleOpenPopover={handleOpenPopover}

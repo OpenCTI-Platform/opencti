@@ -17,6 +17,7 @@ interface WidgetConfigProps {
   setOpen: (open: boolean) => void,
   closeMenu?: () => void,
   widget?: Widget,
+  context: 'workspace' | 'fintelTemplate',
 }
 
 const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
@@ -25,6 +26,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   widget,
   setOpen,
   open,
+  context,
 }) => {
   let initialStep = 0;
   if (widget?.type === 'text') {
@@ -126,7 +128,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   const getStepContent = () => {
     switch (stepIndex) {
       case 0:
-        return <WidgetCreationTypes handleSelectType={handleSelectType} />;
+        return <WidgetCreationTypes context={context} handleSelectType={handleSelectType} />;
       case 1:
         return <WidgetCreationPerspective handleSelectPerspective={handleSelectPerspective} type={type as string} />;
       case 2:
