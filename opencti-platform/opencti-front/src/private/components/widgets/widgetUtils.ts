@@ -1,5 +1,11 @@
 import * as R from 'ramda';
 
+export enum WidgetPerspective {
+  entities,
+  relationships,
+  audits,
+}
+
 export const widgetVisualizationTypes = [
   {
     key: 'text',

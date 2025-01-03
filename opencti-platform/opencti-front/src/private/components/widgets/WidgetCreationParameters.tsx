@@ -12,7 +12,13 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
+import {
+  getCurrentAvailableParameters,
+  getCurrentCategory,
+  getCurrentIsRelationships,
+  isWidgetListOrTimeline,
+  WidgetPerspective
+} from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -164,7 +170,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     style={{ marginTop: 20 }}
                   />
                 )}
-                {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
+                {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === WidgetPerspective.entities && (
                   <div
                     style={{
                       display: 'flex',
@@ -247,7 +253,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective !== 'audits' && (
+                {dataSelection[i].perspective !== WidgetPerspective.audits && (
                   <div
                     style={{
                       display: 'flex',
@@ -304,7 +310,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective === 'relationships'
+                {dataSelection[i].perspective === WidgetPerspective.relationships
                   && type === 'map' && (
                     <TextField
                       label={t_i18n('Zoom')}
@@ -320,7 +326,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
-                {dataSelection[i].perspective === 'relationships'
+                {dataSelection[i].perspective === WidgetPerspective.relationships
                   && type === 'map' && (
                     <TextField
                       label={t_i18n('Center latitude')}
@@ -336,7 +342,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
-                {dataSelection[i].perspective === 'relationships'
+                {dataSelection[i].perspective === WidgetPerspective.relationships
                   && type === 'map' && (
                     <TextField
                       label={t_i18n('Center longitude')}
@@ -356,7 +362,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                   <div
                     style={{ display: 'flex', width: '100%', marginTop: 20 }}
                   >
-                    {dataSelection[i].perspective === 'relationships' && (
+                    {dataSelection[i].perspective === WidgetPerspective.relationships && (
                       <FormControl
                         fullWidth={true}
                         style={{
@@ -412,7 +418,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </Select>
                       </FormControl>
                     )}
-                    {dataSelection[i].perspective === 'entities'
+                    {dataSelection[i].perspective === WidgetPerspective.entities
                       && getCurrentSelectedEntityTypes(i).length > 0
                       && (
                         <FormControl
@@ -490,7 +496,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           />
                         </FormControl>
                       )}
-                    {dataSelection[i].perspective === 'entities'
+                    {dataSelection[i].perspective === WidgetPerspective.entities
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
                         <FormControl
                           fullWidth={true}
@@ -530,7 +536,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           </Select>
                         </FormControl>
                     )}
-                    {dataSelection[i].perspective === 'audits' && (
+                    {dataSelection[i].perspective === WidgetPerspective.audits && (
                       <FormControl
                         fullWidth={true}
                         style={{
@@ -572,7 +578,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </Select>
                       </FormControl>
                     )}
-                    {dataSelection[i].perspective === 'relationships' && (
+                    {dataSelection[i].perspective === WidgetPerspective.relationships && (
                       <FormControlLabel
                         control={
                           <Switch
@@ -583,7 +589,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         label={t_i18n('Display the source')}
                       />
                     )}
-                    {dataSelection[i].perspective === 'relationships' && (
+                    {dataSelection[i].perspective === WidgetPerspective.relationships && (
                       <Tooltip
                         title={t_i18n(
                           'Enable if the displayed data is the source of the relationships.',

@@ -11,13 +11,12 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
-import { WidgetPerspective } from '../../../utils/outcome_template/engine/__generated__/TemplateAndUtilsContainerQuery.graphql';
-import { getCurrentCategory, getCurrentDataSelectionLimit } from './widgetUtils';
+import { getCurrentCategory, getCurrentDataSelectionLimit, WidgetPerspective } from './widgetUtils';
 
 interface WidgetCreationDataSelectionProps {
   dataSelection: WidgetDataSelection[],
   setDataSelection: (selection: WidgetDataSelection[]) => void,
-  perspective: string,
+  perspective: WidgetPerspective,
   type: string,
   setStepIndex: (i: number) => void,
 }
@@ -107,9 +106,9 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
         .fill(0)
         .map((_, i) => {
           let className = classes.step_entity;
-          if (dataSelection[i].perspective === 'relationships') {
+          if (dataSelection[i].perspective === WidgetPerspective.relationships) {
             className = classes.step_relationship;
-          } else if (dataSelection[i].perspective === 'audits') {
+          } else if (dataSelection[i].perspective === WidgetPerspective.audits) {
             className = classes.step_audit;
           }
           return (
@@ -135,7 +134,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
                   value={dataSelection[i].label}
                   onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                 />
-                {perspective === 'relationships'
+                {perspective === WidgetPerspective.relationships
                   && <Tooltip
                     title={t_i18n(
                       'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
@@ -157,14 +156,14 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             </div>
           );
         })}
-      {perspective === 'entities' && (
+      {perspective === WidgetPerspective.entities && (
         <div style={{ display: 'flex' }}>
           <Button
             variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
-            onClick={() => handleAddDataSelection('entities')}
+            onClick={() => handleAddDataSelection(WidgetPerspective.entities)}
             style={{
               width: '100%',
               height: 20,
@@ -175,13 +174,13 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
           </Button>
         </div>
       )}
-      {perspective === 'relationships' && (
+      {perspective === WidgetPerspective.relationships && (
         <div style={{ display: 'flex' }}>
           <Button
             variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             size="small"
-            onClick={() => handleAddDataSelection('relationships')}
+            onClick={() => handleAddDataSelection(WidgetPerspective.relationships)}
             style={{
               width: '100%',
               height: 20,
@@ -196,7 +195,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
-            onClick={() => handleAddDataSelection('entities')}
+            onClick={() => handleAddDataSelection(WidgetPerspective.entities)}
             style={{
               width: '100%',
               height: 20,
@@ -207,7 +206,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
           </Button>
         </div>
       )}
-      {perspective === 'audits' && (
+      {perspective === WidgetPerspective.audits && (
         <div style={{ display: 'flex' }}>
           <Button
             variant="contained"
@@ -217,7 +216,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             }
             color="secondary"
             size="small"
-            onClick={() => handleAddDataSelection('audits')}
+            onClick={() => handleAddDataSelection(WidgetPerspective.audits)}
             style={{
               width: '100%',
               height: 20,

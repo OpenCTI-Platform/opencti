@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary } from '@components/Error';
 import Paper from '@mui/material/Paper';
@@ -12,6 +12,7 @@ import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
+import { WidgetPerspective } from '@components/widgets/widgetUtils';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -95,9 +96,9 @@ const PublicDashboardComponent = ({
             }}
           >
             <ErrorBoundary>
-              {widget.perspective === 'entities' && entityWidget(widget)}
-              {widget.perspective === 'relationships' && relationshipWidget(widget)}
-              {widget.perspective === 'audits' && auditWidget(widget)}
+              {widget.perspective === WidgetPerspective.entities && entityWidget(widget)}
+              {widget.perspective === WidgetPerspective.relationships && relationshipWidget(widget)}
+              {widget.perspective === WidgetPerspective.audits && auditWidget(widget)}
               {widget.perspective === null && rawWidget(widget)}
             </ErrorBoundary>
           </Paper>
