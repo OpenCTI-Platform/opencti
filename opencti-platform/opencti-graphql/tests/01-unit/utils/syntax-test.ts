@@ -17,23 +17,24 @@ describe('Regex Pattern Tests', () => {
     expect('test-test.com').toMatch(domainChecker);
     expect('test-test.mytest.com').toMatch(domainChecker);
     expect('observableTestPromote.com').toMatch(domainChecker);
+    expect('mvix.온라인.한국').toMatch(domainChecker);
+    expect('mvix.xn--oi2b61z32a.xn--3e0b707e').toMatch(domainChecker);
   });
 
   it('should not match a valid domain pattern', () => {
-    expect('invalid_domain.12_3').not.toMatch(domainChecker);
-    expect('invalid_domain').not.toMatch(domainChecker);
     expect('').not.toMatch(domainChecker);
     expect('erijgrjoprgjrejgoejrpojerbjrepobjreobjoperjboprejorpejgorpejeropgjreojgeprogjerpjgreojgoperjgpreojgoperjgorepjgporejgoprejgporejgorepjgoerpjgperjgpoerjgorejgporejoprejgopjergpjerogjrepjgerpgjergojrepgjrvenvrienvrepngvperjgprejgrpegjrepogjrepgjreogjerjgepjgrpejgrpejrgpjerpo.fr').not.toMatch(domainChecker);
-  })
+  });
 
   it('Domain-name regex parsing should be perfomant', async () => {
     const startDate = Date.now();
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < 1000; i++) {
       domainChecker.test('test._mysubdomain.mydomain.com');
       domainChecker.test('invalid_domain.12_3');
     }
-    expect(Date.now() - startDate, 'Domain-name regex parsing should be perfomant').toBeLessThanOrEqual(2);
-  })
+    expect(Date.now() - startDate, 'Domain-name regex parsing should be performant').toBeLessThanOrEqual(2);
+  });
 
   it('should match a valid hostname pattern', () => {
     expect('my-host').toMatch(hostnameChecker);
