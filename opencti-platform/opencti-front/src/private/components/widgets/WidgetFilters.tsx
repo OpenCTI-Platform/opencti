@@ -2,24 +2,14 @@ import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { useAvailableFilterKeysForEntityTypes, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
-import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
-
-export interface DataSelection {
-  label: string;
-  attribute: string;
-  date_attribute: string;
-  perspective: string;
-  filters: FilterGroup,
-  dynamicFrom: FilterGroup,
-  dynamicTo: FilterGroup,
-}
+import { WidgetPerspective } from './widgetUtils';
 
 interface WidgetFiltersProps {
-  perspective: string;
+  perspective: WidgetPerspective;
   type: string;
   dataSelection: WidgetDataSelection;
   setDataSelection: (data: WidgetDataSelection) => void;
@@ -42,9 +32,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   let availableEntityTypes;
   let searchContext;
-  if (perspective === 'relationships') {
+  if (perspective === WidgetPerspective.relationships) {
     searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
-  } else if (perspective === 'audits') {
+  } else if (perspective === WidgetPerspective.audits) {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
   } else { // perspective = 'entities'
@@ -55,7 +45,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     searchContext = { entityTypes: ['Stix-Core-Object'] };
   }
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
-  if (perspective !== 'relationships') {
+  if (perspective !== WidgetPerspective.relationships) {
     availableFilterKeys = availableFilterKeys.concat('entity_type');
   } else {
     availableFilterKeys = availableFilterKeys.filter((key) => key !== 'entity_type'); // for relationships perspective widget, use the relationship_type filter
@@ -71,7 +61,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         searchContext={type === 'bookmark' ? undefined : searchContext}
       />
     </Box>
-    { perspective === 'relationships' && (
+    { perspective === WidgetPerspective.relationships && (
     <>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Filters
@@ -143,7 +133,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
       { isFilterGroupNotEmpty(filters) && (
         <>
-          { perspective === 'relationships'
+          { perspective === WidgetPerspective.relationships
             && <div style={{ marginTop: 8 }}>{t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
           }
           <FilterIconButton

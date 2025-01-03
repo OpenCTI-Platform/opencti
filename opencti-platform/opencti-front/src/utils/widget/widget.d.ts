@@ -1,16 +1,11 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
+import { WidgetPerspective } from '../../private/components/widgets/widgetUtils';
 
 interface WidgetColumn {
   attribute: string | null
   displayStyle?: string | null
   label?: string | null
   variableName?: string | null
-}
-
-export enum WidgetPerspective {
-  entities,
-  relationships,
-  audits,
 }
 
 export interface WidgetDataSelection {
@@ -22,7 +17,7 @@ export interface WidgetDataSelection {
   centerLng?: number | null
   zoom?: number | null
   isTo?: boolean | null
-  perspective?: string | null
+  perspective?: WidgetPerspective | null
   filters?: FilterGroup | null
   dynamicFrom?: FilterGroup | null
   dynamicTo?: FilterGroup | null
@@ -54,7 +49,7 @@ interface WidgetLayout {
 export interface Widget {
   id: string;
   type: string;
-  perspective?: string | null
+  perspective?: WidgetPerspective | null
   dataSelection: WidgetDataSelection[]
   parameters?: WidgetParameters
   layout?: WidgetLayout

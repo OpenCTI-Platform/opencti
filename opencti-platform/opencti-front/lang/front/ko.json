@@ -2859,7 +2859,6 @@
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "이 사용자는 최대 신뢰 수준이 없으며 그룹에서 상속받지 않습니다. 이 사용자를 그룹에 추가하여 문제를 해결하십시오.",
   "This value cannot be null": "이 값은 null일 수 없습니다",
   "This value is overridden for the following entity types": "이 값은 다음 엔터티 유형에 대해 재정의됩니다",
-  "This widget type is not implemented": "이 위젯 유형은 구현되지 않았습니다",
   "Threat actor": "위협 행위자",
   "Threat actor types": "위협 행위자 유형",
   "Threat actors": "위협 행위자",

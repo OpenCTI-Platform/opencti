@@ -2859,7 +2859,6 @@
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "该用户没有最大信任度，也没有从组中继承最大信任度。为该用户添加一个组来解决问题。",
   "This value cannot be null": "该值不能为空",
   "This value is overridden for the following entity types": "以下实体类型可重载该值",
-  "This widget type is not implemented": "未执行此部件类型",
   "Threat actor": "威胁主体",
   "Threat actor types": "威胁主体类型",
   "Threat actors": "威胁行为者",

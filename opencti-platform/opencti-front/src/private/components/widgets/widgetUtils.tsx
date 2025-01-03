@@ -1,4 +1,27 @@
 import * as R from 'ramda';
+import { FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import {
+  AlignHorizontalLeft,
+  ChartAreasplineVariant,
+  ChartBar,
+  ChartBubble,
+  ChartDonut,
+  ChartLine,
+  ChartTimeline,
+  ChartTree,
+  Counter,
+  FormatListNumberedRtl,
+  Radar,
+  StarSettingsOutline,
+  ViewListOutline,
+} from 'mdi-material-ui';
+import React from 'react';
+
+export enum WidgetPerspective {
+  entities,
+  relationships,
+  audits,
+}
 
 export const widgetVisualizationTypes = [
   {
@@ -190,4 +213,45 @@ export const getCurrentIsRelationships = (type: string) => {
 };
 export const isWidgetListOrTimeline = (type: string) => {
   return indexedVisualizationTypes[type]?.key === 'list' || indexedVisualizationTypes[type]?.key === 'timeline';
+};
+
+export const renderIcon = (key: string) => {
+  switch (key) {
+    case 'map':
+      return <MapOutlined fontSize="large" color="primary"/>;
+    case 'horizontal-bar':
+      return <AlignHorizontalLeft fontSize="large" color="primary"/>;
+    case 'vertical-bar':
+      return <ChartBar fontSize="large" color="primary"/>;
+    case 'donut':
+      return <ChartDonut fontSize="large" color="primary"/>;
+    case 'area':
+      return <ChartAreasplineVariant fontSize="large" color="primary"/>;
+    case 'timeline':
+      return <ChartTimeline fontSize="large" color="primary"/>;
+    case 'list':
+      return <ViewListOutline fontSize="large" color="primary"/>;
+    case 'distribution-list':
+      return <FormatListNumberedRtl fontSize="large" color="primary"/>;
+    case 'number':
+      return <Counter fontSize="large" color="primary"/>;
+    case 'text':
+      return <FormatShapesOutlined fontSize="large" color="primary"/>;
+    case 'heatmap':
+      return <ChartBubble fontSize="large" color="primary"/>;
+    case 'line':
+      return <ChartLine fontSize="large" color="primary"/>;
+    case 'radar':
+      return <Radar fontSize="large" color="primary"/>;
+    case 'polar-area':
+      return <PieChartOutlined fontSize="large" color="primary"/>;
+    case 'tree':
+      return <ChartTree fontSize="large" color="primary"/>;
+    case 'bookmark':
+      return <StarSettingsOutline fontSize="large" color="primary"/>;
+    case 'wordcloud':
+      return <ViewQuiltOutlined fontSize="large" color="primary"/>;
+    default:
+      return <div />;
+  }
 };

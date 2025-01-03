@@ -2859,7 +2859,6 @@
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "Este usuario no tiene Nivel de Confianza Máximo y no hereda uno de los grupos. Agregue un grupo a este usuario para resolver el problema.",
   "This value cannot be null": "Este valor no puede ser nulo",
   "This value is overridden for the following entity types": "Este valor se anula para los siguientes tipos de entidad",
-  "This widget type is not implemented": "Este tipo de widget no está implementado",
   "Threat actor": "Actor de amenazas",
   "Threat actor types": "Tipos de actor de amenazas",
   "Threat actors": "Actores de amenazas",

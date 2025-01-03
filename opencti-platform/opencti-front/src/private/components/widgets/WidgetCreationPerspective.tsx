@@ -7,10 +7,10 @@ import Typography from '@mui/material/Typography';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes } from './widgetUtils';
+import { indexedVisualizationTypes, WidgetPerspective } from './widgetUtils';
 
 interface WidgetCreationPerspectiveProps {
-  handleSelectPerspective: (perspective: string) => void,
+  handleSelectPerspective: (perspective: WidgetPerspective) => void,
   type: string,
 }
 
@@ -56,7 +56,7 @@ const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProp
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectPerspective('entities')}
+              onClick={() => handleSelectPerspective(WidgetPerspective.entities)}
               style={{ height: '100%' }}
               aria-label={t_i18n('Entities')}
             >
@@ -88,7 +88,7 @@ const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProp
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectPerspective('relationships')}
+              onClick={() => handleSelectPerspective(WidgetPerspective.relationships)}
               style={{ height: '100%' }}
               aria-label={t_i18n('Knowledge graph')}
             >
@@ -122,7 +122,7 @@ const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProp
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectPerspective('audits')}
+              onClick={() => handleSelectPerspective(WidgetPerspective.audits)}
               style={{ height: '100%' }}
               aria-label={t_i18n('Activity & history')}
             >
