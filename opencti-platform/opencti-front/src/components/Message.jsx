@@ -60,10 +60,11 @@ class Message extends Component {
           sx={{ display: 'flex', alignItems: 'center' }}
         >
           {/* eslint-disable-next-line no-nested-ternary */}
-          {this.state.text === 'Restricted entity already exists, user can request access' ? (
+          {this.state.fullError?.extensions?.code === 'ACCESS_REQUIRED' ? (
             <Alert
               severity="error"
               style={{ display: 'flex', alignItems: 'center' }}
+              onClose={this.handleCloseMessage.bind(this)}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {this.state.text}
@@ -78,7 +79,6 @@ class Message extends Component {
                     >
                       Request Access
                     </Button>
-
                   </Form>
                 </Formik>
                 )}

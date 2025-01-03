@@ -32,7 +32,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const initialValues = {
     request_access_reason: '',
     organizations: [],
-    request_access_entities: '',
+    request_access_entities: [],
     request_access_type: 'organization_sharing',
   };
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
@@ -40,12 +40,12 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   });
   const onSubmit = (values: any, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
     const organizations = Array.isArray(values.organizations)
-      ? values.organizations.map((org) => org.value)
+      ? values.organizations.map((org: any) => org.value)
       : [values.organizations.value];
 
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
-      request_access_entities: [entitiesIds[0]],
+      request_access_entities: entitiesIds,
       request_access_members: organizations,
       request_access_type: 'organization_sharing',
     };
