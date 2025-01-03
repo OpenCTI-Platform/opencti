@@ -7,7 +7,14 @@ import { DataTableColumn, DataTableColumns, DataTableProps, DataTableVariant, Lo
 import DataTableHeaders from './DataTableHeaders';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { DataTableProvider } from './DataTableContext';
-import { useComputeLink, useDataCellHelpers, useDataTableFormatter, useDataTableLocalStorage, useDataTablePaginationLocalStorage, useDataTableToggle } from '../dataTableHooks';
+import {
+  useDataTableComputeLink,
+  useDataCellHelpers,
+  useDataTableFormatter,
+  useDataTableLocalStorage,
+  useDataTablePaginationLocalStorage,
+  useDataTableToggle,
+} from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 
 type DataTableComponentProps = Pick<DataTableProps,
@@ -135,7 +142,7 @@ const DataTableComponent = ({
         useDataTable: useDataTable(dataQueryArgs),
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink,
+        useComputeLink: useDataTableComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),

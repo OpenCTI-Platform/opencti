@@ -19,11 +19,13 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
+import { resolveLink } from '../../../../utils/Entity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,7 +42,8 @@ const useStyles = makeStyles((theme) => ({
 const PlaybookCreationMutation = graphql`
   mutation PlaybookCreationMutation($input: PlaybookAddInput!) {
     playbookAdd(input: $input) {
-      ...PlaybookLine_node
+      id
+      ...PlaybooksLine_node
     }
   }
 `;
@@ -53,6 +56,7 @@ const playbookCreationValidation = (t) => Yup.object().shape({
 const PlaybookCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: PlaybookCreationMutation,
@@ -68,9 +72,10 @@ const PlaybookCreation = ({ paginationOptions }) => {
         );
       },
       setSubmitting,
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
+        navigate(`${resolveLink('Playbook')}/${response.playbookAdd.id}`);
       },
     });
   };
