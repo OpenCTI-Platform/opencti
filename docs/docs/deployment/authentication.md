@@ -168,40 +168,6 @@ Here is an example of SAML Groups mapping configuration using environment variab
 - "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]"
 ```
 
-### Auth0 (button)
-
-This strategy allows to use [Auth0 Service](https://auth0.com) to handle the authentication and is based on [Passport - Auth0](http://www.passportjs.org/packages/passport-auth0).
-
-```json
-"authzero": {
-    "identifier": "auth0",
-    "strategy": "Auth0Strategy",
-    "config": {
-        "clientID": "XXXXXXXXXXXXXXXXXX",
-        "baseURL": "https://opencti.mydomain.com",
-        "clientSecret": "XXXXXXXXXXXXXXXXXX",
-        "callback_url": "https://opencti.mydomain.com/auth/auth0/callback",
-        "domain": "mycompany.eu.auth0.com",
-        "audience": "XXXXXXXXXXXXXXX",
-        "scope": "openid email profile XXXXXXXXXXXXXXX",
-        "logout_remote": false
-    }
-}
-```
-
-Here is an example of Auth0 configuration using environment variables:
-
-```yaml
-- PROVIDERS__AUTHZERO__STRATEGY=Auth0Strategy
-- PROVIDERS__AUTHZERO__CONFIG__CLIENT_ID=${AUTH0_CLIENT_ID}
-- PROVIDERS__AUTHZERO__CONFIG__BASEURL=${AUTH0_BASE_URL}
-- PROVIDERS__AUTHZERO__CONFIG__CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
-- PROVIDERS__AUTHZERO__CONFIG__CALLBACK_URL=${AUTH0_CALLBACK_URL}
-- PROVIDERS__AUTHZERO__CONFIG__DOMAIN=${AUTH0_DOMAIN}
-- "PROVIDERS__AUTHZERO__CONFIG__SCOPE=openid email profile"
-- PROVIDERS__AUTHZERO__CONFIG__LOGOUT_REMOTE=false
-```
-
 ### OpenID Connect (button)
 
 This strategy allows to use the [OpenID Connect Protocol](https://openid.net/connect) to handle the authentication and is based on [Node OpenID Client](https://github.com/panva/node-openid-client) which is more powerful than the passport one.
@@ -274,6 +240,43 @@ Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoin
 ```yaml
 - PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true
 - PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__READ_USERINFO=true
+```
+
+### Auth0 (button)
+
+> Auth0 is a specific implementation of OpenID Connect, if you need advanced configuration such as group management please use OpenID Connect.
+> We may deprecate this strategy in a future version.
+
+This strategy allows to use [Auth0 Service](https://auth0.com) to handle the authentication and is based on [Node OpenID Client](https://github.com/panva/node-openid-client).
+
+```json
+"authzero": {
+    "identifier": "auth0",
+    "strategy": "Auth0Strategy",
+    "config": {
+        "clientID": "XXXXXXXXXXXXXXXXXX",
+        "baseURL": "https://opencti.mydomain.com",
+        "clientSecret": "XXXXXXXXXXXXXXXXXX",
+        "callback_url": "https://opencti.mydomain.com/auth/auth0/callback",
+        "domain": "mycompany.eu.auth0.com",
+        "audience": "XXXXXXXXXXXXXXX",
+        "scope": "openid email profile XXXXXXXXXXXXXXX",
+        "logout_remote": false
+    }
+}
+```
+
+Here is an example of Auth0 configuration using environment variables:
+
+```yaml
+- PROVIDERS__AUTHZERO__STRATEGY=Auth0Strategy
+- PROVIDERS__AUTHZERO__CONFIG__CLIENT_ID=${AUTH0_CLIENT_ID}
+- PROVIDERS__AUTHZERO__CONFIG__BASEURL=${AUTH0_BASE_URL}
+- PROVIDERS__AUTHZERO__CONFIG__CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
+- PROVIDERS__AUTHZERO__CONFIG__CALLBACK_URL=${AUTH0_CALLBACK_URL}
+- PROVIDERS__AUTHZERO__CONFIG__DOMAIN=${AUTH0_DOMAIN}
+- "PROVIDERS__AUTHZERO__CONFIG__SCOPE=openid email profile"
+- PROVIDERS__AUTHZERO__CONFIG__LOGOUT_REMOTE=false
 ```
 
 ### Facebook (button)
