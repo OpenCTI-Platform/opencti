@@ -442,6 +442,7 @@ export const buildCorrelationData = (
   filterAdjust,
   key = 'reports',
 ) => {
+  const related_types = ['cases', 'groupings', 'reports'];
   const objects = R.map((n) => {
     let { objectMarking } = n;
     if (R.isNil(objectMarking) || R.isEmpty(objectMarking)) {
@@ -468,7 +469,7 @@ export const buildCorrelationData = (
     };
   }, originalObjects);
   const thisReportOriginalNodes = R.filter(
-    (o) => o && o.id && o.entity_type && o[key],
+    (o) => o && o.id && o.entity_type && R.any((k) => o[k])(related_types),
     objects,
   );
   const filteredNodesIds = computeFilteredNodesIds(
@@ -479,11 +480,11 @@ export const buildCorrelationData = (
   );
   const thisReportNodes = thisReportOriginalNodes.map((n) => R.assoc('disabled', filteredNodesIds.includes(n.id), n));
   const thisReportLinkNodes = R.filter(
-    (n) => n[key] && n.parent_types && n[key].edges.length > 1,
+    (n) => n.parent_types && R.any((k) => n[k] && ((key === k && n[k].edges.length > 1) || (key !== k && n[k].edges.length > 0)))(related_types),
     thisReportNodes,
   );
   const relatedReportOriginalNodes = R.pipe(
-    R.map((n) => n[key].edges),
+    R.map((n) => R.map((k) => n[k].edges, related_types)),
     R.flatten,
     R.map((n) => {
       let { objectMarking } = n.node;
@@ -545,7 +546,7 @@ export const buildCorrelationData = (
         (m) => m
             && R.includes(
               m.id,
-              R.map((o) => o.node.id, n[key].edges),
+              R.map((o) => o.node.id, R.flatten(R.map((k) => n[k].edges, related_types))),
             ),
       )(relatedReportNodes),
     )),
