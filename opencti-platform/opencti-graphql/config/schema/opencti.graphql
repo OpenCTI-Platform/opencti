@@ -914,18 +914,6 @@ type Widget {
   parameters: WidgetParameters
   layout: WidgetLayout
 }
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-type TemplateAndUtils {
-  template: Template!,
-  template_widgets: [Widget!]!,
-}
 
 type IndexedFile {
   id: ID!
@@ -3200,10 +3188,7 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3388,10 +3373,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3622,10 +3604,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3832,10 +3811,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4066,10 +4042,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]

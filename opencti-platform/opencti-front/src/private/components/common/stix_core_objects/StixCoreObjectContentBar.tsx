@@ -4,10 +4,9 @@ import { ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-materi
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import makeStyles from '@mui/styles/makeStyles';
-import { createStyles } from '@mui/styles';
+import { createStyles, useTheme } from '@mui/styles';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Alert from '@mui/material/Alert';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
@@ -53,6 +52,7 @@ StixCoreObjectContentBarProps
   const classes = useStyles({ bannerHeightNumber });
   const enableZoom = handleZoomIn && handleZoomOut && currentZoom;
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   return (
     <Drawer
@@ -92,10 +92,12 @@ StixCoreObjectContentBarProps
                 </IconButton>
                   }
               label={changed
-                ? <Alert severity="warning">
-                  {t_i18n('You have unsaved changes')}
-                </Alert>
-                : t_i18n('No changes detected')}
+                ? (
+                  <span style={{ color: theme.palette.warn.main }}>
+                    {t_i18n('You have unsaved changes')}
+                  </span>
+                ) : t_i18n('No changes detected')
+              }
             />
           </FormGroup>
           )}

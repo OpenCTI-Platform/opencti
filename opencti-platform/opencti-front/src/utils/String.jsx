@@ -146,6 +146,6 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
  * @param value String to make wrappable.
  * @returns {string} Same string but wrappable.
  */
-export const toWrappableString = (value) => {
+export const stringWithZeroWidthSpace = (value) => {
   return (value.match(/.{1,10}/g) ?? []).join('​');
 };
