@@ -47,6 +47,7 @@
     "@aws-sdk/credential-provider-node": "3.679.0",
     "@aws-sdk/lib-storage": "3.679.0",
     "@aws-sdk/property-provider": "3.374.0",
+    "@datadog/pprof": "5.4.1",
     "@elastic/elasticsearch": "8.17.0",
     "@escape.tech/graphql-armor": "3.1.2",
     "@graphql-tools/import": "7.0.1",
@@ -73,6 +74,7 @@
     "@opentelemetry/sdk-trace-base": "1.25.1",
     "@opentelemetry/sdk-trace-node": "1.25.1",
     "@opentelemetry/semantic-conventions": "1.25.1",
+    "@pyroscope/nodejs": "0.4.3",
     "ajv": "8.17.1",
     "amqplib": "0.10.5",
     "antlr4": "4.13.2",
@@ -186,6 +188,7 @@
     "apollo-server-errors": "3.3.1",
     "cross-env": "7.0.3",
     "esbuild": "0.24.2",
+    "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "8.57.1",
     "eslint-config-airbnb": "19.0.4",
@@ -204,6 +207,7 @@
   },
   "resolutions": {
     "axios": "1.7.9",
+    "chokidar": "4.0.3",
     "cross-spawn": "7.0.6",
     "body-parser": "1.20.3",
     "cookie": "0.7.2",
@@ -218,6 +222,7 @@
     "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch",
     "graphql": "patch:graphql@16.9.0#./patch/graphql-16.8.1.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
+    "@datadog/pprof": "patch:@datadog/pprof@5.4.1#./patch/@datadog-pprof-5.4.1.patch",
     "path-to-regexp": "0.1.12"
   },
   "packageManager": "yarn@4.5.3"

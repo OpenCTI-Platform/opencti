@@ -268,8 +268,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     if (messages_number === 0) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
-          logApp.error(`[OPENCTI-MODULE] INGESTION - Error with rss handler ${ingestion.name}`);
-          logApp.error(e, { name: ingestion.name, context: 'RSS ingestion execution' });
+          logApp.warn(e, { name: ingestion.name, context: '[OPENCTI-MODULE] INGESTION - RSS ingestion execution' });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -444,8 +443,7 @@ const taxiiExecutor = async (context: AuthContext) => {
       }
       const ingestionPromise = taxiiHandler(context, ingestion)
         .catch((e) => {
-          logApp.error(`[OPENCTI-MODULE] INGESTION - Error with taxii handler ${ingestion.name}`);
-          logApp.error(e, { name: ingestion.name, context: 'Taxii ingestion execution' });
+          logApp.warn(e, { name: ingestion.name, context: '[OPENCTI-MODULE] INGESTION - Taxii ingestion execution' });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -507,15 +505,8 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
-
-  try {
-    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-    await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
-  } catch (e: any) {
-    logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
-    logApp.error(e, { ingestion });
-    throw e;
-  }
+  const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
 };
 
 const csvExecutor = async (context: AuthContext) => {
@@ -534,8 +525,7 @@ const csvExecutor = async (context: AuthContext) => {
     if (messages_number === 0) {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
-          logApp.error(`[OPENCTI-MODULE] INGESTION - Error with csv handler ${ingestion.name}`);
-          logApp.error(e, { name: ingestion.name, context: 'CSV ingestion execution' });
+          logApp.warn(e, { name: ingestion.name, context: '[OPENCTI-MODULE] INGESTION - CSV ingestion execution' });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -568,7 +558,6 @@ const ingestionHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.info('[OPENCTI-MODULE] INGESTION - Ingestion manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] INGESTION - Ingestion handlers cannot be started');
       logApp.error(e, { manager: 'INGESTION_MANAGER' });
     }
   } finally {

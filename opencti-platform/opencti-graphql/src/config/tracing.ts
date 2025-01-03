@@ -1,7 +1,7 @@
 import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
 import { MeterProvider, MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { ValueType } from '@opentelemetry/api-metrics';
-import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric';
+import type { Counter, Histogram } from '@opentelemetry/api-metrics/build/src/types/Metric';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
@@ -20,7 +20,7 @@ class MeterManager {
 
   private errors: Counter | null = null;
 
-  private latencyGauge: Gauge | null = null;
+  private latencyHistogram: Histogram | null = null;
 
   private directBulkGauge: Gauge | null = null;
 
@@ -39,7 +39,7 @@ class MeterManager {
   }
 
   latency(val: number, attributes: any) {
-    this.latencyGauge?.record(val, attributes);
+    this.latencyHistogram?.record(val, attributes);
   }
 
   directBulk(val: number, attributes: any) {
@@ -61,11 +61,13 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Counts total number of errors'
     });
-    // - Gauges
-    this.latencyGauge = meter.createGauge('opencti_api_latency', {
+    // - Histograms
+    this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
       valueType: ValueType.INT,
-      description: 'Latency computing per query'
+      description: 'Latency computing per query',
+      advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000] }
     });
+    // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
       valueType: ValueType.INT,
       description: 'Size of bulks for direct absorption'
