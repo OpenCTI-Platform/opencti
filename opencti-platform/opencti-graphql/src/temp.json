@@ -1,0 +1,775 @@
+{
+  "id": "bundle--7579ae2d-83c4-4ca9-87d3-44fec746a623",
+  "spec_version": "2.1",
+  "type": "bundle",
+  "objects": [
+    {
+      "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+      "spec_version": "2.1",
+      "type": "marking-definition",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Marking-Definition"
+        }
+      },
+      "name": "tlp:clear",
+      "definition_type": "tlp"
+    },
+    {
+      "id": "identity--3c091efa-854b-5e6a-ad9a-5c7c358f79bb",
+      "spec_version": "2.1",
+      "type": "identity",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Organization"
+        }
+      },
+      "name": "CUDESO",
+      "identity_class": "organization"
+    },
+    {
+      "id": "domain-name--c40cc350-1c3b-54f0-a329-a75597587e11",
+      "spec_version": "2.1",
+      "type": "domain-name",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Domain-Name"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "TinyTurla C2 domain - Secret Blizzard"
+        }
+      },
+      "value": "connectotels.net"
+    },
+    {
+      "id": "domain-name--07f3ac51-335f-524c-918f-86f80da2bce3",
+      "spec_version": "2.1",
+      "type": "domain-name",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Domain-Name"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "TinyTurla C2 domain - Secret Blizzard"
+        }
+      },
+      "value": "hostelhotels.net"
+    },
+    {
+      "id": "intrusion-set--e0a55e89-dbcd-5704-80b4-93077e4f0815",
+      "spec_version": "2.1",
+      "type": "intrusion-set",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Intrusion-Set"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "name": "Turla",
+      "description": "A 2014 Guardian article described Turla as: 'Dubbed the Turla hackers, initial intelligence had indicated western powers were key targets, but it was later determined embassies for Eastern Bloc nations were of more interest. Embassies in Belgium, Ukraine, China, Jordan, Greece, Kazakhstan, Armenia, Poland, and Germany were all attacked, though researchers from Kaspersky Lab and Symantec could not confirm which countries were the true targets. In one case from May 2012, the office of the prime minister of a former Soviet Union member country was infected, leading to 60 further computers being affected, Symantec researchers said. There were some other victims, including the ministry for health of a Western European country, the ministry for education of a Central American country, a state electricity provider in the Middle East and a medical organisation in the US, according to Symantec. It is believed the group was also responsible for a much - documented 2008 attack on the US Central Command. The attackers - who continue to operate - have ostensibly sought to carry out surveillance on targets and pilfer data, though their use of encryption across their networks has made it difficult to ascertain exactly what the hackers took.Kaspersky Lab, however, picked up a number of the attackers searches through their victims emails, which included terms such as Nato and EU energy dialogue Though attribution is difficult to substantiate, Russia has previously been suspected of carrying out the attacks and Symantecs Gavin O’ Gorman told the Guardian a number of the hackers appeared to be using Russian names and language in their notes for their malicious code. Cyrillic was also seen in use.'",
+      "aliases": [
+        "Snake",
+        "VENOMOUS Bear",
+        "Group 88",
+        "Waterbug",
+        "WRAITH",
+        "Uroburos",
+        "Pfinet",
+        "TAG_0530",
+        "KRYPTON",
+        "Hippo Team",
+        "Pacifier APT",
+        "Popeye",
+        "SIG23",
+        "IRON HUNTER",
+        "MAKERSMARK",
+        "ATK13",
+        "G0010",
+        "ITG12",
+        "Blue Python",
+        "SUMMIT",
+        "UNC4210",
+        "Secret Blizzard",
+        "UAC-0144",
+        "UAC-0024",
+        "UAC-0003"
+      ]
+    },
+    {
+      "id": "intrusion-set--62b3f3f6-d0c0-546b-a153-ac278a822794",
+      "spec_version": "2.1",
+      "type": "intrusion-set",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Intrusion-Set"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "name": "Secret Blizzard",
+      "aliases": [
+        "KRYPTON",
+        "Venomous Bear",
+        "Turla",
+        "Snake"
+      ]
+    },
+    {
+      "id": "malware--497fe074-67e0-5640-b7a5-af2e36a5e1db",
+      "spec_version": "2.1",
+      "type": "malware",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Malware"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "name": "TinyTurla",
+      "description": "Talos describes this as a malware family with very scoped functionality and thus a small code footprint, likely used as a second chance backdoor.",
+      "is_family": true
+    },
+    {
+      "id": "malware--75e410f5-606c-588c-b47c-262cbe7a3b5b",
+      "spec_version": "2.1",
+      "type": "malware",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Malware"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "name": "Crimson RAT",
+      "description": "It was first discovered in 2017 and has since been used to attack organizations around the world. The malware is often distributed through phishing emails or by exploiting vulnerabilities in outdated security software. Once Crimson RAT is installed on a computer, it can be used to steal data, spy on users, and even take control of the infected computers.\r\n\r\nSome of the features of Crimson RAT include:\r\n\r\nRemote control of infected computers\r\nData theft, such as passwords, files, and emails\r\nUser spying\r\nTakeover of infected computers\r\nLocking of infected computers\r\nExtortion of payments",
+      "is_family": true
+    },
+    {
+      "id": "file--ca53dbdd-8d9f-541a-aa83-147f062065e5",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "Wainscot SHA-256 (hubstck.exe) - Storm-0156",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "e298b83891b192b8a2782e638e7f5601acf13bab2f619215ac68a0b61230a273"
+      }
+    },
+    {
+      "id": "file--9cac8113-10d0-5c1e-bb46-5d6349c5d15e",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "Wainscot SHA-256 (auddrv.exe) - Storm-0156",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "08803510089c8832df3f6db57aded7bfd2d91745e7dd44985d4c9cb9bd5fd1d2"
+      }
+    },
+    {
+      "id": "file--1b6bb8bc-bc12-5fe7-9d5c-43fce2a4ac84",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "CrimsonRAT SHA-256 (lustsorelfar.exe) - Storm-0156",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "aba8b59281faa8c1c43a4ca7af075edd3e3516d3cef058a1f43b093177b8f83c"
+      }
+    },
+    {
+      "id": "file--adc920db-7d40-5c74-9f52-df27daac6572",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "Minipocket SHA-256 (duser.dll) - Secret Blizzard",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "7c4ef30bd1b5cb690d2603e33264768e3b42752660c79979a5db80816dfb2ad2"
+      }
+    },
+    {
+      "id": "file--0fbdb761-3593-5a4e-a0fc-a2f8ea2eb358",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "TwoDash backdoor SHA-256 (mfmpef.exe) - Secret Blizzard",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "dbbf8108fd14478ae05d3a3a6aabc242bff6af6eb1e93cbead4f5a23c3587ced"
+      }
+    },
+    {
+      "id": "file--1a2beb06-7159-52e2-8b77-30365a23c4d7",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "TwoDash backdoor SHA-256 (duser.dll) - Secret Blizzard",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "7c7fad6b9ecb1e770693a6c62e0cc4183f602b892823f4a451799376be915912"
+      }
+    },
+    {
+      "id": "file--5a4063f6-2124-5aaa-a977-ca404443c0f8",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "TinyTurla variant SHA-256 (MpSvcS.dl) - Secret Blizzard",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "e2d033b324450e1cb7575fedfc784e66488e342631f059988a9a2fd6e006d381"
+      }
+    },
+    {
+      "id": "file--cd84da57-8ba5-5c5e-b3a0-6cb1bd5f460b",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "TinyTurla variant SHA-256 (WinHttpSvc.dll) - Secret Blizzard",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "c039ec6622393f9324cacbf8cfaba3b7a41fe6929812ce3bd5d79b0fdedc884a"
+      }
+    },
+    {
+      "id": "file--32b0c772-947f-521b-ad6f-c89d465a388a",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile"
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "description": "Clipboard monitor SHA-256 (regsvr.exe) - Secret Blizzard",
+          "score": 90
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "hashes": {
+        "SHA-256": "59d7ec6ec97c6b958e00a3352d38dd13876fecdb2bb13a8541ab93248edde317"
+      }
+    },
+    {
+      "id": "indicator--430d6578-77ee-5b8d-b5da-545eceb35bd1",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "e298b83891b192b8a2782e638e7f5601acf13bab2f619215ac68a0b61230a273"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "Wainscot SHA-256 (hubstck.exe) - Storm-0156",
+      "pattern": "[file:hashes.'SHA-256' = 'e298b83891b192b8a2782e638e7f5601acf13bab2f619215ac68a0b61230a273']"
+    },
+    {
+      "id": "indicator--be567e3f-cb95-55f3-93b0-9f114ca81338",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "08803510089c8832df3f6db57aded7bfd2d91745e7dd44985d4c9cb9bd5fd1d2"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "Wainscot SHA-256 (auddrv.exe) - Storm-0156",
+      "pattern": "[file:hashes.'SHA-256' = '08803510089c8832df3f6db57aded7bfd2d91745e7dd44985d4c9cb9bd5fd1d2']"
+    },
+    {
+      "id": "indicator--8b63f194-f7ee-551d-8e14-f083e287ee51",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "aba8b59281faa8c1c43a4ca7af075edd3e3516d3cef058a1f43b093177b8f83c"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "CrimsonRAT SHA-256 (lustsorelfar.exe) - Storm-0156",
+      "pattern": "[file:hashes.'SHA-256' = 'aba8b59281faa8c1c43a4ca7af075edd3e3516d3cef058a1f43b093177b8f83c']"
+    },
+    {
+      "id": "indicator--e455acc6-4e05-5d0f-8922-f18f38126962",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "7c4ef30bd1b5cb690d2603e33264768e3b42752660c79979a5db80816dfb2ad2"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "Minipocket SHA-256 (duser.dll) - Secret Blizzard",
+      "pattern": "[file:hashes.'SHA-256' = '7c4ef30bd1b5cb690d2603e33264768e3b42752660c79979a5db80816dfb2ad2']"
+    },
+    {
+      "id": "indicator--449f01fe-8640-55ab-b1d7-30e7d95831bd",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "dbbf8108fd14478ae05d3a3a6aabc242bff6af6eb1e93cbead4f5a23c3587ced"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "TwoDash backdoor SHA-256 (mfmpef.exe) - Secret Blizzard",
+      "pattern": "[file:hashes.'SHA-256' = 'dbbf8108fd14478ae05d3a3a6aabc242bff6af6eb1e93cbead4f5a23c3587ced']"
+    },
+    {
+      "id": "indicator--b7a43b30-30a2-5924-ae7d-32474a24b43f",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "7c7fad6b9ecb1e770693a6c62e0cc4183f602b892823f4a451799376be915912"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "TwoDash backdoor SHA-256 (duser.dll) - Secret Blizzard",
+      "pattern": "[file:hashes.'SHA-256' = '7c7fad6b9ecb1e770693a6c62e0cc4183f602b892823f4a451799376be915912']"
+    },
+    {
+      "id": "indicator--42039e46-851e-5135-ba8e-84b1040e7234",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "e2d033b324450e1cb7575fedfc784e66488e342631f059988a9a2fd6e006d381"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "TinyTurla variant SHA-256 (MpSvcS.dl) - Secret Blizzard",
+      "pattern": "[file:hashes.'SHA-256' = 'e2d033b324450e1cb7575fedfc784e66488e342631f059988a9a2fd6e006d381']"
+    },
+    {
+      "id": "indicator--07d98e94-ce03-5fd5-9f1b-bf7d172654d6",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "c039ec6622393f9324cacbf8cfaba3b7a41fe6929812ce3bd5d79b0fdedc884a"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "TinyTurla variant SHA-256 (WinHttpSvc.dll) - Secret Blizzard",
+      "pattern": "[file:hashes.'SHA-256' = 'c039ec6622393f9324cacbf8cfaba3b7a41fe6929812ce3bd5d79b0fdedc884a']"
+    },
+    {
+      "id": "indicator--7f8d8b2a-b609-55e6-8620-c8f1ab92046c",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "score": 90,
+          "observable_values": [
+            {
+              "type": "StixFile",
+              "hashes": {
+                "SHA-256": "59d7ec6ec97c6b958e00a3352d38dd13876fecdb2bb13a8541ab93248edde317"
+              }
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension"
+        }
+      },
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "description": "Clipboard monitor SHA-256 (regsvr.exe) - Secret Blizzard",
+      "pattern": "[file:hashes.'SHA-256' = '59d7ec6ec97c6b958e00a3352d38dd13876fecdb2bb13a8541ab93248edde317']"
+    },
+    {
+      "id": "relationship--befe3cd6-5af7-51ea-b95b-f3fef726e983",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "Wainscot SHA-256 (hubstck.exe) - Storm-0156",
+          "source_type": "Indicator",
+          "target_value": "e298b83891b192b8a2782e638e7f5601acf13bab2f619215ac68a0b61230a273",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--430d6578-77ee-5b8d-b5da-545eceb35bd1",
+      "target_ref": "file--ca53dbdd-8d9f-541a-aa83-147f062065e5"
+    },
+    {
+      "id": "relationship--fedae3af-b8c3-5b1a-847b-680754fc67c1",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "Wainscot SHA-256 (auddrv.exe) - Storm-0156",
+          "source_type": "Indicator",
+          "target_value": "08803510089c8832df3f6db57aded7bfd2d91745e7dd44985d4c9cb9bd5fd1d2",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--be567e3f-cb95-55f3-93b0-9f114ca81338",
+      "target_ref": "file--9cac8113-10d0-5c1e-bb46-5d6349c5d15e"
+    },
+    {
+      "id": "relationship--23ed7866-0759-57c1-9226-f6cf730059db",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "CrimsonRAT SHA-256 (lustsorelfar.exe) - Storm-0156",
+          "source_type": "Indicator",
+          "target_value": "aba8b59281faa8c1c43a4ca7af075edd3e3516d3cef058a1f43b093177b8f83c",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--8b63f194-f7ee-551d-8e14-f083e287ee51",
+      "target_ref": "file--1b6bb8bc-bc12-5fe7-9d5c-43fce2a4ac84"
+    },
+    {
+      "id": "relationship--955dcf19-2c2c-546c-b11f-e8b3a41a0a69",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "Minipocket SHA-256 (duser.dll) - Secret Blizzard",
+          "source_type": "Indicator",
+          "target_value": "7c4ef30bd1b5cb690d2603e33264768e3b42752660c79979a5db80816dfb2ad2",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--e455acc6-4e05-5d0f-8922-f18f38126962",
+      "target_ref": "file--adc920db-7d40-5c74-9f52-df27daac6572"
+    },
+    {
+      "id": "relationship--1451110d-6897-5a77-abb5-a07f0e81fb41",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "TwoDash backdoor SHA-256 (mfmpef.exe) - Secret Blizzard",
+          "source_type": "Indicator",
+          "target_value": "dbbf8108fd14478ae05d3a3a6aabc242bff6af6eb1e93cbead4f5a23c3587ced",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--449f01fe-8640-55ab-b1d7-30e7d95831bd",
+      "target_ref": "file--0fbdb761-3593-5a4e-a0fc-a2f8ea2eb358"
+    },
+    {
+      "id": "relationship--ab6f3944-c1f6-5a63-8a27-815e66519db5",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "TwoDash backdoor SHA-256 (duser.dll) - Secret Blizzard",
+          "source_type": "Indicator",
+          "target_value": "7c7fad6b9ecb1e770693a6c62e0cc4183f602b892823f4a451799376be915912",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--b7a43b30-30a2-5924-ae7d-32474a24b43f",
+      "target_ref": "file--1a2beb06-7159-52e2-8b77-30365a23c4d7"
+    },
+    {
+      "id": "relationship--ca469e8c-604f-5e48-972d-9e6cdf3264ff",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "TinyTurla variant SHA-256 (MpSvcS.dl) - Secret Blizzard",
+          "source_type": "Indicator",
+          "target_value": "e2d033b324450e1cb7575fedfc784e66488e342631f059988a9a2fd6e006d381",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--42039e46-851e-5135-ba8e-84b1040e7234",
+      "target_ref": "file--5a4063f6-2124-5aaa-a977-ca404443c0f8"
+    },
+    {
+      "id": "relationship--a36a81a5-38d3-579a-a580-9184d8ab27dc",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "TinyTurla variant SHA-256 (WinHttpSvc.dll) - Secret Blizzard",
+          "source_type": "Indicator",
+          "target_value": "c039ec6622393f9324cacbf8cfaba3b7a41fe6929812ce3bd5d79b0fdedc884a",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--07d98e94-ce03-5fd5-9f1b-bf7d172654d6",
+      "target_ref": "file--cd84da57-8ba5-5c5e-b3a0-6cb1bd5f460b"
+    },
+    {
+      "id": "relationship--66f0bbb0-5e5f-56ba-8a7d-8e4d0a629e63",
+      "spec_version": "2.1",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sro",
+          "type": "based-on",
+          "source_value": "Clipboard monitor SHA-256 (regsvr.exe) - Secret Blizzard",
+          "source_type": "Indicator",
+          "target_value": "59d7ec6ec97c6b958e00a3352d38dd13876fecdb2bb13a8541ab93248edde317",
+          "target_type": "StixFile"
+        }
+      },
+      "relationship_type": "based-on",
+      "source_ref": "indicator--7f8d8b2a-b609-55e6-8620-c8f1ab92046c",
+      "target_ref": "file--32b0c772-947f-521b-ad6f-c89d465a388a"
+    }
+  ]
+}

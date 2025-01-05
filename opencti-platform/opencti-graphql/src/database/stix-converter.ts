@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4, version as uuidVersion } from 'uuid';
-import { isEmptyField, isInferredIndex } from './utils';
+import { isEmptyField, isInferredIndex, isNotEmptyField } from './utils';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
@@ -230,7 +230,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     authorized_members: instance.authorized_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
-    labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id),
+    labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
   };
   return cleanObject(octiExtensions);

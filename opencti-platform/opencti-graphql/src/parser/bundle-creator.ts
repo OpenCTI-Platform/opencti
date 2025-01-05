@@ -40,19 +40,19 @@ export class BundleBuilder {
     return true;
   }
 
-  addObject(object: StixObject, csvData: string) {
+  addObject(object: StixObject, csvData?: string) {
     const key = object.id;
     const value = JSON.stringify(object);
     this.hashes.set(key, value);
     const objectCopy = object;
-    if (objectCopy.extensions) {
+    if (objectCopy.extensions && csvData) {
       objectCopy.extensions[STIX_EXT_OCTI].converter_csv = csvData;
     }
     this.objects.push(objectCopy);
     return this;
   }
 
-  addObjects(objects: StixObject[], csvData: string) {
+  addObjects(objects: StixObject[], csvData?: string) {
     for (let i = 0; i < objects.length; i += 1) {
       this.addObject(objects[i], csvData);
     }

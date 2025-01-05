@@ -119,7 +119,7 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   }
   return { key, value };
 };
-export const createIndicatorFromObservable = async (context, user, input, observable) => {
+export const buildIndicatorFromObservable = async (context, user, input, observable) => {
   try {
     let entityType = observable.entity_type;
     const indicatorName = observableValue(observable);
@@ -129,7 +129,7 @@ export const createIndicatorFromObservable = async (context, user, input, observ
     }
     const pattern = await createStixPattern(context, user, key, value);
     if (pattern) {
-      const indicatorToCreate = {
+      return {
         pattern_type: STIX_PATTERN_TYPE,
         pattern,
         x_opencti_main_observable_type: entityType,
@@ -146,6 +146,20 @@ export const createIndicatorFromObservable = async (context, user, input, observ
         externalReferences: input.externalReferences,
         update: true,
       };
+    }
+    logApp.warn('Cannot create indicator - cant generate pattern', { key, value });
+  } catch (err) {
+    logApp.info('[OPENCTI] Cannot create indicator', { error: err });
+  }
+  return undefined;
+};
+export const createIndicatorFromObservable = async (context, user, input, observable) => {
+  try {
+    const indicatorName = observableValue(observable);
+    const { key, value } = generateKeyValueForIndicator(observable.entity_type, indicatorName, observable);
+    const pattern = await createStixPattern(context, user, key, value);
+    if (pattern) {
+      const indicatorToCreate = buildIndicatorFromObservable(context, user, input, observable);
       return await addIndicator(context, user, indicatorToCreate);
     }
     logApp.warn('Cannot create indicator - cant generate pattern', { key, value });

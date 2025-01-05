@@ -20,6 +20,7 @@ import type { BasicStoreObject } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
+import { type JsonMapperParsed } from '../modules/internal/jsonMapper/jsonMapper-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
@@ -58,7 +59,7 @@ const formatValue = (value: string, type: AttrType, column: AttributeColumn | un
   return value;
 };
 
-const computeValue = (value: string | undefined, column: AttributeColumn, attributeDef: AttributeDefinition) => {
+export const computeValue = (value: string | undefined, column: AttributeColumn, attributeDef: AttributeDefinition) => {
   if (value === undefined || isEmptyField(value)) {
     return null;
   }
@@ -73,7 +74,7 @@ const computeValue = (value: string | undefined, column: AttributeColumn, attrib
   return formatValue(value, attributeDef.type, column);
 };
 
-const computeDefaultValue = (
+export const computeDefaultValue = (
   defaultValue: string[],
   attribute: CsvMapperRepresentationAttribute,
   definition: AttributeDefinition,
@@ -343,7 +344,7 @@ const mapRecord = async (
 export const handleRefEntities = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperParsed
+  mapper: CsvMapperParsed | JsonMapperParsed
 ) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.

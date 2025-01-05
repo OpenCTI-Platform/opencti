@@ -14,9 +14,11 @@ import './manager/index';
 import './config/tracing';
 // endregion
 import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { platformStart } from './boot';
+// import { platformStart } from './boot';
 import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
+import testJsonMapper from './json-mapper';
+import { json, mispJsonMapper } from './json-mapper-test2';
 
 // -- Apply telemetry
 // ------- Tracing
@@ -55,4 +57,5 @@ if (ENABLED_EVENT_LOOP_MONITORING) {
 }
 // -- Start the platform
 // noinspection JSIgnoredPromiseFromCall
-platformStart();
+// platformStart();
+testJsonMapper(json, mispJsonMapper);
