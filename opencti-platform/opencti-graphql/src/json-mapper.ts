@@ -74,6 +74,14 @@ const extractValueFromJson = async (
         return 'invalid';
       }
     };
+    data.extractWithRegexp = (regexp: string, groupIndex: number, value: string) => {
+      const myRegexp = new RegExp(regexp, 'g');
+      const matches = myRegexp.exec(value);
+      if (matches != null) {
+        return matches[groupIndex];
+      }
+      return value;
+    };
     return ejs.render(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
   }
   if (!attribute.path) {

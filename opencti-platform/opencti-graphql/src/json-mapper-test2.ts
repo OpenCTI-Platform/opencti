@@ -288,7 +288,10 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
         {
           key: 'name',
           attr_path: {
-            path: '$.value',
+            complex: {
+              variables: [{ variable: 'name', path: '$.value' }],
+              formula: 'extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'
+            }
           },
         },
         {
@@ -1109,6 +1112,10 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
           key: 'name',
           attr_path: {
             path: '$.info',
+            complex: {
+              variables: [{ variable: 'info', path: '$.info' }, { variable: 'reference', path: '$.Attribute[?(@.category == \'Internal reference\')]' }],
+              formula: 'reference?.value ?? info'
+            }
           },
         },
         {
@@ -3573,7 +3580,7 @@ export const json = `{
                         "uuid": "e1fa6d45-4ac9-4ace-98a9-e21947f0e497",
                         "collection_uuid": "1d1c9af9-37fa-4deb-a928-f9b0abc7354a",
                         "type": "malpedia",
-                        "value": "TinyTurla",
+                        "value": "TinyTurla - G0089",
                         "tag_name": "misp-galaxy:malpedia=\\"TinyTurla\\"",
                         "description": "Talos describes this as a malware family with very scoped functionality and thus a small code footprint, likely used as a second chance backdoor.",
                         "galaxy_id": "31",
