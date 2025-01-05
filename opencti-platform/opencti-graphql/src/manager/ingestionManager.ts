@@ -3,16 +3,18 @@ import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
+import * as JSONPath from 'jsonpath-plus';
+import ejs from 'ejs';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField, wait } from '../database/utils';
 import { FROM_START_STR, now, sanitizeForMomentParsing, sinceNowInMinutes, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
@@ -22,9 +24,12 @@ import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/in
 import type { AuthContext } from '../types/user';
 import type {
   BasicStoreEntityIngestionCsv,
+  BasicStoreEntityIngestionJson,
   BasicStoreEntityIngestionRss,
   BasicStoreEntityIngestionTaxii,
-  BasicStoreEntityIngestionTaxiiCollection
+  BasicStoreEntityIngestionTaxiiCollection,
+  DataParam,
+  HeaderParam
 } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
@@ -42,6 +47,9 @@ import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
+import jsonMappingExecution from '../json-mapper';
+import { mapper4 } from '../json-mapper-test4';
+import type { JsonMapperParsed } from '../modules/internal/jsonMapper/jsonMapper-types';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -99,7 +107,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
 };
 
 const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection) => {
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson) => {
   const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
@@ -107,7 +115,7 @@ const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStor
 };
 
 export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection, bundle: StixBundle) => {
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);
@@ -589,6 +597,176 @@ const csvExecutor = async (context: AuthContext) => {
 };
 // endregion
 
+// region json ingestion
+const jsonParsers: Record<string, JsonMapperParsed> = { parser4: mapper4 as JsonMapperParsed };
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const testIngestion: BasicStoreEntityIngestionJson = {
+  name: 'test',
+  description: 'test',
+  uri: 'http://localhost:8080/v1/statement',
+  verb: 'post',
+  // body: 'select * from customer',
+  body: 'select * from customer OFFSET <?- offset -?> LIMIT 10',
+  json_parser_id: 'parser4',
+  pagination_with_sub_page: true,
+  pagination_with_sub_page_attribute_path: '$.nextUri',
+  pagination_with_sub_page_query_verb: 'get',
+  confidence_to_score: true,
+  authentication_type: IngestionAuthType.None,
+  authentication_value: '',
+  user_id: undefined,
+  ingestion_running: true,
+  last_execution_date: undefined,
+  query_attributes: [
+    {
+      type: 'data',
+      as_query_param: false,
+      data_operation: 'count',
+      state_operation: 'sum',
+      from_path: '$.data',
+      to_name: 'offset',
+      default: 0
+    }
+  ],
+  headers: [
+    { key: 'X-Trino-User', value: 'admin' },
+    { key: 'X-Trino-Schema', value: 'sf1' },
+    { key: 'X-Trino-Catalog', value: 'tpcds' }
+  ]
+};
+
+let ingestionState = {}; /* TODO GET STATE */
+
+const getValueFromPath = (path: string, json: any) => {
+  const value = JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
+  // console.log(json, path, value);
+  return value;
+};
+const buildQueryObject = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
+  const params: Record<string, string | number> = {};
+  if (queryParamsAttributes) {
+    for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
+      const queryParamsAttribute = queryParamsAttributes[attrIndex];
+      let attrValue;
+      if (queryParamsAttribute.type === 'data') {
+        let valueFromPath = getValueFromPath(queryParamsAttribute.from_path, requestData);
+        if (queryParamsAttribute.data_operation === 'count' && valueFromPath) {
+          valueFromPath = Array.isArray(valueFromPath) ? valueFromPath.length : 1;
+        }
+        attrValue = valueFromPath;
+      } else {
+        attrValue = requestData[queryParamsAttribute.from_name];
+      }
+      // console.log('------------>', queryParamsAttribute, attrValue, isNotEmptyField(attrValue));
+      if (isNotEmptyField(attrValue)) {
+        params[queryParamsAttribute.to_name] = attrValue;
+        // console.log('isNotEmptyField', params);
+      } else if (isNotEmptyField(queryParamsAttribute.default) && withDefault) {
+        params[queryParamsAttribute.to_name] = queryParamsAttribute.default;
+        // console.log('default', params);
+      }
+    }
+  }
+  return params;
+};
+const mergeQueryState = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
+  const state: Record<string, any> = {};
+  const queryParams = queryParamsAttributes ?? [];
+  for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
+    const queryParamsAttribute = queryParams[attrIndex];
+    if (queryParamsAttribute.state_operation === 'sum') {
+      // console.log('------------->', previousState[queryParamsAttribute.to_name], newState[queryParamsAttribute.to_name]);
+      state[queryParamsAttribute.to_name] = previousState[queryParamsAttribute.to_name] + newState[queryParamsAttribute.to_name];
+    } else {
+      state[queryParamsAttribute.to_name] = newState[queryParamsAttribute.to_name];
+    }
+  }
+  return state;
+};
+const buildQueryParams = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, variables: Record<string, any>) => {
+  const params: Record<string, string | number> = {};
+  const paramAttributes = (queryParamsAttributes ?? []).filter((query) => query.as_query_param === true);
+  for (let attrIndex = 0; attrIndex < paramAttributes.length; attrIndex += 1) {
+    const queryParamsAttribute = paramAttributes[attrIndex];
+    params[queryParamsAttribute.to_name] = variables[queryParamsAttribute.to_name];
+  }
+  return params;
+};
+
+export const jsonExecutor = async (_context: AuthContext) => {
+  // console.log('ingestionState', ingestionState);
+  // const filters = {
+  //   mode: 'and',
+  //   filters: [{ key: 'ingestion_running', values: [true] }],
+  //   filterGroups: [],
+  // };
+  // const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  // const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
+  const ingestions = [testIngestion];
+  for (let i = 0; i < ingestions.length; i += 1) {
+    const ingestion = ingestions[i];
+    let certificates;
+    const headers = new OpenCTIHeaders();
+    headers.Accept = 'application/json';
+    const headerOptions = ingestion.headers ?? [];
+    for (let index = 0; index < headerOptions.length; index += 1) {
+      const h = headerOptions[index];
+      headers[h.key] = h.value;
+    }
+    if (ingestion.authentication_type === IngestionAuthType.Basic) {
+      const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
+      headers.Authorization = `Basic ${auth}`;
+    }
+    if (ingestion.authentication_type === IngestionAuthType.Bearer) {
+      headers.Authorization = `Bearer ${ingestion.authentication_value}`;
+    }
+    if (ingestion.authentication_type === IngestionAuthType.Certificate) {
+      certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[2] };
+    }
+    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
+    const httpClient = getHttpClient(httpClientOptions);
+    // Execute the http query
+    // const ingestionState = {}; /* TODO GET STATE */
+    // const params = buildQueryObject({}, ingestion.query_attributes, ingestionState);
+    const variables = isEmptyField(ingestionState) ? buildQueryObject(ingestion.query_attributes, {}) : ingestionState;
+    const params = buildQueryParams(ingestion.query_attributes, variables);
+    // console.log('variables', variables);
+    const parsedBody = await ejs.render(ingestion.body, variables, { delimiter: '?', async: true });
+    // console.log('parsedBody', parsedBody);
+    console.log('query', parsedBody);
+    const { data: requestData, headers: responseHeaders } = await httpClient.call({ method: ingestion.verb, url: ingestion.uri, data: parsedBody, params });
+    const bundle = await jsonMappingExecution({}, requestData, jsonParsers[ingestion.json_parser_id]);
+    let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
+    // region Try to paginate with next page style
+    if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
+      // console.log(requestData);
+      let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
+      while (isNotEmptyField(url)) {
+        console.log(url);
+        await wait(100); // Wait 100 ms between 2 calls
+        const { data: paginationData } = await httpClient.call({ method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb, url, data: ingestion.body, params });
+        const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
+        nextExecutionState = { ...nextExecutionState, ...paginationVariables };
+        const paginationBundle = await jsonMappingExecution({}, paginationData, jsonParsers[ingestion.json_parser_id]);
+        if (paginationBundle.objects.length > 0) {
+          bundle.objects = bundle.objects.concat(paginationBundle.objects);
+        }
+        url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
+      }
+    }
+    // endregion
+    console.log('dataBundle', bundle.objects.length);
+    // console.log('nextExecutionState', ingestionState);
+    // Push the bundle to absorption queue
+    // await pushBundleToConnectorQueue(context, ingestion, bundle);
+    // Save new state for next execution
+    console.log('----------------------------------------------');
+    ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+  }
+};
+// endregion
+
 const ingestionHandler = async () => {
   logApp.debug('[OPENCTI-MODULE] INGESTION - Running ingestion handlers');
   let lock;
@@ -603,6 +781,7 @@ const ingestionHandler = async () => {
     ingestionPromises.push(rssExecutor(context, turndownService));
     ingestionPromises.push(taxiiExecutor(context));
     ingestionPromises.push(csvExecutor(context));
+    ingestionPromises.push(jsonExecutor(context));
     await Promise.all(ingestionPromises);
   } catch (e: any) {
     // We dont care about failing to get the lock.
