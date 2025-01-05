@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import type { AttributeDefinition, AttrType, ObjectAttribute } from '../schema/attribute-definition';
 import { entityType, relationshipType, standardId } from '../schema/attribute-definition';
 import { generateStandardId } from '../schema/identifier';
@@ -20,45 +20,48 @@ import type { BasicStoreObject } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
+import { type AttributePath, type ComplexPath, type JsonMapperParsed } from '../modules/internal/jsonMapper/jsonMapper-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
 
 // -- HANDLE VALUE --
 
-const formatValue = (value: string, type: AttrType, column: AttributeColumn | undefined) => {
+export const formatValue = (value: string | boolean, type: AttrType, column: AttributeColumn | AttributePath | ComplexPath | undefined) => {
   const pattern_date = column?.configuration?.pattern_date;
   const timezone = column?.configuration?.timezone;
-  if (type === 'string') {
+  if ((type === 'string' || type === 'ref') && typeof value === 'string') {
     return value.trim();
   }
-  if (type === 'numeric') {
+  if (type === 'numeric' && typeof value === 'string') {
     const formattedValue = Number(value);
     return Number.isNaN(formattedValue) ? null : formattedValue;
   }
-  if (type === 'date') {
+  if (type === 'date' && typeof value === 'string') {
     try {
-      moment.suppressDeprecationWarnings = true;
       if (isNotEmptyField(pattern_date)) {
         if (isNotEmptyField(timezone)) {
-          return moment(value, pattern_date as string, timezone as string).toISOString();
+          return DateTime.fromFormat(value, pattern_date, { zone: timezone }).toISO();
         }
-        return moment(value, pattern_date as string).toISOString();
+        return DateTime.fromFormat(value, pattern_date).toISO();
       }
-      return moment(value).toISOString();
+      return DateTime.fromISO(value).toISO();
     } catch (error: any) {
       return null;
     }
   }
   if (type === 'boolean') {
-    const stringBoolean = value.toLowerCase().trim();
+    if (typeof value === 'boolean') {
+      return value;
+    }
+    const stringBoolean = (value ?? '').toLowerCase().trim();
     // TODO Matching value must be configurable in parser option
     return stringBoolean === 'true' || stringBoolean === 'yes' || stringBoolean === '1';
   }
   return value;
 };
 
-const computeValue = (value: string | undefined, column: AttributeColumn, attributeDef: AttributeDefinition) => {
+export const computeValue = (value: string | undefined, column: AttributeColumn, attributeDef: AttributeDefinition) => {
   if (value === undefined || isEmptyField(value)) {
     return null;
   }
@@ -73,7 +76,7 @@ const computeValue = (value: string | undefined, column: AttributeColumn, attrib
   return formatValue(value, attributeDef.type, column);
 };
 
-const computeDefaultValue = (
+export const computeDefaultValue = (
   defaultValue: string[],
   attribute: CsvMapperRepresentationAttribute,
   definition: AttributeDefinition,
@@ -343,7 +346,7 @@ const mapRecord = async (
 export const handleRefEntities = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperParsed
+  mapper: CsvMapperParsed | JsonMapperParsed
 ) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
