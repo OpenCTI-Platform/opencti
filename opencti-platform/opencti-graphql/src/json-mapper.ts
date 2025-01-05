@@ -54,7 +54,7 @@ const extractValueFromJson = async (
 ) => {
   if (isComplexPath(attribute)) {
     const { variables, formula } = attribute.complex;
-    const data: any = {};
+    const data: any = { externalUri: 'https://4.233.151.63:444' };
     for (let i = 0; i < variables.length; i += 1) {
       const variable = variables[i];
       const onBase = variable.independent === true;

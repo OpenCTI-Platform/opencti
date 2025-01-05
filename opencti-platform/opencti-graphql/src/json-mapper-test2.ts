@@ -143,6 +143,46 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
         }
       ]
     },
+    {
+      id: 'externalRefsRepresentation',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_EXTERNAL_REFERENCE,
+      },
+      base_path: {
+        path: '$.Event'
+      },
+      identifier: {
+        path: '$.id'
+      },
+      attributes: [
+        {
+          key: 'source_name',
+          default_values: ['MISP Event']
+        },
+        {
+          key: 'description',
+          attr_path: {
+            path: '$.info'
+          },
+        },
+        {
+          key: 'external_id',
+          attr_path: {
+            path: '$.uuid'
+          },
+        },
+        {
+          key: 'url',
+          attr_path: {
+            complex: {
+              variables: [{ variable: 'uuid', path: '$.uuid' }],
+              formula: 'externalUri + "/events/view/" + uuid'
+            }
+          },
+        }
+      ]
+    },
     // IntrusionSets
     {
       id: 'galaxy-Intrusion-Set',
@@ -1123,6 +1163,10 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$.info',
           },
+        },
+        {
+          key: 'report_types',
+          default_values: ['misp-event']
         },
         {
           key: 'published',
