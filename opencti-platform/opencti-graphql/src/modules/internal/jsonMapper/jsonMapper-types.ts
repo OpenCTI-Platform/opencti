@@ -12,13 +12,14 @@ interface AttributeColumnConfiguration {
 }
 export interface ComplexPath {
   complex: {
-    variables: { path: string, variable: string }[]
+    variables: { path: string, independent?: boolean, variable: string }[]
     formula: string
   }
   configuration?: AttributeColumnConfiguration
 }
 export interface AttributePath {
   path: string
+  independent?: boolean
   configuration?: AttributeColumnConfiguration
 }
 interface AttributeBasedOn {
@@ -57,7 +58,7 @@ export interface JsonMapperRepresentation {
   type: JsonMapperRepresentationType
   base_path: AttributePath
   target: JsonMapperRepresentationTarget
-  identifier: AttributePath
+  identifier?: AttributePath
   attributes: JsonMapperRepresentationAttribute[]
   from?: string
   to?: string

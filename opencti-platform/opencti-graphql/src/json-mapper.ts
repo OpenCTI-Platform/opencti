@@ -2,6 +2,7 @@ import * as JSONPath from 'jsonpath-plus';
 
 import './modules';
 import fs from 'node:fs';
+import { v4 as uuidv4 } from 'uuid';
 import ejs from 'ejs';
 import {
   type AttributePath,
@@ -15,9 +16,9 @@ import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { generateStandardId } from './schema/identifier';
 import { schemaRelationsRefDefinition } from './schema/schema-relationsRef';
 import { UnsupportedError } from './config/errors';
-import { type AttributeDefinition, entityType, type ObjectAttribute, relationshipType } from './schema/attribute-definition';
+import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from './schema/attribute-definition';
 import { isEmptyField, isNotEmptyField } from './database/utils';
-import { computeDefaultValue, handleRefEntities, type InputType } from './parser/csv-mapper';
+import { computeDefaultValue, formatValue, handleRefEntities, type InputType } from './parser/csv-mapper';
 import { getHashesNames } from './modules/internal/csvMapper/csvMapper-utils';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import type { BasicStoreObject, StoreCommon } from './types/store';
@@ -27,30 +28,45 @@ import { convertStoreToStix } from './database/stix-converter';
 import { BundleBuilder } from './parser/bundle-creator';
 import { handleInnerType } from './domain/stixDomainObject';
 import { createStixPatternSync } from './python/pythonBridge';
-import type { AuthContext } from './types/user';
+import { from as fromDef, to as toDef } from './schema/stixRefRelationship';
 
 export const isComplexPath = (attribute: AttributePath | ComplexPath): attribute is ComplexPath => 'complex' in attribute;
 
+const format = (value: string | string[], def: AttributeDefinition, attribute: AttributePath | ComplexPath | undefined) => {
+  if (Array.isArray(value)) {
+    if (def.multiple) {
+      return value.map((val) => formatValue(val, def.type, attribute));
+    }
+    if (value.length > 1) {
+      throw UnsupportedError('Only one response expected');
+    }
+    return formatValue(value[0], def.type, attribute);
+  }
+  return formatValue(value, def.type, attribute);
+};
+
 const extractValueFromJson = async (
+  base: JSON,
   iter: number,
   record: JSON,
   attribute: AttributePath | ComplexPath,
-  wrap: boolean
+  attrDef: AttributeDefinition
 ) => {
   if (isComplexPath(attribute)) {
     const { variables, formula } = attribute.complex;
     const data: any = {};
     for (let i = 0; i < variables.length; i += 1) {
       const variable = variables[i];
+      const onBase = variable.independent === true;
       const p = variable.path.replaceAll('{iter}', iter.toString());
-      data[variable.variable] = JSONPath.JSONPath({
+      const val = JSONPath.JSONPath({
         path: p,
-        json: record,
-        wrap,
+        json: onBase ? base : record,
+        wrap: attrDef?.multiple ?? false,
         flatten: true
       });
+      data[variable.variable] = format(val, attrDef, attribute);
     }
-    // Enrich functions
     data.patternFromValue = (k: string, value: string) => {
       try {
         return createStixPatternSync(k, value);
@@ -64,18 +80,20 @@ const extractValueFromJson = async (
     throw UnsupportedError('extractValueFromJson path must be defined');
   }
   const { path } = attribute;
+  const onBase = attribute.independent === true;
   const p = path.replaceAll('{iter}', iter.toString());
-  return JSONPath.JSONPath({
+  const val = JSONPath.JSONPath({
     path: p,
-    json: record,
-    wrap,
+    json: onBase ? base : record,
+    wrap: attrDef?.multiple ?? false,
     flatten: true
   });
+  return format(val, attrDef, attribute);
 };
 
 /* eslint-disable no-param-reassign */
 const handleDirectAttribute = async (
-  context: AuthContext,
+  base: JSON,
   iter: number,
   attribute: JsonMapperRepresentationAttribute,
   input: Record<string, InputType>,
@@ -91,8 +109,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.attr_path) {
-    const computedValue = await extractValueFromJson(iter, record, attribute.attr_path, definition.multiple);
-    // const computedValue = computeValue(recordValue, attribute.column, definition);
+    const computedValue = await extractValueFromJson(base, iter, record, attribute.attr_path, definition);
     if (computedValue !== null && computedValue !== undefined) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -105,12 +122,12 @@ const handleDirectAttribute = async (
 };
 
 const handleBasedOnAttribute = async (
-  context: AuthContext,
+  base: JSON,
   iter: number,
   attribute: JsonMapperRepresentationAttribute,
   input: Record<string, InputType>,
   record: JSON,
-  definition: AttributeDefinition | null,
+  definition: AttributeDefinition,
   otherEntities: Map<string, Record<string, InputType>[]>,
   refEntities: Record<string, BasicStoreObject>
 ) => {
@@ -133,40 +150,35 @@ const handleBasedOnAttribute = async (
     if (isEmptyField(attribute.based_on)) {
       throw UnsupportedError('Unknown value(s)', { key: attribute.key });
     }
+    // region fetch entities
     let entities;
     if (attribute.based_on.identifier_path) {
-      const computedValue = await extractValueFromJson(iter, record, attribute.based_on.identifier_path, definition?.multiple ?? false);
+      const computedValue = await extractValueFromJson(base, iter, record, attribute.based_on.identifier_path, definition);
       const compareValues = Array.isArray(computedValue) ? computedValue : [computedValue];
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()
-        .filter((e) => e !== undefined && compareValues.includes(e.__identifier)) as Record<string, InputType>[];
+        .filter((e) => e !== undefined && compareValues.includes(e.__identifier as string)) as Record<string, InputType>[];
     } else {
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined) as Record<string, InputType>[];
     }
-    // console.log(attribute.key, otherEntities);
+    // endregion
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
       // Is relation from or to (stix-core || stix-sighting)
       if (isStixRelationshipExceptRef(entity_type) && ['from', 'to'].includes(attribute.key)) {
-        if (entities.length > 1) {
-          throw UnsupportedError('Too many entities found for the mapping');
-        }
         if (attribute.key === 'from') {
-          const entity = entities[0];
-          // console.log(attribute.key, entity);
-          if (isNotEmptyField(entity)) {
-            input.from = entity;
-            input.fromType = entity[entityType.name];
-          }
-        } else if (attribute.key === 'to') {
-          const entity = entities[0];
-          // console.log(attribute.key, entity);
-          if (isNotEmptyField(entity)) {
-            input.to = entity;
-            input.toType = entity[entityType.name];
-          }
+          input.__froms = entities.map((e) => ({
+            from: e,
+            fromType: e[entityType.name]
+          }));
+        }
+        if (attribute.key === 'to') {
+          input.__tos = entities.map((e) => ({
+            to: e,
+            toType: e[entityType.name]
+          }));
         }
         // Is relation ref
       } else if (definition) {
@@ -206,8 +218,6 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
       const representation = (mapper.representations ?? [])[i];
       const { entity_type } = representation.target;
       const hashesNames = getHashesNames(entity_type);
-      // console.log('baseJson', baseJson);
-      // console.log('representation.base_path.path', representation.base_path.path);
       const baseData = JSONPath.JSONPath({ path: representation.base_path.path, json: element, flatten: true });
       const baseDatas = (Array.isArray(baseData) ? baseData : [baseData]);
       for (let baseInfo = 0; baseInfo < baseDatas.length; baseInfo += 1) {
@@ -229,37 +239,62 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
           // console.log(hashesNames, test);
           if (attributeDef) {
             if (hashesNames.includes(attribute.key)) {
-              const definitionHash = (attributeDef as ObjectAttribute).mappings
-                .find((definition) => (definition.name === attribute.key));
+              const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
               if (definitionHash) {
-                await handleDirectAttribute(context, baseInfo, attribute, input, baseDatum, attributeDef, hashesNames);
+                await handleDirectAttribute(baseJson, baseInfo, attribute, input, baseDatum, attributeDef, hashesNames);
               }
             } else {
-              await handleDirectAttribute(context, baseInfo, attribute, input, baseDatum, attributeDef, []);
+              await handleDirectAttribute(baseJson, baseInfo, attribute, input, baseDatum, attributeDef, []);
             }
-          } else if (refDef || ['from', 'to'].includes(attribute.key)) {
-            await handleBasedOnAttribute(context, baseInfo, attribute, input, baseDatum, refDef, results, refEntities);
+          } else if (refDef) {
+            await handleBasedOnAttribute(baseJson, baseInfo, attribute, input, baseDatum, refDef, results, refEntities);
+          } else if (attribute.key === 'from') {
+            await handleBasedOnAttribute(baseJson, baseInfo, attribute, input, baseDatum, fromDef, results, refEntities);
+          } else if (attribute.key === 'to') {
+            await handleBasedOnAttribute(baseJson, baseInfo, attribute, input, baseDatum, toDef, results, refEntities);
           } else {
             console.log('Unknown schema for attribute:', { attribute });
             throw UnsupportedError('Unknown schema for attribute:', { attribute });
           }
         }
-        // console.log(entity_type, input);
-        input.standard_id = generateStandardId(entity_type, input);
-        if (representation.identifier) {
-          input.__identifier = await extractValueFromJson(baseInfo, baseDatum, representation.identifier, false);
+        // console.log(input);
+        // Take care of explicit relations cardinality
+        if (input.__froms && input.__tos) {
+          for (let fromIndex = 0; fromIndex < input.__froms.length; fromIndex += 1) {
+            const { from, fromType } = input.__froms[fromIndex];
+            for (let toIndex = 0; toIndex < input.__tos.length; toIndex += 1) {
+              const { to, toType } = input.__tos[toIndex];
+              const inputNew = structuredClone(input);
+              inputNew.__identifier = uuidv4();
+              inputNew.from = from;
+              inputNew.fromType = fromType;
+              inputNew.to = to;
+              inputNew.toType = toType;
+              inputNew.standard_id = generateStandardId(inputNew.entity_type, inputNew);
+              addResult(representation, results, inputNew);
+            }
+          }
+        } else {
+          input.standard_id = generateStandardId(entity_type, input);
+          if (representation.identifier) {
+            input.__identifier = await extractValueFromJson(baseJson, baseInfo, baseDatum, representation.identifier, idType) as string;
+          } else {
+            input.__identifier = uuidv4();
+          }
+          addResult(representation, results, input);
         }
-        addResult(representation, results, input);
       }
-      // console.log('buildElements', JSON.stringify(results.values()));
     }
   }
+  // Generate the final bundle
+  const objects = Array.from(results.values()).flat();
+  const stixObjects = objects.map((e) => convertStoreToStix(e as unknown as StoreCommon));
 
-  const stixObjects = Array.from(results.values()).flat()
-    .map((e) => convertStoreToStix(e as unknown as StoreCommon));
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
   const bundle = bundleBuilder.build();
+  console.log(objects.length, stixObjects.length, bundle.objects.length);
+
   fs.writeFileSync('./src/temp.json', JSON.stringify(bundle), {});
 };
 
