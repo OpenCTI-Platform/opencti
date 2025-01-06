@@ -2091,6 +2091,7 @@
   "Platform under construction, subscribe to update!": "플랫폼이 구축 중입니다. 업데이트를 구독하세요!",
   "Platforms": "플랫폼",
   "Playbook": "플레이북",
+  "entity_Playbook": "플레이북",
   "Playbook is running": "플레이북이 실행 중입니다",
   "Playbook is stopped": "플레이북이 중지되었습니다",
   "Playbook successfully completed.": "플레이북이 성공적으로 완료되었습니다.",

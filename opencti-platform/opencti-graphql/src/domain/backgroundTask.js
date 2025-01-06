@@ -20,6 +20,7 @@ import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
 import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -90,6 +91,8 @@ const buildQueryFilters = async (context, user, filters, search, taskPosition, s
     types = [ENTITY_TYPE_PUBLIC_DASHBOARD];
   } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
     types = [ENTITY_TYPE_WORKSPACE];
+  } else if (scope === BackgroundTaskScope.Playbook) {
+    types = [ENTITY_TYPE_PLAYBOOK];
   }
   // Construct filters
   return {
