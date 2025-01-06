@@ -121,7 +121,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                     'sightings',
                     'channels',
                   ]}
-                  queryRef={channel}
+                  data={channel}
                 />
               }
             />

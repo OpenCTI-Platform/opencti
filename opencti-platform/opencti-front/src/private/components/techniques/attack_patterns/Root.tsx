@@ -119,7 +119,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                     'indicators',
                     'observables',
                   ]}
-                  queryRef={attackPattern}
+                  data={attackPattern}
                 />
               }
             />

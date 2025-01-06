@@ -152,7 +152,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={individual}
+                  data={individual}
                 />
               )}
             />

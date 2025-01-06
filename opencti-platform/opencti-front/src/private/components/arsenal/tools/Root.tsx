@@ -122,7 +122,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                     'observables',
                     'sightings',
                   ]}
-                  queryRef={tool}
+                  data={tool}
                 />
               }
             />

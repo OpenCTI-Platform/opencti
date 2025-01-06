@@ -145,7 +145,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                     'observables',
                     'vulnerabilities',
                   ]}
-                  queryRef={system}
+                  data={system}
                 />
               )}
             />

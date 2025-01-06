@@ -150,7 +150,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                     'vulnerabilities',
                     'observables',
                   ]}
-                  queryRef={organization}
+                  data={organization}
                 />
               )}
             />
