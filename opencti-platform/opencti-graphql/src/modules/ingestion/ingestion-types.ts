@@ -128,6 +128,12 @@ export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEnti
   user_id: string | undefined
   confidence_to_score: boolean
   ingestion_running: boolean
+  authorized_members: {
+    access_right: string
+    entity_type: string
+    id: string
+    name: string
+  }[];
 }
 
 export interface StoreEntityIngestionTaxiiCollection extends StoreEntity {

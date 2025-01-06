@@ -4,12 +4,13 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
-import { convertUser } from '../../../../utils/edition';
+import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import Drawer from '../../common/drawer/Drawer';
 import SwitchField from '../../../../components/fields/SwitchField';
 
@@ -29,6 +30,7 @@ const ingestionTaxiiCollectionValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   user_id: Yup.mixed().nullable(),
   confidence_to_score: Yup.bool().nullable(),
+  authorized_members: Yup.array().required().min(1),
 });
 
 const IngestionTaxiiCollectionEditionContainer = ({
@@ -55,15 +57,30 @@ const IngestionTaxiiCollectionEditionContainer = ({
       })
       .catch(() => false);
   };
+
+  const handleSubmitFieldOptions = (name, value) => ingestionTaxiiCollectionValidation(t)
+    .validateAt(name, { [name]: value })
+    .then(() => {
+      commitMutation({
+        mutation: ingestionTaxiiCollectionMutationFieldPatch,
+        variables: {
+          id: ingestionTaxiiCollection?.id,
+          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+        },
+      });
+    }).catch(() => false);
   const initialValues = R.pipe(
     R.assoc('user_id', convertUser(ingestionTaxiiCollection, 'user')),
+    R.assoc('authorized_members', convertAuthorizedMembers(ingestionTaxiiCollection)),
     R.pick([
       'name',
       'description',
       'user_id',
+      'authorized_members',
       'confidence_to_score',
     ]),
   )(ingestionTaxiiCollection);
+
   return (
     <Drawer
       title={t('Update a TAXII Push ingester')}
@@ -101,6 +118,13 @@ const IngestionTaxiiCollectionEditionContainer = ({
               containerStyle={fieldSpacingContainerStyle}
               showConfidence
             />
+            <ObjectMembersField
+              label={'Accessible for'}
+              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitFieldOptions}
+              multiple={true}
+              name="authorized_members"
+            />
             <Field
               component={SwitchField}
               onChange={handleSubmitField}
@@ -136,6 +160,10 @@ const IngestionTaxiiCollectionEditionFragment = createFragmentContainer(
         user {
           id
           entity_type
+          name
+        }
+        authorized_members {
+          id
           name
         }
       }

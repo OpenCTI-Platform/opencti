@@ -11561,6 +11561,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   description: String
   user_id: String
   user: Creator
+  authorized_members: [MemberAccess!]
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -11585,6 +11586,7 @@ input IngestionTaxiiCollectionAddInput {
   description: String
   user_id: String
   confidence_to_score: Boolean
+  authorized_members: [MemberAccessInput!]!
 }
 
 type IngestionCsv implements InternalObject & BasicObject {

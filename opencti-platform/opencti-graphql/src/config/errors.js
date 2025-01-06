@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql/index';
 const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
 
-const error = (type, message, data) => {
+export const error = (type, message, data) => {
   return new GraphQLError(message, { extensions: { code: type, data } });
 };
 

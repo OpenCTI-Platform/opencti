@@ -13,6 +13,7 @@ import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 import SwitchField from '../../../../components/fields/SwitchField';
 
 const styles = (theme) => ({
@@ -38,16 +39,22 @@ const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
   confidence_to_score: Yup.bool().nullable(),
+  authorized_members: Yup.array().required().min(1),
 });
 
 const IngestionTaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
   const onSubmit = (values, { setSubmitting, resetForm }) => {
+    const authorized_members = values.authorized_members.map(({ value }) => ({
+      id: value,
+      access_right: 'view',
+    }));
     const input = {
       name: values.name,
       description: values.description,
       confidence_to_score: values.confidence_to_score,
       user_id: values.user_id?.value,
+      authorized_members,
     };
     commitMutation({
       mutation: IngestionTaxiiCollectionCreationMutation,
@@ -84,7 +91,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({ submitForm, handleReset, setFieldValue, isSubmitting }) => (
             <Form>
               <Field
                 component={TextField}
@@ -106,6 +113,13 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 label={t('User responsible for data creation (empty = System)')}
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
+              />
+              <ObjectMembersField
+                label={'Accessible for'}
+                style={fieldSpacingContainerStyle}
+                onChange={setFieldValue}
+                multiple={true}
+                name="authorized_members"
               />
               <Field
                 component={SwitchField}

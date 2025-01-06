@@ -5,6 +5,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxiiCollection, type StoreEntityIngestionTaxiiCollection } from './ingestion-types';
 import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
   type: {
@@ -40,6 +41,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
       upsert: true,
       isFilterable: true
     },
+    authorizedMembers
   ],
   relations: [],
   representative: (stix: StixIngestionTaxiiCollection) => {

@@ -8,17 +8,20 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiCollectionAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import { INGESTION_SETINGESTIONS, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
 };
 
 export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionTaxiiCollection>(context, user, [ENTITY_TYPE_INGESTION_TAXII_COLLECTION], opts);
+  const args = { ...opts, includeAuthorities: true };
+  return listEntitiesPaginated<BasicStoreEntityIngestionTaxiiCollection>(context, user, [ENTITY_TYPE_INGESTION_TAXII_COLLECTION], args);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiCollectionAddInput) => {
-  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, { complete: true });
+  const data = { authorized_authorities: [INGESTION_SETINGESTIONS], ...input };
+  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
       id: element.id,
@@ -40,7 +43,14 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input);
+  const finalInput = input.map(({ key, value }) => {
+    const item = { key, value };
+    if (key === 'authorized_members') {
+      item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
+    }
+    return item;
+  });
+  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, finalInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'TAXII-PUSH',
