@@ -332,7 +332,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
 
 `;
 
-const stixCoreRelationshipCreationFromEntityQuery = graphql`
+export const stixCoreRelationshipCreationFromEntityQuery = graphql`
   query StixCoreRelationshipCreationFromEntityQuery($id: String!) {
     stixCoreObject(id: $id) {
       id
@@ -439,7 +439,7 @@ export const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationFromEntityToMutation = graphql`
+export const stixCoreRelationshipCreationFromEntityToMutation = graphql`
   mutation StixCoreRelationshipCreationFromEntityToMutation(
     $input: StixCoreRelationshipAddInput!
   ) {
@@ -465,9 +465,13 @@ interface StixCoreRelationshipCreationFromEntityProps {
   onCreate?: () => void;
   openExports?: boolean;
   handleReverseRelation?: () => void;
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
 }
 
-interface StixCoreRelationshipCreationFromEntityForm {
+export interface StixCoreRelationshipCreationFromEntityForm {
   confidence: string;
   start_time: string;
   stop_time: string;
@@ -502,6 +506,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     onCreate = undefined,
     openExports = false,
     handleReverseRelation = undefined,
+    controlledDial = undefined,
   } = props;
   let isOnlySDOs = false;
   let isOnlySCOs = false;
@@ -981,32 +986,41 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     );
   };
 
+  let openElement = controlledDial
+    ? controlledDial({
+      onOpen: () => setOpen(true),
+      onClose: handleClose,
+    })
+    : '';
+  if (variant === 'inLine') {
+    openElement = (
+      <IconButton
+        color="primary"
+        aria-label="Label"
+        onClick={() => setOpen(true)}
+        style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+        size="large"
+      >
+        <Add fontSize="small" />
+      </IconButton>
+    );
+  } else if (controlledDial === undefined && !openExports) {
+    openElement = (
+      <Fab
+        onClick={() => setOpen(true)}
+        color="primary"
+        aria-label="Add"
+        className={classes.createButton}
+        style={{ right: paddingRight || 30 }}
+      >
+        <Add />
+      </Fab>
+    );
+  }
+
   return (
     <>
-      {/* eslint-disable-next-line no-nested-ternary */}
-      {variant === 'inLine' ? (
-        <IconButton
-          color="primary"
-          aria-label="Label"
-          onClick={() => setOpen(true)}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      ) : !openExports ? (
-        <Fab
-          onClick={() => setOpen(true)}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-          style={{ right: paddingRight || 30 }}
-        >
-          <Add />
-        </Fab>
-      ) : (
-        ''
-      )}
+      {openElement}
       <Drawer
         open={open}
         onClose={handleClose}

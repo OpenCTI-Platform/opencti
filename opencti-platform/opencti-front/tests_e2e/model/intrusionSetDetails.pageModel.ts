@@ -20,6 +20,6 @@ export default class IntrusionSetDetailsPage {
   }
 
   getCreateRelationshipButton() {
-    return this.page.getByLabel('Add', { exact: true });
+    return this.page.getByRole('button', { name: 'Create Relationship' });
   }
 }
