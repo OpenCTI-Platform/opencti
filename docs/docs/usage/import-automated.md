@@ -99,7 +99,7 @@ Additional configuration options:
 
 ### CSV feeds
 
-CSV feed ingester enables users to import CSV files exposed on URLs. Here's a step-by-step guide to configure TAXII ingesters:
+CSV feed ingester enables users to import CSV files exposed on URLs. Here's a step-by-step guide to configure CSV ingesters:
 
 1. CSV URL: Provide the URL of the CSV file exposed from which items will be imported.
 2. CSV Mappers: Choose the CSV mapper to be used to import the data.
