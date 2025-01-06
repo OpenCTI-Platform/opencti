@@ -402,7 +402,7 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
     }
   }
 };
-const executeShare = async (context, user, actionContext, element, containerId) => {
+const executeShare = async (context, user, actionContext, element) => {
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
@@ -411,14 +411,8 @@ const executeShare = async (context, user, actionContext, element, containerId) 
       await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: RELATION_GRANTED_TO });
     }
   }
-  if (containerId) {
-    const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
-    const message = `Updating share on parent ${containerId} after sharing all content.`;
-    // simulate a create event to update downstream openCTI
-    await storeCreateEntityEvent(context, user, objectStoreBase, message, {});
-  }
 };
-const executeUnshare = async (context, user, actionContext, element, containerId) => {
+const executeUnshare = async (context, user, actionContext, element) => {
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
@@ -436,12 +430,6 @@ const executeUnshare = async (context, user, actionContext, element, containerId
     if (!grantedTo.includes(target)) {
       await deleteRelationsByFromAndTo(context, user, element.id, target, RELATION_GRANTED_TO, ABSTRACT_BASIC_RELATIONSHIP);
     }
-  }
-
-  if (containerId) {
-    const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
-    const message = `Updating share on parent ${containerId} after unsharing all content.`;
-    await storeCreateEntityEvent(context, user, objectStoreBase, message, {});
   }
 };
 const executeShareMultiple = async (context, user, actionContext, element) => {
@@ -539,10 +527,10 @@ const executeProcessing = async (context, user, job, scope) => {
             await executeRuleElementRescan(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_SHARE) {
-            await executeShare(context, user, actionContext, element, containerId);
+            await executeShare(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_UNSHARE) {
-            await executeUnshare(context, user, actionContext, element, containerId);
+            await executeUnshare(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_SHARE_MULTIPLE) {
             await executeShareMultiple(context, user, actionContext, element);
@@ -556,6 +544,12 @@ const executeProcessing = async (context, user, job, scope) => {
             errors.push({ id: element.id, message: `${err.message}${err.data?.reason ? ` - ${err.reason}` : ''}` });
           }
         }
+      }
+      if (type === ACTION_TYPE_SHARE && containerId) {
+        const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
+        const message = `Updating share on parent ${containerId} after sharing all content.`;
+        // simulate a create event to update downstream openCTI
+        await storeCreateEntityEvent(context, user, objectStoreBase, message, {});
       }
     }
   }
