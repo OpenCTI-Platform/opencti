@@ -2088,6 +2088,7 @@
   "Platform under construction, subscribe to update!": "Plateforme en cours de construction, abonnez-vous pour être mis à jour !",
   "Platforms": "Systèmes d'exploitation",
   "Playbook": "Playbook",
+  "entity_Playbook": "Playbook",
   "Playbook is running": "Le Playbook est en cours d'exécution",
   "Playbook is stopped": "Playbook est arrêté",
   "PLAYBOOK_MANAGER": "Manager de playbook",

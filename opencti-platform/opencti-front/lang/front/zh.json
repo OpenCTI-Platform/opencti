@@ -2088,6 +2088,7 @@
   "Platform under construction, subscribe to update!": "平台正在建设中，请订阅更新！",
   "Platforms": "平台",
   "Playbook": "剧本",
+  "entity_Playbook": "剧本",
   "Playbook is running": "剧本正在运行",
   "Playbook is stopped": "剧本已停止",
   "PLAYBOOK_MANAGER": "剧本管理器",
