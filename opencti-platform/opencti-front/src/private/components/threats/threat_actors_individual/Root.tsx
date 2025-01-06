@@ -141,7 +141,7 @@ const RootThreatActorIndividualComponent = ({
                     'sightings',
                     'countries',
                   ]}
-                  queryRef={threatActorIndividual}
+                  data={threatActorIndividual}
                 />
              }
             />

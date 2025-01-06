@@ -121,7 +121,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                     'sightings',
                     'infrastructures',
                   ]}
-                  queryRef={vulnerability}
+                  data={vulnerability}
                 />
               }
             />

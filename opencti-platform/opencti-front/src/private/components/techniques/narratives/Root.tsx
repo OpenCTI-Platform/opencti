@@ -115,7 +115,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                     'observables',
                     'sightings',
                   ]}
-                  queryRef={narrative}
+                  data={narrative}
                 />
               }
             />

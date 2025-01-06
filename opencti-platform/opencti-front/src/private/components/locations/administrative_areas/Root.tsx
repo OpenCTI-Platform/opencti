@@ -117,7 +117,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     'tools',
                     'observables',
                   ]}
-                  queryRef={administrativeArea}
+                  data={administrativeArea}
                 />
               }
             />
