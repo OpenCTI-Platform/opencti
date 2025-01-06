@@ -835,6 +835,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           ... on MalwareAnalysis {
             result_name
           }
+          ... on NetworkTraffic {
+            dst_port
+          }
           ... on Position {
             name
             description
