@@ -216,7 +216,6 @@ describe('Delete operation resolver testing', () => {
     reportInternalId = report.data?.reportAdd.id;
     // import a file to this report, to also test it after restore
     const uploadOpts = [API_URI, ADMIN_API_TOKEN, reportInternalId, filename, [MARKING_TLP_AMBER_STRICT]];
-    // local exporter create an export and also upload the file as an import
     const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
