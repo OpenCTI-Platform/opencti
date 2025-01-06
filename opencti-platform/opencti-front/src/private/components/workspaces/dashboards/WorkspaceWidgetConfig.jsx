@@ -6,6 +6,7 @@ import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import Button from '@mui/material/Button';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import WidgetConfig from '../../widgets/WidgetConfig';
 import { toB64 } from '../../../../utils/String';
@@ -14,6 +15,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const workspaceImportWidgetMutation = graphql`
   mutation WorkspaceWidgetConfigImportMutation(
@@ -40,6 +42,8 @@ const useStyles = makeStyles((theme) => ({
 const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   const inputRef = useRef();
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [commitWidgetImportMutation] = useApiMutation(workspaceImportWidgetMutation);
@@ -73,6 +77,28 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
           onChange={handleWidgetImport}
         />
         <Security needs={[EXPLORE_EXUPDATE]}>
+          {FAB_REPLACED && (
+            <div>
+              <Button
+                variant='outlined'
+                disableElevation
+                style={{ marginTop: '2.5px', marginLeft: '4px' }}
+                onClick={() => inputRef.current?.click()}
+              >
+                {t_i18n('Import Widget')}
+              </Button>
+              <Button
+                variant='contained'
+                disableElevation
+                style={{ marginTop: '2.5px', marginLeft: '2px' }}
+                onClick={() => setOpen(true)}
+              >
+                {t_i18n('Create Widget')}
+              </Button>
+            </div>
+          )
+          }
+          {!FAB_REPLACED && (
           <SpeedDial
             style={{
               position: 'fixed',
@@ -99,6 +125,7 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
               FabProps={{ classes: { root: classes.speedDialButton } }}
             />
           </SpeedDial>
+          )}
         </Security>
       </>
       )}
