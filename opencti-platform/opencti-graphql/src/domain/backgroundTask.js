@@ -20,7 +20,7 @@ import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
 import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
-import { ENTITY_TYPE_PLAYBOOK } from "../modules/playbook/playbook-types";
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
