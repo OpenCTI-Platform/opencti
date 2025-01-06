@@ -117,7 +117,7 @@ export const elUpdateRemovedFiles = async (entity, removed = true) => {
       script: { source, params },
       query: {
         term: {
-          'entity_id.keyword': entity.internal_id
+          'metadata.entity_id.keyword': entity.internal_id
         }
       },
     },
