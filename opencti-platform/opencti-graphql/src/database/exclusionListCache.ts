@@ -101,7 +101,6 @@ export const checkObservableValue = async (observableValue: any) => {
   if (!exclusionListCache) {
     throw FunctionalError('Failed to load exclusion list cache.', { exclusionListCache });
   }
-
   if (isStixCyberObservableHashedObservable(type)) {
     const hashesValues = Object.values(hashes) as string[];
     for (let i = 0; i < hashesValues.length; i += 1) {
