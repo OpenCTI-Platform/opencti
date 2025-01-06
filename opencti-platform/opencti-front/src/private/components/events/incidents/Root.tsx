@@ -120,7 +120,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                     'vulnerabilities',
                     'observables',
                   ]}
-                  queryRef={incident}
+                  data={incident}
                 />
               }
             />

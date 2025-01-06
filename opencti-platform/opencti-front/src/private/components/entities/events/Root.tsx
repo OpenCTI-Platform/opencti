@@ -118,7 +118,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={event}
+                  data={event}
                 />
               }
             />

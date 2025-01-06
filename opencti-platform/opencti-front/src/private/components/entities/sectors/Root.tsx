@@ -120,7 +120,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={sector}
+                  data={sector}
                 />
               }
             />
