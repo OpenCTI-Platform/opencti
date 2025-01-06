@@ -45,7 +45,7 @@ import Transition from '../../../components/Transition';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { truncate } from '../../../utils/String';
 import useHelper from '../../../utils/hooks/useHelper';
-import WidgetConfig from '../widgets/WidgetConfig';
+import WorkspaceWidgetConfig from './dashboards/WorkspaceWidgetConfig';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -366,7 +366,7 @@ const WorkspaceHeader = ({
             hasAccess={canEdit}
           >
             <div style={{ marginTop: '-8px', float: 'right' }}>
-              <WidgetConfig onComplete={handleAddWidget} workspace={workspace}></WidgetConfig>
+              <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace}></WorkspaceWidgetConfig>
             </div>
           </Security>
 
