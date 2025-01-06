@@ -241,6 +241,7 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
+  x_opencti_actions: String
 }
 
 type Mutation {
