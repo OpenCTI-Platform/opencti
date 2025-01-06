@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { CaseRfiAddInput, EditInput, RequestAccessAddInput } from '../../generated/graphql';
+import { ActionStatus, type CaseRfiAddInput, type EditInput, type RequestAccessAddInput } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../../utils/access';
 import { listAllFromEntitiesThroughRelations } from '../../database/middleware-loader';
@@ -16,8 +16,8 @@ export interface RequestAccessAction {
   entities?: string[]
   members?: string[]
   type?: string,
-  burned: boolean
-  accepted?: boolean
+  status: string,
+  executionDate?: Date
 }
 
 export const findUsersThatCanShareWithOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[]) => {
@@ -49,7 +49,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     members: input.request_access_members,
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
-    burned: false
+    status: ActionStatus.NotDone,
   };
 
   const rfiInput: CaseRfiAddInput = {
@@ -75,24 +75,38 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
     const action: RequestAccessAction = JSON.parse(actionData);
     logApp.info(`'[OPENCTI-MODULE][Request access] 4 Action parsed on RFI ${id}`, action);
 
-    if (!action.burned) {
+    if (action.status === ActionStatus.NotDone) {
       if (action.entities && action.members) {
         await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
 
         // Burning RFI
-        const burnedAction: RequestAccessAction = { ...action, burned: true, accepted: true };
+        const burnedAction: RequestAccessAction = { ...action, status: ActionStatus.Accepted, executionDate: new Date() };
         const RFIFieldPatch :EditInput[] = [{ key: 'description', value: [`${JSON.stringify(burnedAction)}`] }];
         await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-        return true;
+        return {
+          action_executed: true,
+          action_status: ActionStatus.Accepted,
+          action_date: burnedAction.executionDate
+        };
       }
       logApp.error('Request Access is missing entities or members', { action, RFIId: id });
-      return false;
+      return {
+        action_executed: false,
+        action_status: ActionStatus.MissingParameters,
+      };
     }
     logApp.info('Request Access already accepted or refused', { action, RFIId: id });
-    return false;
+    return {
+      action_executed: false,
+      action_status: action.status,
+      action_date: action.executionDate
+    };
   }
   logApp.error('RFI not found for Request Access', { RFIId: id });
-  return false;
+  return {
+    action_executed: false,
+    action_status: ActionStatus.NotFound,
+  };
 };
 
 export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -104,17 +118,28 @@ export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, 
   const action: RequestAccessAction = JSON.parse(actionData);
   logApp.info(`Action on RFI ${id}`, action);
 
-  if (!action.burned) {
+  if (action.status === ActionStatus.NotDone) {
     if (action.entities && action.members) {
       // Burning RFI
-      const burnedAction: RequestAccessAction = { ...action, burned: true, accepted: false };
+      const burnedAction: RequestAccessAction = { ...action, status: ActionStatus.Refused, executionDate: new Date() };
       const RFIFieldPatch :EditInput[] = [{ key: 'description', value: [`${JSON.stringify(burnedAction)}`] }];
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-      return true;
+      return {
+        action_executed: true,
+        action_status: ActionStatus.Refused,
+        action_date: burnedAction.executionDate
+      };
     }
     logApp.error('Request Access is missing entities or members', { action, RFIId: id });
-    return false;
+    return {
+      action_executed: true,
+      action_status: ActionStatus.MissingParameters,
+    };
   }
   logApp.info('Request Access already accepted or refused', { action, RFIId: id });
-  return false;
+  return {
+    action_executed: false,
+    action_status: action.status,
+    action_date: action.executionDate
+  };
 };

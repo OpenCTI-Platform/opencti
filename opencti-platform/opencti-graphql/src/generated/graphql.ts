@@ -71,6 +71,14 @@ export type AckDetails = {
   rate?: Maybe<Scalars['Float']['output']>;
 };
 
+export enum ActionStatus {
+  Accepted = 'ACCEPTED',
+  MissingParameters = 'MISSING_PARAMETERS',
+  NotDone = 'NOT_DONE',
+  NotFound = 'NOT_FOUND',
+  Refused = 'REFUSED'
+}
+
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AdministrativeArea';
   avatar?: Maybe<OpenCtiFile>;
@@ -13755,8 +13763,8 @@ export type Mutation = {
   reportAdd?: Maybe<Report>;
   reportEdit?: Maybe<ReportEditMutations>;
   requestAccessAdd?: Maybe<Scalars['ID']['output']>;
-  requestAccessReject?: Maybe<Scalars['Boolean']['output']>;
-  requestAccessValidate?: Maybe<Scalars['Boolean']['output']>;
+  requestAccessReject?: Maybe<RequestAccessAction>;
+  requestAccessValidate?: Maybe<RequestAccessAction>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
   resetStateConnector?: Maybe<Connector>;
   retentionRuleAdd: RetentionRule;
@@ -23045,6 +23053,13 @@ export type RepresentativeWithId = {
   value?: Maybe<Scalars['String']['output']>;
 };
 
+export type RequestAccessAction = {
+  __typename?: 'RequestAccessAction';
+  action_date?: Maybe<Scalars['DateTime']['output']>;
+  action_executed?: Maybe<Scalars['Boolean']['output']>;
+  action_status?: Maybe<Scalars['String']['output']>;
+};
+
 export type RequestAccessAddInput = {
   request_access_entities: Array<Scalars['ID']['input']>;
   request_access_members: Array<Scalars['ID']['input']>;
@@ -30915,6 +30930,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
 export type ResolversTypes = ResolversObject<{
   AIBus: ResolverTypeWrapper<AiBus>;
   AckDetails: ResolverTypeWrapper<AckDetails>;
+  ActionStatus: ActionStatus;
   AdministrativeArea: ResolverTypeWrapper<BasicStoreEntityAdministrativeArea>;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
@@ -31502,6 +31518,7 @@ export type ResolversTypes = ResolversObject<{
   ReportsOrdering: ReportsOrdering;
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
+  RequestAccessAction: ResolverTypeWrapper<RequestAccessAction>;
   RequestAccessAddInput: RequestAccessAddInput;
   RequestAccessType: RequestAccessType;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
@@ -32286,6 +32303,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
+  RequestAccessAction: RequestAccessAction;
   RequestAccessAddInput: RequestAccessAddInput;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
@@ -37371,8 +37389,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
   requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
-  requestAccessReject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestAccessRejectArgs, 'id'>>;
-  requestAccessValidate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
+  requestAccessReject?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessRejectArgs, 'id'>>;
+  requestAccessValidate?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;
   retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;
@@ -39213,6 +39231,13 @@ export type RepresentativeWithIdResolvers<ContextType = any, ParentType extends 
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type RequestAccessActionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessAction'] = ResolversParentTypes['RequestAccessAction']> = ResolversObject<{
+  action_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  action_executed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  action_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42265,6 +42290,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReportEditMutations?: ReportEditMutationsResolvers<ContextType>;
   Representative?: RepresentativeResolvers<ContextType>;
   RepresentativeWithId?: RepresentativeWithIdResolvers<ContextType>;
+  RequestAccessAction?: RequestAccessActionResolvers<ContextType>;
   ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
