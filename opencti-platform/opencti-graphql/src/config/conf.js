@@ -338,17 +338,23 @@ export const logTelemetry = {
 };
 
 export function shutdownLoggers() {
-  const shutdownPromises = [appLogger, auditLogger, supportLogger].map(
-    (logger) => new Promise(
-      (resolve) => {
-        logger
-          .end()
-          .on('finish', resolve);
-      }
-    )
-  );
+  const safeShutdown = booleanConf('app:enable_logs_safe_shutdown', false);
 
-  return Promise.all(shutdownPromises);
+  if (safeShutdown) {
+    const shutdownPromises = [appLogger, auditLogger, supportLogger].map(
+      (logger) => new Promise(
+        (resolve) => {
+          logger
+            .end()
+            .on('finish', resolve);
+        }
+      )
+    );
+
+    return Promise.all(shutdownPromises);
+  }
+
+  return Promise.resolve();
 }
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
