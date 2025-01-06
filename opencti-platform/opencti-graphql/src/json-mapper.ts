@@ -222,6 +222,7 @@ const addResult = (representation: JsonMapperRepresentation, results: Map<string
 };
 
 const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
+  const start = new Date().getTime();
   const context = executionContext('JsonMapper');
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
   const results = new Map<string, Record<string, InputType>[]>();
@@ -311,12 +312,10 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
   // Generate the final bundle
   const objects = Array.from(results.values()).flat();
   const stixObjects = objects.map((e) => convertStoreToStix(e as unknown as StoreCommon));
-
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
   const bundle = bundleBuilder.build();
-  // console.log(objects.length, stixObjects.length, bundle.objects.length);
-
+  console.log(`Event built in ${new Date().getTime() - start} ms with ${bundle.objects.length} objects`);
   fs.writeFileSync('./src/temp.json', JSON.stringify(bundle), {});
 };
 

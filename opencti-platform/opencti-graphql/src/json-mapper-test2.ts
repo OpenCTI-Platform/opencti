@@ -10,6 +10,7 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
   entity_type: 'JsonMapper',
   name: 'MispJsonMapper',
   variables: [
+    // threat level to confidence mapping
     {
       name: 'mapper_confidence',
       path: {
