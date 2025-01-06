@@ -11,7 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import Alert from '@mui/material/Alert';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -39,12 +39,6 @@ const styles = (theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
   tooltip: {
     maxWidth: 600,
   },
@@ -54,9 +48,10 @@ const StixCoreObjectEnrollPlaybook = ({
   id,
   playbooksForEntity,
   classes,
-  t,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t_i18n } = useFormatter();
+
   const askEnroll = (playbookId) => {
     setIsSubmitting(true);
     commitMutation({
@@ -64,14 +59,14 @@ const StixCoreObjectEnrollPlaybook = ({
       variables: { id: playbookId, entityId: id },
       onCompleted: () => {
         setIsSubmitting(false);
-        MESSAGING$.notifySuccess('Playbook successfully completed.');
+        MESSAGING$.notifySuccess(t_i18n('Playbook successfully completed.'));
       },
     });
   };
   return (
     <>
       <Alert severity="info">
-        {t('Listing playbooks with entry points manual or live trigger (events) and matching filters.')}
+        {t_i18n('Listing playbooks with entry points manual or live trigger (events) and matching filters.')}
       </Alert>
       <List>
         {playbooksForEntity.length > 0 ? (
@@ -89,7 +84,7 @@ const StixCoreObjectEnrollPlaybook = ({
                   <ListItemText primary={playbook.name} />
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <ListItemSecondaryAction style={{ right: 0 }}>
-                      <Tooltip title={t('Trigger this playbook now')}>
+                      <Tooltip title={t_i18n('Trigger this playbook now')}>
                         <IconButton
                           disabled={isSubmitting}
                           onClick={() => askEnroll(playbook.id)}
@@ -106,7 +101,7 @@ const StixCoreObjectEnrollPlaybook = ({
           })
         ) : (
           <div className={classes.noResult}>
-            {t('No available playbooks for this entity')}
+            {t_i18n('No available playbooks for this entity')}
           </div>
         )}
       </List>
