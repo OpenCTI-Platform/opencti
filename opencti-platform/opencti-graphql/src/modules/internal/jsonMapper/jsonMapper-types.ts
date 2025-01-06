@@ -12,7 +12,7 @@ interface AttributeColumnConfiguration {
 }
 export interface ComplexPath {
   complex: {
-    variables: { path: string, independent?: boolean, variable: string }[]
+    variables?: { path: string, independent?: boolean, variable: string }[]
     formula: string
   }
   configuration?: AttributeColumnConfiguration
@@ -81,6 +81,10 @@ export interface JsonMapperRepresentationResolved {
 }
 
 export type JsonMapperParsed = Omit<BasicStoreEntityJsonMapper, 'representations'> & {
+  variables: {
+    name: string,
+    path: ComplexPath
+  }[]
   representations: JsonMapperRepresentation[]
   user_chosen_markings?: string[]
 };

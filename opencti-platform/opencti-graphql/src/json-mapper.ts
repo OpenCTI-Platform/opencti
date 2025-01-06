@@ -47,25 +47,23 @@ const format = (value: string | string[], def: AttributeDefinition, attribute: A
 
 const extractValueFromJson = async (
   base: JSON,
-  iter: number,
+  metaData: Record<string, any>,
   record: JSON,
   attribute: AttributePath | ComplexPath,
-  attrDef: AttributeDefinition
+  attrDef?: AttributeDefinition
 ) => {
   if (isComplexPath(attribute)) {
     const { variables, formula } = attribute.complex;
-    const data: any = { externalUri: 'https://4.233.151.63:444' };
-    for (let i = 0; i < variables.length; i += 1) {
-      const variable = variables[i];
+    const data: any = { ...metaData };
+    for (let i = 0; i < (variables ?? []).length; i += 1) {
+      const variable = (variables ?? [])[i];
       const onBase = variable.independent === true;
-      const p = variable.path.replaceAll('{iter}', iter.toString());
-      const val = JSONPath.JSONPath({
-        path: p,
+      data[variable.variable] = JSONPath.JSONPath({
+        path: variable.path,
         json: onBase ? base : record,
         wrap: attrDef?.multiple ?? false,
         flatten: true
       });
-      data[variable.variable] = format(val, attrDef, attribute);
     }
     data.patternFromValue = (k: string, value: string) => {
       try {
@@ -82,27 +80,36 @@ const extractValueFromJson = async (
       }
       return value;
     };
-    return ejs.render(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
+    data.decisionMatrix = (value: any, defaultValue: any, matrix: { value: any, result: any }[]) => {
+      for (let i = 0; i < matrix.length; i += 1) {
+        const v = matrix[i];
+        if (v.value === value) {
+          return v.result;
+        }
+      }
+      return defaultValue;
+    };
+    const val = await ejs.render(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
+    return attrDef ? format(val, attrDef, attribute) : val;
   }
   if (!attribute.path) {
     throw UnsupportedError('extractValueFromJson path must be defined');
   }
   const { path } = attribute;
   const onBase = attribute.independent === true;
-  const p = path.replaceAll('{iter}', iter.toString());
   const val = JSONPath.JSONPath({
-    path: p,
+    path,
     json: onBase ? base : record,
     wrap: attrDef?.multiple ?? false,
     flatten: true
   });
-  return format(val, attrDef, attribute);
+  return attrDef ? format(val, attrDef, attribute) : val;
 };
 
 /* eslint-disable no-param-reassign */
 const handleDirectAttribute = async (
   base: JSON,
-  iter: number,
+  metaData: Record<string, any>,
   attribute: JsonMapperRepresentationAttribute,
   input: Record<string, InputType>,
   record: JSON,
@@ -117,7 +124,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.attr_path) {
-    const computedValue = await extractValueFromJson(base, iter, record, attribute.attr_path, definition);
+    const computedValue = await extractValueFromJson(base, metaData, record, attribute.attr_path, definition);
     if (computedValue !== null && computedValue !== undefined) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -131,7 +138,7 @@ const handleDirectAttribute = async (
 
 const handleBasedOnAttribute = async (
   base: JSON,
-  iter: number,
+  metaData: Record<string, any>,
   attribute: JsonMapperRepresentationAttribute,
   input: Record<string, InputType>,
   record: JSON,
@@ -161,7 +168,7 @@ const handleBasedOnAttribute = async (
     // region fetch entities
     let entities;
     if (attribute.based_on.identifier_path) {
-      const computedValue = await extractValueFromJson(base, iter, record, attribute.based_on.identifier_path, definition);
+      const computedValue = await extractValueFromJson(base, metaData, record, attribute.based_on.identifier_path, definition);
       const compareValues = Array.isArray(computedValue) ? computedValue : [computedValue];
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()
@@ -222,6 +229,13 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
   const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
+    // variables
+    const dataVars: any = { externalUri: 'https://4.233.151.63:444' };
+    for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
+      const variable = (mapper.variables ?? [])[indexVar];
+      dataVars[variable.name] = await extractValueFromJson(baseJson, {}, element, variable.path);
+    }
+    // representations
     for (let i = 0; i < (mapper.representations ?? []).length; i += 1) {
       const representation = (mapper.representations ?? [])[i];
       const { entity_type } = representation.target;
@@ -249,17 +263,17 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
             if (hashesNames.includes(attribute.key)) {
               const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
               if (definitionHash) {
-                await handleDirectAttribute(baseJson, baseInfo, attribute, input, baseDatum, attributeDef, hashesNames);
+                await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
               }
             } else {
-              await handleDirectAttribute(baseJson, baseInfo, attribute, input, baseDatum, attributeDef, []);
+              await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, []);
             }
           } else if (refDef) {
-            await handleBasedOnAttribute(baseJson, baseInfo, attribute, input, baseDatum, refDef, results, refEntities);
+            await handleBasedOnAttribute(baseJson, dataVars, attribute, input, baseDatum, refDef, results, refEntities);
           } else if (attribute.key === 'from') {
-            await handleBasedOnAttribute(baseJson, baseInfo, attribute, input, baseDatum, fromDef, results, refEntities);
+            await handleBasedOnAttribute(baseJson, dataVars, attribute, input, baseDatum, fromDef, results, refEntities);
           } else if (attribute.key === 'to') {
-            await handleBasedOnAttribute(baseJson, baseInfo, attribute, input, baseDatum, toDef, results, refEntities);
+            await handleBasedOnAttribute(baseJson, dataVars, attribute, input, baseDatum, toDef, results, refEntities);
           } else {
             console.log('Unknown schema for attribute:', { attribute });
             throw UnsupportedError('Unknown schema for attribute:', { attribute });
@@ -285,7 +299,7 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
         } else {
           input.standard_id = generateStandardId(entity_type, input);
           if (representation.identifier) {
-            input.__identifier = await extractValueFromJson(baseJson, baseInfo, baseDatum, representation.identifier, idType) as string;
+            input.__identifier = await extractValueFromJson(baseJson, dataVars, baseDatum, representation.identifier, idType) as string;
           } else {
             input.__identifier = uuidv4();
           }
@@ -301,7 +315,7 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
   const bundle = bundleBuilder.build();
-  console.log(objects.length, stixObjects.length, bundle.objects.length);
+  // console.log(objects.length, stixObjects.length, bundle.objects.length);
 
   fs.writeFileSync('./src/temp.json', JSON.stringify(bundle), {});
 };

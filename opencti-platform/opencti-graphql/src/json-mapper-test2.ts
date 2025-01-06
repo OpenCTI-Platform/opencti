@@ -9,6 +9,21 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
   id: 'misp-json-mapper',
   entity_type: 'JsonMapper',
   name: 'MispJsonMapper',
+  variables: [
+    {
+      name: 'mapper_confidence',
+      path: {
+        complex: {
+          variables: [{ variable: 'threat_level', path: '$.Event.threat_level_id' }],
+          formula: `decisionMatrix(threat_level, 90, [
+                  { value: '1', result: 390 },
+                  { value: '2', result: 60 },
+                  { value: '3', result: 30 },
+              ])`
+        }
+      }
+    }
+  ],
   representations: [
     {
       id: 'markingRepresentation',
@@ -380,7 +395,16 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
         },
         {
           key: 'x_opencti_score',
-          default_values: ['90']
+          attr_path: {
+            complex: {
+              variables: [{ variable: 'threat_level', independent: true, path: '$.Event.threat_level_id' }],
+              formula: `decisionMatrix(threat_level, 90, [
+                  { value: '1', result: 290 },
+                  { value: '2', result: 60 },
+                  { value: '3', result: 30 },
+              ])`
+            }
+          }
         },
         {
           key: 'objectMarking',
@@ -1012,7 +1036,11 @@ export const mispJsonMapper: Partial<JsonMapperParsed> = {
         },
         {
           key: 'x_opencti_score',
-          default_values: ['90']
+          attr_path: {
+            complex: {
+              formula: 'mapper_confidence'
+            }
+          }
         },
         {
           key: 'pattern_type',
