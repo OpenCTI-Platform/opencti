@@ -164,6 +164,15 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): TriggerConnection @auth
+    triggers(
+        first: Int
+        after: ID
+        orderBy: TriggersOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        includeAuthorities: Boolean
+        search: String
+    ): TriggerConnection @auth
     triggersKnowledgeCount(filters: FilterGroup, includeAuthorities: Boolean, search: String): Int @auth
     # Alerts
     triggerActivity(id: String!): Trigger @auth(for: [SETTINGS_SECURITYACTIVITY])

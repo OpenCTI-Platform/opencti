@@ -72,6 +72,8 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     },
   },
   attributes: [
+    { name: 'name', label: 'Trigger name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'trigger_id', label: 'Trigger', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_TRIGGER], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'notification_type', label: 'Notification type', type: 'string', format: 'enum', values: TRIGGER_TYPE_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
       name: 'notification_content',

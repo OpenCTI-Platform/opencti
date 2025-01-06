@@ -278,6 +278,15 @@ export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts:
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 
+export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
+  if (!isUserHasCapability(user, SETTINGS_SECURITYACTIVITY)) {
+    // if user doesn't have SETTINGS_SECURITYACTIVITY capabilities, we only return knowledge triggers
+    return triggersKnowledgeFind(context, user, opts);
+  }
+  const queryArgs = { ...opts, includeAuthorities: true };
+  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
+};
+
 // region Notifications
 export const notificationGet = (context: AuthContext, user: AuthUser, narrativeId: string): BasicStoreEntityNotification => {
   return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NOTIFICATION) as unknown as BasicStoreEntityNotification;
