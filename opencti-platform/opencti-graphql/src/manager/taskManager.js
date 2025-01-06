@@ -616,7 +616,7 @@ export const taskHandler = async () => {
     const patch = {
       task_position: processingElements.length > 0 ? R.last(processingElements).next : null,
       task_processed_number: processedNumber,
-      completed: processingElements.length < MAX_TASK_ELEMENTS || processingElements.length === 0,
+      completed: processingElements.length < MAX_TASK_ELEMENTS,
     };
     logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Elements processing done, store task status.', { patch });
     await updateTask(context, task.id, patch);

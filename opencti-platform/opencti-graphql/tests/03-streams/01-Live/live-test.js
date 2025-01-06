@@ -8,7 +8,6 @@ import { convertStoreToStix, convertTypeToStixType } from '../../../src/database
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
-import { writeTestDataToFile } from '../../utils/testOutput';
 
 describe('Live streams tests', () => {
   const getElementsCounting = async () => {
@@ -50,7 +49,6 @@ describe('Live streams tests', () => {
       const stixReport = convertStoreToStix(report);
       const now = utcDate().toISOString();
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream/live?from=0&recover=${now}`);
-      writeTestDataToFile(JSON.stringify(events), 'live-test-all-event.json');
       expect(events.length).toBe(SYNC_LIVE_EVENTS_SIZE);
       await checkResultCounting(events);
       for (let index = 0; index < events.length; index += 1) {

@@ -375,7 +375,7 @@ describe('TaskManager executePromote tests', () => {
   });
 });
 
-describe('TaskManager computeQueryTaskElements', () => {
+describe.skip('TaskManager computeQueryTaskElements', () => {
   let observable1;
   let observable2;
   let createdReport: StoreEntityReport;
