@@ -119,7 +119,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={region}
+                  data={region}
                 />
               }
             />

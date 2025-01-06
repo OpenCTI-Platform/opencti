@@ -128,7 +128,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     'infrastructures',
                     'sightings',
                   ]}
-                  queryRef={threatActorGroup}
+                  data={threatActorGroup}
                 />
               }
             />

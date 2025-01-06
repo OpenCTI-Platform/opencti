@@ -130,7 +130,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                     'infrastructures',
                     'sightings',
                   ]}
-                  queryRef={intrusionSet}
+                  data={intrusionSet}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
               }

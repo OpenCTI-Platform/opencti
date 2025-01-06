@@ -117,7 +117,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={country}
+                  data={country}
                 />
               }
             />

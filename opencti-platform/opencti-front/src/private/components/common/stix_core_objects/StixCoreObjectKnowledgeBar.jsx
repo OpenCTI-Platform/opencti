@@ -74,7 +74,7 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
 const StixCoreObjectKnowledgeBar = ({
   stixCoreObjectLink,
   availableSections,
-  queryRef,
+  data,
   attribution,
 }) => {
   const { t_i18n, n } = useFormatter();
@@ -84,7 +84,7 @@ const StixCoreObjectKnowledgeBar = ({
   const isInAvailableSection = (sections) => availableSections.some((filter) => sections.includes(filter));
   const { relationshipsWithoutRelatedToDistribution, stixCoreObjectsDistribution, relatedEntities } = useFragment(
     stixCoreObjectKnowledgeBarFragment,
-    queryRef,
+    data,
   );
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
@@ -812,7 +812,7 @@ StixCoreObjectKnowledgeBar.propTypes = {
   id: PropTypes.string,
   stixCoreObjectLink: PropTypes.string,
   availableSections: PropTypes.array,
-  queryRef: PropTypes.object,
+  data: PropTypes.object,
   attribution: PropTypes.arrayOf(PropTypes.string),
 };
 

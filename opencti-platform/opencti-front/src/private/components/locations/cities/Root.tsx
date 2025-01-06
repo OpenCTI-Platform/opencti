@@ -115,7 +115,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={city}
+                  data={city}
                 />
               }
             />

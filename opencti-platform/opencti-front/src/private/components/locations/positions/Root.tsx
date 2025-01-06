@@ -122,7 +122,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                     'tools',
                     'observables',
                   ]}
-                  queryRef={position}
+                  data={position}
                 />
               }
             />

@@ -124,7 +124,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                     'infrastructures',
                     'sightings',
                   ]}
-                  queryRef={campaign}
+                  data={campaign}
                   attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
               }

@@ -36,7 +36,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
     <>
       <StixCoreObjectKnowledgeBar
         stixCoreObjectLink={link}
-        queryRef={infrastructureData}
+        data={infrastructureData}
         availableSections={[
           'threats',
           'threat_actors',
