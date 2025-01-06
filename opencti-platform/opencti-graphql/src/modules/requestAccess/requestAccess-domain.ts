@@ -10,6 +10,10 @@ import { logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { findById as findOrganizationById } from '../organization/organization-domain';
+import { elFindByIds, elLoadById } from '../../database/engine';
+import type { BasicStoreBase } from '../../types/store';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
 export interface RequestAccessAction {
   reason?: string
@@ -52,12 +56,22 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     status: ActionStatus.NotDone,
   };
 
+  const organizationId = input.request_access_members[0];
+  const elementId = input.request_access_entities[0];
+
+  const elementData = await elLoadById(context, SYSTEM_USER, elementId) as unknown as BasicStoreBase;
+  const mainRepresentative = extractEntityRepresentativeName(elementData);
+  const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
+  const humanDescription = `Acces requested:\n - by user: ${user.name} \n - for organization: ${organizationData.name} \n - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}`;
+
   const rfiInput: CaseRfiAddInput = {
-    name: `Request Access by ${user.user_email} for entity ${input.request_access_entities.join(', ')} to organization ${JSON.stringify(input.request_access_members)}`,
+    name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
     objects: requestedEntities,
     objectAssignee: allAssigneeIds,
-    description: `${JSON.stringify(action)}`
+    description: humanDescription,
+    information_types: ['Request sharing'],
+    x_opencti_actions: `${JSON.stringify(action)}`
   };
   logApp.info('[OPENCTI-MODULE][Request access] - rfiInput', { rfiInput });
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
@@ -68,9 +82,8 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
   logApp.info(`'[OPENCTI-MODULE][Request access] 1 - Validation for RFI ${id}`);
   const rfi = await findRFIById(context, user, id);
   logApp.info(`'[OPENCTI-MODULE][Request access] 2 -Validation for RFI ${id}`, { rfiFound: rfi });
-  if (rfi.description) {
-    // Get data in description for now, will be somewhere else at the end.
-    const actionData = rfi.description;
+  if (rfi.x_opencti_actions) {
+    const actionData = rfi.x_opencti_actions;
     logApp.info('[OPENCTI-MODULE][Request access] 3 Action data', { actionData });
     const action: RequestAccessAction = JSON.parse(actionData);
     logApp.info(`'[OPENCTI-MODULE][Request access] 4 Action parsed on RFI ${id}`, action);
@@ -80,13 +93,13 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
         await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
 
         // Burning RFI
-        const burnedAction: RequestAccessAction = { ...action, status: ActionStatus.Accepted, executionDate: new Date() };
-        const RFIFieldPatch :EditInput[] = [{ key: 'description', value: [`${JSON.stringify(burnedAction)}`] }];
+        const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Accepted, executionDate: new Date() };
+        const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_actions', value: [`${JSON.stringify(requestAccessAction)}`] }];
         await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
         return {
           action_executed: true,
           action_status: ActionStatus.Accepted,
-          action_date: burnedAction.executionDate
+          action_date: requestAccessAction.executionDate
         };
       }
       logApp.error('Request Access is missing entities or members', { action, RFIId: id });
@@ -113,21 +126,20 @@ export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, 
   logApp.info(`Reject for RFI ${id}`);
 
   const rfi = await findRFIById(context, user, id);
-  // Get data in description for now, will be somewhere else at the end.
-  const actionData = rfi.description;
+  const actionData = rfi.x_opencti_actions;
   const action: RequestAccessAction = JSON.parse(actionData);
   logApp.info(`Action on RFI ${id}`, action);
 
   if (action.status === ActionStatus.NotDone) {
     if (action.entities && action.members) {
       // Burning RFI
-      const burnedAction: RequestAccessAction = { ...action, status: ActionStatus.Refused, executionDate: new Date() };
-      const RFIFieldPatch :EditInput[] = [{ key: 'description', value: [`${JSON.stringify(burnedAction)}`] }];
+      const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Refused, executionDate: new Date() };
+      const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_actions', value: [`${JSON.stringify(requestAccessAction)}`] }];
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
       return {
         action_executed: true,
         action_status: ActionStatus.Refused,
-        action_date: burnedAction.executionDate
+        action_date: requestAccessAction.executionDate
       };
     }
     logApp.error('Request Access is missing entities or members', { action, RFIId: id });
