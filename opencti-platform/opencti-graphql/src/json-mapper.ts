@@ -221,7 +221,7 @@ const addResult = (representation: JsonMapperRepresentation, results: Map<string
   }
 };
 
-const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
+const testJsonMapper = async (meta: Record<string, any>, data: string, mapper: JsonMapperParsed) => {
   const start = new Date().getTime();
   const context = executionContext('JsonMapper');
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
@@ -230,18 +230,19 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
   const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
-    // variables
-    const dataVars: any = { externalUri: 'https://4.233.151.63:444' };
+    // region variables
+    const dataVars: any = { ...meta };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
       dataVars[variable.name] = await extractValueFromJson(baseJson, {}, element, variable.path);
     }
-    // representations
+    // endregion
+    // region representations
     for (let i = 0; i < (mapper.representations ?? []).length; i += 1) {
       const representation = (mapper.representations ?? [])[i];
-      const { entity_type } = representation.target;
+      const { entity_type, path: base_path } = representation.target;
       const hashesNames = getHashesNames(entity_type);
-      const baseData = JSONPath.JSONPath({ path: representation.base_path.path, json: element, flatten: true });
+      const baseData = JSONPath.JSONPath({ path: base_path, json: element, flatten: true });
       const baseDatas = (Array.isArray(baseData) ? baseData : [baseData]);
       for (let baseInfo = 0; baseInfo < baseDatas.length; baseInfo += 1) {
         let input: any = {};
@@ -308,6 +309,7 @@ const testJsonMapper = async (data: string, mapper: JsonMapperParsed) => {
         }
       }
     }
+    // endregion
   }
   // Generate the final bundle
   const objects = Array.from(results.values()).flat();

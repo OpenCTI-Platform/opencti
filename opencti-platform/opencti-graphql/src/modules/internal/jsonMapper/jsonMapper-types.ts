@@ -1,7 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
-import type { CsvMapperOperator } from '../../../generated/graphql';
 
 export const ENTITY_TYPE_JSON_MAPPER = 'JsonMapper';
 
@@ -40,14 +39,9 @@ export interface JsonMapperRepresentationAttribute {
   ref?: AttributeRef
 }
 
-interface JsonMapperRepresentationTargetColumn {
-  column_reference?: string
-  operator?: CsvMapperOperator
-  value?: string
-}
 interface JsonMapperRepresentationTarget {
   entity_type: string
-  column_based?: JsonMapperRepresentationTargetColumn
+  path: string
 }
 export enum JsonMapperRepresentationType {
   Entity = 'entity',
@@ -56,7 +50,6 @@ export enum JsonMapperRepresentationType {
 export interface JsonMapperRepresentation {
   id: string
   type: JsonMapperRepresentationType
-  base_path: AttributePath
   target: JsonMapperRepresentationTarget
   identifier?: AttributePath
   attributes: JsonMapperRepresentationAttribute[]

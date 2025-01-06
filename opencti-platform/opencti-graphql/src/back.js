@@ -58,4 +58,4 @@ if (ENABLED_EVENT_LOOP_MONITORING) {
 // -- Start the platform
 // noinspection JSIgnoredPromiseFromCall
 // platformStart();
-testJsonMapper(json, mispJsonMapper);
+testJsonMapper({ externalUri: 'https://4.233.151.63:444' }, json, mispJsonMapper);
