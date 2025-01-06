@@ -752,6 +752,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             parent_types
             created_at
             updated_at
+            representative {
+              main
+            }
             objectLabel {
               id
               value
@@ -777,143 +780,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           ... on StixDomainObject {
             created
             modified
-          }
-          ... on AttackPattern {
-            name
-            description
-            x_mitre_id
-            killChainPhases {
-              id
-              phase_name
-              x_opencti_order
-            }
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Report {
-            name
-            description
-          }
-          ... on Grouping {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on MalwareAnalysis {
-            result_name
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on Task {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on AdministrativeArea {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on Event {
-            name
-            description
-          }
-          ... on Channel {
-            name
-            description
-          }
-          ... on Narrative {
-            name
-            description
-          }
-          ... on Language {
-            name
-          }
-          ... on DataComponent {
-            name
-          }
-          ... on DataSource {
-            name
-          }
-          ... on Case {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on Indicator {
-            pattern_type
-            pattern_version
-            description
-            valid_from
-            valid_until
-            x_opencti_score
-            x_opencti_main_observable_type
           }
           ... on StixCoreRelationship {
             id
