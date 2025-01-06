@@ -837,7 +837,7 @@ describe('Elasticsearch pagination', () => {
     const internalRelationships = groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].map((m) => m.node);
     const internalRelationshipsByType = R.groupBy((m) => m.entity_type, internalRelationships);
     expect(internalRelationshipsByType['accesses-to'].length).toEqual(28);
-    expect(internalRelationshipsByType['has-capability'].length).toEqual(54);
+    expect(internalRelationshipsByType['has-capability'].length).toEqual(55);
     expect(internalRelationshipsByType['has-role'].length).toEqual(9);
     expect(internalRelationshipsByType['member-of'].length).toEqual(13);
     expect(internalRelationshipsByType['participate-to'].length).toEqual(2);
@@ -876,7 +876,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['object-marking'].length).toEqual(28);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
-    expect(data.edges.length).toEqual(261);
+    expect(data.edges.length).toEqual(262);
 
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
@@ -885,7 +885,7 @@ describe('Elasticsearch pagination', () => {
     data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
     const entityTypeMap = mapCountPerEntityType(data);
-    expect(entityTypeMap.get('has-capability')).toBe(54);
+    expect(entityTypeMap.get('has-capability')).toBe(55);
     expect(entityTypeMap.get('accesses-to')).toBe(28);
     expect(entityTypeMap.get('member-of')).toBe(13);
     expect(entityTypeMap.get('has-role')).toBe(9);
@@ -906,7 +906,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(261);
+    expect(data.length).toEqual(262);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

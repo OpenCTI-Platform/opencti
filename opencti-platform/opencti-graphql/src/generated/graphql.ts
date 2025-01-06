@@ -1268,6 +1268,7 @@ export enum BackgroundTaskActionType {
   Merge = 'MERGE',
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
+  RemoveAuthMembers = 'REMOVE_AUTH_MEMBERS',
   Replace = 'REPLACE',
   Restore = 'RESTORE',
   RuleElementRescan = 'RULE_ELEMENT_RESCAN',

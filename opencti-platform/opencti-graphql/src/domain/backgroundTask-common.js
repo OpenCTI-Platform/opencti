@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT, SETTINGS_SETLABELS, KNOWLEDGE_KNUPDATE } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -31,6 +31,7 @@ export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
+export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;

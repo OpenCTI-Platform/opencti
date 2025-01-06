@@ -131,6 +131,7 @@ export interface DataTableProps {
   disableLineSelection?: boolean
   disableToolBar?: boolean
   disableSelectAll?: boolean
+  removeAuthMembersEnabled?: boolean
   selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
   hideHeaders?: boolean
