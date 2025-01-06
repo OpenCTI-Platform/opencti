@@ -7,6 +7,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
+import nconf from 'nconf';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, isFeatureEnabled, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
@@ -333,8 +334,20 @@ export const getFileName = (fileId) => {
 export const guessMimeType = (fileId) => {
   const fileName = getFileName(fileId);
   const mimeType = mime.lookup(fileName);
-  if (!mimeType && fileName === 'pdf_report') {
-    return 'application/pdf';
+  if (!mimeType) {
+    // Specific cases for Sekoia report with no extension
+    if (fileName === 'pdf_report') {
+      return 'application/pdf';
+    }
+    // Check static resolutions
+    const appMimes = nconf.get('app:files_mimes') || {};
+    const mimeEntries = Object.entries(appMimes);
+    for (let index = 0; index < mimeEntries.length; index += 1) {
+      const [key, val] = mimeEntries[index];
+      if (fileName.endsWith(key)) {
+        return val;
+      }
+    }
   }
   return mimeType || 'application/octet-stream';
 };
