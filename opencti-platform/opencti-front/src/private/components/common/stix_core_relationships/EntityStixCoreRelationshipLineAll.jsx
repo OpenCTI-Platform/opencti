@@ -808,6 +808,10 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             name
             description
           }
+          ... on Grouping {
+            name
+            description
+          }
           ... on Sector {
             name
             description
@@ -828,15 +832,8 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             name
             description
           }
-          ... on Malware {
-            name
-            description
-          }
           ... on MalwareAnalysis {
             result_name
-          }
-          ... on NetworkTraffic {
-            dst_port
           }
           ... on Position {
             name
