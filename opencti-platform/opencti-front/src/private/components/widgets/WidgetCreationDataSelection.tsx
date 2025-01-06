@@ -106,9 +106,9 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
         .fill(0)
         .map((_, i) => {
           let className = classes.step_entity;
-          if (dataSelection[i].perspective === WidgetPerspective.relationships) {
+          if (dataSelection[i].perspective === 'relationships') {
             className = classes.step_relationship;
-          } else if (dataSelection[i].perspective === WidgetPerspective.audits) {
+          } else if (dataSelection[i].perspective === 'audits') {
             className = classes.step_audit;
           }
           return (
@@ -134,7 +134,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
                   value={dataSelection[i].label}
                   onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                 />
-                {perspective === WidgetPerspective.relationships
+                {perspective === 'relationships'
                   && <Tooltip
                     title={t_i18n(
                       'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
@@ -156,14 +156,14 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             </div>
           );
         })}
-      {perspective === WidgetPerspective.entities && (
+      {perspective === 'entities' && (
         <div style={{ display: 'flex' }}>
           <Button
             variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
-            onClick={() => handleAddDataSelection(WidgetPerspective.entities)}
+            onClick={() => handleAddDataSelection('entities')}
             style={{
               width: '100%',
               height: 20,
@@ -174,13 +174,13 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
           </Button>
         </div>
       )}
-      {perspective === WidgetPerspective.relationships && (
+      {perspective === 'relationships' && (
         <div style={{ display: 'flex' }}>
           <Button
             variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             size="small"
-            onClick={() => handleAddDataSelection(WidgetPerspective.relationships)}
+            onClick={() => handleAddDataSelection('relationships')}
             style={{
               width: '100%',
               height: 20,
@@ -195,7 +195,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
-            onClick={() => handleAddDataSelection(WidgetPerspective.entities)}
+            onClick={() => handleAddDataSelection('entities')}
             style={{
               width: '100%',
               height: 20,
@@ -206,7 +206,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
           </Button>
         </div>
       )}
-      {perspective === WidgetPerspective.audits && (
+      {perspective === 'audits' && (
         <div style={{ display: 'flex' }}>
           <Button
             variant="contained"
@@ -216,7 +216,7 @@ const WidgetCreationDataSelection: FunctionComponent<WidgetCreationDataSelection
             }
             color="secondary"
             size="small"
-            onClick={() => handleAddDataSelection(WidgetPerspective.audits)}
+            onClick={() => handleAddDataSelection('audits')}
             style={{
               width: '100%',
               height: 20,

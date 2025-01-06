@@ -32,9 +32,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   let availableEntityTypes;
   let searchContext;
-  if (perspective === WidgetPerspective.relationships) {
+  if (perspective === 'relationships') {
     searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
-  } else if (perspective === WidgetPerspective.audits) {
+  } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
   } else { // perspective = 'entities'
@@ -45,7 +45,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     searchContext = { entityTypes: ['Stix-Core-Object'] };
   }
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
-  if (perspective !== WidgetPerspective.relationships) {
+  if (perspective !== 'relationships') {
     availableFilterKeys = availableFilterKeys.concat('entity_type');
   } else {
     availableFilterKeys = availableFilterKeys.filter((key) => key !== 'entity_type'); // for relationships perspective widget, use the relationship_type filter
@@ -61,7 +61,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         searchContext={type === 'bookmark' ? undefined : searchContext}
       />
     </Box>
-    { perspective === WidgetPerspective.relationships && (
+    { perspective === 'relationships' && (
     <>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Filters
@@ -133,7 +133,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
       { isFilterGroupNotEmpty(filters) && (
         <>
-          { perspective === WidgetPerspective.relationships
+          { perspective === 'relationships'
             && <div style={{ marginTop: 8 }}>{t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
           }
           <FilterIconButton

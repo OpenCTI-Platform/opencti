@@ -164,7 +164,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     style={{ marginTop: 20 }}
                   />
                 )}
-                {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === WidgetPerspective.entities && (
+                {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
                   <div
                     style={{
                       display: 'flex',
@@ -247,7 +247,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective !== WidgetPerspective.audits && (
+                {dataSelection[i].perspective !== 'audits' && (
                   <div
                     style={{
                       display: 'flex',
@@ -304,7 +304,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective === WidgetPerspective.relationships
+                {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
                     <TextField
                       label={t_i18n('Zoom')}
@@ -320,7 +320,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
-                {dataSelection[i].perspective === WidgetPerspective.relationships
+                {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
                     <TextField
                       label={t_i18n('Center latitude')}
@@ -336,7 +336,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
-                {dataSelection[i].perspective === WidgetPerspective.relationships
+                {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
                     <TextField
                       label={t_i18n('Center longitude')}
@@ -356,7 +356,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                   <div
                     style={{ display: 'flex', width: '100%', marginTop: 20 }}
                   >
-                    {dataSelection[i].perspective === WidgetPerspective.relationships && (
+                    {dataSelection[i].perspective === 'relationships' && (
                       <FormControl
                         fullWidth={true}
                         style={{
@@ -412,7 +412,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </Select>
                       </FormControl>
                     )}
-                    {dataSelection[i].perspective === WidgetPerspective.entities
+                    {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length > 0
                       && (
                         <FormControl
@@ -490,7 +490,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           />
                         </FormControl>
                       )}
-                    {dataSelection[i].perspective === WidgetPerspective.entities
+                    {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
                         <FormControl
                           fullWidth={true}
@@ -530,7 +530,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           </Select>
                         </FormControl>
                     )}
-                    {dataSelection[i].perspective === WidgetPerspective.audits && (
+                    {dataSelection[i].perspective === 'audits' && (
                       <FormControl
                         fullWidth={true}
                         style={{
@@ -572,7 +572,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </Select>
                       </FormControl>
                     )}
-                    {dataSelection[i].perspective === WidgetPerspective.relationships && (
+                    {dataSelection[i].perspective === 'relationships' && (
                       <FormControlLabel
                         control={
                           <Switch
@@ -583,7 +583,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         label={t_i18n('Display the source')}
                       />
                     )}
-                    {dataSelection[i].perspective === WidgetPerspective.relationships && (
+                    {dataSelection[i].perspective === 'relationships' && (
                       <Tooltip
                         title={t_i18n(
                           'Enable if the displayed data is the source of the relationships.',

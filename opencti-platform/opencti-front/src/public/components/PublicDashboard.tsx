@@ -96,9 +96,9 @@ const PublicDashboardComponent = ({
             }}
           >
             <ErrorBoundary>
-              {widget.perspective === WidgetPerspective.entities && entityWidget(widget)}
-              {widget.perspective === WidgetPerspective.relationships && relationshipWidget(widget)}
-              {widget.perspective === WidgetPerspective.audits && auditWidget(widget)}
+              {widget.perspective === 'entities' && entityWidget(widget)}
+              {widget.perspective === 'relationships' && relationshipWidget(widget)}
+              {widget.perspective === 'audits' && auditWidget(widget)}
               {widget.perspective === null && rawWidget(widget)}
             </ErrorBoundary>
           </Paper>

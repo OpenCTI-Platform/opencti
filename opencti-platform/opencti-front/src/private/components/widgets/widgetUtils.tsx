@@ -17,11 +17,7 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-export enum WidgetPerspective {
-  entities,
-  relationships,
-  audits,
-}
+export type WidgetPerspective = 'entities' | 'relationships' | 'audits';
 
 export const widgetVisualizationTypes = [
   {

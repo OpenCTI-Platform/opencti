@@ -56,7 +56,7 @@ const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProp
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectPerspective(WidgetPerspective.entities)}
+              onClick={() => handleSelectPerspective('entities')}
               style={{ height: '100%' }}
               aria-label={t_i18n('Entities')}
             >
@@ -88,7 +88,7 @@ const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProp
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectPerspective(WidgetPerspective.relationships)}
+              onClick={() => handleSelectPerspective('relationships')}
               style={{ height: '100%' }}
               aria-label={t_i18n('Knowledge graph')}
             >
@@ -122,7 +122,7 @@ const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProp
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectPerspective(WidgetPerspective.audits)}
+              onClick={() => handleSelectPerspective('audits')}
               style={{ height: '100%' }}
               aria-label={t_i18n('Activity & history')}
             >
