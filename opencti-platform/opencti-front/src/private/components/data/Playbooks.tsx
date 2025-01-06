@@ -33,6 +33,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemBoolean from '../../../components/ItemBoolean';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
@@ -138,6 +139,15 @@ const Playbooks: FunctionComponent = () => {
     playbooksLinesQuery,
     queryPaginationOptions,
   );
+
+  const preloadedPaginationProps = {
+    linesQuery: playbooksLinesQuery,
+    linesFragment: playbooksLinesFragment,
+    queryRef,
+    nodePath: ['playbooks', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<PlaybooksLinesPaginationQuery>;
+
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       label: 'Name',
@@ -185,22 +195,15 @@ const Playbooks: FunctionComponent = () => {
           {queryRef && (
             <DataTable
               dataColumns={dataColumns}
-              resolvePath={(data: PlaybooksLines_data$data) => {
-                return data.playbooks?.edges?.map((m) => m?.node);
-              }}
+              resolvePath={(data: PlaybooksLines_data$data) => data.playbooks?.edges?.map((m) => m?.node)}
               storageKey={LOCAL_STORAGE_KEY_PLAYBOOKS}
               initialValues={initialValues}
               toolbarFilters={contextFilters}
-              preloadedPaginationProps={{
-                linesQuery: playbooksLinesQuery,
-                linesFragment: playbooksLinesFragment,
-                queryRef,
-                nodePath: ['playbooks', 'pageInfo', 'globalCount'],
-                setNumberOfElements: helpers.handleSetNumberOfElements,
-              }}
+              preloadedPaginationProps={preloadedPaginationProps}
               lineFragment={playbookFragment}
               entityTypes={['Playbook']}
               searchContextFinal={{ entityTypes: ['Playbook'] }}
+              taskScope='PLAYBOOK'
               actions={(row) => (
                 <PlaybookPopover
                   paginationOptions={queryPaginationOptions}
@@ -213,9 +216,6 @@ const Playbooks: FunctionComponent = () => {
                   <PlaybookCreation paginationOptions={queryPaginationOptions}/>
                 </Security>
               }
-              disableToolBar
-              disableSelectAll
-              canToggleLine={false}
             />
           )}
         </>

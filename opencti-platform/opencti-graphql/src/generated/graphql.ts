@@ -1325,6 +1325,7 @@ export enum BackgroundTaskScope {
   Import = 'IMPORT',
   Investigation = 'INVESTIGATION',
   Knowledge = 'KNOWLEDGE',
+  Playbook = 'PLAYBOOK',
   PublicDashboard = 'PUBLIC_DASHBOARD',
   Settings = 'SETTINGS',
   User = 'USER'
