@@ -8195,7 +8195,6 @@ export enum FilterOperator {
 
 export type FintelTemplate = BasicObject & InternalObject & {
   __typename?: 'FintelTemplate';
-  content: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   fintel_template_widgets: Array<FintelTemplateWidget>;
@@ -8206,16 +8205,17 @@ export type FintelTemplate = BasicObject & InternalObject & {
   settings_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   start_date?: Maybe<Scalars['DateTime']['output']>;
+  template_content: Scalars['String']['output'];
 };
 
 export type FintelTemplateAddInput = {
-  content?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   settings_types: Array<Scalars['String']['input']>;
   start_date?: InputMaybe<Scalars['DateTime']['input']>;
+  template_content?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FintelTemplateConnection = {
@@ -35150,7 +35150,6 @@ export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type FintelTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplate'] = ResolversParentTypes['FintelTemplate']> = ResolversObject<{
-  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
@@ -35161,6 +35160,7 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   settings_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  template_content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

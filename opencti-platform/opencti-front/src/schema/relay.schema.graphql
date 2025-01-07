@@ -12398,7 +12398,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   settings_types: [String!]!
   description: String
   instance_filters: String
-  content: String!
+  template_content: String!
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
 }
@@ -12413,7 +12413,7 @@ input FintelTemplateAddInput {
   description: String
   settings_types: [String!]!
   instance_filters: String
-  content: String
+  template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
 }

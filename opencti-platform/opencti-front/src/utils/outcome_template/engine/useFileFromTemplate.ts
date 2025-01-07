@@ -38,7 +38,7 @@ const useFileFromTemplate = () => {
       throw Error('No fintel template found');
     }
 
-    let { content } = fintelTemplate;
+    let { template_content } = fintelTemplate;
     const { fintel_template_widgets } = fintelTemplate;
 
     for (const templateWidget of fintel_template_widgets) {
@@ -51,7 +51,7 @@ const useFileFromTemplate = () => {
           widget.dataSelection[0],
         );
         for (const outcome of attributesOutcomes) {
-          content = content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
+          template_content = template_content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
         }
       // other widgets
       } else {
@@ -80,11 +80,11 @@ const useFileFromTemplate = () => {
           outcome = `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`;
           MESSAGING$.notifyError('One of the widgets has not been resolved.');
         }
-        content = content.replace(`$${templateWidget.variable_name}`, outcome);
+        template_content = template_content.replace(`$${templateWidget.variable_name}`, outcome);
       }
     }
 
-    return content;
+    return template_content;
   };
 
   return { buildFileFromTemplate };

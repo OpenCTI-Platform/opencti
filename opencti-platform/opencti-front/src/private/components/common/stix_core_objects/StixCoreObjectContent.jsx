@@ -815,7 +815,7 @@ const StixCoreObjectContent = createRefetchContainer(
           fintelTemplates {
             id
             name
-            content
+            template_content
           }
         }
         externalReferences {

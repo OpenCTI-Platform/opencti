@@ -39,7 +39,7 @@ const READ_QUERY = gql`
       standard_id
       name
       description
-      content
+      template_content
       instance_filters
       settings_types
       start_date

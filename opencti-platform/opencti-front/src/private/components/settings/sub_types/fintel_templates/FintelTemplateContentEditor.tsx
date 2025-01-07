@@ -7,7 +7,7 @@ import RichTextField from '../../../../../components/fields/RichTextField';
 
 const editorFragment = graphql`
   fragment FintelTemplateContentEditor_template on FintelTemplate {
-    content
+    template_content
   }
 `;
 
@@ -23,19 +23,19 @@ const FintelTemplateContentEditor = ({
   const template = useFragment(editorFragment, data);
 
   const validation = Yup.object().shape({
-    content: Yup.string().trim(),
+    template_content: Yup.string().trim(),
   });
 
   return (
-    <Formik<{ content: string }>
+    <Formik<{ template_content: string }>
       validationSchema={validation}
-      initialValues={{ content: template.content }}
+      initialValues={{ template_content: template.template_content }}
       onSubmit={() => {}}
     >
       {() => (
         <Field
           component={RichTextField}
-          name="content"
+          name="template_content"
           style={{ height: 'calc(100vh - 280px)' }}
           fullWidth
           hasFullScreen={false}

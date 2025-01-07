@@ -44,7 +44,7 @@ export const addFintelTemplate = async (
   // add id to fintel template widgets
   const finalInput: FintelTemplateAddInput = {
     ...input,
-    content: input.content ?? '',
+    template_content: input.template_content ?? '',
     fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
       ...templateWidget,
       widget: { ...templateWidget.widget, id: uuidv4() },
@@ -140,7 +140,7 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
   // add id to fintel template widgets
   const finalInputs: FintelTemplateAddInput[] = builtInTemplatesInputs.map((input) => ({
     ...input,
-    content: input.content ?? '',
+    template_content: input.template_content ?? '',
     fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
       ...templateWidget,
       widget: { ...templateWidget.widget, id: uuidv4() },

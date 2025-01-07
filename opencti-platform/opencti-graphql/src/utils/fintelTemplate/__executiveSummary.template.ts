@@ -158,7 +158,7 @@ export const generateFintelTemplateExecutiveSummary = (containerType: string): F
   const multiAttributesWidget = getMultiAttributesWidget(containerType);
   return {
     name: 'Executive Summary',
-    content: executiveSummaryContent(containerType),
+    template_content: executiveSummaryContent(containerType),
     settings_types: [containerType],
     start_date: '1970-01-01T00:00:00Z',
     fintel_template_widgets: [

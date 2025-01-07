@@ -5,7 +5,7 @@ const engineFintelTemplateQuery = graphql`
     fintelTemplate(id: $id) {
         id
         name
-        content
+        template_content
         instance_filters
         fintel_template_widgets {
           variable_name

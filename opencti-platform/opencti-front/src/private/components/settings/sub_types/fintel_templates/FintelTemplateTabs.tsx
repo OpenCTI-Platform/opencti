@@ -13,7 +13,7 @@ import Security from '../../../../../utils/Security';
 const tabsFragment = graphql`
   fragment FintelTemplateTabs_template on FintelTemplate {
     id
-    content
+    template_content
   }
 `;
 
@@ -33,13 +33,13 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
   const { t_i18n } = useFormatter();
   const [index, setIndex] = useState(0);
 
-  const { content, id } = useFragment(tabsFragment, data);
-  const [editorValue, setEditorValue] = useState(content);
+  const { template_content, id } = useFragment(tabsFragment, data);
+  const [editorValue, setEditorValue] = useState(template_content);
 
   const [commitEditMutation, editOnGoing] = useFintelTemplateEdit();
 
   const onSubmit = () => {
-    const input = { key: 'content', value: [editorValue] };
+    const input = { key: 'template_content', value: [editorValue] };
     commitEditMutation({
       variables: { id, input: [input] },
     });
@@ -69,7 +69,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         </Security>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-          {editorValue !== content && (
+          {editorValue !== template_content && (
             <span style={{ color: theme.palette.warn.main }}>
               {t_i18n('You have unsaved changes')}
             </span>
@@ -80,7 +80,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
                 variant="outlined"
                 className="icon-outlined"
                 onClick={onSubmit}
-                disabled={editorValue === content || editOnGoing}
+                disabled={editorValue === template_content || editOnGoing}
               >
                 <Save fontSize="small" />
               </Button>

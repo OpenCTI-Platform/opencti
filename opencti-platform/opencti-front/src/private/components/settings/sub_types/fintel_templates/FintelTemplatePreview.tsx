@@ -10,11 +10,11 @@ import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
 
 interface FintelTemplatePreviewProps {
-  content: string
+  template_content: string
   isTabActive: boolean
 }
 
-const FintelTemplatePreview = ({ content, isTabActive }: FintelTemplatePreviewProps) => {
+const FintelTemplatePreview = ({ template_content, isTabActive }: FintelTemplatePreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
@@ -35,7 +35,7 @@ const FintelTemplatePreview = ({ content, isTabActive }: FintelTemplatePreviewPr
     fileMarkings: string[],
   ) => {
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, {
-      content,
+      template_content,
       name: 'Preview',
       id: 'preview',
       fintel_template_widgets: [],
@@ -57,7 +57,7 @@ const FintelTemplatePreview = ({ content, isTabActive }: FintelTemplatePreviewPr
       (contentMaxMarkings ?? []).map((m) => m.label),
       (fileMarkings ?? []).map((m) => m.label),
     );
-  }, [formValues, content, isTabActive]);
+  }, [formValues, template_content, isTabActive]);
 
   return (
     <div style={{
