@@ -15,11 +15,11 @@ export default class DashboardWidgetsPageModel {
   constructor(private page: Page) {}
 
   getCreateWidgetButton() {
-    return this.page.getByRole('button', {name: "Create Widget"});
+    return this.page.getByRole('button', { name: 'Create Widget' });
   }
-  
+
   async openWidgetModal() {
-    return this.page.getByRole('button', {name: "Create Widget"}).click();
+    return this.page.getByRole('button', { name: 'Create Widget' }).click();
   }
 
   selectWidget(widgetName: string) {

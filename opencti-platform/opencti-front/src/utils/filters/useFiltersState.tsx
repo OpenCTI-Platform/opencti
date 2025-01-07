@@ -16,9 +16,9 @@ interface useFiltersStateProps {
   filters: FilterGroup,
   latestAddFilterId?: string
 }
-const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
+const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
   const [filtersState, setFiltersState] = useState<useFiltersStateProps>({
-    filters: initFilters,
+    filters: initFilters ?? emptyFilterGroup,
     latestAddFilterId: undefined,
   });
   const helpers: handleFilterHelpers = {
