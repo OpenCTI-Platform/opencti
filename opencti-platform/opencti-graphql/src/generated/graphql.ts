@@ -74,7 +74,7 @@ export type AckDetails = {
 export enum ActionStatus {
   Accepted = 'ACCEPTED',
   MissingParameters = 'MISSING_PARAMETERS',
-  NotDone = 'NOT_DONE',
+  New = 'NEW',
   NotFound = 'NOT_FOUND',
   Refused = 'REFUSED'
 }
@@ -13861,6 +13861,7 @@ export type Mutation = {
   reportEdit?: Maybe<ReportEditMutations>;
   requestAccessAdd?: Maybe<Scalars['ID']['output']>;
   requestAccessReject?: Maybe<RequestAccessAction>;
+  requestAccessReopen?: Maybe<RequestAccessAction>;
   requestAccessValidate?: Maybe<RequestAccessAction>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
   resetStateConnector?: Maybe<Connector>;
@@ -15382,6 +15383,11 @@ export type MutationRequestAccessAddArgs = {
 
 
 export type MutationRequestAccessRejectArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRequestAccessReopenArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -37706,6 +37712,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
   requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
   requestAccessReject?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessRejectArgs, 'id'>>;
+  requestAccessReopen?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessReopenArgs, 'id'>>;
   requestAccessValidate?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;

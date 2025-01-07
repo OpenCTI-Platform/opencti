@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addRequestAccess, rejectRequestAccess, validateRequestAccess } from './requestAccess-domain';
+import { addRequestAccess, rejectRequestAccess, reopenRequestAccess, validateRequestAccess } from './requestAccess-domain';
 
 const requestAccessResolvers: Resolvers = {
   Mutation: {
@@ -11,6 +11,9 @@ const requestAccessResolvers: Resolvers = {
     },
     requestAccessReject: (_, { id }, context) => {
       return rejectRequestAccess(context, context.user, id);
+    },
+    requestAccessReopen: (_, { id }, context) => {
+      return reopenRequestAccess(context, context.user, id);
     }
   }
 };
