@@ -291,6 +291,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
                 showCreatorLine
                 canDeactivate
                 disabled={isSubmitting}
+                addMeUserWithAdminRights
               />
             </Alert>
           </Security>

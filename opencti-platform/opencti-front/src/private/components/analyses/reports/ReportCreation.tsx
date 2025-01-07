@@ -287,6 +287,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                 showCreatorLine
                 canDeactivate
                 disabled={isSubmitting}
+                addMeUserWithAdminRights
+                owner={values.createdBy}
               />
             </Alert>
           </Security>

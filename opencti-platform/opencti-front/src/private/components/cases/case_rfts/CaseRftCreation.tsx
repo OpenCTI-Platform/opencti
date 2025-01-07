@@ -286,6 +286,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
                 showCreatorLine
                 canDeactivate
                 disabled={isSubmitting}
+                addMeUserWithAdminRights
               />
             </Alert>
           </Security>
