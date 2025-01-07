@@ -143,13 +143,14 @@ describe('File storage file listing', () => {
 
 describe('File storage utils', () => {
   it('should guess mimetype correctly', async () => {
+    expect(guessMimeType('pdf_report')).toBe('application/pdf');
+    expect(guessMimeType('path/1/file.yar')).toBe('text/yara+plain');
     expect(guessMimeType('path/to/iamajsonfile.json')).toBe('application/json');
     expect(guessMimeType('path/to/iamapdf.pdf')).toBe('application/pdf');
     expect(guessMimeType('path/to/i Have space and 💖.txt')).toBe('text/plain');
     expect(guessMimeType('unknown')).toBe('application/octet-stream');
     expect(guessMimeType('export/Malware/b4bebef0-7f1b-4212-b09d-f376adb3181a/(ExportFileStix)_Malware-Paradise Ransomware_all.json')).toBe('application/json');
   });
-
   it('should find filename correctly', async () => {
     expect(getFileName('path/to/iamajsonfile.json')).toBe('iamajsonfile.json');
     expect(getFileName('path/to/iamapdf.pdf')).toBe('iamapdf.pdf');

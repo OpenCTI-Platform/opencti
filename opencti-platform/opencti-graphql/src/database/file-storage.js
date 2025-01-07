@@ -331,16 +331,18 @@ export const getFileName = (fileId) => {
   return `${parsedFilename.name}${parsedFilename.ext}`;
 };
 
+/**
+ * Get file mime type from filename
+ * @param fileId the complete path with filename
+ * @returns {string}
+ */
 export const guessMimeType = (fileId) => {
   const fileName = getFileName(fileId);
   const mimeType = mime.lookup(fileName);
+  // If type is not found
   if (!mimeType) {
-    // Specific cases for Sekoia report with no extension
-    if (fileName === 'pdf_report') {
-      return 'application/pdf';
-    }
-    // Check static resolutions
-    const appMimes = nconf.get('app:files_mimes') || {};
+    // Try static resolutions
+    const appMimes = nconf.get('app:filename_to_mimes') || {};
     const mimeEntries = Object.entries(appMimes);
     for (let index = 0; index < mimeEntries.length; index += 1) {
       const [key, val] = mimeEntries[index];
@@ -348,8 +350,10 @@ export const guessMimeType = (fileId) => {
         return val;
       }
     }
+    // If nothing static found, return basic octet-stream
+    return 'application/octet-stream';
   }
-  return mimeType || 'application/octet-stream';
+  return mimeType;
 };
 
 export const isFileObjectExcluded = (id) => {
