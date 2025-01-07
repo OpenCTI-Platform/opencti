@@ -142,7 +142,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRequestForInformation.object).toEqual([malwareId]);
 
     const action: RequestAccessAction = JSON.parse(caseRequestForInformation.description);
-    expect(action.status).toBe(ActionStatus.NotDone);
+    expect(action.status).toBe(ActionStatus.New);
   });
 
   it('should accept the created Case RFI first time be ok', async () => {
