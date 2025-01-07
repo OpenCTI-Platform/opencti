@@ -14,6 +14,8 @@ import { findById as findOrganizationById } from '../organization/organization-d
 import { elLoadById } from '../../database/engine';
 import type { BasicStoreBase } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
+import { createInternalObject } from '../../domain/internalObject';
+import { ENTITY_TYPE_REQUEST_ACCESS_FLOW, type StoreEntityRequestAccessFlow } from './requestAccessFlow-types';
 
 export interface RequestAccessAction {
   reason?: string
@@ -39,6 +41,53 @@ export const findUsersThatCanShareWithOrganizations = async (context: AuthContex
   return allUserInOrgWithOrgManagementCapability;
 };
 
+export const generateBasicFlow = async (context: AuthContext, user: AuthUser) => {
+  const toNew = {
+    from: ActionStatus.New,
+    to: ActionStatus.New
+  };
+  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, toNew, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
+
+  const fromNewToAccepted = {
+    from: ActionStatus.New,
+    to: ActionStatus.Accepted
+  };
+  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, fromNewToAccepted, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
+
+  const fromNewToRefused = {
+    from: ActionStatus.New,
+    to: ActionStatus.Refused
+  };
+  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, fromNewToRefused, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
+
+  const fromRefusedToANew = {
+    from: ActionStatus.Refused,
+    to: ActionStatus.New
+  };
+  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, fromRefusedToANew, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
+};
+
+export const getRFIStatusOnApprove = () => {
+  // "key": "x_opencti_workflow_id",
+  //     "value": "cc6ae8d3-401c-4e25-b2c6-276680233930"
+  // FIXME works only on my computer :D
+  return 'a83e3917-2d09-49fa-83cc-608f37466118';
+};
+
+export const getRFIStatusOnReject = () => {
+  // "key": "x_opencti_workflow_id",
+  //     "value": "cc6ae8d3-401c-4e25-b2c6-276680233930"
+  // FIXME works only on my computer :D
+  return '217319ad-60b3-44b3-abf6-34e1c055d686';
+};
+
+export const getRFIStatusOnReopen = () => {
+  // "key": "x_opencti_workflow_id",
+  //     "value": "cc6ae8d3-401c-4e25-b2c6-276680233930"
+  // FIXME works only on my computer :D
+  return '6bf11b7c-cb6c-4751-90b7-b6e09ebf98d5';
+};
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   const allAssignees = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members);
@@ -53,7 +102,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     members: input.request_access_members,
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
-    status: ActionStatus.NotDone,
+    status: ActionStatus.New,
   };
 
   const organizationId = input.request_access_members[0];
@@ -62,7 +111,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const elementData = await elLoadById(context, SYSTEM_USER, elementId) as unknown as BasicStoreBase;
   const mainRepresentative = extractEntityRepresentativeName(elementData);
   const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
-  const humanDescription = `Acces requested:\n - by user: ${user.name} \n - for organization: ${organizationData.name} \n - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}`;
+  const humanDescription = `Access requested:\n - by user: ${user.name} \n - for organization: ${organizationData.name} \n - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}`;
 
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
@@ -88,13 +137,16 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
     const action: RequestAccessAction = JSON.parse(actionData);
     logApp.info(`'[OPENCTI-MODULE][Request access] 4 Action parsed on RFI ${id}`, action);
 
-    if (action.status === ActionStatus.NotDone) {
+    if (action.status === ActionStatus.New) {
       if (action.entities && action.members) {
         await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
 
-        // Burning RFI
+        // Moving RFI to approved
         const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Accepted, executionDate: new Date() };
-        const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] }];
+        const RFIFieldPatch :EditInput[] = [
+          { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
+          { key: 'x_opencti_workflow_id', value: [getRFIStatusOnApprove()] }
+        ];
         await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
         return {
           action_executed: true,
@@ -130,11 +182,14 @@ export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, 
   const action: RequestAccessAction = JSON.parse(actionData);
   logApp.info(`Action on RFI ${id}`, action);
 
-  if (action.status === ActionStatus.NotDone) {
+  if (action.status === ActionStatus.New) {
     if (action.entities && action.members) {
       // Burning RFI
       const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Refused, executionDate: new Date() };
-      const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] }];
+      const RFIFieldPatch :EditInput[] = [
+        { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
+        { key: 'x_opencti_workflow_id', value: [getRFIStatusOnReject()] }
+      ];
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
       return {
         action_executed: true,
@@ -144,11 +199,47 @@ export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, 
     }
     logApp.error('Request Access is missing entities or members', { action, RFIId: id });
     return {
-      action_executed: true,
+      action_executed: false,
       action_status: ActionStatus.MissingParameters,
     };
   }
   logApp.info('Request Access already accepted or refused', { action, RFIId: id });
+  return {
+    action_executed: false,
+    action_status: action.status,
+    action_date: action.executionDate
+  };
+};
+
+export const reopenRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
+  logApp.info(`Reopen for RFI ${id}`);
+
+  const rfi = await findRFIById(context, user, id);
+  const actionData = rfi.x_opencti_request_access;
+  const action: RequestAccessAction = JSON.parse(actionData);
+  logApp.info(`Action on RFI ${id}`, action);
+
+  if (action.status === ActionStatus.Refused) {
+    if (action.entities && action.members) {
+      // Reopening RFI
+      const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.New, executionDate: new Date() };
+      const RFIFieldPatch :EditInput[] = [
+        { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
+        { key: 'x_opencti_workflow_id', value: [getRFIStatusOnReopen()] }
+      ];
+      await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+      return {
+        action_executed: true,
+        action_status: ActionStatus.New,
+        action_date: requestAccessAction.executionDate
+      };
+    }
+    logApp.error('Request Access is missing entities or members', { action, RFIId: id });
+    return {
+      action_executed: false,
+      action_status: ActionStatus.MissingParameters,
+    };
+  }
   return {
     action_executed: false,
     action_status: action.status,
