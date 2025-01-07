@@ -6,13 +6,14 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
 import MarkdownField from './fields/MarkdownField';
 import { useFormatter } from './i18n';
 import useApiMutation from '../utils/hooks/useApiMutation';
 import Transition from './Transition';
 import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
+import { handleErrorInForm } from '../relay/environment';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -31,15 +32,17 @@ interface OrganizationForm {
   label: string
 }
 
-interface RequestAccessType {
+interface RequestAccessFormAddInput {
   organizations: OrganizationForm[];
+  request_access_entities: string[];
   request_access_reason: string;
+  request_access_type: 'organization_sharing';
 }
 
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
 
-  const initialValues = {
+  const initialValues: RequestAccessFormAddInput = {
     request_access_reason: '',
     organizations: [],
     request_access_entities: [],
@@ -48,7 +51,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
-  const onSubmit = (values: RequestAccessType, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
+  const onSubmit: FormikConfig<RequestAccessFormAddInput>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
     const organizations = values.organizations.map((org: OrganizationForm) => org.value);
 
     const input: RequestAccessDialogMutation$variables['input'] = {
@@ -60,9 +63,13 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
 
     commit({
       variables: { input },
-      onError: () => setSubmitting(false),
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
       onCompleted: () => {
         setSubmitting(false);
+        resetForm();
         onClose();
       },
     });
