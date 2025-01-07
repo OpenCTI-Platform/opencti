@@ -12,7 +12,7 @@ import RequestAccessDialog from './RequestAccessDialog';
 class Message extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, error: false, text: '', type: '', fullError: null, dialogOpen: false };
+    this.state = { open: false, error: false, text: '', fullError: null, dialogOpen: false };
   }
 
   componentDidMount() {

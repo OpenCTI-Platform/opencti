@@ -86,9 +86,6 @@ class ErrorBoundaryComponent extends React.Component {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
       }
-      if (includes('ACCESS_REQUIRED', types)) {
-        return <DedicatedWarning title={'Request Access !'} description={`${JSON.stringify(this.state.error)}`} />;
-      }
       const DisplayComponent = this.props.display || SimpleError;
       return <DisplayComponent />;
     }
