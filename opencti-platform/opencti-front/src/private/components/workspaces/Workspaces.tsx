@@ -143,74 +143,33 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     workspacePaginationOptions,
   );
 
-  const renderDataTable = () => {
-    const dataColumns: DataTableProps['dataColumns'] = {
-      name: {
-        id: 'name',
-        percentWidth: 33,
-        render: ({ name }, h) => textInTooltip(name, h),
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      id: 'name',
+      percentWidth: 33,
+      render: ({ name }, h) => textInTooltip(name, h),
+    },
+    tags: {
+      id: 'tags',
+    },
+    creator: {
+      id: 'creator',
+      isSortable: true,
+      render: ({ owner }, h) => textInTooltip(owner.name, h),
+    },
+    created_at: {
+      id: 'created_at',
+      percentWidth: 16,
+    },
+    updated_at: {
+      id: 'updated_at',
+      percentWidth: type === 'dashboard' ? 16 : 24,
+    },
+    ...(type === 'dashboard' ? {
+      isShared: {
+        id: 'isShared',
       },
-      tags: {
-        id: 'tags',
-      },
-      creator: {
-        id: 'creator',
-        isSortable: true,
-        render: ({ owner }, h) => textInTooltip(owner.name, h),
-      },
-      created_at: {
-        id: 'created_at',
-        percentWidth: 16,
-      },
-      updated_at: {
-        id: 'updated_at',
-        percentWidth: type === 'dashboard' ? 16 : 24,
-      },
-      ...(type === 'dashboard' ? {
-        isShared: {
-          id: 'isShared',
-        },
-      } : {}),
-    };
-
-    return queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: WorkspacesLines_data$data) => {
-          return data.workspaces?.edges?.map((n) => n?.node);
-        }}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialStorageValues}
-        toolbarFilters={filters}
-        preloadedPaginationProps={{
-          linesQuery: workspacesLinesQuery,
-          linesFragment: workspacesLineFragment,
-          queryRef,
-          nodePath: ['workspaces', 'pageInfo', 'globalCount'],
-          setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-        }}
-        lineFragment={workspaceLineFragment}
-        entityTypes={['Workspace']}
-        searchContextFinal={{ entityTypes: ['Workspace'] }}
-        createButton={isFeatureEnable('FAB_REPLACEMENT') && (
-          <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
-            <WorkspaceCreation
-              paginationOptions={workspacePaginationOptions}
-              type={type}
-            />
-          </Security>
-        )}
-        taskScope={type === 'dashboard' ? 'DASHBOARD' : 'INVESTIGATION'}
-        actions={(row) => (
-          <Security needs={row.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
-            <WorkspacePopover
-              workspace={row}
-              paginationOptions={workspacePaginationOptions}
-            />
-          </Security>
-        )}
-      />
-    );
+    } : {}),
   };
 
   return (
@@ -222,7 +181,44 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
         }
       />
 
-      {renderDataTable()}
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: WorkspacesLines_data$data) => {
+            return data.workspaces?.edges?.map((n) => n?.node);
+          }}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialStorageValues}
+          toolbarFilters={filters}
+          preloadedPaginationProps={{
+            linesQuery: workspacesLinesQuery,
+            linesFragment: workspacesLineFragment,
+            queryRef,
+            nodePath: ['workspaces', 'pageInfo', 'globalCount'],
+            setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+          }}
+          lineFragment={workspaceLineFragment}
+          entityTypes={['Workspace']}
+          searchContextFinal={{ entityTypes: ['Workspace'] }}
+          createButton={isFeatureEnable('FAB_REPLACEMENT') && (
+            <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+              <WorkspaceCreation
+                paginationOptions={workspacePaginationOptions}
+                type={type}
+              />
+            </Security>
+          )}
+          taskScope={type === 'dashboard' ? 'DASHBOARD' : 'INVESTIGATION'}
+          actions={(row) => (
+            <Security needs={row.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
+              <WorkspacePopover
+                workspace={row}
+                paginationOptions={workspacePaginationOptions}
+              />
+            </Security>
+          )}
+        />
+      )}
 
       {!FAB_REPLACED
         && (<Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
