@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
-import { elUpdateIndicesMappings, ES_INIT_RETRO_MAPPING_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
+import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
@@ -98,9 +98,9 @@ const platformInit = async (withMarkings = true) => {
       await initializeInternalQueues();
       await initializeBucket();
       await initializeSchema();
-      if (ES_INIT_RETRO_MAPPING_MIGRATION) {
-        logApp.warn('Templates and indices created with retro compatible mapping protection. '
-            + 'This is only used to help indices reindex and migration. Please reindex, restart and then '
+      if (ES_IS_INIT_MIGRATION) {
+        logApp.warn(`Templates and indices created with ${ES_INIT_MAPPING_MIGRATION} compatible mapping protection. `
+            + 'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then '
             + 'trigger a rollover to secure the new indices');
         process.exit(1);
       }
@@ -110,9 +110,9 @@ const platformInit = async (withMarkings = true) => {
       await initDefaultNotifiers(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
-      if (ES_INIT_RETRO_MAPPING_MIGRATION) {
+      if (ES_IS_INIT_MIGRATION) {
         // noinspection ExceptionCaughtLocallyJS
-        throw ConfigurationError('Internal option internal_init_retro_compatible_mapping_migration is only available for new platform init');
+        throw ConfigurationError('Internal option internal_init_mapping_migration is only available for new platform init');
       }
       await refreshMappingsAndIndices();
       await initializeInternalQueues();

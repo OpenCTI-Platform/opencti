@@ -179,7 +179,9 @@ const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_DEFAULT_WILDCARD_PREFIX = booleanConf('elasticsearch:search_wildcard_prefix', false);
 export const ES_DEFAULT_FUZZY = booleanConf('elasticsearch:search_fuzzy', false);
-export const ES_INIT_RETRO_MAPPING_MIGRATION = booleanConf('elasticsearch:internal_init_retro_compatible_mapping_migration', false);
+export const ES_INIT_MAPPING_MIGRATION = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
+export const ES_IS_OLD_MAPPING = ES_INIT_MAPPING_MIGRATION === 'old';
+export const ES_IS_INIT_MIGRATION = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
 export const ES_MINIMUM_FIXED_PAGINATION = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
@@ -992,7 +994,7 @@ const updateIndexTemplate = async (name, mapping_properties) => {
       index_patterns: [index_pattern],
       template: {
         settings: computeIndexSettings(name),
-        mappings: ES_INIT_RETRO_MAPPING_MIGRATION ? {
+        mappings: ES_IS_OLD_MAPPING ? {
           properties: getRetroCompatibleMappings()
         } : {
           // Global option to prevent elastic to try any magic
