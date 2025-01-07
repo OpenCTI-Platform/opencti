@@ -11,7 +11,7 @@ import { addOrganizationRestriction } from '../../domain/stix';
 import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
-import { elFindByIds, elLoadById } from '../../database/engine';
+import { elLoadById } from '../../database/engine';
 import type { BasicStoreBase } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
