@@ -118,7 +118,18 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-  opencti-dev-jaegertracing:
+
+  ## Telemetry + tracing dependencies
+  ## docker compose --profile telemetry up -d (launch everything + telemetry)
+  opencti-dev-telemetry-pyroscope:
+    container_name: opencti-pyroscope
+    image: grafana/pyroscope
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    profiles:
+      - "telemetry"
+  opencti-dev-telemetry-jaegertracing:
     container_name: opencti-dev-jaegertracing
     image: jaegertracing/all-in-one:latest
     environment:
@@ -126,7 +137,9 @@ services:
     ports:
       - "16686:16686"
       - "4318:4318"
-  opencti-dev-telemetry-otlp: ## docker compose --profile telemetry up -d (launch everything + telemetry)
+    profiles:
+      - "telemetry"
+  opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
     image: otel/opentelemetry-collector-contrib:0.116.1
     restart: unless-stopped
