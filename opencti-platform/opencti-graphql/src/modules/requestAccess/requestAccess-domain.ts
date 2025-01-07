@@ -71,7 +71,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     objectAssignee: allAssigneeIds,
     description: humanDescription,
     information_types: ['Request sharing'],
-    x_opencti_actions: `${JSON.stringify(action)}`
+    x_opencti_request_access: `${JSON.stringify(action)}`
   };
   logApp.info('[OPENCTI-MODULE][Request access] - rfiInput', { rfiInput });
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
@@ -82,8 +82,8 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
   logApp.info(`'[OPENCTI-MODULE][Request access] 1 - Validation for RFI ${id}`);
   const rfi = await findRFIById(context, user, id);
   logApp.info(`'[OPENCTI-MODULE][Request access] 2 -Validation for RFI ${id}`, { rfiFound: rfi });
-  if (rfi.x_opencti_actions) {
-    const actionData = rfi.x_opencti_actions;
+  if (rfi.x_opencti_request_access) {
+    const actionData = rfi.x_opencti_request_access;
     logApp.info('[OPENCTI-MODULE][Request access] 3 Action data', { actionData });
     const action: RequestAccessAction = JSON.parse(actionData);
     logApp.info(`'[OPENCTI-MODULE][Request access] 4 Action parsed on RFI ${id}`, action);
@@ -94,7 +94,7 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
 
         // Burning RFI
         const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Accepted, executionDate: new Date() };
-        const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_actions', value: [`${JSON.stringify(requestAccessAction)}`] }];
+        const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] }];
         await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
         return {
           action_executed: true,
@@ -126,7 +126,7 @@ export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, 
   logApp.info(`Reject for RFI ${id}`);
 
   const rfi = await findRFIById(context, user, id);
-  const actionData = rfi.x_opencti_actions;
+  const actionData = rfi.x_opencti_request_access;
   const action: RequestAccessAction = JSON.parse(actionData);
   logApp.info(`Action on RFI ${id}`, action);
 
@@ -134,7 +134,7 @@ export const rejectRequestAccess = async (context: AuthContext, user: AuthUser, 
     if (action.entities && action.members) {
       // Burning RFI
       const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Refused, executionDate: new Date() };
-      const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_actions', value: [`${JSON.stringify(requestAccessAction)}`] }];
+      const RFIFieldPatch :EditInput[] = [{ key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] }];
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
       return {
         action_executed: true,
