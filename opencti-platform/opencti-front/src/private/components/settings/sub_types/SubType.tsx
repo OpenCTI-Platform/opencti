@@ -1,36 +1,27 @@
 import Typography from '@mui/material/Typography';
-import React, { useMemo } from 'react';
+import React, { CSSProperties, Suspense, useMemo } from 'react';
 import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useFragment, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
-import { RootSubTypeQuery$variables } from '@components/settings/sub_types/__generated__/RootSubTypeQuery.graphql';
+import { useTheme } from '@mui/styles';
+import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import { useParams } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
-import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import type { Theme } from '../../../../components/Theme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-  },
-}));
+import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useHelper from '../../../../utils/hooks/useHelper';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader from '../../../../components/Loader';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -40,44 +31,48 @@ const entitySettingSubscription = graphql`
   }
 `;
 
-// -- GRAPHQL - ENTITY --
-
-const subTypeFragment = graphql`
-  fragment SubType_subType on SubType {
-    id
-    label
-    workflowEnabled
-    settings {
+export const subTypeQuery = graphql`
+  query SubTypeQuery($id: String!) {
+    subType(id: $id) {
       id
-      availableSettings
-      ...EntitySettingsOverviewLayoutCustomization_entitySetting
-      ...EntitySettingSettings_entitySetting
-      ...EntitySettingAttributes_entitySetting
-    }
-    statuses {
-      id
-      order
-      template {
-        name
-        color
+      label
+      workflowEnabled
+      settings {
+        id
+        availableSettings
+        ...EntitySettingsOverviewLayoutCustomization_entitySetting
+        ...EntitySettingSettings_entitySetting
+        ...EntitySettingAttributes_entitySetting
+        ...FintelTemplatesGrid_templates
+      }
+      statuses {
+        id
+        order
+        template {
+          name
+          color
+        }
       }
     }
   }
 `;
 
 interface SubTypeProps {
-  data: SubType_subType$key;
+  queryRef: PreloadedQuery<SubTypeQuery>
 }
 
-const SubType: React.FC<SubTypeProps> = ({ data }) => {
+const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const subType = useFragment<SubType_subType$key>(subTypeFragment, data);
+  const { isFeatureEnable } = useHelper();
+  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
+
+  const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+  if (!subType) return <ErrorNotFound/>;
 
   const subTypeSettingsId = subType.settings?.id;
-  if (!subTypeSettingsId) {
-    return null;
-  }
+  if (!subTypeSettingsId) return <ErrorNotFound/>;
+
   const config = useMemo(
     () => ({
       subscription: entitySettingSubscription,
@@ -88,30 +83,44 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
   useSubscription(config);
 
   const LOCAL_STORAGE_KEY = `${subType.id}-attributes`;
-  const { viewStorage, helpers } = usePaginationLocalStorage<RootSubTypeQuery$variables>(
+  const { viewStorage, helpers } = usePaginationLocalStorage<SubTypeQuery$variables>(
     LOCAL_STORAGE_KEY,
     { searchTerm: '' },
   );
   const { searchTerm } = viewStorage;
 
+  const hasTemplates = subType.settings?.availableSettings.includes('templates') && isFileFromTemplateEnabled;
+
+  const paperStyle: CSSProperties = {
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
+    borderRadius: theme.spacing(0.5),
+    position: 'relative',
+  };
+
   return (
-    <div className={classes.container}>
+    <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
+      <Breadcrumbs elements={[
+        { label: t_i18n('Settings') },
+        { label: t_i18n('Customization') },
+        { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
+        { label: subType.label },
+      ]}
+      />
+
       <CustomizationMenu />
-      <div style={{ marginBottom: 23 }}>
-        <Typography variant="h1" gutterBottom={true}>
-          {t_i18n(`entity_${subType.label}`)}
-        </Typography>
-      </div>
-      <Grid
-        container
-        spacing={3}
-      >
-        <Grid item xs={12}>
+
+      <Typography variant="h1" gutterBottom={true} sx={{ mb: 3 }}>
+        {t_i18n(`entity_${subType.label}`)}
+      </Typography>
+
+      <Grid container spacing={3}>
+        <Grid item xs={hasTemplates ? 6 : 12}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
           </Typography>
           <Paper
-            classes={{ root: classes.paper }}
+            style={paperStyle}
             variant="outlined"
             className={'paper-for-grid'}
           >
@@ -132,6 +141,9 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             }
           </Paper>
         </Grid>
+
+        {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
+
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
           <Grid item xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -145,7 +157,11 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
               />
             </div>
             <div className="clearfix" />
-            <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
+            <Paper
+              style={paperStyle}
+              variant="outlined"
+              className={'paper-for-grid'}
+            >
               <EntitySettingAttributes
                 entitySettingsData={subType.settings}
                 searchTerm={searchTerm}
@@ -153,11 +169,25 @@ const SubType: React.FC<SubTypeProps> = ({ data }) => {
             </Paper>
           </Grid>
         )}
+
         <EntitySettingCustomOverview
           entitySettingsData={subType.settings}
         />
       </Grid>
     </div>
+  );
+};
+
+const SubType = () => {
+  const { subTypeId } = useParams<{ subTypeId?: string }>();
+  if (!subTypeId) return <ErrorNotFound/>;
+
+  const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, { id: subTypeId });
+
+  return (
+    <Suspense fallback={<Loader />}>
+      {subTypeRef && <SubTypeComponent queryRef={subTypeRef} />}
+    </Suspense>
   );
 };
 

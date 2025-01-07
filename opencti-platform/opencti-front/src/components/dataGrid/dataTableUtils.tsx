@@ -252,12 +252,26 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  definition: {
+    id: 'definition',
+    label: 'Definition',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ definition }) => defaultRender(definition),
+  },
+  definition_type: {
+    id: 'definition_type',
+    label: 'Type',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ definition_type }) => defaultRender(definition_type),
+  },
   description: {
     id: 'description',
     label: 'Description',
-    percentWidth: 20,
-    isSortable: false,
-    render: ({ description }) => description || '-',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ description }) => defaultRender(description),
   },
   entity_type: {
     id: 'entity_type',
@@ -265,20 +279,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
-  },
-  definition: {
-    id: 'definition',
-    label: 'Definition',
-    percentWidth: 25,
-    isSortable: true,
-    render: ({ definition }, helpers) => defaultRender(definition, helpers),
-  },
-  definition_type: {
-    id: 'definition_type',
-    label: 'Type',
-    percentWidth: 25,
-    isSortable: true,
-    render: ({ definition_type }, helpers) => defaultRender(definition_type, helpers),
   },
   event_types: {
     id: 'event_types',
@@ -746,6 +746,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: true,
     render: ({ source_name, draftVersion }) => defaultRender(source_name, draftVersion),
+  },
+  start_date: {
+    id: 'start_date',
+    label: 'Start date',
+    percentWidth: 25,
+    isSortable: true,
+    render: ({ start_date }, { fd }) => fd(start_date),
   },
   start_time: {
     id: 'start_time',

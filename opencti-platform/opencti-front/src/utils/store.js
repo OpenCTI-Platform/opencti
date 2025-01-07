@@ -88,3 +88,11 @@ export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   );
   records.setLinkedRecords(newEdges, 'edges');
 };
+
+export const insertNodeFromEdge = (store, parentId, edgesPath, dataPath, params) => {
+  const node = store.get(parentId);
+  const records = node.getLinkedRecord(edgesPath, params);
+  const payload = store.getRootField(dataPath);
+  const newEdge = payload.setLinkedRecord(payload, 'node');
+  ConnectionHandler.insertEdgeBefore(records, newEdge);
+};

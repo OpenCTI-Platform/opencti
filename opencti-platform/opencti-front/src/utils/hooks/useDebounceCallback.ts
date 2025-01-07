@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-type CallbackFunction = (...args: never[]) => void;
+type CallbackFunction<Args> = (...args: Args[]) => void;
 
-const useDebounceCallback = (inputFunc: CallbackFunction, delay: number) => {
+function useDebounceCallback<A>(inputFunc: CallbackFunction<A>, delay: number) {
   const timeoutRef = useRef<number | null>(null);
 
-  const debouncedFunction = useCallback((...args: never[]) => {
+  const debouncedFunction = useCallback((...args: A[]) => {
     if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current);
     }
@@ -25,6 +25,6 @@ const useDebounceCallback = (inputFunc: CallbackFunction, delay: number) => {
   }, [delay]);
 
   return debouncedFunction;
-};
+}
 
 export default useDebounceCallback;

@@ -34,6 +34,9 @@ const ThemeLight = (
       main: '#f44336',
       dark: '#c62828',
     },
+    warn: {
+      main: '#ffa726',
+    },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#D1584F', contrastText: 'black', text: { primary: '#D1584F' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
@@ -136,6 +139,15 @@ const ThemeLight = (
         root: {
           [`&.${buttonClasses.outlined}.${buttonClasses.sizeSmall}`]: {
             padding: '4px 9px',
+          },
+          '&.icon-outlined': {
+            borderColor: hexToRGB('#000000', 0.15),
+            padding: 7,
+            minWidth: 0,
+            '&:hover': {
+              borderColor: hexToRGB('#000000', 0.15),
+              backgroundColor: hexToRGB('#000000', 0.05),
+            },
           },
         },
       },
