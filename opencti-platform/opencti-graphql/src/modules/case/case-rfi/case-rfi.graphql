@@ -242,6 +242,7 @@ input CaseRfiAddInput {
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  x_opencti_request_access: String
 }
 
 type Mutation {
