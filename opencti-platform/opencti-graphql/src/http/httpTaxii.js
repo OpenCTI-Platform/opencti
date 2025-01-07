@@ -271,8 +271,9 @@ const initTaxiiApi = (app) => {
       if (!stats) throw UnsupportedError('Work not found');
       const failure_count = (work.errors ?? []).length;
       const total_count = stats.import_expected_number;
-      const success_count = (stats.import_processed_number ?? 0) - failure_count;
-      const pending_count = (stats.import_processed_number ?? 0) - stats.import_processed_number;
+      const processed_number = stats.import_processed_number ?? 0;
+      const success_count = processed_number - failure_count;
+      const pending_count = total_count - processed_number;
       sendJsonResponse(res, {
         id: status_id,
         status: work.status === 'complete' ? 'complete' : 'pending',
