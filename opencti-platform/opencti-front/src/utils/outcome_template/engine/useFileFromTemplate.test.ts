@@ -54,7 +54,7 @@ describe('Hook: useFileFromTemplate', () => {
                 dataSelection: [{}],
               },
             }],
-            content: 'Hello, I am container $containerName of type $containerType',
+            template_content: 'Hello, I am container $containerName of type $containerType',
           };
         },
       });
@@ -87,7 +87,7 @@ describe('Hook: useFileFromTemplate', () => {
                 }],
               },
             }],
-            content: 'Hello, I have: $containerList',
+            template_content: 'Hello, I have: $containerList',
           };
         },
       });
