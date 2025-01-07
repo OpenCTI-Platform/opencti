@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Skeleton, Checkbox, IconButton } from '@mui/material';
+import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
@@ -163,67 +163,76 @@ const DataTableLine = ({
   };
 
   return (
-    <a
-      style={linkStyle}
-      href={navigable ? link : undefined}
-      // We need both to handle accessibility and widget.
-      onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
-      onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
-      data-testid={getMainRepresentative(data)}
+    <Box sx={{
+      '&:hover > a': {
+        backgroundColor: theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, .1)'
+          : 'rgba(0, 0, 0, .1)',
+      },
+    }}
     >
-      {startsWithAction && (
-        <div
-          key={`select_${data.id}`}
-          style={{
-            ...cellContainerStyle(theme),
-            width: SELECT_COLUMN_SIZE,
-          }}
-        >
-          <Checkbox
-            onClick={handleSelectLine}
-            sx={{
-              marginRight: 1,
-              flex: '0 0 auto',
-              paddingLeft: 0,
-              '&:hover': {
-                background: 'transparent',
-              },
+      <a
+        style={linkStyle}
+        href={navigable ? link : undefined}
+        // We need both to handle accessibility and widget.
+        onMouseDown={variant === DataTableVariant.widget ? handleNavigate : undefined}
+        onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
+        data-testid={getMainRepresentative(data)}
+      >
+        {startsWithAction && (
+          <div
+            key={`select_${data.id}`}
+            style={{
+              ...cellContainerStyle(theme),
+              width: SELECT_COLUMN_SIZE,
             }}
-            checked={
-                  (selectAll
-                    && !((data.id || 'id') in (deSelectedElements || {})))
-                  || (data.id || 'id') in (selectedElements || {})
-                }
+          >
+            <Checkbox
+              onClick={handleSelectLine}
+              sx={{
+                marginRight: 1,
+                flex: '0 0 auto',
+                paddingLeft: 0,
+                '&:hover': {
+                  background: 'transparent',
+                },
+              }}
+              checked={
+                (selectAll
+                  && !((data.id || 'id') in (deSelectedElements || {})))
+                || (data.id || 'id') in (selectedElements || {})
+              }
+            />
+          </div>
+        )}
+
+        {columns.slice(startsWithAction ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+          <DataTableCell
+            key={column.id}
+            cell={column}
+            data={data}
           />
-        </div>
-      )}
+        ))}
 
-      {columns.slice(startsWithAction ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
-        <DataTableCell
-          key={column.id}
-          cell={column}
-          data={data}
-        />
-      ))}
-
-      {endsWithAction && (
-        <div
-          key={`navigate_${data.id}`}
-          style={{
-            ...cellContainerStyle(theme),
-            width: SELECT_COLUMN_SIZE,
-            overflow: 'initial',
-          }}
-        >
-          {actions && actions(data)}
-          {endsWithNavigate && (
-            <IconButton onClick={() => navigate(link)}>
-              <KeyboardArrowRightOutlined />
-            </IconButton>
-          )}
-        </div>
-      )}
-    </a>
+        {endsWithAction && (
+          <div
+            key={`navigate_${data.id}`}
+            style={{
+              ...cellContainerStyle(theme),
+              width: SELECT_COLUMN_SIZE,
+              overflow: 'initial',
+            }}
+          >
+            {actions && actions(data)}
+            {endsWithNavigate && (
+              <IconButton onClick={() => navigate(link)}>
+                <KeyboardArrowRightOutlined />
+              </IconButton>
+            )}
+          </div>
+        )}
+      </a>
+    </Box>
   );
 };
 
