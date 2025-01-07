@@ -17,7 +17,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { textInTooltip } from '../../../components/dataGrid/dataTableUtils';
 
 const workspaceLineFragment = graphql`
-  fragment WorkspaceLine_node on Workspace {
+  fragment WorkspacesLine_node on Workspace {
     id
     name
     tags
@@ -79,7 +79,7 @@ const workspacesLineFragment = graphql`
       edges {
         node {
           id
-          ...WorkspaceLine_node
+          ...WorkspacesLine_node
         }
       }
       pageInfo {

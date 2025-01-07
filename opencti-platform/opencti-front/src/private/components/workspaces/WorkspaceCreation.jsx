@@ -49,7 +49,7 @@ const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
     workspaceAdd(input: $input) {
       id
-      ...WorkspaceLine_node
+      ...WorkspacesLine_node
     }
   }
 `;
