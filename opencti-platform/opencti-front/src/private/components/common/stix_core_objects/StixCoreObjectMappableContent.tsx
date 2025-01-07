@@ -59,7 +59,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 }) => {
   const { t_i18n } = useFormatter();
   let { description, contentField } = containerData;
-  const [selectedTab, setSelectedTab] = useState(editionMode ? 'write' : 'preview');
+  const [selectedTab, setSelectedTab] = useState('preview');
   const basicShape = {
     content: Yup.string().nullable(),
     description: Yup.string().nullable(),
