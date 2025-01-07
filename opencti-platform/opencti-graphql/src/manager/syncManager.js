@@ -129,7 +129,7 @@ const syncManagerInstance = (syncId) => {
         const event = eventsQueue.dequeue();
         if (event) {
           try {
-            currentDelay = manageBackPressure(httpClient, sync, currentDelay);
+            currentDelay = await manageBackPressure(httpClient, sync, currentDelay);
             const { id: eventId, type: eventType, data, context: eventContext } = event;
             if (eventType === 'heartbeat') {
               await saveCurrentState(context, eventType, sync, eventId);
