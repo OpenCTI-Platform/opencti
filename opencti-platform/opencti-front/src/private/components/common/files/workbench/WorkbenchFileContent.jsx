@@ -273,6 +273,7 @@ const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') 
         || n.hashes['SHA-512']))
     || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
     || n.main_entity_name
+    || n.dst_port
     || fallback;
   return mainValue;
 };
@@ -306,6 +307,7 @@ const defaultValueKeys = {
     'hashes.SHA-1',
     'hashes.SHA-256',
     'hashes.SHA-512',
+    'dst_port',
   ],
 };
 
