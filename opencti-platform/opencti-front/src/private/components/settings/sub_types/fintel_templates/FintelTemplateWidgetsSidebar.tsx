@@ -40,6 +40,9 @@ export const widgetsFragment = graphql`
           filters
           dynamicTo
           dynamicFrom
+          instance_id
+          sort_by
+          sort_mode
           columns {
             variableName
             label
