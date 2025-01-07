@@ -493,8 +493,9 @@ const createApp = async (app) => {
       res.set('Expires', '-1');
       res.set('Pragma', 'no-cache');
       res.send(withOptionValued);
+    } else {
+      res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
     }
-    res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
   });
 
   // Any random unexpected request not GET
