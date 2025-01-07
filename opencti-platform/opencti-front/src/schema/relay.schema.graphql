@@ -10603,7 +10603,7 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
-  x_opencti_actions: String
+  x_opencti_request_access: String
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
