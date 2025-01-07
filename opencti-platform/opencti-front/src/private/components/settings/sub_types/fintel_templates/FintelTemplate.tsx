@@ -56,8 +56,9 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
               <Security needs={[KNOWLEDGE]}>
                 <div role="tabpanel" hidden={index !== 1}>
                   <FintelTemplatePreview
-                    template_content={editorValue}
+                    editorContent={editorValue}
                     isTabActive={index === 1}
+                    fintelTemplate={fintelTemplate}
                   />
                 </div>
               </Security>

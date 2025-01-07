@@ -17,7 +17,7 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 export const FINTEL_TEMPLATE_SIDEBAR_WIDTH = 350;
 
-const widgetsFragment = graphql`
+export const widgetsFragment = graphql`
   fragment FintelTemplateWidgetsSidebar_template on FintelTemplate {
     id
     template_content
