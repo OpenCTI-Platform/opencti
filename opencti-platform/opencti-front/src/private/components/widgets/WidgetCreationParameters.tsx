@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, WidgetPerspective } from './widgetUtils';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
