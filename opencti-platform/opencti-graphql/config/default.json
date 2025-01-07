@@ -23,6 +23,9 @@
       "logs_redacted_inputs": ["password", "secret", "token"],
       "extended_error_message": false
     },
+    "files_mimes": {
+      ".yar": "text/yara+plain"
+    },
     "audit_logs": {
       "logs_files": true,
       "logs_console": true,
