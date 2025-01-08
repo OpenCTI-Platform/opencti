@@ -121,10 +121,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
   const usedWidgets = formattedFintelTemplateWidgetsForList.filter((w) => template_content.includes(`$${w.variableName}`));
 
-  const [selectedVariable, setSelectedVariable] = useState<string | null>(null);
+  const [selectedVariable, setSelectedVariable] = useState<string | undefined>(undefined);
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [variableName, setVariableName] = useState<string | null>(null);
 
   const [commitWidgetUpdate] = useApiMutation(fintelTemplateWidgetMutationFieldPatch);
   const deletion = useDeletion({});
@@ -154,7 +153,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     setIsWidgetFormOpen(isOpen);
     if (!isOpen) {
       setAnchorEl(null);
-      setSelectedVariable(null);
+      setSelectedVariable(undefined);
     }
   };
 
@@ -184,12 +183,12 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       },
       onCompleted: () => {
         handleCloseDelete();
-        setSelectedVariable(null);
+        setSelectedVariable(undefined);
       },
     });
   };
 
-  const handleUpsertWidget = (widget: Widget) => {
+  const handleUpsertWidget = (widget: Widget, variableName?: string) => {
     if (!variableName) {
       MESSAGING$.notifyError(t_i18n('You should provide a variable name'));
     } else if (variableName.includes(' ')) {
@@ -289,8 +288,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         onComplete={handleUpsertWidget}
         context={'fintelTemplate'}
         widget={selectedWidget}
-        variableName={selectedVariable}
-        handleChangeVariableName={(n) => setVariableName(n)}
+        initialVariableName={selectedVariable}
       />
 
       <DeleteDialog

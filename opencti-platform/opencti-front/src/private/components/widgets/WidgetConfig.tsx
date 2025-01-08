@@ -11,14 +11,13 @@ import { useFormatter } from '../../../components/i18n';
 import type { Widget, WidgetContext, WidgetPerspective } from '../../../utils/widget/widget';
 
 interface WidgetConfigProps {
-  onComplete: (value: Widget) => void,
+  onComplete: (value: Widget, variableName?: string) => void,
   open: boolean,
   setOpen: (open: boolean) => void,
   closeMenu?: () => void,
   widget?: Widget,
   context: WidgetContext,
-  variableName?: string | null,
-  handleChangeVariableName?: (n: string) => void,
+  initialVariableName?: string,
 }
 
 const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
@@ -28,8 +27,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   setOpen,
   open,
   context,
-  variableName,
-  handleChangeVariableName,
+  initialVariableName,
 }) => {
   let initialStep = 0;
   if (widget?.type === 'text') {
@@ -41,6 +39,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   const [stepIndex, setStepIndex] = useState(initialStep);
   const [type, setType] = useState<string | null>(widget?.type ?? null);
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
+  const [variableName, setVariableName] = useState(initialVariableName);
   const initialSelection = {
     label: '',
     attribute: 'entity_type',
@@ -59,6 +58,9 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   useEffect(() => {
     setStepIndex(initialStep);
   }, [initialStep]);
+  useEffect(() => {
+    setType(widget?.type ?? null);
+  }, [widget]);
 
   const handleCloseAfterCancel = () => {
     if (!widget) {
@@ -99,7 +101,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
         perspective,
         dataSelection,
         parameters,
-      });
+      }, variableName);
     }
     handleCloseAfterUpdate();
   };
@@ -122,6 +124,10 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
     setStepIndex(2);
+  };
+
+  const handleChangeVariableName = (name: string) => {
+    setVariableName(name);
   };
 
   const isDataSelectionAttributesValid = () => {
