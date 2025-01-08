@@ -734,8 +734,8 @@ workflows:
             branches:
               ignore: /.*/
       - docker_build_platform_rolling:
-          requires:
-            - build_frontend
+          # requires:
+          #   - build_frontend
           filters:
             branches:
               only:
