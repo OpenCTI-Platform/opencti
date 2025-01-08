@@ -164,6 +164,21 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           .map((_, i) => {
             return (
               <div key={i}>
+                {(type === 'attribute'
+                  && <TextField
+                    label={t_i18n('Instance')}
+                    fullWidth={true}
+                    type="text"
+                    value={dataSelection[i].instance_id ?? 'SELF_ID'}
+                    onChange={(event) => handleChangeDataValidationParameter(
+                      i,
+                      'instance_id',
+                      event.target.value,
+                      true,
+                    )}
+                    style={{ marginTop: 20 }}
+                     />
+                )}
                 {(getCurrentCategory(type) === 'distribution'
                   || getCurrentCategory(type) === 'list') && (
                   <TextField
@@ -264,7 +279,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective !== 'audits' && (
+                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute'].includes(type) && (
                   <div
                     style={{
                       display: 'flex',
@@ -547,7 +562,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           </Select>
                         </FormControl>
                     )}
-                    {dataSelection[i].perspective === 'audits' && (
+                    {(dataSelection[i].perspective === 'audits' || type === 'attribute') && (
                       <FormControl
                         fullWidth={true}
                         style={{

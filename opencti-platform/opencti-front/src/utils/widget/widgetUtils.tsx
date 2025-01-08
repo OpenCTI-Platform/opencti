@@ -22,8 +22,8 @@ const widgetVisualizationTypes = [
   {
     key: 'attribute',
     name: 'Attribute',
-    category: 'text',
-    availableParameters: [],
+    category: 'attribute',
+    availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: true,
     isAudits: false,

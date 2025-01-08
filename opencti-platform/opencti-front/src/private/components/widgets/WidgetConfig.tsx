@@ -27,7 +27,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   initialVariableName,
 }) => {
   let initialStep = 0;
-  if (widget?.type === 'text') {
+  if (widget?.type === 'text' || widget?.type === 'attribute') {
     initialStep = 3;
   } else if (widget?.dataSelection) {
     initialStep = 2;
@@ -107,7 +107,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   };
   const handleSelectType = (selectedType: string) => {
     setType(selectedType);
-    if (selectedType === 'text') {
+    if (selectedType === 'text' || selectedType === 'attribute') {
       setStepIndex(3);
     } else {
       setStepIndex(1);
