@@ -58,6 +58,9 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   useEffect(() => {
     setType(widget?.type ?? null);
   }, [widget]);
+  useEffect(() => {
+    setVariableName(initialVariableName);
+  }, [initialVariableName]);
 
   const handleCloseAfterCancel = () => {
     if (!widget) {
