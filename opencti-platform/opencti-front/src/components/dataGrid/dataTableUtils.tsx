@@ -148,6 +148,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
+  authorized_members_activation_date: {
+    id: 'authorized_members_activation_date',
+    label: 'Activation date',
+    isSortable: true,
+    render: ({ authorized_members_activation_date }, helpers) => defaultRender(helpers.fd(authorized_members_activation_date)),
+  },
   attribute_abstract: {
     id: 'attribute_abstract',
     label: 'Abstract',

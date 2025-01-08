@@ -23,7 +23,7 @@ import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis
 import type { BasicStoreEntityManagerConfiguration } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionCsv } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
@@ -34,6 +34,7 @@ import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation
 import type { BasicStoreEntitySupportPackage } from '../modules/support/support-types';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreEntityExclusionList } from '../modules/exclusionList/exclusionList-types';
+
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -1920,6 +1921,7 @@ export type CapabilityEdge = {
 
 export type Case = {
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -2171,6 +2173,7 @@ export type CaseEdge = {
 export type CaseIncident = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseIncident';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -2474,6 +2477,7 @@ export enum CaseIncidentsOrdering {
 export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRfi';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -2775,6 +2779,7 @@ export enum CaseRfisOrdering {
 export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRft';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -3779,6 +3784,7 @@ export enum ConnectorType {
 
 export type Container = {
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -7776,6 +7782,7 @@ export enum FeedOrdering {
 export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Feedback';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -8363,6 +8370,7 @@ export type GroupEditMutationsRelationDeleteArgs = {
 export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Grouping';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -16488,6 +16496,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   __typename?: 'Note';
   attribute_abstract?: Maybe<Scalars['String']['output']>;
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
@@ -16968,6 +16977,7 @@ export type ObservablesValues = {
 export type ObservedData = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'ObservedData';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -17299,6 +17309,7 @@ export type OpenCtiFile = {
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Opinion';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
@@ -22583,6 +22594,7 @@ export type RemoteStreamCollection = {
 export type Report = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Report';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -26577,6 +26589,7 @@ export enum SystemsOrdering {
 export type Task = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Task';
   authorized_members?: Maybe<Array<MemberAccess>>;
+  authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -33047,6 +33060,7 @@ export type CapabilityEdgeResolvers<ContextType = any, ParentType extends Resolv
 export type CaseResolvers<ContextType = any, ParentType extends ResolversParentTypes['Case'] = ResolversParentTypes['Case']> = ResolversObject<{
   __resolveType: TypeResolveFn<'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Feedback', ParentType, ContextType>;
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33122,6 +33136,7 @@ export type CaseEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type CaseIncidentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseIncident'] = ResolversParentTypes['CaseIncident']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseIncidentCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33202,6 +33217,7 @@ export type CaseIncidentEdgeResolvers<ContextType = any, ParentType extends Reso
 
 export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRfi'] = ResolversParentTypes['CaseRfi']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRfiCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33281,6 +33297,7 @@ export type CaseRfiEdgeResolvers<ContextType = any, ParentType extends Resolvers
 
 export type CaseRftResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRft'] = ResolversParentTypes['CaseRft']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRftCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33632,6 +33649,7 @@ export interface ConstraintStringScalarConfig extends GraphQLScalarTypeConfig<Re
 export type ContainerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Container'] = ResolversParentTypes['Container']> = ResolversObject<{
   __resolveType: TypeResolveFn<'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Feedback' | 'Grouping' | 'Note' | 'ObservedData' | 'Opinion' | 'Report' | 'Task', ParentType, ContextType>;
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ContainerCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -34994,6 +35012,7 @@ export type FeedMappingResolvers<ContextType = any, ParentType extends Resolvers
 
 export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FeedbackCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -35238,6 +35257,7 @@ export type GroupEditMutationsResolvers<ContextType = any, ParentType extends Re
 
 export type GroupingResolvers<ContextType = any, ParentType extends ResolversParentTypes['Grouping'] = ResolversParentTypes['Grouping']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<GroupingCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -37487,6 +37507,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
 export type NoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = ResolversObject<{
   attribute_abstract?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   authors?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<NoteCasesArgs>>;
@@ -37682,6 +37703,7 @@ export type ObservablesValuesResolvers<ContextType = any, ParentType extends Res
 
 export type ObservedDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservedData'] = ResolversParentTypes['ObservedData']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ObservedDataCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -37777,6 +37799,7 @@ export type OpenCtiFileResolvers<ContextType = any, ParentType extends Resolvers
 
 export type OpinionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Opinion'] = ResolversParentTypes['Opinion']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   authors?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<OpinionCasesArgs>>;
@@ -38932,6 +38955,7 @@ export type RemoteStreamCollectionResolvers<ContextType = any, ParentType extend
 
 export type ReportResolvers<ContextType = any, ParentType extends ResolversParentTypes['Report'] = ResolversParentTypes['Report']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ReportCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -40373,6 +40397,7 @@ export type SystemEditMutationsResolvers<ContextType = any, ParentType extends R
 
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = ResolversObject<{
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<TaskCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
