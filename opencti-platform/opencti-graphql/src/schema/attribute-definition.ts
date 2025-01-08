@@ -255,6 +255,17 @@ export const authorizedMembers: AttributeDefinition = {
   ]
 };
 
+export const authorizedMembersActivationDate : AttributeDefinition = {
+  name: 'authorized_members_activation_date',
+  label: 'Authorized members activation date',
+  type: 'date',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+};
+
 export const authorizedAuthorities: AttributeDefinition = {
   name: 'authorized_authorities',
   label: 'Authorized authorities',
