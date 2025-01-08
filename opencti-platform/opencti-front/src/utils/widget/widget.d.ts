@@ -1,5 +1,8 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
-import { WidgetPerspective } from '../../private/components/widgets/widgetUtils';
+
+export type WidgetContext = 'workspace' | 'fintelTemplate';
+
+export type WidgetPerspective = 'entities' | 'relationships' | 'audits';
 
 interface WidgetColumn {
   attribute: string | null

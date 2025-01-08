@@ -10,8 +10,8 @@ import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, ReactNode } from 'react';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-import { getCurrentAvailableParameters, getCurrentCategory } from './widgetUtils';
 import type { Widget } from '../../../utils/widget/widget';
+import { getCurrentAvailableParameters, getCurrentCategory } from '../../../utils/widget/widgetUtils';
 
 interface WidgetUpsertProps {
   open: boolean,

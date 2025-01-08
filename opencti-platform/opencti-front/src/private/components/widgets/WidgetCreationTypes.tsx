@@ -4,8 +4,9 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent } from 'react';
-import { workspacesWidgetVisualizationTypes, fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, WidgetContext } from './widgetUtils';
 import { useFormatter } from '../../../components/i18n';
+import { fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, workspacesWidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import type { WidgetContext } from '../../../utils/widget/widget';
 
 interface WidgetCreationTypesProps {
   handleSelectType: (type: string) => void,

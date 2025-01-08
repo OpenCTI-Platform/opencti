@@ -18,10 +18,6 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-export type WidgetContext = 'workspace' | 'fintelTemplate';
-
-export type WidgetPerspective = 'entities' | 'relationships' | 'audits';
-
 const widgetVisualizationTypes = [
   {
     key: 'attribute',
@@ -202,7 +198,9 @@ const widgetVisualizationTypes = [
     isAudits: true,
   },
 ];
+
 export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
+
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['attribute', 'list'].includes(w.key));
 
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
@@ -211,16 +209,20 @@ export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
   return indexedVisualizationTypes[type]?.category ?? 'none';
 };
+
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
   if (!type) return [];
   return indexedVisualizationTypes[type]?.availableParameters ?? [];
 };
+
 export const getCurrentDataSelectionLimit = (type: string) => {
   return indexedVisualizationTypes[type]?.dataSelectionLimit ?? 0;
 };
+
 export const getCurrentIsRelationships = (type: string) => {
   return indexedVisualizationTypes[type]?.isRelationships ?? false;
 };
+
 export const isWidgetListOrTimeline = (type: string) => {
   return indexedVisualizationTypes[type]?.key === 'list' || indexedVisualizationTypes[type]?.key === 'timeline';
 };

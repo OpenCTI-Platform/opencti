@@ -7,7 +7,8 @@ import Typography from '@mui/material/Typography';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes, WidgetPerspective } from './widgetUtils';
+import type { WidgetPerspective } from '../../../utils/widget/widget';
+import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
 
 interface WidgetCreationPerspectiveProps {
   handleSelectPerspective: (perspective: WidgetPerspective) => void,

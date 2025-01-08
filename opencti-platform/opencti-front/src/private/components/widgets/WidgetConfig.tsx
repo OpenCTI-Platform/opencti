@@ -8,8 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import WidgetUpsert from '@components/widgets/WidgetUpsert';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import type { Widget } from '../../../utils/widget/widget';
-import { WidgetPerspective, WidgetContext } from './widgetUtils';
+import type { Widget, WidgetContext, WidgetPerspective } from '../../../utils/widget/widget';
 
 interface WidgetConfigProps {
   onComplete: (value: Widget) => void,
@@ -32,7 +31,6 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   variableName,
   handleChangeVariableName,
 }) => {
-  console.log('widget', widget);
   let initialStep = 0;
   if (widget?.type === 'text') {
     initialStep = 3;

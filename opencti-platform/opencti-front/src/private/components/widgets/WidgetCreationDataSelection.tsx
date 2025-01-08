@@ -10,8 +10,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import type { WidgetDataSelection } from '../../../utils/widget/widget';
-import { getCurrentCategory, getCurrentDataSelectionLimit, WidgetPerspective } from './widgetUtils';
+import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
+import { getCurrentCategory, getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 
 interface WidgetCreationDataSelectionProps {
   dataSelection: WidgetDataSelection[],
