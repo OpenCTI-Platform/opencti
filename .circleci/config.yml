@@ -416,8 +416,8 @@ jobs:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
           command: | 
-            docker buildx build --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_circleci -t opencti/platform:rolling . --push
-            docker buildx build --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_circleci -t ghcr.io/opencti-platform/opencti/platform:rolling . --push
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_circleci -t opencti/platform:prep . --push
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_circleci -t ghcr.io/opencti-platform/opencti/platform:prep . --push
           no_output_timeout: 30m
       - slack/notify:
           event: fail
