@@ -1,5 +1,4 @@
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, MouseEvent } from 'react';
@@ -69,35 +68,23 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           const isAttributeWidget = widget.type === 'attribute';
           const isSelfAttributeWidget = isAttributeWidget && widget.dataSelection[0].instance_id === 'SELF_ID';
 
-          return (
-            <ListItem
+          return isAttributeWidget ? (
+            <FintelTemplateWidgetAttribute
               key={variable_name}
-              value={variable_name}
-              sx={{
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                paddingRight: 1,
-                gap: 1,
-              }}
-            >
-              {isAttributeWidget ? (
-                <FintelTemplateWidgetAttribute
-                  key={variable_name}
-                  widget={widget}
-                  onOpenPopover={handleOpenPopover}
-                  variableName={isSelfAttributeWidget
-                    ? t_i18n('Attributes of the instance')
-                    : variable_name
+              widget={widget}
+              onOpenPopover={handleOpenPopover}
+              variableName={isSelfAttributeWidget
+                ? t_i18n('Attributes of the instance')
+                : variable_name
                   }
-                />
-              ) : (
-                <FintelTemplateWidgetDefault
-                  key={variable_name}
-                  widgetType={widget.type}
-                  variableName={variable_name}
-                  onOpenPopover={handleOpenPopover}
-                />
-              )}
-            </ListItem>
+            />
+          ) : (
+            <FintelTemplateWidgetDefault
+              key={variable_name}
+              widgetType={widget.type}
+              variableName={variable_name}
+              onOpenPopover={handleOpenPopover}
+            />
           );
         })}
       </List>
