@@ -408,12 +408,17 @@ jobs:
             docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
             docker buildx create --name mybuilder --use
       - run:
-          name: Login
-          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          name: Login to docker hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            echo "$GHCR_PASS" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling --push .
+          command: | 
+            docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling
+            docker push opencti/platform:rolling
+            docker push ghcr.io/opencti-platform/opencti/platform:rolling
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -735,7 +740,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - oob/ghcr
       - docker_build_worker_rolling:
           requires:
             - build_frontend
