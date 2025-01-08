@@ -192,7 +192,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
-import { confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
+import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
@@ -1904,6 +1904,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       throw UnsupportedError('This feature is disabled');
     }
     accessOperation = 'manage-access';
+    if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
+      && (!initial.authorized_members || initial.authorized_members.length === 0)
+      && updates.some((e) => e.key === 'authorized_members' && e.value?.length > 0)) {
+      updates.push({
+        key: authorizedMembersActivationDate.name,
+        value: [now()]
+      });
+    }
   }
   if (updates.some((e) => e.key === 'authorized_authorities')) {
     accessOperation = 'manage-authorities-access';
