@@ -103,13 +103,13 @@ class IngestionRssLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_execution_date.width }}
               >
-                {nsdt(node.last_execution_date)}
+                {nsdt(node.last_execution_date) || '-'}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.current_state_date.width }}
               >
-                {nsdt(node.current_state_date)}
+                {nsdt(node.current_state_date) || '-'}
               </div>
             </div>
           }

@@ -65,6 +65,11 @@ const asArray = (data: unknown) => {
   return [];
 };
 
+const shouldExecuteIngestion = (ingestion: BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, min_interval_minutes: number) => {
+  const { last_execution_date } = ingestion;
+  return !last_execution_date || sinceNowInMinutes(last_execution_date) >= min_interval_minutes;
+};
+
 interface UpdateInfo {
   state?: any
   buffering?: boolean
@@ -272,10 +277,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const ingestion = ingestions[i];
     // If ingestion have remaining messages in the queue, or if last execution was done before RSS_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    const { last_execution_date } = ingestion;
-    const shouldExecuteIngestion = !last_execution_date || sinceNowInMinutes(last_execution_date) > RSS_FEED_MIN_INTERVAL_MINUTES;
-    logApp.info('ANGIE - ', { last_execution_date, RSS_FEED_MIN_INTERVAL_MINUTES, diff: sinceNowInMinutes(last_execution_date), messages_number });
-    if (messages_number === 0 && shouldExecuteIngestion) {
+    if (messages_number === 0 && shouldExecuteIngestion(ingestion, RSS_FEED_MIN_INTERVAL_MINUTES)) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
@@ -525,9 +527,6 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
-  const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-  await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
-
   try {
     const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
     await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
@@ -549,11 +548,8 @@ const csvExecutor = async (context: AuthContext) => {
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    // If ingestion have remaining messages in the queue, or if last execution was done before CSV_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    const { last_execution_date } = ingestion;
-    const shouldExecuteIngestion = !last_execution_date || sinceNowInMinutes(last_execution_date) > CSV_FEED_MIN_INTERVAL_MINUTES;
-    if (messages_number === 0 && shouldExecuteIngestion) {
+    if (messages_number === 0 && shouldExecuteIngestion(ingestion, CSV_FEED_MIN_INTERVAL_MINUTES)) {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - CSV ingestion execution', { cause: e, name: ingestion.name });
