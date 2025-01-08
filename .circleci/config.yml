@@ -416,7 +416,7 @@ jobs:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
           command: | 
-            docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling
+            docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling .
             docker tag opencti/platform:rolling ghcr.io/opencti-platform/opencti/platform:rolling
             docker push opencti/platform:rolling
             docker push ghcr.io/opencti-platform/opencti/platform:rolling
@@ -692,7 +692,7 @@ workflows:
       - build_frontend:
           filters:
             tags:
-              only: /.*/
+              only: /test.*/
       - build_platform:
           filters:
             tags:
