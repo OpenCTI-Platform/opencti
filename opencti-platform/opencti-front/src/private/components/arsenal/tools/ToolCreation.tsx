@@ -33,6 +33,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import TextField from '../../../../components/TextField';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -59,6 +60,7 @@ interface ToolAddInput {
   objectLabel: Option[]
   externalReferences: { value: string }[]
   tool_types: string[]
+  tool_version: string
   confidence: number | null
   file: File | null
 }
@@ -94,6 +96,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
+    tool_version: Yup.string().nullable(),
   };
   const toolValidator = useSchemaCreationValidation(TOOL_TYPE, basicShape);
 
@@ -137,6 +140,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
         killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
         objectLabel: values.objectLabel.map((v) => v.value),
         tool_types: values.tool_types,
+        tool_version: values.tool_version,
         confidence: parseInt(String(values.confidence), 10),
         externalReferences: values.externalReferences.map(({ value }) => value),
         file: values.file,
@@ -169,6 +173,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
       objectLabel: [],
       externalReferences: [],
       tool_types: [],
+      tool_version: '',
       confidence: defaultConfidence ?? null,
       file: null,
     },
@@ -259,6 +264,13 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               multiple={true}
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
+            />
+            <Field
+              component={TextField}
+              name="tool_version"
+              label={t_i18n('Tool Version')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
             />
             <ExternalReferencesField
               name="externalReferences"
