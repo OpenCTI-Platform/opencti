@@ -2570,9 +2570,6 @@ class OpenCTIStix2:
             in_retry = processing_count < PROCESSING_COUNT
             # Platform is under heavy load, wait for unlock & retry indefinitely.
             if ERROR_TYPE_LOCK in error_msg:
-                worker_logger.info(
-                    "Message reprocess for lock rejection", {"count": processing_count}
-                )
                 bundles_lock_error_counter.add(1)
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
@@ -2581,10 +2578,6 @@ class OpenCTIStix2:
                 )
             # Platform detects a missing reference and have to retry
             elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
-                worker_logger.info(
-                    "Message reprocess for missing reference",
-                    {"count": processing_count},
-                )
                 bundles_missing_reference_error_counter.add(1)
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
@@ -2593,8 +2586,7 @@ class OpenCTIStix2:
                 )
             # A bad gateway error occurs
             elif ERROR_TYPE_BAD_GATEWAY in error_msg:
-                worker_logger.error("A connection error occurred")
-                worker_logger.info(
+                worker_logger.error(
                     "Message reprocess for bad gateway",
                     {"count": processing_count},
                 )
@@ -2605,8 +2597,7 @@ class OpenCTIStix2:
                 )
             # Request timeout error occurs
             elif ERROR_TYPE_TIMEOUT in error_msg:
-                worker_logger.error("A connection error occurred")
-                worker_logger.info(
+                worker_logger.error(
                     "Message reprocess for request timed out",
                     {"count": processing_count},
                 )
@@ -2619,10 +2610,6 @@ class OpenCTIStix2:
             # That also works for missing reference with too much execution
             else:
                 bundles_technical_error_counter.add(1)
-                worker_logger.error(
-                    "Error executing import",
-                    {"count": processing_count, "reason": error},
-                )
                 if work_id is not None:
                     item_str = json.dumps(item)
                     self.opencti.work.report_expectation(
