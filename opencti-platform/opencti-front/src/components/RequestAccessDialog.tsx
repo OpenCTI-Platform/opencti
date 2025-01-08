@@ -8,8 +8,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
-import TextField from '@mui/material/TextField';
 import { useFormatter } from './i18n';
+import TextField from './TextField';
 import useApiMutation from '../utils/hooks/useApiMutation';
 import Transition from './Transition';
 import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
@@ -112,7 +112,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                   />
                   <ObjectOrganizationField
                     name="organizations"
-                    style={{ width: '100%', paddingTop: '16px' }}
+                    style={{ width: '100%', paddingTop: '16px', marginBottom: 20 }}
                     label={t_i18n('Select the organization of your choice for requesting this entity')}
                     multiple={false}
                     alert={false}
