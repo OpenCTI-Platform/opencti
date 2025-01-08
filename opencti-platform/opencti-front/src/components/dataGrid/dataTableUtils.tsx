@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import ItemDueDate from 'src/components/ItemDueDate';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -19,6 +20,7 @@ import ItemPatternType from '../ItemPatternType';
 import type { Theme } from '../Theme';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemEntityType from '../ItemEntityType';
+import ItemScore from '../ItemScore';
 import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
@@ -299,6 +301,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  due_date: {
+    id: 'due_date',
+    label: 'Due Date',
+    percentWidth: 15,
+    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant={'inList'} />,
+  },
   external_id: {
     id: 'external_id',
     label: 'External ID',
@@ -476,6 +484,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.preventDefault();
             e.stopPropagation();
             handleAddFilter('note_types', note_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  tool_types: {
+    id: 'tool_types',
+    label: 'Type',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ tool_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={tool_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('tool_types', tool_types?.at(0) ?? null, 'eq');
           }}
         />
       );
@@ -923,6 +953,38 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
+  x_opencti_cvss_base_score: {
+    id: 'x_opencti_cvss_base_score',
+    label: 'CVSS3 - Score',
+    percentWidth: 15,
+    render: ({ x_opencti_cvss_base_score }) => <ItemScore score={x_opencti_cvss_base_score} />,
+  },
+  x_opencti_cisa_kev: {
+    id: 'x_opencti_cisa_kev',
+    label: 'CISA KEV',
+    percentWidth: 15,
+    render: ({ x_opencti_cisa_kev }) => (
+      <Tooltip title={x_opencti_cisa_kev}>
+        <Truncate>{x_opencti_cisa_kev}</Truncate>
+      </Tooltip>
+    ),
+  },
+  x_opencti_epss_score: {
+    id: 'x_opencti_epss_score',
+    label: 'EPSS Score',
+    percentWidth: 15,
+    render: ({ x_opencti_epss_score }) => <ItemScore score={x_opencti_epss_score} />,
+  },
+  x_opencti_epss_percentile: {
+    id: 'x_opencti_epss_percentile',
+    label: 'EPSS Percentile',
+    percentWidth: 15,
+    render: ({ x_opencti_epss_percentile }) => (
+      <Tooltip title={x_opencti_epss_percentile}>
+        <Truncate>{x_opencti_epss_percentile}</Truncate>
+      </Tooltip>
+    ),
+  },
   x_opencti_cvss_base_severity: {
     id: 'x_opencti_cvss_base_severity',
     label: 'CVSS3 - Severity',
@@ -1012,8 +1074,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</>
-      </Tooltip>);
+      return (
+        <Tooltip title={file?.metaData?.mimetype}>
+          <>{b(file?.size)}</>
+        </Tooltip>
+      );
     },
   },
   valid_until: {
@@ -1075,6 +1140,31 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: ' ',
     percentWidth: 3,
     isSortable: false,
+  },
+  x_opencti_aliases: {
+    id: 'x_opencti_aliases',
+    label: 'Aliases',
+    percentWidth: 10,
+    render: ({ x_opencti_aliases }, helpers) => {
+      const value = x_opencti_aliases ? getMainRepresentative(x_opencti_aliases) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
+  objectParticipant: {
+    id: 'objectParticipant',
+    label: 'Participant',
+    percentWidth: 10,
+    render: ({ objectParticipant }) => {
+      const value = isNotEmptyField(objectParticipant) ? objectParticipant.map((c: { name: string }) => c.name).join(', ') : '-';
+      return defaultRender(value);
+    },
+  },
+  x_opencti_score: {
+    id: 'x_opencti_score',
+    label: 'Score',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ x_opencti_score }) => <ItemScore score={x_opencti_score} />,
   },
 };
 
