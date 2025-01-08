@@ -1,0 +1,51 @@
+type DisseminationList implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # DisseminationList
+  name: String!
+  emails: [String]!
+}
+
+# Ordering
+enum DisseminationListOrdering {
+  name
+  _score
+}
+
+# Relay connections
+type DisseminationListConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListEdge!]!
+}
+type DisseminationListEdge {
+  cursor: String!
+  node: DisseminationList!
+}
+
+# Queries
+type Query {
+  disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  disseminationLists(
+    first: Int
+    after: ID
+    orderBy: DisseminationListOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DisseminationListConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
+
+input DisseminationListAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  emails: [String]!
+}
+
+type Mutation {
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
