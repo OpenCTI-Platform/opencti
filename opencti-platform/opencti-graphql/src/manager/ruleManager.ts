@@ -238,9 +238,7 @@ export const rulesCleanHandler = async (
           }
         }
       } catch (err: any) {
-        if (err.name === ALREADY_DELETED_ERROR) {
-          logApp.warn(err);
-        } else {
+        if (err.name !== ALREADY_DELETED_ERROR) {
           logApp.error(err, { manager: 'RULE_ENGINE' });
         }
       }

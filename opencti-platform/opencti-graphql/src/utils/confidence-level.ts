@@ -203,7 +203,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
     if (keysArray.includes('confidence')) {
       const newValue = parseInt(input.value[0], 10);
       if (overrideMaxConfidence < newValue) {
-        logApp.warn('Object confidence cannot be updated above user\'s max confidence level, the value has been capped.', { user_id: user.id, element_id: element.id });
+        logApp.info('Object confidence cannot be updated above user\'s max confidence level, the value has been capped.', { user_id: user.id, element_id: element.id });
       }
       hasConfidenceInput = true;
       return {

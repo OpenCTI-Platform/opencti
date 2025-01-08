@@ -132,7 +132,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   if (!collection.stream_live) {
     res.statusMessage = 'This live stream is stopped';
     sendErrorStatusAndKillSession(req, res, 410);
-    logApp.warn('This live stream is stopped but still requested', { streamCollectionId: id });
+    logApp.info('This live stream is stopped but still requested', { streamCollectionId: id });
     return { error: 'This live stream is stopped' };
   }
   const streamFilters = JSON.parse(collection.filters);

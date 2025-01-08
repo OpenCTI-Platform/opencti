@@ -328,7 +328,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           // - Access rights are asymmetric, should not happen for meta relationships.
           // - Relations is invalid, should not happen in platform data consistency.
           const relations = invalidRelations.map((v) => ({ relation_id: v.id, target_id: v.toId }));
-          logApp.warn('Targets of loadElementMetaDependencies not found', { relations });
+          logApp.info('Targets of loadElementMetaDependencies not found', { relations });
         }
         const inputKey = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, key);
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
@@ -2601,7 +2601,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
         }
       } else {
-        logApp.warn('Discarding outdated attribute update mutation', { key: attributeKey });
+        logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
       }
     }
   }
@@ -2657,7 +2657,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           }
         }
       } else {
-        logApp.warn('Discarding outdated attribute update mutation', { key: inputField });
+        logApp.info('Discarding outdated attribute update mutation', { key: inputField });
       }
     }
   }
@@ -3323,7 +3323,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     }
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
-      logApp.warn(err);
+      logApp.info(err);
     } else {
       logApp.error(err);
     }

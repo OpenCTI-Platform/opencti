@@ -1,9 +1,9 @@
-import { filter, head, includes, isEmpty, isNil } from 'ramda';
+import { filter, head, isEmpty, isNil } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql/utilities';
 import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { ALREADY_DELETED_ERROR, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR, VALIDATION_ERROR } from '../config/errors';
+import { AUTH_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const innerCompute = (inners) => {
@@ -122,32 +122,30 @@ export default {
             callMetaData.query_attributes = (callError.nodes ?? []).map((node) => graphQLNodeParser(node));
           }
           const errorCode = callError.extensions?.code ?? callError.name;
-          const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && ![
-            UNSUPPORTED_ERROR,
-            ALREADY_DELETED_ERROR,
-            VALIDATION_ERROR,
-          ].includes(errorCode);
-          const isAuthenticationCall = includes(errorCode, [AUTH_REQUIRED]);
-          // Don't log for a simple missing authentication
+          // Don't error log for a simple missing authentication
+          // Specific audit log for forbidden access
+          const isAuthenticationCall = AUTH_ERRORS.includes(errorCode);
           if (isAuthenticationCall) {
+            // If not forbidden access, audit already handled
+            // Forbidden can be called in many places
+            if (errorCode === FORBIDDEN_ACCESS) {
+              await publishUserAction({
+                user: contextUser,
+                event_type: isWrite ? 'mutation' : 'read',
+                event_scope: 'unauthorized',
+                event_access: 'administration',
+                status: 'error',
+                context_data: {
+                  operation: context.operationName,
+                  input: context.request.variables,
+                }
+              });
+            }
             return;
           }
-          // Authentication problem can be logged in warning (dissoc variables to hide password)
-          // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
-          if (isRetryableCall) {
+          // If functional error, log in warning
+          if (FUNCTIONAL_ERRORS.includes(errorCode)) {
             logApp.warn(callError, callMetaData);
-          } else if (errorCode === FORBIDDEN_ACCESS) {
-            await publishUserAction({
-              user: contextUser,
-              event_type: isWrite ? 'mutation' : 'read',
-              event_scope: 'unauthorized',
-              event_access: 'administration',
-              status: 'error',
-              context_data: {
-                operation: context.operationName,
-                input: context.request.variables,
-              }
-            });
           } else {
             // Every other uses cases are logged with error level
             logApp.error(callError, callMetaData);

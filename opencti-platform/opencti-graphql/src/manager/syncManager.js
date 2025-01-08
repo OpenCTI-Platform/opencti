@@ -58,7 +58,7 @@ const syncManagerInstance = (syncId) => {
       logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.url} with id ${connectionId}`);
     });
     eventSource.on('error', (error) => {
-      logApp.error(error, { id: syncId, manager: 'SYNC_MANAGER' });
+      logApp.warn(error, { id: syncId, manager: 'SYNC_MANAGER' });
     });
   };
   const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
