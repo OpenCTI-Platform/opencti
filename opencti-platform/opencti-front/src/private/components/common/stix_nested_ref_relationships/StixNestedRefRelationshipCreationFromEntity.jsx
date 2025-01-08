@@ -507,10 +507,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     const searchPaginationOptions = {
       search: searchTerm,
       filters: removeIdFromFilterGroupObject(filters),
-      orderBy: searchTerm.length > 0 ? null : 'created_at',
-      orderMode: searchTerm.length > 0 ? null : 'desc',
+      orderBy: null,
+      orderMode: null,
       types: targetStixCoreObjectTypes,
     };
+    if (searchTerm.length === 0) {
+      searchPaginationOptions.orderBy = sortBy;
+      searchPaginationOptions.orderMode = orderAsc ? 'asc' : 'desc';
+    }
     const dataColumns = {
       entity_type: {
         label: 'Type',
