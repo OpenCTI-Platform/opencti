@@ -82,7 +82,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
               {isAttributeWidget ? (
                 <FintelTemplateWidgetAttribute
                   key={variable_name}
-                  widgetType={widget.type}
+                  widget={widget}
                   onOpenPopover={handleOpenPopover}
                   variableName={isSelfAttributeWidget
                     ? t_i18n('Attributes of the instance')
