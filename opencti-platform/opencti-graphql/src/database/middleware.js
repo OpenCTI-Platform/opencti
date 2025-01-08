@@ -2160,10 +2160,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // endregion
     // Impacting information
-    if (impactedInputs.length > 0) {
+    if (impactedInputs.length > 0 || (getDraftContext(context, user) && isDraftSupportedEntity(initial) && updatedInputs.length > 0)) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
       if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
-        updateAsInstance.draft_change = getDraftChanges(initial, impactedInputs);
+        updateAsInstance.draft_change = getDraftChanges(initial, updatedInputs);
       }
       await elUpdateElement(context, user, updateAsInstance);
     }

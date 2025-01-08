@@ -16,7 +16,7 @@ import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_IN
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
@@ -185,33 +185,13 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const deleteStixEntities = await stixLoadByIds(contextInDraft, user, deleteEntitiesIds, includeDeleteOption);
   const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => ({ ...d, opencti_operation: 'delete' }));
 
-  // We add all deleted refs in the bundle, marking them as a delete operation
-  const draftStixDeleteRefs = draftEntities.filter((e) => isStixRefRelationship(e.entity_type) && e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);
-  const deletedRefsBundle = draftStixDeleteRefs.map((ref) => ({ id: ref.internal_id, type: ABSTRACT_STIX_REF_RELATIONSHIP, opencti_operation: 'delete' }));
-
-  // TODO: for now, updated entities are fully sent in bundle. But once update metadata are OK, we will want to take the live element and only apply updates done in the draft
-  const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE);
+  // Send update with "field patch" info
+  const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draftupdateinputs);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
+  const updateStixEntitiesWithPatch = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: updateEntities.find((e) => e.standard_id === d.id).draft_change.draftupdateinputs }));
 
-  // const updatedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE
-  //     && e.draft_change.draft_update_patch && e.draft_change.draft_update_patch.length > 0);
-  // const convertUpdatedEntityToStix = async (updatedDraftEntity: any) => {
-  //   const element = await elLoadById(contextOutOfDraft, user, updatedDraftEntity.internal_id, { withoutRels: true, connectionFormat: false }) as any;
-  //   if (!element) return element;
-  //
-  //   for (let i = 0; i < updatedDraftEntity.draft_change.draft_update_patch.length; i += 1) {
-  //     const { path, value } = updatedDraftEntity.draft_change.draft_update_patch[i];
-  //     element[path] = value;
-  //   }
-  //   const elementsWithDeps = await loadElementsWithDependencies(contextInDraft, user, [element]);
-  //   if (elementsWithDeps.length === 0) return null;
-  //   const elementWithDep = elementsWithDeps[0];
-  //   return convertStoreToStix(elementWithDep);
-  // };
-  // const updateStixEntities = await Promise.all(updatedEntities.map(async (e) => convertUpdatedEntityToStix(e)).filter((e) => e));
-
-  return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...deletedRefsBundle, ...updateStixEntities]);
+  return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch]);
 };
 
 export const validateDraftWorkspace = async (context: AuthContext, user: AuthUser, draft_id: string) => {
