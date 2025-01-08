@@ -4,7 +4,6 @@ import WidgetCreationTypes from '@components/widgets/WidgetCreationTypes';
 import WidgetCreationPerspective from '@components/widgets/WidgetCreationPerspective';
 import WidgetCreationDataSelection from '@components/widgets/WidgetCreationDataSelection';
 import WidgetCreationParameters from '@components/widgets/WidgetCreationParameters';
-import MenuItem from '@mui/material/MenuItem';
 import WidgetUpsert from '@components/widgets/WidgetUpsert';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -14,7 +13,6 @@ interface WidgetConfigProps {
   onComplete: (value: Widget, variableName?: string) => void,
   open: boolean,
   setOpen: (open: boolean) => void,
-  closeMenu?: () => void,
   widget?: Widget,
   context: WidgetContext,
   initialVariableName?: string,
@@ -22,7 +20,6 @@ interface WidgetConfigProps {
 
 const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   onComplete,
-  closeMenu,
   widget,
   setOpen,
   open,
@@ -169,16 +166,6 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   };
   return (
     <>
-      {widget && (
-        <MenuItem
-          onClick={() => {
-            closeMenu?.();
-            setOpen(true);
-          }}
-        >
-          {t_i18n('Update')}
-        </MenuItem>
-      )}
       <WidgetUpsert
         open={open}
         handleCloseAfterCancel={handleCloseAfterCancel}

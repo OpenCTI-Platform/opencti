@@ -7,6 +7,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import WidgetConfig from '../../widgets/WidgetConfig';
 import { toB64 } from '../../../../utils/String';
@@ -129,6 +130,16 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
           )}
         </Security>
       </>
+      )}
+      {widget && (
+        <MenuItem
+          onClick={() => {
+            closeMenu?.();
+            setOpen(true);
+          }}
+        >
+          {t_i18n('Update')}
+        </MenuItem>
       )}
       <WidgetConfig
         handleWidgetImport={handleWidgetImport}
