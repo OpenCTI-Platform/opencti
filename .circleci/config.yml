@@ -741,7 +741,7 @@ workflows:
           filters:
             branches:
               only:
-                - oob\/ghcr
+                - /oob\/.*/
       - docker_build_worker_rolling:
           requires:
             - build_frontend
