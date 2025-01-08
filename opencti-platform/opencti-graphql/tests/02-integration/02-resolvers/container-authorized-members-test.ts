@@ -68,6 +68,7 @@ const READ_REPORT_QUERY = gql`
         access_right
       }
       currentUserAccessRight
+      authorized_members_activation_date
     }
   }
 `;
@@ -737,7 +738,7 @@ describe('Restricted entities listing', () => {
     ]);
   });
   it('should Report created', async () => { // +1 create
-    // Create Case Incident Response
+    // Create Report
     const reportCreateQueryResult = await adminQueryWithSuccess({
       query: CREATE_REPORT_QUERY,
       variables: {
@@ -789,6 +790,10 @@ describe('Restricted entities listing', () => {
   it('using platform org - should BYPASS user be allowed list all auth member restricted entities', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
     expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
+  });
+  it('using platform org - should BYPASS user get authorized members activation date in a report', async () => {
+    const queryResult = await adminQueryWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportId } });
+    expect(queryResult?.data?.report.authorized_members_activation_date).toBeDefined();
   });
   it('should platform organization sharing and EE deactivated', async () => {
     await enableCEAndUnSetOrganization();
