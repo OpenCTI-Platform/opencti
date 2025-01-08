@@ -12,6 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
+import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -20,7 +21,7 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 
 interface WidgetCreationParametersProps {
   dataSelection: WidgetDataSelection[],
@@ -87,6 +88,31 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
         .flat(),
     );
   };
+
+  const availableColumns: WidgetColumn[] = [
+    { attribute: 'entity_type' },
+    { attribute: 'relationship_type' },
+    { attribute: 'from.entity_type' },
+    { attribute: 'from.relationship_type' },
+    { attribute: 'to.entity_type' },
+    { attribute: 'to.relationship_type' },
+    { attribute: 'created_at' },
+    { attribute: 'createdBy.name' },
+    { attribute: 'objectMarking' },
+  ];
+  const columns: WidgetColumn[] = dataSelection[0]?.columns ?? availableColumns;
+  const setColumns = (newColumns: WidgetColumn[]) => {
+    setDataSelection((prevDataSelection: WidgetDataSelection[]) => {
+      if (prevDataSelection.length > 0) {
+        return [
+          { ...prevDataSelection[0], columns: newColumns },
+          ...prevDataSelection.slice(1),
+        ] as WidgetDataSelection[];
+      }
+      return prevDataSelection;
+    });
+  };
+  console.log({ dataSelection, columns });
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -635,6 +661,9 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             }
             label={t_i18n('Display legend')}
           />
+        )}
+        {getCurrentCategory(type) === 'list' && (
+          <WidgetConfigColumnsCustomization availableColumns={availableColumns} columns={columns} setColumns={setColumns} />
         )}
       </div>
     </div>
