@@ -39,7 +39,7 @@ const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
   confidence_to_score: Yup.bool().nullable(),
-  authorized_members: Yup.array().required().min(1),
+  authorized_members: Yup.array().required(t('This field is required')).min(1, t('This field is required')),
 });
 
 const IngestionTaxiiCollectionCreation = (props) => {
