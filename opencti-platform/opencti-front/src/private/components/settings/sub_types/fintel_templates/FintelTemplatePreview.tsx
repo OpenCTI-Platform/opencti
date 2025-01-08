@@ -3,8 +3,9 @@ import { Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import { useFragment } from 'react-relay';
-import { FintelTemplateQuery$data } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateQuery.graphql';
-import { FintelTemplateWidgetsSidebar_template$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateWidgetsSidebar_template.graphql';
+import { FintelTemplateQuery$data } from './__generated__/FintelTemplateQuery.graphql';
+import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';
+import { useFintelTemplateContext } from './FintelTemplateContext';
 import { widgetsFragment } from './FintelTemplateWidgetsSidebar';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
@@ -14,20 +15,26 @@ import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
 
 interface FintelTemplatePreviewProps {
-  editorContent: string,
   fintelTemplate: NonNullable<FintelTemplateQuery$data['fintelTemplate']>;
   isTabActive: boolean
 }
 
-const FintelTemplatePreview = ({ editorContent, fintelTemplate, isTabActive }: FintelTemplatePreviewProps) => {
+const FintelTemplatePreview = ({
+  fintelTemplate,
+  isTabActive,
+}: FintelTemplatePreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
+  const { editorValue } = useFintelTemplateContext();
 
   const [pdf, setPdf] = useState<File>();
   const [formValues, setFormValues] = useState<FintelTemplatePreviewFormInputs>();
 
-  const { fintel_template_widgets } = useFragment<FintelTemplateWidgetsSidebar_template$key>(widgetsFragment, fintelTemplate);
+  const { fintel_template_widgets } = useFragment<FintelTemplateWidgetsSidebar_template$key>(
+    widgetsFragment,
+    fintelTemplate,
+  );
 
   const paperStyle: CSSProperties = {
     padding: theme.spacing(2),
@@ -42,7 +49,7 @@ const FintelTemplatePreview = ({ editorContent, fintelTemplate, isTabActive }: F
     fileMarkings: string[],
   ) => {
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, {
-      template_content: editorContent,
+      template_content: editorValue ?? '',
       name: 'Preview',
       id: 'preview',
       fintel_template_widgets,
@@ -64,7 +71,7 @@ const FintelTemplatePreview = ({ editorContent, fintelTemplate, isTabActive }: F
       (contentMaxMarkings ?? []).map((m) => m.label),
       (fileMarkings ?? []).map((m) => m.label),
     );
-  }, [formValues, editorContent, isTabActive]);
+  }, [formValues, editorValue, isTabActive]);
 
   return (
     <div style={{

@@ -1,21 +1,27 @@
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
-import { AddOutlined, MoreVert } from '@mui/icons-material';
+import { AddOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, MouseEvent } from 'react';
-import { renderWidgetIcon } from '@components/widgets/widgetUtils';
 import { Tooltip } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
+import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
+import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
+import type { Widget } from '../../../../../utils/widget/widget';
+
+export interface FintelTemplateWidget {
+  variable_name: string
+  widget: Widget
+}
 
 interface FintelTemplateWidgetsListProps {
-  widgets: { id: string, variableName: string, type: string }[],
-  handleOpenPopover: (event: MouseEvent<HTMLButtonElement>, lineKey: string) => void,
-  title: string;
-  onCreateWidget?: () =>void
+  widgets: FintelTemplateWidget[]
+  handleOpenPopover: (event: MouseEvent<HTMLButtonElement>, lineKey: string) => void
+  title: string
+  onCreateWidget?: () => void
 }
 
 const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({
@@ -28,7 +34,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
   const theme = useTheme<Theme>();
 
   return (
-    <div style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
+    <>
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -58,29 +64,44 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       )}
 
       <List>
-        {widgets.map((widget) => {
-          const { variableName } = widget;
+        {widgets.map((fintelWidget) => {
+          const { variable_name, widget } = fintelWidget;
+          const isAttributeWidget = widget.type === 'attribute';
+          const isSelfAttributeWidget = isAttributeWidget && widget.dataSelection[0].instance_id === 'SELF_ID';
+
           return (
             <ListItem
-              key={variableName}
-              value={variableName}
-              sx={{ paddingRight: 1, paddingTop: 0, gap: 2 }}
+              key={variable_name}
+              value={variable_name}
+              sx={{
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                paddingRight: 1,
+                gap: 1,
+              }}
             >
-              {renderWidgetIcon(widget.type, 'small')}
-              <ListItemText primary={variableName} />
-              <IconButton
-                aria-haspopup="true"
-                color="primary"
-                size="small"
-                onClick={(event) => handleOpenPopover(event, variableName)}
-              >
-                <MoreVert />
-              </IconButton>
+              {isAttributeWidget ? (
+                <FintelTemplateWidgetAttribute
+                  key={variable_name}
+                  widgetType={widget.type}
+                  onOpenPopover={handleOpenPopover}
+                  variableName={isSelfAttributeWidget
+                    ? t_i18n('Attributes of the instance')
+                    : variable_name
+                  }
+                />
+              ) : (
+                <FintelTemplateWidgetDefault
+                  key={variable_name}
+                  widgetType={widget.type}
+                  variableName={variable_name}
+                  onOpenPopover={handleOpenPopover}
+                />
+              )}
             </ListItem>
           );
         })}
       </List>
-    </div>
+    </>
   );
 };
 

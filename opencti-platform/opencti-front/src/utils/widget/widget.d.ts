@@ -2,7 +2,7 @@ import { FilterGroup } from '../filters/filtersHelpers-types';
 
 export type WidgetContext = 'workspace' | 'fintelTemplate';
 
-export type WidgetPerspective = 'entities' | 'relationships' | 'audits';
+export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
 interface WidgetColumn {
   attribute: string | null
@@ -20,6 +20,7 @@ export interface WidgetDataSelection {
   centerLng?: number | null
   zoom?: number | null
   isTo?: boolean | null
+  instance_id?: string | null
   perspective?: WidgetPerspective | null
   filters?: FilterGroup | null
   dynamicFrom?: FilterGroup | null
@@ -53,6 +54,6 @@ export interface Widget {
   type: string;
   perspective?: WidgetPerspective | null
   dataSelection: WidgetDataSelection[]
-  parameters?: WidgetParameters
-  layout?: WidgetLayout
+  parameters?: WidgetParameters | null
+  layout?: WidgetLayout | null
 }

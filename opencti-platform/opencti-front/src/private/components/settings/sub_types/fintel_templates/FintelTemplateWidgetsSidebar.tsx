@@ -4,7 +4,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
 import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';
-import FintelTemplateWidgetsList from './FintelTemplateWidgetsList';
+import FintelTemplateWidgetsList, { FintelTemplateWidget } from './FintelTemplateWidgetsList';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
@@ -91,7 +91,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { id, template_content, fintel_template_widgets: fintelTemplateWidgets } = useFragment(widgetsFragment, data);
 
-  const formattedFintelTemplateWidgets = fintelTemplateWidgets
+  const formattedFintelTemplateWidgets: FintelTemplateWidget[] = fintelTemplateWidgets
     .map((template) => ({
       ...template,
       widget: {
@@ -103,7 +103,8 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
           dynamicTo: selection.dynamicTo ? JSON.parse(selection.dynamicTo) : emptyFilterGroup,
         })),
       },
-    }));
+    }) as FintelTemplateWidget);
+
   const formattedFintelTemplateWidgetsForList = formattedFintelTemplateWidgets
     .map((template) => (template.widget.type === 'attribute'
       ? (template.widget.dataSelection[0].columns ?? []).map((c) => ({
@@ -119,7 +120,6 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     .flat() as { id: string, variableName: string, type: string }[];
 
   const usedWidgets = formattedFintelTemplateWidgetsForList.filter((w) => template_content.includes(`$${w.variableName}`));
-  const availableWidgets = formattedFintelTemplateWidgetsForList.filter((w) => !usedWidgets.includes(w));
 
   const [selectedVariable, setSelectedVariable] = useState<string | null>(null);
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState<boolean>(false);
@@ -254,17 +254,11 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       <Drawer variant="permanent" anchor="right" sx={paperStyle}>
         <Toolbar />
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <FintelTemplateWidgetsList
             title={t_i18n('Available template widgets')}
             onCreateWidget={handleOpenCreateWidget}
-            widgets={availableWidgets}
-            handleOpenPopover={handleOpenPopover}
-          />
-
-          <FintelTemplateWidgetsList
-            title={t_i18n('Template widgets used in content')}
-            widgets={usedWidgets}
+            widgets={formattedFintelTemplateWidgets}
             handleOpenPopover={handleOpenPopover}
           />
         </div>
@@ -281,11 +275,12 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
         </MenuItem>
-        {!usedWidgets.find((w) => w.variableName === selectedVariable) && (
-          <MenuItem onClick={onOpenDelete}>
-            {t_i18n('Delete')}
-          </MenuItem>
-        )}
+        <MenuItem
+          onClick={onOpenDelete}
+          disabled={!!usedWidgets.find((w) => w.variableName === selectedVariable)}
+        >
+          {t_i18n('Delete')}
+        </MenuItem>
       </Menu>
 
       <WidgetConfig

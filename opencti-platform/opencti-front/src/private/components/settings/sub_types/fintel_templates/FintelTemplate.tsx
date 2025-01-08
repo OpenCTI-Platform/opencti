@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import FintelTemplatePreview from '@components/settings/sub_types/fintel_templates/FintelTemplatePreview';
+import { FintelTemplateProvider } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import FintelTemplateContentEditor from './FintelTemplateContentEditor';
 import FintelTemplateTabs from './FintelTemplateTabs';
 import FintelTemplateHeader from './FintelTemplateHeader';
@@ -37,7 +38,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
   if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound/>;
 
   return (
-    <>
+    <FintelTemplateProvider>
       <div style={{ marginRight: FINTEL_TEMPLATE_SIDEBAR_WIDTH }}>
         <FintelTemplateHeader
           entitySettingId={entitySettingByType.id}
@@ -45,18 +46,14 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
         />
 
         <FintelTemplateTabs data={fintelTemplate}>
-          {({ index, setEditorValue, editorValue }) => (
+          {({ index }) => (
             <>
               <div role="tabpanel" hidden={index !== 0}>
-                <FintelTemplateContentEditor
-                  data={fintelTemplate}
-                  onChange={setEditorValue}
-                />
+                <FintelTemplateContentEditor data={fintelTemplate} />
               </div>
               <Security needs={[KNOWLEDGE]}>
                 <div role="tabpanel" hidden={index !== 1}>
                   <FintelTemplatePreview
-                    editorContent={editorValue}
                     isTabActive={index === 1}
                     fintelTemplate={fintelTemplate}
                   />
@@ -68,7 +65,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
       </div>
 
       <FintelTemplateWidgetsSidebar data={fintelTemplate} />
-    </>
+    </FintelTemplateProvider>
   );
 };
 
