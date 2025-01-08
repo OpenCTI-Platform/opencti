@@ -8,12 +8,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
-import MarkdownField from './fields/MarkdownField';
+import TextField from '@mui/material/TextField';
 import { useFormatter } from './i18n';
 import useApiMutation from '../utils/hooks/useApiMutation';
 import Transition from './Transition';
 import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
 import { handleErrorInForm } from '../relay/environment';
+import useAuth from '../utils/hooks/useAuth';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -33,7 +34,7 @@ interface OrganizationForm {
 }
 
 interface RequestAccessFormAddInput {
-  organizations: OrganizationForm[];
+  organizations: OrganizationForm;
   request_access_entities: string[];
   request_access_reason: string;
   request_access_type: 'organization_sharing';
@@ -41,26 +42,25 @@ interface RequestAccessFormAddInput {
 
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
-
-  const initialValues: RequestAccessFormAddInput = {
-    request_access_reason: '',
-    organizations: [],
-    request_access_entities: [],
-    request_access_type: 'organization_sharing',
-  };
+  const { me } = useAuth();
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
+  const initialValues: RequestAccessFormAddInput = {
+    request_access_reason: '',
+    organizations: { label: '', value: '' },
+    request_access_entities: [],
+    request_access_type: 'organization_sharing',
+  };
   const onSubmit: FormikConfig<RequestAccessFormAddInput>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
-    const organizations = values.organizations.map((org: OrganizationForm) => org.value);
+    const { organizations } = values;
 
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
       request_access_entities: entitiesIds,
-      request_access_members: organizations,
+      request_access_members: [organizations.value],
       request_access_type: 'organization_sharing',
     };
-
     commit({
       variables: { input },
       onError: (error) => {
@@ -74,6 +74,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
       },
     });
   };
+
   return (
     <Dialog
       open={open}
@@ -95,25 +96,40 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                 <DialogContent style={{ padding: 0 }}>
                   <DialogContentText>
                     {t_i18n(
-                      'Your account/organization does not have permission to create/update this entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
+                      'Your account/organization does not have permission to create/update the entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
                     )}
                   </DialogContentText>
                   <Field
-                    component={MarkdownField}
+                    component={TextField}
                     name="request_access_reason"
                     label={t_i18n('Enter justification for requesting this entity')}
                     fullWidth={true}
-                    multiline={true}
-                    rows={4}
+                    variant="standard"
                     style={{ marginTop: 20 }}
-                    askAi={false}
+                    askAi={true}
+                    multiline={true}
+                    minRows={5}
                   />
                   <ObjectOrganizationField
                     name="organizations"
                     style={{ width: '100%', paddingTop: '16px' }}
-                    label={t_i18n('Organization')}
-                    multiple={true}
+                    label={t_i18n('Select the organization of your choice for requesting this entity')}
+                    multiple={false}
                     alert={false}
+                    filters={{
+                      mode: 'and',
+                      filters: [
+                        { key: 'entity_type', values: ['Organization'], mode: 'or', operator: 'eq' },
+                        {
+                          key: 'regardingOf',
+                          values: [
+                            { key: 'id', values: [me.id], mode: 'and', operator: 'eq' },
+                            { key: 'relationship_type', values: ['participate-to'], mode: 'and', operator: 'eq' },
+                          ],
+                        },
+                      ],
+                      filterGroups: [],
+                    }}
                   />
                 </DialogContent>
                 <DialogActions>
