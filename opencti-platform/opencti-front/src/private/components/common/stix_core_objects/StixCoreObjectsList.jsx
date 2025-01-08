@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
+import { defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -47,6 +48,9 @@ export const stixCoreObjectsListQuery = graphql`
             description
             x_mitre_id
           }
+          ... on Note {
+            note_types
+          }
           ... on Campaign {
             name
             description
@@ -66,14 +70,29 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             published
+            report_types
+            objectAssignee {
+              entity_type
+              id
+              name
+            }
+            objectParticipant {
+              entity_type
+              id
+              name
+            }
           }
           ... on Grouping {
             name
             description
+            x_opencti_aliases
+            context
           }
           ... on CourseOfAction {
             name
             description
+            x_opencti_aliases
+            x_mitre_id
           }
           ... on Individual {
             name
@@ -84,10 +103,12 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             x_opencti_aliases
+            x_opencti_organization_type
           }
           ... on Sector {
             name
             description
+            x_opencti_aliases
           }
           ... on System {
             name
@@ -102,6 +123,7 @@ export const stixCoreObjectsListQuery = graphql`
             pattern_type
             valid_from
             valid_until
+            x_opencti_score
           }
           ... on Infrastructure {
             name
@@ -111,58 +133,86 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             aliases
+            resource_level
           }
           ... on Position {
             name
             description
+            x_opencti_aliases
           }
           ... on City {
             name
             description
+            x_opencti_aliases
           }
           ... on AdministrativeArea {
             name
             description
+            x_opencti_aliases
           }
           ... on Country {
             name
             description
+            x_opencti_aliases
           }
           ... on Region {
             name
             description
+            x_opencti_aliases
           }
           ... on Malware {
             name
             description
+            malware_types
           }
           ... on MalwareAnalysis {
             result_name
+            product
+            objectAssignee {
+              entity_type
+              id
+              name
+            }
           }
           ... on ThreatActor {
             name
             description
             aliases
+            threat_actor_types
+          }
+          ... on ThreatActorGroup {
+            threat_actor_types
           }
           ... on Tool {
             name
             description
+            tool_types
           }
           ... on Vulnerability {
             name
             description
+            x_opencti_aliases
+            x_opencti_cvss_base_score
+            x_opencti_cvss_base_severity
+            x_opencti_cisa_kev
+            x_opencti_epss_score
+            x_opencti_epss_percentile
           }
           ... on Incident {
             name
             description
+            incident_type
+            severity
           }
           ... on Event {
             name
             description
+            event_types
           }
           ... on Channel {
             name
             description
+            channel_types
           }
           ... on Narrative {
             name
@@ -177,8 +227,75 @@ export const stixCoreObjectsListQuery = graphql`
           ... on DataSource {
             name
           }
+          ... on Task {
+            name
+            description
+            due_date
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
           ... on Case {
             name
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
+          ... on CaseIncident {
+            priority
+            severity
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
+          ... on CaseRfi {
+            priority
+            severity
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
+          ... on CaseRft {
+            priority
+            severity
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
           }
           ... on Task {
             name
@@ -237,6 +354,8 @@ const StixCoreObjectsList = ({
 }) => {
   const { t_i18n } = useFormatter();
   const selection = dataSelection[0];
+  // TODO remove defaultWidgetColumns use entityType
+  const columns = selection.columns ?? defaultWidgetColumns.common;
   const dataSelectionTypes = ['Stix-Core-Object'];
   const sortBy = selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
@@ -274,11 +393,11 @@ const StixCoreObjectsList = ({
               return (
                 <WidgetListCoreObjects
                   data={data}
-                  dateAttribute={dateAttribute}
                   rootRef={rootRef.current ?? undefined}
                   widgetId={widgetId}
                   pageSize={selection.number ?? 10}
                   sortBy={sortBy}
+                  columns={columns}
                 />
               );
             }
