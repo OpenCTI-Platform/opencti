@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import WidgetCreationTypes from '@components/widgets/WidgetCreationTypes';
 import WidgetCreationPerspective from '@components/widgets/WidgetCreationPerspective';
@@ -55,6 +55,10 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     widget?.dataSelection ?? [initialSelection],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
+
+  useEffect(() => {
+    setStepIndex(initialStep);
+  }, [initialStep]);
 
   const handleCloseAfterCancel = () => {
     if (!widget) {
