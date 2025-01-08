@@ -89,6 +89,7 @@ const ToolEditionOverviewComponent = (props) => {
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
+    tool_version: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -112,6 +113,7 @@ const ToolEditionOverviewComponent = (props) => {
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc('tool_types', values.tool_types),
+      R.assoc('tool_version', values.tool_version),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({
@@ -160,6 +162,7 @@ const ToolEditionOverviewComponent = (props) => {
     R.assoc('objectMarking', convertMarkings(tool)),
     R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, tool)),
     R.assoc('tool_types', tool.tool_types ?? []),
+    R.assoc('tool_version', tool.tool_version),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -277,6 +280,18 @@ const ToolEditionOverviewComponent = (props) => {
             variant="edit"
             multiple={true}
             editContext={context}
+          />
+          <Field
+            component={TextField}
+            name="tool_version"
+            label={t_i18n('Tool Version')}
+            fullWidth
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="tool_version" />
+            }
           />
           {enableReferences && (
           <CommitMessage
