@@ -116,6 +116,10 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+
+  const { isFeatureEnable } = useHelper();
+  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
+
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -319,6 +323,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isAccessRestrictionCreationEnable && (
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
           >
@@ -343,6 +348,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
               </Accordion>
             </div>
           </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"
