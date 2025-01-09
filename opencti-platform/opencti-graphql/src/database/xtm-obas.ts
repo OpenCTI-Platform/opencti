@@ -46,11 +46,46 @@ export const getAttackPatterns = async () => {
   }
 };
 
-export const getInjectorContracts = async (attackPatternId: string) => {
+export const searchInjectorContracts = async (attackPatternId: string, platforms: string[], architecture: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
-    const { data: injectorContracts } = await httpClient.get(`/attack_patterns/${attackPatternId}/injector_contracts`);
-    return injectorContracts;
+    const importFilter: any = {
+      mode: 'and',
+      filters: [
+        {
+          key: 'injector_contract_attack_patterns',
+          operator: 'contains',
+          values: [attackPatternId],
+        }
+      ],
+    };
+    const platformFilter = {
+      key: 'injector_contract_platforms',
+      mode: 'and',
+      operator: 'contains',
+      values: platforms,
+    };
+    const architectureFilter = {
+      key: 'injector_contract_arch',
+      mode: 'and',
+      operator: 'eq',
+      values: [architecture],
+    };
+    const searchPaginationInput = {
+      filterGroup: {
+        filters: [
+          ...importFilter.filters,
+          architectureFilter,
+          platformFilter,
+        ],
+        mode: 'and',
+      },
+      page: 0,
+      size: 100,
+    };
+
+    const { data: injectorContracts } = await httpClient.post('/injector_contracts/search', searchPaginationInput);
+    return injectorContracts.content;
   } catch (err) {
     throw DatabaseError('Error querying OpenBAS', { cause: err });
   }
@@ -124,7 +159,9 @@ export const createInjectInScenario = async (
   title: string,
   dependsDuration: number,
   content: string | null,
-  tags: Label[]
+  tags: Label[],
+  enabled: boolean,
+  description: string,
 ) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
@@ -143,6 +180,8 @@ export const createInjectInScenario = async (
         inject_depends_duration: dependsDuration,
         inject_content: content,
         inject_tags: obasTagsIds,
+        inject_enabled: enabled,
+        inject_description: description,
       }
     );
     return inject;
