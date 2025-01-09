@@ -6302,15 +6302,8 @@ export type DisseminationList = BasicObject & InternalObject & {
 };
 
 export type DisseminationListAddInput = {
-  active: Scalars['Boolean']['input'];
-  decay_lifetime: Scalars['Int']['input'];
-  decay_observable_types?: InputMaybe<Array<Scalars['String']['input']>>;
-  decay_points?: InputMaybe<Array<Scalars['Int']['input']>>;
-  decay_pound: Scalars['Float']['input'];
-  decay_revoke_score: Scalars['Int']['input'];
-  description?: InputMaybe<Scalars['String']['input']>;
+  emails: Array<InputMaybe<Scalars['String']['input']>>;
   name: Scalars['String']['input'];
-  order: Scalars['Int']['input'];
 };
 
 export type DisseminationListConnection = {
