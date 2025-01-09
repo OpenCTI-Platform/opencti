@@ -106,6 +106,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
+
+  const { isFeatureEnable } = useHelper();
+  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
@@ -273,6 +277,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isAccessRestrictionCreationEnable && (
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
           >
@@ -297,6 +302,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
               </Accordion>
             </div>
           </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"

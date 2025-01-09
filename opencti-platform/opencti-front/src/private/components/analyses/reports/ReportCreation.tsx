@@ -115,6 +115,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
+
+  const { isFeatureEnable } = useHelper();
+  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
     published: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -323,6 +327,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isAccessRestrictionCreationEnable && (
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
           >
@@ -347,6 +352,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
               </Accordion>
             </div>
           </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"
