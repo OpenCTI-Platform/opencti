@@ -47,6 +47,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     filters: emptyFilterGroup,
     dynamicFrom: emptyFilterGroup,
     dynamicTo: emptyFilterGroup,
+    instance_id: type === 'attribute' ? 'SELF_ID' : undefined,
   };
   const [dataSelection, setDataSelection] = useState(
     widget?.dataSelection ?? [initialSelection],
