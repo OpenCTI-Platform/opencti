@@ -284,7 +284,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                 name={'authorizedMembers'}
                 component={AuthorizedMembersField}
                 showAllMembersLine
-                showCreatorLine
+                showCreatorLine={false}
                 canDeactivate
                 disabled={isSubmitting}
                 addMeUserWithAdminRights
