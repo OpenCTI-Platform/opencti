@@ -17,6 +17,7 @@ export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   object_marking_refs: string[] | undefined
   current_state_date: Date | undefined
   ingestion_running: boolean
+  last_execution_date: Date | undefined
 }
 
 export interface StoreEntityIngestionRss extends StoreEntity {
@@ -25,6 +26,7 @@ export interface StoreEntityIngestionRss extends StoreEntity {
   uri: string
   report_types: string[]
   ingestion_running: boolean
+  last_execution_date: Date | undefined
 }
 
 export interface StixIngestionRss extends StixObject {
@@ -96,6 +98,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   authentication_value?: string | null
   user_id: string | undefined
   ingestion_running: boolean
+  last_execution_date: Date | undefined
   markings?: string[]
 }
 
@@ -105,6 +108,7 @@ export interface StoreEntityIngestionCsv extends StoreEntity {
   uri: string
   csv_mapper_id: string
   ingestion_running: boolean
+  last_execution_date: Date | undefined
 }
 
 export interface StixIngestionCsv extends StixObject {
