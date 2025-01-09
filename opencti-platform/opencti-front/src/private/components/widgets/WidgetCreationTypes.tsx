@@ -12,12 +12,15 @@ interface WidgetCreationTypesProps {
   handleSelectType: (type: string) => void,
   context: WidgetContext,
 }
+
 const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
   handleSelectType,
   context,
 }) => {
   const { t_i18n } = useFormatter();
-  const visualizationTypes = context === 'workspace' ? workspacesWidgetVisualizationTypes : fintelTemplatesWidgetVisualizationTypes;
+  const visualizationTypes = context === 'workspace'
+    ? workspacesWidgetVisualizationTypes
+    : fintelTemplatesWidgetVisualizationTypes;
 
   return (
     <Grid

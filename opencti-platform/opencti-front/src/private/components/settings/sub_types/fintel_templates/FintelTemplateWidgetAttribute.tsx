@@ -51,13 +51,15 @@ const FintelTemplateWidgetAttribute = ({
           {variableName}
         </Typography>
 
-        <IconButton
-          aria-haspopup="true"
-          color="primary"
-          onClick={onUpdate}
-        >
-          <Edit fontSize="small" />
-        </IconButton>
+        <Tooltip title={t_i18n('Update widget')}>
+          <IconButton
+            aria-haspopup="true"
+            color="primary"
+            onClick={onUpdate}
+          >
+            <Edit fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </div>
 
       <div style={{ paddingLeft: theme.spacing(3.5) }}>
@@ -76,13 +78,15 @@ const FintelTemplateWidgetAttribute = ({
                 </Tooltip>
               )}
 
-              <IconButton
-                aria-haspopup="true"
-                color="primary"
-                onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
-              >
-                <ContentCopy fontSize="small" />
-              </IconButton>
+              <Tooltip title={t_i18n('Copy attribute to clipboard')}>
+                <IconButton
+                  aria-haspopup="true"
+                  color="primary"
+                  onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
+                >
+                  <ContentCopy fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </div>
           );
         })}

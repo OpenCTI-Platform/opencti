@@ -26,7 +26,6 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   context,
   initialVariableName,
 }) => {
-  console.log(widget);
   let initialStep = 0;
   if (widget?.type === 'text' || widget?.type === 'attribute') {
     initialStep = 3;
@@ -38,6 +37,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   const [type, setType] = useState<string | null>(widget?.type ?? null);
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const [variableName, setVariableName] = useState(initialVariableName);
+
   const initialSelection = {
     label: '',
     attribute: 'entity_type',
@@ -49,6 +49,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     dynamicTo: emptyFilterGroup,
     instance_id: type === 'attribute' ? 'SELF_ID' : undefined,
   };
+
   const [dataSelection, setDataSelection] = useState(
     widget?.dataSelection ?? [initialSelection],
   );
@@ -94,6 +95,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     }
     setOpen(false);
   };
+
   const completeSetup = () => {
     if (type) {
       onComplete({
@@ -107,6 +109,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     }
     handleCloseAfterUpdate();
   };
+
   const handleSelectType = (selectedType: string) => {
     setType(selectedType);
     if (selectedType === 'text' || selectedType === 'attribute') {
@@ -115,6 +118,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
       setStepIndex(1);
     }
   };
+
   const handleSelectPerspective = (selectedPerspective: WidgetPerspective) => {
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
@@ -140,49 +144,63 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     }
     return true;
   };
+
   const getStepContent = () => {
     switch (stepIndex) {
       case 0:
-        return <WidgetCreationTypes context={context} handleSelectType={handleSelectType} />;
+        return (
+          <WidgetCreationTypes
+            context={context}
+            handleSelectType={handleSelectType}
+          />
+        );
       case 1:
-        return <WidgetCreationPerspective handleSelectPerspective={handleSelectPerspective} type={type as string} />;
+        return (
+          <WidgetCreationPerspective
+            handleSelectPerspective={handleSelectPerspective}
+            type={type ?? ''}
+          />
+        );
       case 2:
-        return <WidgetCreationDataSelection
-          dataSelection={dataSelection}
-          setDataSelection={setDataSelection}
-          perspective={perspective as WidgetPerspective}
-          type={type as string}
-          setStepIndex={setStepIndex}
-               />;
+        return (
+          <WidgetCreationDataSelection
+            dataSelection={dataSelection}
+            setDataSelection={setDataSelection}
+            perspective={perspective as WidgetPerspective}
+            type={type as string}
+            setStepIndex={setStepIndex}
+          />
+        );
       case 3:
-        return <WidgetCreationParameters
-          dataSelection={dataSelection}
-          setDataSelection={setDataSelection}
-          parameters={parameters}
-          setParameters={setParameters}
-          type={type as string}
-          context={context}
-          variableName={variableName}
-          handleChangeVariableName={handleChangeVariableName}
-               />;
+        return (
+          <WidgetCreationParameters
+            dataSelection={dataSelection}
+            setDataSelection={setDataSelection}
+            parameters={parameters}
+            setParameters={setParameters}
+            type={type as string}
+            context={context}
+            variableName={variableName}
+            handleChangeVariableName={handleChangeVariableName}
+          />
+        );
       default:
         return <div>${t_i18n('This step is not implemented')}</div>;
     }
   };
+
   return (
-    <>
-      <WidgetUpsert
-        open={open}
-        handleCloseAfterCancel={handleCloseAfterCancel}
-        stepIndex={stepIndex}
-        setStepIndex={setStepIndex}
-        getStepContent={getStepContent}
-        completeSetup={completeSetup}
-        isDataSelectionAttributesValid={isDataSelectionAttributesValid}
-        widget={widget}
-        type={type}
-      />
-    </>
+    <WidgetUpsert
+      open={open}
+      handleCloseAfterCancel={handleCloseAfterCancel}
+      stepIndex={stepIndex}
+      setStepIndex={setStepIndex}
+      getStepContent={getStepContent}
+      completeSetup={completeSetup}
+      isDataSelectionAttributesValid={isDataSelectionAttributesValid}
+      widget={widget}
+      type={type}
+    />
   );
 };
 

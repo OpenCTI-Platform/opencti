@@ -12,8 +12,6 @@ const fintelTemplateEditMutation = graphql`
       instance_filters
       settings_types
       start_date
-      entity_type
-      template_content
       ...FintelTemplateTabs_template
       ...FintelTemplateWidgetsSidebar_template
     }
