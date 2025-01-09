@@ -14,7 +14,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import { graphql } from 'react-relay';
 import { WidgetCreationParametersInstanceIdQuery$data } from '@components/widgets/__generated__/WidgetCreationParametersInstanceIdQuery.graphql';
-import WidgetCreationAttributes from '@components/widgets/WidgetCreationAttributes';
+import WidgetAttributesInput from '@components/widgets/WidgetAttributesInput';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -22,7 +22,7 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetColumn, WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import ItemIcon from '../../../components/ItemIcon';
 
@@ -145,15 +145,8 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
 
   return (
     <div style={{ marginTop: 20 }}>
-      <TextField
-        label={t_i18n('Title')}
-        fullWidth={true}
-        value={parameters.title}
-        onChange={(event) => handleChangeParameter('title', event.target.value)
-        }
-      />
       {context === 'fintelTemplate' && handleChangeVariableName
-        && <div style={{ marginTop: 20 }}>
+        ? <div style={{ marginTop: 20 }}>
           <TextField
             label={t_i18n('Variable name')}
             fullWidth={true}
@@ -162,6 +155,13 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           }
           />
         </div>
+        : <TextField
+            label={t_i18n('Title')}
+            fullWidth={true}
+            value={parameters.title}
+            onChange={(event) => handleChangeParameter('title', event.target.value)
+          }
+          />
       }
       {getCurrentCategory(type) === 'text' && (
       <div style={{ marginTop: 20 }}>
@@ -602,11 +602,11 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </FormControl>
                       )}
                     {type === 'attribute'
-                      && <WidgetCreationAttributes
+                      && <WidgetAttributesInput
                         i={i}
-                        columns={dataSelection[i]?.columns ?? []}
-                        handleChangeDataValidationColumns={handleChangeDataValidationColumns}
-                         ></WidgetCreationAttributes>
+                        value={dataSelection[i]?.columns ?? []}
+                        onChange={handleChangeDataValidationColumns}
+                         ></WidgetAttributesInput>
                     }
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (

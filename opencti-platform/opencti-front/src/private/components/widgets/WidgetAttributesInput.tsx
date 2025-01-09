@@ -7,26 +7,26 @@ import type { WidgetColumn } from '../../../utils/widget/widget';
 import { useFormatter } from '../../../components/i18n';
 
 interface WidgetCreationAttributesProps {
-  columns: readonly WidgetColumn[],
+  value: readonly WidgetColumn[],
   i: number,
-  handleChangeDataValidationColumns: (i: number,
+  onChange: (i: number,
     key: string,
     value: (string | null)[],
   ) => void,
 }
 
-const WidgetCreationAttributes: FunctionComponent<WidgetCreationAttributesProps> = ({
-  columns,
+const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = ({
+  value,
   i,
-  handleChangeDataValidationColumns,
+  onChange,
 }) => {
   const { t_i18n } = useFormatter();
   const availableColumns: WidgetColumn[] = [
-    { attribute: 'entity_type' },
-    { attribute: 'relationship_type' },
-    { attribute: 'created_at' },
-    { attribute: 'createdBy.name' },
-    { attribute: 'objectMarking' },
+    { attribute: 'entity_type', label: 'Entity type' },
+    { attribute: 'relationship_type', label: 'Relationship type' },
+    { attribute: 'created_at', label: 'Creation date' },
+    { attribute: 'createdBy.name', label: 'Author' },
+    { attribute: 'objectMarking.definition', label: 'Marking' },
   ];
   return (
     <FormControl
@@ -41,20 +41,20 @@ const WidgetCreationAttributes: FunctionComponent<WidgetCreationAttributesProps>
       <Select
         fullWidth={true}
         multiple={true}
-        value={columns.map((c) => c.attribute)}
-        onChange={(event) => handleChangeDataValidationColumns(
+        value={value.map((c) => c.attribute)}
+        onChange={(event) => onChange(
           i,
           'columns',
           event.target.value,
         )
         }
       >
-        {availableColumns.map((value) => (
+        {availableColumns.map((v) => (
           <MenuItem
-            key={value.attribute}
-            value={value.attribute}
+            key={v.attribute}
+            value={v.attribute}
           >
-            {value.attribute}
+            {t_i18n(v.label)}
           </MenuItem>
         ))}
       </Select>
@@ -62,4 +62,4 @@ const WidgetCreationAttributes: FunctionComponent<WidgetCreationAttributesProps>
   );
 };
 
-export default WidgetCreationAttributes;
+export default WidgetAttributesInput;
