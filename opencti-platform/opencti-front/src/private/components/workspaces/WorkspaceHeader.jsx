@@ -33,7 +33,6 @@ import WorkspaceShareButton from './WorkspaceShareButton';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import WidgetConfig from './dashboards/WidgetConfig';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
@@ -46,6 +45,7 @@ import Transition from '../../../components/Transition';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { truncate } from '../../../utils/String';
 import useHelper from '../../../utils/hooks/useHelper';
+import WorkspaceWidgetConfig from './dashboards/WorkspaceWidgetConfig';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -366,7 +366,7 @@ const WorkspaceHeader = ({
             hasAccess={canEdit}
           >
             <div style={{ marginTop: '-8px', float: 'right' }}>
-              <WidgetConfig onComplete={handleAddWidget} workspace={workspace}></WidgetConfig>
+              <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace}></WorkspaceWidgetConfig>
             </div>
           </Security>
 

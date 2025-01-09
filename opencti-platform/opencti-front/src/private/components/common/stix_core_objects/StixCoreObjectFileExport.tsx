@@ -26,6 +26,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',
@@ -80,7 +81,7 @@ const stixCoreObjectFileExportQuery = graphql`
         }
       }
       ... on Container {
-        templates {
+        fintelTemplates {
           id
           name
         }
@@ -153,6 +154,7 @@ const StixCoreObjectFileExportComponent = ({
   const { t_i18n } = useFormatter();
   const [isOpen, setOpen] = useState(false);
   const { buildFileFromTemplate } = useFileFromTemplate();
+  const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
 
   const {
     connectorsForExport,
@@ -191,7 +193,7 @@ const StixCoreObjectFileExportComponent = ({
     })),
   });
 
-  const templateOptions: Option[] = (stixCoreObject?.templates ?? []).map((t) => ({
+  const templateOptions: Option[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
   }));
@@ -203,18 +205,20 @@ const StixCoreObjectFileExportComponent = ({
       label: c.name,
       connectorScope: c.connector_scope ?? [],
     } : []));
-  // Add "built-in" connectors to the list.
-  if (fileOptions.length > 0) {
-    activeConnectors.push({
-      ...BUILT_IN_HTML_TO_PDF,
-      label: t_i18n('HTML content files to PDF'),
-    });
-  }
-  if (templateOptions.length > 0) {
-    activeConnectors.push({
-      ...BUILT_IN_FROM_TEMPLATE,
-      label: t_i18n('Generate Fintel from template'),
-    });
+  // Add "built-in" connectors to the list if the user has the Export and the Upload capabilities
+  if (hasUploadAndExportCapabilities) {
+    if (fileOptions.length > 0) {
+      activeConnectors.push({
+        ...BUILT_IN_HTML_TO_PDF,
+        label: t_i18n('HTML content files to PDF'),
+      });
+    }
+    if (templateOptions.length > 0) {
+      activeConnectors.push({
+        ...BUILT_IN_FROM_TEMPLATE,
+        label: t_i18n('Generate FINTEL from template'),
+      });
+    }
   }
 
   const close = () => {
@@ -266,12 +270,12 @@ const StixCoreObjectFileExportComponent = ({
         const maxContentMarkings = values.contentMaxMarkings.map(({ value }) => value);
         const templateContent = await buildFileFromTemplate(
           scoId,
-          templateId,
           maxContentMarkings,
+          templateId,
         );
 
         if (values.format === 'text/html') {
-          // Export template into HTML file.
+          // Export fintel template into HTML file.
           const fileName = `${values.exportFileName}.html`;
           const blob = new Blob([templateContent], { type: 'text/html' });
           const file = new File([blob], fileName, { type: blob.type });
@@ -282,7 +286,7 @@ const StixCoreObjectFileExportComponent = ({
             file,
           });
         } else {
-          // Export template directly in PDF without HTML step.
+          // Export fintel template directly in PDF without HTML step.
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
@@ -324,7 +328,7 @@ const StixCoreObjectFileExportComponent = ({
         });
       }
     } catch (e) {
-      MESSAGING$.notifyError(t_i18n('Error trying to export a PDF template'));
+      MESSAGING$.notifyError(t_i18n('Error trying to export the file'));
       throw e;
     }
   };

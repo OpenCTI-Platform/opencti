@@ -36,3 +36,5 @@ export function getObjectPropertyWithoutEmptyValues<T extends object>(object: T,
   }
   return property ?? '';
 }
+
+export const isEmptyObject = (o: object) => Object.keys(o).length === 0;

@@ -131,6 +131,7 @@ const RootGrouping = () => {
                     enableAskAi={true}
                     redirectToContent={true}
                     enableEnricher={true}
+                    enableEnrollPlaybook={true}
                   />
                   <Box
                     sx={{

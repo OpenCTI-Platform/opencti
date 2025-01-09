@@ -812,11 +812,10 @@ const StixCoreObjectContent = createRefetchContainer(
               }
             }
           }
-          templates {
+          fintelTemplates {
             id
             name
-            content
-            template_widgets_ids
+            template_content
           }
         }
         externalReferences {
