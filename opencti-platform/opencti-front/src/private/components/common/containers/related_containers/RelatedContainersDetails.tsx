@@ -118,7 +118,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
 
   return (
     <Grid container rowSpacing={3}>
-      <Grid container item xs={12}>
+      <Grid container item xs={12} columnSpacing={3}>
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Entity type')}
@@ -133,7 +133,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      <Grid container item xs={12}>
+      <Grid container item xs={12} columnSpacing={3}>
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Description')}
@@ -148,7 +148,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      <Grid container item xs={12}>
+      <Grid container item xs={12} columnSpacing={3}>
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Author')}
@@ -166,7 +166,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      <Grid container item xs={12}>
+      <Grid container item xs={12} columnSpacing={3}>
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Modification date')}
