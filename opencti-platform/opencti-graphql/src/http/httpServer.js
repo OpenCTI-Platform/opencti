@@ -106,30 +106,10 @@ const createHttpServer = async () => {
             <!DOCTYPE html>
             <html>
             <head>
-              <meta content="en-us" http-equiv="Content-Language">
-              <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-              <style>
-                 body {
-                 margin: 20px 30px 10px 0px;
-                 padding: 0;
-                 background: #f8f8f8;
-                 -webkit-text-size-adjust :100%; 
-                 -ms-text-size-adjust: 100%;
-                 font-family: Arial;
-                 font-size: 16px;
-                 }
-              </style>
               <script>
                 location.replace('${basePath}/public/graphql');
               </script>
             </head>
-            <body align="center" valign="middle" width="100%">
-              <div style="margin-bottom: 20px" class="logo">
-                <img src="${basePath}/static/ext/logo_opencti.png" width="300" />
-              </div>
-              <div>This page has moved. The playground is now available under:</div>
-              <a href="${basePath}/public/graphql">/public/graphql</a>
-            </body>
             </html>`;
           return { html };
         },
