@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import WidgetUpsert from '@components/widgets/WidgetUpsert';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import type { Widget } from '../../../utils/widget/widget';
+import type { Widget, WidgetDataSelection } from '../../../utils/widget/widget';
 import { WidgetPerspective } from './widgetUtils';
 
 interface WidgetConfigProps {
@@ -36,7 +36,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   const [stepIndex, setStepIndex] = useState(initialStep);
   const [type, setType] = useState<string | null>(widget?.type ?? null);
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
-  const initialSelection = {
+  const initialSelection: WidgetDataSelection = {
     label: '',
     attribute: 'entity_type',
     date_attribute: 'created_at',
@@ -46,7 +46,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     dynamicFrom: emptyFilterGroup,
     dynamicTo: emptyFilterGroup,
   };
-  const [dataSelection, setDataSelection] = useState(
+  const [dataSelection, setDataSelection] = useState<WidgetDataSelection[]>(
     widget?.dataSelection ?? [initialSelection],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});

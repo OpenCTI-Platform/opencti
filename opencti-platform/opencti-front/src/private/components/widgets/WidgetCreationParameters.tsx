@@ -100,19 +100,18 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
     { attribute: 'createdBy.name' },
     { attribute: 'objectMarking' },
   ];
-  const columns: WidgetColumn[] = dataSelection[0]?.columns ?? availableColumns;
+  const columns = dataSelection[0]?.columns ?? availableColumns;
   const setColumns = (newColumns: WidgetColumn[]) => {
     setDataSelection((prevDataSelection: WidgetDataSelection[]) => {
       if (prevDataSelection.length > 0) {
         return [
-          { ...prevDataSelection[0], columns: newColumns },
+          { ...prevDataSelection[0], columns: [...newColumns] },
           ...prevDataSelection.slice(1),
         ] as WidgetDataSelection[];
       }
       return prevDataSelection;
     });
   };
-  console.log({ dataSelection, columns });
 
   return (
     <div style={{ marginTop: 20 }}>
