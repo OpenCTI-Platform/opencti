@@ -41,14 +41,34 @@ export const addFintelTemplate = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
+
   // add id to fintel template widgets
+  const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
+    ...templateWidget,
+    widget: { ...templateWidget.widget, id: uuidv4() },
+  }));
+  // add built-in attributes widget for self instance
+  widgetsWithIds.push({
+    variable_name: 'widgetSelfAttributes',
+    widget: {
+      id: uuidv4(),
+      type: 'attribute',
+      perspective: null,
+      dataSelection: [{
+        columns: [{ label: 'Name', attribute: 'name', variableName: 'containerName' }],
+        instance_id: 'SELF_ID',
+      }],
+      parameters: {
+        title: 'widgetSelfAttributes',
+        description: 'Multi attributes widget for the instance which the template is applied to.',
+      }
+    },
+  });
+
   const finalInput: FintelTemplateAddInput = {
     ...input,
     template_content: input.template_content ?? '',
-    fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
-      ...templateWidget,
-      widget: { ...templateWidget.widget, id: uuidv4() },
-    })),
+    fintel_template_widgets: widgetsWithIds,
   };
   // create the fintel template
   const created = await createEntity(
