@@ -119,13 +119,10 @@ const createHttpServer = async () => {
                  font-size: 16px;
                  }
               </style>
-              <script>
-                location.replace('${basePath}/public/graphql');
-              </script>
             </head>
             <body align="center" valign="middle" width="100%">
-              <div class="logo">
-                <img src="/cat/static/ext/favicon.png" />
+              <div style="margin-bottom: 20px" class="logo">
+                <img src="${basePath}/static/ext/logo_opencti.png" width="100" />
               </div>
               <div>This page has moved. The playground is now available under:</div>
               <a href="${basePath}/public/graphql">/public/graphql</a>
