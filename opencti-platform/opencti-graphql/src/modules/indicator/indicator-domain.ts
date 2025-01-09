@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import moment from 'moment/moment';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
@@ -223,17 +223,15 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   }
 
   // Check that indicator is not excluded from an exclusion list
-  if (isFeatureEnabled('EXCLUSION_LIST')) {
-    const observableValues = getObservableValuesFromPattern(formattedPattern);
-    for (let i = 0; i < observableValues.length; i += 1) {
-      const exclusionListCheck = await checkObservableValue(observableValues[i]);
-      if (exclusionListCheck) {
-        throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
-          doc_code: 'INDICATOR_PATTERN_EXCLUDED',
-          excludedValue: exclusionListCheck.value,
-          exclusionList: exclusionListCheck.listId
-        });
-      }
+  const observableValues = getObservableValuesFromPattern(formattedPattern);
+  for (let i = 0; i < observableValues.length; i += 1) {
+    const exclusionListCheck = await checkObservableValue(observableValues[i]);
+    if (exclusionListCheck) {
+      throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
+        doc_code: 'INDICATOR_PATTERN_EXCLUDED',
+        excludedValue: exclusionListCheck.value,
+        exclusionList: exclusionListCheck.listId
+      });
     }
   }
 

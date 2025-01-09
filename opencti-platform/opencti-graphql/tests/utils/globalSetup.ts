@@ -9,7 +9,7 @@ import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './tes
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
-import { logApp, environment, isFeatureEnabled } from '../../src/config/conf';
+import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
@@ -51,9 +51,7 @@ const testPlatformStart = async () => {
     // Init the cache manager
     await cacheManager.start();
     // Init the exclusion list cache
-    if (isFeatureEnabled('EXCLUSION_LIST')) {
-      await initExclusionListCache();
-    }
+    await initExclusionListCache();
     // Init the platform default if it was cleaned up
     if (!SKIP_CLEANUP_PLATFORM) {
       await initializePlatform();
