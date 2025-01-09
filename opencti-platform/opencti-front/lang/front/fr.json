@@ -49,6 +49,7 @@
   "Activate/Deactivate default values": "Activer/Désactiver les valeurs par défaut",
   "Activated": "Activé",
   "Activating this rule will automatically generate new relationships on your existing and future data. Please be aware that enabling this rule may impact your platform's data and performance.": "L'activation de cette règle génère automatiquement de nouvelles relations sur vos données existantes et futures. Veuillez noter que l'activation de cette règle peut avoir un impact sur les données et les performances de votre plateforme.",
+  "Activation date": "Date d'activation",
   "Active": "Actif",
   "Activities": "Activités",
   "Activity": "Activité",

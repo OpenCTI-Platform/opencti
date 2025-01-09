@@ -49,6 +49,7 @@
   "Activate/Deactivate default values": "デフォルト値の有効化/無効化",
   "Activated": "アクティブ化された",
   "Activating this rule will automatically generate new relationships on your existing and future data. Please be aware that enabling this rule may impact your platform's data and performance.": "このルールを有効にすると、既存および将来のデータに新しいリレーションシップが自動的に生成されます。このルールを有効にすると、プラットフォーム'のデータとパフォーマンスに影響を与える可能性があることにご注意ください。",
+  "Activation date": "アクティベーション日",
   "Active": "アクティブ",
   "Activities": "アクティビティ",
   "Activity": "アクティビティ",

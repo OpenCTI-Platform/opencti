@@ -49,6 +49,7 @@
   "Activate/Deactivate default values": "기본값 활성화/비활성화",
   "Activated": "활성화됨",
   "Activating this rule will automatically generate new relationships on your existing and future data. Please be aware that enabling this rule may impact your platform's data and performance.": "이 규칙을 활성화하면 기존 데이터와 향후 데이터에 새로운 관계가 자동으로 생성됩니다. 이 규칙을 활성화하면 플랫폼의 데이터 및 성능에 영향을 미칠 수 있습니다.",
+  "Activation date": "활성화 날짜",
   "Active": "활성",
   "Activities": "활동",
   "Activity": "활동",
