@@ -529,8 +529,8 @@ jobs:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
           command: |
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-to=type=local,dest=.cache -f Dockerfile_circleci -t opencti/platform:prerelease --push .
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-from=type=local,src=.cache -f Dockerfile_circleci -t ghcr.io/opencti-platform/opencti/platform:prerelease --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_circleci -t opencti/platform:prerelease --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_circleci -t ghcr.io/opencti-platform/opencti/platform:prerelease --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -577,8 +577,8 @@ jobs:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
           command: |
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-to=type=local,dest=.cache -t opencti/worker:prerelease --push .
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-from=type=local,src=.cache -t ghcr.io/opencti-platform/opencti/worker:prerelease --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -t opencti/worker:prerelease --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -t ghcr.io/opencti-platform/opencti/worker:prerelease --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -621,8 +621,8 @@ jobs:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
           command: |
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-to=type=local,dest=.cache -f Dockerfile_circleci_fips -t opencti/platform:rolling-fips --push .
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-from=type=local,src=.cache -f Dockerfile_circleci_fips -t ghcr.io/opencti-platform/opencti/platform:rolling-fips --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_circleci_fips -t opencti/platform:rolling-fips --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_circleci_fips -t ghcr.io/opencti-platform/opencti/platform:rolling-fips --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -666,8 +666,8 @@ jobs:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
           command: |
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-to=type=local,dest=.cache -f Dockerfile_fips -t opencti/worker:rolling-fips --push .
-            docker buildx build --platform $BUILDX_PLATFORMS -cache-from=type=local,src=.cache -f Dockerfile_fips -t ghcr.io/opencti-platform/opencti/worker:rolling-fips --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-to=type=local,dest=.cache -f Dockerfile_fips -t opencti/worker:rolling-fips --push .
+            docker buildx build --platform $BUILDX_PLATFORMS --cache-from=type=local,src=.cache -f Dockerfile_fips -t ghcr.io/opencti-platform/opencti/worker:rolling-fips --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
