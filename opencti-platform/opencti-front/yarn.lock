@@ -12138,12 +12138,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:5.16.0":
-  version: 5.16.0
-  resolution: "graphql-ws@npm:5.16.0"
+"graphql-ws@npm:5.16.1":
+  version: 5.16.1
+  resolution: "graphql-ws@npm:5.16.1"
   peerDependencies:
     graphql: ">=0.11 <=16"
-  checksum: 10/e56d903920c78fa88966e31940d281f8b35ef8c9f4543255bfe349e47a0e972c6ca746bcb52040b1c6938d22e42560228994399972abc473cfa6bcd183aca709
+  checksum: 10/ce82ddcb1eb705ea87dac3b454562de9abaec04beef0a3726ffaaa5e6c3cd478217c82d7a9d07902c936c5567db50a0a4d3c95c4274d1b088aeaacb03833f0a7
   languageName: node
   linkType: hard
 
@@ -15826,7 +15826,7 @@ __metadata:
     formik-mui-lab: "npm:1.0.0"
     fs-extra: "npm:11.2.0"
     graphql: "npm:16.9.0"
-    graphql-ws: "npm:5.16.0"
+    graphql-ws: "npm:5.16.1"
     html-to-image: "npm:1.11.11"
     html-to-pdfmake: "npm:2.5.13"
     http-proxy-middleware: "npm:3.0.3"
