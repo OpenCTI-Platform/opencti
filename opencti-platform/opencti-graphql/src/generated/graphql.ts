@@ -6323,6 +6323,13 @@ export enum DisseminationListOrdering {
   Name = 'name'
 }
 
+export type DisseminationListSendInput = {
+  email_address: Scalars['String']['input'];
+  email_attached_file_id: Scalars['ID']['input'];
+  email_body: Scalars['String']['input'];
+  email_object: Scalars['String']['input'];
+};
+
 export type Distribution = {
   __typename?: 'Distribution';
   entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
@@ -13682,6 +13689,7 @@ export type Mutation = {
   disseminationListAdd?: Maybe<DisseminationList>;
   disseminationListDelete?: Maybe<Scalars['ID']['output']>;
   disseminationListFieldPatch?: Maybe<DisseminationList>;
+  disseminationListSend?: Maybe<Scalars['Boolean']['output']>;
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
   draftWorkspaceValidate?: Maybe<Work>;
@@ -14471,6 +14479,11 @@ export type MutationDisseminationListDeleteArgs = {
 export type MutationDisseminationListFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationDisseminationListSendArgs = {
+  input: DisseminationListSendInput;
 };
 
 
@@ -31347,6 +31360,7 @@ export type ResolversTypes = ResolversObject<{
   DisseminationListConnection: ResolverTypeWrapper<DisseminationListConnection>;
   DisseminationListEdge: ResolverTypeWrapper<DisseminationListEdge>;
   DisseminationListOrdering: DisseminationListOrdering;
+  DisseminationListSendInput: DisseminationListSendInput;
   Distribution: ResolverTypeWrapper<Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   DocsMetrics: ResolverTypeWrapper<DocsMetrics>;
   DomainName: ResolverTypeWrapper<Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -32195,6 +32209,7 @@ export type ResolversParentTypes = ResolversObject<{
   DisseminationListAddInput: DisseminationListAddInput;
   DisseminationListConnection: DisseminationListConnection;
   DisseminationListEdge: DisseminationListEdge;
+  DisseminationListSendInput: DisseminationListSendInput;
   Distribution: Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   DocsMetrics: DocsMetrics;
   DomainName: Omit<DomainName, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -37516,6 +37531,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   disseminationListAdd?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListAddArgs, 'input'>>;
   disseminationListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDisseminationListDeleteArgs, 'id'>>;
   disseminationListFieldPatch?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListFieldPatchArgs, 'id' | 'input'>>;
+  disseminationListSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisseminationListSendArgs, 'input'>>;
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
   draftWorkspaceValidate?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceValidateArgs, 'id'>>;

@@ -4,7 +4,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
 
-let smtpOptions = {
+const smtpOptions = {
   host: conf.get('smtp:hostname') || 'localhost',
   port: conf.get('smtp:port') || 25,
   secure: USE_SSL,
@@ -14,7 +14,6 @@ let smtpOptions = {
     minVersion: conf.get('smtp:tls_min_version'),
     ciphers: conf.get('smtp:tls_ciphers'),
   },
-  auth: {},
 };
 
 if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
@@ -35,14 +34,7 @@ export const smtpIsAlive = async () => {
   return true;
 };
 
-interface sendMailArgs {
-  from: string;
-  to: string;
-  bcc?: string[];
-  subject: string;
-  html: string;
-}
-
-export const sendMail = async (args: sendMailArgs) => {
-  await transporter.sendMail(args);
+export const sendMail = async (args) => {
+  const { from, to, subject, html } = args;
+  await transporter.sendMail({ from, to, subject, html });
 };
