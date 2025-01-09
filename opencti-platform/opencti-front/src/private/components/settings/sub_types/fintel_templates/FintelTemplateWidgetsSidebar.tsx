@@ -137,52 +137,64 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     });
   };
 
-  const handleUpsertWidget = (widget: Widget, variableName?: string) => {
+  const checkWidgetIsValid = (widget: Widget, variableName?: string) => {
     if (!variableName) {
       MESSAGING$.notifyError(t_i18n('You should provide a variable name'));
-    } else if (variableName.includes(' ')) {
+      return false;
+    } if (variableName.includes(' ')) {
       MESSAGING$.notifyError(t_i18n('The variable name should not contain blanks'));
+      return false;
+    } if (widget.type === 'attribute') {
+      const selectionsCheck = widget.dataSelection.map((selection) => selection.columns?.every((c) => c.variableName));
+      return !!selectionsCheck.every((c) => c);
     }
-    // build fintel template widget with variable name and stringified filters
-    const fintelTemplateWidget = {
-      variable_name: variableName,
-      widget: {
-        ...widget,
-        dataSelection: widget.dataSelection.map((selection) => ({
-          ...selection,
-          filters: JSON.stringify(removeIdFromFilterGroupObject(selection.filters)),
-          dynamicFrom: JSON.stringify(removeIdFromFilterGroupObject(selection.dynamicFrom)),
-          dynamicTo: JSON.stringify(removeIdFromFilterGroupObject(selection.dynamicTo)),
-        })),
-      },
-    };
-    if (!selectedWidget) { // case widget creation
-      commitEditMutation({
-        variables: {
-          id,
-          // add the widget in the fintel template widgets list
-          input: [{
-            key: 'fintel_template_widgets',
-            value: [fintelTemplateWidget],
-            operation: 'add',
-          }],
+    return true;
+  };
+
+  const handleUpsertWidget = (widget: Widget, variableName?: string) => {
+    const isWidgetValid = checkWidgetIsValid(widget, variableName);
+    if (isWidgetValid) {
+      // build fintel template widget with variable name and stringified filters
+      const fintelTemplateWidget = {
+        variable_name: variableName,
+        widget: {
+          ...widget,
+          dataSelection: widget.dataSelection.map((selection) => ({
+            ...selection,
+            filters: JSON.stringify(removeIdFromFilterGroupObject(selection.filters)),
+            dynamicFrom: JSON.stringify(removeIdFromFilterGroupObject(selection.dynamicFrom)),
+            dynamicTo: JSON.stringify(removeIdFromFilterGroupObject(selection.dynamicTo)),
+          })),
         },
-      });
-    } else { // case widget update
-      if (selectedWidgetIndex < 0) {
-        throw Error('Selected widget index should be positive.');
+      };
+      if (!selectedWidget) { // case widget creation
+        commitEditMutation({
+          variables: {
+            id,
+            // add the widget in the fintel template widgets list
+            input: [{
+              key: 'fintel_template_widgets',
+              value: [fintelTemplateWidget],
+              operation: 'add',
+            }],
+          },
+        });
+      } else { // case widget update
+        if (selectedWidgetIndex < 0) {
+          throw Error('Selected widget index should be positive.');
+        }
+        commitEditMutation({
+          variables: {
+            id,
+            // update the widget in the fintel template widgets list
+            input: [{
+              key: 'fintel_template_widgets',
+              object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
+              value: [fintelTemplateWidget],
+            }],
+          },
+        });
       }
-      commitEditMutation({
-        variables: {
-          id,
-          // update the widget in the fintel template widgets list
-          input: [{
-            key: 'fintel_template_widgets',
-            object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
-            value: [fintelTemplateWidget],
-          }],
-        },
-      });
     }
   };
 
