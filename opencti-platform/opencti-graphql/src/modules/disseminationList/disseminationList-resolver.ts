@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-// import { findById, findAll, addDisseminationList, deleteDisseminationList, fieldPatchDisseminationList } from './disseminationList-domain';
+import { sendToDisseminationList } from './disseminationList-domain';
 
 const disseminationListResolvers: Resolvers = {
   Query: {
@@ -17,6 +17,9 @@ const disseminationListResolvers: Resolvers = {
     // disseminationListFieldPatch: (_, { id, input }, context) => {
     //   return fieldPatchDisseminationList(context, context.user, id, input);
     // },
+    disseminationListSend: (_, { input }, context) => {
+      return sendToDisseminationList(context, context.user, input);
+    }
   }
 };
 

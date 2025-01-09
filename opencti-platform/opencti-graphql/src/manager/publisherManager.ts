@@ -158,7 +158,7 @@ const processNotificationEvent = async (
   const notifierMap = new Map(notifiers.map((n) => [n.internal_id, n]));
   for (let notifierIndex = 0; notifierIndex < userNotifiers.length; notifierIndex += 1) {
     const notifier = userNotifiers[notifierIndex];
-    internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, notification);
+    await internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, notification);
   }
 };
 

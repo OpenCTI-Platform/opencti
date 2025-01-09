@@ -28,7 +28,7 @@ type DisseminationListEdge {
 
 # Queries
 type Query {
-  disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  disseminationList(id: String!): DisseminationList @auth
   disseminationLists(
     first: Int
     after: ID
@@ -36,7 +36,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): DisseminationListConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  ): DisseminationListConnection @auth
 }
 
 input DisseminationListAddInput {
@@ -44,8 +44,16 @@ input DisseminationListAddInput {
   emails: [String]!
 }
 
+input DisseminationListSendInput {
+  email_address: String!
+  email_object: String!
+  email_body: String!
+  email_attached_file_id: ID!
+}
+
 type Mutation {
-  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth
+  disseminationListDelete(id: ID!): ID @auth
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth
+  disseminationListSend(input: DisseminationListSendInput!): Boolean @auth
 }
