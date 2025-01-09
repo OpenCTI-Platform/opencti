@@ -68,7 +68,6 @@ const READ_REPORT_QUERY = gql`
         access_right
       }
       currentUserAccessRight
-      authorized_members_activation_date
     }
   }
 `;
@@ -114,6 +113,7 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
           id
           access_right
         }
+        authorized_members_activation_date
       }
     }
   }
@@ -780,6 +780,7 @@ describe('Restricted entities listing', () => {
         access_right: 'view'
       }
     ]);
+    expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members_activation_date).toBeDefined();
   }); // +1 update
   it('using platform org - user without bypass should not be allowed list all auth member restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
@@ -790,10 +791,6 @@ describe('Restricted entities listing', () => {
   it('using platform org - should BYPASS user be allowed list all auth member restricted entities', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
     expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
-  });
-  it('using platform org - should BYPASS user get authorized members activation date in a report', async () => {
-    const queryResult = await adminQueryWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportId } });
-    expect(queryResult?.data?.report.authorized_members_activation_date).toBeDefined();
   });
   it('should platform organization sharing and EE deactivated', async () => {
     await enableCEAndUnSetOrganization();
