@@ -14,6 +14,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import { graphql } from 'react-relay';
 import { WidgetCreationParametersInstanceIdQuery$data } from '@components/widgets/__generated__/WidgetCreationParametersInstanceIdQuery.graphql';
+import WidgetCreationAttributes from '@components/widgets/WidgetCreationAttributes';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -21,7 +22,7 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import ItemIcon from '../../../components/ItemIcon';
 
@@ -89,6 +90,25 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
         return {
           ...data,
           [key]: number ? parseInt(value, 10) : value,
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
+  };
+  const handleChangeDataValidationColumns = (
+    i: number,
+    key: string,
+    value: (string | null)[],
+  ) => {
+    if (value === null || value.includes(null)) {
+      throw Error(t_i18n('This value cannot be null'));
+    }
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        return {
+          ...data,
+          [key]: value.map((v) => ({ attribute: v, variableName: v })),
         };
       }
       return data;
@@ -582,7 +602,12 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </FormControl>
                       )}
                     {type === 'attribute'
-                      && (<div>COLUMNS TODO</div>)}
+                      && <WidgetCreationAttributes
+                        i={i}
+                        columns={dataSelection[i]?.columns ?? []}
+                        handleChangeDataValidationColumns={handleChangeDataValidationColumns}
+                         ></WidgetCreationAttributes>
+                    }
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
                         <FormControl

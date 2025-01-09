@@ -50,9 +50,8 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
     instance_id: type === 'attribute' ? 'SELF_ID' : undefined,
   };
 
-  const [dataSelection, setDataSelection] = useState(
-    widget?.dataSelection ?? [initialSelection],
-  );
+  const initialDataSelection = widget?.dataSelection ?? [initialSelection];
+  const [dataSelection, setDataSelection] = useState(initialDataSelection);
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
 
   useEffect(() => {
