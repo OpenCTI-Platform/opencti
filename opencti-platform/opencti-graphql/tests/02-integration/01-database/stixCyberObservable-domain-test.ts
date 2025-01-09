@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Readable } from 'stream';
-import { addStixCyberObservable, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
+import { addStixCyberObservable, findAll as findAllObservable, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { AuthContext } from '../../../src/types/user';
 import { mergeEntities, storeLoadByIdWithRefs } from '../../../src/database/middleware';
@@ -9,7 +9,12 @@ import { requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { paginatedForPathWithEnrichment, findById as documentFindById } from '../../../src/modules/internal/document/document-domain';
 
 describe('Testing Artifact merge with files on S3', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'stixCyberObservableDomain-test', otp_mandatory: false };
+  const adminContext: AuthContext = {
+    user: ADMIN_USER,
+    tracing: undefined,
+    source: 'stixCyberObservableDomain-test',
+    otp_mandatory: false
+  };
   let artifact1Id = '';
   let artifact1: any;
   let artifact2: any;
@@ -102,5 +107,45 @@ describe('Testing Artifact merge with files on S3', () => {
 
   it('should delete created artifact', async () => {
     await stixCyberObservableDelete(adminContext, ADMIN_USER, artifact1Id);
+  });
+
+  describe.only('Crash query reproduction', () => {
+    it('should not crash on wrongly formatted filter', async () => {
+      const requestParam = {
+        types: [
+          'Domain-Name'
+        ],
+        search: null,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: [
+                'name',
+                'value',
+                'aliases',
+                'x_opencti_aliases',
+                'value',
+                'content',
+                'attribute_key',
+                'path',
+                'hashes.MD5',
+                'hashes.SHA-1',
+                'hashes.SHA-256',
+                'hashes.SHA-512',
+                'dst_port'
+              ],
+              values: [
+                'wwww.toto.fr'
+              ]
+            }
+          ],
+          filterGroups: []
+        },
+        count: 1
+      };
+      const allObs = await findAllObservable(adminContext, ADMIN_USER, requestParam);
+      expect(allObs.length).toBe(1);
+    });
   });
 });
