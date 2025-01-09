@@ -747,7 +747,7 @@ workflows:
           filters:
             branches:
               only:
-                - /oob\/.*/
+                - master
       - tag_package_rolling:
           requires:
             - build_platform
@@ -762,7 +762,7 @@ workflows:
           filters:
             branches:
               only:
-                - /oob\/.*/
+                - master
       - tag_package_rolling_musl:
           requires:
             - build_platform_musl
@@ -777,14 +777,14 @@ workflows:
           filters:
             branches:
               only:
-                - /oob\/.*/
+                - master
       - docker_build_worker_rolling:
           requires:
             - build_frontend
           filters:
             branches:
               only:
-                - /oob\/.*/
+                - master
       - docker_build_platform_prerelease:
           requires:
             - build_frontend
@@ -805,14 +805,14 @@ workflows:
           filters:
             branches:
               only:
-                - /oob\/.*/
+                - master
       - docker_build_worker_fips_rolling:
           requires:
             - build_frontend
           filters:
             branches:
               only:
-                - /oob\/.*/
+                - master
       - docker_build_platform:
           requires:
             - build_frontend
