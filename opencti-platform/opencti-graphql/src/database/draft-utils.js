@@ -9,6 +9,7 @@ export const DRAFT_OPERATION_UPDATE = 'update';
 export const DRAFT_OPERATION_UPDATE_LINKED = 'update_linked';
 export const DRAFT_OPERATION_DELETE = 'delete';
 export const DRAFT_OPERATION_DELETE_LINKED = 'delete_linked';
+export const DRAFT_OPERATION_UNCHANGED = 'unchanged';
 
 export const buildDraftFilter = (context, user, opts = {}) => {
   const { includeDeletedInDraft = false } = opts;
@@ -91,7 +92,10 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
 // If instance already contained a draft_change with a draft_update_patch, consolidate updated inputs in existing draft_update_patch
 export const getDraftChanges = (initialInstance, updatedInputs) => {
   const currentDraftChanges = initialInstance.draft_change ?? { draft_operation: DRAFT_OPERATION_UPDATE };
-  if (updatedInputs.length === 0) {
+  if (updatedInputs.length === 0
+      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE
+      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE
+      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
     return currentDraftChanges;
   }
 
@@ -137,5 +141,5 @@ export const getDraftChanges = (initialInstance, updatedInputs) => {
 
   const stringifiedUpdatePatch = JSON.stringify(currentUpdatePatch);
 
-  return { ...currentDraftChanges, draft_updates_patch: stringifiedUpdatePatch };
+  return { draft_operation: DRAFT_OPERATION_UPDATE, draft_updates_patch: stringifiedUpdatePatch };
 };

@@ -3939,7 +3939,7 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
 // Creates a copy of a live element in the draft index with the current draft context
-const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
+export const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 

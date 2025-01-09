@@ -6477,6 +6477,7 @@ export enum DraftOperation {
   Create = 'create',
   Delete = 'delete',
   DeleteLinked = 'delete_linked',
+  Unchanged = 'unchanged',
   Update = 'update',
   UpdateLinked = 'update_linked'
 }

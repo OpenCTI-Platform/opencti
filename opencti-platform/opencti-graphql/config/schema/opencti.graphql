@@ -1950,6 +1950,7 @@ enum DraftOperation {
   update_linked
   delete
   delete_linked
+  unchanged
 }
 
 type DraftVersion {
