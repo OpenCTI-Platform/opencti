@@ -11,7 +11,8 @@ import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/co
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
-import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -39,6 +40,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -84,7 +86,7 @@ interface FormikCaseIncidentAddInput {
   created: Date | null;
   response_types: string[];
   caseTemplates?: Option[];
-  authorizedMembers: Option[];
+  authorizedMembers: { value: string, accessRight: string }[];
 }
 
 interface IncidentFormProps {
@@ -150,9 +152,9 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
-      authorized_members: values.authorizedMembers.map(({ value }) => ({
+      authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
         id: value,
-        access_right: '',
+        access_right: accessRight,
       })),
     };
     commit({
@@ -274,27 +276,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             style={fieldSpacingContainerStyle}
             askAi={true}
           />
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-          >
-            <Alert
-              icon={false}
-              classes={{ root: classes.alert, message: classes.message }}
-              severity="warning"
-              variant="outlined"
-              style={fieldSpacingContainerStyle}
-            >
-              <Field
-                name={'authorizedMembers'}
-                component={AuthorizedMembersField}
-                showAllMembersLine
-                showCreatorLine
-                canDeactivate
-                disabled={isSubmitting}
-                addMeUserWithAdminRights
-              />
-            </Alert>
-          </Security>
           <Field
             component={RichTextField}
             name="content"
@@ -338,6 +319,30 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <div style={fieldSpacingContainerStyle}>
+              <Accordion >
+                <AccordionSummary id="accordion-panel">
+                  <Typography>{t_i18n('Advanced options')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Field
+                    name={'authorizedMembers'}
+                    component={AuthorizedMembersField}
+                    containerstyle={{ marginTop: 20 }}
+                    showAllMembersLine
+                    showCreatorLine
+                    canDeactivate
+                    disabled={isSubmitting}
+                    addMeUserWithAdminRights
+                    owner={values.createdBy}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          </Security>
           <div className={classes.buttons}>
             <Button
               variant="contained"

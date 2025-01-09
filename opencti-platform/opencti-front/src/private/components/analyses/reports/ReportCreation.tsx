@@ -11,7 +11,8 @@ import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/co
 import useHelper from 'src/utils/hooks/useHelper';
 import { ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
-import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -38,6 +39,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -270,28 +272,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             style={{ marginTop: 20 }}
             askAi={true}
           />
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-          >
-            <Alert
-              icon={false}
-              classes={{ root: classes.alert, message: classes.message }}
-              severity="warning"
-              variant="outlined"
-              style={fieldSpacingContainerStyle}
-            >
-              <Field
-                name={'authorizedMembers'}
-                component={AuthorizedMembersField}
-                showAllMembersLine
-                showCreatorLine={false}
-                canDeactivate
-                disabled={isSubmitting}
-                addMeUserWithAdminRights
-                owner={values.createdBy}
-              />
-            </Alert>
-          </Security>
           <Field
             component={RichTextField}
             name="content"
@@ -343,6 +323,30 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <div style={fieldSpacingContainerStyle}>
+              <Accordion >
+                <AccordionSummary id="accordion-panel">
+                  <Typography>{t_i18n('Advanced options')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Field
+                    name={'authorizedMembers'}
+                    component={AuthorizedMembersField}
+                    containerstyle={{ marginTop: 20 }}
+                    showAllMembersLine
+                    showCreatorLine
+                    canDeactivate
+                    disabled={isSubmitting}
+                    addMeUserWithAdminRights
+                    owner={values.createdBy}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          </Security>
           <div className={classes.buttons}>
             <Button
               variant="contained"
