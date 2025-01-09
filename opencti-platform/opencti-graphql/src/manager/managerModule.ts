@@ -78,7 +78,7 @@ const initManager = (manager: ManagerDefinition) => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} already started by another API`);
         } else {
-          logApp.error(e, { manager: manager.id });
+          logApp.error(`[OPENCTI-MODULE] ${manager.label} handling error`, { cause: e, manager: manager.id });
         }
       } finally {
         running = false;
@@ -112,7 +112,7 @@ const initManager = (manager: ManagerDefinition) => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} stream handler already started by another API`);
         } else {
-          logApp.error(e, { manager: manager.id });
+          logApp.error(`[OPENCTI-MODULE] ${manager.label} stream error`, { cause: e, manager: manager.id });
         }
       } finally {
         if (streamProcessor) await streamProcessor.shutdown();

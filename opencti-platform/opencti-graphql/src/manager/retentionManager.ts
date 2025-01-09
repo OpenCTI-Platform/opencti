@@ -91,7 +91,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
       } catch (err: any) {
         // Only log the error if not an already deleted message (that can happen though concurrency deletion)
         if (err?.extensions?.code !== ALREADY_DELETED_ERROR) {
-          logApp.error(err, { id: node.id, manager: 'RETENTION_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] Retention manager error', { cause: err, id: node.id, manager: 'RETENTION_MANAGER' });
         }
       }
     };

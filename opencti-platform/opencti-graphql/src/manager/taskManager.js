@@ -36,7 +36,7 @@ import {
 import { now } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, UnsupportedError, ValidationError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, ValidationError } from '../config/errors';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -480,7 +480,7 @@ const executeProcessing = async (context, user, job, scope) => {
           const operations = { [INPUT_OBJECTS]: type.toLowerCase() }; // add, remove, replace
           await patchAttribute(context, user, value, ENTITY_TYPE_CONTAINER, patch, { operations });
         } catch (err) {
-          logApp.error(err);
+          logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: valueIndex });
           if (errors.length < MAX_TASK_ERRORS) {
             errors.push({ id: value, message: err.message, reason: err.reason });
           }
@@ -539,7 +539,7 @@ const executeProcessing = async (context, user, job, scope) => {
             await executeUnshareMultiple(context, user, actionContext, element);
           }
         } catch (err) {
-          logApp.error(err);
+          logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: elementIndex });
           if (errors.length < MAX_TASK_ERRORS) {
             errors.push({ id: element.id, message: `${err.message}${err.data?.reason ? ` - ${err.reason}` : ''}` });
           }
@@ -570,7 +570,7 @@ export const taskHandler = async () => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error(UnsupportedError('Unsupported task type', { type: task.type }));
+      logApp.error('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
       return;
     }
     // endregion
@@ -614,7 +614,7 @@ export const taskHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
-      logApp.error(e, { manager: 'TASK_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] Task manager handler error', { cause: e, manager: 'TASK_MANAGER' });
     }
   } finally {
     running = false;

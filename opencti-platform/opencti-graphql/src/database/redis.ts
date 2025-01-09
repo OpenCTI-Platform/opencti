@@ -130,7 +130,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
-  client.on('error', (err) => logApp.error(DatabaseError('Redis client connection fail', { cause: err, provider })));
+  client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
@@ -705,7 +705,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         await processStreamResult([], callback, opts.withInternal);
       }
     } catch (err) {
-      logApp.error(DatabaseError('Redis stream consume fail', { cause: err, provider }));
+      logApp.error('Redis stream consume fail', { cause: err, provider });
       if (opts.autoReconnect) {
         await waitInSec(2);
       } else {

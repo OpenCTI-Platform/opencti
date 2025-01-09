@@ -1079,7 +1079,7 @@ export const elConfigureAttachmentProcessor = async () => {
         }
       ]
     }).catch((e) => {
-      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
+      logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   } else {
@@ -1101,7 +1101,7 @@ export const elConfigureAttachmentProcessor = async () => {
         ]
       }
     }).catch((e) => {
-      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
+      logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   }
@@ -1154,7 +1154,7 @@ export const elDeleteIndices = async (indexesToDelete) => {
         .catch((err) => {
           /* v8 ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-            logApp.error(DatabaseError('Indices deletion fail', { cause: err }));
+            logApp.error('Indices deletion fail', { cause: err });
           }
         });
     })
@@ -3737,7 +3737,9 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
   // User must have access to all relations to remove to be able to delete
   const filteredRelations = await userFilterStoreElements(context, user, relations);
-  if (relations.length !== filteredRelations.length) throw FunctionalError('Cannot delete element: cannot access all related relations');
+  if (relations.length !== filteredRelations.length) {
+    throw FunctionalError('Cannot delete element: cannot access all related relations');
+  }
   relations.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   relations.forEach((instance) => controlUserRestrictDeleteAgainstElement(user, instance));
   // Compute the id that needs to be removed from rel
@@ -3765,7 +3767,6 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
       const ids = idsByIndex.get(sourceIndex);
       reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
     });
-
     await Promise.all(reindexPromises);
     await createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
   }

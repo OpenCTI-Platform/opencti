@@ -12,7 +12,7 @@ import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
-import { DatabaseError, FunctionalError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage-helper';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
@@ -46,7 +46,7 @@ const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts
       hasError = true;
       const errorData = { error: error.message, source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
-      logApp.error(error);
+      logApp.error(`${LOG_PREFIX} Error streaming the CSV data`, { error });
     }).on('end', async () => {
       if (!hasError) {
         // it's fine to use deprecated bundleProcess since this whole method is also deprecated for drafts.
@@ -132,15 +132,14 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
             totalBundlesCount += bundleCount;
           } catch (error: any) {
             const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };
-            logApp.error(error, { errorData });
+            logApp.error(`${LOG_PREFIX} CSV line parsing error`, { error: errorData });
             await reportExpectation(context, applicantUser, workId, errorData);
           }
         }
       } catch (error: any) {
-        logApp.error(error);
+        logApp.error(`${LOG_PREFIX} CSV global parsing error`, { error });
         const errorData = { error: error.message, source: fileId };
         await reportExpectation(context, applicantUser, workId, errorData);
-
         // circuit breaker
         hasMoreBulk = false;
       } finally {
@@ -197,7 +196,6 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
       entity,
       connectorId: connector.internal_id
     };
-
     await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
     const validateBeforeImport = connectorConfig.config.validate_before_import;
     if (validateBeforeImport) {
@@ -206,8 +204,8 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
       await processCSVforWorkers(context, fileId, opts);
     }
   } catch (error: any) {
+    logApp.error(`${LOG_PREFIX} CSV global parsing error`, { error, source: fileId });
     const errorData = { error: error.stack, source: fileId };
-    logApp.error(error, { context, errorData });
     await reportExpectation(context, applicantUser, workId, errorData);
   }
 };
@@ -227,7 +225,7 @@ export const initImportCsvConnector = () => {
         try {
           rabbitMqConnection.close();
         } catch (e) {
-          logApp.error(DatabaseError(`${LOG_PREFIX} Closing RabbitMQ connection failed`, { cause: e }));
+          logApp.error(`${LOG_PREFIX} Closing RabbitMQ connection failed`, { cause: e });
         }
       }
       // TODO REMOVE TYPING, don't know why it's not working
