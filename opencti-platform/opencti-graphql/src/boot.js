@@ -2,7 +2,6 @@ import { environment, getStoppingState, logApp, setStoppingState } from './confi
 import platformInit, { checkFeatureFlags, checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
-import { UnknownError } from './config/errors';
 import { shutdownModules, startModules } from './managers';
 
 // region platform start and stop
