@@ -83,7 +83,7 @@ interface ReportAddInput {
   objectParticipant: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorizedMembers: Option[];
+  authorizedMembers: { value: string, accessRight: string }[];
 }
 
 interface ReportFormProps {
@@ -157,9 +157,9 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-      authorized_members: values.authorizedMembers.map(({ value }) => ({
+      authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
         id: value,
-        access_right: '',
+        access_right: accessRight,
       })),
     };
     commit({
