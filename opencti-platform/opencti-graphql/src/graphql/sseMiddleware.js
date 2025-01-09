@@ -712,7 +712,7 @@ const createSseMiddleware = () => {
     applyMiddleware: ({ app }) => {
       app.get(`${basePath}/stream`, authenticate, genericStreamHandler);
       app.get(`${basePath}/stream/:id`, authenticateForPublic, liveStreamHandler);
-      app.post(`${basePath}/stream/connection/:id`, manageStreamConnectionHandler);
+      app.post(`${basePath}/stream/connection/:id`, authenticate, manageStreamConnectionHandler);
     },
   };
 };
