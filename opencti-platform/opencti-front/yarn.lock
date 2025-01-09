@@ -11365,9 +11365,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-ui@npm:0.24.7":
-  version: 0.24.7
-  resolution: "filigran-ui@npm:0.24.7"
+"filigran-ui@npm:0.25.2":
+  version: 0.25.2
+  resolution: "filigran-ui@npm:0.25.2"
   dependencies:
     "@dnd-kit/core": "npm:6.1.0"
     "@dnd-kit/modifiers": "npm:7.0.0"
@@ -11399,7 +11399,7 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0
     react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0
-  checksum: 10/138383ad91974b20b7368c5af3cf1222d73f978a9a2f10b975e8cfa8b86ee27e47257a7696a95f5c1b69cb1230be954f22133cba5ea1bd4857b08dfc04326f1f
+  checksum: 10/dacdeb9d8484c27f811df1f74b36891c58c2b2a6ecd47435c30a2fbba36c9f20878ddc4692f8a6183d0993ac6462129d099cf614db29f9bbad0712fd35936df9
   languageName: node
   linkType: hard
 
@@ -15820,7 +15820,7 @@ __metadata:
     express: "npm:4.21.0"
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.10.1"
-    filigran-ui: "npm:0.24.7"
+    filigran-ui: "npm:0.25.2"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
