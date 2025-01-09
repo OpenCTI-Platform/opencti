@@ -497,7 +497,7 @@ export const horizontalBarsChartOptions = (
         : 'rgba(0, 0, 0, .1)',
     strokeDashArray: 3,
     padding: {
-      right: 15,
+      right: 20,
     },
   },
   legend: {
