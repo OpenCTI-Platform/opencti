@@ -1,8 +1,9 @@
-import { Drawer, SxProps, Toolbar, MenuItem, Menu } from '@mui/material';
-import React, { FunctionComponent, MouseEvent, useState } from 'react';
+import { Drawer, SxProps, Toolbar } from '@mui/material';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
+import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';
 import FintelTemplateWidgetsList, { FintelTemplateWidget } from './FintelTemplateWidgetsList';
 import { useFormatter } from '../../../../../components/i18n';
@@ -10,17 +11,15 @@ import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import WidgetConfig from '../../../widgets/WidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 export const FINTEL_TEMPLATE_SIDEBAR_WIDTH = 350;
 
-export const widgetsFragment = graphql`
+const sidebarFragment = graphql`
   fragment FintelTemplateWidgetsSidebar_template on FintelTemplate {
     id
-    template_content
     fintel_template_widgets {
       variable_name
       widget {
@@ -56,27 +55,7 @@ export const widgetsFragment = graphql`
           legend
           distributed
         }
-        layout {
-          w
-          h
-          x
-          y
-          i
-          moved
-          static
-        }
       }
-    }
-  }
-`;
-
-export const fintelTemplateWidgetMutationFieldPatch = graphql`
-  mutation FintelTemplateWidgetsSidebarWidgetsFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
-    fintelTemplateFieldPatch(id: $id, input: $input) {
-      ...FintelTemplateWidgetsSidebar_template
     }
   }
 `;
@@ -89,9 +68,21 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const { id, template_content, fintel_template_widgets: fintelTemplateWidgets } = useFragment(widgetsFragment, data);
 
-  const formattedFintelTemplateWidgets: FintelTemplateWidget[] = fintelTemplateWidgets
+  const { id, fintel_template_widgets } = useFragment(sidebarFragment, data);
+
+  const [commitEditMutation] = useFintelTemplateEdit();
+  const deletion = useDeletion({});
+  const { handleCloseDelete, handleOpenDelete } = deletion;
+
+  const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
+  const [selectedWidget, setSelectedWidget] = useState<FintelTemplateWidget>();
+
+  const selectedWidgetIndex = useMemo(() => {
+    return fintel_template_widgets.findIndex((w) => w.variable_name === selectedWidget?.variable_name);
+  }, [fintel_template_widgets, selectedWidget]);
+
+  const formattedFintelTemplateWidgets: FintelTemplateWidget[] = fintel_template_widgets
     .map((template) => ({
       ...template,
       widget: {
@@ -105,86 +96,44 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       },
     }) as FintelTemplateWidget);
 
-  const formattedFintelTemplateWidgetsForList = formattedFintelTemplateWidgets
-    .map((template) => (template.widget.type === 'attribute'
-      ? (template.widget.dataSelection[0].columns ?? []).map((c) => ({
-        id: template.widget.id,
-        variableName: c.variableName,
-        type: template.widget.type,
-      }))
-      : {
-        id: template.widget.id,
-        variableName: template.variable_name,
-        type: template.widget.type,
-      }))
-    .flat() as { id: string, variableName: string, type: string }[];
-
-  const usedWidgets = formattedFintelTemplateWidgetsForList.filter((w) => template_content.includes(`$${w.variableName}`));
-
-  const [selectedVariable, setSelectedVariable] = useState<string | undefined>(undefined);
-  const [isWidgetFormOpen, setIsWidgetFormOpen] = useState<boolean>(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-  const [commitWidgetUpdate] = useApiMutation(fintelTemplateWidgetMutationFieldPatch);
-  const deletion = useDeletion({});
-  const { handleCloseDelete, handleOpenDelete } = deletion;
-
-  const selectedWidget = formattedFintelTemplateWidgets.find((t) => t.variable_name === selectedVariable)?.widget as Widget ?? undefined;
-  const selectedWidgetIndex = formattedFintelTemplateWidgets.map((t) => t.variable_name).indexOf(selectedVariable ?? '');
-
-  const paperStyle: SxProps = {
-    '.MuiDrawer-paper': {
-      width: FINTEL_TEMPLATE_SIDEBAR_WIDTH,
-      padding: `${theme.spacing(2)} 0`,
-      paddingTop: `calc(${theme.spacing(2)} +  ${settingsMessagesBannerHeight}px)`,
-    },
-  };
-
-  const handleOpenPopover = (event: MouseEvent<HTMLButtonElement>, variable: string) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedVariable(variable);
-  };
-
-  const handleOpenUpdate = () => {
+  const onOpenUpdate = (widget: FintelTemplateWidget) => {
+    setSelectedWidget(widget);
     setIsWidgetFormOpen(true);
+  };
+
+  const onOpenDelete = (widget: FintelTemplateWidget) => {
+    setSelectedWidget(widget);
+    handleOpenDelete();
   };
 
   const handleWidgetConfigOpen = (isOpen: boolean) => {
     setIsWidgetFormOpen(isOpen);
     if (!isOpen) {
-      setAnchorEl(null);
-      setSelectedVariable(undefined);
+      setSelectedWidget(undefined);
     }
   };
 
-  const handleClosePopover = () => {
-    handleWidgetConfigOpen(false);
+  const closeDeleteConfirm = () => {
+    handleCloseDelete();
+    setSelectedWidget(undefined);
   };
 
-  const onOpenDelete = () => {
-    handleOpenDelete();
-    setAnchorEl(null);
-  };
-
-  const handleDeleteWidget = () => {
+  const submitDeleteWidget = () => {
     if (selectedWidgetIndex < 0) {
       throw Error('Selected widget index should be positive.');
     }
-    const editInput = {
-      key: 'fintel_template_widgets',
-      object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
-      value: [null],
-      operation: 'remove',
-    };
-    commitWidgetUpdate({
+    commitEditMutation({
       variables: {
         id,
-        input: editInput,
+        input: [{
+          key: 'fintel_template_widgets',
+          object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
+          value: [null],
+          operation: 'remove',
+        }],
       },
-      onCompleted: () => {
-        handleCloseDelete();
-        setSelectedVariable(undefined);
-      },
+      onError: closeDeleteConfirm,
+      onCompleted: closeDeleteConfirm,
     });
   };
 
@@ -208,44 +157,41 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       },
     };
     if (!selectedWidget) { // case widget creation
-      // add the widget in the fintel template widgets list
-      const editInput = {
-        key: 'fintel_template_widgets',
-        value: [fintelTemplateWidget],
-        operation: 'add',
-      };
-      commitWidgetUpdate({
+      commitEditMutation({
         variables: {
           id,
-          input: editInput,
+          // add the widget in the fintel template widgets list
+          input: [{
+            key: 'fintel_template_widgets',
+            value: [fintelTemplateWidget],
+            operation: 'add',
+          }],
         },
       });
     } else { // case widget update
-      // update the widget in the fintel template widgets list
-      const editInput = {
-        key: 'fintel_template_widgets',
-        object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
-        value: [fintelTemplateWidget],
-      };
-      commitWidgetUpdate({
+      if (selectedWidgetIndex < 0) {
+        throw Error('Selected widget index should be positive.');
+      }
+      commitEditMutation({
         variables: {
           id,
-          input: editInput,
+          // update the widget in the fintel template widgets list
+          input: [{
+            key: 'fintel_template_widgets',
+            object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
+            value: [fintelTemplateWidget],
+          }],
         },
       });
     }
   };
 
-  const handleOpenCreateWidget = () => {
-    setIsWidgetFormOpen(true);
-  };
-
-  const copyWidgetToClipboard = async () => {
-    if (selectedVariable) {
-      await navigator.clipboard.writeText(`$${selectedVariable}`);
-      MESSAGING$.notifySuccess(t_i18n('Widget copied to clipboard'));
-    }
-    setAnchorEl(null);
+  const paperStyle: SxProps = {
+    '.MuiDrawer-paper': {
+      width: FINTEL_TEMPLATE_SIDEBAR_WIDTH,
+      padding: `${theme.spacing(2)} 0`,
+      paddingTop: `calc(${theme.spacing(2)} +  ${settingsMessagesBannerHeight}px)`,
+    },
   };
 
   return (
@@ -255,46 +201,27 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <FintelTemplateWidgetsList
-            title={t_i18n('Available template widgets')}
-            onCreateWidget={handleOpenCreateWidget}
+            onCreateWidget={() => setIsWidgetFormOpen(true)}
             widgets={formattedFintelTemplateWidgets}
-            handleOpenPopover={handleOpenPopover}
+            onUpdateWidget={onOpenUpdate}
+            onDeleteWidget={onOpenDelete}
           />
         </div>
       </Drawer>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClosePopover}
-      >
-        <MenuItem onClick={copyWidgetToClipboard}>
-          {t_i18n('Copy widget to clipboard')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenUpdate}>
-          {t_i18n('Update')}
-        </MenuItem>
-        <MenuItem
-          onClick={onOpenDelete}
-          disabled={!!usedWidgets.find((w) => w.variableName === selectedVariable)}
-        >
-          {t_i18n('Delete')}
-        </MenuItem>
-      </Menu>
 
       <WidgetConfig
         open={isWidgetFormOpen}
         setOpen={handleWidgetConfigOpen}
         onComplete={handleUpsertWidget}
         context={'fintelTemplate'}
-        widget={selectedWidget}
-        initialVariableName={selectedVariable}
+        widget={selectedWidget?.widget}
+        initialVariableName={selectedWidget?.variable_name}
       />
 
       <DeleteDialog
         title={t_i18n('Are you sure you want to remove this widget?')}
         deletion={deletion}
-        submitDelete={handleDeleteWidget}
+        submitDelete={submitDeleteWidget}
       />
     </>
   );

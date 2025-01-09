@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
-import FintelTemplatePreview from '@components/settings/sub_types/fintel_templates/FintelTemplatePreview';
-import { FintelTemplateProvider } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
+import FintelTemplatePreview from './FintelTemplatePreview';
+import { FintelTemplateProvider } from './FintelTemplateContext';
 import FintelTemplateContentEditor from './FintelTemplateContentEditor';
 import FintelTemplateTabs from './FintelTemplateTabs';
 import FintelTemplateHeader from './FintelTemplateHeader';
@@ -25,6 +25,7 @@ export const fintelTemplateQuery = graphql`
       ...FintelTemplateHeader_template
       ...FintelTemplateContentEditor_template
       ...FintelTemplateWidgetsSidebar_template
+      ...FintelTemplatePreview_template
     }
   }
 `;
@@ -55,7 +56,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
                 <div role="tabpanel" hidden={index !== 1}>
                   <FintelTemplatePreview
                     isTabActive={index === 1}
-                    fintelTemplate={fintelTemplate}
+                    data={fintelTemplate}
                   />
                 </div>
               </Security>

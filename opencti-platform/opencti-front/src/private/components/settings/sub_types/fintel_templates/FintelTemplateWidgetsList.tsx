@@ -1,15 +1,14 @@
-import List from '@mui/material/List';
-import IconButton from '@mui/material/IconButton';
+import React, { FunctionComponent, MouseEvent, useMemo, useState } from 'react';
 import { AddOutlined } from '@mui/icons-material';
-import React, { FunctionComponent, MouseEvent } from 'react';
-import { Tooltip } from '@mui/material';
-import Typography from '@mui/material/Typography';
+import { Menu, MenuItem, Tooltip, IconButton, List, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
 import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import type { Widget } from '../../../../../utils/widget/widget';
+import { MESSAGING$ } from '../../../../../relay/environment';
+import { useFintelTemplateContext } from './FintelTemplateContext';
 
 export interface FintelTemplateWidget {
   variable_name: string
@@ -18,19 +17,61 @@ export interface FintelTemplateWidget {
 
 interface FintelTemplateWidgetsListProps {
   widgets: FintelTemplateWidget[]
-  handleOpenPopover: (event: MouseEvent<HTMLButtonElement>, lineKey: string) => void
-  title: string
-  onCreateWidget?: () => void
+  onCreateWidget: () => void
+  onDeleteWidget: (w: FintelTemplateWidget) => void
+  onUpdateWidget: (w: FintelTemplateWidget) => void
 }
 
 const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({
   widgets,
-  handleOpenPopover,
-  title,
   onCreateWidget,
+  onDeleteWidget,
+  onUpdateWidget,
 }) => {
-  const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const { editorValue } = useFintelTemplateContext();
+
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [selectedWidget, setSelectedWidget] = useState<FintelTemplateWidget>();
+
+  const isSelectedWidgetUsed = useMemo(() => {
+    if (!selectedWidget) return false;
+    return !!editorValue?.includes(`$${selectedWidget.variable_name}`);
+  }, [selectedWidget, editorValue]);
+
+  const openPopover = (e: MouseEvent<HTMLButtonElement>, varName: string) => {
+    const widget = widgets.find((w) => w.variable_name === varName);
+    if (widget) {
+      setSelectedWidget(widget);
+      setMenuAnchor(e.currentTarget);
+    }
+  };
+
+  const copyWidgetToClipboard = async () => {
+    if (selectedWidget) {
+      await navigator.clipboard.writeText(`$${selectedWidget}`);
+      MESSAGING$.notifySuccess(t_i18n('Widget copied to clipboard'));
+    }
+    setMenuAnchor(null);
+    setSelectedWidget(undefined);
+  };
+
+  const deleteWidget = () => {
+    if (selectedWidget) {
+      onDeleteWidget(selectedWidget);
+    }
+    setMenuAnchor(null);
+    setSelectedWidget(undefined);
+  };
+
+  const updateWidget = () => {
+    if (selectedWidget) {
+      onUpdateWidget(selectedWidget);
+    }
+    setMenuAnchor(null);
+    setSelectedWidget(undefined);
+  };
 
   return (
     <>
@@ -43,19 +84,20 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         paddingRight: theme.spacing(1),
       }}
       >
-        <Typography variant="body2">{title}</Typography>
-        {onCreateWidget && (
-          <Tooltip title={t_i18n('Create widget')}>
-            <IconButton
-              onClick={onCreateWidget}
-              color="primary"
-              size="small"
-              aria-label={t_i18n('Create widget')}
-            >
-              <AddOutlined />
-            </IconButton>
-          </Tooltip>
-        )}
+        <Typography variant="body2">
+          {t_i18n('Available template widgets')}
+        </Typography>
+
+        <Tooltip title={t_i18n('Create widget')}>
+          <IconButton
+            onClick={onCreateWidget}
+            color="primary"
+            size="small"
+            aria-label={t_i18n('Create widget')}
+          >
+            <AddOutlined />
+          </IconButton>
+        </Tooltip>
       </div>
 
       {widgets.length === 0 && (
@@ -72,22 +114,41 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
             <FintelTemplateWidgetAttribute
               key={variable_name}
               widget={widget}
-              onOpenPopover={handleOpenPopover}
+              onOpenPopover={openPopover}
               variableName={isSelfAttributeWidget
                 ? t_i18n('Attributes of the instance')
                 : variable_name
-                  }
+              }
             />
           ) : (
             <FintelTemplateWidgetDefault
               key={variable_name}
               widgetType={widget.type}
               variableName={variable_name}
-              onOpenPopover={handleOpenPopover}
+              onOpenPopover={openPopover}
             />
           );
         })}
       </List>
+
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => setMenuAnchor(null)}
+      >
+        <MenuItem onClick={copyWidgetToClipboard}>
+          {t_i18n('Copy widget to clipboard')}
+        </MenuItem>
+        <MenuItem onClick={updateWidget}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem
+          onClick={deleteWidget}
+          disabled={isSelectedWidgetUsed}
+        >
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
     </>
   );
 };
