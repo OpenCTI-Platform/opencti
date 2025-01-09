@@ -34,6 +34,10 @@ export const IntrusionSetCardFragment = graphql`
       id
       name
     }
+    creators {
+      id
+      name
+    }
     targetedCountries: stixCoreRelationships(
       relationship_type: "targets"
       toTypes: ["Country"]
