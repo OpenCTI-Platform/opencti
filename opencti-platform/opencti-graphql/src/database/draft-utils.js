@@ -5,6 +5,7 @@ import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE
 
 export const DRAFT_OPERATION_CREATE = 'create';
 export const DRAFT_OPERATION_UPDATE = 'update';
+export const DRAFT_OPERATION_UPDATE_LINKED = 'update_linked';
 export const DRAFT_OPERATION_DELETE = 'delete';
 export const DRAFT_OPERATION_DELETE_LINKED = 'delete_linked';
 
@@ -85,6 +86,8 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
   return JSON.stringify(resultFieldPatch);
 };
 
+// Get the resulting draft_change to apply to instance depending on updated inputs
+// If instance already contained a draft_change with a draft_update_patch, consolidate updated inputs in existing draft_update_patch
 export const getDraftChanges = (initialInstance, updatedInputs) => {
   const currentDraftChanges = initialInstance.draft_change ?? { draft_operation: DRAFT_OPERATION_UPDATE };
   if (updatedInputs.length === 0) {

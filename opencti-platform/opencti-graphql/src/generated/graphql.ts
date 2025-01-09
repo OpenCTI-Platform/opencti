@@ -6476,7 +6476,9 @@ export type DraftObjectsCount = {
 export enum DraftOperation {
   Create = 'create',
   Delete = 'delete',
-  Update = 'update'
+  DeleteLinked = 'delete_linked',
+  Update = 'update',
+  UpdateLinked = 'update_linked'
 }
 
 export type DraftVersion = {
