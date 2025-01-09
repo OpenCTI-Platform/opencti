@@ -2,6 +2,7 @@ import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
+import { EditOperation } from '../generated/graphql';
 
 export const DRAFT_OPERATION_CREATE = 'create';
 export const DRAFT_OPERATION_UPDATE = 'update';
@@ -67,15 +68,15 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
       const currentValues = parsedUpdatePatch[currentKey];
       if (currentValues) {
         if (currentValues.replaced_value && currentValues.replaced_value.length > 0) {
-          const replaceInput = { key: currentKey, value: currentValues.replaced_value, operation: 'replace' };
+          const replaceInput = { key: currentKey, value: currentValues.replaced_value, operation: EditOperation.Replace };
           resultFieldPatch.push(replaceInput);
         } else {
           if (currentValues.added_value && currentValues.added_value.length > 0) {
-            const addInput = { key: currentKey, value: currentValues.added_value, operation: 'add' };
+            const addInput = { key: currentKey, value: currentValues.added_value, operation: EditOperation.Add };
             resultFieldPatch.push(addInput);
           }
           if (currentValues.removed_value && currentValues.removed_value.length > 0) {
-            const removeInput = { key: currentKey, value: currentValues.removed_value, operation: 'remove' };
+            const removeInput = { key: currentKey, value: currentValues.removed_value, operation: EditOperation.Remove };
             resultFieldPatch.push(removeInput);
           }
         }
@@ -83,7 +84,7 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
     }
   }
 
-  return JSON.stringify(resultFieldPatch);
+  return resultFieldPatch;
 };
 
 // Get the resulting draft_change to apply to instance depending on updated inputs
@@ -106,10 +107,10 @@ export const getDraftChanges = (initialInstance, updatedInputs) => {
       if (currentNonResolvedInput.operation === UPDATE_OPERATION_ADD) {
         // if current input was a replace, add updateInput values to the replaced values
         if (currentUpdates.replaced_value.length > 0) {
-          const newReplacedValues = [...currentUpdates.replaced_value, ...currentNonResolvedInput.value];
+          const newReplacedValues = [...new Set([...currentUpdates.replaced_value, ...currentNonResolvedInput.value])];
           currentUpdatePatch[currentNonResolvedInput.key] = { replaced_value: newReplacedValues, added_value: [], removed_value: [] };
         } else { // Otherwise, remove added inputs from removed_value and add them to added_value
-          const newAddedValues = [...currentUpdates.added_value, ...currentNonResolvedInput.value];
+          const newAddedValues = [...new Set([...currentUpdates.added_value, ...currentNonResolvedInput.value])];
           const newRemovedValues = currentUpdates.removed_value.filter((v) => !currentNonResolvedInput.value.includes(v));
           currentUpdatePatch[currentNonResolvedInput.key] = { replaced_value: [], added_value: newAddedValues, removed_value: newRemovedValues };
         }
@@ -120,7 +121,7 @@ export const getDraftChanges = (initialInstance, updatedInputs) => {
           currentUpdatePatch[currentNonResolvedInput.key] = { replaced_value: newReplacedValues, added_value: [], removed_value: [] };
         } else { // Otherwise, remove added inputs from added_value and add them to removed_value
           const newAddedValues = currentUpdates.added_value.filter((v) => !currentNonResolvedInput.value.includes(v));
-          const newRemovedValues = [...currentUpdates.removed_value, ...currentNonResolvedInput.value];
+          const newRemovedValues = [...new Set([...currentUpdates.removed_value, ...currentNonResolvedInput.value])];
           currentUpdatePatch[currentNonResolvedInput.key] = { replaced_value: [], added_value: newAddedValues, removed_value: newRemovedValues };
         }
       } else { // Else if new input is a replace or not defined, remove all added_value and removedValues, and overwrite replaced_value with current input

@@ -1874,11 +1874,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Region - Pre-Check
-  const elementsByKey = R.groupBy((e) => e.key, updates);
-  const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
-  if (multiOperationKeys.length > 1) {
-    throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
-  }
   const references = opts.references ? await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : [];
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id: initial.internal_id, references: opts.references });
@@ -2161,10 +2156,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // endregion
     // Impacting information
     if (impactedInputs.length > 0 || (getDraftContext(context, user) && isDraftSupportedEntity(initial) && updatedInputs.length > 0)) {
-      let updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
       if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
         const lastElementVersion = await internalLoadById(context, user, initial.internal_id);
-        updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+        updateAsInstance._index = lastElementVersion._index;
+        updateAsInstance._id = lastElementVersion._id;
         updateAsInstance.draft_change = getDraftChanges(lastElementVersion, updatedInputs);
       }
       await elUpdateElement(context, user, updateAsInstance);
