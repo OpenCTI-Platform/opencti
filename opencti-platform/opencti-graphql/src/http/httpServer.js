@@ -105,9 +105,31 @@ const createHttpServer = async () => {
           const html = `
             <!DOCTYPE html>
             <html>
+            <head>
+              <meta content="en-us" http-equiv="Content-Language">
+              <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+              <style>
+                 body {
+                 margin: 20px 30px 10px 0px;
+                 padding: 0;
+                 background: #f8f8f8;
+                 -webkit-text-size-adjust :100%; 
+                 -ms-text-size-adjust: 100%;
+                 font-family: Arial;
+                 font-size: 16px;
+                 }
+              </style>
               <script>
-                location.replace('/public/graphql');
+                location.replace('${basePath}/public/graphql');
               </script>
+            </head>
+            <body align="center" valign="middle" width="100%">
+              <div class="logo">
+                <img src="/cat/static/ext/favicon.png" />
+              </div>
+              <div>This page has moved. The playground is now available under:</div>
+              <a href="${basePath}/public/graphql">/public/graphql</a>
+            </body>
             </html>`;
           return { html };
         },
