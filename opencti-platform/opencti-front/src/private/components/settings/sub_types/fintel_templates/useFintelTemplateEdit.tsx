@@ -14,6 +14,8 @@ const fintelTemplateEditMutation = graphql`
       start_date
       entity_type
       template_content
+      ...FintelTemplateTabs_template
+      ...FintelTemplateWidgetsSidebar_template
     }
   }
 `;

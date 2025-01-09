@@ -1,6 +1,6 @@
-import React, { MouseEvent } from 'react';
-import { WarningAmber, ContentCopy, MoreVert } from '@mui/icons-material';
-import { Tooltip, IconButton, ListItemText, ListItem } from '@mui/material';
+import React from 'react';
+import { WarningAmber, ContentCopy, Edit } from '@mui/icons-material';
+import { Tooltip, IconButton, ListItemText, ListItem, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
@@ -12,13 +12,13 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 interface FintelTemplateWidgetAttributeProps {
   widget: Widget
   variableName: string
-  onOpenPopover: (e: MouseEvent<HTMLButtonElement>, varName: string) => void
+  onUpdate: () => void
 }
 
 const FintelTemplateWidgetAttribute = ({
   widget,
   variableName,
-  onOpenPopover,
+  onUpdate,
 }: FintelTemplateWidgetAttributeProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -47,15 +47,16 @@ const FintelTemplateWidgetAttribute = ({
           {renderWidgetIcon(widget.type, 'small')}
         </Tooltip>
 
-        <ListItemText style={{ fontStyle: 'italic', flex: 1 }} primary={variableName} />
+        <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
+          {variableName}
+        </Typography>
 
         <IconButton
           aria-haspopup="true"
           color="primary"
-          size="small"
-          onClick={(event) => onOpenPopover(event, variableName)}
+          onClick={onUpdate}
         >
-          <MoreVert />
+          <Edit fontSize="small" />
         </IconButton>
       </div>
 
@@ -67,7 +68,7 @@ const FintelTemplateWidgetAttribute = ({
               key={column.variableName}
               style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}
             >
-              <ListItemText primary={column.variableName} />
+              <ListItemText secondary={column.variableName} />
 
               {!isUsed && (
                 <Tooltip title={t_i18n('The attribute is not called in the content')}>
@@ -78,7 +79,6 @@ const FintelTemplateWidgetAttribute = ({
               <IconButton
                 aria-haspopup="true"
                 color="primary"
-                size="small"
                 onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
               >
                 <ContentCopy fontSize="small" />

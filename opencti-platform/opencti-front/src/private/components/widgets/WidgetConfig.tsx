@@ -26,6 +26,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   context,
   initialVariableName,
 }) => {
+  console.log(widget);
   let initialStep = 0;
   if (widget?.type === 'text' || widget?.type === 'attribute') {
     initialStep = 3;

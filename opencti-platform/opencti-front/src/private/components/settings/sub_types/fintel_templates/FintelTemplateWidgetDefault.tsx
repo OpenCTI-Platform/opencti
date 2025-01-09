@@ -2,7 +2,7 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import { MoreVert, WarningAmber } from '@mui/icons-material';
 import React, { MouseEvent } from 'react';
-import { Tooltip } from '@mui/material';
+import { Tooltip, Typography } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
 import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
@@ -40,7 +40,9 @@ const FintelTemplateWidgetDefault = ({
         {renderWidgetIcon(widgetType, 'small')}
       </Tooltip>
 
-      <ListItemText primary={variableName} />
+      <Typography style={{ flex: 1 }} variant="body2">
+        {variableName}
+      </Typography>
 
       {!isUsed && (
         <Tooltip title={t_i18n('The widget is not called in the content')}>

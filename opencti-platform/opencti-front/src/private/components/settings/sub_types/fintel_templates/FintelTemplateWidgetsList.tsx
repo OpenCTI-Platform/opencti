@@ -2,6 +2,7 @@ import React, { FunctionComponent, MouseEvent, useMemo, useState } from 'react';
 import { AddOutlined } from '@mui/icons-material';
 import { Menu, MenuItem, Tooltip, IconButton, List, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import Alert from '@mui/material/Alert';
 import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
 import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';
@@ -73,6 +74,13 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
     setSelectedWidget(undefined);
   };
 
+  const openUpdate = (varName: string) => {
+    const widget = widgets.find((w) => w.variable_name === varName);
+    if (widget) {
+      onUpdateWidget(widget);
+    }
+  };
+
   return (
     <>
       <div style={{
@@ -101,7 +109,9 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       </div>
 
       {widgets.length === 0 && (
-        <Typography variant="body2">{t_i18n('No widget')}</Typography>
+        <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 1 }}>
+          {t_i18n('You have no widget created yet')}
+        </Alert>
       )}
 
       <List>
@@ -114,7 +124,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
             <FintelTemplateWidgetAttribute
               key={variable_name}
               widget={widget}
-              onOpenPopover={openPopover}
+              onUpdate={() => openUpdate(variable_name)}
               variableName={isSelfAttributeWidget
                 ? t_i18n('Attributes of the instance')
                 : variable_name
