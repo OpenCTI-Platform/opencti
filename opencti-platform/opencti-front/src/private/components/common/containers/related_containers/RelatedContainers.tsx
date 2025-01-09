@@ -151,7 +151,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
     >
       <Typography variant="h3" gutterBottom={true}>
         {t_i18n('Correlated containers')}
-        <Tooltip title={t_i18n('Go to correlation graph view')} placement="top">
+        <Tooltip title={t_i18n('Display the correlation graph')} placement="top">
           <IconButton
             color="primary"
             component={Link}
@@ -180,7 +180,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             variant={DataTableVariant.inline}
             actions={(row) => (
               <div>
-                <Tooltip title={t_i18n('Open correlation details')} placement="top">
+                <Tooltip title={t_i18n('Open the correlation details')} placement="top">
                   <IconButton
                     color="primary"
                     aria-haspopup="true"
