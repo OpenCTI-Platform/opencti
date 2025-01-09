@@ -26,7 +26,7 @@ import { elAggregationCount, elList } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
-import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from '../../database/draft-utils';
+import { buildUpdateFieldPatch, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from '../../database/draft-utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
@@ -186,10 +186,10 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => ({ ...d, opencti_operation: 'delete' }));
 
   // Send update with "field patch" info
-  const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draftupdateinputs);
+  const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
-  const updateStixEntitiesWithPatch = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: updateEntities.find((e) => e.standard_id === d.id).draft_change.draftupdateinputs }));
+  const updateStixEntitiesWithPatch = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch) }));
 
   return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch]);
 };
