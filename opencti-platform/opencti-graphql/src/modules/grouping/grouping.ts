@@ -3,7 +3,7 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { authorizedMembers } from '../../schema/attribute-definition';
+import { authorizedMembers, authorizedMembersActivationDate } from '../../schema/attribute-definition';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 
@@ -38,6 +38,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     { name: 'content_mapping', label: 'Content mapping', format: 'text', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'context', label: 'Context', type: 'string', format: 'vocabulary', vocabularyCategory: 'grouping_context_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { ...authorizedMembers, editDefault: true, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
+    { ...authorizedMembersActivationDate, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
   ],
   relations: [
     {

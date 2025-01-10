@@ -3,6 +3,7 @@ import {
   aliases,
   type AttributeDefinition,
   authorizedMembers,
+  authorizedMembersActivationDate,
   confidence,
   created,
   entityLocationType,
@@ -128,6 +129,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { ...authorizedMembers, editDefault: true, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
+    { ...authorizedMembersActivationDate, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
   ],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     xOpenctiAliases,

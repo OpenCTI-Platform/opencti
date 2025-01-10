@@ -113,6 +113,7 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
           id
           access_right
         }
+        authorized_members_activation_date
       }
     }
   }
@@ -737,7 +738,7 @@ describe('Restricted entities listing', () => {
     ]);
   });
   it('should Report created', async () => { // +1 create
-    // Create Case Incident Response
+    // Create Report
     const reportCreateQueryResult = await adminQueryWithSuccess({
       query: CREATE_REPORT_QUERY,
       variables: {
@@ -779,6 +780,7 @@ describe('Restricted entities listing', () => {
         access_right: 'view'
       }
     ]);
+    expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members_activation_date).toBeDefined();
   }); // +1 update
   it('using platform org - user without bypass should not be allowed list all auth member restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {

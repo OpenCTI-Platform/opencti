@@ -56,6 +56,9 @@ const managementDefinitionLineFragment = graphql`
           name
       }
     }
+    ... on Container {
+      authorized_members_activation_date
+    }
     objectMarking {
       id
       definition_type
@@ -65,11 +68,11 @@ const managementDefinitionLineFragment = graphql`
       created
       modified
     }
-      objectLabel {
-        id
-        value
-        color
-      }
+    objectLabel {
+      id
+      value
+      color
+    }
     creators {
       id
       name
@@ -159,7 +162,7 @@ const Management = () => {
 
   const dataColumns = {
     entity_type: {
-      percentWidth: 20,
+      percentWidth: 10,
       isSortable: true,
     },
     name: {
@@ -178,6 +181,9 @@ const Management = () => {
     },
     created_at: {
       percentWidth: 20,
+    },
+    authorized_members_activation_date: {
+      percentWidth: 10,
     },
     objectMarking: {
       percentWidth: 10,

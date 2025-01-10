@@ -97,6 +97,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int

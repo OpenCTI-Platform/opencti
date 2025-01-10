@@ -3160,6 +3160,7 @@ interface Container {
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3319,6 +3320,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3551,6 +3553,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3759,6 +3762,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3985,6 +3989,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
