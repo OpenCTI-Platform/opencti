@@ -10,12 +10,11 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
+import { convertAssignees, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
-import CreatedByField from '../../common/form/CreatedByField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { Option } from '../../common/form/ReferenceField';
@@ -63,13 +62,6 @@ const tasksEditionOverviewFragment = graphql`
       name
     }
     x_opencti_stix_ids
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
-      }
-    }
     status {
       id
       order
@@ -141,7 +133,6 @@ interface TasksEditionFormValues {
   description: string | null;
   due_date: Date | null;
   message?: string;
-  createdBy?: Option;
   objectMarking?: Option[];
   objectAssignee?: Option[];
   objectParticipant?: Option[]
@@ -192,7 +183,6 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     const commitMessage = message ?? '';
     const inputValues = Object.entries({
       ...otherValues,
-      createdBy: values.createdBy?.value,
       due_date: formatDate(values.due_date),
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
@@ -217,7 +207,6 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     name: taskData.name,
     description: taskData.description ?? '',
     due_date: buildDate(taskData.due_date),
-    createdBy: convertCreatedBy(taskData) as Option,
     objectMarking: convertMarkings(taskData),
     objectAssignee: convertAssignees(taskData),
     objectParticipant: convertParticipants(taskData),
@@ -313,16 +302,6 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               }
             />
           )}
-          <CreatedByField
-            name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
-            onChange={editor.changeCreated}
-          />
           <ObjectMarkingField
             name="objectMarking"
             required={(mandatoryAttributes.includes('objectMarking'))}

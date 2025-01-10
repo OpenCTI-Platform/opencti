@@ -18,7 +18,6 @@ import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import CreatedByField from '../../common/form/CreatedByField';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -51,7 +50,6 @@ interface FormikCaseTaskAddInput {
   description?: string;
   objectAssignee?: Option[];
   objectParticipant: Option[];
-  createdBy: Option | undefined;
   objectLabel?: Option[];
   objectMarking: Option[];
 }
@@ -61,7 +59,6 @@ interface CaseTaskCreationProps {
   onClose: () => void;
   paginationOptions: CaseTasksLinesQuery$variables;
   defaultMarkings?: { value: string; label: string }[];
-  defaultCreatedBy?: Option;
 }
 
 const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
@@ -69,7 +66,6 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   onClose,
   paginationOptions,
   defaultMarkings,
-  defaultCreatedBy,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -86,7 +82,6 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     objectAssignee: Yup.array(),
     objectParticipant: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -112,7 +107,6 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           objectParticipant: values.objectParticipant.map(({ value }) => value),
           objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
           objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
-          createdBy: values.createdBy?.value,
           objects: [caseId],
         },
       },
@@ -137,7 +131,6 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
         objectAssignee: [],
         objectParticipant: [],
         objectMarking: defaultMarkings ?? [],
-        createdBy: defaultCreatedBy,
       }}
       onSubmit={onSubmit}
       onReset={onClose}
@@ -174,12 +167,6 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             name="objectParticipant"
             required={(mandatoryAttributes.includes('objectParticipant'))}
             style={fieldSpacingContainerStyle}
-          />
-          <CreatedByField
-            name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"

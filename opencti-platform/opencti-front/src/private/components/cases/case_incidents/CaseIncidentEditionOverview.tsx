@@ -270,7 +270,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   return (
     <Formik
       enableReinitialize={true}
-      initialValues={initialValues}
+      initialValues={initialValues as never}
       validationSchema={validator}
       validateOnChange={true}
       validateOnBlur={true}
