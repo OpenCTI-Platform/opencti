@@ -22,7 +22,7 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetColumn, WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import ItemIcon from '../../../components/ItemIcon';
 
@@ -145,10 +145,19 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
 
   return (
     <div style={{ marginTop: 20 }}>
+      <TextField
+        label={t_i18n('Title')}
+        required={context === 'fintelTemplate'}
+        fullWidth={true}
+        value={parameters.title}
+        onChange={(event) => handleChangeParameter('title', event.target.value)
+        }
+      />
       {context === 'fintelTemplate' && handleChangeVariableName
         && <div style={{ marginTop: 20 }}>
           <TextField
             label={t_i18n('Variable name')}
+            required
             fullWidth={true}
             value={variableName}
             onChange={(event) => handleChangeVariableName(event.target.value)

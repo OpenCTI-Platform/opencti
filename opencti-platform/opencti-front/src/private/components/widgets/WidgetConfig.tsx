@@ -191,6 +191,8 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   return (
     <WidgetUpsert
       open={open}
+      variableName={variableName}
+      context={context}
       handleCloseAfterCancel={handleCloseAfterCancel}
       stepIndex={stepIndex}
       setStepIndex={setStepIndex}
@@ -199,6 +201,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
       isDataSelectionAttributesValid={isDataSelectionAttributesValid}
       widget={widget}
       type={type}
+      parameters={parameters}
     />
   );
 };

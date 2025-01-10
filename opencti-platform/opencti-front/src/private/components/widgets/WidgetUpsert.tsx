@@ -10,7 +10,7 @@ import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, ReactNode } from 'react';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-import type { Widget } from '../../../utils/widget/widget';
+import type { Widget, WidgetContext, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory } from '../../../utils/widget/widgetUtils';
 
 interface WidgetUpsertProps {
@@ -23,6 +23,9 @@ interface WidgetUpsertProps {
   isDataSelectionAttributesValid: () => boolean,
   widget?: Widget,
   type: string | null,
+  context: WidgetContext,
+  variableName?: string
+  parameters: WidgetParameters,
 }
 
 const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
@@ -35,8 +38,20 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   isDataSelectionAttributesValid,
   widget,
   type,
+  context,
+  variableName,
+  parameters,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const isLastStep = stepIndex === 3;
+  const isAttributeConfOk = !getCurrentAvailableParameters(type).includes('attribute')
+  || (getCurrentAvailableParameters(type).includes('attribute') && isDataSelectionAttributesValid());
+  const isVariableNameOk = context === 'fintelTemplate' && !!variableName;
+  const isTitleOk = context === 'fintelTemplate' && !!parameters.title;
+
+  const isValid = isLastStep && isAttributeConfOk && isVariableNameOk && isTitleOk;
+
   return (
     <Dialog
       open={open}
@@ -87,14 +102,10 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
       <DialogActions>
         <Button onClick={handleCloseAfterCancel}>{t_i18n('Cancel')}</Button>
         <Button
+          data-testid="widget-submit-button"
           color="secondary"
           onClick={completeSetup}
-          disabled={
-            stepIndex !== 3
-            || (getCurrentAvailableParameters(type).includes('attribute')
-              && !isDataSelectionAttributesValid())
-          }
-          data-testid="widget-submit-button"
+          disabled={!isValid}
         >
           {widget ? t_i18n('Update') : t_i18n('Create')}
         </Button>
