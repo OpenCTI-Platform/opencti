@@ -440,7 +440,6 @@ const createApp = async (app) => {
     } catch (e) {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
-      res.status(503).send({ status: 'error', error: e.message });
     } finally {
       res.redirect(referer ?? '/');
     }
