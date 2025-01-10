@@ -96,9 +96,10 @@ nconf.file('default', resolveEnvFile('default'));
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
-export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:max_depth_size') ?? 10;
-export const appLogLevelMaxArraySize = nconf.get('app:app_logs:max_array_size') ?? 50;
-export const appLogLevelMaxStringSize = nconf.get('app:app_logs:max_string_size') ?? 5000;
+export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:control:max_depth_size') ?? 5;
+export const appLogLevelMaxDepthKeys = nconf.get('app:app_logs:control:max_depth_keys') ?? 20;
+export const appLogLevelMaxArraySize = nconf.get('app:app_logs:control:max_array_size') ?? 50;
+export const appLogLevelMaxStringSize = nconf.get('app:app_logs:control:max_string_size') ?? 5000;
 export const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
 export const extendedErrors = (metaExtension) => {
   if (appLogExtendedErrors) {
@@ -106,15 +107,18 @@ export const extendedErrors = (metaExtension) => {
   }
   return {};
 };
-export const limitMetaErrorComplexity = (obj, current_depth = 0) => {
-  if (obj !== null && current_depth < appLogLevelMaxDepthSize && typeof obj !== 'function') {
+const limitMetaErrorComplexityWrapper = (obj, acc, current_depth = 0) => {
+  const noMaxDepth = current_depth < appLogLevelMaxDepthSize;
+  const noMaxKeys = acc.current_nb_key < appLogLevelMaxDepthKeys;
+  const isNotAKeyFunction = typeof obj !== 'function';
+  if (obj !== null && noMaxDepth && noMaxKeys && isNotAKeyFunction) {
     if (Array.isArray(obj)) {
       // Create a new array with a limited size
       const limitedArray = obj.slice(0, appLogLevelMaxArraySize);
       // Recursively process each item in the truncated array
       const processedArray = [];
       for (let i = 0; i < limitedArray.length; i += 1) {
-        processedArray[i] = limitMetaErrorComplexity(limitedArray[i], current_depth + 1);
+        processedArray[i] = limitMetaErrorComplexityWrapper(limitedArray[i], acc, current_depth);
       }
       return processedArray;
     }
@@ -125,14 +129,20 @@ export const limitMetaErrorComplexity = (obj, current_depth = 0) => {
       // Create a new object to hold the processed properties
       const limitedObject = {};
       const keys = Object.keys(obj); // Get the keys of the object
+      const newDepth = current_depth + 1;
       for (let i = 0; i < keys.length; i += 1) {
+        acc.current_nb_key += 1;
         const key = keys[i];
-        limitedObject[key] = limitMetaErrorComplexity(obj[key], current_depth + 1);
+        limitedObject[key] = limitMetaErrorComplexityWrapper(obj[key], acc, newDepth);
       }
       return limitedObject;
     }
   }
   return obj;
+};
+export const limitMetaErrorComplexity = (obj) => {
+  const acc = { current_nb_key: 0 };
+  return limitMetaErrorComplexityWrapper(obj, acc);
 };
 
 const appLogTransports = [];
