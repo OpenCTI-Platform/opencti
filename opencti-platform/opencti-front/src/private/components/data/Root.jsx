@@ -39,7 +39,6 @@ const Management = lazy(() => import('./Management'));
 const Root = () => {
   const { isFeatureEnable } = useHelper();
   const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
-  const isNewManagementScreenEnable = isFeatureEnable('MANAGE_RESTRICTED_ENTITIES');
 
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
@@ -202,12 +201,10 @@ const Root = () => {
           element={<Navigate to="/dashboard/data/restriction/restricted" replace={true} />}
         />
         )}
-        {isNewManagementScreenEnable && (
         <Route
           path="/restriction/*"
           element={boundaryWrapper(Management)}
         />
-        )}
       </Routes>
     </Suspense>
   );
