@@ -94,7 +94,7 @@ const RootNote = () => {
                     placeholder={
                       <ContainerHeader
                         container={props.note}
-                        PopoverComponent={<NotePopover note={note}/>}
+                        PopoverComponent={<NotePopover note={note} id={note.id} />}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                             <NoteEdition noteId={note.id}/>
