@@ -156,10 +156,12 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
-      authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
-        id: value,
-        access_right: accessRight,
-      })),
+      ...(isAccessRestrictionCreationEnable && {
+        authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
+          id: value,
+          access_right: accessRight,
+        })),
+      }),
     };
     commit({
       variables: {
