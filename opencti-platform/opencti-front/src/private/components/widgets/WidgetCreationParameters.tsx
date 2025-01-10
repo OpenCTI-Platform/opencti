@@ -10,11 +10,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import { graphql } from 'react-relay';
 import { WidgetCreationParametersInstanceIdQuery$data } from '@components/widgets/__generated__/WidgetCreationParametersInstanceIdQuery.graphql';
 import WidgetAttributesInput from '@components/widgets/WidgetAttributesInput';
+import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -22,20 +23,9 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import ItemIcon from '../../../components/ItemIcon';
-
-interface WidgetCreationParametersProps {
-  dataSelection: WidgetDataSelection[],
-  setDataSelection: (d: WidgetDataSelection[]) => void,
-  parameters: WidgetParameters,
-  setParameters: (p: WidgetParameters) => void,
-  type: string,
-  context: WidgetContext,
-  variableName?: string | null,
-  handleChangeVariableName?: (n: string) => void,
-}
 
 const widgetCreationParametersInstanceIdQuery = graphql`
   query WidgetCreationParametersInstanceIdQuery(
@@ -63,19 +53,13 @@ const widgetCreationParametersInstanceIdQuery = graphql`
   }
 `;
 
-const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps> = ({
-  dataSelection,
-  setDataSelection,
-  parameters,
-  setParameters,
-  type,
-  context,
-  variableName,
-  handleChangeVariableName,
-}) => {
+const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+  const { config, setConfigWidget, context, setConfigVariableName } = useWidgetConfigContext();
+  const { type, dataSelection, parameters } = config.widget;
+
   const handleChangeDataValidationParameter = (
     i: number,
     key: string,
@@ -94,13 +78,13 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
   const handleChangeDataValidationColumns = (
     i: number,
     value: WidgetColumn[],
   ) => {
-    console.log('value', value);
     if (value === null) {
       throw Error(t_i18n('This value cannot be null'));
     }
@@ -113,8 +97,9 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
   const handleToggleDataValidationIsTo = (i: number) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
@@ -122,13 +107,27 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
   const handleToggleParameter = (parameter: keyof WidgetParameters) => {
-    setParameters({ ...parameters, [parameter]: !parameters[parameter] });
+    setConfigWidget({
+      ...config.widget,
+      parameters: {
+        ...config.widget.parameters,
+        [parameter]: !parameters[parameter],
+      },
+    });
   };
+
   const handleChangeParameter = (parameter: string, value: string) => {
-    setParameters({ ...parameters, [parameter]: value });
+    setConfigWidget({
+      ...config.widget,
+      parameters: {
+        ...config.widget.parameters,
+        [parameter]: value,
+      },
+    });
   };
 
   const getCurrentSelectedEntityTypes = (index: number) => {
@@ -153,14 +152,14 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
         onChange={(event) => handleChangeParameter('title', event.target.value)
         }
       />
-      {context === 'fintelTemplate' && handleChangeVariableName
+      {context === 'fintelTemplate'
         && <div style={{ marginTop: 20 }}>
           <TextField
             label={t_i18n('Variable name')}
             required
             fullWidth={true}
-            value={variableName}
-            onChange={(event) => handleChangeVariableName(event.target.value)
+            value={config.fintelVariableName}
+            onChange={(event) => setConfigVariableName(event.target.value)
           }
           />
         </div>

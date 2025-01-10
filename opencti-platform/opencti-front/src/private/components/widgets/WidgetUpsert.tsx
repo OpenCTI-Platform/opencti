@@ -1,113 +1,68 @@
 import DialogTitle from '@mui/material/DialogTitle';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepButton from '@mui/material/StepButton';
-import StepLabel from '@mui/material/StepLabel';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent } from 'react';
+import WidgetConfigStepper from './WidgetConfigStepper';
+import { useWidgetConfigContext, WidgetConfigType } from './WidgetConfigContext';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-import type { Widget, WidgetContext, WidgetParameters } from '../../../utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory } from '../../../utils/widget/widgetUtils';
+import WidgetCreationTypes from './WidgetCreationTypes';
+import WidgetCreationPerspective from './WidgetCreationPerspective';
+import WidgetCreationDataSelection from './WidgetCreationDataSelection';
+import WidgetCreationParameters from './WidgetCreationParameters';
+import useWidgetConfigValidateForm from './useWidgetConfigValidateForm';
 
 interface WidgetUpsertProps {
   open: boolean,
-  handleCloseAfterCancel: () => void,
-  stepIndex: number,
-  setStepIndex: (n: number) => void,
-  getStepContent: () => ReactNode | string,
-  completeSetup: () => void,
-  isDataSelectionAttributesValid: () => boolean,
-  widget?: Widget,
-  type: string | null,
-  context: WidgetContext,
-  variableName?: string
-  parameters: WidgetParameters,
+  onCancel: () => void,
+  onSubmit: (conf: WidgetConfigType) => void,
 }
 
 const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   open,
-  handleCloseAfterCancel,
-  stepIndex,
-  setStepIndex,
-  getStepContent,
-  completeSetup,
-  isDataSelectionAttributesValid,
-  widget,
-  type,
-  context,
-  variableName,
-  parameters,
+  onCancel,
+  onSubmit,
 }) => {
   const { t_i18n } = useFormatter();
-
-  const isLastStep = stepIndex === 3;
-  const isAttributeConfOk = !getCurrentAvailableParameters(type).includes('attribute')
-  || (getCurrentAvailableParameters(type).includes('attribute') && isDataSelectionAttributesValid());
-  const isVariableNameOk = context === 'fintelTemplate' && !!variableName;
-  const isTitleOk = context === 'fintelTemplate' && !!parameters.title;
-
-  const isValid = isLastStep && isAttributeConfOk && isVariableNameOk && isTitleOk;
+  const { config, step } = useWidgetConfigContext();
+  const isFormValid = useWidgetConfigValidateForm();
 
   return (
     <Dialog
       open={open}
       PaperProps={{ elevation: 1 }}
       TransitionComponent={Transition}
-      onClose={handleCloseAfterCancel}
+      onClose={onCancel}
       fullWidth={true}
       maxWidth="md"
       className="noDrag"
     >
       <DialogTitle>
-        <Stepper nonLinear activeStep={stepIndex}>
-          <Step>
-            <StepButton
-              onClick={() => setStepIndex(0)}
-              disabled={stepIndex === 0}
-            >
-              <StepLabel>{t_i18n('Visualization')}</StepLabel>
-            </StepButton>
-          </Step>
-          <Step>
-            <StepButton
-              onClick={() => setStepIndex(1)}
-              disabled={stepIndex <= 1 || getCurrentCategory(type) === 'text'}
-            >
-              <StepLabel>{t_i18n('Perspective')}</StepLabel>
-            </StepButton>
-          </Step>
-          <Step>
-            <StepButton
-              onClick={() => setStepIndex(2)}
-              disabled={stepIndex <= 2 || getCurrentCategory(type) === 'text'}
-            >
-              <StepLabel>{t_i18n('Filters')}</StepLabel>
-            </StepButton>
-          </Step>
-          <Step>
-            <StepButton
-              onClick={() => setStepIndex(3)}
-              disabled={stepIndex <= 3}
-            >
-              <StepLabel>{t_i18n('Parameters')}</StepLabel>
-            </StepButton>
-          </Step>
-        </Stepper>
+        <WidgetConfigStepper />
       </DialogTitle>
-      <DialogContent>{getStepContent()}</DialogContent>
+
+      {open && (
+        <DialogContent>
+          {step === 0 && <WidgetCreationTypes />}
+          {step === 1 && <WidgetCreationPerspective />}
+          {step === 2 && <WidgetCreationDataSelection />}
+          {step === 3 && <WidgetCreationParameters />}
+        </DialogContent>
+      )}
+
       <DialogActions>
-        <Button onClick={handleCloseAfterCancel}>{t_i18n('Cancel')}</Button>
+        <Button onClick={onCancel}>
+          {t_i18n('Cancel')}
+        </Button>
         <Button
           data-testid="widget-submit-button"
           color="secondary"
-          onClick={completeSetup}
-          disabled={!isValid}
+          onClick={() => onSubmit(config)}
+          disabled={!isFormValid}
         >
-          {widget ? t_i18n('Update') : t_i18n('Create')}
+          {config.widget ? t_i18n('Update') : t_i18n('Create')}
         </Button>
       </DialogActions>
     </Dialog>

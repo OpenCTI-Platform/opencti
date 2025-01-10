@@ -3,24 +3,23 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
+import { useWidgetConfigContext } from './WidgetConfigContext';
 import { useFormatter } from '../../../components/i18n';
 import { fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, workspacesWidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
-import type { WidgetContext } from '../../../utils/widget/widget';
 
-interface WidgetCreationTypesProps {
-  handleSelectType: (type: string) => void,
-  context: WidgetContext,
-}
-
-const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
-  handleSelectType,
-  context,
-}) => {
+const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
+  const { context, setStep, setConfigWidget, config } = useWidgetConfigContext();
+
   const visualizationTypes = context === 'workspace'
     ? workspacesWidgetVisualizationTypes
     : fintelTemplatesWidgetVisualizationTypes;
+
+  const changeType = (type: string) => {
+    setConfigWidget({ ...config.widget, type });
+    setStep(type === 'text' || type === 'attribute' ? 3 : 1);
+  };
 
   return (
     <Grid
@@ -38,7 +37,7 @@ const WidgetCreationTypes: FunctionComponent<WidgetCreationTypesProps> = ({
             }}
           >
             <CardActionArea
-              onClick={() => handleSelectType(visualizationType.key)}
+              onClick={() => changeType(visualizationType.key)}
               style={{ height: '100%' }}
               aria-label={t_i18n(visualizationType.name)}
             >
