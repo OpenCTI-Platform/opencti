@@ -602,9 +602,8 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       )}
                     {type === 'attribute'
                       && <WidgetAttributesInput
-                        i={i}
                         value={dataSelection[i]?.columns ?? []}
-                        onChange={handleChangeDataValidationColumns}
+                        onChange={(value) => handleChangeDataValidationColumns(i, value)}
                          ></WidgetAttributesInput>
                     }
                     {dataSelection[i].perspective === 'entities'

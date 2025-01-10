@@ -4,22 +4,20 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import * as Yup from 'yup';
-import { Field, Form, Formik } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
+import IconButton from '@mui/material/IconButton';
+import { DeleteOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetColumn } from '../../../utils/widget/widget';
 import TextField from '../../../components/TextField';
 
 interface WidgetCreationAttributesProps {
   value: readonly WidgetColumn[],
-  i: number,
-  onChange: (i: number,
-    value: WidgetColumn[],
-  ) => void,
+  onChange: (value: WidgetColumn[]) => void,
 }
 
 const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = ({
   value,
-  i,
   onChange,
 }) => {
   const { t_i18n } = useFormatter();
@@ -32,18 +30,26 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
     { attribute: 'objectMarking.definition', label: 'Marking' },
   ];
   const attributesValidation = () => Yup.object().shape({
-    variableName: Yup.string()
-      .test('no-space', 'This field cannot contain spaces', (v) => {
-        return !v?.includes(' ');
-      })
-      .required(t_i18n('This field is required')),
+    attributes: Yup.array().of(
+      Yup.object().shape({
+        variableName: Yup.string()
+          .test('no-space', 'This field cannot contain spaces', (v) => {
+            return !v?.includes(' ');
+          })
+          .required(t_i18n('This field is required')),
+      }),
+    ),
   });
   const setFieldValue = (attribute: string | null, field: string, newValue: string) => {
     const newColumns = value.map((c) => (c.attribute === attribute ? {
       ...c,
       [field]: newValue,
     } : c));
-    onChange(i, newColumns);
+    onChange(newColumns);
+  };
+  const removeAttribute = (attribute: string | null) => {
+    const newColumns = value.filter((c) => c.attribute !== attribute);
+    onChange(newColumns);
   };
   return (
     <FormControl
@@ -59,10 +65,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
         fullWidth={true}
         multiple={true}
         value={value}
-        onChange={(event) => onChange(
-          i,
-          event.target.value,
-        )
+        onChange={(event) => onChange(event.target.value)
         }
       >
         {availableColumns.map((v) => (
@@ -74,44 +77,64 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
           </MenuItem>
         ))}
       </Select>
-      {value.map((column) => (
-        <Formik
-          key={column.attribute}
-          initialValues={{
+      <Formik<{ attributes: WidgetColumn[] }>
+        initialValues={{
+          attributes: value.map((column) => ({
             variableName: column.variableName ?? column.attribute,
             label: column.label ?? '',
             attribute: column.attribute,
-          }}
-          validationSchema={attributesValidation()}
-          onSubmit={() => {}}
-        >
-          {({ isValid }) => (
-            <Form>
-              <Field
-                component={TextField}
-                name="attribute"
-                label={t_i18n('Attribute')}
-                disabled={true}
-                style={{ marginTop: 20, marginLeft: 30, width: 220 }}
-              />
-              <Field
-                component={TextField}
-                name="label"
-                label={t_i18n('Label')}
-                style={{ marginTop: 20, marginLeft: 10, width: 220 }}
-                onChange={isValid ? (n: string, v: string) => setFieldValue(column.attribute, n, v) : undefined}
-              />
-              <Field
-                component={TextField}
-                name="variableName"
-                label={t_i18n('Variable name')}
-                style={{ marginTop: 20, marginLeft: 10, width: 220 }}
-                onChange={isValid ? (n: string, v: string) => setFieldValue(column.attribute, n, v) : undefined}
-              />
-            </Form>
-          )}
-        </Formik>))
-      }
+          })),
+        }}
+        validationSchema={attributesValidation()}
+        onSubmit={() => {}}
+      >
+        {({ isValid }) => (
+          <Form>
+            <FieldArray name={'attributes'}>
+              {() => (
+                <>
+                  {value.map((row, _) => (
+                    <>
+                      <Field
+                        component={TextField}
+                        name="attribute"
+                        label={t_i18n('Attribute')}
+                        disabled={true}
+                        value={row.attribute}
+                        style={{ marginTop: 20, marginLeft: 30, width: 220 }}
+                      />
+                      <Field
+                        component={TextField}
+                        name="label"
+                        label={t_i18n('Label')}
+                        value={row.label}
+                        style={{ marginTop: 20, marginLeft: 10, width: 220 }}
+                        onChange={isValid ? (n: string, v: string) => setFieldValue(row.attribute, n, v) : undefined}
+                      />
+                      <Field
+                        component={TextField}
+                        name="variableName"
+                        label={t_i18n('Variable name')}
+                        value={row.variableName}
+                        style={{ marginTop: 20, marginLeft: 10, width: 220 }}
+                        onChange={isValid ? (n: string, v: string) => setFieldValue(row.attribute, n, v) : undefined}
+                      />
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        style={{ marginTop: 30 }}
+                        onClick={() => removeAttribute(row.attribute)}
+                      >
+                        <DeleteOutlined fontSize="small" />
+                      </IconButton>
+                    </>
+                  ))}
+                </>
+              )}
+            </FieldArray>
+          </Form>
+        )}
+      </Formik>
     </FormControl>
   );
 };
