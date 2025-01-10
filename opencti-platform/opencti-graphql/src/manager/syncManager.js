@@ -65,7 +65,7 @@ const syncManagerInstance = (syncId) => {
     if (connectionId) {
       const connectionManagement = `${httpBase(uri)}stream/connection/${connectionId}`;
       const currentQueueLength = eventsQueue.getLength();
-      // If queue length keeps increasing even with an increased delay, we keep increasing the delay until we are able to go back below MON_QUEUE_SIZE
+      // If queue length keeps increasing even with an increased delay, we keep increasing the delay until we are able to go back below MIN_QUEUE_SIZE
       if (currentQueueLength > MAX_QUEUE_SIZE && currentDelay * MAX_QUEUE_SIZE < hDelay * (currentQueueLength - MAX_QUEUE_SIZE)) {
         const newDelay = currentDelay + hDelay;
         await httpClient.post(connectionManagement, { delay: newDelay });
