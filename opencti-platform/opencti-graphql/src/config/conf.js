@@ -253,8 +253,8 @@ export const logApp = {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
       const data = addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' });
       // Prevent meta information to be too massive.
-      const limitedData = limitMetaErrorComplexity(data);
-      appLogger.log(level, message, limitedData);
+      // const limitedData = limitMetaErrorComplexity(data);
+      appLogger.log(level, message, data);
     }
   },
   _logWithError: (level, messageOrError, meta = {}) => {
