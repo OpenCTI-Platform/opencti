@@ -105,6 +105,7 @@ class SessionsListComponent extends Component {
       onCompleted: () => {
         this.setState({ killing: false });
         this.handleCloseKillSession();
+        this.props.relay.refetch(); // refetch sessions after killing to refresh the list
       },
       onError: () => {
         this.setState({ killing: false });
