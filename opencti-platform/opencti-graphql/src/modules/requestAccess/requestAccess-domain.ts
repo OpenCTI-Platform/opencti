@@ -15,7 +15,6 @@ import { elLoadById } from '../../database/engine';
 import type { BasicStoreBase } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { createInternalObject } from '../../domain/internalObject';
-import { ENTITY_TYPE_REQUEST_ACCESS_FLOW, type StoreEntityRequestAccessFlow } from './requestAccessFlow-types';
 
 export interface RequestAccessAction {
   reason?: string
@@ -46,25 +45,21 @@ export const generateBasicFlow = async (context: AuthContext, user: AuthUser) =>
     from: ActionStatus.New,
     to: ActionStatus.New
   };
-  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, toNew, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
 
   const fromNewToAccepted = {
     from: ActionStatus.New,
     to: ActionStatus.Accepted
   };
-  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, fromNewToAccepted, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
 
   const fromNewToRefused = {
     from: ActionStatus.New,
     to: ActionStatus.Refused
   };
-  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, fromNewToRefused, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
 
   const fromRefusedToANew = {
     from: ActionStatus.Refused,
     to: ActionStatus.New
   };
-  await createInternalObject<StoreEntityRequestAccessFlow>(context, user, fromRefusedToANew, ENTITY_TYPE_REQUEST_ACCESS_FLOW);
 };
 
 export const getRFIStatusOnApprove = () => {
