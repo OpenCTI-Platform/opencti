@@ -3,6 +3,7 @@ import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea
 import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Select, MenuItem, AccordionDetails } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { DeleteOutlined, DragIndicatorOutlined } from '@mui/icons-material';
+import Typography from '@mui/material/Typography';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import type { WidgetColumn } from '../../../../utils/widget/widget';
@@ -33,19 +34,26 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
     setColumns(reorderedColumns);
   };
 
+  const formatAttribute = (attribute: string) => attribute.replace('.', '_');
+
+  const handleSelect = (selectedColumnAttribute: string) => {
+    const columnToAdd = availableColumns.find((col) => col.attribute === selectedColumnAttribute);
+    if (columnToAdd) {
+      setColumns([...columns, columnToAdd]);
+    }
+    setNewColumn(null);
+  };
+
   const handleRemove = (attribute: string) => {
     setColumns(columns.filter((col) => col.attribute !== attribute));
   };
 
   return (
     <Accordion sx={{ width: '100%' }}>
-      <AccordionSummary
-        aria-controls="custom_columns_content"
-        id="custom_columns_header"
-      >
-        <ListItemText primary={t_i18n('Customize Columns')} />
+      <AccordionSummary>
+        <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
-      <AccordionDetails id="custom_columns_content">
+      <AccordionDetails sx={{ padding: 0 }}>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="custom_columns_list">
             {(providedDrop) => (
@@ -53,12 +61,10 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
                 ref={providedDrop.innerRef}
                 {...providedDrop.droppableProps}
                 sx={{
-                  width: '100%',
-                  background: theme.palette.background.paper,
                   padding: '0',
                 }}
               >
-                <ListItem divider sx={{ background: theme.palette.background.nav }}>
+                <ListItem divider sx={{ background: theme.palette.background.accent }}>
                   <ListItemIcon />
 
                   <ListItemText
@@ -68,28 +74,27 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
                   >
                     <Select
                       value={newColumn || ''}
-                      onChange={(e) => {
-                        const selectedColumn = e.target.value;
-                        const columnToAdd = availableColumns.find((col) => col.attribute === selectedColumn);
-                        if (columnToAdd) {
-                          setColumns([...columns, columnToAdd]);
-                        }
-                        setNewColumn(null); // Reset selection
-                      }}
-                      displayEmpty
+                      onChange={(e) => e.target.value && handleSelect(e.target.value)}
                       fullWidth
                       variant="standard"
-                      placeholder={t_i18n('Select a column to add')}
+                      displayEmpty
+                      disabled={
+                        availableColumns.filter((col) => !columns.some((c) => c.attribute === col.attribute)).length === 0
+                      }
                     >
+                      <MenuItem value="" disabled>
+                        {t_i18n('Select a column to add')}
+                      </MenuItem>
                       {availableColumns
                         .filter((col) => !columns.some((c) => c.attribute === col.attribute))
                         .map((availableColumn) => availableColumn.attribute && (
                         <MenuItem key={availableColumn.attribute} value={availableColumn.attribute}>
-                          {t_i18n(availableColumn.attribute)}
+                          {formatAttribute(availableColumn.attribute)}
                         </MenuItem>
                         ))}
                     </Select>
                   </ListItemText>
+                  <ListItemSecondaryAction />
                 </ListItem>
 
                 {columns.map((column, index) => (
@@ -110,7 +115,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
                           <DragIndicatorOutlined />
                         </ListItemIcon>
 
-                        <ListItemText primary={t_i18n(column.attribute)} />
+                        <ListItemText primary={column.attribute && formatAttribute(column.attribute)} />
 
                         <ListItemSecondaryAction>
                           <IconButton onClick={() => column.attribute && handleRemove(column.attribute)}>
