@@ -13,6 +13,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
+import { defaultColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -25,7 +26,7 @@ import type { WidgetColumn, WidgetDataSelection, WidgetParameters } from '../../
 
 interface WidgetCreationParametersProps {
   dataSelection: WidgetDataSelection[],
-  setDataSelection: (d: WidgetDataSelection[]) => void,
+  setDataSelection: (d: WidgetDataSelection[] | ((prevDataSelection: WidgetDataSelection[]) => WidgetDataSelection[])) => void,
   parameters: WidgetParameters,
   setParameters: (p: WidgetParameters) => void,
   type: string,
@@ -89,21 +90,9 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
     );
   };
 
-  const availableColumns: WidgetColumn[] = [
-    { attribute: 'entity_type' },
-    { attribute: 'relationship_type' },
-    { attribute: 'from.entity_type' },
-    { attribute: 'from.relationship_type' },
-    { attribute: 'to.entity_type' },
-    { attribute: 'to.relationship_type' },
-    { attribute: 'created_at' },
-    { attribute: 'createdBy.name' },
-    { attribute: 'objectMarking' },
-  ];
-  const columns = dataSelection[0]?.columns ?? availableColumns;
-  const setColumns = (newColumns: WidgetColumn[]) => {
-    setDataSelection((prevDataSelection: WidgetDataSelection[]) => {
-      return prevDataSelection.map((data) => ({ ...data, columns: [...newColumns] } as WidgetDataSelection));
+  const setColumns = (index: number, newColumns: WidgetColumn[]) => {
+    setDataSelection((prevDataSelection) => {
+      return prevDataSelection.map((selection, i) => (i === index ? { ...selection, columns: newColumns } : selection));
     });
   };
 
@@ -615,6 +604,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         />
                       </Tooltip>
                     )}
+                    TOTO
                   </div>
                 )}
               </div>
@@ -655,9 +645,15 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             label={t_i18n('Display legend')}
           />
         )}
-        {(getCurrentCategory(type) === 'list' && dataSelection[0].perspective === 'relationships') && (
-          <WidgetConfigColumnsCustomization availableColumns={availableColumns} columns={[...columns]} setColumns={setColumns} />
-        )}
+        {getCurrentCategory(type) === 'list'
+          && dataSelection.map(({ perspective, columns }, index) => (perspective === 'relationships' ? (
+            <WidgetConfigColumnsCustomization
+              key={index}
+              availableColumns={defaultColumns[perspective]}
+              columns={[...(columns ?? defaultColumns[perspective])]}
+              setColumns={(newColumns) => setColumns(index, newColumns)}
+            />
+          ) : null))}
       </div>
     </div>
   );
