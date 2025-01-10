@@ -32,7 +32,11 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
     { attribute: 'objectMarking.definition', label: 'Marking' },
   ];
   const attributesValidation = () => Yup.object().shape({
-    variableName: Yup.string().required(t_i18n('This field is required')),
+    variableName: Yup.string()
+      .test('no-space', 'This field cannot contain spaces', (v) => {
+        return !v?.includes(' ');
+      })
+      .required(t_i18n('This field is required')),
   });
   const setFieldValue = (attribute: string | null, field: string, newValue: string) => {
     const newColumns = value.map((c) => (c.attribute === attribute ? {
@@ -75,13 +79,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
           key={column.attribute}
           initialValues={{
             variableName: column.variableName ?? column.attribute,
-            label: column.variableName ?? '',
+            label: column.label ?? '',
             attribute: column.attribute,
           }}
           validationSchema={attributesValidation()}
           onSubmit={() => {}}
         >
-          {() => (
+          {({ isValid }) => (
             <Form>
               <Field
                 component={TextField}
@@ -95,14 +99,14 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                 name="label"
                 label={t_i18n('Label')}
                 style={{ marginTop: 20, marginLeft: 10, width: 220 }}
-                onChange={(n: string, v: string) => setFieldValue(column.attribute, n, v)}
+                onChange={isValid ? (n: string, v: string) => setFieldValue(column.attribute, n, v) : undefined}
               />
               <Field
                 component={TextField}
                 name="variableName"
                 label={t_i18n('Variable name')}
                 style={{ marginTop: 20, marginLeft: 10, width: 220 }}
-                onChange={(n: string, v: string) => setFieldValue(column.attribute, n, v)}
+                onChange={isValid ? (n: string, v: string) => setFieldValue(column.attribute, n, v) : undefined}
               />
             </Form>
           )}
