@@ -3,14 +3,13 @@ import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
 import conf, { basePath, DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
-import { ForbiddenAccess, ValidationError } from '../config/errors';
+import { ForbiddenAccess } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
@@ -107,12 +106,7 @@ const createApolloServer = () => {
     csrfPrevention: false, // CSRF is handled by helmet
     tracing: DEV_MODE,
     plugins: apolloPlugins,
-    formatError: (formattedError) => {
-      let error = formattedError;
-      // For constraint lib user input failure, replace the lib error by the opencti validation one.
-      if (formattedError.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
-        error = ValidationError(formattedError.message, formattedError.extensions?.field, formattedError.extensions);
-      }
+    formatError: (error) => {
       // To maintain compatibility with client in version 3.
       const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
       // Remove the exception stack in production.

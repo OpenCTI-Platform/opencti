@@ -96,12 +96,40 @@ nconf.file('default', resolveEnvFile('default'));
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
+export const appLogLevelMaxArraySize = nconf.get('app:app_logs:max_array_size') ?? 50;
+export const appLogLevelMaxStringSize = nconf.get('app:app_logs:max_string_size') ?? 5000;
 export const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
 export const extendedErrors = (metaExtension) => {
   if (appLogExtendedErrors) {
     return metaExtension;
   }
   return {};
+};
+export const limitMetaErrorComplexity = (obj) => {
+  if (Array.isArray(obj)) {
+    // Create a new array with a limited size
+    const limitedArray = obj.slice(0, appLogLevelMaxArraySize);
+    // Recursively process each item in the truncated array
+    const processedArray = [];
+    for (let i = 0; i < limitedArray.length; i += 1) {
+      processedArray[i] = limitMetaErrorComplexity(limitedArray[i]);
+    }
+    return processedArray;
+  }
+  if (typeof obj === 'string' && obj.length > appLogLevelMaxStringSize) {
+    return `${obj.substring(0, appLogLevelMaxStringSize - 3)}...`;
+  }
+  if (obj !== null && typeof obj === 'object') {
+    // Create a new object to hold the processed properties
+    const limitedObject = {};
+    const keys = Object.keys(obj); // Get the keys of the object
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      limitedObject[key] = limitMetaErrorComplexity(obj[key]);
+    }
+    return limitedObject;
+  }
+  return obj;
 };
 
 const appLogTransports = [];
@@ -196,7 +224,6 @@ const buildMetaErrors = (error) => {
   if (error instanceof GraphQLError) {
     const extensions = error.extensions ?? {};
     const extensionsData = extensions.data ?? {};
-    // const attributes = R.dissoc('cause', extensionsData);
     const { cause: _, ...attributes } = extensionsData;
     const baseError = { name: extensions.code ?? error.name, message: error.message, stack: error.stack, attributes };
     errors.push(baseError);
@@ -223,8 +250,11 @@ export const logS3Debug = {
 
 export const logApp = {
   _log: (level, message, error, meta = {}) => {
-    if (appLogTransports.length > 0) {
-      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' }));
+    if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
+      const data = addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' });
+      // Prevent meta information to be too massive.
+      const limitedData = limitMetaErrorComplexity(data);
+      appLogger.log(level, message, limitedData);
     }
   },
   _logWithError: (level, messageOrError, meta = {}) => {

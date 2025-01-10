@@ -1579,7 +1579,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
         return await authenticateUser(context, req, user, loginProvider, opts);
       }
     } catch (err) {
-      logApp.error(err);
+      logApp.error('Error resolving user by token', { cause: err });
     }
   }
   // If user still not identified, try headers authentication

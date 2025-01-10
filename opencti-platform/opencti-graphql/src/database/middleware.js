@@ -2240,7 +2240,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
-    throw FunctionalError(`Cant find element to update ${id} (${type})`, { id, type });
+    throw FunctionalError('Cant find element to update', { id, type });
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -3168,9 +3168,9 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
-
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return draftInternalDeleteElement(context, user, element);
-
+  if (element._index.includes(INDEX_DRAFT_OBJECTS)) {
+    return draftInternalDeleteElement(context, user, element);
+  }
   // region confidence control
   controlUserConfidenceAgainstElement(user, element);
   // region restrict delete control
@@ -3248,7 +3248,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // if trash is disabled globally or for this element, delete permanently
         await deleteAllObjectFiles(context, user, element);
       }
-
       // Delete all linked elements
       await elDeleteElements(context, user, [element], { forceDelete });
       // Publish event in the stream
@@ -3325,7 +3324,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (err.name === ALREADY_DELETED_ERROR) {
       logApp.info(err);
     } else {
-      logApp.error(err);
+      logApp.error('Error handling inference', { cause: err });
     }
   }
   return false;

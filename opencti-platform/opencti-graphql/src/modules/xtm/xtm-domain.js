@@ -401,7 +401,12 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const endingTime = new Date().getTime();
   const totalTime = endingTime - startingTime;
   if (totalTime > 120000) {
-    logApp.warn(`[OPENCTI-MODULE][XTM] Long scenario generation time. Generating ${createAndInjectScenarioPromises.length} emails took ${totalTime} ms`, { useAI, simulationType });
+    logApp.warn('[OPENCTI-MODULE][XTM] Long scenario generation time', {
+      size: createAndInjectScenarioPromises.length,
+      took: totalTime,
+      useAI,
+      simulationType
+    });
   }
   logApp.info(`[OPENCTI-MODULE][XTM] Generating ${createAndInjectScenarioPromises.length} emails took ${totalTime} ms`, { useAI, simulationType });
   return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;

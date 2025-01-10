@@ -10,7 +10,7 @@ import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import nconf from 'nconf';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, isFeatureEnabled, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
-import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
@@ -141,7 +141,7 @@ export const deleteFile = async (context, user, id) => {
     logApp.debug(`[FILE STORAGE] delete file ${id} in index`);
     await elDeleteFilesByIds([id])
       .catch((err) => {
-        logApp.error(err);
+        logApp.error('[FILE STORAGE] Error deleting file', { cause: err });
       });
   }
   return up;
@@ -403,7 +403,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
         requestParams.ContinuationToken = response.NextContinuationToken;
       }
     } catch (err) {
-      logApp.error(DatabaseError('[FILE STORAGE] Storage files read fail', { cause: err }));
+      logApp.error('[FILE STORAGE] Storage files read fail', { cause: err });
       truncated = false;
     }
   }

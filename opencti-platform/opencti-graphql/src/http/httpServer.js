@@ -18,7 +18,6 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { executionContext } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { UnknownError } from '../config/errors';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -134,7 +133,7 @@ const createHttpServer = async () => {
             executeContext.user = userWithOrigin(req, user);
           }
         } catch (error) {
-          logApp.error(error);
+          logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
         }
         return executeContext;
       }
@@ -156,7 +155,7 @@ const listenServer = async () => {
         resolve({ server });
       });
     } catch (e) {
-      logApp.error(UnknownError('Http listen server fail', { cause: e }));
+      logApp.error('Http listen server fail', { cause: e });
       reject(e);
     }
   });

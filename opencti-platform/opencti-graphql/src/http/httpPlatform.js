@@ -27,7 +27,6 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext, redisIsAlive } from '../database/redis';
-import { UnknownError } from '../config/errors';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
 import { isEngineAlive } from '../database/engine';
 
@@ -207,7 +206,7 @@ const createApp = async (app) => {
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting storage get file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -237,7 +236,7 @@ const createApp = async (app) => {
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting storage view file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -267,7 +266,7 @@ const createApp = async (app) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting html file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -292,7 +291,7 @@ const createApp = async (app) => {
       archive.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting encrypted file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -332,7 +331,7 @@ const createApp = async (app) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error auth by cert', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -391,7 +390,7 @@ const createApp = async (app) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error logout', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -415,7 +414,7 @@ const createApp = async (app) => {
       })(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error auth provider', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -439,7 +438,7 @@ const createApp = async (app) => {
       const logged = await callbackLogin();
       await authenticateUser(context, req, logged, provider);
     } catch (e) {
-      logApp.error(e, { provider });
+      logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
       res.status(503).send({ status: 'error', error: e.message });
     } finally {
@@ -507,8 +506,7 @@ const createApp = async (app) => {
   // Error handling
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err, req, res, next) => {
-    const error = UnknownError('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
-    logApp.error(error);
+    logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: err.stack });
   });
 

@@ -12,7 +12,7 @@ import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider, userDelete } from '../domain/user';
 import conf, { getPlatformHttpProxyAgent, logApp } from './conf';
-import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
+import { AuthenticationFailure, ConfigurationError } from './errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../utils/access';
 import { enrichWithRemoteCredentials } from './credentials';
@@ -402,7 +402,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           passport.use(providerRef, openIDStrategy);
           providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
         }).catch((err) => {
-          logApp.error(UnsupportedError('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef }));
+          logApp.error('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef });
         });
       });
     }

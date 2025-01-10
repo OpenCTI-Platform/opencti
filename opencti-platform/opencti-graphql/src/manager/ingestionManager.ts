@@ -268,7 +268,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     if (messages_number === 0) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
-          logApp.warn(e, { name: ingestion.name, context: '[OPENCTI-MODULE] INGESTION - RSS ingestion execution' });
+          logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -443,7 +443,7 @@ const taxiiExecutor = async (context: AuthContext) => {
       }
       const ingestionPromise = taxiiHandler(context, ingestion)
         .catch((e) => {
-          logApp.warn(e, { name: ingestion.name, context: '[OPENCTI-MODULE] INGESTION - Taxii ingestion execution' });
+          logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii ingestion execution', { cause: e, name: ingestion.name });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -525,7 +525,7 @@ const csvExecutor = async (context: AuthContext) => {
     if (messages_number === 0) {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
-          logApp.warn(e, { name: ingestion.name, context: '[OPENCTI-MODULE] INGESTION - CSV ingestion execution' });
+          logApp.warn('[OPENCTI-MODULE] INGESTION - CSV ingestion execution', { cause: e, name: ingestion.name });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -558,7 +558,7 @@ const ingestionHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.info('[OPENCTI-MODULE] INGESTION - Ingestion manager already in progress by another API');
     } else {
-      logApp.error(e, { manager: 'INGESTION_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] Ingestion manager handling error', { cause: e, manager: 'INGESTION_MANAGER' });
     }
   } finally {
     running = false;

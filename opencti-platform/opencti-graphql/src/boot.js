@@ -2,7 +2,6 @@ import { environment, getStoppingState, logApp, setStoppingState } from './confi
 import platformInit, { checkFeatureFlags, checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
-import { UnknownError } from './config/errors';
 import { shutdownModules, startModules } from './managers';
 
 // region platform start and stop
@@ -39,7 +38,6 @@ export const platformStart = async () => {
       throw modulesError;
     }
   } catch (mainError) {
-    logApp.error(mainError);
     process.exit(1);
   }
 };
@@ -58,7 +56,7 @@ export const platformStop = async () => {
 
 // region signals management
 process.on('unhandledRejection', (reason, p) => {
-  logApp.error(UnknownError('Engine unhandled rejection', { reason: reason?.stack, promise: p?.stack }));
+  logApp.error('[OPENCTI] Engine unhandled rejection', { reason: reason?.stack, promise: p?.stack });
 });
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
@@ -71,7 +69,7 @@ process.on('unhandledRejection', (reason, p) => {
           await platformStop();
           process.exit(0);
         } catch (e) {
-          logApp.error(e);
+          logApp.error('[OPENCTI] Error stopping the platform', { cause: e });
           process.exit(1);
         }
       }
