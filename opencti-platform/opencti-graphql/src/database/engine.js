@@ -179,7 +179,9 @@ const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_DEFAULT_WILDCARD_PREFIX = booleanConf('elasticsearch:search_wildcard_prefix', false);
 export const ES_DEFAULT_FUZZY = booleanConf('elasticsearch:search_fuzzy', false);
-export const ES_INIT_RETRO_MAPPING_MIGRATION = booleanConf('elasticsearch:internal_init_retro_compatible_mapping_migration', false);
+export const ES_INIT_MAPPING_MIGRATION = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
+export const ES_IS_OLD_MAPPING = ES_INIT_MAPPING_MIGRATION === 'old';
+export const ES_IS_INIT_MIGRATION = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
 export const ES_MINIMUM_FIXED_PAGINATION = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
@@ -992,7 +994,7 @@ const updateIndexTemplate = async (name, mapping_properties) => {
       index_patterns: [index_pattern],
       template: {
         settings: computeIndexSettings(name),
-        mappings: ES_INIT_RETRO_MAPPING_MIGRATION ? {
+        mappings: ES_IS_OLD_MAPPING ? {
           properties: getRetroCompatibleMappings()
         } : {
           // Global option to prevent elastic to try any magic
@@ -1077,7 +1079,7 @@ export const elConfigureAttachmentProcessor = async () => {
         }
       ]
     }).catch((e) => {
-      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
+      logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   } else {
@@ -1099,7 +1101,7 @@ export const elConfigureAttachmentProcessor = async () => {
         ]
       }
     }).catch((e) => {
-      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
+      logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   }
@@ -1152,7 +1154,7 @@ export const elDeleteIndices = async (indexesToDelete) => {
         .catch((err) => {
           /* v8 ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-            logApp.error(DatabaseError('Indices deletion fail', { cause: err }));
+            logApp.error('Indices deletion fail', { cause: err });
           }
         });
     })
@@ -1599,7 +1601,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         throw DatabaseError('Find direct ids fail', { cause: err, query });
       });
       const elements = data.hits.hits;
-      if (elements.length > workingIds.length) logApp.warn('Search query returned more elements than expected', workingIds);
+      if (elements.length > workingIds.length) {
+        logApp.warn('Search query returned more elements than expected', workingIds);
+      }
       if (elements.length > 0) {
         const convertedHits = await elConvertHits(elements, { withoutRels });
         hits.push(...convertedHits);
@@ -3291,7 +3295,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
-    logApp.warn('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
+    logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
   const query = {
@@ -3733,7 +3737,9 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
   // User must have access to all relations to remove to be able to delete
   const filteredRelations = await userFilterStoreElements(context, user, relations);
-  if (relations.length !== filteredRelations.length) throw FunctionalError('Cannot delete element: cannot access all related relations');
+  if (relations.length !== filteredRelations.length) {
+    throw FunctionalError('Cannot delete element: cannot access all related relations');
+  }
   relations.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   relations.forEach((instance) => controlUserRestrictDeleteAgainstElement(user, instance));
   // Compute the id that needs to be removed from rel
@@ -3761,7 +3767,6 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
       const ids = idsByIndex.get(sourceIndex);
       reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
     });
-
     await Promise.all(reindexPromises);
     await createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
   }

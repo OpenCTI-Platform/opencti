@@ -1,0 +1,58 @@
+type IngestionTaxiiCollection implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    created_at: DateTime
+    updated_at: DateTime
+    name: String!
+    ingestion_running: Boolean
+    confidence_to_score: Boolean
+    description: String
+    user_id: String
+    user: Creator
+    authorized_members: [MemberAccess!] @auth(for: [INGESTION_SETINGESTIONS])
+}
+enum IngestionTaxiiCollectionOrdering {
+    name
+    created_at
+    updated_at
+    _score
+}
+type IngestionTaxiiCollectionConnection {
+    pageInfo: PageInfo!
+    edges: [IngestionTaxiiCollectionEdge!]!
+}
+type IngestionTaxiiCollectionEdge {
+    cursor: String!
+    node: IngestionTaxiiCollection!
+}
+
+# Queries
+type Query {
+    ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection @auth(for: [INGESTION])
+    ingestionTaxiiCollections(
+        first: Int
+        after: ID
+        orderBy: IngestionTaxiiCollectionOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        includeAuthorities: Boolean
+        search: String
+    ): IngestionTaxiiCollectionConnection @auth(for: [INGESTION])
+}
+
+# Mutations
+input IngestionTaxiiCollectionAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    user_id: String
+    confidence_to_score: Boolean
+    authorized_members: [MemberAccessInput!]!
+}
+
+type Mutation {
+    ingestionTaxiiCollectionAdd(input: IngestionTaxiiCollectionAddInput!): IngestionTaxiiCollection @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionTaxiiCollectionDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionTaxiiCollectionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxiiCollection @auth(for: [INGESTION_SETINGESTIONS])
+}

@@ -57,7 +57,7 @@ class PingAlive(threading.Thread):
                 self.worker_logger.debug("PingAlive running.")
                 self.api.query(
                     """
-                    query {
+                    query workerPing {
                       about {
                         version
                       }

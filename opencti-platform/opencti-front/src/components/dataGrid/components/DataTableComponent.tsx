@@ -7,7 +7,7 @@ import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns 
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
 import {
-  useComputeLink as defaultComputeLink,
+  useDataTableComputeLink as defaultComputeLink,
   useDataCellHelpers,
   useDataTableFormatter,
   useDataTableLocalStorage,

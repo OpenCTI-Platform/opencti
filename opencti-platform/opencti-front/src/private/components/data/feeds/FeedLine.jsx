@@ -14,7 +14,7 @@ import Skeleton from '@mui/material/Skeleton';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
@@ -106,11 +106,13 @@ class FeedLineLineComponent extends Component {
                 className={classes.filtersItem}
                 style={{ width: dataColumns.filters.width }}
               >
-                <FilterIconButton
-                  filters={filters}
-                  styleNumber={3}
-                  dataColumns={dataColumns}
-                />
+                {isFilterGroupNotEmpty(filters)
+                  ? <FilterIconButton
+                      filters={filters}
+                      styleNumber={3}
+                      dataColumns={dataColumns}
+                    />
+                  : '-'}
               </div>
             </>
           }

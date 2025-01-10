@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import * as R from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
 import { PrecisionManufacturingOutlined } from '@mui/icons-material';
 import EETooltip from '../entreprise_edition/EETooltip';
+import { StixCoreObjectEnrollPlaybookLinesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectEnrollPlaybookLinesQuery.graphql';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
+import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 
-const StixCoreObjectEnrollPlaybook = (props) => {
-  const { t, stixCoreObjectId, handleClose, open } = props;
-  const [openDrawer, setOpenDrawer] = useState(false);
+interface StixCoreObjectEnrollPlaybookLinesProps {
+  stixCoreObjectId: string,
+  handleClose: () => void,
+  open: boolean,
+}
 
+const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({ stixCoreObjectId, handleClose, open }) => {
+  const [openDrawer, setOpenDrawer] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { t_i18n } = useFormatter();
 
   const handleOpenEnrollPlaybook = () => {
     setOpenDrawer(true);
@@ -25,7 +31,7 @@ const StixCoreObjectEnrollPlaybook = (props) => {
   return (
     <>
       {(isFABReplaced || !handleClose) && (
-        <EETooltip title={t('Enroll in playbook')}>
+        <EETooltip title={t_i18n('Enroll in playbook')}>
           <ToggleButton
             onClick={handleOpenEnrollPlaybook}
             value="enroll"
@@ -39,12 +45,12 @@ const StixCoreObjectEnrollPlaybook = (props) => {
       <Drawer
         open={open || openDrawer}
         onClose={handleClose || handleCloseEnrollPlaybook}
-        title={t('Available playbooks')}
+        title={t_i18n('Available playbooks')}
       >
         <QueryRenderer
           query={stixCoreObjectEnrollPlaybookLinesQuery}
           variables={{ id: stixCoreObjectId }}
-          render={({ props: queryProps }) => {
+          render={({ props: queryProps }: { props: StixCoreObjectEnrollPlaybookLinesQuery$data }) => {
             if (queryProps && queryProps.playbooksForEntity) {
               return (
                 <StixCoreObjectEnrollPlaybookLines id={stixCoreObjectId} playbooksForEntity={queryProps.playbooksForEntity} />
@@ -58,4 +64,4 @@ const StixCoreObjectEnrollPlaybook = (props) => {
   );
 };
 
-export default R.compose(inject18n)(StixCoreObjectEnrollPlaybook);
+export default StixCoreObjectEnrollPlaybook;

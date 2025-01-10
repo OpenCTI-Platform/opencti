@@ -132,7 +132,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   if (!collection.stream_live) {
     res.statusMessage = 'This live stream is stopped';
     sendErrorStatusAndKillSession(req, res, 410);
-    logApp.warn('This live stream is stopped but still requested', { streamCollectionId: id });
+    logApp.info('This live stream is stopped but still requested', { streamCollectionId: id });
     return { error: 'This live stream is stopped' };
   }
   const streamFilters = JSON.parse(collection.filters);
@@ -295,7 +295,7 @@ const createSseMiddleware = () => {
             res.end();
             req.session.destroy();
           } catch (e) {
-            logApp.error(e, { action: 'close', clientId: channel.userId });
+            logApp.error('Stream session destroy fail', { cause: e, action: 'close', clientId: channel.userId });
           }
         }
       },
@@ -700,7 +700,7 @@ const createSseMiddleware = () => {
       // noinspection ES6MissingAwait
       processor.start(isRecoveryMode ? recoverStreamId : startStreamId);
     } catch (e) {
-      logApp.error(e, { id, type: 'live' });
+      logApp.error('Stream handling error', { cause: e, id, type: 'live' });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;
       sendErrorStatusAndKillSession(req, res, 500);
     }
@@ -712,7 +712,7 @@ const createSseMiddleware = () => {
     applyMiddleware: ({ app }) => {
       app.get(`${basePath}/stream`, authenticate, genericStreamHandler);
       app.get(`${basePath}/stream/:id`, authenticateForPublic, liveStreamHandler);
-      app.post(`${basePath}/stream/connection/:id`, manageStreamConnectionHandler);
+      app.post(`${basePath}/stream/connection/:id`, authenticate, manageStreamConnectionHandler);
     },
   };
 };

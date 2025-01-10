@@ -330,7 +330,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           // - Access rights are asymmetric, should not happen for meta relationships.
           // - Relations is invalid, should not happen in platform data consistency.
           const relations = invalidRelations.map((v) => ({ relation_id: v.id, target_id: v.toId }));
-          logApp.warn('Targets of loadElementMetaDependencies not found', { relations });
+          logApp.info('Targets of loadElementMetaDependencies not found', { relations });
         }
         const inputKey = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, key);
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
@@ -2242,7 +2242,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
-    throw FunctionalError(`Cant find element to update ${id} (${type})`, { id, type });
+    throw FunctionalError('Cant find element to update', { id, type });
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2603,7 +2603,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
         }
       } else {
-        logApp.warn('Discarding outdated attribute update mutation', { key: attributeKey });
+        logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
       }
     }
   }
@@ -2659,7 +2659,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           }
         }
       } else {
-        logApp.warn('Discarding outdated attribute update mutation', { key: inputField });
+        logApp.info('Discarding outdated attribute update mutation', { key: inputField });
       }
     }
   }
@@ -3178,9 +3178,9 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
-
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return draftInternalDeleteElement(context, user, element);
-
+  if (element._index.includes(INDEX_DRAFT_OBJECTS)) {
+    return draftInternalDeleteElement(context, user, element);
+  }
   // region confidence control
   controlUserConfidenceAgainstElement(user, element);
   // region restrict delete control
@@ -3258,7 +3258,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // if trash is disabled globally or for this element, delete permanently
         await deleteAllObjectFiles(context, user, element);
       }
-
       // Delete all linked elements
       await elDeleteElements(context, user, [element], { forceDelete });
       // Publish event in the stream
@@ -3333,9 +3332,9 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     }
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
-      logApp.warn(err);
+      logApp.info(err);
     } else {
-      logApp.error(err);
+      logApp.error('Error handling inference', { cause: err });
     }
   }
   return false;

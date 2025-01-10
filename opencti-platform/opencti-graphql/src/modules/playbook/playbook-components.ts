@@ -85,6 +85,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { generateCreateMessage } from '../../database/generate-message';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -596,7 +597,13 @@ const attributePathMapping: any = {
     [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
     [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
     [ABSTRACT_STIX_RELATIONSHIP]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
-  }
+  },
+  severity: {
+    [ENTITY_TYPE_CONTAINER_CASE]: '/severity',
+  },
+  priority: {
+    [ENTITY_TYPE_CONTAINER_CASE]: '/priority',
+  },
 };
 interface UpdateValueConfiguration {
   label: string

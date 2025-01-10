@@ -2,11 +2,22 @@ const esbuild = require('esbuild');
 const {default: importGlobPlugin} = require('esbuild-plugin-import-glob');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
 const nativeNodePlugin = require("../plugin/native.node.plugin");
+const {copy} = require('esbuild-plugin-copy');
 
 esbuild.build({
     logLevel: 'info',
     define: {'process.env.NODE_ENV': '\"development\"'},
-    plugins: [importGlobPlugin(), graphqlLoaderPlugin(), nativeNodePlugin()],
+    plugins: [
+        importGlobPlugin(),
+        graphqlLoaderPlugin(),
+        nativeNodePlugin(),
+        copy({
+            assets: {
+                from: ['./node_modules/@datadog/pprof/prebuilds/**/*'],
+                to: ['./prebuilds'],
+            }
+        }),
+    ],
     entryPoints: [
         'src/back.js',
         'script/script-clean-relations.js',
@@ -19,7 +30,7 @@ esbuild.build({
     platform: 'node',
     target: ['node14'],
     minify: false,
-    keepNames: true,
+    keepNames: false,
     sourcemap: 'inline',
     outdir: 'build',
 });

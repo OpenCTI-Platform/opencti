@@ -89,13 +89,19 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
       throw UnsupportedError('Cache configuration type not supported', { type });
     }
     if (!fromCache.values) {
-      if (!fromCache.inProgress) {
-        fromCache.inProgress = true;
+      // If cache already in progress build, just wait for completion
+      if (fromCache.inProgress) {
+        while (fromCache.inProgress) {
+          await wait(100);
+        }
+        return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
+      }
+      // If not in progress, re fetch the data
+      fromCache.inProgress = true;
+      try {
         fromCache.values = await fromCache.fn();
+      } finally {
         fromCache.inProgress = false;
-      } else {
-        await wait(100);
-        return getEntitiesFromCache(context, user, type);
       }
     }
     return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);

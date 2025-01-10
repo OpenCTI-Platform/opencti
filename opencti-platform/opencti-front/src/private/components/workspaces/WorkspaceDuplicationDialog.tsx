@@ -46,7 +46,7 @@ const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`
   ) {
     workspaceDuplicate(input: $input) {
       id
-      ...WorkspaceLine_node
+      ...WorkspacesLine_node
     }
   }
 `;

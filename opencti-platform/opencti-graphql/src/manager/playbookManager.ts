@@ -174,7 +174,7 @@ export const playbookExecutor = async ({
     } catch (error) {
       // Error executing the step, register
       const executionError = error as Error;
-      logApp.error(error, { step: instanceWithConfig, bundle: baseBundle });
+      logApp.error('[OPENCTI-MODULE] Playbook manager executor error', { cause: error, manager: 'PLAYBOOK_MANAGER', step: instanceWithConfig, bundle: baseBundle });
       const end = utcDate();
       const durationDiff = end.diff(start);
       const duration = moment.duration(durationDiff);
@@ -304,7 +304,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
       }
     }
   } catch (e) {
-    logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
+    logApp.error('[OPENCTI-MODULE] Playbook manager stream error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
   }
 };
 
@@ -347,10 +347,12 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
             // Data
             previousStepBundle: null,
             bundle,
-          }).catch((reason) => logApp.error(reason, { id: entityId, manager: 'PLAYBOOK_MANAGER' }));
+          }).catch((err) => {
+            logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', { cause: err, id: entityId, manager: 'PLAYBOOK_MANAGER' });
+          });
           return true;
         } catch (e) {
-          logApp.error(e, { id: entityId, manager: 'PLAYBOOK_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', { cause: e, id: entityId, manager: 'PLAYBOOK_MANAGER' });
           return false;
         }
       }
@@ -389,7 +391,7 @@ const initPlaybookManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
       } else {
-        logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Playbook manager error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
@@ -486,7 +488,7 @@ const initPlaybookManager = () => {
                     bundle,
                   });
                 } catch (e) {
-                  logApp.error(e, { id: node.id, manager: 'PLAYBOOK_MANAGER' });
+                  logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
                 }
               }
             }
@@ -512,7 +514,7 @@ const initPlaybookManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager (cron) already started by another API');
       } else {
-        logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Playbook manager cron handler error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
       }
     } finally {
       if (lock) await lock.unlock();

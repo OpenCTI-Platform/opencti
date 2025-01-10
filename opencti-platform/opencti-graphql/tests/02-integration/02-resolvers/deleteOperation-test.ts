@@ -1,10 +1,11 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, queryAsAdmin, TEST_ORGANIZATION, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, editorQuery, PYTHON_PATH, queryAsAdmin, TEST_ORGANIZATION, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
-import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { wait } from '../../../src/database/utils';
+import { execChildPython } from '../../../src/python/pythonBridge';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -35,6 +36,14 @@ const READ_REPORT_QUERY = gql`
             description
             published
             toStix
+            importFiles {
+                edges {
+                    node { 
+                        id
+                        name
+                    }
+                }
+            }
         }
     }
 `;
@@ -117,6 +126,8 @@ const DELETE_RESTORE_MUTATION = gql`
     }
 `;
 
+const filename = './tests/data/poisonivy.json';
+
 describe('Delete operation resolver testing', () => {
   let reportInternalId = '';
   let deleteOperationId = '';
@@ -135,6 +146,17 @@ describe('Delete operation resolver testing', () => {
     };
     const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
     reportInternalId = report.data?.reportAdd.id;
+    expect(reportInternalId).toBeDefined();
+
+    // upload a file to this report, to also test it after permanent deletion
+    const uploadOpts = [API_URI, ADMIN_API_TOKEN, reportInternalId, filename, [MARKING_TLP_AMBER_STRICT]];
+    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
+    expect(execution).not.toBeNull();
+    expect(execution.status).toEqual('success');
+    const reportAfterImport = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+    expect(reportAfterImport.data?.report.id).toBe(reportInternalId);
+    expect(reportAfterImport.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
+
     await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
 
     // Check that an associated delete operation was created
@@ -173,7 +195,7 @@ describe('Delete operation resolver testing', () => {
     expect(getDeleteOperation.data?.deleteOperation).toBeNull();
   });
 
-  it('should deleteOperation be deleted', async () => {
+  it('should deleteOperation be confirmed', async () => {
     await queryAsAdmin({ query: DELETE_CONFIRM_MUTATION, variables: { id: deleteOperationId }, });
 
     const queryResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId } });
@@ -192,6 +214,12 @@ describe('Delete operation resolver testing', () => {
 
     const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
     reportInternalId = report.data?.reportAdd.id;
+    // import a file to this report, to also test it after restore
+    const uploadOpts = [API_URI, ADMIN_API_TOKEN, reportInternalId, filename, [MARKING_TLP_AMBER_STRICT]];
+    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
+    expect(execution).not.toBeNull();
+    expect(execution.status).toEqual('success');
+
     await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
 
     // Retrieve the associated delete operation
@@ -219,6 +247,7 @@ describe('Delete operation resolver testing', () => {
 
     const reportQueryAfterResult = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
     expect(reportQueryAfterResult.data?.report.id).toBe(reportInternalId);
+    expect(reportQueryAfterResult.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
 
     await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
   });

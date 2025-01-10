@@ -51,7 +51,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         }
       });
       shell.on('stderr', (stderr) => {
-        logApp.error(`[stderr] ${stderr}`);
+        logApp.error('[PYTHON BRIDGE] Error executing python', { stderr });
         messages.push(stderr);
         //* v8 ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
@@ -89,7 +89,7 @@ const createChildStixPattern = async (context, user, observableType, observableV
     );
     return result.data;
   } catch (err) {
-    logApp.warn(err);
+    logApp.warn('[BRIDGE] createChildStixPattern', { cause: err });
     return null;
   }
 };
@@ -104,7 +104,7 @@ const checkChildIndicatorSyntax = async (context, user, patternType, indicatorVa
     );
     return result.data;
   } catch (err) {
-    logApp.warn(err);
+    logApp.warn('[BRIDGE] checkChildIndicatorSyntax', { cause: err });
     return null;
   }
 };
@@ -129,13 +129,13 @@ const execNativePython = async (context, user, script, ...args) => {
 };
 const createNativeStixPattern = async (context, user, observableType, observableValue) => {
   return execNativePython(context, user, CREATE_PATTERN_SCRIPT, observableType, observableValue).catch((err) => {
-    logApp.warn(err);
+    logApp.warn('[BRIDGE] createNativeStixPattern', { cause: err });
     return null;
   });
 };
 const checkNativeIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch((err) => {
-    logApp.warn(err);
+    logApp.warn('[BRIDGE] checkNativeIndicatorSyntax', { cause: err });
     return null;
   });
 };

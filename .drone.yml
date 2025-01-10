@@ -83,7 +83,7 @@ steps:
 
 
   - name: frontend-e2e-tests
-    image: node:20.18.0
+    image: node:20.18.1
     volumes:
     - name: cache-node-frontend-e2e
       path: /drone/src/opencti-platform/opencti-front/node_modules
@@ -103,7 +103,7 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:20.18.0
+    image: node:20.18.1
     failure: ignore
     when:
       status:
@@ -124,6 +124,8 @@ steps:
       # Archive and upload each artefact that we need
       - tar -czvf frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-front/test-results
       - jf rt u frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
+      - tar -czvf backend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-graphql/test-results
+      - jf rt u backend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
       # Next line should be done only once at the end: it's recording and gathering build info
       - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN --build-url=$DRONE_BUILD_LINK
       # Cleaning up old build in JFrog
@@ -132,7 +134,7 @@ steps:
       - frontend-e2e-tests
 
   - name: frontend-verify-translation
-    image: node:20.18.0
+    image: node:20.18.1
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
@@ -190,7 +192,7 @@ services:
   - name: redis
     image: redis:7.4.0
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     environment:
       discovery.type: single-node
       xpack.security.enabled: false

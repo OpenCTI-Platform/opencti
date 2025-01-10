@@ -3,10 +3,11 @@ import { GraphQLError } from 'graphql/index';
 const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
 
-const error = (type, message, data) => {
+export const error = (type, message, data) => {
   return new GraphQLError(message, { extensions: { code: type, data } });
 };
 
+// region TYPE_AUTH
 export const AUTH_FAILURE = 'AUTH_FAILURE';
 export const AuthenticationFailure = (reason, data) => error(AUTH_FAILURE, reason || 'Bad login or password', {
   http_status: 401,
@@ -14,7 +15,6 @@ export const AuthenticationFailure = (reason, data) => error(AUTH_FAILURE, reaso
   ...data,
 });
 
-// TYPE_AUTH
 export const AUTH_REQUIRED = 'AUTH_REQUIRED';
 export const AuthRequired = (data) => error(AUTH_REQUIRED, 'You must be logged in to do this.', {
   http_status: 401,
@@ -47,38 +47,48 @@ export const ForbiddenAccess = (message, data) => error(
   }
 );
 
-const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
-export const ResourceNotFoundError = (data) => error(RESOURCE_NOT_FOUND_ERROR, 'Resource not found', {
-  http_status: 404,
-  ...data,
-});
+export const AUTH_ERRORS = [
+  AUTH_FAILURE,
+  AUTH_REQUIRED,
+  OTP_REQUIRED,
+  OTP_REQUIRED_ACTIVATION,
+  FORBIDDEN_ACCESS
+];
+// endregion
 
-// CATEGORY_TECHNICAL
-export const DatabaseError = (reason, data) => error('DATABASE_ERROR', reason || 'A database error has occurred', {
+// region CATEGORY_TECHNICAL
+const DATABASE_ERROR = 'DATABASE_ERROR';
+export const DatabaseError = (reason, data) => error(DATABASE_ERROR, reason || 'A database error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
-export const FilesystemError = (reason, data) => error('FILESYSTEM_ERROR', reason || 'A filesystem error has occurred', {
+const FILESYSTEM_ERROR = 'FILESYSTEM_ERROR';
+export const FilesystemError = (reason, data) => {
+  return error(FILESYSTEM_ERROR, reason || 'A filesystem error has occurred', {
+    http_status: 500,
+    genre: CATEGORY_TECHNICAL,
+    ...data,
+  });
+};
+
+const COMPLEX_SEARCH_ERROR = 'COMPLEX_SEARCH_ERROR';
+export const ComplexSearchError = (reason, data) => error(COMPLEX_SEARCH_ERROR, reason || 'A search error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
-export const ComplexSearchError = (reason, data) => error('COMPLEX_SEARCH_ERROR', reason || 'A search error has occurred', {
+const CONFIGURATION_ERROR = 'CONFIGURATION_ERROR';
+export const ConfigurationError = (reason, data) => error(CONFIGURATION_ERROR, reason || 'A configuration error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
-export const ConfigurationError = (reason, data) => error('CONFIGURATION_ERROR', reason || 'A configuration error has occurred', {
-  http_status: 500,
-  genre: CATEGORY_TECHNICAL,
-  ...data,
-});
-
-export const UnknownError = (reason, data) => error('UNKNOWN_ERROR', reason || 'An unknown error has occurred', {
+const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
+export const UnknownError = (reason, data) => error(UNKNOWN_ERROR, reason || 'An unknown error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
@@ -98,6 +108,25 @@ export const UnsupportedError = (reason, data) => error(UNSUPPORTED_ERROR, reaso
   ...data,
 });
 
+export const EngineShardsError = (data) => error(DATABASE_ERROR, 'Engine execution fail, some shards are not available, please check your engine status', {
+  http_status: 500,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+// noinspection JSUnusedGlobalSymbols
+export const TECHNICAL_ERRORS = [
+  DATABASE_ERROR,
+  FILESYSTEM_ERROR,
+  COMPLEX_SEARCH_ERROR,
+  CONFIGURATION_ERROR,
+  UNKNOWN_ERROR,
+  UNSUPPORTED_ERROR,
+];
+// endregion
+
+// region CATEGORY_FUNCTIONAL
+export const FUNCTIONAL_ERROR = 'FUNCTIONAL_ERROR';
 export const FunctionalError = (reason, data) => error('FUNCTIONAL_ERROR', reason || 'Business validation', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
@@ -107,20 +136,6 @@ export const FunctionalError = (reason, data) => error('FUNCTIONAL_ERROR', reaso
 export const ALREADY_DELETED_ERROR = 'ALREADY_DELETED_ERROR';
 export const AlreadyDeletedError = (data) => error(ALREADY_DELETED_ERROR, 'Already deleted elements', {
   http_status: 400,
-  genre: CATEGORY_BUSINESS,
-  ...data,
-});
-
-const TYPE_LOCK = 'LOCK_ERROR';
-export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
-  http_status: 500,
-  genre: CATEGORY_BUSINESS,
-  ...data,
-});
-
-export const EngineShardsError = (data) => error('DATABASE_ERROR', 'Engine execution fail, some shards are not available, please check your engine status', {
-  http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
 });
@@ -139,3 +154,20 @@ export const ValidationError = (message, field, data) => error(VALIDATION_ERROR,
   field,
   ...(data ?? {}),
 });
+
+const TYPE_LOCK = 'LOCK_ERROR';
+export const TYPE_LOCK_ERROR = 'ExecutionError';
+export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
+  http_status: 500,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+export const FUNCTIONAL_ERRORS = [
+  FUNCTIONAL_ERROR,
+  ALREADY_DELETED_ERROR,
+  MISSING_REF_ERROR,
+  VALIDATION_ERROR,
+  TYPE_LOCK_ERROR
+];
+// endregion

@@ -12,6 +12,7 @@ import { EventLine_node$key } from '@components/entities/events/__generated__/Ev
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -97,7 +98,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.event_types.width }}
             >
-              {data.event_types?.join(', ')}
+              <FieldOrEmpty source={data.event_types}>{data.event_types?.join(', ')}</FieldOrEmpty>
             </div>
             <div
               className={classes.bodyItem}

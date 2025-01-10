@@ -315,7 +315,7 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
     const mainEntityRestoredId = result.id;
     if (mainEntityRestoredId !== main_entity_id) {
       upsertedElements[main_entity_id] = mainEntityRestoredId;
-      logApp.warn('Main entity has been restored with with different id (upsert)');
+      logApp.info('Main entity has been restored with with different id (upsert)');
     }
 
     // restore the relationships
@@ -337,11 +337,11 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
       }
       if (result.id && result.id !== relationshipInput.id) {
         upsertedElements[relationshipInput.id] = result.id;
-        logApp.warn('Relationship has been restored with different id (upsert)', { upsertId: result.id, originalId: relationshipInput.id });
+        logApp.info('Relationship has been restored with different id (upsert)', { upsertId: result.id, originalId: relationshipInput.id });
       }
       if (result.element && result.element.id && result.element.id !== relationshipInput.id) {
         upsertedElements[relationshipInput.id] = result.element.id;
-        logApp.warn('Relationship has been restored with different id (upsert)', { upsertId: result.element.id, originalId: relationshipInput.id });
+        logApp.info('Relationship has been restored with different id (upsert)', { upsertId: result.element.id, originalId: relationshipInput.id });
       }
     }
 

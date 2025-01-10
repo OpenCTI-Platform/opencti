@@ -7,11 +7,12 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
+import nconf from 'nconf';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, isFeatureEnabled, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
-import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
-import { isNotEmptyField } from './utils';
+import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
@@ -141,7 +142,7 @@ export const deleteFile = async (context, user, id) => {
     logApp.debug(`[FILE STORAGE] delete file ${id} in index`);
     await elDeleteFilesByIds([id])
       .catch((err) => {
-        logApp.error(err);
+        logApp.error('[FILE STORAGE] Error deleting file', { cause: err });
       });
   }
   return up;
@@ -297,7 +298,7 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       if (!isUserHasCapability(user, KNOWLEDGE)) {
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
-      const instance = await internalLoadById(context, user, metaData.entity_id);
+      const instance = await internalLoadById(context, user, metaData.entity_id, { indices: [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS] });
       if (!instance) {
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
@@ -331,13 +332,29 @@ export const getFileName = (fileId) => {
   return `${parsedFilename.name}${parsedFilename.ext}`;
 };
 
+/**
+ * Get file mime type from filename
+ * @param fileId the complete path with filename
+ * @returns {string}
+ */
 export const guessMimeType = (fileId) => {
   const fileName = getFileName(fileId);
   const mimeType = mime.lookup(fileName);
-  if (!mimeType && fileName === 'pdf_report') {
-    return 'application/pdf';
+  // If type is not found
+  if (!mimeType) {
+    // Try static resolutions
+    const appMimes = nconf.get('app:filename_to_mimes') || {};
+    const mimeEntries = Object.entries(appMimes);
+    for (let index = 0; index < mimeEntries.length; index += 1) {
+      const [key, val] = mimeEntries[index];
+      if (fileName.endsWith(key)) {
+        return val;
+      }
+    }
+    // If nothing static found, return basic octet-stream
+    return 'application/octet-stream';
   }
-  return mimeType || 'application/octet-stream';
+  return mimeType;
 };
 
 export const isFileObjectExcluded = (id) => {
@@ -387,7 +404,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
         requestParams.ContinuationToken = response.NextContinuationToken;
       }
     } catch (err) {
-      logApp.error(DatabaseError('[FILE STORAGE] Storage files read fail', { cause: err }));
+      logApp.error('[FILE STORAGE] Storage files read fail', { cause: err });
       truncated = false;
     }
   }

@@ -972,6 +972,7 @@ enum BackgroundTaskScope {
   DASHBOARD
   PUBLIC_DASHBOARD
   INVESTIGATION
+  PLAYBOOK
 }
 enum BackgroundTaskActionType {
   DELETE

@@ -10,7 +10,7 @@ import type { SentinelConnectionOptions } from 'ioredis/built/connectors/Sentine
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
-import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
+import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
@@ -131,7 +131,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
-  client.on('error', (err) => logApp.error(DatabaseError('Redis client connection fail', { cause: err, provider })));
+  client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
@@ -391,12 +391,12 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const extend = async () => {
     try {
       if (opts.retryCount !== 0) {
-        logApp.warn('Extending resources for long processing task', { locks, stack: initialCallStack });
+        logApp.info('Extending resources for long processing task', { locks, stack: initialCallStack });
       }
       lock = await lock.extend(maxTtl);
       queue();
     } catch (error) {
-      controller.abort('[REDIS] Failed to extend resource');
+      controller.abort({ name: TYPE_LOCK_ERROR });
     }
   };
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
@@ -434,7 +434,6 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
         await lock.release();
       } catch (e) {
         // Nothing to do here
-        logApp.warn('Failed to unlock resource', { locks });
       }
     },
   };
@@ -707,7 +706,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         await processStreamResult([], callback, opts.withInternal);
       }
     } catch (err) {
-      logApp.error(DatabaseError('Redis stream consume fail', { cause: err, provider }));
+      logApp.error('Redis stream consume fail', { cause: err, provider });
       if (opts.autoReconnect) {
         await waitInSec(2);
       } else {
