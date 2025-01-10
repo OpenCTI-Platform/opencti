@@ -8972,6 +8972,10 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
+  requestAccessAdd(input: RequestAccessAddInput!): ID
+  requestAccessValidate(id: ID!): RequestAccessAction
+  requestAccessReject(id: ID!): RequestAccessAction
+  requestAccessReopen(id: ID!): RequestAccessAction
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12491,4 +12495,29 @@ type FintelTemplateConnection {
 enum FintelTemplateOrdering {
   name
   start_date
+}
+
+enum RequestAccessType {
+  organization_sharing
+}
+
+enum ActionStatus {
+  ACCEPTED
+  REFUSED
+  NEW
+  NOT_FOUND
+  MISSING_PARAMETERS
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
+}
+
+type RequestAccessAction {
+  action_executed: Boolean
+  action_status: String
+  action_date: DateTime
 }
