@@ -51,7 +51,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
 
   return (
     <>
-      <Grid container={true} spacing={3} style={{ marginBottom: theme.spacing(2) }}>
+      <Grid container spacing={3} style={{ marginBottom: '20px' }}>
         <Grid item xs={4}>
           <Paper
             variant="outlined"
