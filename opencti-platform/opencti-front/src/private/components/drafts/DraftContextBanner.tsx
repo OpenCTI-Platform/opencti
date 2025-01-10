@@ -75,11 +75,16 @@ const DraftContextBanner = () => {
     }
   };
 
+  const navigateToDraft = () => {
+    const currentDraftContextId = me.draftContext ? me.draftContext.id : '';
+    navigate(`/dashboard/drafts/${currentDraftContextId}`);
+  };
+
   return (
     <div style={{ padding: '0 12px' }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
         <div style={{ padding: '0 12px' }}>
-          <DraftBlock body={truncate(currentDraftContextName, 40)} />
+          <DraftBlock body={truncate(currentDraftContextName, 40)}/>
         </div>
         <div>
           <Button
@@ -113,6 +118,16 @@ const DraftContextBanner = () => {
           </Dialog>
         </div>
         <div style={{ padding: '0 12px' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ width: '100%' }}
+            onClick={navigateToDraft}
+          >
+            {t_i18n('Go to overview')}
+          </Button>
+        </div>
+        <div>
           <Button
             color="primary"
             variant="outlined"
