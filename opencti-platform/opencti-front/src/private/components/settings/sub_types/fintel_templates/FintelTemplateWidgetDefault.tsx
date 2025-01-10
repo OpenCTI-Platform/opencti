@@ -1,6 +1,5 @@
-import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
-import { MoreVert, WarningAmber } from '@mui/icons-material';
+import { ContentCopy, MoreVert, WarningAmber } from '@mui/icons-material';
 import React, { MouseEvent } from 'react';
 import { Tooltip, Typography } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
@@ -9,6 +8,7 @@ import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
 import { useFormatter } from '../../../../../components/i18n';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import type { Theme } from '../../../../../components/Theme';
+import { MESSAGING$ } from '../../../../../relay/environment';
 
 interface FintelTemplateWidgetDefaultProps {
   widgetType: string
@@ -25,6 +25,11 @@ const FintelTemplateWidgetDefault = ({
   const { t_i18n } = useFormatter();
   const { editorValue } = useFintelTemplateContext();
   const isUsed = !!editorValue?.includes(`$${variableName}`);
+
+  const copyWidgetToClipboard = async () => {
+    await navigator.clipboard.writeText(`$${variableName}`);
+    MESSAGING$.notifySuccess(t_i18n('Widget copied to clipboard'));
+  };
 
   return (
     <ListItem
@@ -49,6 +54,16 @@ const FintelTemplateWidgetDefault = ({
           <WarningAmber fontSize="small" color="warning" />
         </Tooltip>
       )}
+
+      <Tooltip style={{ marginRight: -15 }} title={t_i18n('Copy widget to clipboard')}>
+        <IconButton
+          aria-haspopup="true"
+          color="primary"
+          onClick={() => copyWidgetToClipboard()}
+        >
+          <ContentCopy fontSize="small" />
+        </IconButton>
+      </Tooltip>
 
       <IconButton
         aria-haspopup="true"

@@ -29,7 +29,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
     { attribute: 'createdBy.name', label: 'Author' },
     { attribute: 'objectMarking.definition', label: 'Marking' },
   ];
-  const attributesValidation = () => Yup.object().shape({
+  const attributesValidation = () => Yup.object({
     attributes: Yup.array().of(
       Yup.object().shape({
         variableName: Yup.string()

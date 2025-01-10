@@ -1,6 +1,6 @@
 import React, { FunctionComponent, MouseEvent, useMemo, useState } from 'react';
 import { AddOutlined } from '@mui/icons-material';
-import { Menu, MenuItem, Tooltip, IconButton, List, Typography } from '@mui/material';
+import { IconButton, List, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Alert from '@mui/material/Alert';
 import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
@@ -8,7 +8,6 @@ import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import type { Widget } from '../../../../../utils/widget/widget';
-import { MESSAGING$ } from '../../../../../relay/environment';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 
 export interface FintelTemplateWidget {
@@ -47,15 +46,6 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       setSelectedWidget(widget);
       setMenuAnchor(e.currentTarget);
     }
-  };
-
-  const copyWidgetToClipboard = async () => {
-    if (selectedWidget) {
-      await navigator.clipboard.writeText(`$${selectedWidget}`);
-      MESSAGING$.notifySuccess(t_i18n('Widget copied to clipboard'));
-    }
-    setMenuAnchor(null);
-    setSelectedWidget(undefined);
   };
 
   const deleteWidget = () => {
@@ -146,9 +136,6 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         open={Boolean(menuAnchor)}
         onClose={() => setMenuAnchor(null)}
       >
-        <MenuItem onClick={copyWidgetToClipboard}>
-          {t_i18n('Copy widget to clipboard')}
-        </MenuItem>
         <MenuItem onClick={updateWidget}>
           {t_i18n('Update')}
         </MenuItem>

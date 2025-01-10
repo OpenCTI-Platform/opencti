@@ -242,6 +242,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                             return (
                               <Select
                                 fullWidth={true}
+                                disabled={dataSelection[i].instance_id === 'SELF_ID'}
                                 value={dataSelection[i].instance_id}
                                 onChange={(event) => handleChangeDataValidationParameter(
                                   i,
