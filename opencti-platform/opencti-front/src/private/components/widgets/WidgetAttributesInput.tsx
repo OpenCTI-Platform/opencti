@@ -89,48 +89,37 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
         onSubmit={() => {}}
       >
         {({ isValid }) => (
-          <Form><FieldArray name={'attributes'}>
+          <Form>
+            <FieldArray name={'attributes'}>
               {() => (
                 <>
                   {value.map((row, _) => (
                     <>
-            <FieldArray name={'rows'}>
-              {({ remove }) => (
-                <>
-                  <table>
-                    <tbody>
-                      {value.map((row, index) => (
-                        <tr key={index}>
-                          <td>
-                            <Field
-                              component={TextField}
-                              name="attribute"
-                              label={t_i18n('Attribute')}
-                              disabled={true}value={row.attribute}
-                              value={row.attribute}
-                              style={{ marginTop: 20, marginLeft: 30, width: 220 }}
-                            />
-                          </td>
-                          <td>
-                            <Field
-                              component={TextField}
-                              name="label"
-                              label={t_i18n('Label')}value={row.label}
-                              value={row.label}
-                              style={{ marginTop: 20, marginLeft: 10, width: 220 }}
-                              onChange={isValid ? (n: string, v: string) => setFieldValue(row.attribute, n, v) : undefined}
-                            />
-                          </td>
-                          <td>
-                            <Field
-                              component={TextField}
-                              name="variableName"
-                              label={t_i18n('Variable name')}
-                              value={row.variableName}
-                              style={{ marginTop: 20, marginLeft: 10, width: 220 }}
-                              onChange={isValid ? (n: string, v: string) => setFieldValue(row.attribute, n, v) : undefined}
-                            />
-                          <IconButton
+                      <Field
+                        component={TextField}
+                        name="attribute"
+                        label={t_i18n('Attribute')}
+                        disabled={true}
+                        value={row.attribute}
+                        style={{ marginTop: 20, marginLeft: 30, width: 220 }}
+                      />
+                      <Field
+                        component={TextField}
+                        name="label"
+                        label={t_i18n('Label')}
+                        value={row.label}
+                        style={{ marginTop: 20, marginLeft: 10, width: 220 }}
+                        onChange={isValid ? (n: string, v: string) => setFieldValue(row.attribute, n, v) : undefined}
+                      />
+                      <Field
+                        component={TextField}
+                        name="variableName"
+                        label={t_i18n('Variable name')}
+                        value={row.variableName}
+                        style={{ marginTop: 20, marginLeft: 10, width: 220 }}
+                        onChange={isValid ? (n: string, v: string) => setFieldValue(row.attribute, n, v) : undefined}
+                      />
+                      <IconButton
                         size="small"
                         color="primary"
                         style={{ marginTop: 30 }}
@@ -140,23 +129,6 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                       </IconButton>
                     </>
                   ))}
-                </>
-              )}
-            </FieldArray>
-          </td>
-                          <td>
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => remove(index)}
-                            >
-                              <DeleteOutlined fontSize="small" />
-                            </IconButton>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </>
               )}
             </FieldArray>
