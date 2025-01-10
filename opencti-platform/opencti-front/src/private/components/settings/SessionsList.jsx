@@ -99,6 +99,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSession();
+        relay.refetch(); // refetch sessions after killing to refresh the list
       },
       onError: () => {
         setKilling(false);
