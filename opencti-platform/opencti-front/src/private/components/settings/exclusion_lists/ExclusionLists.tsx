@@ -160,7 +160,7 @@ const ExclusionLists = () => {
       id: 'icon',
       label: ' ',
       isSortable: false,
-      percentWidth: 3,
+      percentWidth: 5,
       render: () => <ItemIcon type="exclusion-list" />,
     },
     name: {
