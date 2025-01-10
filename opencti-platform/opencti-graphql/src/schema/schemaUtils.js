@@ -188,10 +188,8 @@ export const keepMostRestrictiveTypes = (entityTypes) => {
   let restrictedEntityTypes = [...entityTypes];
   for (let i = 0; i < entityTypes.length; i += 1) {
     const type = entityTypes[i];
-    const parentTypes = getParentTypes(type);
-    restrictedEntityTypes = parentTypes.includes(type)
-      ? restrictedEntityTypes
-      : restrictedEntityTypes.filter((t) => !parentTypes.includes(t));
+    const parentTypes = getParentTypes(type).filter((p) => p !== type);
+    restrictedEntityTypes = restrictedEntityTypes.filter((t) => !parentTypes.includes(t));
   }
   return restrictedEntityTypes;
 };
