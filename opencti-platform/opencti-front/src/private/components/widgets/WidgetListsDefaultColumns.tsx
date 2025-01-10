@@ -9,6 +9,8 @@ export const defaultColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'from.relationship_type' },
     { attribute: 'to.entity_type' },
     { attribute: 'to.relationship_type' },
+    { attribute: 'start_time' },
+    { attribute: 'stop_time' },
     { attribute: 'created_at' },
     { attribute: 'createdBy.name' },
     { attribute: 'objectMarking' },
