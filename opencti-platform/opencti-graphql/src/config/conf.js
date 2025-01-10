@@ -96,7 +96,7 @@ nconf.file('default', resolveEnvFile('default'));
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
-export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:max_depth_size') ?? 5;
+export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:max_depth_size') ?? 10;
 export const appLogLevelMaxArraySize = nconf.get('app:app_logs:max_array_size') ?? 50;
 export const appLogLevelMaxStringSize = nconf.get('app:app_logs:max_string_size') ?? 5000;
 export const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
@@ -107,7 +107,7 @@ export const extendedErrors = (metaExtension) => {
   return {};
 };
 export const limitMetaErrorComplexity = (obj, current_depth = 0) => {
-  if (obj !== null && current_depth > appLogLevelMaxDepthSize && typeof obj !== 'function') {
+  if (obj !== null && current_depth < appLogLevelMaxDepthSize && typeof obj !== 'function') {
     if (Array.isArray(obj)) {
       // Create a new array with a limited size
       const limitedArray = obj.slice(0, appLogLevelMaxArraySize);
