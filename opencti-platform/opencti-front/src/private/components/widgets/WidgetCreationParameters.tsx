@@ -23,6 +23,7 @@ import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import useHelper from '../../../utils/hooks/useHelper';
 
 interface WidgetCreationParametersProps {
   dataSelection: WidgetDataSelection[],
@@ -40,6 +41,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   type,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const handleChangeDataValidationParameter = (
@@ -645,7 +647,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             label={t_i18n('Display legend')}
           />
         )}
-        {getCurrentCategory(type) === 'list'
+        {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
           && dataSelection.map(({ perspective, columns }, index) => (perspective === 'relationships' ? (
             <WidgetConfigColumnsCustomization
               key={index}
