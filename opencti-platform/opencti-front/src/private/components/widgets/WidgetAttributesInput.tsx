@@ -3,15 +3,17 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import type { WidgetColumn } from '../../../utils/widget/widget';
+import * as Yup from 'yup';
+import { Field, Form, Formik } from 'formik';
 import { useFormatter } from '../../../components/i18n';
+import type { WidgetColumn } from '../../../utils/widget/widget';
+import TextField from '../../../components/TextField';
 
 interface WidgetCreationAttributesProps {
   value: readonly WidgetColumn[],
   i: number,
   onChange: (i: number,
-    key: string,
-    value: (string | null)[],
+    value: WidgetColumn[],
   ) => void,
 }
 
@@ -22,12 +24,23 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 }) => {
   const { t_i18n } = useFormatter();
   const availableColumns: WidgetColumn[] = [
+    { attribute: 'name', label: 'Name' },
     { attribute: 'entity_type', label: 'Entity type' },
     { attribute: 'relationship_type', label: 'Relationship type' },
     { attribute: 'created_at', label: 'Creation date' },
     { attribute: 'createdBy.name', label: 'Author' },
     { attribute: 'objectMarking.definition', label: 'Marking' },
   ];
+  const attributesValidation = () => Yup.object().shape({
+    variableName: Yup.string().required(t_i18n('This field is required')),
+  });
+  const setFieldValue = (attribute: string | null, field: string, newValue: string) => {
+    const newColumns = value.map((c) => (c.attribute === attribute ? {
+      ...c,
+      [field]: newValue,
+    } : c));
+    onChange(i, newColumns);
+  };
   return (
     <FormControl
       fullWidth={true}
@@ -37,14 +50,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
         width: '100%',
       }}
     >
-      <InputLabel>{t_i18n('Attribute')}</InputLabel>
+      <InputLabel>{t_i18n('Attributes')}</InputLabel>
       <Select
         fullWidth={true}
         multiple={true}
-        value={value.map((c) => c.attribute)}
+        value={value}
         onChange={(event) => onChange(
           i,
-          'columns',
           event.target.value,
         )
         }
@@ -52,12 +64,50 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
         {availableColumns.map((v) => (
           <MenuItem
             key={v.attribute}
-            value={v.attribute}
+            value={v}
           >
             {t_i18n(v.label)}
           </MenuItem>
         ))}
       </Select>
+      {value.map((column) => (
+        <Formik
+          key={column.attribute}
+          initialValues={{
+            variableName: column.variableName ?? column.attribute,
+            label: column.variableName ?? '',
+            attribute: column.attribute,
+          }}
+          validationSchema={attributesValidation()}
+          onSubmit={() => {}}
+        >
+          {() => (
+            <Form>
+              <Field
+                component={TextField}
+                name="attribute"
+                label={t_i18n('Attribute')}
+                disabled={true}
+                style={{ marginTop: 20, marginLeft: 30, width: 220 }}
+              />
+              <Field
+                component={TextField}
+                name="label"
+                label={t_i18n('Label')}
+                style={{ marginTop: 20, marginLeft: 10, width: 220 }}
+                onChange={(n: string, v: string) => setFieldValue(column.attribute, n, v)}
+              />
+              <Field
+                component={TextField}
+                name="variableName"
+                label={t_i18n('Variable name')}
+                style={{ marginTop: 20, marginLeft: 10, width: 220 }}
+                onChange={(n: string, v: string) => setFieldValue(column.attribute, n, v)}
+              />
+            </Form>
+          )}
+        </Formik>))
+      }
     </FormControl>
   );
 };

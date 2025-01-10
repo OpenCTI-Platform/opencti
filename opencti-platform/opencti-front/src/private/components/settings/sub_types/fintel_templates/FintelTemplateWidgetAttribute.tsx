@@ -70,7 +70,7 @@ const FintelTemplateWidgetAttribute = ({
               key={column.variableName}
               style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}
             >
-              <ListItemText secondary={column.variableName} />
+              <ListItemText secondary={`$${column.variableName}`} />
 
               {!isUsed && (
                 <Tooltip title={t_i18n('The attribute is not called in the content')}>

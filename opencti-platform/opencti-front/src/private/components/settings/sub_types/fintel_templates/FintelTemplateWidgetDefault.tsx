@@ -41,7 +41,7 @@ const FintelTemplateWidgetDefault = ({
       </Tooltip>
 
       <Typography style={{ flex: 1 }} variant="body2">
-        {variableName}
+        {`$${variableName}`}
       </Typography>
 
       {!isUsed && (

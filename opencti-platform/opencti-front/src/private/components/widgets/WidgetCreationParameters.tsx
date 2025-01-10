@@ -22,7 +22,7 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetContext, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import ItemIcon from '../../../components/ItemIcon';
 
@@ -98,17 +98,17 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   };
   const handleChangeDataValidationColumns = (
     i: number,
-    key: string,
-    value: (string | null)[],
+    value: WidgetColumn[],
   ) => {
-    if (value === null || value.includes(null)) {
+    console.log('value', value);
+    if (value === null) {
       throw Error(t_i18n('This value cannot be null'));
     }
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
         return {
           ...data,
-          [key]: value.map((v) => ({ attribute: v, variableName: v })),
+          columns: value.map((v) => ({ ...v, variableName: v.variableName ?? v.attribute })),
         };
       }
       return data;
@@ -146,7 +146,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   return (
     <div style={{ marginTop: 20 }}>
       {context === 'fintelTemplate' && handleChangeVariableName
-        ? <div style={{ marginTop: 20 }}>
+        && <div style={{ marginTop: 20 }}>
           <TextField
             label={t_i18n('Variable name')}
             fullWidth={true}
@@ -155,14 +155,13 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           }
           />
         </div>
-        : <TextField
-            label={t_i18n('Title')}
-            fullWidth={true}
-            value={parameters.title}
-            onChange={(event) => handleChangeParameter('title', event.target.value)
-          }
-          />
       }
+      <TextField
+        label={t_i18n('Title')}
+        fullWidth={true}
+        value={parameters.title}
+        onChange={(event) => handleChangeParameter('title', event.target.value)}
+      />
       {getCurrentCategory(type) === 'text' && (
       <div style={{ marginTop: 20 }}>
         <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
