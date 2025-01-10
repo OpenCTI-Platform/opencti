@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import * as Yup from 'yup';
 import Axios from 'axios';
 import { Option } from '@components/common/form/ReferenceField';
 import ItemIcon from 'src/components/ItemIcon';
