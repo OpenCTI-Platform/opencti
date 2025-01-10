@@ -94,7 +94,21 @@ export const settingsQuery = graphql`
         name
         focusOn
       }
-      enterprise_edition
+      platform_enterprise_edition {
+        license_enterprise
+        license_by_configuration
+        license_valid_cert
+        license_validated
+        license_expiration_prevention
+        license_customer
+        license_expiration_date
+        license_start_date
+        license_platform_match
+        license_expired
+        license_type
+        license_creator
+        license_global
+      }
       otp_mandatory
       ...SettingsMessages_settingsMessages
       analytics_google_analytics_v4
@@ -139,7 +153,21 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         platform_whitemark
-        enterprise_edition
+        platform_enterprise_edition {
+          license_enterprise
+          license_by_configuration
+          license_valid_cert
+          license_validated
+          license_expiration_prevention
+          license_customer
+          license_expiration_date
+          license_start_date
+          license_platform_match
+          license_expired
+          license_type
+          license_creator
+          license_global
+        }
         platform_login_message
         platform_banner_text
         platform_banner_level
