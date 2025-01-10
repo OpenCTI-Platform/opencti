@@ -9027,6 +9027,9 @@ type Mutation {
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
   disseminationListSend(input: DisseminationListSendInput!): Boolean
+  requestAccessValidate(id: ID!): RequestAccessAction
+  requestAccessReject(id: ID!): RequestAccessAction
+  requestAccessReopen(id: ID!): RequestAccessAction
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
