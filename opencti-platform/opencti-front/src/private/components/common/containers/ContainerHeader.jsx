@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
@@ -454,7 +454,7 @@ const ContainerHeader = (props) => {
   const { t_i18n, fd } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const [displayEnrichment, setDisplayEnrichment] = useState(false);
+  const navigate = useNavigate();
 
   const handleExportCompleted = (fileName) => {
     // navigate with fileName in query params to select the created file

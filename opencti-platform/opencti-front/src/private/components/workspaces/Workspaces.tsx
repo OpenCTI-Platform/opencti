@@ -143,19 +143,18 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     workspacePaginationOptions,
   );
 
-
-    const dataColumns: DataTableProps['dataColumns'] = {
-      name: {
-        id: 'name',
-        percentWidth: 33,
-      },
-      tags: {
-        id: 'tags',
-      },
-      creator: {
-        id: 'creator',
-        isSortable: true,
-        render: ({ owner }) => defaultRender(owner.name),
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      id: 'name',
+      percentWidth: 33,
+    },
+    tags: {
+      id: 'tags',
+    },
+    creator: {
+      id: 'creator',
+      isSortable: true,
+      render: ({ owner }) => defaultRender(owner.name),
     },
     created_at: {
       id: 'created_at',
