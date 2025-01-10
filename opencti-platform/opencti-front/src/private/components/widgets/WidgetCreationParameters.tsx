@@ -103,13 +103,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   const columns = dataSelection[0]?.columns ?? availableColumns;
   const setColumns = (newColumns: WidgetColumn[]) => {
     setDataSelection((prevDataSelection: WidgetDataSelection[]) => {
-      if (prevDataSelection.length > 0) {
-        return [
-          { ...prevDataSelection[0], columns: [...newColumns] },
-          ...prevDataSelection.slice(1),
-        ] as WidgetDataSelection[];
-      }
-      return prevDataSelection;
+      return prevDataSelection.map((data) => ({ ...data, columns: [...newColumns] } as WidgetDataSelection));
     });
   };
 
@@ -661,8 +655,8 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             label={t_i18n('Display legend')}
           />
         )}
-        {getCurrentCategory(type) === 'list' && (
-          <WidgetConfigColumnsCustomization availableColumns={availableColumns} columns={columns} setColumns={setColumns} />
+        {(getCurrentCategory(type) === 'list' && dataSelection[0].perspective === 'relationships') && (
+          <WidgetConfigColumnsCustomization availableColumns={availableColumns} columns={[...columns]} setColumns={setColumns} />
         )}
       </div>
     </div>
