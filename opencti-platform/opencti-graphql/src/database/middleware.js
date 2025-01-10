@@ -1919,8 +1919,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   let accessOperation = 'edit';
   if (updates.some((e) => e.key === 'authorized_members')) {
     if (isStixObject(initial.entity_type)
-      && initial.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK
-      && !isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
+      && initial.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK) {
       throw UnsupportedError('This feature is disabled');
     }
     accessOperation = 'manage-access';

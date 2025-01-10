@@ -37,8 +37,8 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', format: 'text', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'context', label: 'Context', type: 'string', format: 'vocabulary', vocabularyCategory: 'grouping_context_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { ...authorizedMembers, editDefault: true, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
-    { ...authorizedMembersActivationDate, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
+    { ...authorizedMembers, editDefault: true },
+    { ...authorizedMembersActivationDate },
   ],
   relations: [
     {
