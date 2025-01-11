@@ -26,6 +26,7 @@ test.describe.configure({ mode: 'serial' });
  * Update dashboard name.
  * Delete a dashboard.
  * Export/Import a dashboard.
+ * Create Widget - see values - Delete Widget
  */
 test('Dashboard CRUD', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);

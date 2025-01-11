@@ -156,7 +156,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
                 keyword={searchTerm}
                 sx={{
                   marginTop: 2,
-                  marginBottom: 1,
+                  marginBottom: 2,
                 }}
               />
             </GroupEditionUsers>

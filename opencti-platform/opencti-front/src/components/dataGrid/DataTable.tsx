@@ -5,21 +5,25 @@ import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
 import { useDataTable, useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
-import { SELECT_COLUMN_SIZE } from './components/DataTableHeader';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
+import { useFormatter } from '../i18n';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
+| 'message'
+| 'storageKey'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -44,9 +48,11 @@ const DataTableInternalFilters = ({
   additionalHeaderButtons,
   currentView,
   exportContext,
+  storageKey,
+  message,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
-
+  const { t_i18n } = useFormatter();
   const {
     availableFilterKeys,
     useDataTablePaginationLocalStorage: {
@@ -74,6 +80,7 @@ const DataTableInternalFilters = ({
             keyword={searchTerm}
           />
         )}
+
         {!hideFilters && (
           <DataTableFilters
             availableFilterKeys={availableFilterKeys}
@@ -88,6 +95,30 @@ const DataTableInternalFilters = ({
           />
         )}
       </div>
+      {message && (
+        <div style={{ width: '100%', marginTop: 20 }}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ padding: '0px 10px' }}
+          >
+            <Typography>
+              {message}
+            </Typography>
+          </Alert>
+        </div>
+      )}
+      {storageKey === 'restrictedEntities' && (
+        <div style={{ width: '100%', marginBottom: 20 }}>
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ padding: '0px 10px 0px 10px' }}
+          >
+            {t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+          </Alert>
+        </div>
+      )}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}
@@ -95,9 +126,9 @@ const DataTableInternalFilters = ({
           availableEntityTypes={availableEntityTypes}
           additionalFilterKeys={additionalFilterKeys}
           entityTypes={computedEntityTypes}
-          paginationOptions={paginationOptions}
         />
       )}
+
     </>
   );
 };
@@ -105,6 +136,7 @@ const DataTableInternalFilters = ({
 type DataTableInternalToolbarProps = Pick<DataTableProps,
 | 'toolbarFilters'
 | 'handleCopy'
+| 'removeAuthMembersEnabled'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -115,6 +147,7 @@ const DataTableInternalToolbar = ({
   handleCopy,
   toolbarFilters,
   globalSearch,
+  removeAuthMembersEnabled,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -135,9 +168,10 @@ const DataTableInternalToolbar = ({
     <div
       style={{
         background: theme.palette.background.accent,
-        width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
+        flex: 1,
       }}
     >
+
       <DataTableToolBar
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
@@ -148,6 +182,7 @@ const DataTableInternalToolbar = ({
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
         handleCopy={handleCopy}
+        removeAuthMembersEnabled={removeAuthMembersEnabled}
       />
     </div>
   );
@@ -169,9 +204,10 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
-| 'canToggleLine'
+| 'message'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -202,6 +238,9 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideSearch,
     hideFilters,
     taskScope,
+    message,
+    storageKey,
+    removeAuthMembersEnabled,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -244,6 +283,8 @@ const DataTable = (props: OCTIDataTableProps) => {
           currentView={currentView}
           exportContext={exportContext}
           searchContextFinal={computedSearchContextFinal}
+          storageKey={storageKey}
+          message={message}
         />
       )}
       dataTableToolBarComponent={(
@@ -252,6 +293,7 @@ const DataTable = (props: OCTIDataTableProps) => {
           taskScope={taskScope}
           toolbarFilters={toolbarFilters}
           globalSearch={globalSearch}
+          removeAuthMembersEnabled={removeAuthMembersEnabled}
         />
       )}
     />

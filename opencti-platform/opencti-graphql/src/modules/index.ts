@@ -64,6 +64,7 @@ import './deleteOperation/deleteOperation';
 import './support/support';
 import './exclusionList/exclusionList';
 import './draftWorkspace/draftWorkspace';
+import './fintelTemplate/fintelTemplate';
 
 // incomplete modules
 import './report/report';
@@ -123,4 +124,5 @@ import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
+import './fintelTemplate/fintelTemplate-graphql';
 // endregion

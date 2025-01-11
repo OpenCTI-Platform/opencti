@@ -50,7 +50,7 @@ const operationStylesDark = {
 
 const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation }) => {
   const classes = useStyles();
-  const theme: Theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const getChipStyle = () => {
     switch (draftOperation) {

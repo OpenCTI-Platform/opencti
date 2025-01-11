@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
 
 const Drafts = lazy(() => import('./Drafts'));
-const DraftEntities = lazy(() => import('./DraftEntities'));
+const DraftRoot = lazy(() => import('./DraftRoot'));
 
 const Root = () => {
   return (
@@ -14,7 +14,7 @@ const Root = () => {
       />
       <Route
         path="/:draftId/*"
-        element={boundaryWrapper(DraftEntities)}
+        element={boundaryWrapper(DraftRoot)}
       />
     </Routes>
   );

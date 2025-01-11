@@ -109,13 +109,14 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
           <StixDomainObjectHeader
             entityType="Indicator"
             stixDomainObject={indicator}
-            PopoverComponent={<IndicatorPopover/>}
+            PopoverComponent={<IndicatorPopover id={indicator.id}/>}
             EditComponent={isFABReplaced && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IndicatorEdition indicatorId={indicator.id} />
               </Security>
             )}
             noAliases={true}
+            enableEnrollPlaybook={true}
           />
           <Box
             sx={{

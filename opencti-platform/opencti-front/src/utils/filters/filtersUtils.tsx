@@ -50,6 +50,7 @@ export const entityTypesFilters = [
   'type', // regardingOf subfilter
   'x_opencti_main_observable_type',
   'main_entity_type', // for DeleteOperation
+  'exclusion_list_entity_types',
 ];
 
 // context filters for audits (filters on the entity involved in an activity/knowledge event)
@@ -747,8 +748,10 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 };
 
+const notCleanableFilterKeys = ['entity_type', 'authorized_members.id'];
+
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat('entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
   if (!filters) {
     return undefined;
   }

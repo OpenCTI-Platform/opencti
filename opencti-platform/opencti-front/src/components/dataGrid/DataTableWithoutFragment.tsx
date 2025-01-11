@@ -12,7 +12,10 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'disableSelectAll'
 | 'selectOnLineClick'
 | 'filtersComponent'
+| 'useComputeLink'
 | 'pageSize'
+| 'hideHeaders'
+| 'onLineClick'
 | 'variant'> & {
   data: unknown,
   globalCount: number

@@ -6,6 +6,7 @@ import { compose } from 'ramda';
 import List from '@mui/material/List';
 import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine } from './SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine';
 import inject18n from '../../../../components/i18n';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 const styles = (theme) => ({
   paper: {
@@ -78,7 +79,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
                 textAlign: 'center',
               }}
             >
-              {t('No entities of this type has been found.')}
+              {t(NO_DATA_WIDGET_MESSAGE)}
             </span>
           </div>
         )}

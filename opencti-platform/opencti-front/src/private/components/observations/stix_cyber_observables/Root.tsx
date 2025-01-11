@@ -104,8 +104,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
           />
           <StixCyberObservableHeader
             stixCyberObservable={stixCyberObservable}
-            disableSharing={undefined}
-            isArtifact={undefined}
+            isArtifact={false}
           />
           <Box
             sx={{

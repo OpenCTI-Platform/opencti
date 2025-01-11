@@ -26,6 +26,8 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import type { Theme } from '../../../../components/Theme';
+import IncidentDeletion from './IncidentDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -245,6 +247,8 @@ IncidentEditionOverviewProps
     confidence: incident.confidence,
     references: [],
   };
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik<IncidentEditionFormValues>
       enableReinitialize={true}
@@ -371,7 +375,14 @@ IncidentEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <IncidentDeletion
+                  id={incident.id}
+                />
+              : <div/>
+              }
+            {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting || !isValid || !dirty}
@@ -380,7 +391,8 @@ IncidentEditionOverviewProps
               setFieldValue={setFieldValue}
               id={incident.id}
             />
-          )}
+            )}
+          </div>
         </Form>
       )}
     </Formik>

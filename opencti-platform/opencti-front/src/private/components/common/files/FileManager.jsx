@@ -20,7 +20,7 @@ import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/fields/SelectField';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
@@ -42,18 +42,23 @@ const styles = (theme) => ({
   },
 });
 
+export const CONTENT_MAX_MARKINGS_TITLE = 'Content max marking definition levels';
+export const CONTENT_MAX_MARKINGS_HELPERTEXT = 'Entities with higher marking definition levels won\'t be included in the file content.';
+
 export const fileManagerAskJobImportMutation = graphql`
   mutation FileManagerAskJobImportMutation(
     $fileName: ID!
     $connectorId: String
     $configuration: String
     $bypassValidation: Boolean
+    $validationMode: ValidationMode
   ) {
     askJobImport(
       fileName: $fileName
       connectorId: $connectorId
       configuration: $configuration
       bypassValidation: $bypassValidation
+      validationMode: $validationMode
     ) {
       ...FileLine_file
     }
@@ -452,11 +457,12 @@ const FileManager = ({
                           </Field>
                           <ObjectMarkingField
                             name="contentMaxMarkings"
-                            label={t_i18n('Content max marking definition levels')}
+                            label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                             onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                             limitToMaxSharing
+                            helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                           />
                           <ObjectMarkingField
                             name="fileMarkings"

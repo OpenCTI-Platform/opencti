@@ -7,18 +7,11 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import RelatedContainers from '../../common/containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemIcon from '../../../../components/ItemIcon';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
@@ -27,6 +20,8 @@ const styles = (theme) => ({
     padding: '15px',
     borderRadius: 4,
     position: 'relative',
+    display: 'flex',
+    flexFlow: 'column',
   },
   chip: {
     fontSize: 12,
@@ -79,37 +74,13 @@ const styles = (theme) => ({
   },
 });
 
-const inlineStyles = {
-  itemAuthor: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    marginLeft: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemDate: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 const GroupingDetailsComponent = (props) => {
-  const { t, fsd, classes, grouping } = props;
-  const [expanded, setExpanded] = useState(false);
+  const { t, classes, grouping } = props;
   const [height, setHeight] = useState(0);
   const ref = useRef(null);
   useEffect(() => {
     setHeight(ref.current.clientHeight);
   });
-  const expandable = grouping.relatedContainers.edges.length > 5;
 
   const entitiesDistributionDataSelection = [
     {
@@ -172,67 +143,12 @@ const GroupingDetailsComponent = (props) => {
             />
           </Grid>
         </Grid>
-        <Typography variant="h3" gutterBottom={true}>
-          {t('Correlated groupings')}
-        </Typography>
-        <List>
-          {R.take(expanded ? 200 : 5, grouping.relatedContainers.edges)
-            .filter(
-              (relatedContainerEdge) => relatedContainerEdge.node.id !== grouping.id,
-            )
-            .map((relatedContainerEdge) => {
-              const relatedContainer = relatedContainerEdge.node;
-              return (
-                <ListItem
-                  key={grouping.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/analyses/groupings/${relatedContainer.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div className={classes.itemText}>
-                        {relatedContainer.name}
-                      </div>
-                    }
-                  />
-                  <div style={inlineStyles.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                  </div>
-                  <div style={inlineStyles.itemDate}>
-                    {fsd(relatedContainer.published)}
-                  </div>
-                  <div style={{ width: 110, paddingRight: 20 }}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitions={relatedContainer.objectMarking}
-                      limit={1}
-                    />
-                  </div>
-                </ListItem>
-              );
-            })}
-        </List>
-        {expandable && (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => setExpanded(!expanded)}
-            classes={{ root: classes.buttonExpand }}
-          >
-            {expanded ? (
-              <ExpandLessOutlined fontSize="small" />
-            ) : (
-              <ExpandMoreOutlined fontSize="small" />
-            )}
-          </Button>
-        )}
+        <Divider style={{ marginTop: 30 }} />
+        <RelatedContainers
+          relatedContainers={grouping.relatedContainers}
+          containerId={grouping.id}
+          entityType={grouping.entity_type}
+        />
       </Paper>
     </div>
   );
@@ -249,44 +165,20 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
   grouping: graphql`
     fragment GroupingDetails_grouping on Grouping {
       id
+      entity_type
       context
       description
       relatedContainers(
         first: 10
-        orderBy: published
+        orderBy: modified
         orderMode: desc
-        types: ["Grouping"]
+        types: ["Case", "Report", "Grouping"]
         viaTypes: ["Indicator", "Stix-Cyber-Observable"]
       ) {
-        edges {
-          node {
-            id
-            entity_type
-            ... on Grouping {
-              name
-              context
-              description
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
-                id
-                definition
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
-          }
-        }
+        ...RelatedContainersFragment_container_connection
       }
     }
-  `,
+`,
 });
 
 export default R.compose(inject18n, withStyles(styles))(GroupingDetails);

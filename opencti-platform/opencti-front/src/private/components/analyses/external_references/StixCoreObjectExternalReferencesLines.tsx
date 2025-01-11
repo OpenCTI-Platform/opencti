@@ -49,6 +49,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -451,7 +452,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   textAlign: 'center',
                 }}
               >
-                {t_i18n('No entities of this type has been found.')}
+                {t_i18n(NO_DATA_WIDGET_MESSAGE)}
               </span>
             </div>
           )}

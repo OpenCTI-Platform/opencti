@@ -98,7 +98,7 @@ export const editAuthorizedMembers = async (
     input: MemberAccessInput[] | undefined | null,
     requiredCapabilities: string[],
     entityType: string,
-    busTopicKey: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+    busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
   },
 ) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot edit authorized members in draft');
@@ -130,5 +130,8 @@ export const editAuthorizedMembers = async (
 
   const patch = { authorized_members };
   const { element } = await patchAttribute(context, user, entityId, entityType, patch);
-  return notify(BUS_TOPICS[busTopicKey].EDIT_TOPIC, element, user);
+  if (busTopicKey) {
+    return notify(BUS_TOPICS[busTopicKey].EDIT_TOPIC, element, user);
+  }
+  return element;
 };

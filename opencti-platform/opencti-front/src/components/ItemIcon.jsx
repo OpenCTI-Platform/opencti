@@ -67,6 +67,7 @@ import {
   BackupTableOutlined,
   PlayCircleOutlined,
   ArchitectureOutlined,
+  PlaylistRemoveOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -542,6 +543,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <ViewStreamTwoTone style={style} fontSize={fontSize} role="img" />;
     case 'draft_context':
       return <ArchitectureOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'exclusion-list':
+      return <PlaylistRemoveOutlined style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

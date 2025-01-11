@@ -110,6 +110,19 @@ export const draftIds: AttributeDefinition = {
   featureFlag: 'DRAFT_WORKSPACE'
 };
 
+export const draftContext: AttributeDefinition = {
+  name: 'draft_context',
+  label: 'Current draft context',
+  type: 'string',
+  format: 'short',
+  mandatoryType: 'no',
+  multiple: false,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: 'DRAFT_WORKSPACE'
+};
+
 export const draftChange: AttributeDefinition = {
   name: 'draft_change',
   label: 'Draft change',
@@ -240,6 +253,17 @@ export const authorizedMembers: AttributeDefinition = {
     { name: 'entity_type', label: 'Entity type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
   ]
+};
+
+export const authorizedMembersActivationDate : AttributeDefinition = {
+  name: 'authorized_members_activation_date',
+  label: 'Authorized members activation date',
+  type: 'date',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
 };
 
 export const authorizedAuthorities: AttributeDefinition = {

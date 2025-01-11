@@ -15,6 +15,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
@@ -48,12 +49,14 @@ export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
     $connectorId: String
     $bypassEntityId: String
     $configuration: String
+    $validationMode: ValidationMode
   ) {
     askJobImport(
       fileName: $fileName
       connectorId: $connectorId
       bypassEntityId: $bypassEntityId
       configuration: $configuration
+      validationMode: $validationMode
     ) {
       ...FileLine_file
     }
@@ -152,7 +155,7 @@ const StixCoreObjectFilesAndHistory = ({
   const handleCloseExport = () => setOpenExport(false);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
-    const { connector_id, configuration, objectMarking } = values;
+    const { connector_id, configuration, objectMarking, validation_mode } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
@@ -170,6 +173,7 @@ const StixCoreObjectFilesAndHistory = ({
         connectorId: connector_id,
         bypassEntityId: bypassEntityId ? id : null,
         configuration: config,
+        validationMode: validation_mode,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -282,7 +286,7 @@ const StixCoreObjectFilesAndHistory = ({
       </Grid>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
+        initialValues={{ connector_id: '', validation_mode: 'workbench', configuration: '', objectMarking: [] }}
         validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
@@ -324,6 +328,28 @@ const StixCoreObjectFilesAndHistory = ({
                       </MenuItem>
                     );
                   })}
+                </Field>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="validation_mode"
+                  label={t_i18n('Validation mode')}
+                  fullWidth={true}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                >
+                  <MenuItem
+                    key={'workbench'}
+                    value={'workbench'}
+                  >
+                    {'Workbench'}
+                  </MenuItem>
+                  <MenuItem
+                    key={'draft'}
+                    value={'draft'}
+                  >
+                    {'Draft'}
+                  </MenuItem>
                 </Field>
                 {selectedConnector?.configurations?.length > 0
                   ? <Field
@@ -441,11 +467,12 @@ const StixCoreObjectFilesAndHistory = ({
                   </Field>
                   <ObjectMarkingField
                     name="contentMaxMarkings"
-                    label={t_i18n('Content max marking definition levels')}
+                    label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
                     onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                     style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     limitToMaxSharing
+                    helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                   />
                   <ObjectMarkingField
                     name="fileMarkings"

@@ -137,7 +137,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entityType="Event"
               stixDomainObject={event}
               enableQuickSubscription={true}
-              PopoverComponent={<EventPopover />}
+              PopoverComponent={<EventPopover id={event.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <EventEdition eventId={event.id} />

@@ -26,6 +26,7 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   disabled?: boolean;
   noFileSelectedLabel?: string
   noMargin?: boolean
+  required?: boolean;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -74,6 +75,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   field,
   noFileSelectedLabel,
   noMargin = false,
+  required = false,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -142,8 +144,8 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
 
   return (
     <div className={classes.div} style={noMargin ? { margin: 0 } : {}}>
-      <InputLabel shrink={true} variant="standard">
-        {label ? t_i18n(label) : t_i18n('Associated file')}
+      <InputLabel shrink={true} variant="standard" className={classNames({ [classes.error]: !!errorText })}>
+        {label ? t_i18n(label) : t_i18n('Associated file')} {required && '*'}
       </InputLabel>
       <Box
         className={classNames({
@@ -163,7 +165,10 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
         </Button>
         <span
           title={fileNameForDisplay || noFileLabel}
-          className={classes.span}
+          className={classNames({
+            [classes.span]: true,
+            [classes.error]: !!errorText,
+          })}
         >
           {fileNameForDisplay || noFileLabel}
         </span>

@@ -16,6 +16,7 @@ import { FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage-helper';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
+import { addDraftWorkspace } from '../../modules/draftWorkspace/draftWorkspace-domain';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 const BULK_LINE_PARSING_NUMBER = conf.get('import_csv_built_in_connector:bulk_creation_size') || 5000;
@@ -172,6 +173,19 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
   return { totalObjectsCount, totalBundlesCount };
 };
 
+const processValidateBeforeImport = async (context: AuthContext, validationMode: string, draftId: string, fileId: string, opts: CsvBundlerIngestionOpts) => {
+  if (draftId) {
+    const contextInDraft = { ...context, draft_context: draftId };
+    await processCSVforWorkers(contextInDraft, fileId, { ...opts, draftId });
+  } else if (validationMode === 'draft') {
+    const { id } = await addDraftWorkspace(context, opts.applicantUser, { name: fileId, entity_id: opts.entity?.id ?? '' });
+    const contextInDraft = { ...context, draft_context: id };
+    await processCSVforWorkers(contextInDraft, fileId, { ...opts, draftId: id });
+  } else {
+    await processCSVforWorkbench(context, fileId, opts);
+  }
+};
+
 const consumeQueueCallback = async (context: AuthContext, message: string) => {
   const messageParsed = JSON.parse(message);
   const workId = messageParsed.internal.work_id;
@@ -194,12 +208,14 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
       applicantUser,
       csvMapper,
       entity,
-      connectorId: connector.internal_id
+      connectorId: connector.internal_id,
     };
     await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
+    const { validation_mode } = messageParsed.event;
+    const { draft_id } = messageParsed.internal;
     const validateBeforeImport = connectorConfig.config.validate_before_import;
     if (validateBeforeImport) {
-      await processCSVforWorkbench(context, fileId, opts);
+      await processValidateBeforeImport(context, validation_mode, draft_id, fileId, opts);
     } else {
       await processCSVforWorkers(context, fileId, opts);
     }

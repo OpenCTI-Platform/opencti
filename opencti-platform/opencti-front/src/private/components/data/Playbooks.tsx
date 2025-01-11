@@ -28,12 +28,12 @@ import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables 
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
@@ -111,6 +111,7 @@ const Playbooks: FunctionComponent = () => {
   const { t_i18n, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Processing: Automation | Data'));
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',

@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
+import { ENABLED_FEATURE_FLAGS, isFeatureEnabled, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
@@ -19,6 +19,8 @@ import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData } from './database/data-initialization';
+import { initExclusionListCache } from './database/exclusionListCache';
+import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -108,6 +110,9 @@ const platformInit = async (withMarkings = true) => {
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
+      if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
+        await initFintelTemplates(context, SYSTEM_USER);
+      }
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_IS_INIT_MIGRATION) {
@@ -123,6 +128,9 @@ const platformInit = async (withMarkings = true) => {
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
+    }
+    if (isFeatureEnabled('EXCLUSION_LIST')) {
+      await initExclusionListCache();
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

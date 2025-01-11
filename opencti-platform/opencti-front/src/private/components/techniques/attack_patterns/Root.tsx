@@ -137,7 +137,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
             <StixDomainObjectHeader
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
-              PopoverComponent={<AttackPatternPopover />}
+              PopoverComponent={<AttackPatternPopover id={attackPattern.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />

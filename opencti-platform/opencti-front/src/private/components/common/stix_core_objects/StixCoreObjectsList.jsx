@@ -30,6 +30,7 @@ export const stixCoreObjectsListQuery = graphql`
           created_at
           representative {
             main
+            secondary
           }
           opinions_metrics {
             mean
@@ -44,6 +45,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on AttackPattern {
             name
             description
+            x_mitre_id
           }
           ... on Campaign {
             name
@@ -185,6 +187,7 @@ export const stixCoreObjectsListQuery = graphql`
           }
           ... on StixCyberObservable {
             observable_value
+            x_opencti_description
           }
           createdBy {
             ... on Identity {
@@ -250,41 +253,42 @@ const StixCoreObjectsList = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Entities list')}
       variant={variant}
-      ref={rootRef}
     >
-      <QueryRenderer
-        query={stixCoreObjectsListQuery}
-        variables={{
-          types: dataSelectionTypes,
-          first: selection.number ?? 10,
-          orderBy: sortBy,
-          orderMode: selection.sort_mode ?? 'asc',
-          filters,
-        }}
-        render={({ props }) => {
-          if (
-            props
+      <div ref={rootRef} style={{ height: '100%' }}>
+        <QueryRenderer
+          query={stixCoreObjectsListQuery}
+          variables={{
+            types: dataSelectionTypes,
+            first: selection.number ?? 10,
+            orderBy: sortBy,
+            orderMode: selection.sort_mode ?? 'asc',
+            filters,
+          }}
+          render={({ props }) => {
+            if (
+              props
             && props.stixCoreObjects
             && props.stixCoreObjects.edges.length > 0
-          ) {
-            const data = props.stixCoreObjects.edges;
-            return (
-              <WidgetListCoreObjects
-                data={data}
-                dateAttribute={dateAttribute}
-                rootRef={rootRef.current ?? undefined}
-                widgetId={widgetId}
-                pageSize={selection.number ?? 10}
-                sortBy={sortBy}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+            ) {
+              const data = props.stixCoreObjects.edges;
+              return (
+                <WidgetListCoreObjects
+                  data={data}
+                  dateAttribute={dateAttribute}
+                  rootRef={rootRef.current ?? undefined}
+                  widgetId={widgetId}
+                  pageSize={selection.number ?? 10}
+                  sortBy={sortBy}
+                />
+              );
+            }
+            if (props) {
+              return <WidgetNoData />;
+            }
+            return <Loader variant={LoaderVariant.inElement} />;
+          }}
+        />
+      </div>
     </WidgetContainer>
   );
 };

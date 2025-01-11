@@ -128,6 +128,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
         disableSharing={true}
         enableQuickSubscription
         redirectToContent={true}
+        enableEnricher={true}
       />
       <Box
         sx={{

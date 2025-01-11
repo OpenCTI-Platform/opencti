@@ -26,6 +26,7 @@ import handleExportJson from './workspaceExportHandler';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import stopEvent from '../../../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -61,23 +62,42 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
-  const handleOpen = (event) => setAnchorEl(event.currentTarget);
-  const handleClose = () => setAnchorEl(null);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
+
+  const handleOpen = (event) => {
+    stopEvent(event);
+    setAnchorEl(event.currentTarget);
   };
-  const handleCloseDelete = () => setDisplayDelete(false);
-  const handleCloseDuplicate = () => {
+
+  const handleClose = (event) => {
+    stopEvent(event);
+    setAnchorEl(null);
+  };
+
+  const handleOpenDelete = (event) => {
+    setDisplayDelete(true);
+    handleClose(event);
+  };
+
+  const handleCloseDelete = (event) => {
+    stopEvent(event);
+    setDisplayDelete(false);
+  };
+
+  const handleCloseDuplicate = (event) => {
+    if (event) stopEvent(event);
     setDisplayDuplicate(false);
   };
+
   const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
+
   const updater = (store) => {
     if (paginationOptions) {
       insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
     }
   };
-  const submitDelete = () => {
+
+  const submitDelete = (event) => {
+    stopEvent(event);
     setDeleting(true);
     commit({
       variables: { id },
@@ -88,9 +108,9 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
+        handleClose(event);
         if (paginationOptions) {
-          handleCloseDelete();
+          handleCloseDelete(event);
         } else {
           navigate(`/dashboard/workspaces/${type}s`);
         }
@@ -98,22 +118,26 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     });
   };
 
-  const handleOpenEdit = () => {
+  const handleOpenEdit = (event) => {
     setDisplayEdit(true);
-    handleClose();
+    handleClose(event);
   };
-  const handleDashboardDuplication = () => {
+
+  const handleDashboardDuplication = (event) => {
     setDisplayDuplicate(true);
-    handleClose();
+    handleClose(event);
   };
 
   const handleCloseEdit = () => setDisplayEdit(false);
+
   const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
   if (!canEdit && workspace.type !== 'dashboard') {
     return <></>;
   }
 
-  const goToPublicDashboards = () => {
+  const goToPublicDashboards = (event) => {
+    stopEvent(event);
+
     const filter = {
       mode: 'and',
       filterGroups: [],
@@ -130,11 +154,19 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   // -- Creation public dashboard --
   const [displayCreate, setDisplayCreate] = useState(false);
 
-  const handleOpenCreation = () => {
+  const handleOpenCreation = (event) => {
     setDisplayCreate(true);
-    handleClose();
+    handleClose(event);
   };
-  const handleCloseCreate = () => setDisplayCreate(false);
+
+  const handleCloseCreate = () => {
+    setDisplayCreate(false);
+  };
+
+  const handleExport = (event) => {
+    stopEvent(event);
+    handleExportJson(workspace);
+  };
 
   return (
     <div className={classes.container}>
@@ -158,13 +190,13 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
               <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>
             </Security>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
-              <MenuItem onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>
+              <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
             </Security>
             <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
               <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
             </Security>
             <Box>
-              <MenuItem onClick={() => goToPublicDashboards()}>
+              <MenuItem onClick={goToPublicDashboards}>
                 {t_i18n('View associated public dashboards')}
               </MenuItem>
               <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>

@@ -14,6 +14,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useHelper from '../../../utils/hooks/useHelper';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -108,6 +109,8 @@ const vulnerabilitiesLinesFragment = graphql`
 
 const Vulnerabilities = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Vulnerabilities | Arsenal'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

@@ -44,6 +44,8 @@ import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 import Transition from '../../../components/Transition';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { truncate } from '../../../utils/String';
+import useHelper from '../../../utils/hooks/useHelper';
+import WorkspaceWidgetConfig from './dashboards/WorkspaceWidgetConfig';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -110,9 +112,11 @@ const WorkspaceHeader = ({
   adjust,
   handleDateChange,
   widgetActions,
+  handleAddWidget,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const openTagsCreate = false;
   const [openTag, setOpenTag] = useState(false);
   const [newTag, setNewTag] = useState('');
@@ -355,6 +359,17 @@ const WorkspaceHeader = ({
               />
             </div>
           </Security>
+        )}
+        {variant === 'dashboard' && isFeatureEnable('FAB_REPLACEMENT') && (
+          <Security
+            needs={[EXPLORE_EXUPDATE]}
+            hasAccess={canEdit}
+          >
+            <div style={{ marginTop: '-8px', float: 'right' }}>
+              <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace}></WorkspaceWidgetConfig>
+            </div>
+          </Security>
+
         )}
         {variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>

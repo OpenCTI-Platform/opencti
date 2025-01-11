@@ -25,7 +25,11 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitiv
   );
 
   return (
-    <div data-testid="navigation" style={{ marginBottom: theme.spacing(2), display: 'flex' }}>
+    <div
+      id="page-breadcrumb"
+      data-testid="navigation"
+      style={{ marginBottom: theme.spacing(2), display: 'flex' }}
+    >
       {elements.map((element, index) => {
         if (element.current) {
           return (

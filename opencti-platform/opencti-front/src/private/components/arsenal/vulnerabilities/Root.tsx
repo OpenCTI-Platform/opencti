@@ -145,6 +145,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

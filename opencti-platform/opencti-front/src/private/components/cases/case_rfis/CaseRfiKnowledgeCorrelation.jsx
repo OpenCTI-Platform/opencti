@@ -245,7 +245,7 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       LOCAL_STORAGE_KEY,
     );
     this.zoom = R.propOr(null, 'zoom', params);
-    this.graphObjects = R.map((n) => n.node, props.caseData.objects.edges);
+    this.allGraphObjects = props.caseData.objects.edges.map((n) => n.node);
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),
@@ -281,8 +281,9 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       keyword: '',
-      navOpen: localStorage.getItem('navOpen') === 'true',
+      queryMode: 'indicators-and-observables',
     };
+    this.graphObjects = this.allGraphObjects.filter((n) => n.entity_type === 'Indicator' || n.parent_types.includes('Stix-Cyber-Observable'));
     const filterAdjust = {
       markedBy: [],
       createdBy: [],
@@ -295,7 +296,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       decodeGraphData(props.caseData.x_opencti_graph_data),
       props.t,
       filterAdjust,
-      'cases',
     );
     this.state.graphData = { ...this.graphData };
   }
@@ -387,6 +387,29 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
         },
       },
     });
+  }
+
+  handleToggleQueryMode() {
+    if (this.state.queryMode === 'indicators-and-observables') {
+      this.graphObjects = this.allGraphObjects;
+      this.graphData = buildCorrelationData(
+        this.graphObjects,
+        decodeGraphData(this.props.caseData.x_opencti_graph_data),
+        this.props.t,
+        this.state,
+      );
+      this.setState({ queryMode: 'all-entities' }, () => this.saveParameters(true));
+    }
+    if (this.state.queryMode === 'all-entities') {
+      this.graphObjects = this.allGraphObjects.filter((n) => n.entity_type === 'Indicator' || n.parent_types.includes('Stix-Cyber-Observable'));
+      this.graphData = buildCorrelationData(
+        this.graphObjects,
+        decodeGraphData(this.props.caseData.x_opencti_graph_data),
+        this.props.t,
+        this.state,
+      );
+      this.setState({ queryMode: 'indicators-and-observables' }, () => this.saveParameters(true));
+    }
   }
 
   handleToggle3DMode() {
@@ -481,7 +504,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
-          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -507,7 +529,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
-          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -533,7 +554,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
-          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -647,7 +667,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
             decodeGraphData(this.props.caseData.x_opencti_graph_data),
             this.props.t,
             this.state,
-            'cases',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -673,7 +692,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
             decodeGraphData(this.props.caseData.x_opencti_graph_data),
             this.props.t,
             this.state,
-            'cases',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -773,7 +791,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       {},
       this.props.t,
       this.state,
-      'cases',
     );
     this.setState(
       {
@@ -804,7 +821,6 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
-          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -846,6 +862,7 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       selectModeFree,
       selectModeFreeReady,
       navOpen,
+      queryMode,
     } = this.state;
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
@@ -926,6 +943,8 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
           return (
             <>
               <CaseRfiKnowledgeGraphBar
+                handleToggleQueryMode={this.handleToggleQueryMode.bind(this)}
+                currentQueryMode={queryMode}
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
                 currentMode3D={mode3D}
                 handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
@@ -1286,6 +1305,60 @@ const CaseRfiKnowledgeCorrelation = createFragmentContainer(
                   x_opencti_order
                   x_opencti_color
                 }
+                reports(first: 20) {
+                  edges {
+                    node {
+                      id
+                      name
+                      published
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+                groupings(first: 20) {
+                  edges {
+                    node {
+                      id
+                      name
+                      context
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
                 cases(first: 20) {
                   edges {
                     node {
@@ -1390,6 +1463,60 @@ const CaseRfiKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
+                reports(first: 20) {
+                  edges {
+                    node {
+                      id
+                      name
+                      published
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+                groupings(first: 20) {
+                  edges {
+                    node {
+                      id
+                      name
+                      context
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
                 cases(first: 20) {
                   edges {
                     node {

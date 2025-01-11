@@ -13,6 +13,7 @@ import useGranted, {
   SETTINGS_SETPARAMETERS,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -46,6 +47,7 @@ const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
 const SupportPackage = lazy(() => import('./support/SupportPackages'));
+const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -67,6 +69,9 @@ const Root = () => {
     if (isGrantedToSupport) return '/dashboard/settings/support';
     return '/dashboard';
   };
+
+  const { isFeatureEnable } = useHelper();
+  const exclusionListEnabled = isFeatureEnable('EXCLUSION_LIST');
 
   return (
     <div data-testid="settings-page">
@@ -328,6 +333,16 @@ const Root = () => {
               </Security>
             }
           />
+          {exclusionListEnabled && (
+            <Route
+              path="customization/exclusion_lists"
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                  <ExclusionLists />
+                </Security>
+              }
+            />
+          )}
           <Route
             path="/customization/notifiers"
             element={

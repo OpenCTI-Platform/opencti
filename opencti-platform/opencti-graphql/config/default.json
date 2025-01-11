@@ -99,6 +99,9 @@
       "cache_max_size": 5000,
       "cache_max_time": 2
     },
+    "exclusion_list": {
+      "file_max_size": 10000000
+    },
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png",
@@ -120,7 +123,8 @@
     },
     "csv_ingestion": {
       "max_bundle_size": 1000
-    }
+    },
+    "validation_mode" : "workbench"
   },
   "demo_mode": false,
   "http_proxy": "",
@@ -271,6 +275,15 @@
     "lock_key": "file_index_manager_lock",
     "stream_lock_key": "file_index_manager_stream_lock",
     "interval": 60000
+  },
+  "exclusion_list_cache_build_manager": {
+    "enabled": true,
+    "lock_key": "exclusion_list_cache_build_manager_lock",
+    "interval": 10000
+  },
+  "exclusion_list_cache_sync_manager": {
+    "lock_key": "exclusion_list_cache_sync_manager_lock",
+    "interval": 10000
   },
   "redis": {
     "mode": "single",

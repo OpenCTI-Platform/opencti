@@ -10,7 +10,6 @@ const ChannelEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const { handleClose, channel, open, controlledDial } = props;
   const { editContext } = channel;
 

@@ -37,6 +37,7 @@ enum State {
   timeout
 }
 enum Capabilities {
+  BYPASS
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
@@ -802,6 +803,7 @@ type Work {
   messages: [WorkMessage]
   errors: [WorkMessage]
   tracking: WorkTracking
+  draft_context: String
 }
 type WorkEdge {
   cursor: String!
@@ -912,18 +914,6 @@ type Widget {
   parameters: WidgetParameters
   layout: WidgetLayout
 }
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-type TemplateAndUtils {
-  template: Template!,
-  template_widgets: [Widget!]!,
-}
 
 type IndexedFile {
   id: ID!
@@ -999,6 +989,7 @@ enum BackgroundTaskActionType {
   UNSHARE
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
+  REMOVE_AUTH_MEMBERS
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -3169,6 +3160,7 @@ interface Container {
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3190,7 +3182,7 @@ interface Container {
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3199,10 +3191,7 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3331,6 +3320,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3378,7 +3368,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3387,10 +3377,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3566,6 +3553,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3612,7 +3600,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3621,10 +3609,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3777,6 +3762,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3822,7 +3808,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3831,10 +3817,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4006,6 +3989,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -4056,7 +4040,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -4065,10 +4049,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -12926,6 +12907,15 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  stixCoreObjectsRestricted(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): StixCoreObjectConnection @auth(for: [BYPASS])
   globalSearch(
     first: Int
     after: ID
@@ -13848,6 +13838,7 @@ type WorkEditMutations {
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
   addExpectations(expectations: Int): ID!
+  addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
   toProcessed(message: String, inError: Boolean): ID!
 }
@@ -14287,13 +14278,17 @@ type StixRefRelationshipEditMutations {
 }
 
 ### MUTATIONS DECLARATION
+enum ValidationMode {
+  draft
+  workbench
+}
 
 type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])
   resetFileIndexing: Boolean @auth(for: [SETTINGS_FILEINDEXING])
 

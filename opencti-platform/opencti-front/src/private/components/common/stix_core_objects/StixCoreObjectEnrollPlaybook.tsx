@@ -1,12 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
-import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
 import { PrecisionManufacturingOutlined } from '@mui/icons-material';
 import { StixCoreObjectEnrollPlaybookLinesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectEnrollPlaybookLinesQuery.graphql';
+import EETooltip from '../entreprise_edition/EETooltip';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
   stixCoreObjectId: string,
@@ -16,7 +17,10 @@ interface StixCoreObjectEnrollPlaybookLinesProps {
 
 const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({ stixCoreObjectId, handleClose, open }) => {
   const [openDrawer, setOpenDrawer] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
+
   const handleOpenEnrollPlaybook = () => {
     setOpenDrawer(true);
   };
@@ -25,17 +29,17 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   };
   return (
     <>
-      {!handleClose && (
-        <Tooltip title={t_i18n('Enroll in playbook')}>
+      {(isFABReplaced || !handleClose) && (
+        <EETooltip title={t_i18n('Enroll in playbook')}>
           <ToggleButton
             onClick={handleOpenEnrollPlaybook}
-            value="enrich"
+            value="enroll"
             size="small"
             style={{ marginRight: 3 }}
           >
-            <PrecisionManufacturingOutlined fontSize="small" color="primary" />
+            <PrecisionManufacturingOutlined fontSize="small" color="secondary" />
           </ToggleButton>
-        </Tooltip>
+        </EETooltip>
       )}
       <Drawer
         open={open || openDrawer}
