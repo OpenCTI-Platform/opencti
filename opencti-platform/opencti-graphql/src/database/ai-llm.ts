@@ -30,7 +30,7 @@ if (AI_ENABLED && AI_TOKEN) {
   }
 }
 
-export const queryMistralAi = async (busId: string | null, question: string, user: AuthUser) => {
+export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -38,7 +38,10 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: question.substring(0, 100) });
     const response = (client as MistralClient)?.chatStream({
       model: AI_MODEL,
-      messages: [{ role: 'user', content: question }],
+      messages: [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: userMessage }
+      ],
     });
     let content = '';
     if (response) {
@@ -54,7 +57,7 @@ export const queryMistralAi = async (busId: string | null, question: string, use
       }
       return content;
     }
-    logApp.error('[AI] No response from MistralAI', { busId, question });
+    logApp.error('[AI] No response from MistralAI', { busId, systemMessage, userMessage });
     return 'No response from MistralAI';
   } catch (err) {
     logApp.error('[AI] Cannot query MistralAI', { cause: err });
@@ -64,7 +67,7 @@ export const queryMistralAi = async (busId: string | null, question: string, use
   }
 };
 
-export const queryChatGpt = async (busId: string | null, question: string, user: AuthUser) => {
+export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -72,7 +75,10 @@ export const queryChatGpt = async (busId: string | null, question: string, user:
     logApp.info('[AI] Querying OpenAI with prompt');
     const response = await (client as OpenAI)?.chat.completions.create({
       model: AI_MODEL,
-      messages: [{ role: 'user', content: question }],
+      messages: [
+        { role: 'developer', content: developerMessage },
+        { role: 'user', content: userMessage }
+      ],
       stream: true,
     });
     let content = '';
@@ -89,7 +95,7 @@ export const queryChatGpt = async (busId: string | null, question: string, user:
       }
       return content;
     }
-    logApp.error('[AI] No response from OpenAI', { busId, question });
+    logApp.error('[AI] No response from OpenAI', { busId, developerMessage, userMessage });
     return 'No response from OpenAI';
   } catch (err) {
     logApp.error('[AI] Cannot query OpenAI', { cause: err });
@@ -99,12 +105,13 @@ export const queryChatGpt = async (busId: string | null, question: string, user:
   }
 };
 
-export const queryAi = async (busId: string | null, question: string, user: AuthUser) => {
+export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser) => {
+  const finalDeveloperMessage = developerMessage || 'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
   switch (AI_TYPE) {
     case 'mistralai':
-      return queryMistralAi(busId, question, user);
+      return queryMistralAi(busId, finalDeveloperMessage, userMessage, user);
     case 'openai':
-      return queryChatGpt(busId, question, user);
+      return queryChatGpt(busId, finalDeveloperMessage, userMessage, user);
     default:
       throw UnsupportedError('Not supported AI type', { type: AI_TYPE });
   }

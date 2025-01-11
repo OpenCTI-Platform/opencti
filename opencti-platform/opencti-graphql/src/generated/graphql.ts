@@ -11195,6 +11195,15 @@ export enum IngestionTaxiiOrdering {
   Version = 'version'
 }
 
+export type Intelligence = {
+  __typename?: 'Intelligence';
+  containers?: Maybe<Scalars['String']['output']>;
+  forecast?: Maybe<Scalars['String']['output']>;
+  internalActivity?: Maybe<Scalars['String']['output']>;
+  trends?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
 export type InternalObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -11245,6 +11254,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
+  intelligence?: Maybe<Intelligence>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -19504,6 +19514,7 @@ export type Query = {
   ingestionTaxiiCollection?: Maybe<IngestionTaxiiCollection>;
   ingestionTaxiiCollections?: Maybe<IngestionTaxiiCollectionConnection>;
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
+  intelligence?: Maybe<Intelligence>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -31264,6 +31275,7 @@ export type ResolversTypes = ResolversObject<{
   IngestionTaxiiEdge: ResolverTypeWrapper<Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversTypes['IngestionTaxii'] }>;
   IngestionTaxiiOrdering: IngestionTaxiiOrdering;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  Intelligence: ResolverTypeWrapper<Intelligence>;
   InternalObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['InternalObject']>;
   InternalRelationship: ResolverTypeWrapper<Omit<InternalRelationship, 'from' | 'to'> & { from?: Maybe<ResolversTypes['InternalObject']>, to?: Maybe<ResolversTypes['InternalObject']> }>;
   InternalRelationshipAddInput: InternalRelationshipAddInput;
@@ -32071,6 +32083,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionTaxiiConnection: Omit<IngestionTaxiiConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionTaxiiEdge']> };
   IngestionTaxiiEdge: Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversParentTypes['IngestionTaxii'] };
   Int: Scalars['Int']['output'];
+  Intelligence: Intelligence;
   InternalObject: ResolversInterfaceTypes<ResolversParentTypes>['InternalObject'];
   InternalRelationship: Omit<InternalRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['InternalObject']>, to?: Maybe<ResolversParentTypes['InternalObject']> };
   InternalRelationshipAddInput: InternalRelationshipAddInput;
@@ -36219,6 +36232,15 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type IntelligenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Intelligence'] = ResolversParentTypes['Intelligence']> = ResolversObject<{
+  containers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  forecast?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  internalActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trends?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Capability' | 'CaseTemplate' | 'Connector' | 'CsvMapper' | 'DecayRule' | 'DeleteOperation' | 'DraftWorkspace' | 'EntitySetting' | 'ExclusionList' | 'FintelTemplate' | 'Group' | 'IngestionCsv' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Playbook' | 'PublicDashboard' | 'Role' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36263,6 +36285,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IntrusionSetGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetImportFilesArgs>>;
+  intelligence?: Resolver<Maybe<ResolversTypes['Intelligence']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IntrusionSetJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38723,6 +38746,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionTaxiiCollection?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiCollectionArgs, 'id'>>;
   ingestionTaxiiCollections?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiiCollectionsArgs>>;
   ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
+  intelligence?: Resolver<Maybe<ResolversTypes['Intelligence']>, ParentType, ContextType>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
@@ -42087,6 +42111,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionTaxiiCollectionEdge?: IngestionTaxiiCollectionEdgeResolvers<ContextType>;
   IngestionTaxiiConnection?: IngestionTaxiiConnectionResolvers<ContextType>;
   IngestionTaxiiEdge?: IngestionTaxiiEdgeResolvers<ContextType>;
+  Intelligence?: IntelligenceResolvers<ContextType>;
   InternalObject?: InternalObjectResolvers<ContextType>;
   InternalRelationship?: InternalRelationshipResolvers<ContextType>;
   IntrusionSet?: IntrusionSetResolvers<ContextType>;

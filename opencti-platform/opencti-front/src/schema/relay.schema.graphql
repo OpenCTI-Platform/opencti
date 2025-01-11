@@ -448,8 +448,10 @@ type OpinionsMetrics {
   total: Int
 }
 
-type AiSummary {
-  summary: String
+type Intelligence {
+  trends: String
+  containers: String
+  internalActivity: String
   forecast: String
   updated_at: DateTime
 }
@@ -4105,6 +4107,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  intelligence: Intelligence
 }
 
 input IntrusionSetAddInput {
@@ -7837,6 +7840,7 @@ type Query {
   importFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesMetrics: FilesMetrics
+  intelligence: Intelligence
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
@@ -7918,7 +7922,6 @@ type Query {
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: FilterGroup, search: String): [TimeSeries]
   stixDomainObjectsNumber(dateAttribute: String, types: [String], endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
-  stixDomainObjectAiSummary(id: String!): AiSummary
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): AttackPatternConnection
   attackPatternsMatrix: AttackPatternsMatrix

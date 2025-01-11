@@ -42,6 +42,7 @@ import { elSearchFiles } from '../../database/file-search';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { checkEnterpriseEdition } from '../../utils/ee';
 
+const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 const RESOLUTION_LIMIT = 200;
 
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
@@ -60,7 +61,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   # Content
   ${content}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -80,7 +81,7 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   # Content
   ${content}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -101,7 +102,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   # Content
   ${content}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -122,7 +123,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   # Content
   ${content}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -141,7 +142,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
   # Content
   ${content}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -160,7 +161,7 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
   # Content
   ${content}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -243,7 +244,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     # Contextual information about the above facts
     ${entitiesInvolved.join('')}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -301,7 +302,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   # Content
   ${filesContent.join('')}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
 
@@ -344,6 +345,6 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   # Content
   ${filesContent.join('')}
   `;
-  const response = await queryAi(id, prompt, user);
+  const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   return response;
 };
