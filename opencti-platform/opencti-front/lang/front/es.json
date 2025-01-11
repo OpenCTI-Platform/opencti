@@ -2828,7 +2828,7 @@
   "team": "Equipo organizado",
   "Technical": "Técnico",
   "Technical (payloads)": "Técnica (cargas útiles)",
-  "Technical (payloads) require attack patterns in this entity.": "Técnica (cargas útiles) requieren patrones de ataque en esta entidad.",
+  "Technical (payloads) requires attack patterns in this entity.": "Técnica (cargas útiles) requiere patrones de ataque en esta entidad.",
   "Technical date": "Fecha técnica",
   "Technical elements (indicators & observables)": "Elementos técnicos (indicadores y observables)",
   "Techniques": "Técnicas",

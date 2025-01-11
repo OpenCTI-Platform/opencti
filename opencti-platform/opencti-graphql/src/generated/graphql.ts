@@ -8297,7 +8297,8 @@ export enum Format {
 
 export type GenerationResponse = {
   __typename?: 'GenerationResponse';
-  attackPatternsWithoutInjectorContracts?: Maybe<Scalars['String']['output']>;
+  attackPatternsNotAvailableInOpenBAS?: Maybe<Scalars['String']['output']>;
+  hasInjectPlaceholders?: Maybe<Scalars['Boolean']['output']>;
   urlResponse?: Maybe<Scalars['String']['output']>;
 };
 
@@ -13750,9 +13751,15 @@ export type Mutation = {
   notifierAdd?: Maybe<Notifier>;
   notifierDelete?: Maybe<Scalars['ID']['output']>;
   notifierFieldPatch?: Maybe<Notifier>;
-  obasContainerGenerateScenario?: Maybe<GenerationResponse>;
-  obasThreatGenerateScenario?: Maybe<GenerationResponse>;
-  obasVictimGenerateScenario?: Maybe<GenerationResponse>;
+  /** @deprecated [>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`. */
+  obasContainerGenerateScenario?: Maybe<Scalars['String']['output']>;
+  obasContainerGenerateScenarioWithInjectPlaceholders?: Maybe<GenerationResponse>;
+  /** @deprecated [>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`. */
+  obasThreatGenerateScenario?: Maybe<Scalars['String']['output']>;
+  obasThreatGenerateScenarioWithInjectPlaceholders?: Maybe<GenerationResponse>;
+  /** @deprecated [>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`. */
+  obasVictimGenerateScenario?: Maybe<Scalars['String']['output']>;
+  obasVictimGenerateScenarioWithInjectPlaceholders?: Maybe<GenerationResponse>;
   observedDataAdd?: Maybe<ObservedData>;
   observedDataEdit?: Maybe<ObservedDataEditMutations>;
   opinionAdd?: Maybe<Opinion>;
@@ -15015,6 +15022,16 @@ export type MutationNotifierFieldPatchArgs = {
 export type MutationObasContainerGenerateScenarioArgs = {
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
+  interval?: InputMaybe<Scalars['Int']['input']>;
+  selection?: InputMaybe<Selection>;
+  simulationType?: InputMaybe<SimulationType>;
+  useAI?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationObasContainerGenerateScenarioWithInjectPlaceholdersArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['ID']['input'];
   simulationConfig?: InputMaybe<SimulationConfig>;
 };
 
@@ -15022,11 +15039,31 @@ export type MutationObasContainerGenerateScenarioArgs = {
 export type MutationObasThreatGenerateScenarioArgs = {
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
+  interval?: InputMaybe<Scalars['Int']['input']>;
+  selection?: InputMaybe<Selection>;
+  simulationType?: InputMaybe<SimulationType>;
+  useAI?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationObasThreatGenerateScenarioWithInjectPlaceholdersArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['ID']['input'];
   simulationConfig?: InputMaybe<SimulationConfig>;
 };
 
 
 export type MutationObasVictimGenerateScenarioArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['ID']['input'];
+  interval?: InputMaybe<Scalars['Int']['input']>;
+  selection?: InputMaybe<Selection>;
+  simulationType?: InputMaybe<SimulationType>;
+  useAI?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationObasVictimGenerateScenarioWithInjectPlaceholdersArgs = {
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
   simulationConfig?: InputMaybe<SimulationConfig>;
@@ -23774,9 +23811,9 @@ export type SettingsMessageInput = {
 
 export type SimulationConfig = {
   architecture?: InputMaybe<Architecture>;
-  interval?: InputMaybe<Scalars['Int']['input']>;
+  interval: Scalars['Int']['input'];
   platforms?: InputMaybe<Array<InputMaybe<Platform>>>;
-  selection?: InputMaybe<Selection>;
+  selection: Selection;
   simulationType: SimulationType;
 };
 
@@ -35470,7 +35507,8 @@ export type FintelTemplateWidgetResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type GenerationResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['GenerationResponse'] = ResolversParentTypes['GenerationResponse']> = ResolversObject<{
-  attackPatternsWithoutInjectorContracts?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  attackPatternsNotAvailableInOpenBAS?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hasInjectPlaceholders?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   urlResponse?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -37477,9 +37515,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   notifierAdd?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<MutationNotifierAddArgs, 'input'>>;
   notifierDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNotifierDeleteArgs, 'id'>>;
   notifierFieldPatch?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<MutationNotifierFieldPatchArgs, 'id' | 'input'>>;
-  obasContainerGenerateScenario?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasContainerGenerateScenarioArgs, 'id'>>;
-  obasThreatGenerateScenario?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasThreatGenerateScenarioArgs, 'id'>>;
-  obasVictimGenerateScenario?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasVictimGenerateScenarioArgs, 'id'>>;
+  obasContainerGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasContainerGenerateScenarioArgs, 'id'>>;
+  obasContainerGenerateScenarioWithInjectPlaceholders?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasContainerGenerateScenarioWithInjectPlaceholdersArgs, 'id'>>;
+  obasThreatGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasThreatGenerateScenarioArgs, 'id'>>;
+  obasThreatGenerateScenarioWithInjectPlaceholders?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasThreatGenerateScenarioWithInjectPlaceholdersArgs, 'id'>>;
+  obasVictimGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasVictimGenerateScenarioArgs, 'id'>>;
+  obasVictimGenerateScenarioWithInjectPlaceholders?: Resolver<Maybe<ResolversTypes['GenerationResponse']>, ParentType, ContextType, RequireFields<MutationObasVictimGenerateScenarioWithInjectPlaceholdersArgs, 'id'>>;
   observedDataAdd?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<MutationObservedDataAddArgs, 'input'>>;
   observedDataEdit?: Resolver<Maybe<ResolversTypes['ObservedDataEditMutations']>, ParentType, ContextType, RequireFields<MutationObservedDataEditArgs, 'id'>>;
   opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationOpinionAddArgs, 'input'>>;

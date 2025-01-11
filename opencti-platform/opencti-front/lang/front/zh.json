@@ -2828,7 +2828,7 @@
   "team": "团队",
   "Technical": "技术",
   "Technical (payloads)": "技术（有效载荷）",
-  "Technical (payloads) require attack patterns in this entity.": "技术（有效载荷）需要该实体中的攻击模式。",
+  "Technical (payloads) requires attack patterns in this entity.": "技术（有效载荷）需要该实体中的攻击模式。",
   "Technical date": "技术日期",
   "Technical elements (indicators & observables)": "技术元素(攻击指标和可观测数据)",
   "Techniques": "技术",

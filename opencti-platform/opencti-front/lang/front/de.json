@@ -2828,7 +2828,7 @@
   "team": "Organisiertes Team",
   "Technical": "Technisch",
   "Technical (payloads)": "Technisch (Nutzlasten)",
-  "Technical (payloads) require attack patterns in this entity.": "Technische (Nutzlasten) erfordern Angriffsmuster in dieser Einheit.",
+  "Technical (payloads) requires attack patterns in this entity.": "Technische (Nutzlasten) erfordern Angriffsmuster in dieser Einheit.",
   "Technical date": "Technisches Datum",
   "Technical elements (indicators & observables)": "Technische Elemente (Indikatoren & Beobachtungswerte)",
   "Techniques": "Techniken",

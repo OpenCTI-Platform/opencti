@@ -1,7 +1,7 @@
 import conf, { getBaseUrl, logApp } from '../config/conf';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, ResourceNotFoundError } from '../config/errors';
 import { isEmptyField } from './utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
@@ -49,15 +49,11 @@ export const getAttackPatterns = async () => {
 export const searchInjectorContracts = async (attackPatternId: string, platforms: string[], architecture: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
-    const importFilter: any = {
+    const attackPatternFilter = {
+      key: 'injector_contract_attack_patterns',
       mode: 'and',
-      filters: [
-        {
-          key: 'injector_contract_attack_patterns',
-          operator: 'contains',
-          values: [attackPatternId],
-        }
-      ],
+      operator: 'contains',
+      values: [attackPatternId],
     };
     const platformFilter = {
       key: 'injector_contract_platforms',
@@ -74,7 +70,7 @@ export const searchInjectorContracts = async (attackPatternId: string, platforms
     const searchPaginationInput = {
       filterGroup: {
         filters: [
-          ...importFilter.filters,
+          attackPatternFilter,
           architectureFilter,
           platformFilter,
         ],
@@ -233,7 +229,7 @@ export const getScenarioResult = async (id: string) => {
       human,
     };
   } catch (err) {
-    logApp.debug('Scenario not found in OpenBAS', { err });
+    logApp.debug(`[OPENCTI-MODULE][XTM] Scenario results not found in OpenBAS : ${id}`, ResourceNotFoundError({ reason: 'Scenario results not found in OpenBAS', doc_code: 'ELEMENT_NOT_FOUND' }));
     return noResult;
   }
 };

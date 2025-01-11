@@ -95,29 +95,32 @@ const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = g
   }
 `;
 
-const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasContainerGenerateScenario(id: $id, simulationConfig: $simulationConfig, filters: $filters){
+const stixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation = graphql`
+  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasContainerGenerateScenarioWithInjectPlaceholders(id: $id, simulationConfig: $simulationConfig, filters: $filters){
       urlResponse
-      attackPatternsWithoutInjectorContracts
+      attackPatternsNotAvailableInOpenBAS
+      hasInjectPlaceholders
     }
   }
 `;
 
-const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasThreatGenerateScenario(id: $id, simulationConfig: $simulationConfig, filters: $filters) {
+const stixCoreObjectSimulationResultObasThreatGenerateScenarioWithInjectPlaceholdersMutation = graphql`
+  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioWithInjectPlaceholdersMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasThreatGenerateScenarioWithInjectPlaceholders(id: $id, simulationConfig: $simulationConfig, filters: $filters) {
       urlResponse
-      attackPatternsWithoutInjectorContracts
+      attackPatternsNotAvailableInOpenBAS
+      hasInjectPlaceholders
     }
   }
 `;
 
-const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasVictimGenerateScenario(id: $id, simulationConfig: $simulationConfig, filters: $filters){
+const stixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlaceholdersMutation = graphql`
+  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlaceholdersMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
+    obasVictimGenerateScenarioWithInjectPlaceholders(id: $id, simulationConfig: $simulationConfig, filters: $filters){
       urlResponse
-      attackPatternsWithoutInjectorContracts
+      attackPatternsNotAvailableInOpenBAS
+      hasInjectPlaceholders
     }
   }
 `;
@@ -184,7 +187,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const { enabled, configured } = useAI();
   const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
   const [simulationType, setSimulationType] = useState('technical');
-  const [platforms, setPlatforms] = useState(['Windows']);
+  const [platforms, setPlatforms] = useState([{ label: 'Windows', value: 'Windows' }]);
   const [architecture, setArchitecture] = useState('x86_64');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(2);
@@ -235,13 +238,14 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     handleClose();
   };
 
-  const [commitMutationGenerateContainer] = useApiMutation(stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation);
-  const [commitMutationGenerateThreat] = useApiMutation(stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation);
-  const [commitMutationGenerateVictim] = useApiMutation(stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation);
+  const [commitMutationGenerateContainer] = useApiMutation(stixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation);
+  const [commitMutationGenerateThreat] = useApiMutation(stixCoreObjectSimulationResultObasThreatGenerateScenarioWithInjectPlaceholdersMutation);
+  const [commitMutationGenerateVictim] = useApiMutation(stixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlaceholdersMutation);
 
   const handleGenerate = () => {
     setIsSubmitting(true);
     setOpen(false);
+    const selectedPlatforms = platforms.map((option) => option.value);
     switch (type) {
       case 'container':
         commitMutationGenerateContainer({
@@ -251,13 +255,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               interval,
               selection,
               simulationType,
-              platforms,
+              platforms: selectedPlatforms,
               architecture,
             },
             filters,
           },
           onCompleted: (response) => {
-            setResult(response.obasContainerGenerateScenario);
+            setResult(response.obasContainerGenerateScenarioWithInjectPlaceholders);
             setIsSubmitting(false);
             handleClose();
           },
@@ -276,7 +280,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               interval,
               selection,
               simulationType,
-              platforms,
+              platforms: selectedPlatforms,
               architecture,
             },
             filters,
@@ -301,7 +305,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               interval,
               selection,
               simulationType,
-              platforms,
+              platforms: selectedPlatforms,
               architecture,
             },
             filters,
@@ -389,46 +393,46 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
               </Field>
             </div>
             {values.simulationType !== 'simulated' && (
-            <>
-              {!hasAttackPatterns && (
-                <Alert severity="warning" variant="outlined" style={{ marginTop: 5 }}>
-                  {t_i18n('Technical (payloads) requires attack patterns in this entity.')}
-                </Alert>
-              )}
-              <div style={fieldSpacingContainerStyle}>
-                <Field
-                  component={AutocompleteField}
-                  name="platforms"
-                  textfieldprops={{
-                    variant: 'standard',
-                    label: t_i18n('Targeted platforms'),
-                  }}
-                  multiple
-                  options={platformOptions}
-                  onChange={(_event, newValue) => setPlatforms(newValue.map((option) => option.value))}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.text}>{option.label ?? ''}</div>
-                    </li>
-                  )}
-                  disabled={!hasAttackPatterns}
-                />
-              </div>
-              <div style={fieldSpacingContainerStyle}>
-                <Field
-                  component={SelectField}
-                  label={t_i18n('Targeted architecture')}
-                  name="architecture"
-                  fullWidth
-                  disabled={!hasAttackPatterns}
-                  onChange={(_event, newValue) => setArchitecture(newValue)}
-                  containerstyle={{ width: '100%' }}
-                >
-                  <MenuItem value="x86_64">x86_64</MenuItem>
-                  <MenuItem value="arm64">arm64</MenuItem>
-                </Field>
-              </div>
-            </>
+              <>
+                {!hasAttackPatterns && (
+                  <Alert severity="warning" variant="outlined" style={{ marginTop: 5 }}>
+                    {t_i18n('Technical (payloads) requires attack patterns in this entity.')}
+                  </Alert>
+                )}
+                <div style={fieldSpacingContainerStyle}>
+                  <Field
+                    component={AutocompleteField}
+                    name="platforms"
+                    textfieldprops={{
+                      variant: 'standard',
+                      label: t_i18n('Targeted platforms'),
+                    }}
+                    multiple
+                    options={platformOptions}
+                    onChange={(_event, newValue) => setPlatforms(newValue)}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        <div className={classes.text}>{option.label ?? ''}</div>
+                      </li>
+                    )}
+                    disabled={!hasAttackPatterns}
+                  />
+                </div>
+                <div style={fieldSpacingContainerStyle}>
+                  <Field
+                    component={SelectField}
+                    label={t_i18n('Targeted architecture')}
+                    name="architecture"
+                    fullWidth
+                    disabled={!hasAttackPatterns}
+                    onChange={(_event, newValue) => setArchitecture(newValue)}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    <MenuItem value="x86_64">x86_64</MenuItem>
+                    <MenuItem value="arm64">arm64</MenuItem>
+                  </Field>
+                </div>
+              </>
             )}
             <div style={fieldSpacingContainerStyle}>
               <Field
@@ -453,8 +457,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
                 onChange={(_event, newValue) => setSelection(newValue)}
                 containerstyle={{ width: '100%' }}
               >
-                <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
                 <MenuItem value="random">{t_i18n('One (random)')}</MenuItem>
+                <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
               </Field>
             </div>
             <div className={classes.buttons}>
@@ -640,21 +644,23 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         <Alert icon={<CheckOutlined fontSize="inherit" />} severity="success">
           {t_i18n('The scenario has been correctly generated in your OpenBAS platform.')}
         </Alert>
-        {result.attackPatternsWithoutInjectorContracts && result.attackPatternsWithoutInjectorContracts.trim() !== '' && (
-        <Alert severity="warning" sx={{ marginTop: 2 }}>
-          {t_i18n('The following TTPs are not covered in your OpenBAS catalog : ')}
-          <ul
-            style={{
-              columnCount: Math.min(Math.ceil(result.attackPatternsWithoutInjectorContracts.split(',').length / 10), 20),
-              paddingLeft: 20,
-            }}
-          >
-            {result.attackPatternsWithoutInjectorContracts.split(',').map((ttp, index) => (
-              <li key={index}>{ttp}</li>
-            ))}
-          </ul>
-          {t_i18n('In response, we have created placeholders for these TTPs.')}
-        </Alert>
+        {result.attackPatternsNotAvailableInOpenBAS && result.attackPatternsNotAvailableInOpenBAS.trim() !== '' && (
+          <Alert severity="warning" sx={{ marginTop: 2 }}>
+            {t_i18n('The following TTPs are not covered in your OpenBAS catalog : ')}
+            <ul
+              style={{
+                columnCount: Math.min(Math.ceil(result.attackPatternsNotAvailableInOpenBAS.split(',').length / 10), 20),
+                paddingLeft: 20,
+              }}
+            >
+              {result.attackPatternsNotAvailableInOpenBAS.split(',').map((ttp, index) => (
+                <li key={index}>{ttp}</li>
+              ))}
+            </ul>
+            {result.hasInjectPlaceholders && (
+              <span>{t_i18n('In response, we have created placeholders for these TTPs.')}</span>
+            )}
+          </Alert>
         )}
         <Box textAlign="center" style={{ marginTop: 20 }}>
           <Button component={Link} to={result.urlResponse} target="_blank" variant="outlined" endIcon={<OpenInNewOutlined />}>

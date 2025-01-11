@@ -2828,7 +2828,7 @@
   "team": "조직된 팀",
   "Technical": "기술적",
   "Technical (payloads)": "기술적 (페이로드)",
-  "Technical (payloads) require attack patterns in this entity.": "기술(페이로드)은 이 엔티티에 공격 패턴이 필요합니다.",
+  "Technical (payloads) requires attack patterns in this entity.": "기술(페이로드)은 이 엔티티의 공격 패턴을 필요로 합니다.",
   "Technical date": "기술적 날짜",
   "Technical elements (indicators & observables)": "기술적 요소 (인디케이터 및 관찰 가능)",
   "Techniques": "기법",

@@ -2828,7 +2828,7 @@
   "team": "組織的なチーム",
   "Technical": "テクニカル",
   "Technical (payloads)": "テクニカル（ペイロード）",
-  "Technical (payloads) require attack patterns in this entity.": "技術的（ペイロード）には、このエンティティの攻撃パターンが必要である。",
+  "Technical (payloads) requires attack patterns in this entity.": "技術的（ペイロード）には、このエンティティの攻撃パターンが必要である。",
   "Technical date": "技術的な日時",
   "Technical elements (indicators & observables)": "技術的要素（インジケータと観測結果）",
   "Techniques": "技術",

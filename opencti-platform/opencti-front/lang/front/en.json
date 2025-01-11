@@ -2828,7 +2828,7 @@
   "team": "Organized team",
   "Technical": "Technical",
   "Technical (payloads)": "Technical (payloads)",
-  "Technical (payloads) require attack patterns in this entity.": "Technical (payloads) require attack patterns in this entity.",
+  "Technical (payloads) requires attack patterns in this entity.": "Technical (payloads) requires attack patterns in this entity.",
   "Technical date": "Technical date",
   "Technical elements (indicators & observables)": "Technical elements (indicators & observables)",
   "Techniques": "Techniques",

@@ -27,15 +27,17 @@ enum Architecture {
 }
 
 input SimulationConfig {
-    interval: Int
-    selection: Selection
+    interval: Int!
+    selection: Selection!
     simulationType: SimulationType!
     platforms: [Platform]
     architecture: Architecture
 }
+
 type GenerationResponse {
     urlResponse: String
-    attackPatternsWithoutInjectorContracts: String
+    attackPatternsNotAvailableInOpenBAS: String
+    hasInjectPlaceholders: Boolean
 }
 
 type SimulationsResult {
@@ -56,7 +58,7 @@ type Query {
 }
 
 type Mutation {
-    obasContainerGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasThreatGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasVictimGenerateScenario(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasContainerGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasThreatGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasVictimGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
 }

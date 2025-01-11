@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { listAllToEntitiesThroughRelations, storeLoadById } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
@@ -14,13 +13,12 @@ import {
 } from '../../schema/stixDomainObject';
 import conf, { logApp } from '../../config/conf';
 import {
-  createInjectInScenario,
   createInjectInScenario as obasCreateInjectInScenario,
   createScenario as obasCreateScenario,
   getAttackPatterns as obasGetAttackPatterns,
-  getKillChainPhases,
+  getKillChainPhases as obasGetKillChainPhases,
   getScenarioResult as obasGetScenarioResult,
-  searchInjectorContracts
+  searchInjectorContracts as obasSearchInjectorContracts
 } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -35,6 +33,9 @@ import { resolveFiles } from '../../utils/ai/dataResolutionHelpers';
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
 const SYSTEM_PROMPT = 'You are an assistant helping cybersecurity engineer to select attack simulation elements and actions based on the given threat intelligence information.';
 const RESOLUTION_LIMIT = 50;
+const obasManualContractId = 'd02e9132-b9d0-4daa-b3b1-4b9871f8472c';
+const obasEmailContractId = '2790bd39-37d4-4e39-be7e-53f3ca783f86';
+const obasInjectorType = 'openbas_email';
 
 const getShuffledArr = (arr) => {
   const newArr = arr.slice();
@@ -67,7 +68,7 @@ export const resolveContent = async (context, user, stixCoreObject) => {
     files = await resolveFiles(context, user, stixCoreObject);
   } else {
     const containers = await listAllToEntitiesThroughRelations(context, user, stixCoreObject.id, RELATION_OBJECT, [ENTITY_TYPE_CONTAINER_REPORT]);
-    const allFiles = await Promise.all(R.take(15, containers).map((container) => resolveFiles(context, user, container)));
+    const allFiles = await Promise.all(containers.slice(0, 15)).map((container) => resolveFiles(context, user, container));
     files = allFiles.flat();
     names = containers.map((n) => n.name);
     descriptions = containers.map((n) => n.description);
@@ -93,10 +94,10 @@ const generateTechnicalAttackPattern = async (obasAttackPattern, finalObasInject
 
 const generatePlaceholder = async (externalId, platforms, architecture, scenarioId, dependsOnDuration) => {
   const title = `[${externalId}] Placeholder - ${platforms.join(',')} ${architecture}`;
-  await createInjectInScenario(
+  await obasCreateInjectInScenario(
     scenarioId,
     'openbas_manual',
-    'd02e9132-b9d0-4daa-b3b1-4b9871f8472c',
+    obasManualContractId,
     title,
     dependsOnDuration,
     null,
@@ -143,8 +144,8 @@ const generateAttackPatternEmail = async (obasAttackPattern, killChainPhaseName,
   const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
-    'openbas_email',
-    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    obasInjectorType,
+    obasEmailContractId,
     titleIncidentResponse,
     dependsOnDuration,
     { expectations: [], subject: responseIncidentResponseSubject.replace('Subject: ', '').replace('"', ''), body: responseIncidentResponse },
@@ -189,8 +190,8 @@ const generateAttackPatternEmailCiso = async (obasAttackPattern, killChainPhaseN
 
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
-    'openbas_email',
-    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    obasInjectorType,
+    obasEmailContractId,
     titleCiso,
     dependsOnDuration,
     { expectations: [], subject: responseCisoSubject.replace('Subject: ', '').replace('"', ''), body: responseCiso },
@@ -231,8 +232,8 @@ const generateKillChainEmailCiso = async (killChainPhaseName, killChainPhasesLis
   const titleCiso = `[${killChainPhaseName}] ${responseCisoSubject} - Email to the CISO`;
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
-    'openbas_email',
-    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    obasInjectorType,
+    obasEmailContractId,
     titleCiso,
     dependsOnDuration,
     {
@@ -277,8 +278,8 @@ const generateKillChainEmail = async (killChainPhaseName, killChainPhasesListOfN
   const titleIncidentResponse = `[${killChainPhaseName}] ${responseIncidentResponseSubject} - Email to the incident response team`;
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
-    'openbas_email',
-    '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+    obasInjectorType,
+    obasEmailContractId,
     titleIncidentResponse,
     dependsOnDuration,
     {
@@ -290,7 +291,7 @@ const generateKillChainEmail = async (killChainPhaseName, killChainPhasesListOfN
   );
 };
 
-export const generateOpenBasScenario = async (
+export const generateOpenBasScenarioWithInjectPlaceholders = async (
   context,
   user,
   stixCoreObject,
@@ -300,6 +301,9 @@ export const generateOpenBasScenario = async (
   simulationConfig
 ) => {
   const { interval, selection, simulationType = 'technical', platforms = ['Windows'], architecture = 'x86_64' } = simulationConfig;
+  // Initialize an array to collect attack patterns without contracts
+  let hasInjectPlaceholders = true;
+  const attackPatternsNotAvailableInOpenBAS = [];
 
   if (simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
@@ -308,7 +312,7 @@ export const generateOpenBasScenario = async (
   const startingTime = new Date().getTime();
   logApp.info('[OPENCTI-MODULE][XTM] Starting to generate OBAS scenario', { simulationType });
   const content = await resolveContent(context, user, stixCoreObject);
-  const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
+  const finalAttackPatterns = attackPatterns.slice(0, RESOLUTION_LIMIT);
 
   // Create the scenario
   const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
@@ -327,7 +331,7 @@ export const generateOpenBasScenario = async (
   );
 
   // Get kill chain phases
-  const obasKillChainPhases = await getKillChainPhases();
+  const obasKillChainPhases = await obasGetKillChainPhases();
   const sortedObasKillChainPhases = obasKillChainPhases.sort((a, b) => a.phase_order - b.phase_order);
   const killChainPhasesListOfNames = sortedObasKillChainPhases.map((n) => n.phase_name).join(', ');
   const indexedSortedObasKillChainPhase = sortedObasKillChainPhases.reduce((acc, phase) => {
@@ -338,17 +342,21 @@ export const generateOpenBasScenario = async (
   const createAndInjectScenarioPromises = [];
 
   let dependsOnDuration = 0;
-  if (simulationType !== 'technical' && attackPatterns.length === 0) {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const obasKillChainPhase of sortedObasKillChainPhases) {
-      const killChainPhaseName = obasKillChainPhase.phase_name;
-      createAndInjectScenarioPromises.push(generateKillChainEmail(killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration));
-      dependsOnDuration += (interval * 60);
-      createAndInjectScenarioPromises.push(generateKillChainEmailCiso(killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration));
-      dependsOnDuration += (interval * 60);
+  if (attackPatterns.length === 0) {
+    if (simulationType === 'simulated') {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const obasKillChainPhase of sortedObasKillChainPhases) {
+        const killChainPhaseName = obasKillChainPhase.phase_name;
+        createAndInjectScenarioPromises.push(generateKillChainEmail(killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration));
+        dependsOnDuration += (interval * 60);
+        createAndInjectScenarioPromises.push(generateKillChainEmailCiso(killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration));
+        dependsOnDuration += (interval * 60);
+      }
+    } else {
+      logApp.info('[OPENCTI-MODULE][XTM] No attack pattern associated to this entity. Please use AI to generate the scenario. This feature will be enhanced in the future to cover more types of entities.');
     }
   } else {
-    logApp.debug('[OPENCTI-MODULE][XTM] attack pattern found, no generation of kill chain phase email');
+    logApp.info('[OPENCTI-MODULE][XTM] Attack pattern found, no generation of kill chain phase email');
   }
 
   // Get contracts from OpenBAS related to found attack patterns
@@ -362,86 +370,105 @@ export const generateOpenBasScenario = async (
   // Keep only attack patterns matching the container ones
   const filteredObasAttackPatterns = obasAttackPatterns.filter((n) => attackPatternsMitreIds.includes(n.attack_pattern_external_id));
 
-  // Enrich with the earliest kill chain phase
-  const enrichedFilteredObasAttackPatterns = filteredObasAttackPatterns.map((n) => {
-    const earliestKillChainPhase = n.attack_pattern_kill_chain_phases
-      .map((phaseId) => indexedSortedObasKillChainPhase[phaseId])
-      .sort((a, b) => a.phase_order - b.phase_order)[0];
-    return { ...n, attack_pattern_kill_chain_phase: earliestKillChainPhase };
-  });
+  if (filteredObasAttackPatterns.length === 0) {
+    hasInjectPlaceholders = false;
+    attackPatternsNotAvailableInOpenBAS.push(attackPatternsMitreIds);
+    logApp.info(`[OPENCTI-MODULE][XTM] No attack patterns available on OpenBAS linked to these Mitre ids : ${attackPatternsMitreIds.join(', ')}`);
+    if (simulationType !== 'simulated') {
+      hasInjectPlaceholders = true;
+      attackPatternsMitreIds.forEach((attackNotAvailable) => {
+        createAndInjectScenarioPromises.push(generatePlaceholder(
+          attackNotAvailable,
+          platforms,
+          architecture,
+          obasScenario.scenario_id,
+          dependsOnDuration
+        ));
+        dependsOnDuration += (interval * 60);
+      });
+    }
+  } else {
+    // Enrich with the earliest kill chain phase
+    const enrichedFilteredObasAttackPatterns = filteredObasAttackPatterns.map((n) => {
+      const earliestKillChainPhase = n.attack_pattern_kill_chain_phases
+        .map((phaseId) => indexedSortedObasKillChainPhase[phaseId])
+        .sort((a, b) => a.phase_order - b.phase_order)[0];
+      return { ...n, attack_pattern_kill_chain_phase: earliestKillChainPhase };
+    });
 
-  // Sort attack pattern by kill chain phase
-  const sortedEnrichedFilteredObasAttackPatterns = enrichedFilteredObasAttackPatterns.sort((a, b) => {
-    return a.attack_pattern_kill_chain_phase.phase_order - b.attack_pattern_kill_chain_phase.phase_order;
-  });
+    // Sort attack pattern by kill chain phase
+    const sortedEnrichedFilteredObasAttackPatterns = enrichedFilteredObasAttackPatterns.sort((a, b) => {
+      return a.attack_pattern_kill_chain_phase.phase_order - b.attack_pattern_kill_chain_phase.phase_order;
+    });
 
-  // Initialize an array to collect attack patterns without contracts
-  const attackPatternsWithoutInjectorContracts = [];
-
-  // Get the injector contracts
-  // eslint-disable-next-line no-restricted-syntax
-  for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
-    const killChainPhaseName = obasAttackPattern.attack_pattern_kill_chain_phase.phase_name;
-    if (simulationType === 'simulated') {
-      createAndInjectScenarioPromises.push(
-        generateAttackPatternEmail(obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration)
-      );
-      dependsOnDuration += (interval * 60);
-      createAndInjectScenarioPromises.push(
-        generateAttackPatternEmailCiso(obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration)
-      );
-      dependsOnDuration += (interval * 60);
-    } else {
-      const obasInjectorContracts = await searchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
-
-      if (obasInjectorContracts.length === 0) {
-        attackPatternsWithoutInjectorContracts.push(obasAttackPattern.attack_pattern_external_id);
-        logApp.info(`[OPENCTI-MODULE][XTM] No injector contracts available for this attack pattern ${obasAttackPattern.attack_pattern_external_id}`);
-        createAndInjectScenarioPromises.push(generatePlaceholder(obasAttackPattern.attack_pattern_external_id, platforms, architecture, obasScenario.scenario_id, dependsOnDuration));
+    // Get the injector contracts
+    // eslint-disable-next-line no-restricted-syntax
+    for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
+      const killChainPhaseName = obasAttackPattern.attack_pattern_kill_chain_phase.phase_name;
+      if (simulationType === 'simulated') {
+        createAndInjectScenarioPromises.push(
+          generateAttackPatternEmail(obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration)
+        );
+        dependsOnDuration += (interval * 60);
+        createAndInjectScenarioPromises.push(
+          generateAttackPatternEmailCiso(obasAttackPattern, killChainPhaseName, killChainPhasesListOfNames, content, user, obasScenario, dependsOnDuration)
+        );
         dependsOnDuration += (interval * 60);
       } else {
-        let finalObasInjectorContracts = getShuffledArr(obasInjectorContracts).slice(0, 5);
-        if (selection === 'random') {
-          finalObasInjectorContracts = finalObasInjectorContracts.slice(0, 1);
-        }
-        if (simulationType === 'technical') {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const finalObasInjectorContract of finalObasInjectorContracts) {
-            createAndInjectScenarioPromises.push(generateTechnicalAttackPattern(obasAttackPattern, finalObasInjectorContract, obasScenario.scenario_id, dependsOnDuration));
-            dependsOnDuration += (interval * 60);
-          }
+        const obasInjectorContracts = await obasSearchInjectorContracts(obasAttackPattern.attack_pattern_external_id, platforms, architecture);
+        if (obasInjectorContracts.length === 0) {
+          attackPatternsNotAvailableInOpenBAS.push(obasAttackPattern.attack_pattern_external_id);
+          logApp.info(`[OPENCTI-MODULE][XTM] No injector contracts available for this attack pattern ${obasAttackPattern.attack_pattern_external_id}`);
+          createAndInjectScenarioPromises.push(generatePlaceholder(
+            obasAttackPattern.attack_pattern_external_id,
+            platforms,
+            architecture,
+            obasScenario.scenario_id,
+            dependsOnDuration
+          ));
+          dependsOnDuration += (interval * 60);
         } else {
-          // TODO CASE Mixed (both)
-          logApp.info(`[OPENCTI-MODULE][XTM] simulationType ${simulationType} not implemented yet.`);
+          let finalObasInjectorContracts = getShuffledArr(obasInjectorContracts).slice(0, 5);
+          if (selection === 'random') {
+            finalObasInjectorContracts = finalObasInjectorContracts.slice(0, 1);
+          }
+          if (simulationType === 'technical') {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const finalObasInjectorContract of finalObasInjectorContracts) {
+              createAndInjectScenarioPromises.push(generateTechnicalAttackPattern(obasAttackPattern, finalObasInjectorContract, obasScenario.scenario_id, dependsOnDuration));
+              dependsOnDuration += (interval * 60);
+            }
+          } else {
+            // TODO CASE Mixed (both)
+            logApp.info(`[OPENCTI-MODULE][XTM] simulationType ${simulationType} not implemented yet.`);
+          }
         }
       }
+    } // end loop for
+
+    await Promise.all(createAndInjectScenarioPromises).catch((error) => logApp.error('[OPENCTI-MODULE][XTM] Error resolving promises', { error }));
+
+    const endingTime = new Date().getTime();
+    const totalTime = endingTime - startingTime;
+    if (totalTime > 120000) {
+      logApp.warn('[OPENCTI-MODULE][XTM] Long scenario generation time', {
+        size: createAndInjectScenarioPromises.length,
+        took: totalTime,
+        simulationType
+      });
     }
-  } // end loop for
 
-  try {
-    await Promise.all(createAndInjectScenarioPromises);
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE][XTM] Error in scenario generation', { error });
+    logApp.info(`[OPENCTI-MODULE][XTM] Generating ${createAndInjectScenarioPromises.length} injects took ${totalTime} ms`, { simulationType });
   }
-
-  const endingTime = new Date().getTime();
-  const totalTime = endingTime - startingTime;
-  if (totalTime > 120000) {
-    logApp.warn('[OPENCTI-MODULE][XTM] Long scenario generation time', {
-      size: createAndInjectScenarioPromises.length,
-      took: totalTime,
-      simulationType
-    });
-  }
-  logApp.info(`[OPENCTI-MODULE][XTM] Generating ${createAndInjectScenarioPromises.length} emails took ${totalTime} ms`, { simulationType });
 
   return {
     urlResponse: `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`,
-    attackPatternsWithoutInjectorContracts: attackPatternsWithoutInjectorContracts.join(',')
+    attackPatternsNotAvailableInOpenBAS: attackPatternsNotAvailableInOpenBAS.join(','),
+    hasInjectPlaceholders,
   };
 };
 
-export const generateContainerScenario = async (context, user, args) => {
+export const generateContainerScenarioWithInjectPlaceholders = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, simulationConfig } = args;
 
@@ -449,10 +476,10 @@ export const generateContainerScenario = async (context, user, args) => {
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
+  return generateOpenBasScenarioWithInjectPlaceholders(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
 
-export const generateThreatScenario = async (context, user, args) => {
+export const generateThreatScenarioWithInjectPlaceholders = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, simulationConfig } = args;
 
@@ -460,10 +487,10 @@ export const generateThreatScenario = async (context, user, args) => {
   const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
   const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
+  return generateOpenBasScenarioWithInjectPlaceholders(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
 
-export const generateVictimScenario = async (context, user, args) => {
+export const generateVictimScenarioWithInjectPlaceholders = async (context, user, args) => {
   if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
   const { id, simulationConfig } = args;
 
@@ -485,5 +512,5 @@ export const generateVictimScenario = async (context, user, args) => {
   );
   const threatsIds = threats.map((n) => n.id);
   const attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
+  return generateOpenBasScenarioWithInjectPlaceholders(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
