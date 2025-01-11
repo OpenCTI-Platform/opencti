@@ -397,7 +397,7 @@ export const generateOpenBasScenario = async (
       if (obasInjectorContracts.length === 0) {
         attackPatternsWithoutInjectorContracts.push(obasAttackPattern.attack_pattern_external_id);
         logApp.info(`[OPENCTI-MODULE][XTM] No injector contracts available for this attack pattern ${obasAttackPattern.attack_pattern_external_id}`);
-        createAndInjectScenarioPromises.push(generatePlaceholder(obasAttackPattern.externalId, platforms, architecture, obasScenario.scenario_id, dependsOnDuration));
+        createAndInjectScenarioPromises.push(generatePlaceholder(obasAttackPattern.attack_pattern_external_id, platforms, architecture, obasScenario.scenario_id, dependsOnDuration));
         dependsOnDuration += (interval * 60);
       } else {
         let finalObasInjectorContracts = getShuffledArr(obasInjectorContracts).slice(0, 5);
@@ -411,7 +411,7 @@ export const generateOpenBasScenario = async (
             dependsOnDuration += (interval * 60);
           }
         } else {
-          // TODO
+          // TODO CASE Mixed (both)
           logApp.info(`[OPENCTI-MODULE][XTM] simulationType ${simulationType} not implemented yet.`);
         }
       }
@@ -430,7 +430,6 @@ export const generateOpenBasScenario = async (
     logApp.warn('[OPENCTI-MODULE][XTM] Long scenario generation time', {
       size: createAndInjectScenarioPromises.length,
       took: totalTime,
-      useAI,
       simulationType
     });
   }
