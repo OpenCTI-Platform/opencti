@@ -34,6 +34,7 @@ import { queryAi } from '../../database/ai-llm';
 import { getDraftContext } from '../../utils/draftContext';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
+const SYSTEM_PROMPT = 'You are an assistant helping cybersecurity engineer to select attack simulation elements and actions based on the given threat intelligence information.';
 const RESOLUTION_LIMIT = 50;
 
 const getShuffledArr = (arr) => {
@@ -149,7 +150,7 @@ const generateAttackPatternEmail = async (obasAttackPattern, killChainPhaseName,
             # Content
             ${obasAttackPattern.attack_pattern_description}
             `;
-  const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
+  const responseIncidentResponse = await queryAi(null, SYSTEM_PROMPT, promptIncidentResponse, user);
   const promptIncidentResponseSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -160,7 +161,7 @@ const generateAttackPatternEmail = async (obasAttackPattern, killChainPhaseName,
             # Email content
             ${responseIncidentResponse}
             `;
-  const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
+  const responseIncidentResponseSubject = await queryAi(null, SYSTEM_PROMPT, promptIncidentResponseSubject, user);
   const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
@@ -194,7 +195,7 @@ const generateAttackPatternEmailCiso = async (obasAttackPattern, killChainPhaseN
             # Content
             ${obasAttackPattern.attack_pattern_description}
         `;
-  const responseCiso = await queryAi(null, promptCiso, user);
+  const responseCiso = await queryAi(null, SYSTEM_PROMPT, promptCiso, user);
   const promptCisoSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -205,7 +206,7 @@ const generateAttackPatternEmailCiso = async (obasAttackPattern, killChainPhaseN
             # Email content
             ${responseCiso}
             `;
-  const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
+  const responseCisoSubject = await queryAi(null, SYSTEM_PROMPT, promptCisoSubject, user);
   const titleCiso = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the CISO`;
 
   await obasCreateInjectInScenario(
