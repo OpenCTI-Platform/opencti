@@ -28,3 +28,7 @@ export const addIntrusionSet = async (context, user, intrusionSet) => {
 export const locationsPaginated = async (context, user, intrusionSetId, args) => {
   return listEntitiesThroughRelationsPaginated(context, user, intrusionSetId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION, false, args);
 };
+
+export const aiSummary = async (context, user, intrusionSetId) => {
+  const intrusionSet = await storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
+};

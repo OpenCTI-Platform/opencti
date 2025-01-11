@@ -422,6 +422,11 @@ type OpinionsMetrics {
   max: Int
   total: Int
 }
+type AiSummary {
+  summary: String
+  forecast: String
+  updated_at: DateTime
+}
 
 ### INTERFACES & TYPES
 
@@ -12706,6 +12711,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
+  aiSummary: AiSummary @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -13275,7 +13281,6 @@ type Query {
     search: String
     toStix: Boolean
   ): SystemConnection @auth(for: [KNOWLEDGE])
-
   infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
     first: Int
@@ -13295,6 +13300,7 @@ type Query {
     search: String
     toStix: Boolean
   ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
+  intrusionSetAiSummary(id: String): AiSummary @auth(for: [KNOWLEDGE])
   # Locations
   location(id: String!): Location @auth(for: [KNOWLEDGE])
   locations(
