@@ -1,4 +1,6 @@
 import nconf from 'nconf';
+
+import { SourceMapper } from '@datadog/pprof';
 import { booleanConf, logApp } from './config/conf';
 
 const isPyroscopeEnable = booleanConf('app:telemetry:pyroscope:enabled', false);
@@ -8,10 +10,14 @@ if (isPyroscopeEnable) {
     const Pyroscope = require('@pyroscope/nodejs');
     const node = nconf.get('app:telemetry:pyroscope:identifier') ?? 'opencti';
     const exporter = nconf.get('app:telemetry:pyroscope:exporter');
-    Pyroscope.init({ serverAddress: exporter, appName: node });
-    Pyroscope.start();
+    SourceMapper.create(['.']).then((sourceMapper) => {
+      Pyroscope.init({ serverAddress: exporter, appName: node, sourceMapper });
+      Pyroscope.start();
+    }).catch((err) => {
+      logApp.error('[OPENCTI] Error loading Pyroscope source mapper', { cause: err });
+    });
     logApp.info('[OPENCTI] Pyroscope plugin successfully loaded.');
   } catch (err) {
-    logApp.error('[OPENCTI] Error loading Pyroscope', { cause: err.message });
+    logApp.error('[OPENCTI] Error loading Pyroscope', { cause: err });
   }
 }

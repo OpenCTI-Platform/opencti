@@ -17,6 +17,12 @@ esbuild.build({
                 to: ['./prebuilds'],
             }
         }),
+        copy({
+            assets: {
+                from: ['./node_modules/source-map/lib/mappings.wasm'],
+                to: ['.'],
+            }
+        }),
     ],
     entryPoints: [
         'src/back.js',
