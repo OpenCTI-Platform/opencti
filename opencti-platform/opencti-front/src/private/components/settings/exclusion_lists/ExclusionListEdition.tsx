@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import * as Yup from 'yup';
 import Axios from 'axios';
 import { Option } from '@components/common/form/ReferenceField';
 import ItemIcon from 'src/components/ItemIcon';
@@ -13,7 +12,7 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { now } from 'src/utils/Time';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { availableEntityTypes } from '@components/settings/exclusion_lists/ExclusionListUtils';
+import { availableEntityTypes, exclusionListUpdateValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -31,11 +30,6 @@ export const exclusionListMutationFieldPatch = graphql`
     }
   }
 `;
-
-const exclusionListValidation = (t: (n: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
 
 interface ExclusionListEditionComponentProps {
   data: ExclusionListsLine_node$data;
@@ -156,8 +150,10 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
         ? (
           <Formik<ExclusionListEditionFormData>
             enableReinitialize={true}
+            validateOnBlur={false}
+            validateOnChange={false}
             initialValues={initialValues}
-            validationSchema={exclusionListValidation(t_i18n)}
+            validationSchema={exclusionListUpdateValidator(t_i18n)}
             onSubmit={onSubmit}
           >
             {({ submitForm, isSubmitting, setFieldValue }) => (
@@ -234,6 +230,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                     variant="contained"
                     disabled={isSubmitting}
                     style={{ marginLeft: 16 }}
+                    onClick={onClose}
                   >
                     {t_i18n('Cancel')}
                   </Button>
