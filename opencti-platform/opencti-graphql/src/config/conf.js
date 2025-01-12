@@ -9,7 +9,7 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { v4 as uuid } from 'uuid';
-import { GraphQLError } from 'graphql/error';
+import { GraphQLError } from 'graphql/index';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -30,7 +30,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
-import { UnknownError, UnsupportedError } from './errors';
+import { UNKNOWN_ERROR, UnknownError, UnsupportedError } from './errors';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
@@ -47,8 +47,9 @@ const LINUX_CERTFILES = [
 
 const DEFAULT_ENV = 'production';
 export const OPENCTI_SESSION = 'opencti_session';
-
 export const PLATFORM_VERSION = pjson.version;
+const LOG_APP = 'APP';
+const LOG_AUDIT = 'AUDIT';
 
 export const booleanConf = (key, defaultValue = true) => {
   const configValue = nconf.get(key);
@@ -107,7 +108,19 @@ export const extendedErrors = (metaExtension) => {
   }
   return {};
 };
-const limitMetaErrorComplexityWrapper = (obj, acc, current_depth = 0) => {
+const convertErrorObject = (error) => {
+  if (error instanceof GraphQLError) {
+    const extensions = error.extensions ?? {};
+    const extensionsData = extensions.data ?? {};
+    const { ...attributes } = extensionsData;
+    return { name: extensions.code ?? error.name, code: extensions.code, message: error.message, stack: error.stack, attributes };
+  }
+  if (error instanceof Error) {
+    return { name: error.name, code: UNKNOWN_ERROR, message: error.message, stack: error.stack };
+  }
+  return error;
+};
+const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
   const noMaxDepth = current_depth < appLogLevelMaxDepthSize;
   const noMaxKeys = acc.current_nb_key < appLogLevelMaxDepthKeys;
   const isNotAKeyFunction = typeof obj !== 'function';
@@ -118,7 +131,7 @@ const limitMetaErrorComplexityWrapper = (obj, acc, current_depth = 0) => {
       // Recursively process each item in the truncated array
       const processedArray = [];
       for (let i = 0; i < limitedArray.length; i += 1) {
-        processedArray[i] = limitMetaErrorComplexityWrapper(limitedArray[i], acc, current_depth);
+        processedArray[i] = prepareLogMetadataComplexityWrapper(limitedArray[i], acc, current_depth);
       }
       return processedArray;
     }
@@ -126,23 +139,26 @@ const limitMetaErrorComplexityWrapper = (obj, acc, current_depth = 0) => {
       return `${obj.substring(0, appLogLevelMaxStringSize - 3)}...`;
     }
     if (typeof obj === 'object') {
+      const workingObject = convertErrorObject(obj);
       // Create a new object to hold the processed properties
       const limitedObject = {};
-      const keys = Object.keys(obj); // Get the keys of the object
+      const keys = Object.keys(workingObject); // Get the keys of the object
       const newDepth = current_depth + 1;
       for (let i = 0; i < keys.length; i += 1) {
         acc.current_nb_key += 1;
         const key = keys[i];
-        limitedObject[key] = limitMetaErrorComplexityWrapper(obj[key], acc, newDepth);
+        limitedObject[key] = prepareLogMetadataComplexityWrapper(workingObject[key], acc, newDepth);
       }
       return limitedObject;
     }
   }
   return obj;
 };
-export const limitMetaErrorComplexity = (obj) => {
+// Prepare the data - Format the errors and limit complexity
+export const prepareLogMetadata = (obj, extra = {}) => {
   const acc = { current_nb_key: 0 };
-  return limitMetaErrorComplexityWrapper(obj, acc);
+  const protectedObj = prepareLogMetadataComplexityWrapper(obj, acc);
+  return { ...extra, ...protectedObj, version: PLATFORM_VERSION };
 };
 
 const appLogTransports = [];
@@ -230,74 +246,37 @@ const telemetryLogger = winston.createLogger({
   transports: telemetryLogTransports,
 });
 
-// Specific case to fail any test that produce an error log
-const LOG_APP = 'APP';
-const buildMetaErrors = (error) => {
-  const errors = [];
-  if (error instanceof GraphQLError) {
-    const extensions = error.extensions ?? {};
-    const extensionsData = extensions.data ?? {};
-    const { cause: _, ...attributes } = extensionsData;
-    const baseError = { name: extensions.code ?? error.name, message: error.message, stack: error.stack, attributes };
-    errors.push(baseError);
-    if (extensionsData.cause && extensionsData.cause instanceof Error) {
-      errors.push(...buildMetaErrors(extensionsData.cause));
-    }
-  } else if (error instanceof Error) {
-    const baseError = { name: error.name, message: error.message, stack: error.stack };
-    errors.push(baseError);
-  }
-  return errors;
-};
-const addBasicMetaInformation = (category, error, meta) => {
-  const logMeta = { ...meta };
-  if (error) logMeta.errors = buildMetaErrors(error);
-  return { category, version: PLATFORM_VERSION, ...logMeta };
-};
-
 export const logS3Debug = {
   debug: (message, detail) => {
-    logApp._log('info', message, null, { detail });
+    logApp._log('info', message, { detail });
   },
 };
 
 export const logApp = {
-  _log: (level, message, error, meta = {}) => {
+  _log: (level, message, meta = {}) => {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
-      const data = addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' });
-      // Prevent meta information to be too massive.
-      const limitedData = limitMetaErrorComplexity(data);
-      appLogger.log(level, message, limitedData);
-    }
-  },
-  _logWithError: (level, messageOrError, meta = {}) => {
-    const isError = messageOrError instanceof Error;
-    const message = isError ? messageOrError.message : messageOrError;
-    let error = null;
-    if (isError) {
-      if (messageOrError instanceof GraphQLError) {
-        error = messageOrError;
-      } else {
-        error = UnknownError(message, { cause: messageOrError });
+      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
+      appLogger.log(level, message, data);
+      // Only add in support package starting warn level
+      if (appLogger.isLevelEnabled('warn')) {
+        supportLogger.log(level, message, data);
       }
     }
-    logApp._log(level, message, error, meta);
-    supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' }));
   },
-  debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
-  info: (message, meta = {}) => logApp._log('info', message, null, meta),
-  warn: (messageOrError, meta = {}) => logApp._logWithError('warn', messageOrError, meta),
-  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta),
+  debug: (message, meta = {}) => logApp._log('debug', message, meta),
+  info: (message, meta = {}) => logApp._log('info', message, meta),
+  warn: (message, meta = {}) => logApp._log('warn', message, meta),
+  error: (message, meta = {}) => logApp._log('error', message, meta),
   query: (options, errCallback) => appLogger.query(options, errCallback),
 };
 
-const LOG_AUDIT = 'AUDIT';
 export const logAudit = {
   _log: (level, user, operation, meta = {}) => {
     if (auditLogTransports.length > 0) {
       const metaUser = { email: user.user_email, ...user.origin };
       const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
-      auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, null, logMeta));
+      const data = prepareLogMetadata(logMeta, { category: LOG_AUDIT, source: 'backend' });
+      auditLogger.log(level, operation, data);
     }
   },
   info: (user, operation, meta = {}) => logAudit._log('info', user, operation, meta),
@@ -305,12 +284,12 @@ export const logAudit = {
 };
 
 export const logFrontend = {
-  _log: (level, message, error, meta = {}) => {
-    const info = { ...meta, source: 'frontend' };
-    appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, info));
-    supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, info));
+  _log: (level, message, meta = {}) => {
+    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
+    appLogger.log(level, message, data);
+    supportLogger.log(level, message, data);
   },
-  error: (message, meta = {}) => logFrontend._log('error', message, null, meta),
+  error: (message, meta = {}) => logFrontend._log('error', message, meta),
 };
 
 export const logTelemetry = {

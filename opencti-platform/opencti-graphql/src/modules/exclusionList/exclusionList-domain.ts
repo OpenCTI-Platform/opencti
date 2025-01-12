@@ -7,6 +7,7 @@ import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import type { ExclusionListContentAddInput, ExclusionListFileAddInput, QueryExclusionListsArgs } from '../../generated/graphql';
+import { UnsupportedError } from '../../config/errors';
 
 const filePath = 'exclusionLists';
 
@@ -35,7 +36,9 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
 };
 
 export const addExclusionListContent = async (context: AuthContext, user: AuthUser, input: ExclusionListContentAddInput) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
+  if (!isExclusionListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   const file = {
     createReadStream: () => Readable.from(Buffer.from(input.content, 'utf-8')),
     filename: `${input.name}.txt`,
@@ -45,12 +48,16 @@ export const addExclusionListContent = async (context: AuthContext, user: AuthUs
   return storeAndCreateExclusionList(context, user, input, file);
 };
 export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
+  if (!isExclusionListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   return storeAndCreateExclusionList(context, user, input, input.file);
 };
 
 export const deleteExclusionList = async (context: AuthContext, user: AuthUser, exclusionListId: string) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
+  if (!isExclusionListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   const exclusionList = await findById(context, user, exclusionListId);
   await deleteFile(context, user, exclusionList.file_id);
   return deleteInternalObject(context, user, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST);

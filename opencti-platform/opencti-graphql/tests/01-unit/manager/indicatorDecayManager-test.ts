@@ -33,8 +33,8 @@ describe('Testing indicatorDecayManager', () => {
   });
 
   it('should manage error in findIndicatorsForDecay', async () => {
-    const logAppWarnSpy = vi.spyOn(logApp, 'warn');
+    const logAppWarnSpy = vi.spyOn(logApp, 'error');
     await indicatorDecayHandler();
-    expect(logAppWarnSpy, 'Error should be managed and log as warn.').toHaveBeenCalledTimes(1);
+    expect(logAppWarnSpy, 'Error should be managed and log as error.').toHaveBeenCalledTimes(2);
   });
 });

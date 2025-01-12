@@ -57,7 +57,7 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     logApp.error('[AI] No response from MistralAI', { busId, question });
     return 'No response from MistralAI';
   } catch (err) {
-    logApp.error('[AI] Cannot query MistralAI', { error: err });
+    logApp.error('[AI] Cannot query MistralAI', { cause: err });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     return `An error occurred: ${err.toString()}`;
@@ -92,7 +92,7 @@ export const queryChatGpt = async (busId: string | null, question: string, user:
     logApp.error('[AI] No response from OpenAI', { busId, question });
     return 'No response from OpenAI';
   } catch (err) {
-    logApp.error('[AI] Cannot query OpenAI', { error: err });
+    logApp.error('[AI] Cannot query OpenAI', { cause: err });
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     return `An error occurred: ${err.toString()}`;

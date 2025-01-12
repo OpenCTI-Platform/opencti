@@ -173,7 +173,7 @@ export const downloadFile = async (id) => {
     }
     return object.Body;
   } catch (err) {
-    logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { error: err, fileId: id });
+    logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { cause: err, fileId: id });
     return null;
   }
 };
@@ -213,7 +213,7 @@ export const copyFile = async (context, copyProps) => {
     logApp.info('[FILE STORAGE] Copy file to S3 in success', { document: file, sourceId, targetId });
     return file;
   } catch (err) {
-    logApp.error('[FILE STORAGE] Cannot copy file in S3', { error: err, sourceId, targetId });
+    logApp.error('[FILE STORAGE] Cannot copy file in S3', { cause: err, sourceId, targetId });
     return null;
   }
 };

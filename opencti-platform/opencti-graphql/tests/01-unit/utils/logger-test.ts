@@ -1,7 +1,9 @@
 import * as R from 'ramda';
 import { describe, expect, it } from 'vitest';
-import { appLogLevelMaxArraySize, appLogLevelMaxStringSize, limitMetaErrorComplexity } from '../../../src/config/conf';
+import { appLogLevelMaxArraySize, appLogLevelMaxStringSize, prepareLogMetadata } from '../../../src/config/conf';
+import { FunctionalError } from '../../../src/config/errors';
 
+// region objects definition
 const CLASSIC_OBJECT = {
   category: 'APP',
   errors: [
@@ -32,7 +34,6 @@ const CLASSIC_OBJECT = {
   timestamp: '2025-01-09T20:57:05.422Z',
   version: '6.4.6'
 };
-
 const TOO_COMPLEX_OBJECT = {
   category: 'APP',
   errors: [
@@ -178,17 +179,29 @@ const TOO_COMPLEX_OBJECT = {
   source: R.range(1, 6000).map(() => 'A').join(''),
   timestamp: '2025-01-09T20:57:05.422Z'
 };
+const WITH_ERROR_OBJECT = {
+  level: 'error',
+  cause: FunctionalError('my error', { cause: new Error('embedded error') }),
+  timestamp: '2025-01-09T20:57:05.422Z'
+};
+// endregion
 
 describe('Logger test suite', () => {
   it('Log object is correctly untouched', () => {
-    const cleanObject = limitMetaErrorComplexity(CLASSIC_OBJECT);
+    const cleanObject = prepareLogMetadata(CLASSIC_OBJECT);
     expect(JSON.stringify(cleanObject)).toEqual(JSON.stringify(CLASSIC_OBJECT));
+  });
+
+  it('Log object with error correctly formatted', () => {
+    const cleanObject = prepareLogMetadata(WITH_ERROR_OBJECT);
+    expect(cleanObject.cause.message).toBe('my error');
+    expect(cleanObject.cause.attributes.cause.message).toBe('embedded error');
   });
 
   it('Log object is correctly limited', () => {
     let initialSize = TOO_COMPLEX_OBJECT.errors[0].attributes.category_to_limit.length;
     const start = new Date().getTime();
-    const cleanObject = limitMetaErrorComplexity(TOO_COMPLEX_OBJECT);
+    const cleanObject = prepareLogMetadata(TOO_COMPLEX_OBJECT);
     const parsingTimeMs = new Date().getTime() - start;
     expect(parsingTimeMs).to.be.lt(2);
     let cleanedSize = cleanObject.errors[0].attributes.category_to_limit.length;

@@ -358,7 +358,7 @@ describe('PublicDashboard resolver', () => {
         });
         expect(publicDashboardQuery).not.toBeNull();
         expect(publicDashboardQuery.errors.length).toEqual(1);
-        expect(publicDashboardQuery.errors.at(0).message).toEqual('You are not allowed to share these markings.');
+        expect(publicDashboardQuery.errors.at(0).message).toEqual('You are not allowed to share these markings');
       });
 
       it('should publicDashboard created', async () => {
