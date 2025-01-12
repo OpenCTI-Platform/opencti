@@ -1,6 +1,8 @@
 import type { JSONSchemaType } from 'ajv';
 import type { NotifierConnector } from '../../generated/graphql';
 import type { BasicStoreEntityNotifier } from './notifier-types';
+import { HEADER_TEMPLATE } from '../../utils/emailTemplates/header';
+import { FOOTER_TEMPLATE } from '../../utils/emailTemplates/footer';
 
 // region Notifier User interface
 export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
@@ -177,47 +179,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
         + ' <% } else{ %>  \n'
         + '[<%=notification.trigger_type%>] <%= notification.name%>'
         + '<% } %>',
-      template: `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-   <head>
-      <meta content="en-us" http-equiv="Content-Language">
-      <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-      <title>Cyber Threat Intelligence Digest</title>
-      <style type="text/css">
-         #outlook a {
-         padding: 0;
-         }
-         .ReadMsgBody{
-         width:100%;
-         }
-         .ExternalClass{
-         width: 100%;
-         }
-         .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
-         line-height: 100%;
-         }
-         body, table, td, p, a, li, blockquote{
-         -webkit-text-size-adjust :100%; 
-         -ms-text-size-adjust: 100%;
-         }
-         table, td {
-         mso-table-lspace: 0pt; 
-         mso-table-rspace: 0pt;
-         }
-         img{
-         -ms-interpolation-mode: bicubic;
-         }
-         * {
-         font-family: 'Arial';
-         }
-         body {
-         margin: 0;
-         padding: 0;
-         background-color: #f8f8f8;
-         background: #f8f8f8;
-         }
-      </style>
-   </head>
+      template: `${HEADER_TEMPLATE}
    <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" bgcolor="#f5f8fa" style="-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; margin: 0; padding:0; font-family: Helvetica, Arial, sans-serif; font-size: 16px; height: 100%; width: 100%; min-width: 100%;">
       <table id="outerWrapper" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" bgcolor="#f5f8fa" style="font-family: Helvetica, Arial, sans-serif; font-size:16px; color: #425b76; line-height: 1.5; width: 100%; min-width: 100%; background-color:#f5f8fa;">
          <tbody>
@@ -392,43 +354,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
                               </table>
                            </td>
                         </tr>
-                        <tr>
-                           <td>
-                              <table id="footer" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" bgcolor="#f5f8fa" style="width: 100%; min-width: 100%;">
-                                 <tbody>
-                                    <tr>
-                                       <td align="center" valign="top">
-                                          <table border="0" cellpadding="0" cellspacing="0" height="100%" width="500" style="width: 500px;">
-                                             <tbody>
-                                                <tr>
-                                                   <td align="center" valign="top">
-                                                      <table cellpadding="0" border="0" cellspacing="0" width="100%" style="color: #425b76; background-color: ; font-size: 14px; width: 100%; margin: initial; min-width: 100%; line-height: 24px">
-                                                         <tbody>
-                                                            <tr>
-                                                               <td align="center" valign="middle" style="padding: 5px 0 65px;">
-                                                                  <p style="font-size: 12px; color: #516f90">Copyright &copy; 2024 OpenCTI<br>Powered by <a style="color: #001bda; text-decoration:none;" href="https://filigran.io" target="_blank">Filigran</a></p>
-                                                               </td>
-                                                            </tr>
-                                                         </tbody>
-                                                      </table>
-                                                   </td>
-                                                </tr>
-                                             </tbody>
-                                          </table>
-                                       </td>
-                                    </tr>
-                                 </tbody>
-                              </table>
-                           </td>
-                        </tr>
-                     </tbody>
-                  </table>
-               </td>
-            </tr>
-         </tbody>
-      </table>
-   </body>
-</html>
+                       ${FOOTER_TEMPLATE}
       `
     })
   }
