@@ -64,12 +64,15 @@ const syncManagerInstance = (syncId) => {
   const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
     if (connectionId) {
       const connectionManagement = `${httpBase(uri)}stream/connection/${connectionId}`;
-      if (currentDelay === lDelay && eventsQueue.getLength() > MAX_QUEUE_SIZE) {
-        await httpClient.post(connectionManagement, { delay: hDelay });
-        logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${hDelay} delay`);
-        return hDelay;
+      const currentQueueLength = eventsQueue.getLength();
+      // If queue length keeps increasing even with an increased delay, we keep increasing the delay until we are able to go back below MIN_QUEUE_SIZE
+      if (currentQueueLength > MAX_QUEUE_SIZE && currentDelay * MAX_QUEUE_SIZE < hDelay * (currentQueueLength - MAX_QUEUE_SIZE)) {
+        const newDelay = currentDelay + hDelay;
+        await httpClient.post(connectionManagement, { delay: newDelay });
+        logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${newDelay} delay`);
+        return newDelay;
       }
-      if (currentDelay === hDelay && eventsQueue.getLength() < MIN_QUEUE_SIZE) {
+      if (currentQueueLength < MIN_QUEUE_SIZE && currentDelay !== lDelay) {
         await httpClient.post(connectionManagement, { delay: lDelay });
         logApp.info(`[OPENCTI] Sync ${syncId}: connection setup to use ${lDelay} delay`);
         return lDelay;
