@@ -338,7 +338,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
     data.parent_types.includes('Stix-Cyber-Observable')
       ? data.x_opencti_description
       : data.description,
-    120,
+    130,
   );
 
   return (
@@ -392,7 +392,11 @@ const StixCoreRelationshipCreationFromEntityList = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={node.name}
-                        secondary={defaultDescription(node)}
+                        secondary={
+                          <span style={{ whiteSpace: 'nowrap' }}>
+                            {defaultDescription(node)}
+                          </span>
+                        }
                       />
                     </ListItem>
                   );
