@@ -501,7 +501,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         // Data with Empty granted_refs are not visible
         // Data with granted_refs users that participate to at least one
         const should = [excludedEntityMatches];
-        const shouldOrgs = user.allowed_organizations
+        const shouldOrgs = user.organizations
           .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
         // User individual or data created by this individual must be accessible
