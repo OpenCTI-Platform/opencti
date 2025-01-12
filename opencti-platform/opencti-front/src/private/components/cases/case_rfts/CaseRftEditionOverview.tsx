@@ -182,7 +182,10 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     priority: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
     rating: Yup.number().nullable(),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
   };
   const caseValidator = useSchemaEditionValidation('Case-Rft', basicShape);
 
@@ -340,7 +343,6 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             entityType="Case-Rft"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
-            variant="edit"
           />
           <Field
             component={MarkdownField}

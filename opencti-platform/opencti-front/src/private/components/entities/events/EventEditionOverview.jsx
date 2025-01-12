@@ -81,7 +81,10 @@ const EventEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
     stop_time: Yup.date()

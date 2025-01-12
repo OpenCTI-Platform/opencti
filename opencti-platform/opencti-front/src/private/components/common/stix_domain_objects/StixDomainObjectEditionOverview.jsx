@@ -118,7 +118,10 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
   aliases: Yup.string().nullable(),
   x_opencti_aliases: Yup.string().nullable(),
   references: Yup.array(),
-  confidence: Yup.number().nullable(),
+  confidence: Yup.number()
+    .min(0, t('The value must be greater than or equal to 0'))
+    .max(100, t('The value must be less than or equal to 100'))
+    .nullable(),
 });
 
 const StixDomainObjectEditionContainer = (props) => {

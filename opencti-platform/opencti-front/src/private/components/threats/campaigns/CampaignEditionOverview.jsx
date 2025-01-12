@@ -89,7 +89,10 @@ const CampaignEditionOverviewComponent = (props) => {
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
