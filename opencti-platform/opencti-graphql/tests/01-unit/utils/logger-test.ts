@@ -129,6 +129,12 @@ describe('Logger test suite', () => {
     expect(cleanObject.cause.attributes.cause.message).toBe('embedded error');
   });
 
+  it('Log object with error correctly formatted', () => {
+    const cleanObject = prepareLogMetadata(WITH_ERROR_OBJECT);
+    expect(cleanObject.cause.message).toBe('my error');
+    expect(cleanObject.cause.attributes.cause.message).toBe('embedded error');
+  });
+
   it('Log object is correctly limited', () => {
     let initialSize = CATEGORY_TO_LIMIT.length;
     const start = new Date().getTime();
