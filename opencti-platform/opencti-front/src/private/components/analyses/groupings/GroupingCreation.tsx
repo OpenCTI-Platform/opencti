@@ -10,6 +10,9 @@ import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
 import useHelper from 'src/utils/hooks/useHelper';
 import { GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -31,6 +34,9 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,6 +77,7 @@ interface GroupingAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
+  authorizedMembers: { value: string, accessRight: string }[];
 }
 
 interface GroupingFormProps {
@@ -99,6 +106,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
+
+  const { isFeatureEnable } = useHelper();
+  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
@@ -108,6 +119,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
     file: Yup.mixed().nullable(),
+    authorized_members: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -133,6 +145,12 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
+      ...(isAccessRestrictionCreationEnable && {
+        authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
+          id: value,
+          access_right: accessRight,
+        })),
+      }),
     };
     commit({
       variables: {
@@ -173,6 +191,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    authorizedMembers: [],
   });
 
   return (
@@ -260,6 +279,32 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isAccessRestrictionCreationEnable && (
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <div style={fieldSpacingContainerStyle}>
+              <Accordion >
+                <AccordionSummary id="accordion-panel">
+                  <Typography>{t_i18n('Advanced options')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Field
+                    name={'authorizedMembers'}
+                    component={AuthorizedMembersField}
+                    containerstyle={{ marginTop: 20 }}
+                    showAllMembersLine
+                    showCreatorLine
+                    canDeactivate
+                    disabled={isSubmitting}
+                    addMeUserWithAdminRights
+                    owner={values.createdBy}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"

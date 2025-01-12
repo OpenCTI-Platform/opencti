@@ -10,6 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -35,6 +38,9 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -80,6 +86,7 @@ interface FormikCaseIncidentAddInput {
   created: Date | null;
   response_types: string[];
   caseTemplates?: Option[];
+  authorizedMembers: { value: string, accessRight: string }[];
 }
 
 interface IncidentFormProps {
@@ -109,10 +116,15 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+
+  const { isFeatureEnable } = useHelper();
+  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
+
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
   };
   const caseIncidentValidator = useSchemaCreationValidation(
     CASE_INCIDENT_TYPE,
@@ -144,6 +156,12 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
+      ...(isAccessRestrictionCreationEnable && {
+        authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
+          id: value,
+          access_right: accessRight,
+        })),
+      }),
     };
     commit({
       variables: {
@@ -192,6 +210,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: [],
       externalReferences: [],
       file: undefined,
+      authorizedMembers: [],
     },
   );
 
@@ -306,6 +325,32 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isAccessRestrictionCreationEnable && (
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <div style={fieldSpacingContainerStyle}>
+              <Accordion >
+                <AccordionSummary id="accordion-panel">
+                  <Typography>{t_i18n('Advanced options')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Field
+                    name={'authorizedMembers'}
+                    component={AuthorizedMembersField}
+                    containerstyle={{ marginTop: 20 }}
+                    showAllMembersLine
+                    showCreatorLine
+                    canDeactivate
+                    disabled={isSubmitting}
+                    addMeUserWithAdminRights
+                    owner={values.createdBy}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"

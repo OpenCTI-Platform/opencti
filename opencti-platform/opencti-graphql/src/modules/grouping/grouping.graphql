@@ -263,6 +263,7 @@ input GroupingAddInput {
     x_opencti_workflow_id: String
     update: Boolean
     file: Upload
+    authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {
