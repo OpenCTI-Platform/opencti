@@ -20,6 +20,7 @@ import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data
 import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data } from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
 import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
 import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
+import { useTheme } from '@mui/styles';
 import EETooltip from '../entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 // eslint-disable-next-line import/no-cycle
@@ -27,6 +28,7 @@ import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
 
 // region types
 interface TextFieldAskAiProps {
@@ -82,6 +84,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   disabled,
   style,
 }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
@@ -235,12 +238,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
           <IconButton
             size="small"
-            color="secondary"
             onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
             style={{ marginTop: 4 }}
           >
-            <AutoAwesomeOutlined fontSize='small' />
+            <AutoAwesomeOutlined fontSize='small' style={{ color: theme.palette.ai.main }} />
           </IconButton>
         </EETooltip>
         <Menu

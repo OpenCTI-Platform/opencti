@@ -422,11 +422,16 @@ type OpinionsMetrics {
   max: Int
   total: Int
 }
-type Intelligence {
+type AiIntelligence {
   trends: String
   containers: String
   internalActivity: String
   forecast: String
+  updated_at: DateTime
+}
+type AiSummary {
+  report: String
+  topics: [String]
   updated_at: DateTime
 }
 
@@ -5339,7 +5344,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  intelligence: Intelligence
 }
 input IntrusionSetAddInput {
   stix_id: StixId
@@ -12714,7 +12718,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
-  intelligence: Intelligence @auth(for: [KNOWLEDGE])
+  aiIntelligence: AiIntelligence @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -13096,6 +13100,27 @@ type Query {
     search: String
   ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   containersNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  containersDistribution(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  containersAiSummary(
+    first: Int
+    after: ID
+    orderBy: ContainersOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): AiSummary @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int

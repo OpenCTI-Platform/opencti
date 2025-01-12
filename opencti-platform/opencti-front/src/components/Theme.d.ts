@@ -74,6 +74,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   chip: Partial<ExtendedColor>
   pagination: Partial<ExtendedColor>
   ee: Partial<ExtendedColor>
+  ai: Partial<ExtendedColor>
   secondary: Partial<ExtendedColor>
   mode: PaletteMode
 }

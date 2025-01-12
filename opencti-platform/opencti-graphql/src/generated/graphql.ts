@@ -319,6 +319,22 @@ export enum AdministrativeAreasOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type AiIntelligence = {
+  __typename?: 'AiIntelligence';
+  containers?: Maybe<Scalars['String']['output']>;
+  forecast?: Maybe<Scalars['String']['output']>;
+  internalActivity?: Maybe<Scalars['String']['output']>;
+  trends?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type AiSummary = {
+  __typename?: 'AiSummary';
+  report?: Maybe<Scalars['String']['output']>;
+  topics?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
 export type Analysis = MappingAnalysis;
 
 export enum AnalysisContentType {
@@ -11195,15 +11211,6 @@ export enum IngestionTaxiiOrdering {
   Version = 'version'
 }
 
-export type Intelligence = {
-  __typename?: 'Intelligence';
-  containers?: Maybe<Scalars['String']['output']>;
-  forecast?: Maybe<Scalars['String']['output']>;
-  internalActivity?: Maybe<Scalars['String']['output']>;
-  trends?: Maybe<Scalars['String']['output']>;
-  updated_at?: Maybe<Scalars['DateTime']['output']>;
-};
-
 export type InternalObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -11254,7 +11261,6 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  intelligence?: Maybe<Intelligence>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -19390,6 +19396,7 @@ export type Query = {
   about?: Maybe<AppInfo>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
+  aiIntelligence?: Maybe<AiIntelligence>;
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
@@ -19432,6 +19439,8 @@ export type Query = {
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
   container?: Maybe<Container>;
   containers?: Maybe<ContainerConnection>;
+  containersAiSummary?: Maybe<AiSummary>;
+  containersDistribution?: Maybe<Array<Maybe<Distribution>>>;
   containersNumber?: Maybe<Number>;
   containersObjectsOfObject?: Maybe<StixObjectOrStixRelationshipConnection>;
   countries?: Maybe<CountryConnection>;
@@ -19514,7 +19523,6 @@ export type Query = {
   ingestionTaxiiCollection?: Maybe<IngestionTaxiiCollection>;
   ingestionTaxiiCollections?: Maybe<IngestionTaxiiCollectionConnection>;
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
-  intelligence?: Maybe<Intelligence>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -20016,6 +20024,31 @@ export type QueryContainersArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryContainersAiSummaryArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryContainersDistributionArgs = {
+  authorId?: InputMaybe<Scalars['String']['input']>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  objectId?: InputMaybe<Scalars['String']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
 
@@ -30905,6 +30938,8 @@ export type ResolversTypes = ResolversObject<{
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
   AdministrativeAreaEdge: ResolverTypeWrapper<Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversTypes['AdministrativeArea'] }>;
   AdministrativeAreasOrdering: AdministrativeAreasOrdering;
+  AiIntelligence: ResolverTypeWrapper<AiIntelligence>;
+  AiSummary: ResolverTypeWrapper<AiSummary>;
   Analysis: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['Analysis']>;
   AnalysisContentType: AnalysisContentType;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
@@ -31275,7 +31310,6 @@ export type ResolversTypes = ResolversObject<{
   IngestionTaxiiEdge: ResolverTypeWrapper<Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversTypes['IngestionTaxii'] }>;
   IngestionTaxiiOrdering: IngestionTaxiiOrdering;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
-  Intelligence: ResolverTypeWrapper<Intelligence>;
   InternalObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['InternalObject']>;
   InternalRelationship: ResolverTypeWrapper<Omit<InternalRelationship, 'from' | 'to'> & { from?: Maybe<ResolversTypes['InternalObject']>, to?: Maybe<ResolversTypes['InternalObject']> }>;
   InternalRelationshipAddInput: InternalRelationshipAddInput;
@@ -31771,6 +31805,8 @@ export type ResolversParentTypes = ResolversObject<{
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
   AdministrativeAreaEdge: Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversParentTypes['AdministrativeArea'] };
+  AiIntelligence: AiIntelligence;
+  AiSummary: AiSummary;
   Analysis: ResolversUnionTypes<ResolversParentTypes>['Analysis'];
   Any: Scalars['Any']['output'];
   AppDebugDistribution: AppDebugDistribution;
@@ -32083,7 +32119,6 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionTaxiiConnection: Omit<IngestionTaxiiConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionTaxiiEdge']> };
   IngestionTaxiiEdge: Omit<IngestionTaxiiEdge, 'node'> & { node: ResolversParentTypes['IngestionTaxii'] };
   Int: Scalars['Int']['output'];
-  Intelligence: Intelligence;
   InternalObject: ResolversInterfaceTypes<ResolversParentTypes>['InternalObject'];
   InternalRelationship: Omit<InternalRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['InternalObject']>, to?: Maybe<ResolversParentTypes['InternalObject']> };
   InternalRelationshipAddInput: InternalRelationshipAddInput;
@@ -32607,6 +32642,22 @@ export type AdministrativeAreaConnectionResolvers<ContextType = any, ParentType 
 export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeAreaEdge'] = ResolversParentTypes['AdministrativeAreaEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['AdministrativeArea'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AiIntelligenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiIntelligence'] = ResolversParentTypes['AiIntelligence']> = ResolversObject<{
+  containers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  forecast?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  internalActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trends?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AiSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiSummary'] = ResolversParentTypes['AiSummary']> = ResolversObject<{
+  report?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  topics?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -36232,15 +36283,6 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type IntelligenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Intelligence'] = ResolversParentTypes['Intelligence']> = ResolversObject<{
-  containers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  forecast?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  internalActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  trends?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Capability' | 'CaseTemplate' | 'Connector' | 'CsvMapper' | 'DecayRule' | 'DeleteOperation' | 'DraftWorkspace' | 'EntitySetting' | 'ExclusionList' | 'FintelTemplate' | 'Group' | 'IngestionCsv' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Playbook' | 'PublicDashboard' | 'Role' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36285,7 +36327,6 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<IntrusionSetGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetImportFilesArgs>>;
-  intelligence?: Resolver<Maybe<ResolversTypes['Intelligence']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IntrusionSetJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38623,6 +38664,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
+  aiIntelligence?: Resolver<Maybe<ResolversTypes['AiIntelligence']>, ParentType, ContextType>;
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
@@ -38665,6 +38707,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
+  containersAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAiSummaryArgs>>;
+  containersDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryContainersDistributionArgs, 'field' | 'operation'>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryContainersNumberArgs>>;
   containersObjectsOfObject?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryContainersObjectsOfObjectArgs, 'id'>>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType, Partial<QueryCountriesArgs>>;
@@ -38746,7 +38790,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionTaxiiCollection?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiCollectionArgs, 'id'>>;
   ingestionTaxiiCollections?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiiCollectionsArgs>>;
   ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
-  intelligence?: Resolver<Maybe<ResolversTypes['Intelligence']>, ParentType, ContextType>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
@@ -41878,6 +41921,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;
+  AiIntelligence?: AiIntelligenceResolvers<ContextType>;
+  AiSummary?: AiSummaryResolvers<ContextType>;
   Analysis?: AnalysisResolvers<ContextType>;
   Any?: GraphQLScalarType;
   AppDebugDistribution?: AppDebugDistributionResolvers<ContextType>;
@@ -42111,7 +42156,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionTaxiiCollectionEdge?: IngestionTaxiiCollectionEdgeResolvers<ContextType>;
   IngestionTaxiiConnection?: IngestionTaxiiConnectionResolvers<ContextType>;
   IngestionTaxiiEdge?: IngestionTaxiiEdgeResolvers<ContextType>;
-  Intelligence?: IntelligenceResolvers<ContextType>;
   InternalObject?: InternalObjectResolvers<ContextType>;
   InternalRelationship?: InternalRelationshipResolvers<ContextType>;
   IntrusionSet?: IntrusionSetResolvers<ContextType>;

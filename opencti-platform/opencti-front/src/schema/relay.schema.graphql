@@ -448,11 +448,17 @@ type OpinionsMetrics {
   total: Int
 }
 
-type Intelligence {
+type AiIntelligence {
   trends: String
   containers: String
   internalActivity: String
   forecast: String
+  updated_at: DateTime
+}
+
+type AiSummary {
+  report: String
+  topics: [String]
   updated_at: DateTime
 }
 
@@ -4107,7 +4113,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  intelligence: Intelligence
 }
 
 input IntrusionSetAddInput {
@@ -7840,7 +7845,7 @@ type Query {
   importFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesMetrics: FilesMetrics
-  intelligence: Intelligence
+  aiIntelligence: AiIntelligence
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
@@ -7932,6 +7937,8 @@ type Query {
   containers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ContainerConnection
   containersObjectsOfObject(id: String!, types: [String], filters: FilterGroup, search: String): StixObjectOrStixRelationshipConnection
   containersNumber(objectId: String, endDate: DateTime): Number
+  containersDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String, filters: FilterGroup, search: String): [Distribution]
+  containersAiSummary(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AiSummary
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): NoteConnection
   notesNumber(objectId: String, endDate: DateTime): Number

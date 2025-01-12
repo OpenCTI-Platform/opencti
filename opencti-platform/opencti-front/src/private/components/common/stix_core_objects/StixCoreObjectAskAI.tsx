@@ -40,6 +40,7 @@ import type {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
   StixCoreObjectContentFilesUploadStixCoreObjectMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
+import { useTheme } from '@mui/styles';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
 import { stixCoreObjectMappableContentFieldPatchMutation } from './StixCoreObjectMappableContent';
 import FilesNativeField from '../form/FilesNativeField';
@@ -55,6 +56,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import locale from '../../../../utils/BrowserLanguage';
 import { aiLanguage } from '../../../../components/AppIntlProvider';
+import type { Theme } from '../../../../components/Theme';
 
 // region types
 interface StixCoreObjectAskAiProps {
@@ -105,6 +107,7 @@ const actionsExplanation = {
 
 const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, instanceType, instanceName, type, instanceMarkings }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
@@ -308,7 +311,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
           size="small"
           style={{ marginRight: 3 }}
         >
-          <AutoAwesomeOutlined fontSize="small" color="secondary" />
+          <AutoAwesomeOutlined fontSize="small" style={{ color: theme.palette.ai.main }} />
         </ToggleButton>
       </EETooltip>
       <Menu

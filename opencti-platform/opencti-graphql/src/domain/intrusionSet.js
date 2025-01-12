@@ -10,7 +10,7 @@ import { FROM_START, minutesAgo, monthsAgo, now, UNTIL_END, utcDate } from '../u
 import { getIndicatorsStats, getTopVictims, getVictimologyStats, systemPrompt } from '../utils/ai/summaryHelpers';
 import { queryAi } from '../database/ai-llm';
 
-const intelligenceCache = {};
+const aiResponseCache = {};
 
 export const findById = (context, user, intrusionSetId) => {
   return storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
@@ -34,8 +34,8 @@ export const locationsPaginated = async (context, user, intrusionSetId, args) =>
 };
 
 export const intelligence = async (context, user, intrusionSetId) => {
-  if (intelligenceCache[intrusionSetId] && utcDate(intelligenceCache[intrusionSetId].updatedAt).isAfter(minutesAgo(60))) {
-    return intelligenceCache[intrusionSetId];
+  if (aiResponseCache[intrusionSetId] && utcDate(aiResponseCache[intrusionSetId].updatedAt).isAfter(minutesAgo(60))) {
+    return aiResponseCache[intrusionSetId];
   }
   const intrusionSet = await storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
   const indicatorsStats = await getIndicatorsStats(context, user, intrusionSetId, monthsAgo(24), now());
@@ -98,9 +98,8 @@ export const intelligence = async (context, user, intrusionSetId) => {
   ${JSON.stringify(topRegions)}
   `;
 
-  console.log(userPrompt);
   const trends = await queryAi(null, systemPrompt, userPrompt, user);
   const intel = { trends, forecast: trends, updatedAt: utcDate() };
-  intelligenceCache[intrusionSetId] = intel;
+  aiResponseCache[intrusionSetId] = intel;
   return intel;
 };
