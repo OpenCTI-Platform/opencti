@@ -17,6 +17,7 @@ import {
   batchUserEffectiveConfidenceLevel,
   bookmarks,
   buildCompleteUser,
+  cleanAllSessions,
   deleteBookmark,
   findAll,
   findAllMembers,
@@ -80,7 +81,7 @@ const userResolvers = {
     participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findAllMembers(context, context.user, args),
     systemMembers: () => findAllSystemMembers(),
-    sessions: () => findSessions(),
+    sessions: () => findSessions({ maxSessionsPerUser: 10 }),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
@@ -123,6 +124,9 @@ const userResolvers = {
   },
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),
+  },
+  SessionDetail: {
+    user_execution: (detail, _, context) => (detail.user_execution_id ? creatorLoader.load(detail.user_execution_id, context, context.user) : undefined),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
@@ -199,6 +203,7 @@ const userResolvers = {
       });
       return id;
     },
+    cleanAllSessions: () => cleanAllSessions(),
     otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
     userSessionsKill: async (_, { id }, context) => {
       const user = await internalLoadById(context, context.user, id);
