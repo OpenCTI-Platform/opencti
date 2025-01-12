@@ -1,5 +1,5 @@
 import { dissoc, propOr } from 'ramda';
-import { deleteElementById, storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
+import { storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
@@ -11,7 +11,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD } from '../database/utils';
+import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 
 // Query
 
@@ -94,7 +94,21 @@ export const stixRefRelationshipDelete = async (context, user, stixRefRelationsh
   if (!stixRefRelation) {
     throw FunctionalError('Cannot delete the relation, Stix-Ref-Relation cannot be found.');
   }
-  await deleteElementById(context, user, stixRefRelationshipId, ABSTRACT_STIX_REF_RELATIONSHIP);
+  const fromPromise = storeLoadByIdWithRefs(context, user, stixRefRelation.fromId);
+  const toPromise = internalLoadById(context, user, stixRefRelation.toId);
+  const [from, to] = await Promise.all([fromPromise, toPromise]);
+  if (!from || !to) {
+    throw FunctionalError('MISSING_ELEMENTS', {
+      from: stixRefRelation.fromId,
+      from_missing: !from,
+      to: stixRefRelation.toId,
+      to_missing: !to
+    });
+  }
+  const refInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, stixRefRelation.relationship_type);
+  const inputs = [{ key: refInputName, value: [stixRefRelation.toId], operation: UPDATE_OPERATION_REMOVE }];
+  await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
+
   await notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].DELETE_TOPIC, stixRefRelation, user);
   return stixRefRelationshipId;
 };

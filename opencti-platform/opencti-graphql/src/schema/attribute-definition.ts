@@ -136,8 +136,8 @@ export const draftChange: AttributeDefinition = {
   isFilterable: false,
   featureFlag: 'DRAFT_WORKSPACE',
   mappings: [
-    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    // draftUpdatePatch
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ]
 };
 
