@@ -1,14 +1,12 @@
-import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
-import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import React, { Suspense, useMemo } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import { AutoAwesomeOutlined } from '@mui/icons-material';
-import IntrusionSetIntelligence from '@components/threats/intrusion_sets/IntrusionSetIntelligence';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import IntrusionSet from './IntrusionSet';
@@ -30,8 +28,6 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import IntrusionSetEdition from './IntrusionSetEdition';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useAI from '../../../../utils/hooks/useAI';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -67,7 +63,6 @@ const intrusionSetQuery = graphql`
       }
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
-      ...IntrusionSetIntelligence_intrusionSet
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -98,8 +93,6 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const { t_i18n } = useFormatter();
   useSubscription<RootIntrusionSetSubscription>(subConfig);
   const { isFeatureEnable } = useHelper();
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const { fullyActive } = useAI();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     intrusionSet,
@@ -182,13 +175,6 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/intelligence`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/intelligence`}
-                  label={<div style={{ display: 'flex', alignItems: 'center' }}>{t_i18n('Intelligence')} &nbsp; <AutoAwesomeOutlined fontSize="small" /></div>}
-                  disabled={!isEnterpriseEdition || !fullyActive}
-                />
-                <Tab
-                  component={Link}
                   to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge/overview`}
                   value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
                   label={t_i18n('Knowledge')}
@@ -218,21 +204,14 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
-              )}
+              <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
+
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
                   <IntrusionSet intrusionSetData={intrusionSet} />
-                }
-              />
-              <Route
-                path="/intelligence"
-                element={
-                  <IntrusionSetIntelligence intrusionSetData={intrusionSet} />
                 }
               />
               <Route
