@@ -1,4 +1,4 @@
-import { addIntrusionSet, intelligence, findAll, findById, locationsPaginated } from '../domain/intrusionSet';
+import { addIntrusionSet, findAll, findById, locationsPaginated } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

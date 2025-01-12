@@ -328,7 +328,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRe
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}
       </Typography>
-      <AISummaryContainer title='test' floating={true}>
+      <AISummaryContainer floating={true}>
         <ContainersAiSummary
           stixCoreObjectId={stixCoreObjectOrStixRelationshipId}
           first={10}

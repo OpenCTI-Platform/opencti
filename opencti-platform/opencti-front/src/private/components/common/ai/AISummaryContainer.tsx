@@ -91,12 +91,11 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 }));
 
 interface AiSummaryContainerProps {
-  title: string
   children: ReactNode
   floating?: boolean
 }
 
-const AISummaryContainer = ({ title, children, floating = false }: AiSummaryContainerProps) => {
+const AISummaryContainer = ({ children, floating = false }: AiSummaryContainerProps) => {
   const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -191,7 +190,7 @@ const AISummaryContainer = ({ title, children, floating = false }: AiSummaryCont
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
+          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{t_i18n('Summary of the latest containers')}</Typography>
           <Typography variant="caption" style={{ display: 'flex', alignItems: 'center', textWrap: 'nowrap', position: 'absolute', right: 10 }}>
             {t_i18n('Powered by')}&nbsp;<a href='https://docs.opencti.io' target='_blank' rel='noreferrer'>XTM Copilot</a>
             <Chip label="beta" color="secondary" size="small" style={{ marginLeft: 10, borderRadius: 4, fontSize: 10 }} />
