@@ -24,14 +24,13 @@ import {
 } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../utils/ee';
-import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
-import { elSearchFiles } from '../../database/file-search';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { queryAi } from '../../database/ai-llm';
 import { getDraftContext } from '../../utils/draftContext';
+import { resolveFiles } from '../../utils/ai/dataResolutionHelpers';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
 const SYSTEM_PROMPT = 'You are an assistant helping cybersecurity engineer to select attack simulation elements and actions based on the given threat intelligence information.';
@@ -56,28 +55,6 @@ export const scenarioElementsDistribution = async (context, user, args) => {
   const { id } = args;
   const filters = addFilter(args.filters, buildRefRelationKey('*', '*'), id);
   return distributionEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], { field: 'entity_type', filters });
-};
-
-export const resolveFiles = async (context, user, stixCoreObject) => {
-  const opts = {
-    first: 1,
-    prefixMimeTypes: undefined,
-    entity_id: stixCoreObject.id,
-    entity_type: stixCoreObject.entity_type
-  };
-  const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
-  const fileIds = importFiles.edges.map((n) => n.node.id);
-  if (fileIds.length === 0) {
-    return [];
-  }
-  const files = await elSearchFiles(context, user, {
-    first: 1,
-    fileIds,
-    connectionFormat: false,
-    excludeFields: [],
-    includeContent: true
-  });
-  return files;
 };
 
 export const resolveContent = async (context, user, stixCoreObject) => {

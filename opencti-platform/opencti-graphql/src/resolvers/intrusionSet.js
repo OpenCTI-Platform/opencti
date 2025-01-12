@@ -15,7 +15,6 @@ const intrusionSetResolvers = {
   },
   IntrusionSet: {
     locations: (intrusionSet, args, context) => locationsPaginated(context, context.user, intrusionSet.id, args),
-    intelligence: (intrusionSet, _, context) => intelligence(context, context.user, intrusionSet.id),
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, context) => ({

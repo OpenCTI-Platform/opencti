@@ -25,7 +25,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
     fontSize: 12,
     height: 20,
-    borderRadius: 10,
+    borderRadius: 4,
     lineHeight: '32px',
   },
   operator1: {
@@ -232,22 +232,26 @@ FilterIconButtonContainerProps
     classOperator = classes.operator3;
     margin = '0px';
   }
+  let boxStyle = {
+    margin: `${margin} 0`,
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 1,
+    overflow: 'auto',
+  };
+  if (!isReadWriteFilter) {
+    if (styleNumber !== 2) {
+      boxStyle = {
+        margin: '0 0',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 0,
+        overflow: 'hidden',
+      };
+    }
+  }
   return (
-    <Box
-      sx={
-        !isReadWriteFilter
-          ? {
-            display: 'flex',
-            overflow: 'hidden',
-          }
-          : {
-            margin: `${margin} 0`,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-          }
-      }
-    >
+    <Box sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);

@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import { TableTuneIcon } from 'filigran-icon';
 import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
-import NestedMenuButton from '../nestedMenu/NestedMenuButton';
+import NestedMenuButton from '../nested_menu/NestedMenuButton';
 import { useDataTableContext } from './components/DataTableContext';
 
 const DataTablePagination = ({

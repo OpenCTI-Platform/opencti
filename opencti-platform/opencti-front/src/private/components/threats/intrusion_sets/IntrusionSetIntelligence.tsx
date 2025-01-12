@@ -2,14 +2,12 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import parse from 'html-react-parser';
+import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
 import { IntrusionSetIntelligence_intrusionSet$key } from './__generated__/IntrusionSetIntelligence_intrusionSet.graphql';
 
 const intrusionSetIntelligenceFragment = graphql`
   fragment IntrusionSetIntelligence_intrusionSet on IntrusionSet {
     id
-    intelligence {
-      trends
-    }
   }
 `;
 
@@ -19,7 +17,14 @@ interface IntrusionSetIntelligenceProps {
 
 const IntrusionSetIntelligence: React.FC<IntrusionSetIntelligenceProps> = ({ intrusionSetData }) => {
   const intrusionSet = useFragment<IntrusionSetIntelligence_intrusionSet$key>(intrusionSetIntelligenceFragment, intrusionSetData);
-  console.log(intrusionSet);
+  const containersFilters = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', values: ['Report'] },
+      { key: 'objects', values: [intrusionSet.id] },
+    ],
+    filterGroups: [],
+  };
   return (
     <>
       <Grid
@@ -28,7 +33,7 @@ const IntrusionSetIntelligence: React.FC<IntrusionSetIntelligenceProps> = ({ int
         style={{ marginBottom: 20 }}
       >
         <Grid item xs={6}>
-          {parse(intrusionSet?.intelligence?.trends ?? '')}
+          <ContainersAiSummary first={10} filters={containersFilters} />
         </Grid>
       </Grid>
     </>

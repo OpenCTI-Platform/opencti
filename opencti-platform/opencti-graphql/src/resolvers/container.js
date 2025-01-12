@@ -10,7 +10,9 @@ import {
   containersNumberByEntity,
   containerEditAuthorizedMembers,
   getFilesFromTemplate,
-  getFintelTemplates
+  getFintelTemplates,
+  aiSummary,
+  containersDistributionByEntity
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
@@ -23,6 +25,8 @@ import {
 import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
 import { getUserAccessRight } from '../utils/access';
+import { distributionEntities } from '../database/middleware';
+import { ENTITY_TYPE_CONTAINER } from '../schema/general';
 
 const containerResolvers = {
   Query: {
@@ -38,6 +42,13 @@ const containerResolvers = {
       }
       return containersNumber(context, context.user, args);
     },
+    containersDistribution: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return containersDistributionByEntity(context, context.user, args);
+      }
+      return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER], args);
+    },
+    containersAiSummary: (_, args, context) => aiSummary(context, context.user, args),
   },
   Container: {
     __resolveType(obj) {

@@ -180,9 +180,11 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
               />
             )}
           </Alert>
-          <Box sx={{ paddingTop: 4,
+          <Box sx={{
+            paddingTop: 4,
             display: 'flex',
-            gap: 1 }}
+            gap: 1,
+          }}
           >
             <Filters
               availableFilterKeys={stixFilters}
@@ -194,7 +196,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             filters={filters}
             styleNumber={2}
             helpers={helpers}
-            redirection
+            redirection={true}
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
           />
