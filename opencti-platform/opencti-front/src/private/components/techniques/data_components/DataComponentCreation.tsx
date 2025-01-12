@@ -22,7 +22,7 @@ import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation, DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -89,17 +89,16 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_COMPONENT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number()
       .nullable(),
-  };
-  const dataComponentValidator = useSchemaCreationValidation(
-    DATA_COMPONENT_TYPE,
+  }, mandatoryAttributes);
+  const dataComponentValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -184,6 +183,8 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     <Formik<DataComponentAddInput>
       initialValues={initialValues}
       validationSchema={dataComponentValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -221,11 +222,12 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
           >
             <BulkResult variablesToString={(v) => v.input.name} />
           </ProgressBar>
-          <Form>
+          <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Data-Component']}
             />
@@ -237,6 +239,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -244,6 +247,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -252,6 +256,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -261,6 +266,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={{
                 marginTop: 20,
                 width: '100%',
@@ -269,6 +275,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={{
                 marginTop: 20,
                 width: '100%',
