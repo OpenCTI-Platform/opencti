@@ -36,6 +36,5 @@ const EXCLUSION_LIST_CACHE_SYNC_MANAGER: ManagerDefinition = {
     return this.enabledByConfig;
   }
 };
-if (isFeatureEnabled('EXCLUSION_LIST')) {
-  registerManager(EXCLUSION_LIST_CACHE_SYNC_MANAGER);
-}
+
+registerManager(EXCLUSION_LIST_CACHE_SYNC_MANAGER);

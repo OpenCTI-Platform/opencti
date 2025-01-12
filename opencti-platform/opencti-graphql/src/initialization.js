@@ -129,9 +129,7 @@ const platformInit = async (withMarkings = true) => {
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
     }
-    if (isFeatureEnabled('EXCLUSION_LIST')) {
-      await initExclusionListCache();
-    }
+    await initExclusionListCache();
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';

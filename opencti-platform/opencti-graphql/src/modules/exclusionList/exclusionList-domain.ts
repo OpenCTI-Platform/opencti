@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import conf, { BUS_TOPICS } from '../../config/conf';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
 import { deleteFile } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
@@ -15,7 +15,6 @@ import { generateInternalId } from '../../schema/identifier';
 
 const filePath = 'exclusionLists';
 
-const isExclusionListEnabled = isFeatureEnabled('EXCLUSION_LIST');
 const MAX_FILE_SIZE = conf.get('app:exclusion_list:file_max_size') ?? 10000000;
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -98,7 +97,6 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
 };
 
 export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
   return storeAndCreateExclusionList(context, user, input, input.file);
 };
 
@@ -135,7 +133,6 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
 };
 
 export const deleteExclusionList = async (context: AuthContext, user: AuthUser, exclusionListId: string) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
   const exclusionList = await findById(context, user, exclusionListId);
   await deleteFile(context, user, exclusionList.file_id);
   const deletedExclusionList = deleteInternalObject(context, user, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST);
