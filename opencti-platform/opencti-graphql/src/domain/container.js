@@ -352,11 +352,13 @@ export const aiSummary = async (context, user, args) => {
   ## Summarize
   - In clear and concise language, summarize the key points and themes presented in the reports.
   - Avoid using the general knowledge as much as possible and focus on the user input.
-  - Put footnotes to source as much as possible all the information you have generated referring the original reports. 
+  - Put footnotes to source as much as possible all the information you have generated referring the original reports.
+  - Ensure that sources contain title, date and author.
+  - Always start the report with a section "Key Findings".
   
   ## Report writing
   - Create a comprehensive report in markdown format.
-  - Always start the report with a section "Key Findings".
+  - In the markdown format, don't use h1 (first level title), start with h2.  
   `;
 
   const userPromptTopics = `
