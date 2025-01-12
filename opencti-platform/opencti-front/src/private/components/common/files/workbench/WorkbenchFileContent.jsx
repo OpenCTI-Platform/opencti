@@ -308,7 +308,6 @@ const defaultValueKeys = {
     'hashes.SHA-1',
     'hashes.SHA-256',
     'hashes.SHA-512',
-    'dst_port',
   ],
 };
 

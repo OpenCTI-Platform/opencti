@@ -487,8 +487,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         authorizationURL: `https://${authDomain}/authorize`,
         tokenURL: `https://${authDomain}/oauth/token`,
         userInfoURL: `https://${authDomain}/userinfo`,
-        client_id: config.clientID,
-        client_secret: config.clientSecret,
+        client_id: config.clientID ? config.clientID : mappedConfig.clientID, // backward compatibility with Json conf & env var
+        client_secret: config.clientSecret ? config.clientSecret : mappedConfig.clientSecret,
         redirect_uri: config.callback_url
       };
       const auth0config = { ...config, ...auth0OpenIDConfiguration };

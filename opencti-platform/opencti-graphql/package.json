@@ -213,6 +213,7 @@
     "cookie": "0.7.2",
     "cross-fetch": "4.0.0",
     "jose": "5.9.6",
+    "source-map": "0.7.4",
     "json5": "2.2.3",
     "lodash": "4.17.21",
     "@xmldom/xmldom": "0.8.10",
