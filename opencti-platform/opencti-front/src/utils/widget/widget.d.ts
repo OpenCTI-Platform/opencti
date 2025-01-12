@@ -1,5 +1,8 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
-import { WidgetPerspective } from '../../private/components/widgets/widgetUtils';
+
+export type WidgetContext = 'workspace' | 'fintelTemplate';
+
+export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
 interface WidgetColumn {
   attribute: string | null
@@ -17,12 +20,12 @@ export interface WidgetDataSelection {
   centerLng?: number | null
   zoom?: number | null
   isTo?: boolean | null
+  instance_id?: string | null
   perspective?: WidgetPerspective | null
   filters?: FilterGroup | null
   dynamicFrom?: FilterGroup | null
   dynamicTo?: FilterGroup | null
   columns?: readonly WidgetColumn[] | null
-  instance_id?: string | null
   sort_by?: string | null
   sort_mode?: string | null
 }
@@ -51,6 +54,6 @@ export interface Widget {
   type: string;
   perspective?: WidgetPerspective | null
   dataSelection: WidgetDataSelection[]
-  parameters?: WidgetParameters
-  layout?: WidgetLayout
+  parameters?: WidgetParameters | null
+  layout?: WidgetLayout | null
 }

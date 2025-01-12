@@ -52,7 +52,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+      <div style={{ display: 'flex', gap: theme.spacing(1) }}>
         <Typography variant="h1" sx={{ float: 'left' }}>
           {template.name}
         </Typography>

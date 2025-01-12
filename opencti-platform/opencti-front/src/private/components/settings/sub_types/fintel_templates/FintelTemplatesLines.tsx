@@ -1,6 +1,6 @@
-import FintelTemplatePopover from '@components/settings/sub_types/fintel_templates/FintelTemplatePopover';
 import React, { FunctionComponent } from 'react';
-import { FintelTemplatesGrid_templates$data } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatesGrid_templates.graphql';
+import FintelTemplatePopover from './FintelTemplatePopover';
+import { FintelTemplatesGrid_templates$data } from './__generated__/FintelTemplatesGrid_templates.graphql';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { resolveLink } from '../../../../../utils/Entity';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
@@ -18,7 +18,7 @@ interface FintelTemplatesLinesProps {
   targetType: string,
 }
 
-export const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
+const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
   fintelTemplates,
   dataTableRef,
   onUpdate,
@@ -41,6 +41,7 @@ export const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> 
       ),
     },
   };
+
   return (
     <DataTableWithoutFragment
       dataColumns={dataColumns}

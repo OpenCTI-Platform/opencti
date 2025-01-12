@@ -10,9 +10,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
+import { graphql } from 'react-relay';
+import { WidgetCreationParametersInstanceIdQuery$data } from '@components/widgets/__generated__/WidgetCreationParametersInstanceIdQuery.graphql';
+import WidgetAttributesInput from '@components/widgets/WidgetAttributesInput';
+import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -20,26 +23,43 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
+import ItemIcon from '../../../components/ItemIcon';
 
-interface WidgetCreationParametersProps {
-  dataSelection: WidgetDataSelection[],
-  setDataSelection: (d: WidgetDataSelection[]) => void,
-  parameters: WidgetParameters,
-  setParameters: (p: WidgetParameters) => void,
-  type: string,
-}
+const widgetCreationParametersInstanceIdQuery = graphql`
+  query WidgetCreationParametersInstanceIdQuery(
+    $search: String
+    $types: [String]
+    $count: Int
+    $filters: FilterGroup
+  ) {
+    stixCoreObjects(
+      search: $search
+      types: $types
+      first: $count
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          representative {
+            main
+          }
+        }
+      }
+    }
+  }
+`;
 
-const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps> = ({
-  dataSelection,
-  setDataSelection,
-  parameters,
-  setParameters,
-  type,
-}) => {
+const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+  const { config, setConfigWidget, context, setConfigVariableName } = useWidgetConfigContext();
+  const { type, dataSelection, parameters } = config.widget;
+
   const handleChangeDataValidationParameter = (
     i: number,
     key: string,
@@ -58,8 +78,28 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
+  const handleChangeDataValidationColumns = (
+    i: number,
+    value: WidgetColumn[],
+  ) => {
+    if (value === null) {
+      throw Error(t_i18n('This value cannot be null'));
+    }
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        return {
+          ...data,
+          columns: value.map((v) => ({ ...v, variableName: v.variableName ?? v.attribute })),
+        };
+      }
+      return data;
+    });
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
+  };
+
   const handleToggleDataValidationIsTo = (i: number) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
@@ -67,13 +107,27 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
   const handleToggleParameter = (parameter: keyof WidgetParameters) => {
-    setParameters({ ...parameters, [parameter]: !parameters[parameter] });
+    setConfigWidget({
+      ...config.widget,
+      parameters: {
+        ...config.widget.parameters,
+        [parameter]: !parameters[parameter],
+      },
+    });
   };
+
   const handleChangeParameter = (parameter: string, value: string) => {
-    setParameters({ ...parameters, [parameter]: value });
+    setConfigWidget({
+      ...config.widget,
+      parameters: {
+        ...config.widget.parameters,
+        [parameter]: value,
+      },
+    });
   };
 
   const getCurrentSelectedEntityTypes = (index: number) => {
@@ -92,36 +146,55 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
     <div style={{ marginTop: 20 }}>
       <TextField
         label={t_i18n('Title')}
+        required={context === 'fintelTemplate'}
         fullWidth={true}
         value={parameters.title}
         onChange={(event) => handleChangeParameter('title', event.target.value)
         }
       />
-      {getCurrentCategory(type) === 'text' && (
-        <div style={{ marginTop: 20 }}>
-          <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
-          <ReactMde
-            value={parameters.content ?? undefined}
-            onChange={(value) => handleChangeParameter('content', value)}
-            selectedTab={selectedTab}
-            onTabChange={(tab) => setSelectedTab(tab)}
-            generateMarkdownPreview={(markdown) => Promise.resolve(
-              <MarkdownDisplay
-                content={markdown}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />,
-            )}
-            l18n={{
-              write: t_i18n('Write'),
-              preview: t_i18n('Preview'),
-              uploadingImage: t_i18n('Uploading image'),
-              pasteDropSelect: t_i18n('Paste'),
-            }}
-            minEditorHeight={100}
-            maxEditorHeight={100}
+      {context === 'fintelTemplate'
+        && <div style={{ marginTop: 20 }}>
+          <TextField
+            label={t_i18n('Variable name')}
+            required
+            fullWidth={true}
+            value={config.fintelVariableName}
+            onChange={(event) => setConfigVariableName(event.target.value)
+          }
           />
         </div>
+      }
+      <TextField
+        label={t_i18n('Title')}
+        fullWidth={true}
+        value={parameters.title}
+        onChange={(event) => handleChangeParameter('title', event.target.value)}
+      />
+      {getCurrentCategory(type) === 'text' && (
+      <div style={{ marginTop: 20 }}>
+        <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
+        <ReactMde
+          value={parameters.content ?? undefined}
+          onChange={(value) => handleChangeParameter('content', value)}
+          selectedTab={selectedTab}
+          onTabChange={(tab) => setSelectedTab(tab)}
+          generateMarkdownPreview={(markdown) => Promise.resolve(
+            <MarkdownDisplay
+              content={markdown}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />,
+          )}
+          l18n={{
+            write: t_i18n('Write'),
+            preview: t_i18n('Preview'),
+            uploadingImage: t_i18n('Uploading image'),
+            pasteDropSelect: t_i18n('Paste'),
+          }}
+          minEditorHeight={100}
+          maxEditorHeight={100}
+        />
+      </div>
       )}
       {getCurrentCategory(type) === 'timeseries' && (
         <FormControl fullWidth={true} style={{ marginTop: 20 }}>
@@ -147,22 +220,87 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           .map((_, i) => {
             return (
               <div key={i}>
+                {(type === 'attribute'
+                  && <div
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      marginTop: 20,
+                    }}
+                     >
+                    <FormControl
+                      fullWidth={true}
+                      style={{
+                        flex: 1,
+                        width: '100%',
+                      }}
+                    >
+                      <InputLabel>{t_i18n('Instance')}</InputLabel>
+                      <QueryRenderer
+                        query={widgetCreationParametersInstanceIdQuery}
+                        variables={{
+                          count: 200,
+                        }}
+                        render={({ props: resultProps }: { props: WidgetCreationParametersInstanceIdQuery$data }) => {
+                          if (resultProps
+                          && resultProps.stixCoreObjects
+                          ) {
+                            const instancesValues = (resultProps.stixCoreObjects.edges)
+                              .map((n) => n.node);
+                            return (
+                              <Select
+                                fullWidth={true}
+                                disabled={dataSelection[i].instance_id === 'SELF_ID'}
+                                value={dataSelection[i].instance_id}
+                                onChange={(event) => handleChangeDataValidationParameter(
+                                  i,
+                                  'instance_id',
+                                  event.target.value,
+                                )
+                              }
+                              >
+                                {[
+                                  { id: 'SELF_ID', entity_type: 'self', representative: { main: 'SELF_ID' } },
+                                  ...instancesValues,
+                                ].map((instance) => (
+                                  <MenuItem
+                                    key={instance.id}
+                                    value={instance.id}
+                                  >
+                                    <ItemIcon type={instance.entity_type} />
+                                    <div style={{
+                                      display: 'inline-block',
+                                      flexGrow: 1,
+                                      marginLeft: 10,
+                                    }}
+                                    >{instance.representative.main}</div>
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            );
+                          }
+                          return <div/>;
+                        }}
+                      />
+                    </FormControl>
+                  </div>
+                    )}
                 {(getCurrentCategory(type) === 'distribution'
-                  || getCurrentCategory(type) === 'list') && (
-                  <TextField
-                    label={t_i18n('Number of results')}
-                    fullWidth={true}
-                    type="number"
-                    value={dataSelection[i].number ?? 10}
-                    onChange={(event) => handleChangeDataValidationParameter(
-                      i,
-                      'number',
-                      event.target.value,
-                      true,
-                    )
+                      || getCurrentCategory(type) === 'list') && (
+                      <TextField
+                        label={t_i18n('Number of results')}
+                        fullWidth={true}
+                        type="number"
+                        value={dataSelection[i].number ?? 10}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'number',
+                          event.target.value,
+                          true,
+                        )
                     }
-                    style={{ marginTop: 20 }}
-                  />
+                        style={{ marginTop: 20 }}
+                      />
                 )}
                 {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
                   <div
@@ -247,7 +385,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective !== 'audits' && (
+                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute'].includes(type) && (
                   <div
                     style={{
                       display: 'flex',
@@ -376,39 +514,20 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           )
                           }
                         >
-                          <MenuItem key="internal_id" value="internal_id">
-                            {t_i18n('Entity')}
-                          </MenuItem>
-                          <MenuItem key="entity_type" value="entity_type">
-                            {t_i18n('Entity type')}
-                          </MenuItem>
-                          <MenuItem key="relationship_type" value="relationship_type">
-                            {t_i18n('Relationship type')}
-                          </MenuItem>
-                          <MenuItem
-                            key="created-by.internal_id"
-                            value="created-by.internal_id"
-                          >
-                            {t_i18n('Author')}
-                          </MenuItem>
-                          <MenuItem
-                            key="object-marking.internal_id"
-                            value="object-marking.internal_id"
-                          >
-                            {t_i18n('Marking definition')}
-                          </MenuItem>
-                          <MenuItem
-                            key="kill-chain-phase.internal_id"
-                            value="kill-chain-phase.internal_id"
-                          >
-                            {t_i18n('Kill chain phase')}
-                          </MenuItem>
-                          <MenuItem key="creator_id" value="creator_id">
-                            {t_i18n('Creator')}
-                          </MenuItem>
-                          <MenuItem key="x_opencti_workflow_id" value="x_opencti_workflow_id">
-                            {t_i18n('Status')}
-                          </MenuItem>
+                          {[
+                            { value: 'internal_id', label: 'Entity' },
+                            { value: 'entity_type', label: 'Entity type' },
+                            { value: 'relationship_type', label: 'Relationship type' },
+                            { value: 'created-by.internal_id', label: 'Author' },
+                            { value: 'object-marking.internal_id', label: 'Marking definition' },
+                            { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
+                            { value: 'creator_id', label: 'Creator' },
+                            { value: 'x_opencti_workflow_id', label: 'Status' },
+                          ].map((n) => (
+                            <MenuItem key={n.value} value={n.value}>
+                              {t_i18n(n.label)}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     )}
@@ -490,6 +609,12 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           />
                         </FormControl>
                       )}
+                    {type === 'attribute'
+                      && <WidgetAttributesInput
+                        value={dataSelection[i]?.columns ?? []}
+                        onChange={(value) => handleChangeDataValidationColumns(i, value)}
+                         ></WidgetAttributesInput>
+                    }
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
                         <FormControl

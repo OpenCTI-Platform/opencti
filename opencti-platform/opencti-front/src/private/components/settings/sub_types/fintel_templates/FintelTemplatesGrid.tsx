@@ -8,7 +8,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { graphql, useFragment } from 'react-relay';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import FintelTemplatesLines, { TemplateType } from '@components/settings/sub_types/fintel_templates/FintelTemplatesLines';
+import FintelTemplatesLines, { TemplateType } from './FintelTemplatesLines';
 import { FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
 import { FintelTemplateFormInputs } from './FintelTemplateForm';
@@ -111,14 +111,15 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
                 {t_i18n('FINTEL templates are available with an Enterprise Edition subscription')}
               </div>
             )}
-            {isEnterpriseEdition
-              && <FintelTemplatesLines
+            {isEnterpriseEdition && (
+              <FintelTemplatesLines
                 fintelTemplates={fintelTemplates}
                 dataTableRef={dataTableRef}
                 onUpdate={onUpdate}
                 entitySettingId={entitySettingId}
                 targetType={target_type}
-                 ></FintelTemplatesLines>}
+              />
+            )}
           </div>
         </Paper>
       </Grid>

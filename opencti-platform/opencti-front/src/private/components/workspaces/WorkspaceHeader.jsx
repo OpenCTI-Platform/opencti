@@ -369,7 +369,6 @@ const WorkspaceHeader = ({
               <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace}></WorkspaceWidgetConfig>
             </div>
           </Security>
-
         )}
         {variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>

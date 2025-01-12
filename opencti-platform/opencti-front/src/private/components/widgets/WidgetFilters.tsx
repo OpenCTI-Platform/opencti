@@ -5,11 +5,10 @@ import useFiltersState from '../../../utils/filters/useFiltersState';
 import { isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
-import type { WidgetDataSelection } from '../../../utils/widget/widget';
-import { WidgetPerspective } from './widgetUtils';
+import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 
 interface WidgetFiltersProps {
-  perspective: WidgetPerspective;
+  perspective: WidgetPerspective | null;
   type: string;
   dataSelection: WidgetDataSelection;
   setDataSelection: (data: WidgetDataSelection) => void;

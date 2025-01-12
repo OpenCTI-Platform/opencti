@@ -5,20 +5,34 @@ import CardContent from '@mui/material/CardContent';
 import { DatabaseOutline, FlaskOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { LibraryBooksOutlined } from '@mui/icons-material';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes, WidgetPerspective } from './widgetUtils';
+import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { useWidgetConfigContext } from './WidgetConfigContext';
+import type { WidgetPerspective } from '../../../utils/widget/widget';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
-interface WidgetCreationPerspectiveProps {
-  handleSelectPerspective: (perspective: WidgetPerspective) => void,
-  type: string,
-}
-
-const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProps> = ({
-  handleSelectPerspective,
-  type,
-}) => {
+const WidgetCreationPerspective = () => {
   const { t_i18n } = useFormatter();
+  const { config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { type, dataSelection } = config.widget;
+
+  const handleSelectPerspective = (perspective: WidgetPerspective) => {
+    const newDataSelection = dataSelection.map((n) => ({
+      ...n,
+      perspective,
+      filters: perspective === n.perspective ? n.filters : emptyFilterGroup,
+      dynamicFrom: perspective === n.perspective ? n.dynamicFrom : emptyFilterGroup,
+      dynamicTo: perspective === n.perspective ? n.dynamicTo : emptyFilterGroup,
+    }));
+    setConfigWidget({
+      ...config.widget,
+      perspective,
+      dataSelection: newDataSelection,
+    });
+    setStep(2);
+  };
+
   const getCurrentIsEntities = () => {
     return indexedVisualizationTypes[type]?.isEntities ?? false;
   };

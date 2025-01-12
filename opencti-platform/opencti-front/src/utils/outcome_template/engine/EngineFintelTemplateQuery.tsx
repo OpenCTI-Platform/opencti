@@ -36,6 +36,8 @@ const engineFintelTemplateQuery = graphql`
                 label
               }
               instance_id
+              sort_by
+              sort_mode
             }
         }
       }
