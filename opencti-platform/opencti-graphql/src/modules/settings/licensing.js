@@ -21,9 +21,11 @@ import conf from '../../config/conf';
 
 const GLOBAL_LICENSE_OPTION = 'global';
 export const LICENSE_OPTION_TRIAL = 'trial';
-const LICENSE_OPTION_PRODUCT = 'opencti';
-const LICENSE_OPTION_TYPE = '1.2.3.4.5.6.7.8.9';
-const LICENSE_OPTION_PRODUCT_IDENTIFIER = '1.2.3.4.5.6.7.8.11';
+
+// https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
+// 62944 - Filigran
+export const LICENSE_OPTION_TYPE = '6.2.9.4.4.10';
+export const LICENSE_OPTION_PRODUCT = '6.2.9.4.4.20';
 
 const getExtensionValue = (clientCrt, extension) => {
   return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
@@ -36,7 +38,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
       const license_type = getExtensionValue(clientCrt, LICENSE_OPTION_TYPE);
-      const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT_IDENTIFIER) === LICENSE_OPTION_PRODUCT;
+      const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT) === 'opencti';
       const license_customer = clientCrt.subject.getField('O').value;
       const license_platform = clientCrt.subject.getField('OU').value;
       const license_platform_match = valid_product && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
