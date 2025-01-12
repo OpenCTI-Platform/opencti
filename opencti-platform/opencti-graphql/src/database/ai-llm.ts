@@ -1,4 +1,4 @@
-import MistralClient from '@mistralai/mistralai';
+import { Mistral } from '@mistralai/mistralai';
 import OpenAI from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { isEmptyField } from './utils';
@@ -13,11 +13,19 @@ const AI_ENDPOINT = conf.get('ai:endpoint');
 const AI_TOKEN = conf.get('ai:token');
 const AI_MODEL = conf.get('ai:model');
 
-let client: MistralClient | OpenAI | null = null;
+let client: Mistral | OpenAI | null = null;
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
-      client = new MistralClient(AI_TOKEN, isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT);
+      client = new Mistral({
+        serverURL: isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT,
+        apiKey: AI_TOKEN,
+        debugLogger: {
+          log: (message, args) => logApp.info(`[AI] log ${message}`, { message }),
+          group: (label) => logApp.info(`[AI] group ${label} start.`),
+          groupEnd: () => logApp.info('[AI] group end.'),
+        }
+      });
       break;
     case 'openai':
       client = new OpenAI({
@@ -35,17 +43,19 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: question.substring(0, 100) });
-    const response = (client as MistralClient)?.chatStream({
+    logApp.info('[AI] Querying MistralAI with prompt', { questionStart: question });
+    const response = await (client as Mistral)?.chat.stream({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],
+      safePrompt: undefined,
     });
     let content = '';
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
-        if (chunk.choices[0].delta.content !== undefined) {
-          const streamText = chunk.choices[0].delta.content;
+        logApp.info('[AI] Querying MistralAI response chunk', { chunk });
+        if (chunk.data.choices[0].delta.content !== undefined) {
+          const streamText = chunk.data.choices[0].delta.content;
           content += streamText;
           if (busId !== null) {
             await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
