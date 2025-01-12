@@ -8,7 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/gen
 import { RELATION_ORIGINATES_FROM } from '../schema/stixCoreRelationship';
 import { FROM_START, minutesAgo, monthsAgo, now, UNTIL_END, utcDate } from '../utils/format';
 import { getIndicatorsStats, getTopVictims, getVictimologyStats, systemPrompt } from '../utils/ai/summaryHelpers';
-import { compute } from '../database/ai-llm';
+import { queryAi } from '../database/ai-llm';
 
 const intelligenceCache = {};
 
@@ -99,7 +99,7 @@ export const intelligence = async (context, user, intrusionSetId) => {
   `;
 
   console.log(userPrompt);
-  const trends = await compute(null, systemPrompt, userPrompt, user);
+  const trends = await queryAi(null, systemPrompt, userPrompt, user);
   const intel = { trends, forecast: trends, updatedAt: utcDate() };
   intelligenceCache[intrusionSetId] = intel;
   return intel;
