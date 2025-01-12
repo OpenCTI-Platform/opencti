@@ -19,7 +19,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { InfrastructureCreationMutation, InfrastructureCreationMutation$variables } from './__generated__/InfrastructureCreationMutation.graphql';
@@ -93,8 +93,9 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INFRASTRUCTURE_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
@@ -108,9 +109,9 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
         'The last seen date can\'t be before first seen date',
       )
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  };
-  const infrastructureValidator = useSchemaCreationValidation(
-    INFRASTRUCTURE_TYPE,
+  }, mandatoryAttributes);
+  const infrastructureValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -200,6 +201,8 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     <Formik<InfrastructureAddInput>
       initialValues={initialValues}
       validationSchema={infrastructureValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -236,6 +239,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Infrastructure']}
             />
@@ -243,6 +247,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               label={t_i18n('Infrastructure types')}
               type="infrastructure-type-ov"
               name="infrastructure_types"
+              required={(mandatoryAttributes.includes('infrastructure_types'))}
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
               onChange={(name, value) => setFieldValue(name, value)}
@@ -256,6 +261,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               name="first_seen"
               textFieldProps={{
                 label: t_i18n('First seen'),
+                required: (mandatoryAttributes.includes('first_seen')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -266,6 +272,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               name="last_seen"
               textFieldProps={{
                 label: t_i18n('Last seen'),
+                required: (mandatoryAttributes.includes('last_seen')),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -273,12 +280,14 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             />
             <KillChainPhasesField
               name="killChainPhases"
+              required={(mandatoryAttributes.includes('killChainPhases'))}
               style={fieldSpacingContainerStyle}
             />
             <Field
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -286,21 +295,25 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
