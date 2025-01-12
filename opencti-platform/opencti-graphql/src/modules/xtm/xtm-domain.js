@@ -413,7 +413,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
 };
 
 export const generateContainerScenario = async (context, user, args) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot generate scenario in draft');
+  }
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
@@ -426,7 +428,9 @@ export const generateContainerScenario = async (context, user, args) => {
 };
 
 export const generateThreatScenario = async (context, user, args) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot generate scenario in draft');
+  }
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);
@@ -439,7 +443,9 @@ export const generateThreatScenario = async (context, user, args) => {
 };
 
 export const generateVictimScenario = async (context, user, args) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot generate scenario in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot generate scenario in draft');
+  }
   const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
   if (useAI || simulationType !== 'technical') {
     await checkEnterpriseEdition(context);

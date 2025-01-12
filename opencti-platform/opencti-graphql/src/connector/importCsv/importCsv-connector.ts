@@ -46,7 +46,7 @@ const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts
       hasError = true;
       const errorData = { error: error.message, source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
-      logApp.error(`${LOG_PREFIX} Error streaming the CSV data`, { error });
+      logApp.error(`${LOG_PREFIX} Error streaming the CSV data`, { cause: error });
     }).on('end', async () => {
       if (!hasError) {
         // it's fine to use deprecated bundleProcess since this whole method is also deprecated for drafts.
@@ -132,12 +132,12 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
             totalBundlesCount += bundleCount;
           } catch (error: any) {
             const errorData = { error: error.message, source: `${fileId}, from ${lineNumber} and ${BULK_LINE_PARSING_NUMBER} following lines.` };
-            logApp.error(`${LOG_PREFIX} CSV line parsing error`, { error: errorData });
+            logApp.error(`${LOG_PREFIX} CSV line parsing error`, { cause: errorData });
             await reportExpectation(context, applicantUser, workId, errorData);
           }
         }
       } catch (error: any) {
-        logApp.error(`${LOG_PREFIX} CSV global parsing error`, { error });
+        logApp.error(`${LOG_PREFIX} CSV global parsing error`, { cause: error });
         const errorData = { error: error.message, source: fileId };
         await reportExpectation(context, applicantUser, workId, errorData);
         // circuit breaker
@@ -204,7 +204,7 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
       await processCSVforWorkers(context, fileId, opts);
     }
   } catch (error: any) {
-    logApp.error(`${LOG_PREFIX} CSV global parsing error`, { error, source: fileId });
+    logApp.error(`${LOG_PREFIX} CSV global parsing error`, { cause: error, source: fileId });
     const errorData = { error: error.stack, source: fileId };
     await reportExpectation(context, applicantUser, workId, errorData);
   }

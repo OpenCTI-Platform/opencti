@@ -9,6 +9,7 @@ import { allFilesForPaths, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPO
 import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { getDraftContext } from '../utils/draftContext';
+import { UnsupportedError } from '../config/errors';
 
 interface FileUploadOpts {
   entity?:BasicStoreBase | unknown, // entity on which the file is uploaded
@@ -54,7 +55,9 @@ interface S3File {
  * @param opts
  */
 export const uploadToStorage = (context: AuthContext, user: AuthUser, filePath: string, fileUpload: FileUploadData, opts: FileUploadOpts) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot upload file in draft context');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot upload file in draft context');
+  }
   return upload(context, user, filePath, fileUpload, opts);
 };
 
