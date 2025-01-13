@@ -25,6 +25,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
@@ -420,6 +421,9 @@ const StixDomainObjectHeader = (props) => {
               {truncate(getMainRepresentative(stixDomainObject), 80)}
             </Typography>
           </Tooltip>
+          {stixDomainObject.draftVersion && (
+            <DraftChip />
+          )}
           {typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
               <InputLabel>
