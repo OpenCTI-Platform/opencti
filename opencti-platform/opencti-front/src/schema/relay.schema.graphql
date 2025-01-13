@@ -2024,7 +2024,10 @@ type Inference {
 enum DraftOperation {
   create
   update
+  update_linked
   delete
+  delete_linked
+  unchanged
 }
 
 type DraftVersion {

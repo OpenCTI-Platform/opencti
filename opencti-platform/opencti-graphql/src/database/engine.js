@@ -167,7 +167,14 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
+import {
+  buildDraftFilter,
+  DRAFT_OPERATION_CREATE,
+  DRAFT_OPERATION_DELETE_LINKED,
+  DRAFT_OPERATION_DELETE,
+  isDraftSupportedEntity,
+  DRAFT_OPERATION_UPDATE_LINKED
+} from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -3639,7 +3646,8 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
     + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
     + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
     + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
-    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); ";
+    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
+    + "ctx._source.remove('rel_can-share'); ";
   const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
   const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
@@ -3931,7 +3939,7 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
 // Creates a copy of a live element in the draft index with the current draft context
-const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE) => {
+export const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
