@@ -22,6 +22,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import ItemRequestAccessStatus from '../../../../components/ItemRequestAccessStatus';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -98,6 +99,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
     position: 'relative',
   };
 
+  console.log('ANGIE - subType.settings', { truc: subType.settings });
+
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
       <Breadcrumbs elements={[
@@ -136,6 +139,35 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <ItemStatusTemplate
                   statuses={subType.statuses}
                   disabled={!subType.workflowEnabled}
+                />
+              </>
+            }
+
+            {subType.settings?.availableSettings.includes('request_access_workflow')
+              && <>
+                <div style={{ marginTop: 10 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Request access workflow')}
+                    <SubTypeStatusPopover subTypeId={subType.id} />
+                  </Typography>
+                </div>
+                <ItemRequestAccessStatus
+                  statuses={[{
+                    id: '1234',
+                    order: 1,
+                    template: {
+                      color: '#ffff',
+                      name: 'patate',
+                    },
+                  }, {
+                    id: '1234',
+                    order: 1,
+                    template: {
+                      color: '#ffff',
+                      name: 'patate',
+                    },
+                  }]}
+                  disabled={false}
                 />
               </>
             }

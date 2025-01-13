@@ -94,8 +94,6 @@ export const getRFIStatusForStatus = async (context: AuthContext, user: AuthUser
     const rfiStatus = requestAccessWorkflow.find((value) => value.from === from && value.to === to);
     logApp.info(`Found status (from:${from}, to:${to}) =>`, { rfiStatus });
     rfiStatusId = rfiStatus?.x_opencti_workflow_id;
-  } else {
-    // TODO
   }
   return rfiStatusId;
 };

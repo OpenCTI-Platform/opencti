@@ -23293,6 +23293,13 @@ export type RequestAccessAddInput = {
   request_access_type?: InputMaybe<RequestAccessType>;
 };
 
+export type RequestAccessTransition = {
+  __typename?: 'RequestAccessTransition';
+  from?: Maybe<Scalars['String']['output']>;
+  to: Scalars['String']['output'];
+  x_opencti_workflow_id?: Maybe<Scalars['ID']['output']>;
+};
+
 export enum RequestAccessType {
   OrganizationSharing = 'organization_sharing'
 }
@@ -31779,6 +31786,7 @@ export type ResolversTypes = ResolversObject<{
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
   RequestAccessAction: ResolverTypeWrapper<RequestAccessAction>;
   RequestAccessAddInput: RequestAccessAddInput;
+  RequestAccessTransition: ResolverTypeWrapper<RequestAccessTransition>;
   RequestAccessType: RequestAccessType;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
@@ -32576,6 +32584,7 @@ export type ResolversParentTypes = ResolversObject<{
   RepresentativeWithId: RepresentativeWithId;
   RequestAccessAction: RequestAccessAction;
   RequestAccessAddInput: RequestAccessAddInput;
+  RequestAccessTransition: RequestAccessTransition;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -39604,6 +39613,13 @@ export type RequestAccessActionResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type RequestAccessTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessTransition'] = ResolversParentTypes['RequestAccessTransition']> = ResolversObject<{
+  from?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_opencti_workflow_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResolvedInstanceFilter'] = ResolversParentTypes['ResolvedInstanceFilter']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -42667,6 +42683,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Representative?: RepresentativeResolvers<ContextType>;
   RepresentativeWithId?: RepresentativeWithIdResolvers<ContextType>;
   RequestAccessAction?: RequestAccessActionResolvers<ContextType>;
+  RequestAccessTransition?: RequestAccessTransitionResolvers<ContextType>;
   ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;

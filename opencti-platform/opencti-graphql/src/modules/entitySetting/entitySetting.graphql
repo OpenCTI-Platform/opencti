@@ -34,6 +34,12 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
+type RequestAccessTransition {
+  from: String
+  to: String!
+  x_opencti_workflow_id: ID
+}
+
 type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
