@@ -98,7 +98,7 @@ const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
 export const appLogLevelMaxDepthSize = nconf.get('app:app_logs:control:max_depth_size') ?? 5;
-export const appLogLevelMaxDepthKeys = nconf.get('app:app_logs:control:max_depth_keys') ?? 20;
+export const appLogLevelMaxDepthKeys = nconf.get('app:app_logs:control:max_depth_keys') ?? 30;
 export const appLogLevelMaxArraySize = nconf.get('app:app_logs:control:max_array_size') ?? 50;
 export const appLogLevelMaxStringSize = nconf.get('app:app_logs:control:max_string_size') ?? 5000;
 export const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
@@ -108,11 +108,11 @@ export const extendedErrors = (metaExtension) => {
   }
   return {};
 };
-const convertErrorObject = (error) => {
+const convertErrorObject = (error, acc, current_depth) => {
   if (error instanceof GraphQLError) {
     const extensions = error.extensions ?? {};
     const extensionsData = extensions.data ?? {};
-    const { ...attributes } = extensionsData;
+    const attributes = prepareLogMetadataComplexityWrapper(extensionsData, acc, current_depth);
     return { name: extensions.code ?? error.name, code: extensions.code, message: error.message, stack: error.stack, attributes };
   }
   if (error instanceof Error) {
@@ -121,17 +121,26 @@ const convertErrorObject = (error) => {
   return error;
 };
 const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
-  const noMaxDepth = current_depth < appLogLevelMaxDepthSize;
-  const noMaxKeys = acc.current_nb_key < appLogLevelMaxDepthKeys;
-  const isNotAKeyFunction = typeof obj !== 'function';
-  if (obj !== null && noMaxDepth && noMaxKeys && isNotAKeyFunction) {
+  const maxDepth = current_depth > appLogLevelMaxDepthSize;
+  const maxKeys = acc.current_nb_key > appLogLevelMaxDepthKeys;
+  const isAKeyFunction = typeof obj === 'function';
+  if (obj !== null) {
+    // If complexity is too much or function found.
+    // return null value
+    if (maxDepth || maxKeys || isAKeyFunction) {
+      return null;
+    }
+    // If array, try to limit the number of elements
     if (Array.isArray(obj)) {
       // Create a new array with a limited size
       const limitedArray = obj.slice(0, appLogLevelMaxArraySize);
       // Recursively process each item in the truncated array
       const processedArray = [];
       for (let i = 0; i < limitedArray.length; i += 1) {
-        processedArray[i] = prepareLogMetadataComplexityWrapper(limitedArray[i], acc, current_depth);
+        const cleanItem = prepareLogMetadataComplexityWrapper(limitedArray[i], acc, current_depth);
+        if (cleanItem) {
+          processedArray[i] = cleanItem;
+        }
       }
       return processedArray;
     }
@@ -139,7 +148,7 @@ const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
       return `${obj.substring(0, appLogLevelMaxStringSize - 3)}...`;
     }
     if (typeof obj === 'object') {
-      const workingObject = convertErrorObject(obj);
+      const workingObject = convertErrorObject(obj, acc, current_depth);
       // Create a new object to hold the processed properties
       const limitedObject = {};
       const keys = Object.keys(workingObject); // Get the keys of the object
@@ -148,6 +157,10 @@ const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
         acc.current_nb_key += 1;
         const key = keys[i];
         limitedObject[key] = prepareLogMetadataComplexityWrapper(workingObject[key], acc, newDepth);
+        // If data is null, remove the key
+        if (!limitedObject[key]) {
+          delete limitedObject[key];
+        }
       }
       return limitedObject;
     }
