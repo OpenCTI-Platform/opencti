@@ -7,8 +7,9 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import AISummaryContainer from '@components/common/ai/AISummaryContainer';
-import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
+import AIInsights from '@components/common/ai/AIInsights';
+import AISummaryContainers from '@components/common/ai/AISummaryContainers';
+import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import IntrusionSet from './IntrusionSet';
@@ -206,9 +207,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                 />
               </Tabs>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AISummaryContainer title={t_i18n('Summary of the intrusion set trends')}>
-                  <span></span>
-                </AISummaryContainer>
+                <AIInsights id={intrusionSet.id} />
                 <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
               </div>
             </Box>

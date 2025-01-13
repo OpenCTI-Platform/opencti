@@ -12,8 +12,8 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
-import AISummaryContainer from '@components/common/ai/AISummaryContainer';
-import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
+import AIInsights from '@components/common/ai/AIInsights';
+import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -128,7 +128,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         )}
         enableQuickSubscription={true}
         enableEnrollPlaybook={true}
-        enableAskAi={true}
         redirectToContent={true}
         enableEnricher={true}
       />
@@ -183,9 +182,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           />
         </Tabs>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-          <AISummaryContainer title={t_i18n('Summary of the case')}>
-            <ContainersAiSummary first={1} filters={filters}/>
-          </AISummaryContainer>
+          <AIInsights id={reportId} tabs={['containers']} defaultTab='containers' />
           <StixCoreObjectSimulationResult id={caseData.id} type="container"/>
         </div>
       </Box>

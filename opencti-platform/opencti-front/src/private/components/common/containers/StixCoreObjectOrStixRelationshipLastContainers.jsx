@@ -10,8 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
-import AISummaryContainer from '../ai/AISummaryContainer';
-import ContainersAiSummary from './ContainersAiSummary';
+import AIInsights from '../ai/AIInsights';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -327,9 +326,12 @@ const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRe
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}
       </Typography>
-      <AISummaryContainer title={t_i18n('Summary of the latest containers')} floating={true}>
-        <ContainersAiSummary first={10} filters={filters} />
-      </AISummaryContainer>
+      <AIInsights
+        id={stixCoreObjectOrStixRelationshipId}
+        defaultTab='containers'
+        floating={true}
+        onlyIcon={true}
+      />
       <div className="clearfix"/>
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
         <QueryRenderer
@@ -391,7 +393,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRe
                                     />
                                   </div>
                                 </>
-                                        }
+                                }
                             />
                           </ListItem>
                         );

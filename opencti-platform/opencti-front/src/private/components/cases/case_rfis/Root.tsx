@@ -121,7 +121,6 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         )}
         enableQuickSubscription={true}
         enableEnrollPlaybook={true}
-        enableAskAi={true}
         redirectToContent={true}
         enableEnricher={true}
       />

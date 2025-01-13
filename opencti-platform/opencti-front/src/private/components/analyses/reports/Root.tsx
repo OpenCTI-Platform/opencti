@@ -11,8 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
-import AISummaryContainer from '@components/common/ai/AISummaryContainer';
-import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
+import AIInsights from '@components/common/ai/AIInsights';
+import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
@@ -137,7 +137,7 @@ const RootReport = () => {
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableEnrollPlaybook={true}
-                    enableAskAi={true}
+                    enableAskAi={false}
                     overview={isOverview}
                     redirectToContent={true}
                     enableEnricher={true}
@@ -193,9 +193,7 @@ const RootReport = () => {
                       />
                     </Tabs>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                      <AISummaryContainer title={t_i18n('Summary of the report')}>
-                        <ContainersAiSummary first={1} filters={filters}/>
-                      </AISummaryContainer>
+                      <AIInsights id={reportId} tabs={['containers']} defaultTab='containers' />
                       <StixCoreObjectSimulationResult id={report.id} type="container"/>
                     </div>
                   </Box>

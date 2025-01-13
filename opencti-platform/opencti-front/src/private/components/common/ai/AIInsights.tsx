@@ -1,5 +1,5 @@
 import makeStyles from '@mui/styles/makeStyles';
-import React, { ReactNode, useState } from 'react';
+import React, { useState } from 'react';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -14,15 +14,19 @@ import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import AISummaryActivity from '@components/common/ai/AISummaryActivity';
+import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
-import { fileUri } from '../../../../relay/environment';
-import obasDark from '../../../../static/images/xtm/obas_dark.png';
-import obasLight from '../../../../static/images/xtm/obas_light.png';
+import { aiName, aiUrl } from '../../../../utils/ai/Common';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -89,13 +93,21 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
 }));
 
-interface AiSummaryContainerProps {
-  title: string
-  children: ReactNode
+interface AIInsightProps {
+  id: string
+  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>
+  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history'
   floating?: boolean
+  onlyIcon?: boolean
 }
 
-const AISummaryContainer = ({ title, children, floating = false }: AiSummaryContainerProps) => {
+const AIInsights = ({
+  id,
+  tabs = ['activity', 'containers', 'forecast', 'history'],
+  defaultTab = 'activity',
+  floating = false,
+  onlyIcon = false,
+}: AIInsightProps) => {
   const theme = useTheme<Theme>();
   const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
@@ -105,24 +117,59 @@ const AISummaryContainer = ({ title, children, floating = false }: AiSummaryCont
   const [display, setDisplay] = useState(false);
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayAIDialog, setDisplayAIDialog] = useState(false);
+  const [currentTab, setCurrentTab] = useState(defaultTab);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+
+  const handleChangeTab = (_: React.SyntheticEvent, newValue: 'activity' | 'containers' | 'forecast' | 'history') => {
+    setCurrentTab(newValue);
+  };
+
+  const initialContainersFilters = {
+    mode: 'and',
+    filters: [{
+      key: 'entity_type',
+      values: ['Report', 'Case', 'Observed-Data', 'Grouping', 'Task'],
+    },
+    {
+      key: 'objects',
+      values: [id],
+    }],
+    filterGroups: [],
+  };
+  // TODO make the filter "objects" readonly?
+  const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
+
   if (!isEnterpriseEdition) {
     return (
       <>
-        <Tooltip title={`${t_i18n('AI Summary')}`}>
-          <Button
-            variant="outlined"
-            size="small"
-            style={{
-              fontSize: 12,
-              color: theme.palette.ai.main,
-            }}
-            onClick={() => setDisplayEEDialog(true)}
-            className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
-          >
-            {t_i18n('AI Summary')}
-          </Button>
+        <Tooltip title={t_i18n('AI Insights')}>
+          {onlyIcon ? (
+            <IconButton
+              size="small"
+              style={{
+                fontSize: 12,
+                color: theme.palette.ai.main,
+              }}
+              onClick={() => setDisplayEEDialog(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+            >
+              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+            </IconButton>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              style={{
+                fontSize: 12,
+                color: theme.palette.ai.main,
+              }}
+              onClick={() => setDisplayEEDialog(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            >
+              {t_i18n('AI Insights')}
+            </Button>
+          )}
         </Tooltip>
         {isAdmin ? (
           <EnterpriseEditionAgreement
@@ -145,20 +192,34 @@ const AISummaryContainer = ({ title, children, floating = false }: AiSummaryCont
   if (!fullyActive) {
     return (
       <>
-        <Tooltip title={`${t_i18n('AI Summary')}`}>
-          <Button
-            variant="outlined"
-            size="small"
-            style={{
-              fontSize: 12,
-              color: theme.palette.ai.main,
-            }}
-            onClick={() => setDisplayAIDialog(true)}
-            className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
-          >
-            {t_i18n('AI Summary')}
-          </Button>
+        <Tooltip title={t_i18n('AI Insights')}>
+          {onlyIcon ? (
+            <IconButton
+              size="small"
+              style={{
+                fontSize: 12,
+                color: theme.palette.ai.main,
+              }}
+              onClick={() => setDisplayAIDialog(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+            >
+              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+            </IconButton>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              style={{
+                fontSize: 12,
+                color: theme.palette.ai.main,
+              }}
+              onClick={() => setDisplayAIDialog(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            >
+              {t_i18n('AI Insights')}
+            </Button>
+          )}
         </Tooltip>
         <Dialog
           PaperProps={{ elevation: 1 }}
@@ -182,20 +243,34 @@ const AISummaryContainer = ({ title, children, floating = false }: AiSummaryCont
   }
   return (
     <>
-      <Tooltip title={`${t_i18n('AI Summary')}`}>
-        <Button
-          variant="outlined"
-          size="small"
-          style={{
-            fontSize: 12,
-            color: theme.palette.ai.main,
-          }}
-          onClick={() => setDisplay(true)}
-          className={floating ? classes.chipFloating : classes.chip}
-          startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
-        >
-          {t_i18n('AI Summary')}
-        </Button>
+      <Tooltip title={t_i18n('AI Insights')}>
+        {onlyIcon ? (
+          <IconButton
+            size="small"
+            style={{
+              fontSize: 12,
+              color: theme.palette.ai.main,
+            }}
+            onClick={() => setDisplay(true)}
+            className={floating ? classes.chipFloating : classes.chip}
+          >
+            <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+          </IconButton>
+        ) : (
+          <Button
+            variant="outlined"
+            size="small"
+            style={{
+              fontSize: 12,
+              color: theme.palette.ai.main,
+            }}
+            onClick={() => setDisplay(true)}
+            className={floating ? classes.chipFloating : classes.chip}
+            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+          >
+            {t_i18n('AI Insights')}
+          </Button>
+        )}
       </Tooltip>
       <Drawer
         open={display}
@@ -216,7 +291,7 @@ const AISummaryContainer = ({ title, children, floating = false }: AiSummaryCont
             <Close fontSize="small" color="primary"/>
           </IconButton>
           <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
-            {title}
+            {t_i18n('AI Insights')}
           </Typography>
           <Typography variant="caption" style={{
             display: 'flex',
@@ -226,19 +301,39 @@ const AISummaryContainer = ({ title, children, floating = false }: AiSummaryCont
             right: 10,
           }}
           >
-            {t_i18n('Powered by')}&nbsp;<a href='https://docs.opencti.io' target='_blank' rel='noreferrer'>XTM
-              Copilot</a>
-            <Chip label="beta" color="secondary" size="small"
-              style={{ marginLeft: 10, borderRadius: 4, fontSize: 10 }}
-            />
+            {t_i18n('Powered by')}&nbsp;<a href={aiUrl} target='_blank' rel='noreferrer'>{aiName}</a>
+            <Chip label="beta" color="secondary" size="small" style={{ marginLeft: 10, borderRadius: 4, fontSize: 10 }} />
           </Typography>
         </div>
         <div className={classes.container}>
-          {children}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={currentTab} onChange={handleChangeTab}>
+              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
+              {tabs.includes('containers') && <Tab value="containers" label={t_i18n('Latest containers')} />}
+              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
+              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
+            </Tabs>
+          </Box>
+          {currentTab === 'activity' && (
+            <AISummaryActivity id={id} />
+          )}
+          {currentTab === 'containers' && (
+            <AISummaryContainers
+              first={10}
+              filters={containersFilters}
+              helpers={containersFiltersHelpers}
+            />
+          )}
+          {currentTab === 'forecast' && (
+            <AISummaryActivity id={id} />
+          )}
+          {currentTab === 'history' && (
+            <AISummaryActivity id={id} />
+          )}
         </div>
       </Drawer>
     </>
   );
 };
 
-export default AISummaryContainer;
+export default AIInsights;

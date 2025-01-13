@@ -826,41 +826,35 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 };
 // endregion
 
-export const aiIntelligence = async (context, user, stixCoreObjectId) => {
+// region ai
+export const aiActivity = async (context, user, stixCoreObjectId) => {
   // Resolve in cache
-  if (aiResponseCache[stixCoreObjectId] && utcDate(aiResponseCache[stixCoreObjectId].updatedAt).isAfter(minutesAgo(60))) {
-    return aiResponseCache[stixCoreObjectId];
+  const identifier = `${stixCoreObjectId}-activity`;
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
+    return aiResponseCache[identifier];
   }
-
   // Resolve the entity
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-
-  // Internal activity summary
-  const internalActivity = await aiInternalActivity(context, user, stixCoreObject);
-
   // Trends summary
-  let trends = '';
+  let result = '';
   if (threats.includes(stixCoreObject.entity_type)) {
-    trends = await aiTrendsForThreat(context, user, stixCoreObject);
+    result = await aiActivityForThreats(context, user, stixCoreObject);
   }
-
-  // Forecast summary
-  const forecast = '';
-
-  const intelligence = {
-    trends,
-    internalActivity,
-    forecast,
-    updated_at: now()
-  };
-
-  aiResponseCache[stixCoreObjectId] = intelligence;
-  return intelligence;
+  const activity = { result, updated_at: now() };
+  aiResponseCache[stixCoreObjectId] = activity;
+  return activity;
 };
 
-export const aiInternalActivity = async (context, user, stixCoreObject) => {
-  const history = await getHistory(context, user, stixCoreObject.id);
-
+export const aiHistory = async (context, user, stixCoreObjectId) => {
+  // Resolve in cache
+  const identifier = `${stixCoreObjectId}-history`;
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
+    return aiResponseCache[identifier];
+  }
+  // Resolve the entity
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  // Resolve logs
+  const logs = await getHistory(context, user, stixCoreObject.id);
   const userPrompt = `
   # Instructions
 
@@ -877,13 +871,17 @@ export const aiInternalActivity = async (context, user, stixCoreObject) => {
   
   ## Logs
   This is the latest 200 logs entries of this entity.
-  ${JSON.stringify(history)}
+  ${JSON.stringify(logs)}
   `;
-
-  return queryAi(null, systemPrompt, userPrompt, user);
+  // Get results
+  const result = await queryAi(null, systemPrompt, userPrompt, user);
+  const history = { result, updated_at: now() };
+  aiResponseCache[stixCoreObjectId] = history;
+  return history;
 };
 
-export const aiTrendsForThreat = async (context, user, stixCoreObject) => {
+// region prompts
+export const aiActivityForThreats = async (context, user, stixCoreObject) => {
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
@@ -946,3 +944,4 @@ export const aiTrendsForThreat = async (context, user, stixCoreObject) => {
 
   return queryAi(null, systemPrompt, userPrompt, user);
 };
+// endregion

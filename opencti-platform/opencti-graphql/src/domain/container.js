@@ -369,10 +369,10 @@ export const aiSummary = async (context, user, args) => {
   # Reports
   ${JSON.stringify(content)}
   `;
-  const report = await queryAi(null, systemPrompt, userPromptReport, user);
+  const result = await queryAi(null, systemPrompt, userPromptReport, user);
   const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
 
-  const summary = { report, topics: topics.split(',').map((n) => n.trim()) };
+  const summary = { result, topics: topics.split(',').map((n) => n.trim()) };
   aiResponseCache[identifier] = summary;
   return summary;
 };

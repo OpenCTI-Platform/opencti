@@ -422,15 +422,22 @@ type OpinionsMetrics {
   max: Int
   total: Int
 }
-type AiIntelligence {
-  trends: String
-  internalActivity: String
-  forecast: String
+type AiActivity {
+  result: String
   updated_at: DateTime
 }
 type AiSummary {
-  report: String
+  result: String
   topics: [String]
+  updated_at: DateTime
+}
+type AiForecast {
+  result: String
+  confidence: Int
+  updated_at: DateTime
+}
+type AiHistory {
+  result: String
   updated_at: DateTime
 }
 
@@ -12717,7 +12724,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
-  aiIntelligence: AiIntelligence @auth(for: [KNOWLEDGE])
+  aiActivity: AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -12913,7 +12920,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiIntelligence(id: ID!): AiIntelligence @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiActivity(id: ID!): AiActivity @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiForecast(id: ID!): AiForecast @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiHistory(id: ID!): AiHistory @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
