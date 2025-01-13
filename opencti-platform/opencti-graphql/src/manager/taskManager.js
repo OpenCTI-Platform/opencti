@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { buildCreateEvent, lockResource, storeCreateEntityEvent } from '../database/redis';
+import { buildCreateEvent, lockResource, storeUpdateEvent } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_ENRICHMENT,
@@ -33,7 +33,7 @@ import {
   stixLoadById,
   storeLoadByIdWithRefs
 } from '../database/middleware';
-import { now } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, ValidationError } from '../config/errors';
@@ -80,6 +80,7 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { findById as findOrganizationById } from '../modules/organization/organization-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -546,10 +547,17 @@ const executeProcessing = async (context, user, job, scope) => {
         }
       }
       if (type === ACTION_TYPE_SHARE && containerId) {
-        const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
-        const message = `Updating share on parent ${containerId} after sharing all content.`;
         // simulate a create event to update downstream openCTI
-        await storeCreateEntityEvent(context, user, objectStoreBase, message, {});
+        const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
+        let organizationNames = '';
+        for (let i = 0; i < actionContext.values.length; i += 1) {
+          const orgId = actionContext.values[i];
+          const organization = await findOrganizationById(context, user, orgId);
+          organizationNames += `${organization.name} `;
+        }
+        const message = `Update ${organizationNames} children in \`Shared with\``;
+        const objectStoreBaseModified = { ...objectStoreBase, updated_at: utcDate() };
+        await storeUpdateEvent(context, user, objectStoreBase, objectStoreBaseModified, message, { allow_only_modified: true });
       }
     }
   }
