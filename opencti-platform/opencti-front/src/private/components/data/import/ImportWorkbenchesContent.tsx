@@ -57,6 +57,7 @@ export const workbenchLineFragment = graphql`
         name
       }
     }
+    ...FileWork_file
   }
 `;
 

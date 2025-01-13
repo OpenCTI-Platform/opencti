@@ -483,16 +483,16 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         <DialogContent>
           <DialogContentText>
             {t_i18n('How do you want to download this file?')}
-            <Alert
-              severity="warning"
-              variant="outlined"
-              style={{ position: 'relative', marginTop: 20 }}
-            >
-              {t_i18n(
-                'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
-              )}
-            </Alert>
           </DialogContentText>
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ position: 'relative', marginTop: 20 }}
+          >
+            {t_i18n(
+              'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
+            )}
+          </Alert>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDownload} disabled={deleting}>
