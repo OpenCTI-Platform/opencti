@@ -20,24 +20,26 @@ import {
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObjectContainer
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
+import { elCount, elFindByIds, elPaginate, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -52,8 +54,12 @@ import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';
-import { getIndicatorsStats, getTopVictims, getVictimologyStats, systemPrompt } from '../utils/ai/summaryHelpers';
+import { getHistory, getIndicatorsStats, getTopVictims, getVictimologyStats, systemPrompt } from '../utils/ai/intelligenceHelpers';
 import { queryAi } from '../database/ai-llm';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+
+const aiResponseCache = {};
+const threats = [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN];
 
 const extractStixCoreObjectTypesFromArgs = (args) => {
   let types = [];
@@ -820,59 +826,109 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 };
 // endregion
 
-export const aiIntelligence = async (context, user, intrusionSetId) => {
-  if (aiResponseCache[intrusionSetId] && utcDate(aiResponseCache[intrusionSetId].updatedAt).isAfter(minutesAgo(60))) {
-    return aiResponseCache[intrusionSetId];
+export const aiIntelligence = async (context, user, stixCoreObjectId) => {
+  // Resolve in cache
+  if (aiResponseCache[stixCoreObjectId] && utcDate(aiResponseCache[stixCoreObjectId].updatedAt).isAfter(minutesAgo(60))) {
+    return aiResponseCache[stixCoreObjectId];
   }
+
+  // Resolve the entity
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+
+  // Internal activity summary
+  const internalActivity = await aiInternalActivity(context, user, stixCoreObject);
+
+  // Trends summary
+  let trends = '';
+  if (threats.includes(stixCoreObject.entity_type)) {
+    trends = await aiTrendsForThreat(context, user, stixCoreObject);
+  }
+
+  // Forecast summary
+  const forecast = '';
+
+  const intelligence = {
+    trends,
+    internalActivity,
+    forecast,
+    updated_at: now()
+  };
+
+  aiResponseCache[stixCoreObjectId] = intelligence;
+  return intelligence;
 };
 
-export const aiIntelligenceForThreat = async (context, user, intrusionSetId) => {
-  const intrusionSet = await storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
-  const indicatorsStats = await getIndicatorsStats(context, user, intrusionSetId, monthsAgo(24), now());
-  const victimologyStats = await getVictimologyStats(context, user, intrusionSetId, monthsAgo(24), now());
+export const aiInternalActivity = async (context, user, stixCoreObject) => {
+  const history = await getHistory(context, user, stixCoreObject.id);
+
+  const userPrompt = `
+  # Instructions
+
+  - You have to compute a summary of the given logs representing the history of creation and modifications of a ${stixCoreObject.entity_type} in the OpenCTI platform.
+  - The summary should be about the latest activities performed by a user, which can be an analyst (human) or a connector (data source or enrichment) on the ${stixCoreObject.entity_type}.
+  - The summary should be formatted in HTML.
+    
+  # Context
+  
+  - The summary is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the ${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Logs
+  This is the latest 200 logs entries of this entity.
+  ${JSON.stringify(history)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiTrendsForThreat = async (context, user, stixCoreObject) => {
+  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
-    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, intrusionSetId, ['Sector'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, ['Sector'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
-    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, intrusionSetId, ['Country'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, ['Country'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
-    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, intrusionSetId, ['Region'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, ['Region'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
 
   const userPrompt = `
   # Instructions
 
-  - You have to compute a summary of approximately 1000 words based on the following statistics / trends about an intrusion set.
-  - The summary should be about the latest activities of the intrusion set.
+  - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - The summary should be about the latest activities of the ${stixCoreObject.entity_type}.
   - The summary should be formatted in HTML and highlight important numbers with appropriate colors.
   - The used highlight color should be compatible with both light theme and dark themes.
   
   # Interpretation of the data
-  - Increasing of indicators of compromise is indicating a surge in the intrusion set activity, which is BAD (red).
-  - Decreasing of indicators of compromise is indicating a reduction in the intrusion set activity, which is GOOD (green).
-  - Increasing of victims is indicating a surge in the intrusion set activity, which is BAD (red).
-  - Decreasing of victims of compromise is indicating a reduction in the intrusion set activity, which is GOOD (green).
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD (red).
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD (green).
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD (red).
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD (green).
   
   # Context
   
-  - The summary is about the intrusion set ${intrusionSet.name} (${(intrusionSet.aliases ?? []).join(', ')}). 
-  - The description of the intrusion set ${intrusionSet.name} is ${intrusionSet.description}.
+  - The summary is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
   
   # Data
   
   ## Last indicators of compromise (IOCs) statistics.
-  This is the number of indicators related to this intrusion sets over time:
+  This is the number of indicators related to this ${stixCoreObject.entity_type} over time:
   ${JSON.stringify(indicatorsStats)}
   
   ## Last victims statistics
-  This is the number of times this intrusion set has targeted something, whether it is an organization, a sector, a location, etc.:
+  This is the number of times this ${stixCoreObject.entity_type} has targeted something, whether it is an organization, a sector, a location, etc.:
   ${JSON.stringify(victimologyStats)}
   
   ## Top targeted sectors over time
@@ -888,8 +944,5 @@ export const aiIntelligenceForThreat = async (context, user, intrusionSetId) => 
   ${JSON.stringify(topRegions)}
   `;
 
-  const trends = await queryAi(null, systemPrompt, userPrompt, user);
-  const intel = { trends, forecast: trends, updatedAt: utcDate() };
-  aiResponseCache[intrusionSetId] = intel;
-  return intel;
+  return queryAi(null, systemPrompt, userPrompt, user);
 };

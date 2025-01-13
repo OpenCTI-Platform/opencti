@@ -8,8 +8,6 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/gen
 import { RELATION_ORIGINATES_FROM } from '../schema/stixCoreRelationship';
 import { FROM_START, UNTIL_END } from '../utils/format';
 
-const aiResponseCache = {};
-
 export const findById = (context, user, intrusionSetId) => {
   return storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
 };

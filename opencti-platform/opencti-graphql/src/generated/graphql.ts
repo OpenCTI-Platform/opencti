@@ -321,7 +321,6 @@ export enum AdministrativeAreasOrdering {
 
 export type AiIntelligence = {
   __typename?: 'AiIntelligence';
-  containers?: Maybe<Scalars['String']['output']>;
   forecast?: Maybe<Scalars['String']['output']>;
   internalActivity?: Maybe<Scalars['String']['output']>;
   trends?: Maybe<Scalars['String']['output']>;
@@ -19629,6 +19628,7 @@ export type Query = {
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']['output']>;
   stixCoreObject?: Maybe<StixCoreObject>;
+  stixCoreObjectAiIntelligence?: Maybe<AiIntelligence>;
   stixCoreObjectAnalysis?: Maybe<Analysis>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']['output']>;
@@ -21364,6 +21364,11 @@ export type QueryStixArgs = {
 
 export type QueryStixCoreObjectArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryStixCoreObjectAiIntelligenceArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -32646,7 +32651,6 @@ export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extend
 }>;
 
 export type AiIntelligenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiIntelligence'] = ResolversParentTypes['AiIntelligence']> = ResolversObject<{
-  containers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   forecast?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   internalActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   trends?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38896,6 +38900,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
+  stixCoreObjectAiIntelligence?: Resolver<Maybe<ResolversTypes['AiIntelligence']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAiIntelligenceArgs, 'id'>>;
   stixCoreObjectAnalysis?: Resolver<Maybe<ResolversTypes['Analysis']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAnalysisArgs, 'contentSource' | 'contentType' | 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;

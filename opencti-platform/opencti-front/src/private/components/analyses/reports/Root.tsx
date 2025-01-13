@@ -11,6 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
+import AISummaryContainer from '@components/common/ai/AISummaryContainer';
+import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
@@ -94,7 +96,14 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-
+  const filters = {
+    mode: 'and',
+    filters: [{
+      key: 'id',
+      values: [reportId],
+    }],
+    filterGroups: [],
+  };
   return (
     <>
       <QueryRenderer
@@ -183,9 +192,12 @@ const RootReport = () => {
                         label={t_i18n('Data')}
                       />
                     </Tabs>
-                    {isOverview && (
-                      <StixCoreObjectSimulationResult id={report.id} type="container" />
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                      <AISummaryContainer title={t_i18n('Summary of the report')}>
+                        <ContainersAiSummary first={1} filters={filters}/>
+                      </AISummaryContainer>
+                      <StixCoreObjectSimulationResult id={report.id} type="container"/>
+                    </div>
                   </Box>
                   <Routes>
                     <Route

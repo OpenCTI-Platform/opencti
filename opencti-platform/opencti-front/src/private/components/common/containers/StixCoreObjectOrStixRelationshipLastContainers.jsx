@@ -302,7 +302,6 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
 const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRelationshipId, authorId }) => {
   const { t_i18n, fsd } = useFormatter();
   const classes = useStyles();
-
   const filtersContent = [
     {
       key: 'entity_type',
@@ -328,12 +327,8 @@ const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRe
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}
       </Typography>
-      <AISummaryContainer floating={true}>
-        <ContainersAiSummary
-          stixCoreObjectId={stixCoreObjectOrStixRelationshipId}
-          first={10}
-          filters={filters}
-        />
+      <AISummaryContainer title={t_i18n('Summary of the latest containers')} floating={true}>
+        <ContainersAiSummary first={10} filters={filters} />
       </AISummaryContainer>
       <div className="clearfix"/>
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">

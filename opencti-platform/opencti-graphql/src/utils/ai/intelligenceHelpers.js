@@ -1,6 +1,8 @@
 import { distributionRelations, timeSeriesEntities } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
+import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
+import { listEntities } from '../../database/middleware-loader';
 
 export const systemPrompt = `You are a threat intelligence analyst and your role is to help analyzing numbers and statistics about the activity and the context of cyber entities.". 
 # General instructions
@@ -86,4 +88,26 @@ export const getTopVictims = async (context, user, id, types, startDate, endDate
     endDate
   });
   return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
+};
+
+export const getHistory = (context, user, id) => {
+  const filters = {
+    mode: 'and',
+    filterGroups: [],
+    filters: [
+      { key: 'context_data.id', values: [id] },
+      {
+        key: 'event_type',
+        values: [
+          'mutation',
+          'create',
+          'update',
+          'delete',
+          'merge'
+        ]
+      }
+    ]
+  };
+  const args = { filters, first: 200, orderBy: 'timestamp', orderMode: 'desc', connectionFormat: false };
+  return listEntities(context, user, [ENTITY_TYPE_HISTORY], args);
 };

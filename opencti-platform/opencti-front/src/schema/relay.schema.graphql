@@ -450,7 +450,6 @@ type OpinionsMetrics {
 
 type AiIntelligence {
   trends: String
-  containers: String
   internalActivity: String
   forecast: String
   updated_at: DateTime
@@ -7909,6 +7908,7 @@ type Query {
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
+  stixCoreObjectAiIntelligence(id: ID!): AiIntelligence
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection

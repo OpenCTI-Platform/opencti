@@ -7,18 +7,22 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import { createStyles } from '@mui/styles';
+import { createStyles, useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import { AutoAwesomeOutlined, Close } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
+import { fileUri } from '../../../../relay/environment';
+import obasDark from '../../../../static/images/xtm/obas_dark.png';
+import obasLight from '../../../../static/images/xtm/obas_light.png';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,14 +52,11 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
   chip: {
     fontSize: 'x-small',
-    height: 25,
     display: 'inline-flex',
     fontWeight: 600,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 6,
-    paddingRight: 5,
-    paddingLeft: 5,
     borderRadius: theme.borderRadius,
     border: `1px solid ${theme.palette.ai.main}`,
     color: theme.palette.ai.main,
@@ -76,8 +77,6 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     alignItems: 'center',
     marginTop: -7,
     marginLeft: 6,
-    paddingRight: 5,
-    paddingLeft: 5,
     borderRadius: theme.borderRadius,
     border: `1px solid ${theme.palette.ai.main}`,
     color: theme.palette.ai.main,
@@ -91,11 +90,13 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 }));
 
 interface AiSummaryContainerProps {
+  title: string
   children: ReactNode
   floating?: boolean
 }
 
-const AISummaryContainer = ({ children, floating = false }: AiSummaryContainerProps) => {
+const AISummaryContainer = ({ title, children, floating = false }: AiSummaryContainerProps) => {
+  const theme = useTheme<Theme>();
   const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -108,13 +109,21 @@ const AISummaryContainer = ({ children, floating = false }: AiSummaryContainerPr
   if (!isEnterpriseEdition) {
     return (
       <>
-        <div
-          className={floating ? classes.chipFloating : classes.chip}
-          onClick={() => setDisplayEEDialog(true)}
-        >
-          <AutoAwesomeOutlined style={{ fontSize: 14 }} />  &nbsp;
-          AI Summary
-        </div>
+        <Tooltip title={`${t_i18n('AI Summary')}`}>
+          <Button
+            variant="outlined"
+            size="small"
+            style={{
+              fontSize: 12,
+              color: theme.palette.ai.main,
+            }}
+            onClick={() => setDisplayEEDialog(true)}
+            className={floating ? classes.chipFloating : classes.chip}
+            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+          >
+            {t_i18n('AI Summary')}
+          </Button>
+        </Tooltip>
         {isAdmin ? (
           <EnterpriseEditionAgreement
             open={displayEEDialog}
@@ -136,13 +145,21 @@ const AISummaryContainer = ({ children, floating = false }: AiSummaryContainerPr
   if (!fullyActive) {
     return (
       <>
-        <div
-          className={floating ? classes.chipFloating : classes.chip}
-          onClick={() => setDisplayAIDialog(true)}
-        >
-          <AutoAwesomeOutlined style={{ fontSize: 14 }} />  &nbsp;
-          AI Summary
-        </div>
+        <Tooltip title={`${t_i18n('AI Summary')}`}>
+          <Button
+            variant="outlined"
+            size="small"
+            style={{
+              fontSize: 12,
+              color: theme.palette.ai.main,
+            }}
+            onClick={() => setDisplayAIDialog(true)}
+            className={floating ? classes.chipFloating : classes.chip}
+            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+          >
+            {t_i18n('AI Summary')}
+          </Button>
+        </Tooltip>
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={displayAIDialog}
@@ -165,13 +182,21 @@ const AISummaryContainer = ({ children, floating = false }: AiSummaryContainerPr
   }
   return (
     <>
-      <div
-        className={floating ? classes.chipFloating : classes.chip}
-        onClick={() => setDisplay(true)}
-      >
-        <AutoAwesomeOutlined style={{ fontSize: 14 }} />  &nbsp;
-        AI Summary
-      </div>
+      <Tooltip title={`${t_i18n('AI Summary')}`}>
+        <Button
+          variant="outlined"
+          size="small"
+          style={{
+            fontSize: 12,
+            color: theme.palette.ai.main,
+          }}
+          onClick={() => setDisplay(true)}
+          className={floating ? classes.chipFloating : classes.chip}
+          startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+        >
+          {t_i18n('AI Summary')}
+        </Button>
+      </Tooltip>
       <Drawer
         open={display}
         anchor="right"
@@ -188,12 +213,24 @@ const AISummaryContainer = ({ children, floating = false }: AiSummaryContainerPr
             size="large"
             color="primary"
           >
-            <Close fontSize="small" color="primary" />
+            <Close fontSize="small" color="primary"/>
           </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{t_i18n('Summary of the latest containers')}</Typography>
-          <Typography variant="caption" style={{ display: 'flex', alignItems: 'center', textWrap: 'nowrap', position: 'absolute', right: 10 }}>
-            {t_i18n('Powered by')}&nbsp;<a href='https://docs.opencti.io' target='_blank' rel='noreferrer'>XTM Copilot</a>
-            <Chip label="beta" color="secondary" size="small" style={{ marginLeft: 10, borderRadius: 4, fontSize: 10 }} />
+          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
+            {title}
+          </Typography>
+          <Typography variant="caption" style={{
+            display: 'flex',
+            alignItems: 'center',
+            textWrap: 'nowrap',
+            position: 'absolute',
+            right: 10,
+          }}
+          >
+            {t_i18n('Powered by')}&nbsp;<a href='https://docs.opencti.io' target='_blank' rel='noreferrer'>XTM
+              Copilot</a>
+            <Chip label="beta" color="secondary" size="small"
+              style={{ marginLeft: 10, borderRadius: 4, fontSize: 10 }}
+            />
           </Typography>
         </div>
         <div className={classes.container}>

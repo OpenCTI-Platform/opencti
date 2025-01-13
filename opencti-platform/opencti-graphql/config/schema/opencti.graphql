@@ -424,7 +424,6 @@ type OpinionsMetrics {
 }
 type AiIntelligence {
   trends: String
-  containers: String
   internalActivity: String
   forecast: String
   updated_at: DateTime
@@ -12914,6 +12913,7 @@ type Query {
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiIntelligence(id: ID!): AiIntelligence @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID

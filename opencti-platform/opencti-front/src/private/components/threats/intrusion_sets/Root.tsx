@@ -7,6 +7,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AISummaryContainer from '@components/common/ai/AISummaryContainer';
+import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import IntrusionSet from './IntrusionSet';
@@ -100,7 +102,6 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
     connectorsForImport,
   } = usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
-  const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSetId}`;
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
@@ -204,8 +205,12 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   label={t_i18n('History')}
                 />
               </Tabs>
-              <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
-
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AISummaryContainer title={t_i18n('Summary of the intrusion set trends')}>
+                  <span></span>
+                </AISummaryContainer>
+                <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
+              </div>
             </Box>
             <Routes>
               <Route

@@ -12,6 +12,8 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
+import AISummaryContainer from '@components/common/ai/AISummaryContainer';
+import ContainersAiSummary from '@components/common/containers/ContainersAiSummary';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -180,9 +182,12 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             label={t_i18n('Data')}
           />
         </Tabs>
-        {isOverview && (
-          <StixCoreObjectSimulationResult id={caseData.id} type="container" />
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+          <AISummaryContainer title={t_i18n('Summary of the case')}>
+            <ContainersAiSummary first={1} filters={filters}/>
+          </AISummaryContainer>
+          <StixCoreObjectSimulationResult id={caseData.id} type="container"/>
+        </div>
       </Box>
       <Routes>
         <Route

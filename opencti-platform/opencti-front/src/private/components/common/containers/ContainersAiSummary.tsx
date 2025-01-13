@@ -63,7 +63,7 @@ const ContainersAiSummaryComponent = ({ first, queryRef, filters }: ContainersAi
           <Grid item={true} xs={3}>
             <Chip
               size="small"
-              label={`${t_i18n('Last')} ${first} ${t_i18n('elements')}`}
+              label={`${t_i18n('Last')} ${first} ${t_i18n('element(s)')}`}
               style={{ borderRadius: 4, height: 32, float: 'right', marginTop: 8 }}
             />
           </Grid>
