@@ -11,7 +11,7 @@ import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../domain/taxii';
-import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
 import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
 import { now } from '../utils/format';
@@ -35,10 +35,7 @@ const errorConverter = (e) => {
     http_status: e.extensions.data?.http_status || 500,
   };
 };
-const userHaveAccess = (user) => {
-  const capabilities = user.capabilities.map((c) => c.name);
-  return capabilities.includes(BYPASS) || capabilities.includes(TAXIIAPI);
-};
+
 const extractUserFromRequest = async (context, req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const user = await authenticateUserFromRequest(context, req, res);
@@ -46,7 +43,7 @@ const extractUserFromRequest = async (context, req, res) => {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();
   }
-  if (!userHaveAccess(user)) throw ForbiddenAccess();
+  if (!isUserHasCapability(user, TAXIIAPI)) throw ForbiddenAccess();
   return user;
 };
 const rebuildParamsForObject = (id, req) => {
