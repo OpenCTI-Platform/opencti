@@ -26,7 +26,7 @@ export const exclusionListUpdateValidator = (t: (n: string) => string) => Yup.ob
   description: Yup.string().nullable(),
   exclusion_list_entity_types: Yup.array().min(1, t('Minimum one entity type')).test(
     'entityTypeListValidator',
-    'Incompatible types, can\'t mix IP types with other types',
+    t('Incompatible types, can\'t mix IP types with other types'),
     (value?: Option[]) => entityTypeListValidator(value),
   ).required(t('This field is required')),
 });
@@ -37,7 +37,7 @@ export const exclusionListCreationValidator = (t: (value: string) => string, isC
     description: Yup.string().nullable(),
     exclusion_list_entity_types: Yup.array().min(1, t('Minimum one entity type')).test(
       'entityTypeListValidator',
-      'Incompatible types, can\'t mix IP types with other types',
+      t('Incompatible types, can\'t mix IP types with other types'),
       (value?: Option[]) => entityTypeListValidator(value),
     ).required(t('This field is required')),
     file: isCreatedWithFile ? Yup.mixed().required(t('This field is required')) : Yup.mixed().nullable(),
