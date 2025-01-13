@@ -375,7 +375,7 @@ describe('TaskManager executePromote tests', () => {
   });
 });
 
-describe.skip('TaskManager computeQueryTaskElements', () => {
+describe('TaskManager computeQueryTaskElements', () => {
   let observable1;
   let observable2;
   let createdReport: StoreEntityReport;
@@ -393,7 +393,12 @@ describe.skip('TaskManager computeQueryTaskElements', () => {
 
     observable1 = await addStixCyberObservable(testContext, ADMIN_USER, observable1Data);
     observable2 = await addStixCyberObservable(testContext, ADMIN_USER, observable2Data);
-    createdReport = await addReport(testContext, ADMIN_USER, { ...promoteReportInput, objects: [observable1.id, observable2.id] });
+    createdReport = await addReport(testContext, ADMIN_USER, {
+      name: 'taskManager test - computeQueryTaskElements',
+      published: '2024-10-06T22:00:00.000Z',
+      description: 'report use for taskManager test purpose on orderMode',
+      objects: [observable1.id, observable2.id]
+    });
     const relationShipAddInput = {
       relationship_type: 'related-to',
       confidence: 100,
