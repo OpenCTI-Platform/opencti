@@ -372,7 +372,10 @@ export const aiSummary = async (context, user, args) => {
   const result = await queryAi(null, systemPrompt, userPromptReport, user);
   const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
 
-  const summary = { result, topics: topics.split(',').map((n) => n.trim()) };
+  const summary = {
+    result: result.replace('```html', '').replace('```', '').trim(),
+    topics: topics.split(',').map((n) => n.trim())
+  };
   aiResponseCache[identifier] = summary;
   return summary;
 };

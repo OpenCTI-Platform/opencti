@@ -19,6 +19,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import AISummaryContainers from '@components/common/ai/AISummaryContainers';
+import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -328,7 +329,7 @@ const AIInsights = ({
             <AISummaryActivity id={id} />
           )}
           {currentTab === 'history' && (
-            <AISummaryActivity id={id} />
+            <AISummaryHistory id={id} />
           )}
         </div>
       </Drawer>

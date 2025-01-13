@@ -450,6 +450,7 @@ type OpinionsMetrics {
 
 type AiActivity {
   result: String
+  trend: String
   updated_at: DateTime
 }
 

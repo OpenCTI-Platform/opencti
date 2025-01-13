@@ -840,7 +840,7 @@ export const aiActivity = async (context, user, stixCoreObjectId) => {
   if (threats.includes(stixCoreObject.entity_type)) {
     result = await aiActivityForThreats(context, user, stixCoreObject);
   }
-  const activity = { result, updated_at: now() };
+  const activity = { result: result.replace('```html', '').replace('```', '').trim(), updated_at: now() };
   aiResponseCache[identifier] = activity;
   return activity;
 };
@@ -875,7 +875,7 @@ export const aiHistory = async (context, user, stixCoreObjectId) => {
   `;
   // Get results
   const result = await queryAi(null, systemPrompt, userPrompt, user);
-  const history = { result, updated_at: now() };
+  const history = { result: result.replace('```html', '').replace('```', '').trim(), updated_at: now() };
   aiResponseCache[identifier] = history;
   return history;
 };

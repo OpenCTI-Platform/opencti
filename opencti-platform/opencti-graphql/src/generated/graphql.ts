@@ -322,6 +322,7 @@ export enum AdministrativeAreasOrdering {
 export type AiActivity = {
   __typename?: 'AiActivity';
   result?: Maybe<Scalars['String']['output']>;
+  trend?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -32679,6 +32680,7 @@ export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extend
 
 export type AiActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiActivity'] = ResolversParentTypes['AiActivity']> = ResolversObject<{
   result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trend?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
