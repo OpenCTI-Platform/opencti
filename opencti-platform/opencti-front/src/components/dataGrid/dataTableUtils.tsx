@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { helpId } from '@rjsf/utils';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -1033,6 +1034,56 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Opinions mean',
     percentWidth: 10,
     render: ({ opinions_metrics }) => <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? '-'}</span>,
+  },
+  from_entity_type: {
+    id: 'from_entity_type',
+    label: 'From entity type',
+    percentWidth: 10,
+    render: ({ from }, helpers) => {
+      if (from) {
+        const value = helpers.t_i18n(from.relationship_type
+          ? `relationship_${from.entity_type}`
+          : `entity_${from.entity_type}`);
+        return defaultRender(value);
+      }
+
+      const value = helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
+  from_relationship_type: {
+    id: 'from_relationship_type',
+    label: 'From relationship type',
+    percentWidth: 10,
+    render: ({ from }, helpers) => {
+      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
+  to_entity_type: {
+    id: 'to_entity_type',
+    label: 'To entity type',
+    percentWidth: 10,
+    render: ({ to }, helpers) => {
+      if (to) {
+        const value = helpers.t_i18n(to.relationship_type
+          ? `relationship_${to.entity_type}`
+          : `entity_${to.entity_type}`);
+        return defaultRender(value);
+      }
+
+      const value = helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
+  to_relationship_type: {
+    id: 'to_relationship_type',
+    label: 'To relationship type',
+    percentWidth: 10,
+    render: ({ to }, helpers) => {
+      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
   },
 };
 

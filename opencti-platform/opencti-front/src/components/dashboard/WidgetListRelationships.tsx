@@ -1,17 +1,20 @@
+import React, { useState, CSSProperties, useEffect } from 'react';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
-import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
+import { DataTableColumn, DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
+import { WidgetColumn } from 'src/utils/widget/widget';
 import ItemIcon from '../ItemIcon';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemMarkings from '../ItemMarkings';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
+import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 
 const bodyItemStyle = (width: string): CSSProperties => ({
   height: 20,
@@ -29,15 +32,54 @@ interface WidgetListRelationshipsProps {
   data: any[]
   dateAttribute: string
   publicWidget?: boolean
+  widgetId: string;
+  rootRef: DataTableProps['rootRef'],
+  columns: WidgetColumn[]
 }
 
 const WidgetListRelationships = ({
   data,
   dateAttribute,
   publicWidget = false,
+  widgetId,
+  rootRef,
+  columns,
 }: WidgetListRelationshipsProps) => {
   const theme = useTheme<Theme>();
   const { fsd, t_i18n } = useFormatter();
+  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>(null);
+
+  useEffect(() => {
+    const columnKeys = columns.map((column) => column.attribute);
+    const newColumns = columnKeys.reduce((acc: DataTableProps['dataColumns'], cur: string, index: number) => ({ ...acc, [cur]: { order: index + 2 } }), {});
+    newColumns.icon = {
+      order: 1,
+      label: ' ',
+      render: (stixRelationship) => (
+        <ItemIcon
+          type={stixRelationship.entity_type}
+          color="primary"
+        />
+      ),
+    };
+    setCurrentColumns(newColumns);
+  }, []);
+
+  if (!currentColumns) return null;
+  return (
+    <div style={{ width: '100%' }}>
+      <DataTableWithoutFragment
+        dataColumns={currentColumns}
+        storageKey={widgetId}
+        data={data.map(({ node }) => node)}
+        globalCount={data.length}
+        variant={DataTableVariant.widget}
+        pageSize='50'
+        disableNavigation={publicWidget}
+        rootRef={rootRef}
+      />
+    </div>
+  );
 
   return (
     <div
@@ -93,7 +135,9 @@ const WidgetListRelationships = ({
                   type={stixRelationship.entity_type}
                   color="primary"
                 />
+
               </ListItemIcon>
+
               <ListItemText
                 primary={
                   <div>
@@ -115,12 +159,14 @@ const WidgetListRelationships = ({
                             `entity_${stixRelationship.from.entity_type}`,
                           )
                         : t_i18n('Restricted')}
+
                     </div>
                     <div style={bodyItemStyle('18%')}>
                       <code>
                         {stixRelationship.from
                           ? getMainRepresentative(stixRelationship.from)
                           : t_i18n('Restricted')}
+                        aze
                       </code>
                     </div>
                     <div style={bodyItemStyle('10%')}>
@@ -185,5 +231,7 @@ const WidgetListRelationships = ({
     </div>
   );
 };
+
+WidgetListRelationships.displayName = 'WidgetListRelationships';
 
 export default WidgetListRelationships;
