@@ -72,6 +72,15 @@ export const REJECT_RFI_QUERY = gql`
         }
     }`;
 
+const REOPEN_RFI_QUERY = gql`
+  mutation ReopenRequestAccess($id: ID!) {
+    requestAccessReopen(id: $id){
+      action_executed,
+      action_status,
+      action_date
+    }
+  }`;
+
 describe('Add Request Access to an entity and create an RFI.'
   + 'USER_EDITOR is used as platform admin (in TEST_ORGANIZATION org),'
   + 'USER_DISINFORMATION_ANALYST is used as user that request access to knowledge.', async () => {
@@ -185,6 +194,15 @@ describe('Add Request Access to an entity and create an RFI.'
     console.log('RFI created for reject:', requestAccessData?.data?.requestAccessAdd);
   });
 
+  it('should not reopen the Case RFI when not rejected', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: REOPEN_RFI_QUERY,
+      variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
+    });
+    expect(queryResult?.data?.requestAccessReopen.action_status).toBe(ActionStatus.New);
+    expect(queryResult?.data?.requestAccessReopen.action_executed).toBeFalsy();
+  });
+
   it('should reject the created Case RFI first time be ok', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: REJECT_RFI_QUERY,
@@ -206,6 +224,24 @@ describe('Add Request Access to an entity and create an RFI.'
     });
     expect(queryResult?.data?.requestAccessReject.action_status).toBe(ActionStatus.Refused);
     expect(queryResult?.data?.requestAccessReject.action_executed).toBeFalsy();
+  });
+
+  it('should refuse to accept the Case RFI when already rejected', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: VALIDATE_RFI_QUERY,
+      variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
+    });
+    expect(queryResult?.data?.requestAccessValidate.action_status).toBe(ActionStatus.Refused);
+    expect(queryResult?.data?.requestAccessValidate.action_executed).toBeFalsy();
+  });
+
+  it('should reopen the Case RFI when rejected', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: REOPEN_RFI_QUERY,
+      variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
+    });
+    expect(queryResult?.data?.requestAccessReopen.action_status).toBe(ActionStatus.New);
+    expect(queryResult?.data?.requestAccessReopen.action_executed).toBeTruthy();
   });
 
   it('should remove platform organization and test data', async () => {
