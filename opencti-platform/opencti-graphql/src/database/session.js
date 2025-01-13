@@ -99,8 +99,8 @@ export const usersWithActiveSessionCount = async (maxInactivityDurationInMin = 1
   return sessions.filter((s) => s.isActiveUser).length;
 };
 
-export const findUserSessions = async (userId) => {
-  const sessions = await findSessions({ maxSessionsPerUser: 10 });
+export const findUserSessions = async (userId, opts = {}) => {
+  const sessions = await findSessions(opts);
   const userSessions = sessions.filter((s) => s.user_id === userId);
   if (userSessions.length > 0) {
     return R.head(userSessions);
@@ -120,8 +120,8 @@ export const killSession = async (id) => {
 
 export const killUserSessions = async (userId) => {
   const { store } = applicationSession;
-  const sessions = await findUserSessions(userId);
-  const sessionsIds = sessions.map((s) => s.id);
+  const userSessions = await findUserSessions(userId);
+  const sessionsIds = userSessions.sessions.map((s) => s.id);
   const killedSessions = [];
   for (let index = 0; index < sessionsIds.length; index += 1) {
     const sessionId = sessionsIds[index];

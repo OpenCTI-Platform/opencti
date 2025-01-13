@@ -92,7 +92,7 @@ const userResolvers = {
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
-    sessions: (current) => findUserSessions(current.id),
+    sessions: (current) => findUserSessions(current.id, { maxSessionsPerUser: 10 }),
     effective_confidence_level: (current, args, context) => usersConfidenceLoader.load(current, context, context.user),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
