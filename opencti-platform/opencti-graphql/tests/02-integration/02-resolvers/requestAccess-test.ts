@@ -141,7 +141,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRequestForInformation[RELATION_OBJECT_ASSIGNEE]).toContain(userEditorId);
     expect(caseRequestForInformation.object).toEqual([malwareId]);
 
-    const action: RequestAccessAction = JSON.parse(caseRequestForInformation.description);
+    const action: RequestAccessAction = JSON.parse(caseRequestForInformation.x_opencti_request_access);
     expect(action.status).toBe(ActionStatus.New);
   });
 
@@ -154,7 +154,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(queryResult?.data?.requestAccessValidate.action_executed).toBeTruthy();
 
     const caseRFIAccepted = await findRFIById(testContext, ADMIN_USER, caseRfiIdForApproval);
-    const action: RequestAccessAction = JSON.parse(caseRFIAccepted.description);
+    const action: RequestAccessAction = JSON.parse(caseRFIAccepted.x_opencti_request_access);
     expect(action.status).toBe(ActionStatus.Accepted);
   });
 
@@ -195,7 +195,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(queryResult?.data?.requestAccessReject.action_executed).toBeTruthy();
 
     const caseRFIAccepted = await findRFIById(testContext, ADMIN_USER, caseRfiIdForReject);
-    const action: RequestAccessAction = JSON.parse(caseRFIAccepted.description);
+    const action: RequestAccessAction = JSON.parse(caseRFIAccepted.x_opencti_request_access);
     expect(action.status).toBe(ActionStatus.Refused);
   });
 
