@@ -90,7 +90,7 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
               case 'details':
                 return (
                   <Grid key={key} item xs={width}>
-                    <ToolDetails tool={tool} />
+                    <ToolDetails tools={tool} />
                   </Grid>
                 );
               case 'basicInformation':
