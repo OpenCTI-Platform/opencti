@@ -33,13 +33,13 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { elCount, elFindByIds, elPaginate, elUpdateElement } from '../database/engine';
+import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -841,7 +841,7 @@ export const aiActivity = async (context, user, stixCoreObjectId) => {
     result = await aiActivityForThreats(context, user, stixCoreObject);
   }
   const activity = { result, updated_at: now() };
-  aiResponseCache[stixCoreObjectId] = activity;
+  aiResponseCache[identifier] = activity;
   return activity;
 };
 
@@ -876,7 +876,7 @@ export const aiHistory = async (context, user, stixCoreObjectId) => {
   // Get results
   const result = await queryAi(null, systemPrompt, userPrompt, user);
   const history = { result, updated_at: now() };
-  aiResponseCache[stixCoreObjectId] = history;
+  aiResponseCache[identifier] = history;
   return history;
 };
 

@@ -341,7 +341,7 @@ export const aiSummary = async (context, user, args) => {
   }
   const systemPrompt = 'You are an assistant aimed to summarize and categorize cyber threat intelligence deliverables.';
   const userPromptReport = `
-  You are a cyber threat intelligence analyst. Your task is to create a comprehensive summary of the given reports and write a final report in the markdown format.
+  You are a cyber threat intelligence analyst. Your task is to create a comprehensive summary of the given reports and write a final report in the HTML format.
   
   You will only respond with the report content. Do not include formatting hint or syntax highlight. Do not provide explanations or notes.
   
@@ -357,8 +357,8 @@ export const aiSummary = async (context, user, args) => {
   - Always start the report with a section "Key Findings".
   
   ## Report writing
-  - Create a comprehensive report in markdown format.
-  - In the markdown format, don't use h1 (first level title), start with h2.  
+  - Create a comprehensive report in HTML format.
+  - In the HTML format, don't use h1 (first level title), start with h2.  
   `;
 
   const userPromptTopics = `
