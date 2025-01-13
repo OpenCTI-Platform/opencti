@@ -35,6 +35,7 @@ import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import { maskString } from '../../../utils/String';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import ProfileLocalStorage from './ProfileLocalStorage';
 
 const styles = () => ({
   container: {
@@ -681,6 +682,8 @@ const ProfileOverviewComponent = (props) => {
           </Button>
         </div>
       </Paper>
+
+      <ProfileLocalStorage />
     </div>
   );
 };
