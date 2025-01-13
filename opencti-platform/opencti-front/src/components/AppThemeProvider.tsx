@@ -7,8 +7,6 @@ import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
-import useConnectedDocumentModifier from '../utils/hooks/useConnectedDocumentModifier';
-import { pascalize } from '../utils/String';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
@@ -64,8 +62,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   settings,
 }) => {
   const { me } = useContext<UserContextType>(UserContext);
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(pascalize(window.location.pathname.split('/').at(-1)));
   useDocumentFaviconModifier(settings?.platform_favicon);
   // region theming
   const defaultTheme = settings?.platform_theme ?? null;
