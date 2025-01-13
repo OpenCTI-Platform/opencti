@@ -32,7 +32,7 @@ const CLASSIC_OBJECT = {
   message: 'Bulk indexing fail',
   source: 'backend',
   timestamp: '2025-01-09T20:57:05.422Z',
-  version: '6.4.6'
+  // version: '6.4.6', we remove the octi version from the tests so it works after bumping during the automated release process
 };
 const TOO_COMPLEX_OBJECT = {
   category: 'APP',
@@ -189,6 +189,7 @@ const WITH_ERROR_OBJECT = {
 describe('Logger test suite', () => {
   it('Log object is correctly untouched', () => {
     const cleanObject = prepareLogMetadata(CLASSIC_OBJECT);
+    delete cleanObject.version; // do not compare octi version, for a stable test after bumping platform version
     expect(JSON.stringify(cleanObject)).toEqual(JSON.stringify(CLASSIC_OBJECT));
   });
 
