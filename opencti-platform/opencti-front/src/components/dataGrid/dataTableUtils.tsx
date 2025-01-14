@@ -1039,17 +1039,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'from_entity_type',
     label: 'From entity type',
     percentWidth: 10,
-    render: ({ from }, helpers) => {
-      if (from) {
-        const value = helpers.t_i18n(from.relationship_type
-          ? `relationship_${from.entity_type}`
-          : `entity_${from.entity_type}`);
-        return defaultRender(value);
-      }
-
-      const value = helpers.t_i18n('Restricted');
-      return defaultRender(value);
-    },
+    render: ({ from }) => (<ItemEntityType showIcon entityType={from.entity_type} inList />),
   },
   from_relationship_type: {
     id: 'from_relationship_type',
@@ -1064,17 +1054,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'to_entity_type',
     label: 'To entity type',
     percentWidth: 10,
-    render: ({ to }, helpers) => {
-      if (to) {
-        const value = helpers.t_i18n(to.relationship_type
-          ? `relationship_${to.entity_type}`
-          : `entity_${to.entity_type}`);
-        return defaultRender(value);
-      }
-
-      const value = helpers.t_i18n('Restricted');
-      return defaultRender(value);
-    },
+    render: ({ to }) => (<ItemEntityType showIcon entityType={to.entity_type} inList />),
   },
   to_relationship_type: {
     id: 'to_relationship_type',
