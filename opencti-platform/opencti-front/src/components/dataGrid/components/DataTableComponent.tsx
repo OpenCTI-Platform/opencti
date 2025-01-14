@@ -41,7 +41,8 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'canToggleLine'
-| 'disableLineSelection'>;
+| 'disableLineSelection'
+| 'isLocalStorageEnabled'>;
 
 const DataTableComponent = ({
   dataColumns,
@@ -69,6 +70,7 @@ const DataTableComponent = ({
   selectOnLineClick,
   onLineClick,
   canToggleLine = true,
+  isLocalStorageEnabled = true,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
@@ -101,8 +103,15 @@ const DataTableComponent = ({
     ].sort((a, b) => a.order - b.order);
   };
 
-  const [columns, setColumns] = useState(buildColumns());
-  console.log('columns ; ', columns);
+  const [columns, setColumns] = useState(buildColumns(isLocalStorageEnabled));
+
+  useEffect(() => {
+    if (isLocalStorageEnabled) return;
+
+    const updatedColumns = buildColumns(isLocalStorageEnabled);
+    setColumns(updatedColumns);
+  }, [dataColumns]);
+
   useEffect(() => {
     setLocalStorageColumns((curr) => {
       const cols = { ...curr };

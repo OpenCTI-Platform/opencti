@@ -13,7 +13,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
-import { defaultColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { commonWidgetColumns, defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -648,11 +648,11 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           />
         )}
         {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
-          && dataSelection.map(({ perspective, columns }, index) => (perspective === 'relationships' ? (
+          && dataSelection.map(({ perspective, columns }, index) => ((perspective === 'relationships' || perspective === 'entities') ? (
             <WidgetConfigColumnsCustomization
               key={index}
-              availableColumns={defaultColumns[perspective]}
-              columns={[...(columns ?? defaultColumns[perspective])]}
+              availableColumns={commonWidgetColumns[perspective]}
+              columns={[...(columns ?? defaultWidgetColumns[perspective])]}
               setColumns={(newColumns) => setColumns(index, newColumns)}
             />
           ) : null))}
