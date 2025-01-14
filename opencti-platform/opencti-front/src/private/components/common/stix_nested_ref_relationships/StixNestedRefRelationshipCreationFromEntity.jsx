@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
@@ -503,18 +503,19 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     }
   };
 
+  useEffect(() => {
+    setSortBy('created_at');
+    setOrderAsc(false);
+  }, [searchTerm]);
+
   const renderSelectEntity = () => {
     const searchPaginationOptions = {
       search: searchTerm,
       filters: removeIdFromFilterGroupObject(filters),
-      orderBy: null,
-      orderMode: null,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
       types: targetStixCoreObjectTypes,
     };
-    if (searchTerm.length === 0) {
-      searchPaginationOptions.orderBy = sortBy;
-      searchPaginationOptions.orderMode = orderAsc ? 'asc' : 'desc';
-    }
     const dataColumns = {
       entity_type: {
         label: 'Type',
