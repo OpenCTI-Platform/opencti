@@ -83,6 +83,8 @@ import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { getDraftContext } from '../utils/draftContext';
+import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -240,6 +242,8 @@ const executeDelete = async (context, user, element, scope) => {
   }
   if (scope === BackgroundTaskScope.Import) {
     await deleteFile(context, user, element.id);
+  } else if (element.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE) {
+    await deleteDraftWorkspace(context, user, element.id);
   } else {
     await deleteElementById(context, user, element.internal_id, element.entity_type);
   }

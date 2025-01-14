@@ -193,7 +193,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
 import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
@@ -1871,6 +1871,29 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   };
 };
 
+export const generateUpdateMessage = async (context, entityType, inputs) => {
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
+  const patchElements = Object.entries(inputsByOperations);
+  if (patchElements.length === 0) {
+    throw UnsupportedError('Generating update message with empty inputs fail');
+  }
+
+  const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
+    return operations.slice(0, 3).flatMap(({ key, value }) => {
+      return key === 'authorized_members' ? (value ?? []).map(({ id }) => id) : [];
+    });
+  });
+  let members = [];
+  if (authorizedMembersIds.length > 0) {
+    members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
+      baseData: true,
+      baseFields: ['internal_id', 'name']
+    });
+  }
+
+  return generateUpdatePatchMessage(patchElements, entityType, { members });
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -2185,7 +2208,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
       const args = {
         filters: {
           mode: 'and',
