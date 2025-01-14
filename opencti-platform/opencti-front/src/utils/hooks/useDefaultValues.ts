@@ -44,6 +44,8 @@ export const useComputeDefaultValues = () => {
         .map((v) => {
           const parsed = JSON.parse(v.id);
           const member = membersData?.members?.edges?.find(({ node }) => node.id === parsed.id);
+          // TODO membersData is not filled for report creation form
+          // TODO replace 'CREATOR' by current user
           return {
             id: parsed.id,
             name: member?.node.name ?? '',

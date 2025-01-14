@@ -37,7 +37,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
@@ -85,7 +85,7 @@ interface ReportAddInput {
   objectParticipant: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorized_members: { value: string, accessRight: string }[];
+  authorized_members: { value: string, accessRight: string }[] | undefined;
 }
 
 interface ReportFormProps {
@@ -115,7 +115,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
-
+  const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const { isFeatureEnable } = useHelper();
   const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
 
@@ -163,7 +163,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-      ...(isAccessRestrictionCreationEnable && {
+      ...(canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
@@ -212,8 +212,11 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
-    authorized_members: [],
+    authorized_members: undefined,
   });
+  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+    delete initialValues.authorized_members;
+  }
   return (
     <Formik<ReportAddInput>
       initialValues={initialValues}
@@ -344,7 +347,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                     component={AuthorizedMembersField}
                     containerstyle={{ marginTop: 20 }}
                     showAllMembersLine
-                    showCreatorLine
+                    showCreatorLine={false}
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights
