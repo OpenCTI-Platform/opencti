@@ -3647,7 +3647,7 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
     + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
     + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
     + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
-    + "ctx._source.remove('rel_can-share'); ";
+    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');";
   const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
   const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
