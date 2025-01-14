@@ -7,7 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import { createStyles, useTheme } from '@mui/styles';
+import { createStyles } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import { AutoAwesomeOutlined, Close } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
@@ -57,11 +57,11 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     overflowY: 'auto',
   },
   chip: {
-    fontSize: 'x-small',
     display: 'inline-flex',
     fontWeight: 600,
     justifyContent: 'center',
     alignItems: 'center',
+    fontSize: 12,
     marginLeft: 6,
     borderRadius: theme.borderRadius,
     border: `1px solid ${theme.palette.ai.main}`,
@@ -75,7 +75,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
   chipFloating: {
     float: 'right',
-    fontSize: 'x-small',
+    fontSize: 12,
     fontWeight: 600,
     height: 25,
     display: 'inline-flex',
@@ -112,7 +112,6 @@ const AIInsights = ({
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
-  const theme = useTheme<Theme>();
   const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -156,10 +155,6 @@ const AIInsights = ({
           {onlyIcon ? (
             <IconButton
               size="small"
-              style={{
-                fontSize: 12,
-                color: theme.palette.ai.main,
-              }}
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
@@ -169,10 +164,6 @@ const AIInsights = ({
             <Button
               variant="outlined"
               size="small"
-              style={{
-                fontSize: 12,
-                color: theme.palette.ai.main,
-              }}
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
               startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
@@ -206,10 +197,6 @@ const AIInsights = ({
           {onlyIcon ? (
             <IconButton
               size="small"
-              style={{
-                fontSize: 12,
-                color: theme.palette.ai.main,
-              }}
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
@@ -219,10 +206,6 @@ const AIInsights = ({
             <Button
               variant="outlined"
               size="small"
-              style={{
-                fontSize: 12,
-                color: theme.palette.ai.main,
-              }}
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
               startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
@@ -257,10 +240,6 @@ const AIInsights = ({
         {onlyIcon ? (
           <IconButton
             size="small"
-            style={{
-              fontSize: 12,
-              color: theme.palette.ai.main,
-            }}
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
           >
@@ -270,10 +249,6 @@ const AIInsights = ({
           <Button
             variant="outlined"
             size="small"
-            style={{
-              fontSize: 12,
-              color: theme.palette.ai.main,
-            }}
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
             startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
