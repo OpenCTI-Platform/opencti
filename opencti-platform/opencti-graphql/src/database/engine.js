@@ -46,7 +46,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -180,6 +180,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { lockResource } from './redis';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3976,13 +3977,28 @@ export const copyLiveElementToDraft = async (context, user, element, draftOperat
 };
 // Gets the version of the element in current draft context if it exists
 // If it doesn't exist, creates a copy of live element to draft context then returns it
+const draftCopyLockPrefix = 'draft_copy_';
 const loadDraftElement = async (context, user, element) => {
   if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
-  const loadedElement = await elLoadById(context, user, element.internal_id);
-  if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
+  let lock;
+  const lockKey = `${draftCopyLockPrefix}${element.internal_id}`;
+  try {
+    lock = await lockResource([lockKey]);
+    const loadedElement = await elLoadById(context, user, element.internal_id);
+    if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
 
-  return await copyLiveElementToDraft(context, user, element);
+    return await copyLiveElementToDraft(context, user, element);
+  } catch (e) {
+    if (e.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [lockKey] });
+    }
+    throw e;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 const validateElementsToIndex = (context, user, elements) => {
   const draftContext = getDraftContext(context, user);
