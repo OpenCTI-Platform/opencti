@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
