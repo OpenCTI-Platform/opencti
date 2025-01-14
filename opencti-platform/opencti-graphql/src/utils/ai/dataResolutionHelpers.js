@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import {distributionRelations, timeSeriesEntities, timeSeriesRelations} from '../../database/middleware';
+import { distributionRelations, timeSeriesEntities, timeSeriesRelations } from '../../database/middleware';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -9,9 +9,9 @@ import {
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION
 } from '../../schema/general';
-import {extractEntityRepresentativeName, extractRepresentativeDescription} from '../../database/entity-representative';
-import {listAllToEntitiesThroughRelations} from '../../database/middleware-loader';
-import {RELATION_OBJECT} from '../../schema/stixRefRelationship';
+import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
+import { listAllToEntitiesThroughRelations } from '../../database/middleware-loader';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import {
   RELATION_AMPLIFIES,
   RELATION_ATTRIBUTED_TO,
@@ -23,22 +23,16 @@ import {
   RELATION_TARGETS,
   RELATION_USES
 } from '../../schema/stixCoreRelationship';
-import {isNotEmptyField, READ_INDEX_HISTORY} from '../../database/utils';
-import {FROM_START_STR, UNTIL_END_STR} from '../format';
-import {paginatedForPathWithEnrichment} from '../../modules/internal/document/document-domain';
-import {elSearchFiles} from '../../database/file-search';
-import {elPaginate} from '../../database/engine';
-import {ENTITY_TYPE_HISTORY} from '../../schema/internalObject';
-import {isStixCyberObservable} from '../../schema/stixCyberObservable';
-import {ENTITY_TYPE_INDICATOR} from '../../modules/indicator/indicator-types';
-import {
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP
-} from '../../schema/stixDomainObject';
-import {ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL} from '../../modules/threatActorIndividual/threatActorIndividual-types';
+import { isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
+import { FROM_START_STR, UNTIL_END_STR } from '../format';
+import { paginatedForPathWithEnrichment } from '../../modules/internal/document/document-domain';
+import { elSearchFiles } from '../../database/file-search';
+import { elPaginate } from '../../database/engine';
+import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../modules/threatActorIndividual/threatActorIndividual-types';
 
 export const RESOLUTION_LIMIT = 200;
 export const systemPrompt = `

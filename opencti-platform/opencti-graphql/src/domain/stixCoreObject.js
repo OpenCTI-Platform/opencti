@@ -1,25 +1,11 @@
 import * as R from 'ramda';
-import {
-  buildRestrictedEntity,
-  createEntity,
-  createRelationRaw,
-  deleteElementById,
-  distributionEntities,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities
-} from '../database/middleware';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
-  storeLoadById
-} from '../database/middleware-loader';
-import {findAll as relationFindAll} from './stixCoreRelationship';
-import {delEditContext, lockResource, notify, setEditContext, storeUpdateEvent} from '../database/redis';
-import {BUS_TOPICS, logApp} from '../config/conf';
-import {ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError} from '../config/errors';
-import {isStixCoreObject, stixCoreObjectOptions} from '../schema/stixCoreObject';
+import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
+import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { findAll as relationFindAll } from './stixCoreRelationship';
+import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
+import { BUS_TOPICS, logApp } from '../config/conf';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -32,12 +18,7 @@ import {
   INPUT_MARKINGS,
   REL_INDEX_PREFIX
 } from '../schema/general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -55,38 +36,31 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObjectContainer
 } from '../schema/stixDomainObject';
-import {ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION} from '../schema/stixMetaObject';
-import {createWork, worksForSource, workToExportFile} from './work';
-import {pushToConnector} from '../database/rabbitmq';
-import {minutesAgo, monthsAgo, now, utcDate} from '../utils/format';
-import {ENTITY_TYPE_CONNECTOR} from '../schema/internalObject';
-import {deleteFile, getFileContent, loadFile, storeFileConverter} from '../database/file-storage';
-import {
-  findById as documentFindById,
-  paginatedForPathWithEnrichment
-} from '../modules/internal/document/document-domain';
-import {elCount, elFindByIds, elUpdateElement} from '../database/engine';
-import {generateStandardId, getInstanceIds} from '../schema/identifier';
-import {askEntityExport, askListExport, exportTransformFilters} from './stix';
-import {isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES} from '../database/utils';
-import {ENTITY_TYPE_CONTAINER_CASE} from '../modules/case/case-types';
-import {getEntitySettingFromCache} from '../modules/entitySetting/entitySetting-utils';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipAddRefRelations,
-  stixObjectOrRelationshipDeleteRefRelation
-} from './stixObjectOrStixRelationship';
-import {buildContextDataForFile, completeContextDataForEntity, publishUserAction} from '../listener/UserActionListener';
-import {extractEntityRepresentativeName} from '../database/entity-representative';
-import {addFilter, findFiltersFromKey} from '../utils/filtering/filtering-utils';
-import {INSTANCE_REGARDING_OF} from '../utils/filtering/filtering-constants';
-import {ENTITY_TYPE_CONTAINER_GROUPING} from '../modules/grouping/grouping-types';
-import {getEntitiesMapFromCache} from '../database/cache';
-import {isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation} from '../utils/access';
-import {uploadToStorage} from '../database/file-storage-helper';
-import {connectorsForAnalysis} from '../database/repository';
-import {getDraftContext} from '../utils/draftContext';
-import {FilterOperator} from '../generated/graphql';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { createWork, worksForSource, workToExportFile } from './work';
+import { pushToConnector } from '../database/rabbitmq';
+import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
+import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
+import { generateStandardId, getInstanceIds } from '../schema/identifier';
+import { askEntityExport, askListExport, exportTransformFilters } from './stix';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
+import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { uploadToStorage } from '../database/file-storage-helper';
+import { connectorsForAnalysis } from '../database/repository';
+import { getDraftContext } from '../utils/draftContext';
+import { FilterOperator } from '../generated/graphql';
 import {
   getContainersStats,
   getHistory,
@@ -97,10 +71,10 @@ import {
   getVictimologyStats,
   systemPrompt
 } from '../utils/ai/dataResolutionHelpers';
-import {queryAi} from '../database/ai-llm';
-import {ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL} from '../modules/threatActorIndividual/threatActorIndividual-types';
-import {ENTITY_TYPE_IDENTITY_ORGANIZATION} from '../modules/organization/organization-types';
-import {ENTITY_TYPE_EVENT} from '../modules/event/event-types';
+import { queryAi } from '../database/ai-llm';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 
 const aiResponseCache = {};
 const threats = [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_MALWARE];
