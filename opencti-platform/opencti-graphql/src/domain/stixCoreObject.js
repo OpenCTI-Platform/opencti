@@ -3,7 +3,7 @@ import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementBy
 import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
@@ -76,6 +76,7 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndiv
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 
+const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
 const threats = [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_MALWARE];
 // const arsenal = [ENTITY_TYPE_TOOL, ENTITY_TYPE_ATTACK_PATTERN];
@@ -860,7 +861,7 @@ export const aiActivity = async (context, user, args) => {
   const { id, language = 'English' } = args;
   // Resolve in cache
   const identifier = `${id}-activity`;
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -894,7 +895,7 @@ export const aiForecast = async (context, user, args) => {
   const { id, language = 'English' } = args;
   // Resolve in cache
   const identifier = `${id}-forecast`;
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -920,7 +921,7 @@ export const aiHistory = async (context, user, args) => {
   const { id, language = 'English' } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity

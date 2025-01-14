@@ -688,15 +688,6 @@ const ContainerHeader = (props) => {
             {isFABReplaced && enableEnrollPlaybook && (
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
             )}
-            {enableAskAi && (
-              <StixCoreObjectAskAI
-                instanceId={container.id}
-                instanceType={container.entity_type}
-                instanceName={getMainRepresentative(container)}
-                instanceMarkings={container.objectMarking.map(({ id }) => id)}
-                type="container"
-              />
-            )}
             {!knowledge && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}

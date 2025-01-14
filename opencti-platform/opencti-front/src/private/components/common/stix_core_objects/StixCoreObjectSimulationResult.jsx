@@ -471,10 +471,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             <Button
               variant="outlined"
               size="small"
-              style={{
-                fontSize: 12,
-                color: (!isGrantedToUpdate && oBasConfigured) ? theme.palette.text.disabled : theme.palette.text.primary,
-              }}
+              style={{ fontSize: 12 }}
               disabled={!isGrantedToUpdate && oBasConfigured}
               onClick={() => (oBasConfigured ? setOpen(true) : setOpenCallToAction(true))}
             >

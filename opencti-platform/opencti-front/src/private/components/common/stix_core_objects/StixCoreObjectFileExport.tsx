@@ -36,10 +36,19 @@ export const BUILT_IN_FROM_TEMPLATE = {
   value: 'fromTemplate',
   connectorScope: ['text/html', 'application/pdf'],
 };
+export const BUILT_IN_FROM_AI = {
+  value: 'fromAI',
+  connectorScope: ['text/html', 'text/markdown'],
+};
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery($id: String!) {
     stixCoreObject(id: $id) {
+      id
+      entity_type
+      representative {
+        main
+      }
       objectMarking {
         id
         representative {
@@ -219,6 +228,10 @@ const StixCoreObjectFileExportComponent = ({
         label: t_i18n('Generate FINTEL from template'),
       });
     }
+    activeConnectors.push({
+      ...BUILT_IN_FROM_AI,
+      label: t_i18n('Generate report using AI'),
+    });
   }
 
   const close = () => {
@@ -404,6 +417,9 @@ const StixCoreObjectFileExportComponent = ({
           onClose={close}
           defaultValues={defaultValues}
           scoName={scoName}
+          instanceId={stixCoreObject?.id}
+          instanceName={stixCoreObject?.representative?.main}
+          instanceType={stixCoreObject?.entity_type}
         />
       )}
     </>
@@ -418,7 +434,6 @@ const StixCoreObjectFileExport = (props: StixCoreObjectFileExportProps) => {
     stixCoreObjectFileExportQuery,
     { id: scoId },
   );
-
   return (
     <>
       {!connectorsQueryRef && (
