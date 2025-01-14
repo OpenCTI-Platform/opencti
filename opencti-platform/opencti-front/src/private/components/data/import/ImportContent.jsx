@@ -214,7 +214,7 @@ const ImportContentComponent = ({
   };
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
-    const { connector_id, configuration, objectMarking } = values;
+    const { connector_id, configuration, objectMarking, validation_mode } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
@@ -231,6 +231,7 @@ const ImportContentComponent = ({
         fileName: fileToImport.id,
         connectorId: connector_id,
         configuration: config,
+        validationMode: validation_mode,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -425,7 +426,7 @@ const ImportContentComponent = ({
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
+          initialValues={{ connector_id: '', validation_mode: 'workbench', configuration: '', objectMarking: [] }}
           validationSchema={importValidation(t_i18n, !!selectedConnector?.configurations)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
@@ -464,6 +465,28 @@ const ImportContentComponent = ({
                         </MenuItem>
                       );
                     })}
+                  </Field>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="validation_mode"
+                    label={t_i18n('Validation mode')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  >
+                    <MenuItem
+                      key={'workbench'}
+                      value={'workbench'}
+                    >
+                      {'Workbench'}
+                    </MenuItem>
+                    <MenuItem
+                      key={'draft'}
+                      value={'draft'}
+                    >
+                      {'Draft'}
+                    </MenuItem>
                   </Field>
                   {selectedConnector?.configurations?.length > 0
                     ? <Field
