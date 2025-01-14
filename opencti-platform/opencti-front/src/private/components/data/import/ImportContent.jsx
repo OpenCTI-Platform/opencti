@@ -37,6 +37,7 @@ import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -162,6 +163,8 @@ const ImportContentComponent = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Import: Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
   const [fileToValidate, setFileToValidate] = useState(null);
