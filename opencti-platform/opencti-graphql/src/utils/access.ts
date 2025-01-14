@@ -18,7 +18,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
-import { isNotEmptyField } from '../database/utils';
+import { isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
@@ -288,8 +288,8 @@ export const REDACTED_USER: AuthUser = {
   id: REDACTED_USER_UUID,
   internal_id: REDACTED_USER_UUID,
   individual_id: undefined,
-  name: '*** Redacted ***',
-  user_email: '*** Redacted ***',
+  name: REDACTED_INFORMATION,
+  user_email: REDACTED_INFORMATION,
   inside_platform_organization: false,
   origin: { user_id: REDACTED_USER_UUID, socket: 'internal' },
   roles: [],

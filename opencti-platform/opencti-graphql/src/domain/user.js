@@ -218,7 +218,7 @@ const buildCreatorUser = (user) => {
   return {
     id: user.id,
     entity_type: user.entity_type,
-    name: user.name,
+    name: ENABLED_DEMO_MODE ? REDACTED_USER.name : user.name,
     description: user.description,
     standard_id: user.id
   };
