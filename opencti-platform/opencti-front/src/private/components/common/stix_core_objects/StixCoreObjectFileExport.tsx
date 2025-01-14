@@ -37,10 +37,6 @@ export const BUILT_IN_FROM_TEMPLATE = {
   value: 'fromTemplate',
   connectorScope: ['text/html', 'application/pdf'],
 };
-export const BUILT_IN_FROM_AI = {
-  value: 'fromAI',
-  connectorScope: ['text/html', 'text/markdown'],
-};
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery($id: String!) {
@@ -237,10 +233,6 @@ const StixCoreObjectFileExportComponent = ({
         label: t_i18n('Generate FINTEL from template'),
       });
     }
-    activeConnectors.push({
-      ...BUILT_IN_FROM_AI,
-      label: t_i18n('Generate report using AI'),
-    });
   }
 
   const close = () => {

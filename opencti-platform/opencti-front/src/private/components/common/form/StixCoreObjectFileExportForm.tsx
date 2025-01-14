@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tooltip from '@mui/material/Tooltip';
-import { AutoAwesomeOutlined, FormatShapesOutlined, HtmlOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import { AutoAwesomeOutlined, HtmlOutlined } from '@mui/icons-material';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -19,24 +19,7 @@ import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
-import {
-  AlignHorizontalLeft,
-  ChartAreasplineVariant,
-  ChartBar,
-  ChartBubble,
-  ChartDonut,
-  ChartLine,
-  ChartTimeline,
-  ChartTree,
-  Counter,
-  FilePdfBox,
-  FormatListNumberedRtl,
-  InformationOutline,
-  LanguageMarkdownOutline,
-  Radar,
-  StarSettingsOutline,
-  ViewListOutline,
-} from 'mdi-material-ui';
+import { FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -116,7 +99,7 @@ const StixCoreObjectFileExportForm = ({
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
   const [stepIndex, setStepIndex] = useState(0);
-  const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value, BUILT_IN_FROM_AI.value].includes(connector ?? '');
+  const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
 
   const validation = () => Yup.object().shape({
     connector: Yup.object().required(t_i18n('This field is required')),
@@ -446,7 +429,7 @@ const StixCoreObjectFileExportForm = ({
                 <Button
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || stepIndex === 0}
                 >
                   {t_i18n('Create')}
                 </Button>
