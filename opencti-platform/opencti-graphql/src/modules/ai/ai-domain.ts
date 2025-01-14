@@ -179,6 +179,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     # Formatting
     - The report should be in ${format?.toUpperCase() ?? 'TEXT'} format.
     - The report should be in ${language} language.
+    - Just output the report without anything else.
     - For all found technical indicators of compromise and or observables, you must generate a table with all of them at the end of the report, including file hashes, IP addresses, domain names, etc.
     
     # Facts
@@ -188,9 +189,10 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     ${entitiesInvolved}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  return response.replace('```html', '').replace('```', '').trim();
 };
 
+// TODO This function is deprecated (AI Insights)
 export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
   const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
@@ -249,6 +251,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   return response;
 };
 
+// TODO This function is deprecated (NLP)
 export const convertFilesToStix = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
   const { id, elementId, fileIds } = args;

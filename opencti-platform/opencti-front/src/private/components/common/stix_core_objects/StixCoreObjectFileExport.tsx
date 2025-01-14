@@ -17,6 +17,7 @@ import {
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from '@components/common/stix_core_objects/StixCoreObjectContentFiles';
 import axios from 'axios';
 import { Option } from '@components/common/form/ReferenceField';
+import StixCoreObjectAskAI from '@components/common/stix_core_objects/StixCoreObjectAskAI';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
@@ -162,6 +163,14 @@ const StixCoreObjectFileExportComponent = ({
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [isOpen, setOpen] = useState(false);
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const handleOpenAskAi = () => {
+    setAskAiOpen(true);
+    setOpen(false);
+  };
+  const handleCloseAskAi = () => {
+    setAskAiOpen(false);
+  };
   const { buildFileFromTemplate } = useFileFromTemplate();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
 
@@ -400,7 +409,7 @@ const StixCoreObjectFileExportComponent = ({
       await submitExportConnector(values, helpers);
     }
   };
-
+  const isContainer = ['Report', 'Case-Incident', 'Case-RFI'].includes(stixCoreObject?.entity_type ?? 'Unknown');
   return (
     <>
       <OpenFormComponent
@@ -417,10 +426,19 @@ const StixCoreObjectFileExportComponent = ({
           onClose={close}
           defaultValues={defaultValues}
           scoName={scoName}
-          instanceId={stixCoreObject?.id}
-          instanceName={stixCoreObject?.representative?.main}
           instanceType={stixCoreObject?.entity_type}
+          handleOpenAskAi={handleOpenAskAi}
         />
+      )}
+      {stixCoreObject && isContainer && (
+      <StixCoreObjectAskAI
+        instanceId={stixCoreObject.id}
+        instanceName={stixCoreObject.representative.main}
+        instanceType={stixCoreObject.entity_type}
+        type={isContainer ? 'container' : 'unsupported'}
+        optionsOpen={askAiOpen}
+        handleCloseOptions={handleCloseAskAi}
+      />
       )}
     </>
   );
