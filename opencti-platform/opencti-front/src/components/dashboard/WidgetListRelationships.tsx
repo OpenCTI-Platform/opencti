@@ -29,16 +29,15 @@ const WidgetListRelationships = ({
 
     const newColumns = (
       columnKeys.reduce<DataTableProps['dataColumns']>(
-        (acc, cur, index) => ({
+        (acc, current) => ({
           ...acc,
-          [cur]: { percentWidth, isSortable: false, order: index + 2 },
+          [current]: { percentWidth, isSortable: false },
         }),
         {},
       )
     ) as DataTableProps['dataColumns'];
 
     const iconColumn = {
-      order: 1,
       percentWidth: iconWidth,
       isSortable: false,
       label: ' ',
