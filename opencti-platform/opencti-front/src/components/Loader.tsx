@@ -66,7 +66,6 @@ const Loader: FunctionComponent<LoaderProps> = ({
   withTopMargin = false,
   rotatingTexts,
 }) => {
-  console.log(rotatingTexts);
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { settings } = useContext(UserContext);
