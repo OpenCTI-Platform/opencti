@@ -146,7 +146,18 @@ const ContainerAddStixCoreObjects = (props) => {
   const contextFilters = useBuildEntityTypeBasedFilterContext(targetStixCoreObjectTypes, filters);
 
   const containerRef = useRef(null);
-  const keyword = mapping && (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
+  const [mappingSearch, setMappingSearch] = useState(null);
+  const [currentSelectedText, setCurrentSelectedText] = useState(selectedText);
+  if (currentSelectedText !== selectedText) {
+    setMappingSearch(null);
+    setCurrentSelectedText(selectedText);
+  }
+  let keyword;
+  if (!mapping) {
+    keyword = searchTerm;
+  } else {
+    keyword = !mappingSearch ? selectedText : mappingSearch;
+  }
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
     setOpenSpeedDial(false);
@@ -319,7 +330,7 @@ const ContainerAddStixCoreObjects = (props) => {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={buildColumns()}
-        handleSearch={helpers.handleSearch}
+        handleSearch={mapping ? setMappingSearch : helpers.handleSearch}
         keyword={keyword}
         handleSort={helpers.handleSort}
         handleAddFilter={helpers.handleAddFilter}
