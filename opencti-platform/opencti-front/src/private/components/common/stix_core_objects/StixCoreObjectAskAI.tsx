@@ -18,19 +18,11 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { createSearchParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import {
-  StixCoreObjectAskAISummarizeFilesMutation,
-  StixCoreObjectAskAISummarizeFilesMutation$data,
-} from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAISummarizeFilesMutation.graphql';
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
 import {
   StixCoreObjectAskAIContainerReportMutation,
   StixCoreObjectAskAIContainerReportMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAIContainerReportMutation.graphql';
-import {
-  StixCoreObjectAskAIConvertFilesToStixMutation,
-  StixCoreObjectAskAIConvertFilesToStixMutation$data,
-} from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAIConvertFilesToStixMutation.graphql';
 import type {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
   StixCoreObjectContentFilesUploadStixCoreObjectMutation$data,
@@ -64,18 +56,6 @@ const isContainerWithContent = (type: string) => ['Report', 'Grouping', 'Case-In
 const stixCoreObjectAskAIContainerReportMutation = graphql`
   mutation StixCoreObjectAskAIContainerReportMutation($id: ID!, $containerId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $language: String) {
     aiContainerGenerateReport(id: $id, containerId: $containerId, paragraphs: $paragraphs, tone: $tone, format: $format, language: $language)
-  }
-`;
-
-const stixCoreObjectAskAISummarizeFilesMutation = graphql`
-  mutation StixCoreObjectAskAISummarizeFilesMutation($id: ID!, $elementId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $fileIds: [String], $language: String) {
-    aiSummarizeFiles(id: $id, elementId: $elementId, paragraphs: $paragraphs, tone: $tone, format: $format, language: $language, fileIds: $fileIds)
-  }
-`;
-
-const stixCoreObjectAskAIConvertFilesToStixMutation = graphql`
-  mutation StixCoreObjectAskAIConvertFilesToStixMutation($id: ID!, $elementId: String!, $fileIds: [String]) {
-    aiConvertFilesToStix(id: $id, elementId: $elementId, fileIds: $fileIds)
   }
 `;
 
@@ -129,77 +109,30 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
   const [commitMutationCreateFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
   const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
-  const [commitMutationSummarizeFiles] = useApiMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);
-  const [commitMutationConvertFilesToStix] = useApiMutation<StixCoreObjectAskAIConvertFilesToStixMutation>(stixCoreObjectAskAIConvertFilesToStixMutation);
   const handleAskAiContent = () => {
     handleCloseOptions();
     setDisableResponse(true);
     const id = uuid();
     setBusId(id);
     handleOpenAskAI();
-    switch (action) {
-      case 'container-report':
-        commitMutationContainerReport({
-          variables: {
-            id,
-            containerId: instanceId,
-            paragraphs,
-            tone,
-            format,
-            language,
-          },
-          onCompleted: (response: StixCoreObjectAskAIContainerReportMutation$data) => {
-            setContent(response?.aiContainerGenerateReport ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'summarize-files':
-        commitMutationSummarizeFiles({
-          variables: {
-            id,
-            elementId: instanceId,
-            paragraphs,
-            tone,
-            format,
-            language,
-            fileIds: files.map((n) => n.value),
-          },
-          onCompleted: (response: StixCoreObjectAskAISummarizeFilesMutation$data) => {
-            setContent(response?.aiSummarizeFiles ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'convert-files':
-        setDestination('file');
-        commitMutationConvertFilesToStix({
-          variables: {
-            id,
-            elementId: instanceId,
-            fileIds: files.map((n) => n.value),
-          },
-          onCompleted: (response: StixCoreObjectAskAIConvertFilesToStixMutation$data) => {
-            setContent(response?.aiConvertFilesToStix ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      default:
-      // do nothing
-    }
+    commitMutationContainerReport({
+      variables: {
+        id,
+        containerId: instanceId,
+        paragraphs,
+        tone,
+        format,
+        language,
+      },
+      onCompleted: (response: StixCoreObjectAskAIContainerReportMutation$data) => {
+        setContent(response?.aiContainerGenerateReport ?? '');
+        setDisableResponse(false);
+      },
+      onError: (error: Error) => {
+        setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+        setDisableResponse(false);
+      },
+    });
   };
   const handleAskAi = () => {
     // check paragraphs value is correct

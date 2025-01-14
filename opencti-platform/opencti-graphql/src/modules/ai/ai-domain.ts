@@ -189,7 +189,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     ${entitiesInvolved}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response.replace('```html', '').replace('```', '').trim();
+  return response.replace('```html', '').replace('```markdown', '').replace('```', '').trim();
 };
 
 // TODO This function is deprecated (AI Insights)

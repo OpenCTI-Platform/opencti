@@ -219,7 +219,7 @@ const StixCoreObjectFileExportForm = ({
             >
               <DialogTitle>
                 <Typography
-                  variant="h3"
+                  variant="h2"
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >

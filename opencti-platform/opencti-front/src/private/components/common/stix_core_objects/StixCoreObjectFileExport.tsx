@@ -427,7 +427,7 @@ const StixCoreObjectFileExportComponent = ({
         instanceId={stixCoreObject.id}
         instanceName={stixCoreObject.representative.main}
         instanceType={stixCoreObject.entity_type}
-        type={isContainer ? 'container' : 'unsupported'}
+        type='container'
         optionsOpen={askAiOpen}
         handleCloseOptions={handleCloseAskAi}
       />
