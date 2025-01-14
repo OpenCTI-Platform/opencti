@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
@@ -454,10 +453,7 @@ const ImportContentComponent = ({
                     {connectors.map((connector) => {
                       const disabled = !fileToImport
                           || (connector.connector_scope.length > 0
-                            && !R.includes(
-                              fileToImport.metaData.mimetype,
-                              connector.connector_scope,
-                            ));
+                            && !connector.connector_scope.includes(fileToImport.metaData.mimetype));
                       return (
                         <MenuItem
                           key={connector.id}
@@ -549,11 +545,8 @@ const ImportContentComponent = ({
                   >
                     {connectors.map((connector, i) => {
                       const disabled = !fileToValidate
-                          || (connector.connector_scope.length > 0
-                            && !R.includes(
-                              fileToValidate.metaData.mimetype,
-                              connector.connector_scope,
-                            ));
+                        || (connector.connector_scope.length > 0
+                          && !connector.connector_scope.includes(fileToValidate.metaData.mimetype));
                       return (
                         <MenuItem
                           key={i}
