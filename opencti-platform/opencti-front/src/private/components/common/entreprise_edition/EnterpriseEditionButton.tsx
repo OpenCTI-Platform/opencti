@@ -33,7 +33,6 @@ const EnterpriseEditionButton = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme<Theme>();
-
   const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
   const [feedbackCreation, setFeedbackCreation] = useState(false);
   const {

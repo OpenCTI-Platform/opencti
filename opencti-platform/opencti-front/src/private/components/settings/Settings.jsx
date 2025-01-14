@@ -334,78 +334,8 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('Enterprise Edition')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined" className={'paper-for-grid'}>
-                      {!isEnterpriseEditionByConfig && <EnterpriseEditionButton disabled={!isAllowed} title={isEnterpriseEditionActivated ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'} inLine/>}
-                      {!isEnterpriseEditionByConfig && isEnterpriseEditionActivated && <div style={{ float: 'right' }}>
-                        <DangerZoneBlock type={'ce_ee_toggle'} sx={{
-                          root: { border: 'none', padding: 0, paddingTop: 0, margin: 0 },
-                          title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                        }}
-                        >
-                          {({ disabled }) => (
-                            <>
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                color={isSensitive ? 'dangerZone' : 'primary'}
-                                onClick={() => setOpenEEChanges(true)}
-                                disabled={disabled}
-                                style={isSensitive
-                                  ? {
-                                    color: isAllowed ? theme.palette.dangerZone.text.primary : theme.palette.dangerZone.text.nullable,
-                                    borderColor: theme.palette.dangerZone.main,
-                                  }
-                                  : undefined}
-                              >
-                                {t_i18n('Disable')}
-                              </Button>
-                              <Dialog
-                                PaperProps={{ elevation: 1 }}
-                                open={openEEChanges}
-                                keepMounted
-                                TransitionComponent={Transition}
-                                onClose={() => setOpenEEChanges(false)}
-                              >
-                                <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                                <DialogContent>
-                                  <DialogContentText>
-                                    <Alert
-                                      severity="warning"
-                                      variant="outlined"
-                                      color="dangerZone"
-                                      style={{
-                                        borderColor: theme.palette.dangerZone.main,
-                                      }}
-                                    >
-                                      {t_i18n(
-                                        'You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.',
-                                      )}
-                                    </Alert>
-                                  </DialogContentText>
-                                </DialogContent>
-                                <DialogActions>
-                                  <Button
-                                    onClick={() => {
-                                      setOpenEEChanges(false);
-                                    }}
-                                  >
-                                    {t_i18n('Cancel')}
-                                  </Button>
-                                  <Button
-                                    color="secondary"
-                                    onClick={() => {
-                                      setOpenEEChanges(false);
-                                      handleSubmitField(id, 'enterprise_license', '');
-                                    }}
-                                  >
-                                    {t_i18n('Validate')}
-                                  </Button>
-                                </DialogActions>
-                              </Dialog>
-                            </>
-                          )}
-                        </DangerZoneBlock>
-                      </div>}
+                    <Paper classes={{ root: classes.paper }} variant="outlined" className='paper-for-grid'>
+
                       <list>
                         <ListItem divider={true}>
                           <ListItemText primary={t_i18n('Platform identifier')} />
@@ -482,7 +412,7 @@ const Settings = () => {
                     <Paper
                       classes={{ root: classes.paper }}
                       variant="outlined"
-                      className={'paper-for-grid'}
+                      className='paper-for-grid'
                     >
                       <Formik
                         onSubmit={() => {
@@ -524,7 +454,7 @@ const Settings = () => {
                                   context={editContext}
                                   fieldName="platform_favicon"
                                 />
-                                  }
+                              }
                             />
                             <Field
                               component={TextField}
@@ -541,7 +471,7 @@ const Settings = () => {
                                   context={editContext}
                                   fieldName="platform_email"
                                 />
-                                  }
+                              }
                             />
                             <Field
                               component={SelectField}
@@ -551,14 +481,13 @@ const Settings = () => {
                               fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                                  }
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
                               helpertext={
                                 <SubscriptionFocus
                                   context={editContext}
                                   fieldName="platform_theme"
                                 />
-                                  }
+                              }
                             >
                               <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
                               <MenuItem value="light">{t_i18n('Light')}</MenuItem>
@@ -596,15 +525,94 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
-
+                    <div style={{ float: 'right', marginTop: isSensitive ? theme.spacing(-5) : theme.spacing(-3.5), position: 'relative' }}>
+                      {!isEnterpriseEditionByConfig && (
+                        <EnterpriseEditionButton
+                          disabled={!isAllowed}
+                          title={isEnterpriseEditionActivated ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'}
+                          inLine={true}
+                        />
+                      )}
+                      {!isEnterpriseEditionByConfig && isEnterpriseEditionActivated && (
+                      <DangerZoneBlock type={'ce_ee_toggle'} sx={{
+                        root: { border: 'none', padding: 0, margin: 0 },
+                        title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                      }}
+                      >
+                        {({ disabled }) => (
+                          <>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color={isSensitive ? 'dangerZone' : 'primary'}
+                              onClick={() => setOpenEEChanges(true)}
+                              disabled={disabled}
+                              style={isSensitive
+                                ? {
+                                  color: isAllowed ? theme.palette.dangerZone.text.primary : theme.palette.dangerZone.text.nullable,
+                                  borderColor: theme.palette.dangerZone.main,
+                                }
+                                : undefined}
+                            >
+                              {t_i18n('Disable')}
+                            </Button>
+                            <Dialog
+                              PaperProps={{ elevation: 1 }}
+                              open={openEEChanges}
+                              keepMounted
+                              TransitionComponent={Transition}
+                              onClose={() => setOpenEEChanges(false)}
+                            >
+                              <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                              <DialogContent>
+                                <DialogContentText>
+                                  <Alert
+                                    severity="warning"
+                                    variant="outlined"
+                                    color="dangerZone"
+                                    style={{
+                                      borderColor: theme.palette.dangerZone.main,
+                                    }}
+                                  >
+                                    {t_i18n(
+                                      'You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.',
+                                    )}
+                                  </Alert>
+                                </DialogContentText>
+                              </DialogContent>
+                              <DialogActions>
+                                <Button
+                                  onClick={() => {
+                                    setOpenEEChanges(false);
+                                  }}
+                                >
+                                  {t_i18n('Cancel')}
+                                </Button>
+                                <Button
+                                  color="secondary"
+                                  onClick={() => {
+                                    setOpenEEChanges(false);
+                                    handleSubmitField(id, 'enterprise_license', '');
+                                  }}
+                                >
+                                  {t_i18n('Validate')}
+                                </Button>
+                              </DialogActions>
+                            </Dialog>
+                          </>
+                        )}
+                      </DangerZoneBlock>
+                      )}
+                    </div>
+                    <div className="clearfix"/>
                     <Paper
                       classes={{ root: classes.paper }}
-                      className={'paper-for-grid'}
+                      className='paper-for-grid'
                       variant="outlined"
+                      style={{ marginTop: 6 }}
                     >
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t_i18n)}
@@ -612,8 +620,12 @@ const Settings = () => {
                         {() => (
                           <Form>
                             <List style={{ marginTop: -20 }}>
+                              <ListItem divider={true} style={{ paddingRight: 30 }}>
+                                <ListItemText primary={t_i18n('Platform identifier')}/>
+                                <ItemCopy content={settings.id} variant="inLine"/>
+                              </ListItem>
                               <ListItem divider={true}>
-                                <ListItemText primary={t_i18n('Version')} />
+                                <ListItemText primary={t_i18n('Version')}/>
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={version}
@@ -621,14 +633,14 @@ const Settings = () => {
                                 />
                               </ListItem>
                               <ListItem divider={true}>
-                                <ListItemText primary={t_i18n('Edition')} />
+                                <ListItemText primary={t_i18n('Edition')}/>
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={
-                                    isEnterpriseEditionValid
-                                      ? t_i18n('Enterprise')
-                                      : t_i18n('Community')
-                                  }
+                                          isEnterpriseEditionValid
+                                            ? t_i18n('Enterprise')
+                                            : t_i18n('Community')
+                                        }
                                   status={null}
                                 />
                               </ListItem>
@@ -639,11 +651,11 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={
-                                    settings.platform_cluster.instances_number
-                                    > 1
-                                      ? t_i18n('Cluster')
-                                      : t_i18n('Standalone')
-                                  }
+                                          settings.platform_cluster.instances_number
+                                          > 1
+                                            ? t_i18n('Cluster')
+                                            : t_i18n('Standalone')
+                                        }
                                   status={null}
                                 />
                               </ListItem>
@@ -654,8 +666,8 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={
-                                    `${settings.platform_cluster.instances_number}`
-                                  }
+                                          `${settings.platform_cluster.instances_number}`
+                                        }
                                   status={null}
                                 />
                               </ListItem>
@@ -666,9 +678,9 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   label={
-                                    // eslint-disable-next-line no-nested-ternary
-                                    !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
-                                      ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
+                                          // eslint-disable-next-line no-nested-ternary
+                                          !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
+                                            ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
                                   status={settings.platform_ai_enabled && settings.platform_ai_has_token}
                                   tooltip={settings.platform_ai_has_token ? `${settings.platform_ai_type} - ${settings.platform_ai_model}` : t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
                                 />
@@ -678,25 +690,25 @@ const Settings = () => {
                                   primary={
                                     <>
                                       {t_i18n('Remove Filigran logos')}
-                                      <EEChip />
+                                      <EEChip/>
                                     </>
-                                  }
-                                ></ListItemText>
+                                        }
+                                />
                                 <Field
                                   component={Switch}
                                   variant="standard"
                                   name="platform_whitemark"
                                   disabled={!isEnterpriseEditionValid}
                                   checked={
-                                    settings.platform_whitemark
-                                    && isEnterpriseEditionValid
-                                  }
+                                            settings.platform_whitemark
+                                            && isEnterpriseEditionValid
+                                        }
                                   onChange={(event, value) => handleSubmitField(
                                     id,
                                     'platform_whitemark',
                                     value,
                                   )
-                                  }
+                                        }
                                 />
                               </ListItem>
                             </List>
@@ -706,7 +718,7 @@ const Settings = () => {
                     </Paper>
                   </Grid>
                   <Grid item xs={8}>
-                    <SettingsMessages settings={settings} />
+                    <SettingsMessages settings={settings}/>
                   </Grid>
                   <Grid item xs={4}>
                     <SettingsAnalytics
