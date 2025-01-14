@@ -106,6 +106,7 @@ const RootReport = () => {
               const { report } = props;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
               const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
+              const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
@@ -183,10 +184,12 @@ const RootReport = () => {
                         label={t_i18n('Data')}
                       />
                     </Tabs>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                      <AIInsights id={reportId} tabs={['containers']} defaultTab='containers' isContainer={true} />
-                      <StixCoreObjectSimulationResult id={report.id} type="container"/>
-                    </div>
+                    {!isKnowledgeOrContent && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <StixCoreObjectSimulationResult id={report.id} type="container"/>
+                      </div>
+                    )}
                   </Box>
                   <Routes>
                     <Route
