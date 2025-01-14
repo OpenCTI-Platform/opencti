@@ -96,7 +96,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-
   const {
     caseIncident: caseData,
     connectorsForExport,
@@ -105,9 +104,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   if (!caseData) {
     return <ErrorNotFound />;
   }
-  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/incidents', false);
-
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }} data-testid="incident-details-page">

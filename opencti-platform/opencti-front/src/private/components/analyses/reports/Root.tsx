@@ -95,14 +95,6 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const filters = {
-    mode: 'and',
-    filters: [{
-      key: 'id',
-      values: [reportId],
-    }],
-    filterGroups: [],
-  };
   return (
     <>
       <QueryRenderer
