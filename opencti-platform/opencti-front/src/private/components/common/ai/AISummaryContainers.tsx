@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
+import { aiRotatingTexts, getDefaultAiLanguage } from '../../../../utils/ai/Common';
 
 const aISummaryContainersQuery = graphql`
   query AISummaryContainersQuery(
@@ -129,7 +129,7 @@ const AISummaryContainers = ({ first, filters }: ContainersAiSummaryProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} rotatingTexts={aiRotatingTexts} />}>
           <AISummaryContainersComponent
             first={first}
             queryRef={queryRef}
@@ -139,7 +139,7 @@ const AISummaryContainers = ({ first, filters }: ContainersAiSummaryProps) => {
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.inElement} rotatingTexts={aiRotatingTexts} />
       )}
     </>
   );

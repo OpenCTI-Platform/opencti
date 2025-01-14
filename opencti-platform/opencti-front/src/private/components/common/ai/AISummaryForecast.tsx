@@ -6,7 +6,7 @@ import { AISummaryForecastQuery } from './__generated__/AISummaryForecastQuery.g
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
+import { aiRotatingTexts, getDefaultAiLanguage } from '../../../../utils/ai/Common';
 
 const aISummaryForecastQuery = graphql`
   query AISummaryForecastQuery($id: ID!, $language: String) {
@@ -73,7 +73,7 @@ const AISummaryForecast = ({ id }: AISummaryForecastProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} rotatingTexts={aiRotatingTexts} />}>
           <AISummaryForecastComponent
             queryRef={queryRef}
             language={language}
@@ -81,7 +81,7 @@ const AISummaryForecast = ({ id }: AISummaryForecastProps) => {
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.inElement} rotatingTexts={aiRotatingTexts} />
       )}
     </>
   );

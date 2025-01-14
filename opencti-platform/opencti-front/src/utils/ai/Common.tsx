@@ -7,6 +7,15 @@ export const aiName = 'XTM AI';
 
 export const aiUrl = 'https://filigran.io';
 
+export const aiRotatingTexts = [
+  'Gathering data',
+  'Computing trends and statistics',
+  'Inferring facts',
+  `Cooking with ${aiName}`,
+  'Preparing results',
+  'Aligning planets',
+];
+
 export const getDefaultAiLanguage = () => {
   // get default language (in English, not in Iso-code) for Ai generation by priority : 1. user language, 2. platform language, 3. browser language
   const { me, settings } = useContext(UserContext);

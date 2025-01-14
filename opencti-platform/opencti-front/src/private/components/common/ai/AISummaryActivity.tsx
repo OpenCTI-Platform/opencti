@@ -7,7 +7,7 @@ import { AISummaryActivityQuery } from './__generated__/AISummaryActivityQuery.g
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
+import { aiRotatingTexts, getDefaultAiLanguage } from '../../../../utils/ai/Common';
 
 const aISummaryActivityQuery = graphql`
   query AISummaryActivityQuery($id: ID!, $language: String) {
@@ -120,7 +120,7 @@ const AISummaryActivity = ({ id }: AISummaryActivityProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} rotatingTexts={aiRotatingTexts} />}>
           <AISummaryActivityComponent
             queryRef={queryRef}
             language={language}
@@ -128,7 +128,7 @@ const AISummaryActivity = ({ id }: AISummaryActivityProps) => {
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.inElement} rotatingTexts={aiRotatingTexts} />
       )}
     </>
   );
