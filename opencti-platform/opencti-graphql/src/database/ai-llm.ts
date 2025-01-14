@@ -6,12 +6,14 @@ import { notify } from './redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
+import { truncate } from '../utils/format';
 
 const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
 const AI_ENDPOINT = conf.get('ai:endpoint');
 const AI_TOKEN = conf.get('ai:token');
 const AI_MODEL = conf.get('ai:model');
+const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 
 let client: MistralClient | OpenAI | null = null;
 if (AI_ENABLED && AI_TOKEN) {
@@ -40,7 +42,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
       model: AI_MODEL,
       messages: [
         { role: 'system', content: systemMessage },
-        { role: 'user', content: userMessage }
+        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
       ],
     });
     let content = '';
@@ -77,7 +79,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
       model: AI_MODEL,
       messages: [
         { role: 'developer', content: developerMessage },
-        { role: 'user', content: userMessage }
+        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
       ],
       stream: true,
     });

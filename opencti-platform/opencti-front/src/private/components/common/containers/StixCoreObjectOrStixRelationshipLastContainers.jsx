@@ -298,7 +298,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
   }
 `;
 
-const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRelationshipId, authorId }) => {
+const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRelationshipId, authorId = null }) => {
   const { t_i18n, fsd } = useFormatter();
   const classes = useStyles();
   const filtersContent = [

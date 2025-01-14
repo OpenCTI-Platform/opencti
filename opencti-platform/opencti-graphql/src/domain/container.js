@@ -34,7 +34,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedbac
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
-import { resolveFiles } from '../utils/ai/dataResolutionHelpers';
+import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
 
 const aiResponseCache = {};
@@ -317,6 +317,7 @@ export const getFintelTemplates = async (context, user, container) => {
 };
 
 export const aiSummary = async (context, user, args) => {
+  const { language = 'English' } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10, connectionFormat: false };
@@ -331,41 +332,56 @@ export const aiSummary = async (context, user, args) => {
   for (const container of containers) {
     const author = await listAllToEntitiesThroughRelations(context, user, container.id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
     const files = await resolveFiles(context, user, container);
+    const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(context, user, container.id);
     content.push({
       title: container.name,
       date: container.published || container.created,
       author: (author && author.length > 0 ? author.at(0).name : 'Unknown'),
       content: container.content ? `${container.description}\n\n${container.content}` : container.description,
       long_content: files.map((n) => n.content).join(' '),
+      knowledge: relationshipsSentences,
+      entities: entitiesInvolved,
     });
   }
   const systemPrompt = 'You are an assistant aimed to summarize and categorize cyber threat intelligence deliverables.';
   const userPromptReport = `
-  You are a cyber threat intelligence analyst. Your task is to create a comprehensive summary of the given reports and write a final report in the HTML format.
-  
-  You will only respond with the report content. Do not include formatting hint or syntax highlight. Do not provide explanations or notes.
-  
-  # Reports
-  ${JSON.stringify(content)}
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a comprehensive summary of the given reports and write a final report in the HTML format.
+  - You will only respond with the report content. Do not include formatting hint or syntax highlight. 
+  - Do not provide explanations or notes.
   
   # Instructions
+  
   ## Summarize
   - In clear and concise language, summarize the key points and themes presented in the reports.
+  - If there is only one report, be sure to have title in singular like "Report Summary" instead of "Reports Summary".
   - Avoid using the general knowledge as much as possible and focus on the user input.
+  - The summary should be in ${language} language.
   - Put footnotes to source as much as possible all the information you have generated referring the original reports.
   - Ensure that sources contain title, date and author.
-  - Always start the report with a section "Key Findings".
+  - Always start the report with a section "Key Findings" with 5 items.
+  - Your response should be only the summary and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given content.
   
   ## Report writing
   - Create a comprehensive report in HTML format.
-  - In the HTML format, don't use h1 (first level title), start with h2.  
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  - The summary should be in ${language} language.
+  
+  # Reports
+  ${JSON.stringify(content)}  
   `;
 
   const userPromptTopics = `
-  You are a cyber threat intelligence analyst. Your task is to assess the 5 main topics of the given reports. Each topic should be maximum 2 words in lowercase such as ransomware, state-sponsored, information stealer, etc. Don't limit your self to the given examples.
+  # Context
+  - You are a cyber threat intelligence analyst. Your task is to assess the 5 main topics of the given reports.
   
-  You will only respond with the topics, separated by commas. Do not include the word "Topic" or "Category". Do not provide explanations or notes.
-    
+  # Instructions 
+  - Each topic should be maximum 2 words in lowercase such as ransomware, state-sponsored, information stealer, etc. Don't limit your self to the given examples.
+  - You will only respond with the topics, separated by commas. Do not include the word "Topic" or "Category".
+  - Do not provide explanations or notes.
+  
   # Reports
   ${JSON.stringify(content)}
   `;

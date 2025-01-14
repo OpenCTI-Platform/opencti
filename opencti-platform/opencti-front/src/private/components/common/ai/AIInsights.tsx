@@ -20,6 +20,7 @@ import Tab from '@mui/material/Tab';
 import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import AISummaryHistory from '@components/common/ai/AISummaryHistory';
+import AISummaryForecast from '@components/common/ai/AISummaryForecast';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -100,6 +101,7 @@ interface AIInsightProps {
   defaultTab?: 'activity' | 'containers' | 'forecast' | 'history'
   floating?: boolean
   onlyIcon?: boolean
+  isContainer?: boolean;
 }
 
 const AIInsights = ({
@@ -108,6 +110,7 @@ const AIInsights = ({
   defaultTab = 'activity',
   floating = false,
   onlyIcon = false,
+  isContainer = false,
 }: AIInsightProps) => {
   const theme = useTheme<Theme>();
   const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
@@ -125,7 +128,14 @@ const AIInsights = ({
     setCurrentTab(newValue);
   };
 
-  const initialContainersFilters = {
+  const initialContainersFilters = isContainer ? {
+    mode: 'and',
+    filters: [{
+      key: 'id',
+      values: [id],
+    }],
+    filterGroups: [],
+  } : {
     mode: 'and',
     filters: [{
       key: 'entity_type',
@@ -139,7 +149,6 @@ const AIInsights = ({
   };
   // TODO make the filter "objects" readonly?
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
-
   if (!isEnterpriseEdition) {
     return (
       <>
@@ -310,7 +319,7 @@ const AIInsights = ({
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={handleChangeTab}>
               {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={t_i18n('Latest containers')} />}
+              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Latest containers')} />}
               {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
               {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
             </Tabs>
@@ -320,13 +329,13 @@ const AIInsights = ({
           )}
           {currentTab === 'containers' && (
             <AISummaryContainers
-              first={10}
+              first={isContainer ? 1 : 10}
               filters={containersFilters}
               helpers={containersFiltersHelpers}
             />
           )}
           {currentTab === 'forecast' && (
-            <AISummaryActivity id={id} />
+            <AISummaryForecast id={id} />
           )}
           {currentTab === 'history' && (
             <AISummaryHistory id={id} />

@@ -54,7 +54,7 @@ import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';
-import { getHistory, getIndicatorsStats, getTopVictims, getVictimologyStats, systemPrompt } from '../utils/ai/intelligenceHelpers';
+import { getHistory, getIndicatorsStats, getTopVictims, getVictimologyStats, systemPrompt } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
@@ -827,32 +827,66 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // endregion
 
 // region ai
-export const aiActivity = async (context, user, stixCoreObjectId) => {
+export const aiActivity = async (context, user, args) => {
+  const { id, language = 'English' } = args;
   // Resolve in cache
-  const identifier = `${stixCoreObjectId}-activity`;
+  const identifier = `${id}-activity`;
   if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
-  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-  // Trends summary
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
+  // Activity
   let result = '';
   if (threats.includes(stixCoreObject.entity_type)) {
-    result = await aiActivityForThreats(context, user, stixCoreObject);
+    result = await aiActivityForThreats(context, user, stixCoreObject, language);
   }
-  const activity = { result: result.replace('```html', '').replace('```', '').trim(), updated_at: now() };
+  let trend = '';
+  if (threats.includes(stixCoreObject.entity_type)) {
+    trend = await aiActivityTrendForThreats(context, user, stixCoreObject);
+  }
+
+  const activity = {
+    result: result.replace('```html', '').replace('```', '').trim(),
+    trend,
+    updated_at: now()
+  };
   aiResponseCache[identifier] = activity;
   return activity;
 };
 
-export const aiHistory = async (context, user, stixCoreObjectId) => {
+export const aiForecast = async (context, user, args) => {
+  const { id, language = 'English' } = args;
   // Resolve in cache
-  const identifier = `${stixCoreObjectId}-history`;
+  const identifier = `${id}-activity`;
   if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
-  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
+  // Activity
+  let result = '';
+  if (threats.includes(stixCoreObject.entity_type)) {
+    result = await aiForecastForThreats(context, user, stixCoreObject, language);
+  }
+
+  const activity = {
+    result: result.replace('```html', '').replace('```', '').trim(),
+    updated_at: now()
+  };
+  aiResponseCache[identifier] = activity;
+  return activity;
+};
+
+export const aiHistory = async (context, user, args) => {
+  const { id, language = 'English' } = args;
+  // Resolve in cache
+  const identifier = `${id}-history`;
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
+    return aiResponseCache[identifier];
+  }
+  // Resolve the entity
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
   // Resolve logs
   const logs = await getHistory(context, user, stixCoreObject.id);
   const userPrompt = `
@@ -860,7 +894,10 @@ export const aiHistory = async (context, user, stixCoreObjectId) => {
 
   - You have to compute a summary of the given logs representing the history of creation and modifications of a ${stixCoreObject.entity_type} in the OpenCTI platform.
   - The summary should be about the latest activities performed by a user, which can be an analyst (human) or a connector (data source or enrichment) on the ${stixCoreObject.entity_type}.
+  - Create a comprehensive summary in HTML format.
   - The summary should be formatted in HTML.
+  - The summary should be in ${language} language.
+  - In the HTML format, don't use h1 (first level title), start with h2.    
     
   # Context
   
@@ -881,7 +918,7 @@ export const aiHistory = async (context, user, stixCoreObjectId) => {
 };
 
 // region prompts
-export const aiActivityForThreats = async (context, user, stixCoreObject) => {
+export const aiActivityForThreats = async (context, user, stixCoreObject, language) => {
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
@@ -901,22 +938,144 @@ export const aiActivityForThreats = async (context, user, stixCoreObject) => {
   }
 
   const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a comprehensive summary based on statistics and trends about a threat.
+  
   # Instructions
 
   - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
   - The summary should be about the latest activities of the ${stixCoreObject.entity_type}.
-  - The summary should be formatted in HTML and highlight important numbers with appropriate colors.
-  - The used highlight color should be compatible with both light theme and dark themes.
+  - The summary should be in ${language} language.
+  - The summary should be formatted in HTML and highlight important numbers with bold.
+  - Your response should be only the summary and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  - In the HTML format, don't use h1 (first level title), start with h2.
   
   # Interpretation of the data
-  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD (red).
-  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD (green).
-  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD (red).
-  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD (green).
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
   
   # Context
   
   - The summary is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Last indicators of compromise (IOCs) statistics.
+  This is the number of indicators related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(indicatorsStats)}
+  
+  ## Last victims statistics
+  This is the number of times this ${stixCoreObject.entity_type} has targeted something, whether it is an organization, a sector, a location, etc.:
+  ${JSON.stringify(victimologyStats)}
+  
+  ## Top targeted sectors over time
+  This is the top sectors targeted over time:
+  ${JSON.stringify(topSectors)}
+  
+  ## Top targeted countries over time
+  This is the top countries targeted over time:
+  ${JSON.stringify(topCountries)}
+  
+  ## Top targeted regions over time
+  This is the top regions targeted over time:
+  ${JSON.stringify(topRegions)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiActivityTrendForThreats = async (context, user, stixCoreObject) => {
+  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to categorize a trend about a cyber threat in 4 categories:
+    - increasing: The threat activity is showing a significant increase.
+    - stable: The threat activity is stable with minor fluctuations whether down or up.
+    - decreasing: The threat activity is showing a significant decrease.
+    - unknown: The evaluation of the threat activity cannot be done (not enough data, etc.).
+     
+  # Instructions
+
+  - Based on the following data, you have to categorize the recent activity of a ${stixCoreObject.entity_type}. 
+  - Categories are:
+    - increasing: The threat activity is showing a significant increase.
+    - stable: The threat activity is stable with minor fluctuations whether down or up.
+    - decreasing: The threat activity is showing a significant decrease.
+    - unknown: The evaluation of the threat activity cannot be done (not enough data, etc.).
+  - Your response answer should be only one word with the category keyword and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  
+  # Interpretation of the data
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity.
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity.
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity.
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity.
+    
+  # Data
+  
+  ## Last indicators of compromise (IOCs) statistics.
+  This is the number of indicators related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(indicatorsStats)}
+  
+  ## Last victims statistics
+  This is the number of times this ${stixCoreObject.entity_type} has targeted something, whether it is an organization, a sector, a location, etc.:
+  ${JSON.stringify(victimologyStats)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiForecastForThreats = async (context, user, stixCoreObject, language) => {
+  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const topSectors = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, ['Sector'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topCountries = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, ['Country'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topRegions = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, ['Region'], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a forecast report based on statistics and trends about a threat.
+  
+  # Instructions
+
+  - You have to compute a forecast report of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - The summary should be about the potential upcoming activities of the ${stixCoreObject.entity_type}.
+  - The summary should be in ${language} language.
+  - The summary should be formatted in HTML and highlight important numbers with bold.
+  - Your response should be only the forecast report and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  
+  # Interpretation of the data
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  
+  # Context
+  
+  - The forecast is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
   - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
   
   # Data

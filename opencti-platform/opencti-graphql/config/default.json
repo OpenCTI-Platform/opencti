@@ -170,7 +170,8 @@
     "endpoint": "",
     "token": "",
     "model": "",
-    "model_images": ""
+    "model_images": "",
+    "max_tokens": 20000
   },
   "xtm": {
     "openbas_url": "",

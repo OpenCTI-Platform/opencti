@@ -12725,7 +12725,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
-  aiActivity: AiActivity @auth(for: [KNOWLEDGE])
+  aiActivity(languange: String): AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -12921,9 +12921,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiActivity(id: ID!): AiActivity @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiForecast(id: ID!): AiForecast @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiHistory(id: ID!): AiHistory @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiActivity(id: ID!, language: String): AiActivity @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiForecast(id: ID!, language: String): AiForecast @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiHistory(id: ID!, language: String): AiHistory @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -13130,6 +13130,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    language: String
   ): AiSummary @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(

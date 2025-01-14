@@ -182,7 +182,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           />
         </Tabs>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-          <AIInsights id={reportId} tabs={['containers']} defaultTab='containers' />
+          <AIInsights id={reportId} tabs={['containers']} defaultTab='containers' isContainer={true} />
           <StixCoreObjectSimulationResult id={caseData.id} type="container"/>
         </div>
       </Box>

@@ -19758,6 +19758,11 @@ export type QueryAdministrativeAreasArgs = {
 };
 
 
+export type QueryAiActivityArgs = {
+  languange?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryAssigneesArgs = {
   entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
 };
@@ -20045,6 +20050,7 @@ export type QueryContainersAiSummaryArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  language?: InputMaybe<Scalars['String']['input']>;
   orderBy?: InputMaybe<ContainersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -21383,16 +21389,19 @@ export type QueryStixCoreObjectArgs = {
 
 export type QueryStixCoreObjectAiActivityArgs = {
   id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type QueryStixCoreObjectAiForecastArgs = {
   id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type QueryStixCoreObjectAiHistoryArgs = {
   id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -38708,7 +38717,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
-  aiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType>;
+  aiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, Partial<QueryAiActivityArgs>>;
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
