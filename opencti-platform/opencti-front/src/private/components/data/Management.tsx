@@ -15,6 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useAuth from '../../../utils/hooks/useAuth';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -123,6 +124,9 @@ const managementDefinitionsLinesFragment = graphql`
 
 const Management = () => {
   const { t_i18n } = useFormatter();
+
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Restriction | Data'));
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },

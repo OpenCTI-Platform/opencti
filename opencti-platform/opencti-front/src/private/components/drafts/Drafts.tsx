@@ -14,6 +14,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
 import useAuth from '../../../utils/hooks/useAuth';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -89,6 +90,9 @@ const Drafts: React.FC = () => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Drafts'));
+
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
