@@ -171,7 +171,7 @@
     "token": "",
     "model": "",
     "model_images": "",
-    "max_tokens": 20000
+    "max_tokens": 30000
   },
   "xtm": {
     "openbas_url": "",

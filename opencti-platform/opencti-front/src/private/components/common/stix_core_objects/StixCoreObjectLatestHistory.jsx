@@ -10,6 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
+import AIInsights from '../ai/AIInsights';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import inject18n from '../../../../components/i18n';
@@ -27,9 +28,16 @@ class StixCoreObjectLatestHistory extends Component {
     const { t, stixCoreObjectId, classes } = this.props;
     return (
       <>
-        <Typography variant="h4">
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Most recent history')}
         </Typography>
+        <AIInsights
+          id={stixCoreObjectId}
+          defaultTab='history'
+          floating={true}
+          onlyIcon={true}
+        />
+        <div className="clearfix"/>
         <QueryRenderer
           query={stixCoreObjectHistoryLinesQuery}
           variables={{

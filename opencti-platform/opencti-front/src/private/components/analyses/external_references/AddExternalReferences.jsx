@@ -54,7 +54,7 @@ const AddExternalReferences = ({
 
   const paginationOptions = { search };
   return (
-    <div>
+    <>
       <IconButton
         color="primary"
         aria-label="Add"
@@ -160,7 +160,7 @@ const AddExternalReferences = ({
           />
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

@@ -895,6 +895,7 @@ export const aiHistory = async (context, user, args) => {
   - You have to compute a summary of the given logs representing the history of creation and modifications of a ${stixCoreObject.entity_type} in the OpenCTI platform.
   - The summary should be about the latest activities performed by a user, which can be an analyst (human) or a connector (data source or enrichment) on the ${stixCoreObject.entity_type}.
   - Create a comprehensive summary in HTML format.
+  - Don't give too much details, really summarize and highlight the history of modifications of the entity.
   - The summary should be formatted in HTML.
   - The summary should be in ${language} language.
   - In the HTML format, don't use h1 (first level title), start with h2.    
@@ -945,9 +946,10 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   # Instructions
 
   - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
-  - The summary should be about the latest activities of the ${stixCoreObject.entity_type}.
+  - The summary should be about the latest activities of the ${stixCoreObject.entity_type} and highlight the variations of numbers over time.
+  - The summary should not repeat numbers, but aggregate them in a meaningful way to stay short and comprehensive.
   - The summary should be in ${language} language.
-  - The summary should be formatted in HTML and highlight important numbers with bold.
+  - The summary should be formatted in HTML and highlight important numbers with bold. 
   - Your response should be only the summary and nothing else.
   - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
   - In the HTML format, don't use h1 (first level title), start with h2.

@@ -20,7 +20,7 @@ import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
-    marginTop: 5,
+    marginTop: 4,
     padding: 0,
     borderRadius: 4,
   },

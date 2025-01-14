@@ -20,6 +20,8 @@ import { paginatedForPathWithEnrichment } from '../../modules/internal/document/
 import { elSearchFiles } from '../../database/file-search';
 import { elPaginate } from '../../database/engine';
 import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
 export const RESOLUTION_LIMIT = 200;
 export const systemPrompt = `
@@ -127,7 +129,7 @@ export const getContainerKnowledge = async (context, user, id) => {
   const elements = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
   // generate mappings
   const relationships = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP)));
-  const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT)));
+  const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => !isStixCyberObservable(n.entity_type) && n.entity_type !== ENTITY_TYPE_INDICATOR));
   const indexedEntities = R.indexBy(R.prop('id'), entities);
 
   // generate entities involved

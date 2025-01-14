@@ -22,7 +22,7 @@ import {
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES, toBase64 } from '../database/utils';
-import { minutesAgo, now, utcDate } from '../utils/format';
+import { minutesAgo, now, truncate, utcDate } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
@@ -338,9 +338,9 @@ export const aiSummary = async (context, user, args) => {
       date: container.published || container.created,
       author: (author && author.length > 0 ? author.at(0).name : 'Unknown'),
       content: container.content ? `${container.description}\n\n${container.content}` : container.description,
-      long_content: files.map((n) => n.content).join(' '),
-      knowledge: relationshipsSentences,
-      entities: entitiesInvolved,
+      long_content: truncate(files.map((n) => n.content).join(' '), 1000),
+      knowledge: truncate(relationshipsSentences, 1000),
+      entities: truncate(entitiesInvolved, 1000),
     });
   }
   const systemPrompt = 'You are an assistant aimed to summarize and categorize cyber threat intelligence deliverables.';

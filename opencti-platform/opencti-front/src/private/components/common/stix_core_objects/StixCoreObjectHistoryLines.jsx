@@ -11,9 +11,9 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const styles = (theme) => ({
+const styles = () => ({
   paperHistory: {
-    marginTop: theme.spacing(1),
+    marginTop: 4,
     padding: 15,
     borderRadius: 4,
   },
