@@ -85,7 +85,7 @@ interface ReportAddInput {
   objectParticipant: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorizedMembers: { value: string, accessRight: string }[];
+  authorized_members: { value: string, accessRight: string }[];
 }
 
 interface ReportFormProps {
@@ -164,7 +164,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
       ...(isAccessRestrictionCreationEnable && {
-        authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
+        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
         })),
@@ -212,7 +212,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
-    authorizedMembers: [],
+    authorized_members: [],
   });
   return (
     <Formik<ReportAddInput>
@@ -340,7 +340,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                 </AccordionSummary>
                 <AccordionDetails>
                   <Field
-                    name={'authorizedMembers'}
+                    name={'authorized_members'}
                     component={AuthorizedMembersField}
                     containerstyle={{ marginTop: 20 }}
                     showAllMembersLine
