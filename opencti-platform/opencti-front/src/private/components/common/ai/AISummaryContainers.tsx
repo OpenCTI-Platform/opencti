@@ -129,7 +129,7 @@ const AISummaryContainers = ({ first, filters }: ContainersAiSummaryProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} withTopMargin={true} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AISummaryContainersComponent
             first={first}
             queryRef={queryRef}
@@ -139,7 +139,7 @@ const AISummaryContainers = ({ first, filters }: ContainersAiSummaryProps) => {
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} withTopMargin={true} />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </>
   );

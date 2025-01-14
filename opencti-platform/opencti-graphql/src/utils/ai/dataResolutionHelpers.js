@@ -2,8 +2,7 @@ import * as R from 'ramda';
 import { distributionRelations, timeSeriesEntities } from '../../database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
-import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
-import { listAllToEntitiesThroughRelations, listEntities } from '../../database/middleware-loader';
+import { listAllToEntitiesThroughRelations } from '../../database/middleware-loader';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import {
   RELATION_AMPLIFIES,
@@ -15,10 +14,12 @@ import {
   RELATION_TARGETS,
   RELATION_USES
 } from '../../schema/stixCoreRelationship';
-import { isNotEmptyField } from '../../database/utils';
+import { isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../format';
 import { paginatedForPathWithEnrichment } from '../../modules/internal/document/document-domain';
 import { elSearchFiles } from '../../database/file-search';
+import { elPaginate } from '../../database/engine';
+import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 
 export const RESOLUTION_LIMIT = 200;
 export const systemPrompt = `
@@ -118,8 +119,8 @@ export const getHistory = (context, user, id) => {
       }
     ]
   };
-  const args = { filters, first: 200, orderBy: 'timestamp', orderMode: 'desc', connectionFormat: false };
-  return listEntities(context, user, [ENTITY_TYPE_HISTORY], args);
+  const args = { types: [ENTITY_TYPE_HISTORY], filters, first: 200, orderBy: 'timestamp', orderMode: 'desc', connectionFormat: false };
+  return elPaginate(context, user, READ_INDEX_HISTORY, args);
 };
 
 export const getContainerKnowledge = async (context, user, id) => {

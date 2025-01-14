@@ -355,7 +355,6 @@ export const aiSummary = async (context, user, args) => {
   
   ## Summarize
   - In clear and concise language, summarize the key points and themes presented in the reports.
-  - If there is only one report, be sure to have title in singular like "Report Summary" instead of "Reports Summary".
   - Avoid using the general knowledge as much as possible and focus on the user input.
   - The summary should be in ${language} language.
   - Put footnotes to source as much as possible all the information you have generated referring the original reports.

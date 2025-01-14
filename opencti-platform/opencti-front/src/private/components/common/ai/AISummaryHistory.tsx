@@ -73,7 +73,7 @@ const AISummaryHistory = ({ id }: AISummaryHistoryProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} withTopMargin={true} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <AISummaryHistoryComponent
             queryRef={queryRef}
             language={language}
@@ -81,7 +81,7 @@ const AISummaryHistory = ({ id }: AISummaryHistoryProps) => {
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} withTopMargin={true} />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </>
   );
