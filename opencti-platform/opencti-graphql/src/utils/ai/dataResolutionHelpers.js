@@ -1,6 +1,15 @@
 import * as R from 'ramda';
-import { distributionRelations, timeSeriesEntities } from '../../database/middleware';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
+import { distributionRelations, timeSeriesEntities, timeSeriesRelations } from '../../database/middleware';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_LOCATION,
+  ENTITY_TYPE_THREAT_ACTOR
+} from '../../schema/general';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import { listAllToEntitiesThroughRelations } from '../../database/middleware-loader';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
@@ -10,6 +19,7 @@ import {
   RELATION_COMPROMISES,
   RELATION_COOPERATES_WITH,
   RELATION_HAS,
+  RELATION_INDICATES,
   RELATION_LOCATED_AT,
   RELATION_TARGETS,
   RELATION_USES
@@ -22,6 +32,8 @@ import { elPaginate } from '../../database/engine';
 import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../modules/threatActorIndividual/threatActorIndividual-types';
 
 export const RESOLUTION_LIMIT = 200;
 export const systemPrompt = `
@@ -30,17 +42,32 @@ export const systemPrompt = `
 - You should avoid using your general knowledge to answer questions and focus on the data provided by the user. 
 `;
 
+export const getContainersStats = async (context, user, id, startDate, endDate) => {
+  const filters = { mode: 'and',
+    filters: [
+      { key: 'entity_type', values: [ENTITY_TYPE_CONTAINER] },
+      { key: 'objects', values: [id] }
+    ],
+    filterGroups: []
+  };
+  return timeSeriesEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
+    field: 'created',
+    startDate,
+    endDate,
+    interval: 'month',
+    filters
+  });
+};
+
 export const getIndicatorsStats = async (context, user, id, startDate, endDate) => {
   const filters = { mode: 'and',
     filters: [
-      { key: 'entity_type', values: ['Indicator'], operator: 'eq', mode: 'or' },
+      { key: 'entity_type', values: [ENTITY_TYPE_INDICATOR] },
       { key: 'regardingOf',
         values: [
-          { key: 'relationship_type', values: ['indicates'] },
+          { key: 'relationship_type', values: [RELATION_INDICATES] },
           { key: 'id', values: [id] }
         ],
-        operator: 'eq',
-        mode: 'or'
       },
     ],
     filterGroups: []
@@ -58,19 +85,13 @@ export const getVictimologyStats = async (context, user, id, startDate, endDate)
   const filters = {
     mode: 'and',
     filters: [
-      { key: 'entity_type', values: ['Location', 'Identity'], operator: 'eq', mode: 'or' },
-      { key: 'regardingOf',
-        values: [
-          { key: 'relationship_type', values: ['targets'] },
-          { key: 'id', values: [id] }
-        ],
-        operator: 'eq',
-        mode: 'or'
-      },
+      { key: 'relationship_type', values: [RELATION_TARGETS] },
+      { key: 'fromId', values: [id] },
+      { key: 'toTypes', values: [ENTITY_TYPE_LOCATION, ENTITY_TYPE_IDENTITY] },
     ],
     filterGroups: []
   };
-  return timeSeriesEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
+  return timeSeriesRelations(context, user, {
     field: 'created',
     startDate,
     endDate,
@@ -79,13 +100,13 @@ export const getVictimologyStats = async (context, user, id, startDate, endDate)
   });
 };
 
-export const getTopVictims = async (context, user, id, types, startDate, endDate) => {
+export const getTopThreats = async (context, user, id, types, startDate, endDate) => {
   const filters = {
     mode: 'and',
     filters: [
-      { key: 'relationship_type', values: ['targets'], operator: 'eq', mode: 'or' },
-      { key: 'fromId', values: [id], operator: 'eq', mode: 'or' },
-      { key: 'toTypes', values: types, operator: 'eq', mode: 'or' },
+      { key: 'relationship_type', values: [RELATION_TARGETS] },
+      { key: 'fromTypes', values: types },
+      { key: 'toId', values: [id] },
     ],
     filterGroups: []
   };
@@ -101,6 +122,58 @@ export const getTopVictims = async (context, user, id, types, startDate, endDate
     endDate
   });
   return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
+};
+
+export const getTopVictims = async (context, user, id, types, startDate, endDate) => {
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'relationship_type', values: [RELATION_TARGETS] },
+      { key: 'fromId', values: [id] },
+      { key: 'toTypes', values: types },
+    ],
+    filterGroups: []
+  };
+  const distribution = await distributionRelations(context, user, {
+    relationship_type: [ABSTRACT_STIX_RELATIONSHIP],
+    field: 'internal_id',
+    isTo: true,
+    limit: 20,
+    dateAttribute: 'created',
+    operation: 'count',
+    filters,
+    startDate,
+    endDate
+  });
+  return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
+};
+
+export const getTargetingStats = async (context, user, id, startDate, endDate) => {
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'relationship_type', values: [RELATION_TARGETS] },
+      { key: 'fromTypes',
+        values: [
+          ENTITY_TYPE_THREAT_ACTOR_GROUP,
+          ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+          ENTITY_TYPE_INTRUSION_SET,
+          ENTITY_TYPE_INTRUSION_SET,
+          ENTITY_TYPE_CAMPAIGN,
+          ENTITY_TYPE_INCIDENT,
+          ENTITY_TYPE_MALWARE,
+        ] },
+      { key: 'toId', values: [id] },
+    ],
+    filterGroups: []
+  };
+  return timeSeriesRelations(context, user, {
+    field: 'created',
+    startDate,
+    endDate,
+    interval: 'month',
+    filters
+  });
 };
 
 export const getHistory = (context, user, id) => {

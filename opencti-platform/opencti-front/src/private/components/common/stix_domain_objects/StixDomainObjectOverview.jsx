@@ -387,7 +387,6 @@ const StixDomainObjectOverview = ({
                 <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
                   <IconButton
                     aria-label="Close"
-                    disableRipple={true}
                     size="small"
                     disabled={stixIds.length === 0}
                     onClick={handleToggleOpenStixIds}

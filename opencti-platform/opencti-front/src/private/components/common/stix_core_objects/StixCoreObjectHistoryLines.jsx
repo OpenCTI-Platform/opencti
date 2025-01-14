@@ -13,7 +13,7 @@ const interval$ = interval(FIVE_SECONDS);
 
 const styles = () => ({
   paperHistory: {
-    marginTop: 4,
+    marginTop: 6,
     padding: 15,
     borderRadius: 4,
   },
