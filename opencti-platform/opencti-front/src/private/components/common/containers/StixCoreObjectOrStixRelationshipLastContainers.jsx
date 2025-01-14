@@ -298,7 +298,8 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
   }
 `;
 
-const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRelationshipId = null, authorId = null }) => {
+const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
+  const { stixCoreObjectOrStixRelationshipId = null, authorId = null } = props;
   const { t_i18n, fsd } = useFormatter();
   const classes = useStyles();
   const filtersContent = [
@@ -342,13 +343,13 @@ const StixCoreObjectOrStixRelationshipLastContainers = ({ stixCoreObjectOrStixRe
             orderMode: 'desc',
             filters,
           }}
-          render={({ props }) => {
-            if (props && props.containers) {
-              if (props.containers.edges.length > 0) {
+          render={({ props: renderProps }) => {
+            if (renderProps && renderProps.containers) {
+              if (renderProps.containers.edges.length > 0) {
                 return (
                   <>
                     <List>
-                      {props.containers.edges.map((containerEdge) => {
+                      {renderProps.containers.edges.map((containerEdge) => {
                         const container = containerEdge.node;
                         return (
                           <ListItem
