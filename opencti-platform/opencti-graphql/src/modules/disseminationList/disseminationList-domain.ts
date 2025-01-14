@@ -7,6 +7,7 @@ import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { downloadFile, loadFile } from '../../database/file-storage';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -22,13 +23,31 @@ interface SendMailArgs {
   bcc?: string[];
   subject: string;
   html: string;
+  attachments?: any[];
 }
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const sendMailArgs: SendMailArgs = { from: settings.platform_email, to: user.user_email, bcc: [input.email_address], subject: input.email_object, html: input.email_body };
-  await sendMail(sendMailArgs);
-  return true;
+  const filePath = input.email_attached_file_id;
+  const file = await loadFile(context, user, filePath);
+  if (file) {
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const sendMailArgs: SendMailArgs = {
+      from: settings.platform_email,
+      to: user.user_email,
+      bcc: [input.email_address],
+      subject: input.email_object,
+      html: input.email_body,
+      attachments: [
+        {
+          // TODO : use the good path
+          path: file.id
+        }
+      ],
+    };
+    await sendMail(sendMailArgs);
+    return true;
+  }
+  return false;
 };
 
 // export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {};
