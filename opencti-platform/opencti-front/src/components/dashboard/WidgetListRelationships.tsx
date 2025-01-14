@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
-import { DataTableColumn, DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
+import { DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { WidgetColumn } from 'src/utils/widget/widget';
 import ItemIcon from '../ItemIcon';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
@@ -47,13 +47,26 @@ const WidgetListRelationships = ({
 }: WidgetListRelationshipsProps) => {
   const theme = useTheme<Theme>();
   const { fsd, t_i18n } = useFormatter();
-  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>(null);
+  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>();
 
   useEffect(() => {
-    const columnKeys = columns.map((column) => column.attribute);
-    const newColumns = columnKeys.reduce((acc: DataTableProps['dataColumns'], cur: string, index: number) => ({ ...acc, [cur]: { order: index + 2 } }), {});
+    const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
+    const iconWidth = 2;
+    const percentWidth = (100 - iconWidth) / (columns?.length ?? 1);
+
+    const newColumns = (
+      columnKeys.reduce<DataTableProps['dataColumns']>(
+        (acc, cur, index) => ({
+          ...acc,
+          [cur]: { percentWidth, order: index + 2 },
+        }),
+        {},
+      )
+    ) as DataTableProps['dataColumns'];
+
     newColumns.icon = {
       order: 1,
+      percentWidth: iconWidth,
       label: ' ',
       render: (stixRelationship) => (
         <ItemIcon
