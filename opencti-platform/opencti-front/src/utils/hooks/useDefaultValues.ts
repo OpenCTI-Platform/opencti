@@ -93,6 +93,7 @@ const useDefaultValues = <Values extends FormikValues>(
 ) => {
   const computeDefaultValues = useComputeDefaultValues();
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
+  const { me } = useAuth();
 
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
@@ -121,6 +122,14 @@ const useDefaultValues = <Values extends FormikValues>(
           attr.type,
           attr.defaultValues,
         );
+        if (attr.name === INPUT_AUTHORIZED_MEMBERS) {
+          const creatorRule = (defaultValues[attr.name] as Option[])?.find((v) => v.value === 'CREATOR');
+          if (creatorRule) {
+            creatorRule.value = me.id;
+            creatorRule.label = me.name;
+            creatorRule.type = me.entity_type;
+          }
+        }
       }
     },
   );
@@ -141,7 +150,6 @@ const useDefaultValues = <Values extends FormikValues>(
     defaultValues.created = now();
   }
 
-  const { me } = useAuth();
   const defaultMarkings = me.default_marking;
   if (
     keys.includes('objectMarking')
