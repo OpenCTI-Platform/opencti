@@ -5,7 +5,6 @@ import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
-import { jsonToPlainText } from 'json-to-plain-text';
 import {
   AccessRequiredError,
   ALREADY_DELETED_ERROR,
@@ -150,7 +149,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp, ORGA_SHARING_REQUEST_FF } from '../config/conf';
-import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, truncate, UNTIL_END_STR, utcDate } from '../utils/format';
+import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
@@ -194,7 +193,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
 import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
@@ -1892,47 +1891,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
     });
   }
 
-  // noinspection UnnecessaryLocalVariableJS
-  const generatedMessage = patchElements.slice(0, 3).map(([type, operations]) => {
-    return `${type}s ${operations.slice(0, 3).map(({ key, value, object_path }) => {
-      let message = 'nothing';
-      let convertedKey;
-      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-      const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-      if (relationsRefDefinition) {
-        convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
-      } else {
-        convertedKey = object_path ?? attributeDefinition.label ?? attributeDefinition.name;
-      }
-      const fromArray = Array.isArray(value) ? value : [value];
-      const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
-      if (isNotEmptyField(values)) {
-        // If update is based on internal ref, we need to extract the value
-        if (relationsRefDefinition) {
-          message = values.map((val) => truncate(extractEntityRepresentativeName(val), 250)).join(', ');
-        } else if (key === creators.name) {
-          message = 'itself'; // Creator special case
-        } else if (key === 'authorized_members') {
-          message = value.map(({ id, access_right }) => {
-            const member = members.find(({ internal_id }) => internal_id === id);
-            return `${member?.name ?? id} (${access_right})`;
-          }).join(', ');
-        } else if (attributeDefinition.type === 'string' && attributeDefinition.format === 'json') {
-          message = values.map((v) => truncate(JSON.stringify(v), 250));
-        } else if (attributeDefinition.type === 'date') {
-          message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
-        } else if (attributeDefinition.type === 'object') {
-          message = jsonToPlainText(values, { color: false, spacing: false });
-        } else {
-          // If standard primitive data, just join the values
-          message = values.join(', ');
-        }
-      }
-      return `\`${message}\` in \`${convertedKey}\`${(fromArray.length > 3) ? ` and ${fromArray.length - 3} more items` : ''}`;
-    }).join(' - ')}`;
-  }).join(' | ');
-  // Return generated update message
-  return `${generatedMessage}${patchElements.length > 3 ? ` and ${patchElements.length - 3} more operations` : ''}`;
+  return generateUpdatePatchMessage(patchElements, entityType, { members });
 };
 
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
