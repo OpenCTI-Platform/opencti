@@ -3977,12 +3977,13 @@ export const copyLiveElementToDraft = async (context, user, element, draftOperat
 };
 // Gets the version of the element in current draft context if it exists
 // If it doesn't exist, creates a copy of live element to draft context then returns it
-const draftCopyLockPrefix = 'draft_copy_';
+const draftCopyLockPrefix = 'draft_copy';
 const loadDraftElement = async (context, user, element) => {
   if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
   let lock;
-  const lockKey = `${draftCopyLockPrefix}${element.internal_id}`;
+  const currentDraft = getDraftContext(context, user);
+  const lockKey = `${draftCopyLockPrefix}_${currentDraft}_${element.internal_id}`;
   try {
     lock = await lockResource([lockKey]);
     const loadedElement = await elLoadById(context, user, element.internal_id);
