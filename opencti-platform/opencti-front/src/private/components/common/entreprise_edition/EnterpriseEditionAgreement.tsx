@@ -63,36 +63,27 @@ EnterpriseEditionAgreementProps
         {t_i18n('OpenCTI Enterprise Edition (EE) license agreement')}
       </DialogTitle>
       <DialogContent>
-        <span>
-          {t_i18n('By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental ')}
-          <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE" target="_blank" rel="noreferrer">{t_i18n('license terms and conditions of usage')}</a>
-        </span>
-        <Alert severity="error" style={{ marginTop: 16 }}>
-          {t_i18n('OpenCTI EE required an annual subscription. However the license will be granted for free to development, testing and research purposes and charity organizations with NGO status.')}
+        <Alert severity="info" style={{ marginTop: 15 }}>
+          {t_i18n('OpenCTI Enterprise Edition requires a license key to be enabled. Filigran provides a free-to-use license for development and research purposes as well as for charity organizations.')}
           <br/><br/>
-          <b>
-            {t_i18n(' Please contact Filigran to get your license at ')}
-            <a href="mailto:sales@filigran.io" target="_blank" rel="noreferrer">
-              sales@filigran.io
-            </a>
-          </b>
+          {t_i18n('To obtain a license, please')} <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('reach out to the Filigran team')}</a>.
+          <br />
+          {t_i18n('You just need to try?')} Get right now <a href="https://filigran.io/enterprise-editions-trial/" target="_blank" rel="noreferrer">{t_i18n('your trial license online')}</a>.
         </Alert>
-        <Alert severity="info" style={{ marginTop: 16 }}>
-          {t_i18n('If you simply want to try the OpenCTI Enterprise edition, get your license at ')}
-          <a href="https://filigran.io/ee-trial" target="_blank" rel="noreferrer">
-            {'https://filigran.io/ee-trial'}
-          </a>
-        </Alert>
-        <FormGroup style={{ marginTop: 16 }}>
+        <FormGroup style={{ marginTop: 15 }}>
           <TextField
             onChange={(event) => setEnterpriseLicense(event.target.value)}
             multiline={true}
             fullWidth={true}
-            minRows={20}
-            placeholder={t_i18n('Paste your Filigran license')}
+            minRows={10}
+            placeholder={t_i18n('Paste your Filigran OpenCTI Enterprise Edition license')}
             variant="outlined"
           />
         </FormGroup>
+        <div style={{ marginTop: 15 }}>
+          {t_i18n('By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) ')}
+          <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE" target="_blank" rel="noreferrer">{t_i18n('license terms and conditions of usage')}</a>.
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t_i18n('Cancel')}</Button>

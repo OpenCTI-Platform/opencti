@@ -27,7 +27,6 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
-import Loader from '../../../components/Loader';
 import ColorPickerField from '../../../components/ColorPickerField';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
@@ -39,6 +38,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
 import ItemCopy from '../../../components/ItemCopy';
+import Loader from '../../../components/Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -329,82 +329,164 @@ const Settings = () => {
             return (
               <>
                 <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
-                      {t_i18n('Enterprise Edition')}
-                    </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined" className='paper-for-grid'>
-
-                      <list>
-                        <ListItem divider={true}>
-                          <ListItemText primary={t_i18n('Platform identifier')} />
-                          <ItemCopy content={settings.id} variant="inLine" />
-                        </ListItem>
-                      </list>
-                      { isEnterpriseEditionActivated && settings.platform_enterprise_edition.license_valid_cert
-                          && <List>
-                            <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('Assignation')} />
-                              <ItemBoolean
-                                variant="large"
-                                neutralLabel={settings.platform_enterprise_edition.license_customer}
-                                status={null}
-                              />
-                            </ListItem>
-                            <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('Identification')} />
-                              <ItemBoolean
-                                variant="large"
-                                label={settings.platform_enterprise_edition.license_platform_match ? 'YES' : 'NO'}
-                                status={settings.platform_enterprise_edition.license_platform_match}
-                              />
-                            </ListItem>
-                            <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('Start date')} />
-                              <ItemBoolean
-                                variant="xlarge"
-                                label={fldt(settings.platform_enterprise_edition.license_start_date)}
-                                status={!settings.platform_enterprise_edition.license_expired}
-                              />
-                            </ListItem>
-                            <ListItem divider={true}>
-                              <ListItemText primary={t_i18n('Expiration date')} />
-                              <ItemBoolean
-                                variant="xlarge"
-                                label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
-                                status={!settings.platform_enterprise_edition.license_expired}
-                              />
-                            </ListItem>
-                            <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
-                              <ListItemText primary={t_i18n('License type')} />
-                              <ItemBoolean
-                                variant="large"
-                                neutralLabel={settings.platform_enterprise_edition.license_type}
-                                status={null}
-                              />
-                            </ListItem>
-                            { !settings.platform_enterprise_edition.license_expired
-                                && settings.platform_enterprise_edition.license_expiration_prevention && <ListItem divider={false}>
-                                  <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
-                                    Your license will expire in less than 3 months, please contact Filigran to renew your license
-                                  </Alert>
-                                </ListItem>}
-                          </List>
-                      }
-                      { isEnterpriseEditionActivated && !settings.platform_enterprise_edition.license_validated
-                          && settings.platform_enterprise_edition.license_valid_cert && <List>
+                {isEnterpriseEditionActivated && settings.platform_enterprise_edition.license_valid_cert && (
+                  <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
+                    <Grid item xs={6}>
+                      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+                        {t_i18n('Enterprise Edition')}
+                      </Typography>
+                      {!isEnterpriseEditionByConfig && isEnterpriseEditionActivated && (
+                        <div style={{ float: 'right', marginTop: theme.spacing(-2.8), position: 'relative' }}>
+                          <DangerZoneBlock
+                            type='ce_ee_toggle'
+                            sx={{
+                              root: { border: 'none', padding: 0, margin: 0 },
+                              title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                            }}
+                          >
+                            {({ disabled }) => (
+                              <>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color='dangerZone'
+                                  onClick={() => setOpenEEChanges(true)}
+                                  disabled={disabled}
+                                  style={{
+                                    color: isAllowed ? theme.palette.dangerZone.text.primary : theme.palette.dangerZone.text.nullable,
+                                    borderColor: theme.palette.dangerZone.main,
+                                  }}
+                                >
+                                  {t_i18n('Disable Enterprise Edition')}
+                                </Button>
+                                <Dialog
+                                  PaperProps={{ elevation: 1 }}
+                                  open={openEEChanges}
+                                  keepMounted
+                                  TransitionComponent={Transition}
+                                  onClose={() => setOpenEEChanges(false)}
+                                >
+                                  <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                                  <DialogContent>
+                                    <DialogContentText>
+                                      <Alert
+                                        severity="warning"
+                                        variant="outlined"
+                                        color="dangerZone"
+                                        style={{ borderColor: theme.palette.dangerZone.main }}
+                                      >
+                                        {t_i18n('You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).')}
+                                        <br /><br />
+                                        <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+                                      </Alert>
+                                    </DialogContentText>
+                                  </DialogContent>
+                                  <DialogActions>
+                                    <Button
+                                      onClick={() => {
+                                        setOpenEEChanges(false);
+                                      }}
+                                    >
+                                      {t_i18n('Cancel')}
+                                    </Button>
+                                    <Button
+                                      color="secondary"
+                                      onClick={() => {
+                                        setOpenEEChanges(false);
+                                        handleSubmitField(id, 'enterprise_license', '');
+                                      }}
+                                    >
+                                      {t_i18n('Validate')}
+                                    </Button>
+                                  </DialogActions>
+                                </Dialog>
+                              </>
+                            )}
+                          </DangerZoneBlock>
+                        </div>
+                      )}
+                      <div className="clearfix" />
+                      <Paper classes={{ root: classes.paper }} variant="outlined" className='paper-for-grid' style={{ marginTop: 6 }}>
+                        <List style={{ marginTop: -20 }}>
+                          <ListItem divider={true}>
+                            <ListItemText primary={t_i18n('Assignation')} />
+                            <ItemBoolean
+                              variant="large"
+                              neutralLabel={settings.platform_enterprise_edition.license_customer}
+                              status={null}
+                            />
+                          </ListItem>
+                          <ListItem divider={true}>
+                            <ListItemText primary={t_i18n('Identification')} />
+                            <ItemBoolean
+                              variant="large"
+                              label={settings.platform_enterprise_edition.license_platform_match ? 'YES' : 'NO'}
+                              status={settings.platform_enterprise_edition.license_platform_match}
+                            />
+                          </ListItem>
+                        </List>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
+                        {t_i18n('License')}
+                      </Typography>
+                      {isEnterpriseEditionActivated && !isEnterpriseEditionByConfig && (
+                        <div style={{ float: 'right', marginTop: theme.spacing(-4.2), position: 'relative' }}>
+                          <EnterpriseEditionButton
+                            disabled={!isAllowed}
+                            title={t_i18n('Change your Enterprise Edition license')}
+                            inLine={true}
+                          />
+                        </div>
+                      )}
+                      <div className="clearfix"/>
+                      <Paper classes={{ root: classes.paper }} variant="outlined" className='paper-for-grid' style={{ marginTop: 6 }}>
+                        <List style={{ marginTop: -20 }}>
+                          {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
                             <ListItem divider={false}>
-                              <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                                {t_i18n('Your OpenCTI license is expired')}<br/>
-                                {t_i18n('Please contact Filigran to get your new license')} - <a href={'mailto:sales@filigran.io'}>sales@filigran.io</a>
+                              <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
+                                {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
                               </Alert>
                             </ListItem>
-                          </List>
-                      }
-                    </Paper>
+                          )}
+                          {isEnterpriseEditionActivated && !settings.platform_enterprise_edition.license_validated && settings.platform_enterprise_edition.license_valid_cert && (
+                            <ListItem divider={false}>
+                              <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
+                                {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
+                              </Alert>
+                            </ListItem>
+                          )}
+                          <ListItem divider={true}>
+                            <ListItemText primary={t_i18n('Start date')}/>
+                            <ItemBoolean
+                              variant="xlarge"
+                              label={fldt(settings.platform_enterprise_edition.license_start_date)}
+                              status={!settings.platform_enterprise_edition.license_expired}
+                            />
+                          </ListItem>
+                          <ListItem divider={true}>
+                            <ListItemText primary={t_i18n('Expiration date')}/>
+                            <ItemBoolean
+                              variant="xlarge"
+                              label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
+                              status={!settings.platform_enterprise_edition.license_expired}
+                            />
+                          </ListItem>
+                          <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
+                            <ListItemText primary={t_i18n('License type')}/>
+                            <ItemBoolean
+                              variant="large"
+                              neutralLabel={settings.platform_enterprise_edition.license_type}
+                              status={null}
+                            />
+                          </ListItem>
+                        </List>
+                      </Paper>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={6}></Grid>
+                )}
+                <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Configuration')}
@@ -511,9 +593,7 @@ const Settings = () => {
                               <MenuItem value="auto">
                                 <em>{t_i18n('Automatic')}</em>
                               </MenuItem>
-                              {
-                                availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
-                              }
+                              {availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
                             </Field>
                             <HiddenTypesField />
                           </Form>
@@ -525,83 +605,13 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
-                    <div style={{ float: 'right', marginTop: isSensitive ? theme.spacing(-5) : theme.spacing(-3.5), position: 'relative' }}>
-                      {!isEnterpriseEditionByConfig && (
-                        <EnterpriseEditionButton
-                          disabled={!isAllowed}
-                          title={isEnterpriseEditionActivated ? 'Change your Enterprise Edition license' : 'Activate Enterprise Edition'}
-                          inLine={true}
-                        />
-                      )}
-                      {!isEnterpriseEditionByConfig && isEnterpriseEditionActivated && (
-                      <DangerZoneBlock type={'ce_ee_toggle'} sx={{
-                        root: { border: 'none', padding: 0, margin: 0 },
-                        title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                      }}
-                      >
-                        {({ disabled }) => (
-                          <>
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color={isSensitive ? 'dangerZone' : 'primary'}
-                              onClick={() => setOpenEEChanges(true)}
-                              disabled={disabled}
-                              style={isSensitive
-                                ? {
-                                  color: isAllowed ? theme.palette.dangerZone.text.primary : theme.palette.dangerZone.text.nullable,
-                                  borderColor: theme.palette.dangerZone.main,
-                                }
-                                : undefined}
-                            >
-                              {t_i18n('Disable')}
-                            </Button>
-                            <Dialog
-                              PaperProps={{ elevation: 1 }}
-                              open={openEEChanges}
-                              keepMounted
-                              TransitionComponent={Transition}
-                              onClose={() => setOpenEEChanges(false)}
-                            >
-                              <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                              <DialogContent>
-                                <DialogContentText>
-                                  <Alert
-                                    severity="warning"
-                                    variant="outlined"
-                                    color="dangerZone"
-                                    style={{
-                                      borderColor: theme.palette.dangerZone.main,
-                                    }}
-                                  >
-                                    {t_i18n(
-                                      'You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.',
-                                    )}
-                                  </Alert>
-                                </DialogContentText>
-                              </DialogContent>
-                              <DialogActions>
-                                <Button
-                                  onClick={() => {
-                                    setOpenEEChanges(false);
-                                  }}
-                                >
-                                  {t_i18n('Cancel')}
-                                </Button>
-                                <Button
-                                  color="secondary"
-                                  onClick={() => {
-                                    setOpenEEChanges(false);
-                                    handleSubmitField(id, 'enterprise_license', '');
-                                  }}
-                                >
-                                  {t_i18n('Validate')}
-                                </Button>
-                              </DialogActions>
-                            </Dialog>
-                          </>
-                        )}
-                      </DangerZoneBlock>
+                    <div style={{ float: 'right', marginTop: theme.spacing(-4.5), position: 'relative' }}>
+                      {!isEnterpriseEditionActivated && (
+                      <EnterpriseEditionButton
+                        disabled={!isAllowed}
+                        title={t_i18n('Activate Enterprise Edition')}
+                        inLine={true}
+                      />
                       )}
                     </div>
                     <div className="clearfix"/>
@@ -609,7 +619,7 @@ const Settings = () => {
                       classes={{ root: classes.paper }}
                       className='paper-for-grid'
                       variant="outlined"
-                      style={{ marginTop: 6 }}
+                      style={{ marginTop: 4 }}
                     >
                       <Formik
                         onSubmit={() => {}}
@@ -620,7 +630,7 @@ const Settings = () => {
                         {() => (
                           <Form>
                             <List style={{ marginTop: -20 }}>
-                              <ListItem divider={true} style={{ paddingRight: 30 }}>
+                              <ListItem divider={true} style={{ paddingRight: 24 }}>
                                 <ListItemText primary={t_i18n('Platform identifier')}/>
                                 <ItemCopy content={settings.id} variant="inLine"/>
                               </ListItem>
