@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
-import { BUILT_IN_FROM_AI, BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@components/common/files/FileManager';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -184,7 +184,6 @@ const StixCoreObjectFileExportForm = ({
           const connector = values.connector?.value;
           if (connector !== BUILT_IN_HTML_TO_PDF.value) setFieldValue('fileToExport', null);
           if (connector !== BUILT_IN_FROM_TEMPLATE.value) setFieldValue('template', null);
-          if (connector !== BUILT_IN_FROM_AI.value) setFieldValue('ai', null);
           if (!isBuiltInConnector(connector)) {
             setFieldValue('exportFileName', null);
           }
