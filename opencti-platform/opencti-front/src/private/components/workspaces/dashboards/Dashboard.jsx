@@ -5,6 +5,7 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
+import DashboardTimeFilters from './DashboardTimeFilters';
 import StixCoreObjectsPolarArea from '../../common/stix_core_objects/StixCoreObjectsPolarArea';
 import StixRelationshipsPolarArea from '../../common/stix_relationships/StixRelationshipsPolarArea';
 import { computerRelativeDate, dayStartDate, parse } from '../../../../utils/Time';
@@ -89,6 +90,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const classes = useStyles();
   const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
@@ -799,13 +802,24 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       }}
     >
       {!noToolbar && (
-        <WorkspaceHeader
-          handleAddWidget={handleAddWidget}
-          workspace={workspace}
-          config={manifest.config}
-          handleDateChange={handleDateChange}
-          variant="dashboard"
-        />
+        <>
+          <WorkspaceHeader
+            handleAddWidget={handleAddWidget}
+            workspace={workspace}
+            variant="dashboard"
+            config={manifest.config}
+            handleDateChange={handleDateChange}
+          />
+          {isFABReplaced && (
+            <div style={{ marginTop: 8 }}>
+              <DashboardTimeFilters
+                workspace={workspace}
+                config={manifest.config}
+                handleDateChange={handleDateChange}
+              />
+            </div>
+          )}
+        </>
       )}
       {isExploreUpdater && userCanEdit ? (
         <ReactGridLayout
@@ -909,7 +923,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           })}
         </ReactGridLayout>
       )}
-      {!noToolbar && userCanEdit && !isFeatureEnable('FAB_REPLACEMENT') && <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
+      {!noToolbar && userCanEdit && !isFABReplaced && <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
     </div>
   );
 };
