@@ -3,7 +3,7 @@ import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { filter, includes, map } from 'ramda';
 // eslint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
-import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation } from '../config/errors';
+import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 
@@ -26,7 +26,7 @@ export const authDirectiveBuilder = (directiveName) => {
         if (!authDirective && (typeName === 'Query' || typeName === 'Mutation')) {
           const publicDirective = getDirective(schema, fieldConfig, 'public')?.[0];
           if (!publicDirective) {
-            throw new Error(`Unsecure schema: missing auth or public directive for ${_fieldName}`);
+            throw UnsupportedError('Unsecure schema: missing auth or public directive', { field: _fieldName });
           }
         }
         if (authDirective) {

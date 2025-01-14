@@ -9,7 +9,7 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
@@ -132,6 +132,9 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 };
 
 export const createQueryTask = async (context, user, input) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot create background task in draft');
+  }
   const { actions, filters, excluded_ids = [], search = null, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
   const queryData = await executeTaskQuery(context, user, filters, search, scope);

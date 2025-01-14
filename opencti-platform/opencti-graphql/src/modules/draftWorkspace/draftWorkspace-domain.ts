@@ -113,7 +113,9 @@ export const listDraftSightingRelations = (context: AuthContext, user: AuthUser,
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
-  if (!isFeatureEnabled('DRAFT_WORKSPACE')) throw new Error('Feature not yet available');
+  if (!isFeatureEnabled('DRAFT_WORKSPACE')) {
+    throw UnsupportedError('Feature not yet available');
+  }
   const defaultOps = {
     created_at: now(),
   };

@@ -22,7 +22,7 @@ export const indicatorDecayHandler = async () => {
       const indicator = indicatorsToUpdate[i];
       await updateIndicatorDecayScore(context, DECAY_MANAGER_USER, indicator);
     } catch (e) {
-      logApp.warn('[OPENCTI-MODULE] Error when processing decay, skipping.', { cause: e, id: indicatorsToUpdate[i].id });
+      logApp.error('[OPENCTI-MODULE] Error when processing decay, skipping.', { cause: e, id: indicatorsToUpdate[i].id });
       errorCount += 1;
     }
   }

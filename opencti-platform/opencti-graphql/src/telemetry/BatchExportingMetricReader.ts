@@ -5,6 +5,7 @@ import { type MetricProducer, MetricReader, type PushMetricExporter, TimeoutErro
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import type { DataPoint, ResourceMetrics } from '@opentelemetry/sdk-metrics/build/src/export/MetricData';
 import { Resource } from '@opentelemetry/resources/build/src/Resource';
+import { UnknownError } from '../config/errors';
 
 export type BatchExportingMetricReaderOptions = {
   exporter: PushMetricExporter;
@@ -104,7 +105,7 @@ export class BatchExportingMetricReader extends MetricReader {
     const doExport = async () => {
       const result = await internal._export(this._exporter, this._resourceMetrics);
       if (result.code !== ExportResultCode.SUCCESS) {
-        throw new Error(`PeriodicExportingMetricReader: metrics export failed (error ${result.error})`);
+        throw UnknownError('PeriodicExportingMetricReader: metrics export failed', { cause: result.error });
       }
       this._resourceMetrics.resource = Resource.EMPTY;
     };

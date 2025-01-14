@@ -1609,7 +1609,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       });
       const elements = data.hits.hits;
       if (elements.length > workingIds.length) {
-        logApp.warn('Search query returned more elements than expected', workingIds);
+        logApp.warn('Search query returned more elements than expected', { ids: workingIds });
       }
       if (elements.length > 0) {
         const convertedHits = await elConvertHits(elements, { withoutRels });

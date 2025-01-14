@@ -87,7 +87,7 @@ export const ConfigurationError = (reason, data) => error(CONFIGURATION_ERROR, r
   ...data,
 });
 
-const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
+export const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
 export const UnknownError = (reason, data) => error(UNKNOWN_ERROR, reason || 'An unknown error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
@@ -155,6 +155,12 @@ export const ValidationError = (message, field, data) => error(VALIDATION_ERROR,
   ...(data ?? {}),
 });
 
+export const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
+export const ResourceNotFoundError = (data) => error(RESOURCE_NOT_FOUND_ERROR, 'Resource not found', {
+  http_status: 404,
+  ...data,
+});
+
 const TYPE_LOCK = 'LOCK_ERROR';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
 export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
@@ -168,6 +174,7 @@ export const FUNCTIONAL_ERRORS = [
   ALREADY_DELETED_ERROR,
   MISSING_REF_ERROR,
   VALIDATION_ERROR,
+  RESOURCE_NOT_FOUND_ERROR,
   TYPE_LOCK_ERROR
 ];
 // endregion

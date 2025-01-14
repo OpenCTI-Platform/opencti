@@ -41,7 +41,7 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
           return secretResult;
         }
       } catch (e: any) {
-        logApp.error('[OPENCTI] Remote credentials data fail to fetch, fallback', { error: e, provider, source: prefix });
+        logApp.error('[OPENCTI] Remote credentials data fail to fetch, fallback', { cause: e, provider, source: prefix });
       }
     }
     // No compatible provider available

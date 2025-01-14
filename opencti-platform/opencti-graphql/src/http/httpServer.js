@@ -18,6 +18,7 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { executionContext } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import { ForbiddenAccess } from '../config/errors';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -45,7 +46,7 @@ const createHttpServer = async () => {
       httpServer = https.createServer(options, app);
       logApp.info('[INIT] HTTPS server initialization done.');
     } catch (e) {
-      logApp.error('[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations', e);
+      logApp.error('[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations', { cause: e });
     }
   } else {
     httpServer = http.createServer(app);
@@ -58,7 +59,7 @@ const createHttpServer = async () => {
     path: `${basePath}/graphql`,
   });
   wsServer.on('error', (e) => {
-    throw new Error(e.message);
+    throw e;
   });
   const serverCleanup = useServer({
     schema,
@@ -89,7 +90,7 @@ const createHttpServer = async () => {
         context.user = { ...wsSession.user, origin };
         return context;
       }
-      throw new Error('User must be authenticated');
+      throw ForbiddenAccess('User must be authenticated');
     },
   }, wsServer);
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));

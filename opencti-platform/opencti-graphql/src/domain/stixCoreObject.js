@@ -4,7 +4,7 @@ import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitie
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
-import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -362,7 +362,9 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for export in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot ask for export in draft');
+  }
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
@@ -372,7 +374,9 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, input) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for export in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot ask for export in draft');
+  }
   const { format, exportType, contentMaxMarkings, fileMarkings } = input;
   const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
@@ -409,12 +413,14 @@ export const CONTENT_TYPE_FIELDS = 'fields';
 export const CONTENT_TYPE_FILE = 'file';
 
 export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for analysis in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot ask for analysis in draft');
+  }
   logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
 
   if (contentType === CONTENT_TYPE_FIELDS) return await askFieldsAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
   if (contentType === CONTENT_TYPE_FILE) return await askFileAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
-  throw new Error(`Content type ${contentType} not recognized`);
+  throw FunctionalError('Content type not recognized', { contentType });
 };
 
 export const CONTENT_SOURCE_CONTENT_MAPPING = 'content_mapping';
@@ -431,7 +437,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     const work = await createWork(context, user, connector, 'Content fields analysis', element.standard_id);
 
     if (contentSource !== CONTENT_SOURCE_CONTENT_MAPPING) {
-      throw new Error(`Fields content source not handled: ${contentSource}`);
+      throw FunctionalError('Fields content source not handled', { contentSource });
     }
 
     const contentMappingFields = ['description', 'content'];
@@ -457,7 +463,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     await publishAnalysisAction(user, analyzedId, connector, element);
     return work;
   }
-  throw new Error('No connector found for analysis');
+  throw new ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
 const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
@@ -494,7 +500,7 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
     await publishAnalysisAction(user, analyzedId, connector, element);
     return work;
   }
-  throw new Error('No connector found for analysis');
+  throw new ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
 const getAnalysisFileName = (contentSource, contentType) => {
@@ -612,7 +618,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot import in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot import in draft');
+  }
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -719,7 +727,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot delete imports in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot delete imports in draft');
+  }
   if (!fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
