@@ -1179,7 +1179,7 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   - In the HTML format, don't use h1 (first level title), start with h2.
   
   # Interpretation of the data
-  - Increasing of containers a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Increasing of containers is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
   - Decreasing of containers is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
   - Increasing of targets is indicating a surge in the ${stixCoreObject.entity_type} being targeted, which is BAD.
   - Decreasing of targets of compromise is indicating a reduction in the ${stixCoreObject.entity_type} being targeted, which is GOOD.
@@ -1236,7 +1236,7 @@ export const aiActivityTrendForVictims = async (context, user, stixCoreObject) =
   - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
   
 # Interpretation of the data
-  - Increasing of containers a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Increasing of containers is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
   - Decreasing of containers is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
   - Increasing of targets is indicating a surge in the ${stixCoreObject.entity_type} being targeted, which is BAD.
   - Decreasing of targets of compromise is indicating a reduction in the ${stixCoreObject.entity_type} being targeted, which is GOOD.
@@ -1285,7 +1285,7 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   - In the HTML format, don't use h1 (first level title), start with h2.
   
 # Interpretation of the data
-  - Increasing of containers a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Increasing of containers is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
   - Decreasing of containers is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
   - Increasing of targets is indicating a surge in the ${stixCoreObject.entity_type} being targeted, which is BAD.
   - Decreasing of targets of compromise is indicating a reduction in the ${stixCoreObject.entity_type} being targeted, which is GOOD.
