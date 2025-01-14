@@ -2987,8 +2987,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
-  if (input.authorized_members?.length > 0 && !validateUserAccessOperation(user, input, 'manage-access')) {
-    throw ForbiddenAccess();
+  if (input.authorized_members?.length > 0) {
+    if (!validateUserAccessOperation(user, input, 'manage-access')) {
+      throw ForbiddenAccess();
+    }
+    if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
+      input.authorized_members_activation_date = now();
+    }
   }
   // region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
