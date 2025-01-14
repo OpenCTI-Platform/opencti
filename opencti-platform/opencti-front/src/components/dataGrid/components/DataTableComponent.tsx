@@ -102,6 +102,7 @@ const DataTableComponent = ({
   };
 
   const [columns, setColumns] = useState(buildColumns());
+  console.log('columns ; ', columns);
   useEffect(() => {
     setLocalStorageColumns((curr) => {
       const cols = { ...curr };
