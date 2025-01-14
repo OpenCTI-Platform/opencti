@@ -24,11 +24,14 @@ import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import TextField from '../../../../components/TextField';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAI from '../../../../utils/hooks/useAI';
 
 export type FileOption = Pick<Option, 'label' | 'value'> & {
   fileMarkings: {
@@ -98,6 +101,8 @@ const StixCoreObjectFileExportForm = ({
   instanceType,
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { fullyActive } = useAI();
   const [stepIndex, setStepIndex] = useState(0);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
 
@@ -294,22 +299,24 @@ const StixCoreObjectFileExportForm = ({
                           textAlign: 'center',
                         }}
                       >
-                        <CardActionArea
-                          onClick={() => selectFormat(setFieldValue, 'ai')}
-                          style={{ height: '100%' }}
-                          aria-label={t_i18n('Ask AI')}
-                        >
-                          <CardContent>
-                            {renderIcon('ai')}
-                            <Typography
-                              gutterBottom
-                              variant="body1"
-                              style={{ marginTop: 8 }}
-                            >
-                              {t_i18n('Ask AI (multiple formats supported)')}
-                            </Typography>
-                          </CardContent>
-                        </CardActionArea>
+                        <EETooltip forAi={true} title={t_i18n('Ask AI (multiple formats supported)')}>
+                          <CardActionArea
+                            onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
+                            style={{ height: '100%' }}
+                            aria-label={t_i18n('Ask AI')}
+                          >
+                            <CardContent>
+                              {renderIcon('ai')}
+                              <Typography
+                                gutterBottom
+                                variant="body1"
+                                style={{ marginTop: 8 }}
+                              >
+                                {t_i18n('Ask AI (multiple formats supported)')}
+                              </Typography>
+                            </CardContent>
+                          </CardActionArea>
+                        </EETooltip>
                       </Card>
                     </Grid>
                   )}

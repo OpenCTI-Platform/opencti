@@ -423,14 +423,14 @@ const StixCoreObjectFileExportComponent = ({
         />
       )}
       {stixCoreObject && isContainer && (
-      <StixCoreObjectAskAI
-        instanceId={stixCoreObject.id}
-        instanceName={stixCoreObject.representative.main}
-        instanceType={stixCoreObject.entity_type}
-        type='container'
-        optionsOpen={askAiOpen}
-        handleCloseOptions={handleCloseAskAi}
-      />
+        <StixCoreObjectAskAI
+          instanceId={stixCoreObject.id}
+          instanceName={stixCoreObject.representative.main}
+          instanceType={stixCoreObject.entity_type}
+          type='container'
+          optionsOpen={askAiOpen}
+          handleCloseOptions={handleCloseAskAi}
+        />
       )}
     </>
   );
