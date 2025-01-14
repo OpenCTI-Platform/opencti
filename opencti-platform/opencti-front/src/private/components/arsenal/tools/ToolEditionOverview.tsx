@@ -25,7 +25,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const toolMutationFieldPatch = graphql`
+export const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -44,7 +44,7 @@ const toolMutationFieldPatch = graphql`
   }
 `;
 
-const toolEditionOverviewFocus = graphql`
+export const toolEditionOverviewFocus = graphql`
   mutation ToolEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     toolEdit(id: $id) {
       contextPatch(input: $input) {
@@ -54,7 +54,7 @@ const toolEditionOverviewFocus = graphql`
   }
 `;
 
-const toolMutationRelationAdd = graphql`
+export const toolMutationRelationAdd = graphql`
   mutation ToolEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -69,7 +69,7 @@ const toolMutationRelationAdd = graphql`
   }
 `;
 
-const toolMutationRelationDelete = graphql`
+export const toolMutationRelationDelete = graphql`
   mutation ToolEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!

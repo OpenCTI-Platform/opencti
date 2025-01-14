@@ -24,7 +24,7 @@ const ToolEditionContainer = (props) => {
       controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <ToolEditionOverview
-        tool={tool}
+        toolRef={tool}
         enableReferences={useIsEnforceReference('Tool')}
         context={editContext}
         handleClose={handleClose}
