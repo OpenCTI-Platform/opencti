@@ -49,6 +49,10 @@ const indicatorQuery = graphql`
   query RootIndicatorQuery($id: String!) {
     indicator(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

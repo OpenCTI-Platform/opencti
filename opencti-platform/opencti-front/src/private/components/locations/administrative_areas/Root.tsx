@@ -51,6 +51,10 @@ const administrativeAreaQuery = graphql`
   query RootAdministrativeAreaQuery($id: String!) {
     administrativeArea(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       name
       x_opencti_aliases
       x_opencti_graph_data

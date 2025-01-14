@@ -48,6 +48,10 @@ const dataComponentQuery = graphql`
   query RootDataComponentQuery($id: String!) {
     dataComponent(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

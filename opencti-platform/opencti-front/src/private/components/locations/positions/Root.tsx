@@ -48,6 +48,10 @@ const positionQuery = graphql`
   query RootPositionQuery($id: String!) {
     position(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       name
       x_opencti_aliases

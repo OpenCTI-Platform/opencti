@@ -47,6 +47,10 @@ const attackPatternQuery = graphql`
   query RootAttackPatternQuery($id: String!) {
     attackPattern(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

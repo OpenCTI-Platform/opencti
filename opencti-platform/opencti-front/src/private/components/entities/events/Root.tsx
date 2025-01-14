@@ -48,6 +48,10 @@ const eventQuery = graphql`
   query RootEventQuery($id: String!) {
     event(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       name
       aliases

@@ -50,6 +50,10 @@ const systemQuery = graphql`
   query RootSystemQuery($id: String!) {
     system(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       name
       x_opencti_aliases
