@@ -448,6 +448,29 @@ type OpinionsMetrics {
   total: Int
 }
 
+type AiActivity {
+  result: String
+  trend: String
+  updated_at: DateTime
+}
+
+type AiSummary {
+  result: String
+  topics: [String]
+  updated_at: DateTime
+}
+
+type AiForecast {
+  result: String
+  confidence: Int
+  updated_at: DateTime
+}
+
+type AiHistory {
+  result: String
+  updated_at: DateTime
+}
+
 type LogsWorkerConfig {
   elasticsearch_url: [String]!
   elasticsearch_proxy: String
@@ -7831,6 +7854,7 @@ type Query {
   importFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesMetrics: FilesMetrics
+  aiActivity(languange: String): AiActivity
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
@@ -7894,6 +7918,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
+  stixCoreObjectAiActivity(id: ID!, language: String): AiActivity
+  stixCoreObjectAiForecast(id: ID!, language: String): AiForecast
+  stixCoreObjectAiHistory(id: ID!, language: String): AiHistory
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
@@ -7922,6 +7949,8 @@ type Query {
   containers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ContainerConnection
   containersObjectsOfObject(id: String!, types: [String], filters: FilterGroup, search: String): StixObjectOrStixRelationshipConnection
   containersNumber(objectId: String, endDate: DateTime): Number
+  containersDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String, filters: FilterGroup, search: String): [Distribution]
+  containersAiSummary(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, language: String): AiSummary
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): NoteConnection
   notesNumber(objectId: String, endDate: DateTime): Number

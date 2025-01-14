@@ -128,7 +128,6 @@ const RootGrouping = () => {
                     )}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
-                    enableAskAi={true}
                     redirectToContent={true}
                     enableEnricher={true}
                     enableEnrollPlaybook={true}

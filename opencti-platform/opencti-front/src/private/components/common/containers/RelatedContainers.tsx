@@ -90,7 +90,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
 
   return (
     <div style={{
-      marginTop: 20,
+      marginTop: 10,
       flex: 1,
       display: 'flex',
       flexFlow: 'column',

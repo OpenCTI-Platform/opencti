@@ -8,6 +8,7 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import Campaign from './Campaign';
@@ -84,23 +85,18 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
     subscription,
     variables: { id: campaignId },
   }), [campaignId]);
-
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   useSubscription<RootCampaignSubscription>(subConfig);
-
   const {
     campaign,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
-
   const { forceUpdate } = useForceUpdate();
-
   const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
     <>
@@ -202,16 +198,17 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={campaign.id}/>
+                <StixCoreObjectSimulationResult id={campaign.id} type="threat"/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <Campaign campaignData={campaign} />
-                }
+                  <Campaign campaignData={campaign}/>
+                  }
               />
               <Route
                 path="/knowledge"

@@ -13,7 +13,6 @@ import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectF
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
@@ -444,7 +443,6 @@ const ContainerHeader = (props) => {
     onApplied,
     enableQuickSubscription,
     investigationAddFromContainer,
-    enableAskAi,
     enableEnrollPlaybook,
     redirectToContent,
     enableEnricher,
@@ -687,15 +685,6 @@ const ContainerHeader = (props) => {
             )}
             {isFABReplaced && enableEnrollPlaybook && (
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
-            )}
-            {enableAskAi && (
-              <StixCoreObjectAskAI
-                instanceId={container.id}
-                instanceType={container.entity_type}
-                instanceName={getMainRepresentative(container)}
-                instanceMarkings={container.objectMarking.map(({ id }) => id)}
-                type="container"
-              />
             )}
             {!knowledge && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>

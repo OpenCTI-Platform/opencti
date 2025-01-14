@@ -28,7 +28,6 @@ import { useTheme } from '@mui/styles';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
@@ -263,7 +262,6 @@ const StixDomainObjectHeader = (props) => {
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
     enableQuickSubscription,
-    enableAskAi,
     enableEnricher,
     enableEnrollPlaybook,
   } = props;
@@ -279,14 +277,6 @@ const StixDomainObjectHeader = (props) => {
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  let type = 'unsupported';
-  const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
-  const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
-  if (isThreat) {
-    type = 'threat';
-  } else if (isVictim) {
-    type = 'victim';
-  }
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
   };
@@ -595,15 +585,6 @@ const StixDomainObjectHeader = (props) => {
                 instanceName={getMainRepresentative(stixDomainObject)}
                 paginationOptions={triggersPaginationOptions}
                 triggerData={triggerData}
-              />
-            )}
-            {enableAskAi && (
-              <StixCoreObjectAskAI
-                instanceId={stixDomainObject.id}
-                instanceType={stixDomainObject.entity_type}
-                instanceName={getMainRepresentative(stixDomainObject)}
-                instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
-                type={type}
               />
             )}
             {(enableEnricher && isKnowledgeEnricher) && (

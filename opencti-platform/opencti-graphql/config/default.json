@@ -170,7 +170,9 @@
     "endpoint": "",
     "token": "",
     "model": "",
-    "model_images": ""
+    "model_images": "",
+    "max_tokens": 30000,
+    "insights_refresh_timeout": 60
   },
   "xtm": {
     "openbas_url": "",

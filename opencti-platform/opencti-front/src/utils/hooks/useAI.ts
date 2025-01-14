@@ -17,10 +17,11 @@ import useAuth from './useAuth';
 
 const useAI = (): {
   configured: boolean;
-  enabled: boolean
+  enabled: boolean;
+  fullyActive: boolean;
 } => {
   const { settings } = useAuth();
-  return { enabled: settings.platform_ai_enabled, configured: settings.platform_ai_has_token };
+  return { enabled: settings.platform_ai_enabled, configured: settings.platform_ai_has_token, fullyActive: settings.platform_ai_enabled && settings.platform_ai_has_token };
 };
 
 export default useAI;

@@ -9,6 +9,7 @@ import { RootThreatActorGroupQuery } from '@components/threats/threat_actors_gro
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootThreatActorsGroupSubscription } from '@components/threats/threat_actors_group/__generated__/RootThreatActorsGroupSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import ThreatActorGroup from './ThreatActorGroup';
@@ -86,22 +87,17 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
     subscription,
     variables: { id: threatActorGroupId },
   }), [threatActorGroupId]);
-
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorsGroupSubscription>(subConfig);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const {
     threatActorGroup,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
-
   const { forceUpdate } = useForceUpdate();
-
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`;
   const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
   return (
@@ -206,16 +202,17 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat" />
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={threatActorGroup.id}/>
+                <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat"/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorGroup threatActorGroupData={threatActorGroup} />
-                }
+                  <ThreatActorGroup threatActorGroupData={threatActorGroup}/>
+                  }
               />
               <Route
                 path="/knowledge"
@@ -277,7 +274,6 @@ const Root = () => {
   const queryRef = useQueryLoading<RootThreatActorGroupQuery>(ThreatActorGroupQuery, {
     id: threatActorGroupId,
   });
-
   return (
     <>
       {queryRef && (

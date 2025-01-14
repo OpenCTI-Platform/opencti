@@ -43,6 +43,7 @@
     "formik-mui-lab": "1.0.0",
     "graphql": "16.9.0",
     "graphql-ws": "5.16.1",
+    "html-react-parser": "5.2.2",
     "html-to-image": "1.11.11",
     "html-to-pdfmake": "2.5.13",
     "invert-color": "2.0.0",

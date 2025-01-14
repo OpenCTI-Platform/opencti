@@ -319,6 +319,33 @@ export enum AdministrativeAreasOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type AiActivity = {
+  __typename?: 'AiActivity';
+  result?: Maybe<Scalars['String']['output']>;
+  trend?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type AiForecast = {
+  __typename?: 'AiForecast';
+  confidence?: Maybe<Scalars['Int']['output']>;
+  result?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type AiHistory = {
+  __typename?: 'AiHistory';
+  result?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type AiSummary = {
+  __typename?: 'AiSummary';
+  result?: Maybe<Scalars['String']['output']>;
+  topics?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
 export type Analysis = MappingAnalysis;
 
 export enum AnalysisContentType {
@@ -19380,6 +19407,7 @@ export type Query = {
   about?: Maybe<AppInfo>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
+  aiActivity?: Maybe<AiActivity>;
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
@@ -19422,6 +19450,8 @@ export type Query = {
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
   container?: Maybe<Container>;
   containers?: Maybe<ContainerConnection>;
+  containersAiSummary?: Maybe<AiSummary>;
+  containersDistribution?: Maybe<Array<Maybe<Distribution>>>;
   containersNumber?: Maybe<Number>;
   containersObjectsOfObject?: Maybe<StixObjectOrStixRelationshipConnection>;
   countries?: Maybe<CountryConnection>;
@@ -19610,6 +19640,9 @@ export type Query = {
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']['output']>;
   stixCoreObject?: Maybe<StixCoreObject>;
+  stixCoreObjectAiActivity?: Maybe<AiActivity>;
+  stixCoreObjectAiForecast?: Maybe<AiForecast>;
+  stixCoreObjectAiHistory?: Maybe<AiHistory>;
   stixCoreObjectAnalysis?: Maybe<Analysis>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']['output']>;
@@ -19722,6 +19755,11 @@ export type QueryAdministrativeAreasArgs = {
   orderBy?: InputMaybe<AdministrativeAreasOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryAiActivityArgs = {
+  languange?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -20005,6 +20043,32 @@ export type QueryContainersArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryContainersAiSummaryArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  language?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryContainersDistributionArgs = {
+  authorId?: InputMaybe<Scalars['String']['input']>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  objectId?: InputMaybe<Scalars['String']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
 
@@ -21320,6 +21384,24 @@ export type QueryStixArgs = {
 
 export type QueryStixCoreObjectArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryStixCoreObjectAiActivityArgs = {
+  id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStixCoreObjectAiForecastArgs = {
+  id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStixCoreObjectAiHistoryArgs = {
+  id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -30894,6 +30976,10 @@ export type ResolversTypes = ResolversObject<{
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
   AdministrativeAreaEdge: ResolverTypeWrapper<Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversTypes['AdministrativeArea'] }>;
   AdministrativeAreasOrdering: AdministrativeAreasOrdering;
+  AiActivity: ResolverTypeWrapper<AiActivity>;
+  AiForecast: ResolverTypeWrapper<AiForecast>;
+  AiHistory: ResolverTypeWrapper<AiHistory>;
+  AiSummary: ResolverTypeWrapper<AiSummary>;
   Analysis: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['Analysis']>;
   AnalysisContentType: AnalysisContentType;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
@@ -31759,6 +31845,10 @@ export type ResolversParentTypes = ResolversObject<{
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
   AdministrativeAreaEdge: Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversParentTypes['AdministrativeArea'] };
+  AiActivity: AiActivity;
+  AiForecast: AiForecast;
+  AiHistory: AiHistory;
+  AiSummary: AiSummary;
   Analysis: ResolversUnionTypes<ResolversParentTypes>['Analysis'];
   Any: Scalars['Any']['output'];
   AppDebugDistribution: AppDebugDistribution;
@@ -32594,6 +32684,33 @@ export type AdministrativeAreaConnectionResolvers<ContextType = any, ParentType 
 export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeAreaEdge'] = ResolversParentTypes['AdministrativeAreaEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['AdministrativeArea'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AiActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiActivity'] = ResolversParentTypes['AiActivity']> = ResolversObject<{
+  result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trend?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AiForecastResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiForecast'] = ResolversParentTypes['AiForecast']> = ResolversObject<{
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AiHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiHistory'] = ResolversParentTypes['AiHistory']> = ResolversObject<{
+  result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AiSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiSummary'] = ResolversParentTypes['AiSummary']> = ResolversObject<{
+  result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  topics?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38600,6 +38717,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
+  aiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, Partial<QueryAiActivityArgs>>;
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
@@ -38642,6 +38760,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
+  containersAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAiSummaryArgs>>;
+  containersDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryContainersDistributionArgs, 'field' | 'operation'>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryContainersNumberArgs>>;
   containersObjectsOfObject?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryContainersObjectsOfObjectArgs, 'id'>>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType, Partial<QueryCountriesArgs>>;
@@ -38829,6 +38949,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
+  stixCoreObjectAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAiActivityArgs, 'id'>>;
+  stixCoreObjectAiForecast?: Resolver<Maybe<ResolversTypes['AiForecast']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAiForecastArgs, 'id'>>;
+  stixCoreObjectAiHistory?: Resolver<Maybe<ResolversTypes['AiHistory']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAiHistoryArgs, 'id'>>;
   stixCoreObjectAnalysis?: Resolver<Maybe<ResolversTypes['Analysis']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAnalysisArgs, 'contentSource' | 'contentType' | 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
@@ -41854,6 +41977,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;
+  AiActivity?: AiActivityResolvers<ContextType>;
+  AiForecast?: AiForecastResolvers<ContextType>;
+  AiHistory?: AiHistoryResolvers<ContextType>;
+  AiSummary?: AiSummaryResolvers<ContextType>;
   Analysis?: AnalysisResolvers<ContextType>;
   Any?: GraphQLScalarType;
   AppDebugDistribution?: AppDebugDistributionResolvers<ContextType>;
