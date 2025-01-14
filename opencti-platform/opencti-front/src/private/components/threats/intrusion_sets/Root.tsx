@@ -8,8 +8,6 @@ import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
-import AISummaryContainers from '@components/common/ai/AISummaryContainers';
-import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import IntrusionSet from './IntrusionSet';

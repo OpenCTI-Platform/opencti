@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { AutoAwesomeOutlined } from '@mui/icons-material';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import MenuItem from '@mui/material/MenuItem';
@@ -53,8 +53,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import locale from '../../../../utils/BrowserLanguage';
 import { aiLanguage } from '../../../../components/AppIntlProvider';
 import type { Theme } from '../../../../components/Theme';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';

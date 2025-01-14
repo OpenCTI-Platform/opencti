@@ -120,7 +120,7 @@ const AISummaryActivity = ({ id }: AISummaryActivityProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} withTopMargin={true} />}>
           <AISummaryActivityComponent
             queryRef={queryRef}
             language={language}

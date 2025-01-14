@@ -319,7 +319,7 @@ const AIInsights = ({
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={handleChangeTab}>
               {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Latest containers')} />}
+              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
               {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
               {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
             </Tabs>

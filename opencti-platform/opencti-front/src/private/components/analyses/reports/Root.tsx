@@ -12,7 +12,6 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
-import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
@@ -29,7 +28,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
 import useHelper from '../../../../utils/hooks/useHelper';

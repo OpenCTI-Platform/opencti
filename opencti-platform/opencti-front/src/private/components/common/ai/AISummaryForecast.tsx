@@ -73,7 +73,7 @@ const AISummaryForecast = ({ id }: AISummaryForecastProps) => {
   return (
     <>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} withTopMargin={true} />}>
           <AISummaryForecastComponent
             queryRef={queryRef}
             language={language}

@@ -13,28 +13,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import * as R from 'ramda';
-import { listAllToEntitiesThroughRelations, storeLoadById } from '../../database/middleware-loader';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
+import { storeLoadById } from '../../database/middleware-loader';
+import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
+import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
-import { isEmptyField, isNotEmptyField } from '../../database/utils';
-import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
+import { isEmptyField } from '../../database/utils';
 import { queryAi } from '../../database/ai-llm';
-import {
-  RELATION_AMPLIFIES,
-  RELATION_ATTRIBUTED_TO,
-  RELATION_COMPROMISES,
-  RELATION_COOPERATES_WITH,
-  RELATION_HAS,
-  RELATION_LOCATED_AT,
-  RELATION_TARGETS,
-  RELATION_USES
-} from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';

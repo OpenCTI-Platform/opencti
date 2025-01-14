@@ -858,7 +858,7 @@ export const aiActivity = async (context, user, args) => {
 export const aiForecast = async (context, user, args) => {
   const { id, language = 'English' } = args;
   // Resolve in cache
-  const identifier = `${id}-activity`;
+  const identifier = `${id}-forecast`;
   if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(60))) {
     return aiResponseCache[identifier];
   }
