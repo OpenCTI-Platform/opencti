@@ -2185,7 +2185,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
       const args = {
         filters: {
           mode: 'and',
