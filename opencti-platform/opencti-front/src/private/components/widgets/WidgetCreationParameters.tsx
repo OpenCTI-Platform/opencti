@@ -652,6 +652,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             <WidgetConfigColumnsCustomization
               key={index}
               availableColumns={commonWidgetColumns[perspective]}
+              defaultColumns={defaultWidgetColumns[perspective]}
               columns={[...(columns ?? defaultWidgetColumns[perspective])]}
               setColumns={(newColumns) => setColumns(index, newColumns)}
             />
