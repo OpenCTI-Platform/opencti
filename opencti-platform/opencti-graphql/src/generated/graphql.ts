@@ -24381,6 +24381,7 @@ export type StixCoreObjectsNumberParameters = {
 
 export enum StixCoreObjectsOrdering {
   Score = '_score',
+  AuthorizedMembersActivationDate = 'authorized_members_activation_date',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
