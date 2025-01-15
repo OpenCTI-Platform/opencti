@@ -37,6 +37,10 @@ const WidgetListRelationships = ({
       )
     ) as DataTableProps['dataColumns'];
 
+    if (newColumns.relationship_type) {
+      newColumns.relationship_type.label = 'Relationship type';
+    }
+
     const iconColumn = {
       percentWidth: iconWidth,
       isSortable: false,
