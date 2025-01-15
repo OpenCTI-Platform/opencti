@@ -975,7 +975,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
-        <Tooltip title='ntm'>
+        <Tooltip title={file?.name}>
           <Truncate>{file?.name}</Truncate>
         </Tooltip>
       );
