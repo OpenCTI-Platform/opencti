@@ -46,7 +46,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -167,19 +167,29 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
+import {
+  buildDraftFilter,
+  DRAFT_OPERATION_CREATE,
+  DRAFT_OPERATION_DELETE_LINKED,
+  DRAFT_OPERATION_DELETE,
+  isDraftSupportedEntity,
+  DRAFT_OPERATION_UPDATE_LINKED
+} from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { lockResource } from './redis';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_DEFAULT_WILDCARD_PREFIX = booleanConf('elasticsearch:search_wildcard_prefix', false);
 export const ES_DEFAULT_FUZZY = booleanConf('elasticsearch:search_fuzzy', false);
-export const ES_INIT_RETRO_MAPPING_MIGRATION = booleanConf('elasticsearch:internal_init_retro_compatible_mapping_migration', false);
+export const ES_INIT_MAPPING_MIGRATION = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
+export const ES_IS_OLD_MAPPING = ES_INIT_MAPPING_MIGRATION === 'old';
+export const ES_IS_INIT_MIGRATION = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
 export const ES_MINIMUM_FIXED_PAGINATION = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
@@ -992,7 +1002,7 @@ const updateIndexTemplate = async (name, mapping_properties) => {
       index_patterns: [index_pattern],
       template: {
         settings: computeIndexSettings(name),
-        mappings: ES_INIT_RETRO_MAPPING_MIGRATION ? {
+        mappings: ES_IS_OLD_MAPPING ? {
           properties: getRetroCompatibleMappings()
         } : {
           // Global option to prevent elastic to try any magic
@@ -1077,7 +1087,7 @@ export const elConfigureAttachmentProcessor = async () => {
         }
       ]
     }).catch((e) => {
-      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
+      logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   } else {
@@ -1099,7 +1109,7 @@ export const elConfigureAttachmentProcessor = async () => {
         ]
       }
     }).catch((e) => {
-      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
+      logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
     });
   }
@@ -1152,7 +1162,7 @@ export const elDeleteIndices = async (indexesToDelete) => {
         .catch((err) => {
           /* v8 ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-            logApp.error(DatabaseError('Indices deletion fail', { cause: err }));
+            logApp.error('Indices deletion fail', { cause: err });
           }
         });
     })
@@ -1599,7 +1609,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         throw DatabaseError('Find direct ids fail', { cause: err, query });
       });
       const elements = data.hits.hits;
-      if (elements.length > workingIds.length) logApp.warn('Search query returned more elements than expected', workingIds);
+      if (elements.length > workingIds.length) {
+        logApp.warn('Search query returned more elements than expected', { ids: workingIds });
+      }
       if (elements.length > 0) {
         const convertedHits = await elConvertHits(elements, { withoutRels });
         hits.push(...convertedHits);
@@ -3291,7 +3303,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
-    logApp.warn('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
+    logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
   const query = {
@@ -3635,7 +3647,8 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
     + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
     + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
     + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
-    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); ";
+    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
+    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');";
   const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
   const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
@@ -3733,7 +3746,9 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
   // User must have access to all relations to remove to be able to delete
   const filteredRelations = await userFilterStoreElements(context, user, relations);
-  if (relations.length !== filteredRelations.length) throw FunctionalError('Cannot delete element: cannot access all related relations');
+  if (relations.length !== filteredRelations.length) {
+    throw FunctionalError('Cannot delete element: cannot access all related relations');
+  }
   relations.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   relations.forEach((instance) => controlUserRestrictDeleteAgainstElement(user, instance));
   // Compute the id that needs to be removed from rel
@@ -3761,7 +3776,6 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
       const ids = idsByIndex.get(sourceIndex);
       reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
     });
-
     await Promise.all(reindexPromises);
     await createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
   }
@@ -3926,7 +3940,7 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
 // Creates a copy of a live element in the draft index with the current draft context
-const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE) => {
+export const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
@@ -3963,13 +3977,29 @@ const copyLiveElementToDraft = async (context, user, element, draftOperation = D
 };
 // Gets the version of the element in current draft context if it exists
 // If it doesn't exist, creates a copy of live element to draft context then returns it
+const draftCopyLockPrefix = 'draft_copy';
 const loadDraftElement = async (context, user, element) => {
   if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
-  const loadedElement = await elLoadById(context, user, element.internal_id);
-  if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
+  let lock;
+  const currentDraft = getDraftContext(context, user);
+  const lockKey = `${draftCopyLockPrefix}_${currentDraft}_${element.internal_id}`;
+  try {
+    lock = await lockResource([lockKey]);
+    const loadedElement = await elLoadById(context, user, element.internal_id);
+    if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
 
-  return await copyLiveElementToDraft(context, user, element);
+    return await copyLiveElementToDraft(context, user, element);
+  } catch (e) {
+    if (e.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [lockKey] });
+    }
+    throw e;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 const validateElementsToIndex = (context, user, elements) => {
   const draftContext = getDraftContext(context, user);

@@ -11,6 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
+import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -102,6 +104,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     return <ErrorNotFound />;
   }
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfis', false);
+  const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
@@ -121,7 +124,6 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         )}
         enableQuickSubscription={true}
         enableEnrollPlaybook={true}
-        enableAskAi={true}
         redirectToContent={true}
         enableEnricher={true}
       />
@@ -172,11 +174,17 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
             label={t_i18n('Data')}
           />
         </Tabs>
+        {!isKnowledgeOrContent && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+            <StixCoreObjectSimulationResult id={caseData.id} type="container"/>
+          </div>
+        )}
       </Box>
       <Routes>
         <Route
           path="/"
-          element={<CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />}
+          element={<CaseRfi caseRfiData={caseData} enableReferences={enableReferences}/>}
         />
         <Route
           path="/entities"

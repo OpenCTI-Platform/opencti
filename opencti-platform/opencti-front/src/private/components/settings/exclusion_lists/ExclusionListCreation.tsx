@@ -3,7 +3,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import { availableEntityTypes, exclusionListValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
+import { availableEntityTypes, exclusionListCreationValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
 import Button from '@mui/material/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
@@ -118,7 +118,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
       initialValues={initialValues}
       validateOnBlur={false}
       validateOnChange={false}
-      validationSchema={exclusionListValidator(t_i18n, isUploadFileChecked)}
+      validationSchema={exclusionListCreationValidator(t_i18n, isUploadFileChecked)}
       onSubmit={onSubmit}
       onReset={onReset}
     >

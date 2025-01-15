@@ -25,16 +25,16 @@ export const onSupportPackageMessage = async (event: { instance: BasicStoreEntit
       await sendCurrentNodeSupportLogToS3(context, SYSTEM_USER, event.instance as StoreEntitySupportPackage);
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.Ready);
     } else {
-      logApp.warn(`${event.instance.entity_type} entity cannot be sent to SupportPackage PubSubListener`);
+      logApp.warn('Entity cannot be sent to SupportPackage PubSubListener', { type: event.instance.entity_type });
     }
   } catch (error) {
+    logApp.error('Error generating support package (first round)', { cause: error, from: 'supportListener', nodeId: NODE_INSTANCE_ID, packageId: event.instance.id });
     try {
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.InError);
     } catch (errorInError) {
       // Well we cannot do much here.... elastic seems broken.
-      logApp.error(errorInError, { from: 'supportListener', nodeId: NODE_INSTANCE_ID, packageId: event.instance.id });
+      logApp.error('Error generating support package (second round)', { cause: errorInError, from: 'supportListener', nodeId: NODE_INSTANCE_ID, packageId: event.instance.id });
     }
-    logApp.error(error, { from: 'supportListener', nodeId: NODE_INSTANCE_ID, packageId: event.instance.id });
   }
 };
 

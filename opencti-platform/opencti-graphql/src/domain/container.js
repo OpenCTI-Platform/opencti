@@ -1,30 +1,44 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { listAllThings, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listAllEntities, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { distributionEntities, listAllThings, timeSeriesEntities } from '../database/middleware';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listAllToEntitiesThroughRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER
+  ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_IDENTITY
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { now } from '../utils/format';
+import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES, toBase64 } from '../database/utils';
+import { minutesAgo, now, truncate, utcDate } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isFeatureEnabled } from '../config/conf';
+import conf, { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../utils/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
+import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
+import { queryAi } from '../database/ai-llm';
+
+const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
+const aiResponseCache = {};
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -53,6 +67,12 @@ export const numberOfContainersForObject = (context, user, args) => {
       { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
     ),
   };
+};
+
+export const containersDistributionByEntity = async (context, user, args) => {
+  const { objectId } = args;
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER], { ...args, filters });
 };
 
 export const objects = async (context, user, containerId, args) => {
@@ -295,4 +315,83 @@ export const getFintelTemplates = async (context, user, container) => {
     filterGroups: [],
   };
   return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
+};
+
+export const aiSummary = async (context, user, args) => {
+  const { language = 'English' } = args;
+  const hasTypesArgs = args.types && args.types.length > 0;
+  const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
+  const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10, connectionFormat: false };
+  const identifier = toBase64(JSON.stringify(finalArgs));
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    return aiResponseCache[identifier];
+  }
+
+  const content = [];
+  const containers = await listEntities(context, user, types, finalArgs);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const container of containers) {
+    const author = await listAllToEntitiesThroughRelations(context, user, container.id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+    const files = await resolveFiles(context, user, container);
+    const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(context, user, container.id);
+    content.push({
+      title: container.name,
+      date: container.published || container.created,
+      author: (author && author.length > 0 ? author.at(0).name : 'Unknown'),
+      content: container.content ? `${container.description}\n\n${container.content}` : container.description,
+      long_content: truncate(files.map((n) => n.content).join(' '), 1000),
+      knowledge: truncate(relationshipsSentences, 1000),
+      entities: truncate(entitiesInvolved, 1000),
+    });
+  }
+  const systemPrompt = 'You are an assistant aimed to summarize and categorize cyber threat intelligence deliverables.';
+  const userPromptReport = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a comprehensive summary of the given reports and write a final report in the HTML format.
+  - You will only respond with the report content. Do not include formatting hint or syntax highlight. 
+  - Do not provide explanations or notes.
+  
+  # Instructions
+  
+  ## Summarize
+  - In clear and concise language, summarize the key points and themes presented in the reports.
+  - Avoid using the general knowledge as much as possible and focus on the user input.
+  - The summary should be in ${language} language.
+  - Put footnotes to source as much as possible all the information you have generated referring the original reports.
+  - Ensure that sources contain title, date and author.
+  - Always start the report with a section "Key Findings" with 5 items.
+  - Your response should be only the summary and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given content.
+  
+  ## Report writing
+  - Create a comprehensive report in HTML format.
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  - The summary should be in ${language} language.
+  
+  # Reports
+  ${JSON.stringify(content)}  
+  `;
+
+  const userPromptTopics = `
+  # Context
+  - You are a cyber threat intelligence analyst. Your task is to assess the 5 main topics of the given reports.
+  
+  # Instructions 
+  - Each topic should be maximum 2 words in lowercase such as ransomware, state-sponsored, information stealer, etc. Don't limit your self to the given examples.
+  - You will only respond with the topics, separated by commas. Do not include the word "Topic" or "Category".
+  - Do not provide explanations or notes.
+  
+  # Reports
+  ${JSON.stringify(content)}
+  `;
+  const result = await queryAi(null, systemPrompt, userPromptReport, user);
+  const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
+
+  const summary = {
+    result: result.replace('```html', '').replace('```', '').trim(),
+    topics: topics.split(',').map((n) => n.trim())
+  };
+  aiResponseCache[identifier] = summary;
+  return summary;
 };

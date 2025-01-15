@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { UIEvent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -24,7 +24,7 @@ import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { deleteNode } from '../../../utils/store';
 import { RelayError } from '../../../relay/relayTypes';
-import useDeletion from '../../../utils/hooks/useDeletion';
+import stopEvent from '../../../utils/domEvent';
 
 const draftPopoverDeleteMutation = graphql`
     mutation DraftPopoverDeleteMutation($id: ID!) {
@@ -48,6 +48,8 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openSwitch, setOpenSwitch] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [switchToDraft, setSwitchToDraft] = useState(false);
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   const deleteSuccessMessage = t_i18n('', {
@@ -59,27 +61,37 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-  const handleOpen = (event: React.SyntheticEvent) => {
+  const handleOpen = (event: UIEvent) => {
+    stopEvent(event);
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => setAnchorEl(null);
-
-  const handleOpenSwitch = () => {
-    setOpenSwitch(true);
-    handleClose();
+  const handleClose = (event: UIEvent) => {
+    stopEvent(event);
+    setAnchorEl(null);
   };
-  const handleCloseSwitch = () => {
+
+  const handleOpenSwitch = (event: UIEvent) => {
+    setOpenSwitch(true);
+    handleClose(event);
+  };
+
+  const handleCloseSwitch = (event: UIEvent) => {
+    stopEvent(event);
     setOpenSwitch(false);
   };
-  const {
-    deleting,
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-    setDeleting,
-  } = useDeletion({ handleClose });
 
-  const submitDelete = () => {
+  const handleOpenDelete = (event: UIEvent) => {
+    setOpenDelete(true);
+    handleClose(event);
+  };
+
+  const handleCloseDelete = (event: UIEvent) => {
+    stopEvent(event);
+    setOpenDelete(false);
+  };
+
+  const submitDelete = (event: UIEvent) => {
+    stopEvent(event);
     setDeleting(true);
     commitDeletion({
       variables: {
@@ -87,12 +99,14 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
+        handleClose(event);
+        handleCloseDelete(event);
       },
       onError: (error) => {
         MESSAGING$.notifyRelayError(error as unknown as RelayError);
         setDeleting(false);
-        handleClose();
+        handleClose(event);
+        handleCloseDelete(event);
       },
       updater: (store) => {
         deleteNode(store, 'Pagination_draftWorkspaces', paginationOptions, draftId);
@@ -100,7 +114,8 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
     });
   };
 
-  const submitToDraft = () => {
+  const submitToDraft = (event: UIEvent) => {
+    stopEvent(event);
     setSwitchToDraft(true);
     commitSwitchToDraft({
       variables: {
@@ -109,14 +124,14 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
       onCompleted: () => {
         MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
         setSwitchToDraft(false);
-        handleCloseSwitch();
-        handleClose();
+        handleClose(event);
+        handleCloseSwitch(event);
       },
       onError: (error) => {
         MESSAGING$.notifyRelayError(error as unknown as RelayError);
         setSwitchToDraft(false);
-        handleCloseSwitch();
-        handleClose();
+        handleClose(event);
+        handleCloseSwitch(event);
       },
       updater: (store) => updater && updater(store),
     });
@@ -143,7 +158,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           <MenuItem onClick={handleOpenSwitch}>{t_i18n('Switch to Draft')}</MenuItem>
         </Menu>
         <Dialog
-          open={displayDelete}
+          open={openDelete}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}

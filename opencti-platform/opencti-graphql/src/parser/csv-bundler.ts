@@ -115,7 +115,7 @@ const internalGenerateBundles = async (
             }
           }
         } catch (e) {
-          logApp.error(e);
+          logApp.error('CSV generate handler error', { cause: e });
         }
       }
     }
@@ -274,7 +274,7 @@ export const bundleProcess = async (
           const csvData = record.join(sanitizedMapper.separator);
           bundleBuilder.addObjects(stixObjects, csvData);
         } catch (e) {
-          logApp.error(e);
+          logApp.error('CSV bundle process handler error', { cause: e });
         }
       }
     })));

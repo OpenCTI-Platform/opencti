@@ -11,6 +11,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -152,6 +153,9 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                 borderBottom: 1,
                 borderColor: 'divider',
                 marginBottom: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItem: 'center',
               }}
             >
               <Tabs
@@ -200,11 +204,14 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={region.id}/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Region regionData={region} />}
+                element={<Region regionData={region}/>}
               />
               <Route
                 path="/knowledge"

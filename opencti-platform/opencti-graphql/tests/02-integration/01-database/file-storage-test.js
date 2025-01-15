@@ -15,7 +15,7 @@ const importFileId = `import/global/${exportFileName.toLowerCase()}`;
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const importOpts = [API_URI, ADMIN_API_TOKEN, malware.id, exportFileName, [MARKING_TLP_AMBER_STRICT]];
+    const importOpts = [API_URI, ADMIN_API_TOKEN, malware.id, 'Malware', exportFileName, [MARKING_TLP_AMBER_STRICT]];
     // local exporter create an export and also upload the file as an import
     const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
@@ -143,13 +143,14 @@ describe('File storage file listing', () => {
 
 describe('File storage utils', () => {
   it('should guess mimetype correctly', async () => {
+    expect(guessMimeType('pdf_report')).toBe('application/pdf');
+    expect(guessMimeType('path/1/file.yar')).toBe('text/yara+plain');
     expect(guessMimeType('path/to/iamajsonfile.json')).toBe('application/json');
     expect(guessMimeType('path/to/iamapdf.pdf')).toBe('application/pdf');
     expect(guessMimeType('path/to/i Have space and 💖.txt')).toBe('text/plain');
     expect(guessMimeType('unknown')).toBe('application/octet-stream');
     expect(guessMimeType('export/Malware/b4bebef0-7f1b-4212-b09d-f376adb3181a/(ExportFileStix)_Malware-Paradise Ransomware_all.json')).toBe('application/json');
   });
-
   it('should find filename correctly', async () => {
     expect(getFileName('path/to/iamajsonfile.json')).toBe('iamajsonfile.json');
     expect(getFileName('path/to/iamapdf.pdf')).toBe('iamapdf.pdf');

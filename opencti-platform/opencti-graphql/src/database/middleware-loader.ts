@@ -662,7 +662,7 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   return await elLoadById(context, user, id, opts) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string, opts = {}): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string | string[], opts = {}): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }

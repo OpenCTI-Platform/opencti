@@ -19,7 +19,12 @@ import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
-import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
+import type {
+  BasicStoreEntityIngestionCsv,
+  BasicStoreEntityIngestionRss,
+  BasicStoreEntityIngestionTaxii,
+  BasicStoreEntityIngestionTaxiiCollection
+} from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
@@ -84,15 +89,15 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
 };
 
 const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv) => {
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection) => {
   const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
   return work;
 };
 
-const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, bundle: StixBundle) => {
+export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection, bundle: StixBundle) => {
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);
@@ -109,6 +114,7 @@ const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: Basic
     work_id: work.id,
     update: true
   });
+  return work.id;
 };
 // endregion
 
@@ -262,8 +268,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     if (messages_number === 0) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
-          logApp.error(`[OPENCTI-MODULE] INGESTION - Error with rss handler ${ingestion.name}`);
-          logApp.error(e, { name: ingestion.name, context: 'RSS ingestion execution' });
+          logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -344,33 +349,37 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
 
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
 
+export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntityIngestionTaxii | BasicStoreEntityIngestionTaxiiCollection, objects: StixObject[]) => {
+  if (ingestion.confidence_to_score === true) {
+    return objects.map((o) => {
+      if (o.type === 'indicator') {
+        const indicator = o as StixIndicator;
+        if (isNotEmptyField(indicator.confidence)) {
+          if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
+            indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
+          } else if (indicator.extensions) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
+          } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
+          }
+          return indicator;
+        }
+      }
+      return o;
+    });
+  }
+  return objects;
+};
+
 export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-    let { objects } = data;
-    if (ingestion.confidence_to_score === true) {
-      objects = objects.map((o) => {
-        if (o.type === 'indicator') {
-          const indicator = o as StixIndicator;
-          if (isNotEmptyField(indicator.confidence)) {
-            if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
-              indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
-            } else if (indicator.extensions) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
-            } else {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
-            }
-            return indicator;
-          }
-        }
-        return o;
-      });
-    }
+    const objects = handleConfidenceToScoreTransformation(ingestion, data.objects);
     const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
     // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);
@@ -434,8 +443,7 @@ const taxiiExecutor = async (context: AuthContext) => {
       }
       const ingestionPromise = taxiiHandler(context, ingestion)
         .catch((e) => {
-          logApp.error(`[OPENCTI-MODULE] INGESTION - Error with taxii handler ${ingestion.name}`);
-          logApp.error(e, { name: ingestion.name, context: 'Taxii ingestion execution' });
+          logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii ingestion execution', { cause: e, name: ingestion.name });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -497,15 +505,8 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
-
-  try {
-    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
-    await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
-  } catch (e: any) {
-    logApp.error(`[OPENCTI-MODULE] INGESTION - Error trying to fetch csv feed for: ${ingestion.name}`);
-    logApp.error(e, { ingestion });
-    throw e;
-  }
+  const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
 };
 
 const csvExecutor = async (context: AuthContext) => {
@@ -524,8 +525,7 @@ const csvExecutor = async (context: AuthContext) => {
     if (messages_number === 0) {
       const ingestionPromise = csvDataHandler(context, ingestion)
         .catch((e) => {
-          logApp.error(`[OPENCTI-MODULE] INGESTION - Error with csv handler ${ingestion.name}`);
-          logApp.error(e, { name: ingestion.name, context: 'CSV ingestion execution' });
+          logApp.warn('[OPENCTI-MODULE] INGESTION - CSV ingestion execution', { cause: e, name: ingestion.name });
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -558,8 +558,7 @@ const ingestionHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.info('[OPENCTI-MODULE] INGESTION - Ingestion manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] INGESTION - Ingestion handlers cannot be started');
-      logApp.error(e, { manager: 'INGESTION_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] Ingestion manager handling error', { cause: e, manager: 'INGESTION_MANAGER' });
     }
   } finally {
     running = false;

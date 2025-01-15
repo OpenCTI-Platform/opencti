@@ -91,15 +91,12 @@ class ExportButtons extends Component {
           this.adjust,
         ).then(() => {
           buttons.setAttribute('style', 'display: block');
-          if (theme !== currentTheme.palette.mode) {
-            commitLocalUpdate((store) => {
-              const me = store.getRoot().getLinkedRecord('me');
-              me.setValue(false, 'exporting');
-              me.setValue(currentTheme.palette.mode, 'theme');
-            });
-          } else {
-            this.setState({ exporting: false });
-          }
+          commitLocalUpdate((store) => {
+            const me = store.getRoot().getLinkedRecord('me');
+            me.setValue(false, 'exporting');
+            me.setValue(currentTheme.palette.mode, 'theme');
+          });
+          this.setState({ exporting: false });
         });
       }, timeout / 2);
     }, timeout);
@@ -142,15 +139,12 @@ class ExportButtons extends Component {
         this.adjust,
       ).then(() => {
         buttons.setAttribute('style', 'display: block');
-        if (theme !== currentTheme.palette.mode) {
-          commitLocalUpdate((store) => {
-            const me = store.getRoot().getLinkedRecord('me');
-            me.setValue(false, 'exporting');
-            me.setValue(currentTheme.palette.mode, 'theme');
-          });
-        } else {
-          this.setState({ exporting: false });
-        }
+        commitLocalUpdate((store) => {
+          const me = store.getRoot().getLinkedRecord('me');
+          me.setValue(false, 'exporting');
+          me.setValue(currentTheme.palette.mode, 'theme');
+        });
+        this.setState({ exporting: false });
       });
     }, timeout);
   }

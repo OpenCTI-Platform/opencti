@@ -6,9 +6,9 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
-import { type ExclusionListFileAddInput, type MutationExclusionListFieldPatchArgs, type QueryExclusionListsArgs } from '../../generated/graphql';
+import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
 import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { generateInternalId } from '../../schema/identifier';
@@ -98,7 +98,9 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
 };
 
 export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
+  if (!isExclusionListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   return storeAndCreateExclusionList(context, user, input, input.file);
 };
 
@@ -135,7 +137,9 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
 };
 
 export const deleteExclusionList = async (context: AuthContext, user: AuthUser, exclusionListId: string) => {
-  if (!isExclusionListEnabled) throw new Error('Feature not yet available');
+  if (!isExclusionListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   const exclusionList = await findById(context, user, exclusionListId);
   await deleteFile(context, user, exclusionList.file_id);
   const deletedExclusionList = deleteInternalObject(context, user, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST);

@@ -122,6 +122,11 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         .map((stixId) => markingsById.get(stixId)?.internal_id)
         .filter((o) => isNotEmptyField(o)) as string[];
       eventMarkingRefs.push(...previousMarkingRefs);
+      // Get related restrictions (e.g. markings of added objects in a container)
+      if (updateEvent.context.related_restrictions) {
+        const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
+        eventMarkingRefs.push(...relatedMarkings);
+      }
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
@@ -195,7 +200,7 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
       await eventsApplyHandler(context, compatibleEvents);
     }
   } catch (e) {
-    logApp.error(e, { manager: 'HISTORY_MANAGER' });
+    logApp.error('[OPENCTI-MODULE] History manager stream error', { cause: e, manager: 'HISTORY_MANAGER' });
   }
 };
 
@@ -228,7 +233,7 @@ const initHistoryManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] History manager already started by another API');
       } else {
-        logApp.error(e, { manager: 'HISTORY_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] History manager handling error', { cause: e, manager: 'HISTORY_MANAGER' });
       }
     } finally {
       running = false;

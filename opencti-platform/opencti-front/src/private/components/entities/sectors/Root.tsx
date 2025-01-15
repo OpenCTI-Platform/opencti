@@ -1,6 +1,6 @@
-import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
-import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import React, { Suspense, useMemo } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -9,6 +9,7 @@ import { RootSectorQuery } from '@components/entities/sectors/__generated__/Root
 import { RootSectorSubscription } from '@components/entities/sectors/__generated__/RootSectorSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
@@ -153,6 +154,9 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 borderBottom: 1,
                 borderColor: 'divider',
                 marginBottom: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItem: 'center',
               }}
             >
               <Tabs
@@ -201,13 +205,16 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={sector.id}/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={(
-                  <Sector sectorData={sector} />
-                )}
+                  <Sector sectorData={sector}/>
+                  )}
               />
               <Route
                 path="/knowledge"

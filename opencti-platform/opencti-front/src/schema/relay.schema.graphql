@@ -448,6 +448,29 @@ type OpinionsMetrics {
   total: Int
 }
 
+type AiActivity {
+  result: String
+  trend: String
+  updated_at: DateTime
+}
+
+type AiSummary {
+  result: String
+  topics: [String]
+  updated_at: DateTime
+}
+
+type AiForecast {
+  result: String
+  confidence: Int
+  updated_at: DateTime
+}
+
+type AiHistory {
+  result: String
+  updated_at: DateTime
+}
+
 type LogsWorkerConfig {
   elasticsearch_url: [String]!
   elasticsearch_proxy: String
@@ -1031,6 +1054,7 @@ enum BackgroundTaskScope {
   DASHBOARD
   PUBLIC_DASHBOARD
   INVESTIGATION
+  PLAYBOOK
 }
 
 enum BackgroundTaskActionType {
@@ -2023,7 +2047,10 @@ type Inference {
 enum DraftOperation {
   create
   update
+  update_linked
   delete
+  delete_linked
+  unchanged
 }
 
 type DraftVersion {
@@ -2853,6 +2880,7 @@ interface Container {
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2928,6 +2956,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -3062,6 +3091,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -3171,6 +3201,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -3299,6 +3330,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -7822,6 +7854,7 @@ type Query {
   importFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesMetrics: FilesMetrics
+  aiActivity(languange: String): AiActivity
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
@@ -7885,6 +7918,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
+  stixCoreObjectAiActivity(id: ID!, language: String): AiActivity
+  stixCoreObjectAiForecast(id: ID!, language: String): AiForecast
+  stixCoreObjectAiHistory(id: ID!, language: String): AiHistory
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
@@ -7913,6 +7949,8 @@ type Query {
   containers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ContainerConnection
   containersObjectsOfObject(id: String!, types: [String], filters: FilterGroup, search: String): StixObjectOrStixRelationshipConnection
   containersNumber(objectId: String, endDate: DateTime): Number
+  containersDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String, filters: FilterGroup, search: String): [Distribution]
+  containersAiSummary(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, language: String): AiSummary
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): NoteConnection
   notesNumber(objectId: String, endDate: DateTime): Number
@@ -8090,6 +8128,8 @@ type Query {
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
+  ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   indicator(id: String!): Indicator
@@ -8899,6 +8939,9 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionTaxiiCollectionAdd(input: IngestionTaxiiCollectionAddInput!): IngestionTaxiiCollection
+  ingestionTaxiiCollectionDelete(id: ID!): ID
+  ingestionTaxiiCollectionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxiiCollection
   ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult
   ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv
   ingestionCsvResetState(id: ID!): IngestionCsv
@@ -9310,6 +9353,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10117,6 +10161,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10258,6 +10303,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10382,6 +10428,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10507,6 +10554,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10630,6 +10678,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10754,6 +10803,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -11532,6 +11582,47 @@ input IngestionTaxiiAddInput {
   ingestion_running: Boolean
   confidence_to_score: Boolean
   user_id: String
+}
+
+type IngestionTaxiiCollection implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  created_at: DateTime
+  updated_at: DateTime
+  name: String!
+  ingestion_running: Boolean
+  confidence_to_score: Boolean
+  description: String
+  user_id: String
+  user: Creator
+  authorized_members: [MemberAccess!]
+}
+
+enum IngestionTaxiiCollectionOrdering {
+  name
+  created_at
+  updated_at
+  _score
+}
+
+type IngestionTaxiiCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [IngestionTaxiiCollectionEdge!]!
+}
+
+type IngestionTaxiiCollectionEdge {
+  cursor: String!
+  node: IngestionTaxiiCollection!
+}
+
+input IngestionTaxiiCollectionAddInput {
+  name: String!
+  description: String
+  user_id: String
+  confidence_to_score: Boolean
+  authorized_members: [MemberAccessInput!]!
 }
 
 type IngestionCsv implements InternalObject & BasicObject {

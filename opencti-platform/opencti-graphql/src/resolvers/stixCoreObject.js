@@ -1,12 +1,16 @@
 import {
+  aiActivity,
+  aiForecast,
+  aiHistory,
   analysisClear,
-  askElementEnrichmentForConnector,
   askElementAnalysisForConnector,
+  askElementEnrichmentForConnector,
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
   externalReferencesPaginated,
   findAll,
+  findAllAuthMemberRestricted,
   findById,
   groupingsPaginated,
   notesPaginated,
@@ -35,8 +39,7 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationships,
-  findAllAuthMemberRestricted
+  stixCoreRelationships
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -83,6 +86,9 @@ const stixCoreObjectResolvers = {
       return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
     stixCoreObjectAnalysis: (_, { id, contentSource, contentType }, context) => stixCoreAnalysis(context, context.user, id, contentSource, contentType),
+    stixCoreObjectAiActivity: (_, args, context) => aiActivity(context, context.user, args),
+    stixCoreObjectAiForecast: (_, args, context) => aiForecast(context, context.user, args),
+    stixCoreObjectAiHistory: (_, args, context) => aiHistory(context, context.user, args),
   },
   StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
   StixCoreObject: {

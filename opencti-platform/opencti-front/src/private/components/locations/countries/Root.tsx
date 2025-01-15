@@ -10,6 +10,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import Country from './Country';
 import CountryKnowledge from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -150,6 +151,9 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                 borderBottom: 1,
                 borderColor: 'divider',
                 marginBottom: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItem: 'center',
               }}
             >
               <Tabs
@@ -198,11 +202,14 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={country.id}/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Country countryData={country} />}
+                element={<Country countryData={country}/>}
               />
               <Route
                 path="/knowledge"

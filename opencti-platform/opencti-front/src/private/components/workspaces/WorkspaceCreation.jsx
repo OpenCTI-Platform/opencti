@@ -49,7 +49,7 @@ const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
     workspaceAdd(input: $input) {
       id
-      ...WorkspaceLine_node
+      ...WorkspacesLine_node
     }
   }
 `;
@@ -123,7 +123,6 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
 
   const createDashboardButton = FAB_REPLACED ? (props) => (
     <>
-      <CreateEntityControlledDial entityType='Dashboard' {...props} />
       <Button
         color='primary'
         variant='outlined'
@@ -135,6 +134,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       >
         {t_i18n('Import dashboard')}
       </Button>
+      <CreateEntityControlledDial entityType='Dashboard' {...props} />
     </>
   ) : ({ onOpen }) => (
     <SpeedDial

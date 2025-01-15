@@ -5,6 +5,7 @@ import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
 import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '../../utils/testStream';
 import { PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
+import { writeTestDataToFile } from '../../utils/testOutput';
 
 describe('Raw streams tests', () => {
   // We need to check the event format to be sure that everything is setup correctly
@@ -13,6 +14,7 @@ describe('Raw streams tests', () => {
     async () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
+      writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');
       // Check the number of events
       // 01 - CHECK CREATE EVENTS.
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
@@ -75,14 +77,14 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
       expect(updateEventsByTypes['note'].length).toBe(3);
       expect(updateEventsByTypes['opinion'].length).toBe(6);
-      expect(updateEventsByTypes['report'].length).toBe(16);
+      expect(updateEventsByTypes['report'].length).toBe(18);
       expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
       expect(updateEventsByTypes['tool'].length).toBe(9);
       expect(updateEventsByTypes['sighting'].length).toBe(4);
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(181);
+      expect(updateEvents.length).toBe(183);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;

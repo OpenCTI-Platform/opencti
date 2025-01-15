@@ -59,7 +59,7 @@ const closeOldWorks = async (context, connector) => {
           // Delete redis tracking key
           await redisDeleteWorks(element.internal_id);
         } catch (e) {
-          logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', { error: e });
+          logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', { cause: e });
         }
       }
     };
@@ -128,7 +128,7 @@ const connectorHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Connector manager already started by another API');
     } else {
-      logApp.error(e, { manager: 'CONNECTOR_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] Connector manager handling error', { cause: e, manager: 'CONNECTOR_MANAGER' });
     }
   } finally {
     running = false;

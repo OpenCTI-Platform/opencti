@@ -89,7 +89,9 @@ export const sendStixBundle = async (context, user, connectorId, bundle) => {
 };
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
-  if (!exportContext || !exportContext?.entity_type) throw new Error('entity_type is missing from askListExport');
+  if (!exportContext || !exportContext?.entity_type) {
+    throw FunctionalError('entity_type is missing from askListExport');
+  }
 
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
@@ -273,7 +275,9 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot restrict organization in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot restrict organization in draft');
+  }
   const from = await internalLoadById(context, user, fromId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
   // We skip references validation when updating organization sharing
@@ -285,7 +289,9 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
 };
 
 export const removeOrganizationRestriction = async (context, user, fromId, organizationId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot remove organization restriction in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot remove organization restriction in draft');
+  }
   const from = await internalLoadById(context, user, fromId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
   // We skip references validation when updating organization sharing

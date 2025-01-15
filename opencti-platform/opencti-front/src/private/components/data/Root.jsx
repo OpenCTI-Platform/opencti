@@ -30,6 +30,7 @@ const Feed = lazy(() => import('./Feed'));
 const Sync = lazy(() => import('./Sync'));
 const IngestionRss = lazy(() => import('./IngestionRss'));
 const IngestionTaxiis = lazy(() => import('./IngestionTaxiis'));
+const IngestionTaxiiCollections = lazy(() => import('./IngestionTaxiiCollections'));
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
@@ -110,6 +111,10 @@ const Root = () => {
         <Route
           path="/ingestion/taxii"
           element={boundaryWrapper(IngestionTaxiis)}
+        />
+        <Route
+          path="/ingestion/collection"
+          element={boundaryWrapper(IngestionTaxiiCollections)}
         />
         <Route
           path="/ingestion/csv"

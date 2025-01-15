@@ -29,7 +29,7 @@ export const checkRetentionRule = async (context, input) => {
   } else if (scope === 'workbench') {
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString() });
   } else {
-    logApp.error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
+    logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
     result.edges = result.edges.filter((e) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)

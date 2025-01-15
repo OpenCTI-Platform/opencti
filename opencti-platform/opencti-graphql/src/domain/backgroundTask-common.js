@@ -19,6 +19,7 @@ import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/grap
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -216,6 +217,27 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not public dashboards.');
       }
     }
+  } else if (scope === BackgroundTaskScope.Playbook) {
+    const isAuthorized = isUserHasCapability(user, Capabilities.SettingsSetaccesses);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (!actions.every((a) => a.type === ACTION_TYPE_DELETE)) {
+      throw UnsupportedError('Background tasks of scope Playbook can only be deletions.');
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      const isPlaybooks = entityTypeFilters.length === 1
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_PLAYBOOK;
+      if (!isPlaybooks) {
+        throw ForbiddenAccess('The targeted ids are not playbooks.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids);
+      if (objects.some((o) => o.entity_type !== ENTITY_TYPE_PLAYBOOK)) {
+        throw ForbiddenAccess('The targeted ids are not playbooks.');
+      }
+    }
   } else { // Background task with an invalid scope
     throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.');
   }
@@ -286,6 +308,9 @@ const authorizedMembersForTask = (user, scope) => {
 };
 
 export const createListTask = async (context, user, input) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot create background task in draft');
+  }
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);

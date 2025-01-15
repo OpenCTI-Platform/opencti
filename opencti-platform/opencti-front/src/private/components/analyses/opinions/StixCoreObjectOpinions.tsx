@@ -103,7 +103,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
     },
     [deleteActionTrigger],
   );
-  const height = 240;
+  const height = 180;
   return (
     <>
       <Typography

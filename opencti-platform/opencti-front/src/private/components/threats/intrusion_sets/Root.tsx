@@ -1,12 +1,13 @@
-import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
-import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import React, { Suspense, useMemo } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import IntrusionSet from './IntrusionSet';
@@ -89,22 +90,17 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
     subscription,
     variables: { id: intrusionSetId },
   }), [intrusionSetId]);
-
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootIntrusionSetSubscription>(subConfig);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const {
     intrusionSet,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
-
   const { forceUpdate } = useForceUpdate();
-
-  const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSetId}`;
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
@@ -157,7 +153,6 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               )}
               enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
-              enableAskAi={true}
             />
             <Box
               sx={{
@@ -209,9 +204,10 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={intrusionSet.id} />
                 <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
-              )}
+              </div>
             </Box>
             <Routes>
               <Route

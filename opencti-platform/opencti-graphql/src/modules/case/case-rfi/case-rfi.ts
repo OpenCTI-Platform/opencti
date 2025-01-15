@@ -6,7 +6,7 @@ import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../
 import type { StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
 import convertCaseRfiToStix from './case-rfi-converter';
-import { authorizedMembers } from '../../../schema/attribute-definition';
+import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
 const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
   type: {
@@ -43,6 +43,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     { name: 'severity', label: 'Severity', type: 'string', format: 'vocabulary', vocabularyCategory: 'case_severity_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'priority', label: 'Priority', type: 'string', format: 'vocabulary', vocabularyCategory: 'case_priority_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { ...authorizedMembers, editDefault: true, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
+    { ...authorizedMembersActivationDate, featureFlag: 'CONTAINERS_AUTHORIZED_MEMBERS' },
   ],
   relations: [],
   relationsRefs: [createdBy, objectMarking, objectAssignee, objectParticipant],

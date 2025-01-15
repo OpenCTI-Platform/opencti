@@ -78,11 +78,11 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
         />
         <Security needs={[EXPLORE_EXUPDATE]}>
           {FAB_REPLACED && (
-            <div>
+            <>
               <Button
                 variant='outlined'
                 disableElevation
-                style={{ marginTop: '2.5px', marginLeft: '4px' }}
+                sx={{ marginLeft: 1 }}
                 onClick={() => inputRef.current?.click()}
               >
                 {t_i18n('Import Widget')}
@@ -90,41 +90,40 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
               <Button
                 variant='contained'
                 disableElevation
-                style={{ marginTop: '2.5px', marginLeft: '2px' }}
+                sx={{ marginLeft: 1 }}
                 onClick={() => setOpen(true)}
               >
                 {t_i18n('Create Widget')}
               </Button>
-            </div>
-          )
-          }
+            </>
+          )}
           {!FAB_REPLACED && (
-          <SpeedDial
-            style={{
-              position: 'fixed',
-              bottom: 30,
-              right: 30,
-              zIndex: 1100,
-            }}
-            ariaLabel="Create"
-            icon={<SpeedDialIcon/>}
-            FabProps={{ color: 'primary' }}
-          >
-            <SpeedDialAction
-              title={t_i18n('Create a widget')}
-              icon={<WidgetsOutlined/>}
-              tooltipTitle={t_i18n('Create a widget')}
-              onClick={() => setOpen(true)}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-            <SpeedDialAction
-              title={t_i18n('Import a widget')}
-              icon={<CloudUploadOutlined/>}
-              tooltipTitle={t_i18n('Import a widget')}
-              onClick={() => inputRef?.current?.click()}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-          </SpeedDial>
+            <SpeedDial
+              style={{
+                position: 'fixed',
+                bottom: 30,
+                right: 30,
+                zIndex: 1100,
+              }}
+              ariaLabel="Create"
+              icon={<SpeedDialIcon/>}
+              FabProps={{ color: 'primary' }}
+            >
+              <SpeedDialAction
+                title={t_i18n('Create a widget')}
+                icon={<WidgetsOutlined/>}
+                tooltipTitle={t_i18n('Create a widget')}
+                onClick={() => setOpen(true)}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+              <SpeedDialAction
+                title={t_i18n('Import a widget')}
+                icon={<CloudUploadOutlined/>}
+                tooltipTitle={t_i18n('Import a widget')}
+                onClick={() => inputRef?.current?.click()}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+            </SpeedDial>
           )}
         </Security>
       </>

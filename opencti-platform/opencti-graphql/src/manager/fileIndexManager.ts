@@ -86,7 +86,7 @@ export const indexImportedFiles = async (context: AuthContext, indexFromDate: st
           };
         });
         const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 })
-          .catch((error) => logApp.error(error, { manager: 'FILE_INDEX_MANAGER' }));
+          .catch((error) => logApp.error('[OPENCTI-MODULE] Index manager indexing error', { cause: error, manager: 'FILE_INDEX_MANAGER' }));
 
         // index all files one by one
         await elIndexFiles(context, SYSTEM_USER, filesToIndex);
@@ -94,7 +94,7 @@ export const indexImportedFiles = async (context: AuthContext, indexFromDate: st
       }
     } catch (e) {
       // if one file processing raise an exception, we log and skip the bulk.
-      logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
+      logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
     }
   }
 };
@@ -124,7 +124,7 @@ const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>
       }
     }
   } catch (e) {
-    logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
+    logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
   }
 };
 
@@ -164,7 +164,7 @@ const initFileIndexManager = () => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug('[OPENCTI-MODULE] File index manager handler already started by another API');
         } else {
-          logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
         }
       } finally {
         running = false;
@@ -194,7 +194,7 @@ const initFileIndexManager = () => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
         } else {
-          logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
         }
       } finally {
         if (streamProcessor) await streamProcessor.shutdown();

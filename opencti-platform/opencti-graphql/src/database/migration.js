@@ -83,7 +83,7 @@ const migrationStorage = {
       logApp.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
       return fn();
     } catch (err) {
-      logApp.error(err);
+      logApp.error('Error handling migration', { cause: err });
       return fn();
     }
   },
@@ -124,7 +124,7 @@ export const applyMigration = (context) => {
       // Start the set migration
       set.up((migrationError) => {
         if (migrationError) {
-          logApp.error(migrationError);
+          logApp.error('Migration up error', { cause: migrationError });
           reject(migrationError);
           return;
         }

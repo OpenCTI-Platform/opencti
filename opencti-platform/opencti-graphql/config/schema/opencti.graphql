@@ -422,6 +422,25 @@ type OpinionsMetrics {
   max: Int
   total: Int
 }
+type AiActivity {
+  result: String
+  trend: String
+  updated_at: DateTime
+}
+type AiSummary {
+  result: String
+  topics: [String]
+  updated_at: DateTime
+}
+type AiForecast {
+  result: String
+  confidence: Int
+  updated_at: DateTime
+}
+type AiHistory {
+  result: String
+  updated_at: DateTime
+}
 
 ### INTERFACES & TYPES
 
@@ -972,6 +991,7 @@ enum BackgroundTaskScope {
   DASHBOARD
   PUBLIC_DASHBOARD
   INVESTIGATION
+  PLAYBOOK
 }
 enum BackgroundTaskActionType {
   DELETE
@@ -1946,7 +1966,10 @@ type Inference {
 enum DraftOperation {
   create
   update
+  update_linked
   delete
+  delete_linked
+  unchanged
 }
 
 type DraftVersion {
@@ -3159,6 +3182,7 @@ interface Container {
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3318,6 +3342,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3550,6 +3575,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3758,6 +3784,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3984,6 +4011,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -12697,6 +12725,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
+  aiActivity(languange: String): AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -12892,6 +12921,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiActivity(id: ID!, language: String): AiActivity @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiForecast(id: ID!, language: String): AiForecast @auth(for: [KNOWLEDGE])
+  stixCoreObjectAiHistory(id: ID!, language: String): AiHistory @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -13078,6 +13110,28 @@ type Query {
     search: String
   ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   containersNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  containersDistribution(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  containersAiSummary(
+    first: Int
+    after: ID
+    orderBy: ContainersOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    language: String
+  ): AiSummary @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
@@ -13266,7 +13320,6 @@ type Query {
     search: String
     toStix: Boolean
   ): SystemConnection @auth(for: [KNOWLEDGE])
-
   infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
     first: Int

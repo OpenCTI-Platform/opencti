@@ -318,7 +318,7 @@ export const checkUserCanShareMarkings = async (context, user, markingsToShare) 
   const contentMaxMarkingsIsShareable = markingsToShare.every((m) => (
     shareableMarkings.some((shareableMarking) => m.definition_type === shareableMarking.definition_type && m.x_opencti_order <= shareableMarking.x_opencti_order)));
   if (!contentMaxMarkingsIsShareable) {
-    throw new Error('You are not allowed to share these markings.');
+    throw ForbiddenAccess('You are not allowed to share these markings', { markings: markingsToShare });
   }
 };
 
@@ -1579,7 +1579,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
         return await authenticateUser(context, req, user, loginProvider, opts);
       }
     } catch (err) {
-      logApp.error(err);
+      logApp.error('Error resolving user by token', { cause: err });
     }
   }
   // If user still not identified, try headers authentication

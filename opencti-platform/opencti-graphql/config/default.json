@@ -23,6 +23,10 @@
       "logs_redacted_inputs": ["password", "secret", "token"],
       "extended_error_message": false
     },
+    "filename_to_mimes": {
+      "pdf_report": "application/pdf",
+      ".yar": "text/yara+plain"
+    },
     "audit_logs": {
       "logs_files": true,
       "logs_console": true,
@@ -53,6 +57,11 @@
       }
     },
     "telemetry": {
+      "pyroscope": {
+        "enabled": false,
+        "identifier": "OpenCTI",
+        "exporter": ""
+      },
       "tracing": {
         "enabled": false,
         "exporter_otlp": "",
@@ -161,7 +170,9 @@
     "endpoint": "",
     "token": "",
     "model": "",
-    "model_images": ""
+    "model_images": "",
+    "max_tokens": 30000,
+    "insights_refresh_timeout": 60
   },
   "xtm": {
     "openbas_url": "",

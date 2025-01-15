@@ -27,7 +27,6 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext, redisIsAlive } from '../database/redis';
-import { UnknownError } from '../config/errors';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
 import { isEngineAlive } from '../database/engine';
 
@@ -207,7 +206,7 @@ const createApp = async (app) => {
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting storage get file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -237,7 +236,7 @@ const createApp = async (app) => {
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting storage view file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -267,7 +266,7 @@ const createApp = async (app) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting html file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -292,7 +291,7 @@ const createApp = async (app) => {
       archive.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error getting encrypted file', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -332,7 +331,7 @@ const createApp = async (app) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error auth by cert', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -357,19 +356,26 @@ const createApp = async (app) => {
         req.session.destroy(() => {
           const strategy = passport._strategy(provider);
           if (strategy) {
-            if (strategy.logout_remote === true && strategy.logout) {
-              logApp.debug('Logout: requesting remote logout using authentication strategy parameters.');
-              req.user = user; // Needed for passport
-              strategy.logout(req, (error, request) => {
-                if (error) {
-                  setCookieError(res, 'Error generating logout uri');
-                  res.status(503).send({ status: 'error', error: error.message });
-                } else {
-                  res.redirect(request);
-                }
-              });
+            if (strategy.logout_remote === true) {
+              if (strategy.logout) {
+                logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
+                req.user = user; // Needed for passport
+                strategy.logout(req, (error, request) => {
+                  // When logout is implemented for strategy
+                  if (error) {
+                    setCookieError(res, 'Error generating logout uri');
+                    res.status(503).send({ status: 'error', error: error.message });
+                  } else {
+                    logApp.debug('[LOGOUT] Remote logout ok');
+                    res.redirect(request);
+                  }
+                });
+              } else {
+                logApp.info('[LOGOUT] No remote logout implementation found in strategy.');
+                res.redirect(referer);
+              }
             } else {
-              logApp.debug('Logout: OpenCTI logout only, remote logout on IDP not requested.');
+              logApp.debug('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
           } else {
@@ -384,7 +390,7 @@ const createApp = async (app) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error logout', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -408,7 +414,7 @@ const createApp = async (app) => {
       })(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error(e);
+      logApp.error('Error auth provider', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -432,9 +438,8 @@ const createApp = async (app) => {
       const logged = await callbackLogin();
       await authenticateUser(context, req, logged, provider);
     } catch (e) {
-      logApp.error(e, { provider });
+      logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
-      res.status(503).send({ status: 'error', error: e.message });
     } finally {
       res.redirect(referer ?? '/');
     }
@@ -486,8 +491,9 @@ const createApp = async (app) => {
       res.set('Expires', '-1');
       res.set('Pragma', 'no-cache');
       res.send(withOptionValued);
+    } else {
+      res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
     }
-    res.status(503).send({ status: 'error', error: 'Interface is disabled by configuration' });
   });
 
   // Any random unexpected request not GET
@@ -499,8 +505,7 @@ const createApp = async (app) => {
   // Error handling
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err, req, res, next) => {
-    const error = UnknownError('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
-    logApp.error(error);
+    logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: err.stack });
   });
 

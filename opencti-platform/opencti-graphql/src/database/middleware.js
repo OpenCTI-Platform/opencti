@@ -23,6 +23,7 @@ import {
   buildPagination,
   computeAverage,
   extractIdsFromStoreObject,
+  extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
   INDEX_DRAFT_OBJECTS,
   INDEX_INFERRED_RELATIONSHIPS,
@@ -57,6 +58,7 @@ import {
   ES_MAX_CONCURRENCY,
   ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
+  copyLiveElementToDraft,
   MAX_BULK_OPERATIONS,
   ROLE_FROM,
   ROLE_TO
@@ -191,8 +193,8 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
-import { confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
+import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
@@ -209,7 +211,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
-import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
+import { DRAFT_OPERATION_UNCHANGED, getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -330,7 +332,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           // - Access rights are asymmetric, should not happen for meta relationships.
           // - Relations is invalid, should not happen in platform data consistency.
           const relations = invalidRelations.map((v) => ({ relation_id: v.id, target_id: v.toId }));
-          logApp.warn('Targets of loadElementMetaDependencies not found', { relations });
+          logApp.info('Targets of loadElementMetaDependencies not found', { relations });
         }
         const inputKey = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, key);
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
@@ -1869,16 +1871,34 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   };
 };
 
+export const generateUpdateMessage = async (context, entityType, inputs) => {
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
+  const patchElements = Object.entries(inputsByOperations);
+  if (patchElements.length === 0) {
+    throw UnsupportedError('Generating update message with empty inputs fail');
+  }
+
+  const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
+    return operations.slice(0, 3).flatMap(({ key, value }) => {
+      return key === 'authorized_members' ? (value ?? []).map(({ id }) => id) : [];
+    });
+  });
+  let members = [];
+  if (authorizedMembersIds.length > 0) {
+    members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
+      baseData: true,
+      baseFields: ['internal_id', 'name']
+    });
+  }
+
+  return generateUpdatePatchMessage(patchElements, entityType, { members });
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Region - Pre-Check
-  const elementsByKey = R.groupBy((e) => e.key, updates);
-  const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
-  if (multiOperationKeys.length > 1) {
-    throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
-  }
   const references = opts.references ? await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : [];
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id: initial.internal_id, references: opts.references });
@@ -1904,6 +1924,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       throw UnsupportedError('This feature is disabled');
     }
     accessOperation = 'manage-access';
+    if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
+      && (!initial.authorized_members || initial.authorized_members.length === 0)
+      && updates.some((e) => e.key === 'authorized_members' && e.value?.length > 0)) {
+      updates.push({
+        key: authorizedMembersActivationDate.name,
+        value: [now()]
+      });
+    }
   }
   if (updates.some((e) => e.key === 'authorized_authorities')) {
     accessOperation = 'manage-authorities-access';
@@ -2152,11 +2180,19 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // endregion
     // Impacting information
-    if (impactedInputs.length > 0) {
-      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
-        updateAsInstance.draft_change = getDraftChanges(initial, impactedInputs);
+    if ((getDraftContext(context, user) && isDraftSupportedEntity(initial))) {
+      const lastElementVersion = await internalLoadById(context, user, initial.internal_id);
+      if (updatedInputs.length > 0) {
+        const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+        updateAsInstance._index = lastElementVersion._index;
+        updateAsInstance._id = lastElementVersion._id;
+        updateAsInstance.draft_change = getDraftChanges(lastElementVersion, updatedInputs);
+        await elUpdateElement(context, user, updateAsInstance);
+      } else if (!lastElementVersion._index.includes(INDEX_DRAFT_OBJECTS)) {
+        await copyLiveElementToDraft(context, user, initial, DRAFT_OPERATION_UNCHANGED);
       }
+    } else if (impactedInputs.length > 0) {
+      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
       await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {
@@ -2172,7 +2208,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
       const args = {
         filters: {
           mode: 'and',
@@ -2202,7 +2238,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
-      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
+      const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
+      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit, related_restrictions: relatedRestrictions });
       return { element: updatedInstance, event, isCreation: false };
     }
     // Return updated element after waiting for it.
@@ -2242,7 +2279,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
-    throw FunctionalError(`Cant find element to update ${id} (${type})`, { id, type });
+    throw FunctionalError('Cant find element to update', { id, type });
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2603,7 +2640,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
         }
       } else {
-        logApp.warn('Discarding outdated attribute update mutation', { key: attributeKey });
+        logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
       }
     }
   }
@@ -2659,7 +2696,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           }
         }
       } else {
-        logApp.warn('Discarding outdated attribute update mutation', { key: inputField });
+        logApp.info('Discarding outdated attribute update mutation', { key: inputField });
       }
     }
   }
@@ -2668,6 +2705,10 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
     return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
+  }
+  // If no modifications needs to be done but we are in a draft, we still want to import the element to the draft but with an 'unchanged' operation
+  if (getDraftContext(context, user) && !element._index.includes(INDEX_DRAFT_OBJECTS)) {
+    await copyLiveElementToDraft(context, user, element, DRAFT_OPERATION_UNCHANGED);
   }
   // -- No modification applied
   return { element, event: null, isCreation: false };
@@ -3178,9 +3219,9 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
-
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return draftInternalDeleteElement(context, user, element);
-
+  if (element._index.includes(INDEX_DRAFT_OBJECTS)) {
+    return draftInternalDeleteElement(context, user, element);
+  }
   // region confidence control
   controlUserConfidenceAgainstElement(user, element);
   // region restrict delete control
@@ -3258,7 +3299,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // if trash is disabled globally or for this element, delete permanently
         await deleteAllObjectFiles(context, user, element);
       }
-
       // Delete all linked elements
       await elDeleteElements(context, user, [element], { forceDelete });
       // Publish event in the stream
@@ -3333,9 +3373,9 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     }
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
-      logApp.warn(err);
+      logApp.info(err);
     } else {
-      logApp.error(err);
+      logApp.error('Error handling inference', { cause: err });
     }
   }
   return false;

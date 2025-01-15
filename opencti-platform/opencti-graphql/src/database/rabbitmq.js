@@ -97,7 +97,7 @@ export const getConnectorQueueDetails = async (connectorId) => {
       messages_size: queueDetailResponse.message_bytes || 0
     };
   } catch (e) {
-    logApp.error(e, { connectorId });
+    logApp.error('Get connector queue details fail', { cause: e, connectorId });
     return {
       messages_number: 0,
       messages_size: 0
@@ -357,10 +357,10 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
                 }
               }, { noAck: true }, (consumeError) => {
                 if (consumeError) {
-                  logApp.error(DatabaseError('[QUEUEING] Consumption fail', {
+                  logApp.error('[QUEUEING] Consumption fail', {
                     connectorId,
                     cause: consumeError
-                  }));
+                  });
                 }
               });
             }

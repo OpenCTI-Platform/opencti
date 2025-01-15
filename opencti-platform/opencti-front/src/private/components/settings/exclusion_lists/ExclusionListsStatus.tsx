@@ -4,13 +4,15 @@ import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import React, { FunctionComponent, useEffect } from 'react';
-import { EventRepeatOutlined, SyncDisabledOutlined, SyncOutlined, UpdateOutlined } from '@mui/icons-material';
+import { EventRepeatOutlined, UpdateOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import { Theme } from 'src/components/Theme';
 import { interval } from 'rxjs';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -36,6 +38,10 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
     exclusionListsStatusQuery,
     queryRef,
   );
+  const { setTitle } = useConnectedDocumentModifier();
+
+  setTitle(t_i18n('Customization: Exclusion lists | Settings'));
+
   const isInProgress = exclusionListCacheStatus?.isCacheRebuildInProgress;
   const cacheDate = exclusionListCacheStatus?.cacheVersion;
   const refreshDate = exclusionListCacheStatus?.refreshVersion;
@@ -51,18 +57,13 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
 
   return (
     <>
-      <Grid container={true} spacing={3} style={{ marginBottom: theme.spacing(2) }}>
+      <Grid container spacing={3} style={{ marginBottom: '20px' }}>
         <Grid item xs={4}>
           <Paper
             variant="outlined"
-            style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
+            style={{ display: 'flex', justifyContent: 'space-between', padding: 20, height: 100 }}
             className={'paper-for-grid'}
           >
-            {isInProgress ? (
-              <SyncOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
-            ) : (
-              <SyncDisabledOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
-            )}
             <div>
               <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
                 {t_i18n('Status')}
@@ -79,6 +80,15 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
                 label={isInProgress ? t_i18n('In progress') : t_i18n('Synchronized')}
               />
             </div>
+            {isInProgress && (
+              <div style={{ margin: 'auto 0' }}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  color="primary"
+                />
+              </div>
+            )}
           </Paper>
         </Grid>
         <Grid item xs={4}>

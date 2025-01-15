@@ -36,11 +36,11 @@ const NotePopoverDeletionMutation = graphql`
 `;
 
 interface NotePopoverProps {
-  id?: string;
+  id: string;
   handleOpenRemoveExternal?: () => void;
   size?: 'medium' | 'large' | 'small' | undefined;
   note: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
-  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
+  paginationOptions?: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
   variant?: string;
 }
 

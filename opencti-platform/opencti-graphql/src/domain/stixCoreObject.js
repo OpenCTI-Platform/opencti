@@ -3,8 +3,8 @@ import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementBy
 import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
-import { BUS_TOPICS, logApp } from '../config/conf';
-import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -20,16 +20,26 @@ import {
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObjectContainer
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { now } from '../utils/format';
+import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
@@ -51,6 +61,35 @@ import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';
+import {
+  getContainersStats,
+  getHistory,
+  getIndicatorsStats,
+  getTargetingStats,
+  getTopThreats,
+  getTopVictims,
+  getVictimologyStats,
+  systemPrompt
+} from '../utils/ai/dataResolutionHelpers';
+import { queryAi } from '../database/ai-llm';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
+
+const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
+const aiResponseCache = {};
+const threats = [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_MALWARE];
+// const arsenal = [ENTITY_TYPE_TOOL, ENTITY_TYPE_ATTACK_PATTERN];
+const victims = [
+  ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_EVENT
+];
 
 const extractStixCoreObjectTypesFromArgs = (args) => {
   let types = [];
@@ -362,7 +401,9 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for export in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot ask for export in draft');
+  }
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
@@ -372,7 +413,9 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, input) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for export in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot ask for export in draft');
+  }
   const { format, exportType, contentMaxMarkings, fileMarkings } = input;
   const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
@@ -409,12 +452,14 @@ export const CONTENT_TYPE_FIELDS = 'fields';
 export const CONTENT_TYPE_FILE = 'file';
 
 export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot ask for analysis in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot ask for analysis in draft');
+  }
   logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
 
   if (contentType === CONTENT_TYPE_FIELDS) return await askFieldsAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
   if (contentType === CONTENT_TYPE_FILE) return await askFileAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
-  throw new Error(`Content type ${contentType} not recognized`);
+  throw FunctionalError('Content type not recognized', { contentType });
 };
 
 export const CONTENT_SOURCE_CONTENT_MAPPING = 'content_mapping';
@@ -431,7 +476,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     const work = await createWork(context, user, connector, 'Content fields analysis', element.standard_id);
 
     if (contentSource !== CONTENT_SOURCE_CONTENT_MAPPING) {
-      throw new Error(`Fields content source not handled: ${contentSource}`);
+      throw FunctionalError('Fields content source not handled', { contentSource });
     }
 
     const contentMappingFields = ['description', 'content'];
@@ -457,7 +502,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     await publishAnalysisAction(user, analyzedId, connector, element);
     return work;
   }
-  throw new Error('No connector found for analysis');
+  throw new ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
 const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
@@ -494,7 +539,7 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
     await publishAnalysisAction(user, analyzedId, connector, element);
     return work;
   }
-  throw new Error('No connector found for analysis');
+  throw new ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
 const getAnalysisFileName = (contentSource, contentType) => {
@@ -612,7 +657,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot import in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot import in draft');
+  }
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -719,7 +766,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
-  if (getDraftContext(context, user)) throw new Error('Cannot delete imports in draft');
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot delete imports in draft');
+  }
   if (!fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
@@ -804,5 +853,466 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
   });
+};
+// endregion
+
+// region ai
+export const aiActivity = async (context, user, args) => {
+  const { id, language = 'English' } = args;
+  // Resolve in cache
+  const identifier = `${id}-activity`;
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    return aiResponseCache[identifier];
+  }
+  // Resolve the entity
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
+  // Activity
+  let result = '';
+  if (threats.includes(stixCoreObject.entity_type)) {
+    result = await aiActivityForThreats(context, user, stixCoreObject, language);
+  }
+  if (victims.includes(stixCoreObject.entity_type)) {
+    result = await aiActivityForVictims(context, user, stixCoreObject, language);
+  }
+  let trend = '';
+  if (threats.includes(stixCoreObject.entity_type)) {
+    trend = await aiActivityTrendForThreats(context, user, stixCoreObject);
+  }
+  if (victims.includes(stixCoreObject.entity_type)) {
+    trend = await aiActivityTrendForVictims(context, user, stixCoreObject);
+  }
+
+  const activity = {
+    result: result.replace('```html', '').replace('```', '').trim(),
+    trend,
+    updated_at: now()
+  };
+  aiResponseCache[identifier] = activity;
+  return activity;
+};
+
+export const aiForecast = async (context, user, args) => {
+  const { id, language = 'English' } = args;
+  // Resolve in cache
+  const identifier = `${id}-forecast`;
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    return aiResponseCache[identifier];
+  }
+  // Resolve the entity
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
+  // Activity
+  let result = '';
+  if (threats.includes(stixCoreObject.entity_type)) {
+    result = await aiForecastForThreats(context, user, stixCoreObject, language);
+  }
+  if (victims.includes(stixCoreObject.entity_type)) {
+    result = await aiForecastForVictims(context, user, stixCoreObject, language);
+  }
+
+  const activity = {
+    result: result.replace('```html', '').replace('```', '').trim(),
+    updated_at: now()
+  };
+  aiResponseCache[identifier] = activity;
+  return activity;
+};
+
+export const aiHistory = async (context, user, args) => {
+  const { id, language = 'English' } = args;
+  // Resolve in cache
+  const identifier = `${id}-history`;
+  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    return aiResponseCache[identifier];
+  }
+  // Resolve the entity
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
+  // Resolve logs
+  const logs = await getHistory(context, user, stixCoreObject.id);
+  const userPrompt = `
+  # Instructions
+
+  - You have to compute a summary of the given logs representing the history of creation and modifications of a ${stixCoreObject.entity_type} in the OpenCTI platform.
+  - The summary should be about the latest activities performed by a user, which can be an analyst (human) or a connector (data source or enrichment) on the ${stixCoreObject.entity_type}.
+  - Create a comprehensive summary in HTML format.
+  - Don't give too much details, really summarize and highlight the history of modifications of the entity.
+  - The summary should be formatted in HTML.
+  - The summary should be in ${language} language.
+  - In the HTML format, don't use h1 (first level title), start with h2.    
+    
+  # Context
+  
+  - The summary is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the ${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Logs
+  This is the latest 200 logs entries of this entity.
+  ${JSON.stringify(logs)}
+  `;
+  // Get results
+  const result = await queryAi(null, systemPrompt, userPrompt, user);
+  const history = { result: result.replace('```html', '').replace('```', '').trim(), updated_at: now() };
+  aiResponseCache[identifier] = history;
+  return history;
+};
+
+// region prompts for threats
+export const aiActivityForThreats = async (context, user, stixCoreObject, language) => {
+  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const topSectors = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topCountries = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topRegions = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a comprehensive summary based on statistics and trends about a threat.
+  
+  # Instructions
+
+  - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - The summary should be about the latest activities of the ${stixCoreObject.entity_type} and highlight the variations of numbers over time.
+  - The summary should not repeat numbers, but aggregate them in a meaningful way to stay short and comprehensive.
+  - The summary should be in ${language} language.
+  - The summary should be formatted in HTML and highlight important numbers with bold. 
+  - Your response should be only the summary and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  
+  # Interpretation of the data
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  
+  # Context
+  
+  - The summary is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Last indicators of compromise (IOCs) statistics.
+  This is the number of indicators related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(indicatorsStats)}
+  
+  ## Last victims statistics
+  This is the number of times this ${stixCoreObject.entity_type} has targeted something, whether it is an organization, a sector, a location, etc.:
+  ${JSON.stringify(victimologyStats)}
+  
+  ## Top targeted sectors over time
+  This is the top sectors targeted over time:
+  ${JSON.stringify(topSectors)}
+  
+  ## Top targeted countries over time
+  This is the top countries targeted over time:
+  ${JSON.stringify(topCountries)}
+  
+  ## Top targeted regions over time
+  This is the top regions targeted over time:
+  ${JSON.stringify(topRegions)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiActivityTrendForThreats = async (context, user, stixCoreObject) => {
+  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to categorize a trend about a cyber threat in 4 categories:
+    - increasing: The threat activity is showing a significant increase.
+    - stable: The threat activity is stable with minor fluctuations whether down or up.
+    - decreasing: The threat activity is showing a significant decrease.
+    - unknown: The evaluation of the threat activity cannot be done (not enough data, etc.).
+     
+  # Instructions
+
+  - Based on the following data, you have to categorize the recent activity of a ${stixCoreObject.entity_type}. 
+  - Categories are:
+    - increasing: The threat activity is showing a significant increase.
+    - stable: The threat activity is stable with minor fluctuations whether down or up.
+    - decreasing: The threat activity is showing a significant decrease.
+    - unknown: The evaluation of the threat activity cannot be done (not enough data, etc.).
+  - Your response answer should be only one word with the category keyword and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  
+  # Interpretation of the data
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity.
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity.
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity.
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity.
+    
+  # Data
+  
+  ## Last indicators of compromise (IOCs) statistics.
+  This is the number of indicators related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(indicatorsStats)}
+  
+  ## Last victims statistics
+  This is the number of times this ${stixCoreObject.entity_type} has targeted something, whether it is an organization, a sector, a location, etc.:
+  ${JSON.stringify(victimologyStats)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiForecastForThreats = async (context, user, stixCoreObject, language) => {
+  const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const topSectors = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topCountries = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topRegions = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a forecast report based on statistics and trends about a threat.
+  
+  # Instructions
+
+  - You have to compute a forecast report of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - The summary should be about the potential upcoming activities of the ${stixCoreObject.entity_type}.
+  - The summary should be in ${language} language.
+  - The summary should be formatted in HTML and highlight important numbers with bold.
+  - Your response should be only the forecast report and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  
+  # Interpretation of the data
+  - Increasing of indicators of compromise is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of indicators of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of victims is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of victims of compromise is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  
+  # Context
+  
+  - The forecast is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Last indicators of compromise (IOCs) statistics.
+  This is the number of indicators related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(indicatorsStats)}
+  
+  ## Last victims statistics
+  This is the number of times this ${stixCoreObject.entity_type} has targeted something, whether it is an organization, a sector, a location, etc.:
+  ${JSON.stringify(victimologyStats)}
+  
+  ## Top targeted sectors over time
+  This is the top sectors targeted over time:
+  ${JSON.stringify(topSectors)}
+  
+  ## Top targeted countries over time
+  This is the top countries targeted over time:
+  ${JSON.stringify(topCountries)}
+  
+  ## Top targeted regions over time
+  This is the top regions targeted over time:
+  ${JSON.stringify(topRegions)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+// endregion
+
+// region prompts for victims
+export const aiActivityForVictims = async (context, user, stixCoreObject, language) => {
+  const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const topIntrusionSets = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topMalwares = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a comprehensive summary based on statistics and trends about a targeted entity.
+  
+  # Instructions
+
+  - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - The summary should be about the latest activities of the ${stixCoreObject.entity_type} and highlight the variations of numbers over time.
+  - The summary should not repeat numbers, but aggregate them in a meaningful way to stay short and comprehensive.
+  - The summary should be in ${language} language.
+  - The summary should be formatted in HTML and highlight important numbers with bold. 
+  - Your response should be only the summary and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  
+  # Interpretation of the data
+  - Increasing of containers is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of containers is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of targets is indicating a surge in the ${stixCoreObject.entity_type} being targeted, which is BAD.
+  - Decreasing of targets of compromise is indicating a reduction in the ${stixCoreObject.entity_type} being targeted, which is GOOD.
+  
+  # Context
+  
+  - The summary is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Last containers stats (reports, incidents etc.)
+  This is the number of containers related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(containersStats)}
+  
+  ## Last targets stats
+  This is the number of times this ${stixCoreObject.entity_type} has been targeted by something, whether it is an intrusion set, malware, etc.
+  ${JSON.stringify(targetingStats)}
+  
+  ## Top intrusion sets over time
+  This is the top intrusion sets targeting this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(topIntrusionSets)}
+  
+  ## Top malwares over time
+  This is the top malwares targeting this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(topMalwares)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiActivityTrendForVictims = async (context, user, stixCoreObject) => {
+  const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to categorize a trend about a cyber threat in 4 categories:
+    - increasing: The threat activity is showing a significant increase.
+    - stable: The threat activity is stable with minor fluctuations whether down or up.
+    - decreasing: The threat activity is showing a significant decrease.
+    - unknown: The evaluation of the threat activity cannot be done (not enough data, etc.).
+     
+  # Instructions
+
+  - Based on the following data, you have to categorize the recent activity of a ${stixCoreObject.entity_type}. 
+  - Categories are:
+    - increasing: The threat activity is showing a significant increase.
+    - stable: The threat activity is stable with minor fluctuations whether down or up.
+    - decreasing: The threat activity is showing a significant decrease.
+    - unknown: The evaluation of the threat activity cannot be done (not enough data, etc.).
+  - Your response answer should be only one word with the category keyword and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  
+# Interpretation of the data
+  - Increasing of containers is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of containers is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of targets is indicating a surge in the ${stixCoreObject.entity_type} being targeted, which is BAD.
+  - Decreasing of targets of compromise is indicating a reduction in the ${stixCoreObject.entity_type} being targeted, which is GOOD.
+    
+  # Data
+  
+  ## Last containers stats (reports, incidents etc.)
+  This is the number of containers related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(containersStats)}
+  
+  ## Last targets stats
+  This is the number of times this ${stixCoreObject.entity_type} has been targeted by something, whether it is an intrusion set, malware, etc.
+  ${JSON.stringify(targetingStats)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
+};
+
+export const aiForecastForVictims = async (context, user, stixCoreObject, language) => {
+  const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
+  const topIntrusionSets = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+  const topMalwares = {};
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 8; i++) {
+    topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
+  }
+
+  const userPrompt = `
+  # Context
+  - You are a cyber threat intelligence analyst. 
+  - Your task is to create a forecast report based on statistics and trends about a targeted entity.
+  
+  # Instructions
+
+  - You have to compute a forecast report of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - The summary should be about the potential upcoming activities and targeting of the ${stixCoreObject.entity_type}.
+  - The summary should be in ${language} language.
+  - The summary should be formatted in HTML and highlight important numbers with bold.
+  - Your response should be only the forecast report and nothing else.
+  - Your response should not contain any generic assumptions or recommendations, it should rely only on the given context and statistics.
+  - In the HTML format, don't use h1 (first level title), start with h2.
+  
+# Interpretation of the data
+  - Increasing of containers is indicating a surge in the ${stixCoreObject.entity_type} activity, which is BAD.
+  - Decreasing of containers is indicating a reduction in the ${stixCoreObject.entity_type} activity, which is GOOD.
+  - Increasing of targets is indicating a surge in the ${stixCoreObject.entity_type} being targeted, which is BAD.
+  - Decreasing of targets of compromise is indicating a reduction in the ${stixCoreObject.entity_type} being targeted, which is GOOD.
+  
+  # Context
+  
+  - The forecast is about the ${stixCoreObject.entity_type} ${stixCoreObject.name} (${(stixCoreObject.aliases ?? []).join(', ')}). 
+  - The description of the${stixCoreObject.entity_type} ${stixCoreObject.name} is ${stixCoreObject.description}.
+  
+  # Data
+  
+  ## Last containers stats (reports, incidents etc.)
+  This is the number of containers related to this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(containersStats)}
+  
+  ## Last targets stats
+  This is the number of times this ${stixCoreObject.entity_type} has been targeted by something, whether it is an intrusion set, malware, etc.
+  ${JSON.stringify(targetingStats)}
+  
+  ## Top intrusion sets over time
+  This is the top intrusion sets targeting this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(topIntrusionSets)}
+  
+  ## Top malwares over time
+  This is the top malwares targeting this ${stixCoreObject.entity_type} over time:
+  ${JSON.stringify(topMalwares)}
+  `;
+
+  return queryAi(null, systemPrompt, userPrompt, user);
 };
 // endregion

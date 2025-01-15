@@ -15,6 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useAuth from '../../../utils/hooks/useAuth';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -56,6 +57,9 @@ const managementDefinitionLineFragment = graphql`
           name
       }
     }
+    ... on Container {
+      authorized_members_activation_date
+    }
     objectMarking {
       id
       definition_type
@@ -65,11 +69,11 @@ const managementDefinitionLineFragment = graphql`
       created
       modified
     }
-      objectLabel {
-        id
-        value
-        color
-      }
+    objectLabel {
+      id
+      value
+      color
+    }
     creators {
       id
       name
@@ -121,6 +125,9 @@ const managementDefinitionsLinesFragment = graphql`
 const Management = () => {
   const { t_i18n } = useFormatter();
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Restriction | Data'));
+
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -159,7 +166,7 @@ const Management = () => {
 
   const dataColumns = {
     entity_type: {
-      percentWidth: 20,
+      percentWidth: 10,
       isSortable: true,
     },
     name: {
@@ -178,6 +185,9 @@ const Management = () => {
     },
     created_at: {
       percentWidth: 20,
+    },
+    authorized_members_activation_date: {
+      percentWidth: 10,
     },
     objectMarking: {
       percentWidth: 10,
