@@ -12,7 +12,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
   defaultColumns: WidgetColumn[];
-  readonly columns?: WidgetColumn[];
+  columns?: WidgetColumn[];
   setColumns: (columns: WidgetColumn[]) => void;
 };
 
