@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
@@ -15,10 +15,8 @@ import RolePopover, { roleEditionQuery } from './RolePopover';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
-import { QueryRenderer } from '../../../../relay/environment';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import RoleEdition from './RoleEdition';
-import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEditionQuery.graphql';
+import { RolePopoverEditionQuery } from './__generated__/RolePopoverEditionQuery.graphql';
 import CapabilitiesList from './CapabilitiesList';
 import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
@@ -26,6 +24,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,7 +75,8 @@ const Role = ({
   groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
 }) => {
   const classes = useStyles();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
@@ -91,6 +91,10 @@ const Role = ({
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );
+  const roleEditionData = useLazyLoadQuery<RolePopoverEditionQuery>(
+    roleEditionQuery,
+    { id: role.id },
+  );
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -102,9 +106,18 @@ const Role = ({
         >
           {role.name}
         </Typography>
-        <div className={classes.popover}>
-          <RolePopover roleId={role.id} disabled={!isAllowed && isSensitive} isSensitive={isSensitive} />
-        </div>
+        {!isFABReplaced && <div className={classes.popover}>
+          <RolePopover
+            roleId={role.id}
+            disabled={!isAllowed && isSensitive}
+            isSensitive={isSensitive}
+            roleEditionData={roleEditionData}
+          />
+        </div>}
+        <RoleEdition
+          roleEditionData={roleEditionData}
+          disabled={!isAllowed && isSensitive}
+        />
         <div className="clearfix"/>
       </div>
       <Grid
@@ -169,21 +182,6 @@ const Role = ({
           </Paper>
         </Grid>
       </Grid>
-      <QueryRenderer
-        query={roleEditionQuery}
-        variables={{ id: role.id }}
-        render={({ props }: { props: RolePopoverEditionQuery$data }) => {
-          if (props && props.role) {
-            return (
-              <RoleEdition
-                role={props.role}
-                disabled={!isAllowed && isSensitive}
-              />
-            );
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
     </div>
   );
 };
