@@ -3,12 +3,10 @@ import AppBar from '@mui/material/AppBar';
 import React from 'react';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
-import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 
 const PublicTopBar = ({ title }: { title: string }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
 
   return (
     <AppBar
@@ -36,7 +34,7 @@ const PublicTopBar = ({ title }: { title: string }) => {
               pointerEvents: 'none',
             }}
           >
-            {t_i18n(title)}
+            {title}
           </Button>
         </div>
       </Toolbar>

@@ -63,7 +63,7 @@ const PublicDashboardComponent = ({
 
   return (
     <>
-      <PublicTopBar title={'Public dashboard'} />
+      <PublicTopBar title={t_i18n('Public dashboard')} />
       <PublicDashboardHeader
         title={publicDashboardByUriKey?.name ?? ''}
         manifestConfig={config}
