@@ -23,7 +23,7 @@ import {
   getScenarioResult as obasGetScenarioResult,
 } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
-import { checkEnterpriseEdition } from '../../utils/ee';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';

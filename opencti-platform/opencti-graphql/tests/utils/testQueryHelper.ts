@@ -16,7 +16,7 @@ import {
   testContext
 } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
-import { logApp } from '../../src/config/conf';
+import conf, { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage-helper';
@@ -177,14 +177,13 @@ export const enableEEAndSetOrganization = async (organization: OrganizationTestD
   const platformSettings: any = await getSettings(testContext);
 
   const input = [
-    { key: 'enterprise_edition', value: [new Date().getTime()] },
+    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
     { key: 'platform_organization', value: [platformOrganizationId] }
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
   expect(settingsResult.platform_organization).not.toBeUndefined();
-  expect(settingsResult.enterprise_edition).not.toBeUndefined();
-  expect(settingsResult.platform_organization).toEqual(platformOrganizationId);
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
   resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 };
 
@@ -195,13 +194,14 @@ export const enableCEAndUnSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
 
   const input = [
-    { key: 'enterprise_edition', value: [] },
+    { key: 'enterprise_license', value: [] },
     { key: 'platform_organization', value: [] }
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
   expect(settingsResult.platform_organization).toBeUndefined();
-  expect(settingsResult.enterprise_edition).toBeUndefined();
+  // EE cant be disabled as setup by configuration
+  expect(settingsResult.platform_enterprise_edition.license_enterprise).toBeTruthy();
 };
 
 /**
@@ -210,10 +210,10 @@ export const enableCEAndUnSetOrganization = async () => {
 export const enableEE = async () => {
   const platformSettings: any = await getSettings(testContext);
   const input = [
-    { key: 'enterprise_edition', value: [new Date().getTime()] },
+    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  expect(settingsResult.enterprise_edition).not.toBeUndefined();
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
   resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 };
 
@@ -223,10 +223,11 @@ export const enableEE = async () => {
 export const disableEE = async () => {
   const platformSettings: any = await getSettings(testContext);
   const input = [
-    { key: 'enterprise_edition', value: [] },
+    { key: 'enterprise_license', value: [] },
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  expect(settingsResult.enterprise_edition).toBeUndefined();
+  // EE cant be disabled as setup by configuration
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {

@@ -32,7 +32,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import conf, { isFeatureEnabled } from '../config/conf';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { isEnterpriseEdition } from '../utils/ee';
+import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';

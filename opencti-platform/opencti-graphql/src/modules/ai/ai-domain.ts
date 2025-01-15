@@ -27,7 +27,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import { elSearchFiles } from '../../database/file-search';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
-import { checkEnterpriseEdition } from '../../utils/ee';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';

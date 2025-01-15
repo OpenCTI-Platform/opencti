@@ -5,7 +5,6 @@ import { FiligranLoader } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
-import { isNotEmptyField } from '../utils/utils';
 import { UserContext } from '../utils/hooks/useAuth';
 import type { Theme } from './Theme';
 import { TEN_SECONDS } from '../utils/Time';
@@ -71,7 +70,7 @@ const Loader: FunctionComponent<LoaderProps> = ({
   const { settings } = useContext(UserContext);
   const [currentText, setCurrentText] = useState(0);
   // if you have EE and whitemark set, you can remove the loader
-  const hasFiligranLoader = theme && !(isNotEmptyField(settings?.enterprise_edition) && settings?.platform_whitemark);
+  const hasFiligranLoader = theme && !(settings?.platform_enterprise_edition.license_validated && settings?.platform_whitemark);
   if (rotatingTexts && rotatingTexts.length > 0) {
     useEffect(() => {
       const subscription = interval$.subscribe(() => {
