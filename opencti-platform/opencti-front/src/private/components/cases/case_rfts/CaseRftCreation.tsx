@@ -334,7 +334,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
                     component={AuthorizedMembersField}
                     containerstyle={{ marginTop: 20 }}
                     showAllMembersLine
-                    showCreatorLine
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights

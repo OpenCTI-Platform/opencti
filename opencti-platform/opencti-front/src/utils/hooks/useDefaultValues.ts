@@ -1,6 +1,5 @@
 import { head, isEmpty } from 'ramda';
 import { FormikValues } from 'formik/dist/types';
-import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import { useCallback } from 'react';
 import useEntitySettings from './useEntitySettings';
@@ -22,7 +21,6 @@ export const useComputeDefaultValues = () => {
     multiple: boolean,
     type: string,
     defaultValues: readonly { id: string; name: string }[],
-    membersData?: EntitySettingAttributeEditionMembersQuery$data, // TODO cleanup
   ) => {
     const ovCategory = fieldToCategory(entityType, attributeName);
     // Handle createdBy

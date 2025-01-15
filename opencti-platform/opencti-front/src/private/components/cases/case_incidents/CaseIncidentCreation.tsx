@@ -340,7 +340,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
                     component={AuthorizedMembersField}
                     containerstyle={{ marginTop: 20 }}
                     showAllMembersLine
-                    showCreatorLine
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights

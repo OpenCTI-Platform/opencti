@@ -217,7 +217,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
     delete initialValues.authorized_members;
   }
-  console.log('initialValues', { initialValues });
   return (
     <Formik<ReportAddInput>
       initialValues={initialValues}
