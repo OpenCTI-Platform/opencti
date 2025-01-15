@@ -8,7 +8,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { findById as findUserById } from '../../domain/user';
 import { logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
-import { updateAttribute } from '../../database/middleware';
+import { stixLoadById, updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
 import { elLoadById } from '../../database/engine';
@@ -16,6 +16,9 @@ import type { BasicStoreBase } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { storeNotificationEvent } from '../../database/redis';
+import type { KnowledgeNotificationEvent, NotificationUser } from '../../manager/notificationManager';
+import type { StixObject } from '../../types/stix-common';
 
 export interface RequestAccessAction {
   reason?: string
@@ -168,6 +171,27 @@ export const validateRequestAccess = async (context: AuthContext, user: AuthUser
           RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
         }
         await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+
+        const elementData = await stixLoadById(context, SYSTEM_USER, action.entities[0]) as StixObject;
+        const userToNotify : NotificationUser = {
+          user_id: '',
+          user_email: 'angelique.jard@filigran.io',
+          notifiers: []
+        };
+        const target = {
+          user: userToNotify,
+          type: 'live',
+          message: 'Coucou'
+        };
+        const notificationEvent: KnowledgeNotificationEvent = {
+          origin: undefined,
+          type: 'live',
+          notification_id: '1234',
+          data: elementData,
+          targets: [target],
+          version: '1.0' };
+        await storeNotificationEvent(context, notificationEvent);
+
         return {
           action_executed: true,
           action_status: ActionStatus.Accepted,
