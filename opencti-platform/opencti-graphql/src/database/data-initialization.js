@@ -54,6 +54,7 @@ const KNOWLEDGE_CAPABILITIES = {
       dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
     },
     { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
+    { name: 'KNDISSEMINATION', description: 'Disseminate files by email', attribute_order: 900 },
   ],
 };
 export const SETTINGS_CAPABILITIES = {
@@ -64,6 +65,7 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETPARAMETERS', description: 'Manage parameters', attribute_order: 3100 },
     { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
+    { name: 'SETDISSEMINATION', description: 'Manage dissemination lists', attribute_order: 3320 },
     { name: 'SETCUSTOMIZATION', description: 'Manage customization', attribute_order: 3350 },
     { name: 'SETLABELS', description: 'Manage taxonomies', attribute_order: 3400 },
     { name: 'SECURITYACTIVITY', description: 'Access security activity', attribute_order: 3500 },

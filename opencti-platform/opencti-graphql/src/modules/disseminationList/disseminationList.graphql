@@ -28,7 +28,7 @@ type DisseminationListEdge {
 
 # Queries
 type Query {
-  disseminationList(id: String!): DisseminationList @auth
+  disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationLists(
     first: Int
     after: ID
@@ -36,7 +36,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): DisseminationListConnection @auth
+  ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
 }
 
 input DisseminationListAddInput {
@@ -52,8 +52,8 @@ input DisseminationListSendInput {
 }
 
 type Mutation {
-  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth
-  disseminationListDelete(id: ID!): ID @auth
-  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth
-  disseminationListSend(input: DisseminationListSendInput!): Boolean @auth
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListSend(input: DisseminationListSendInput!): Boolean @auth(for: [KNOWLEDGE_KNDISSEMINATION])
 }
