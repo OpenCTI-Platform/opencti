@@ -50,8 +50,8 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
   const formatColumnName = ({ attribute, label }: WidgetColumn) => (label ? t_i18n(label) : t_i18n(attribute ?? ''));
 
   return (
-    <Accordion sx={{ width: '100%', borderRadius: theme.borderRadius, background: 'rgba(0, 0, 0, 0)' }}>
-      <AccordionSummary sx={{ borderRadius: theme.borderRadius }}>
+    <Accordion sx={{ width: '100%' }}>
+      <AccordionSummary>
         <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
 
@@ -60,7 +60,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4">{`${t_i18n('Available Columns')} (${availableColumns.length})`}</Typography>
-            <List sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: theme.borderRadius }}>
+            <List sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: `${theme.borderRadius}px` }}>
               {availableColumns.map((column) => (
                 <ListItem
                   disablePadding
@@ -86,7 +86,11 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
                   <List
                     ref={providedDrop.innerRef}
                     {...providedDrop.droppableProps}
-                    sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: theme.borderRadius, paddingBlock: theme.spacing(1) }}
+                    sx={{
+                      border: `1px solid ${theme.palette.common.white}`,
+                      borderRadius: `${theme.borderRadius}px`,
+                      paddingBlock: theme.spacing(1),
+                    }}
                   >
                     {columns.map((column, index) => (
                       <Draggable key={column.attribute} draggableId={column.attribute ?? ''} index={index}>
@@ -130,7 +134,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
             style={{ marginTop: '2.5px', marginLeft: '4px' }}
             onClick={() => setColumns(defaultColumns)}
           >
-            {t_i18n('Restore to column defaults')}
+            {t_i18n('Reset')}
           </Button>
         </Box>
       </AccordionDetails>
