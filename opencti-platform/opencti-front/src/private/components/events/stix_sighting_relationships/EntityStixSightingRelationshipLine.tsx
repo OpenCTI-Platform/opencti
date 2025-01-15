@@ -256,10 +256,8 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
     node,
   );
   const entity = isTo ? data.from : data.to;
-  const isObservable = !!entity?.observable_value;
   const restricted = entity === null;
-  const entityLink = (entity?.entity_type) ? `${resolveLink(entity.entity_type)}/${entity.id}` : undefined;
-  const link = isObservable ? `${entityLink}` : `${entityLink}/knowledge/sightings/${data.id}`;
+  const link = (data?.entity_type) ? `${resolveLink(data.entity_type)}/${data.id}` : undefined;
   return (
     <ListItem
       classes={{ root: classes.item }}
