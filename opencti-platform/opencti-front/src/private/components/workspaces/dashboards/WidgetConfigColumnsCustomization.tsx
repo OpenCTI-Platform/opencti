@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Select, MenuItem, AccordionDetails } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Checkbox, Typography, Divider, Box, AccordionDetails } from '@mui/material';
+import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import { DeleteOutlined, DragIndicatorOutlined } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import type { WidgetColumn } from '../../../../utils/widget/widget';
@@ -11,18 +11,19 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
+  defaultColumns: WidgetColumn[];
   readonly columns?: WidgetColumn[];
   setColumns: (columns: WidgetColumn[]) => void;
 };
 
 const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
   availableColumns,
+  defaultColumns,
   columns = [],
   setColumns,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [newColumn, setNewColumn] = useState<string | null>(null);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -34,103 +35,104 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
     setColumns(reorderedColumns);
   };
 
-  const formatAttribute = (attribute: string) => attribute.replace('.', '_');
-
-  const handleSelect = (selectedColumnAttribute: string) => {
-    const columnToAdd = availableColumns.find((col) => col.attribute === selectedColumnAttribute);
-    if (columnToAdd) {
-      setColumns([...columns, columnToAdd]);
+  const handleToggleColumn = (attribute?: string | null) => {
+    const columnExists = columns.some((col) => col.attribute === attribute);
+    if (columnExists) {
+      setColumns(columns.filter((col) => col.attribute !== attribute));
+    } else {
+      const columnToAdd = availableColumns.find((col) => col.attribute === attribute);
+      if (columnToAdd) {
+        setColumns([...columns, columnToAdd]);
+      }
     }
-    setNewColumn(null);
   };
 
-  const handleRemove = (attribute: string) => {
-    setColumns(columns.filter((col) => col.attribute !== attribute));
-  };
+  const formatColumnName = ({ attribute, label }: WidgetColumn) => (label ? t_i18n(label) : t_i18n(attribute ?? ''));
 
   return (
-    <Accordion sx={{ width: '100%' }}>
-      <AccordionSummary>
+    <Accordion sx={{ width: '100%', borderRadius: theme.borderRadius, background: 'rgba(0, 0, 0, 0)' }}>
+      <AccordionSummary sx={{ borderRadius: theme.borderRadius }}>
         <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
-      <AccordionDetails sx={{ padding: 0 }}>
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="custom_columns_list">
-            {(providedDrop) => (
-              <List
-                ref={providedDrop.innerRef}
-                {...providedDrop.droppableProps}
-                sx={{
-                  padding: '0',
-                }}
-              >
-                <ListItem divider sx={{ background: theme.palette.background.accent }}>
-                  <ListItemIcon />
 
-                  <ListItemText
-                    sx={{
-                      paddingRight: theme.spacing(2),
-                    }}
-                  >
-                    <Select
-                      value={newColumn || ''}
-                      onChange={(e) => e.target.value && handleSelect(e.target.value)}
-                      fullWidth
-                      variant="standard"
-                      displayEmpty
-                      disabled={
-                        availableColumns.filter((col) => !columns.some((c) => c.attribute === col.attribute)).length === 0
-                      }
-                    >
-                      <MenuItem value="" disabled>
-                        {t_i18n('Select a column to add')}
-                      </MenuItem>
-                      {availableColumns
-                        .filter((col) => !columns.some((c) => c.attribute === col.attribute))
-                        .map((availableColumn) => availableColumn.attribute && (
-                        <MenuItem key={availableColumn.attribute} value={availableColumn.attribute}>
-                          {formatAttribute(availableColumn.attribute)}
-                        </MenuItem>
-                        ))}
-                    </Select>
-                  </ListItemText>
-                  <ListItemSecondaryAction />
+      <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }} >
+        <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
+          {/* Available Columns */}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h4">{`${t_i18n('Available Columns')} (${availableColumns.length})`}</Typography>
+            <List sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: theme.borderRadius }}>
+              {availableColumns.map((column) => (
+                <ListItem
+                  disablePadding
+                  key={column.attribute}
+                  sx={{ height: 42 }}
+                >
+                  <Checkbox
+                    checked={columns.some((col) => col.attribute === column.attribute)}
+                    onChange={() => handleToggleColumn(column.attribute)}
+                  />
+                  <ListItemText primary={formatColumnName(column)} />
                 </ListItem>
+              ))}
+            </List>
+          </Box>
 
-                {columns.map((column, index) => (
-                  <Draggable key={column.attribute} draggableId={column.attribute ?? ''} index={index}>
-                    {(providedDrag, snapshotDrag) => (
-                      <ListItem
-                        ref={providedDrag.innerRef}
-                        {...providedDrag.draggableProps}
-                        divider
-                        sx={{
-                          ...providedDrag.draggableProps.style,
-                          background: snapshotDrag.isDragging
-                            ? theme.palette.background.accent
-                            : theme.palette.background.paper,
-                        }}
-                      >
-                        <ListItemIcon {...providedDrag.dragHandleProps}>
-                          <DragIndicatorOutlined />
-                        </ListItemIcon>
+          {/* Selected Columns */}
+          <Box sx={{ flex: 1, height: '100%' }}>
+            <Typography variant="h4">{`${t_i18n('Selected Columns')} (${columns.length})`}</Typography>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="selected_columns">
+                {(providedDrop) => (
+                  <List
+                    ref={providedDrop.innerRef}
+                    {...providedDrop.droppableProps}
+                    sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: theme.borderRadius, paddingBlock: theme.spacing(1) }}
+                  >
+                    {columns.map((column, index) => (
+                      <Draggable key={column.attribute} draggableId={column.attribute ?? ''} index={index}>
+                        {(providedDrag, snapshotDrag) => (
+                          <ListItem
+                            ref={providedDrag.innerRef}
+                            {...providedDrag.draggableProps}
+                            divider={index < columns.length - 1}
+                            sx={{
+                              ...providedDrag.draggableProps.style,
+                              background: snapshotDrag.isDragging ? 'rgba(0, 0, 0, 0.05)' : 'inherit',
+                              height: 42,
+                            }}
+                          >
+                            <ListItemIcon {...providedDrag.dragHandleProps}>
+                              <DragIndicatorOutlined />
+                            </ListItemIcon>
 
-                        <ListItemText primary={column.attribute && formatAttribute(column.attribute)} />
+                            <ListItemText primary={formatColumnName(column)} />
 
-                        <ListItemSecondaryAction>
-                          <IconButton onClick={() => column.attribute && handleRemove(column.attribute)}>
-                            <DeleteOutlined />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    )}
-                  </Draggable>
-                ))}
-                {providedDrop.placeholder}
-              </List>
-            )}
-          </Droppable>
-        </DragDropContext>
+                            <ListItemSecondaryAction>
+                              <IconButton onClick={() => handleToggleColumn(column.attribute)}>
+                                <Close />
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        )}
+                      </Draggable>
+                    ))}
+                    {providedDrop.placeholder}
+                  </List>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }} >
+          <Button
+            variant='outlined'
+            style={{ marginTop: '2.5px', marginLeft: '4px' }}
+            onClick={() => setColumns(defaultColumns)}
+          >
+            {t_i18n('Restore to column defaults')}
+          </Button>
+        </Box>
       </AccordionDetails>
     </Accordion>
   );
