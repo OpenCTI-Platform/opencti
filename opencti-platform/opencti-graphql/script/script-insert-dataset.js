@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import '../src/modules/index';
 import { executionContext } from '../src/utils/access';
 import { checkPythonAvailability, execChildPython } from '../src/python/pythonBridge';
-import conf, { isFeatureEnabled, logApp } from '../src/config/conf';
+import conf, { logApp } from '../src/config/conf';
 import httpServer from '../src/http/httpServer';
 import cacheManager from '../src/manager/cacheManager';
 import { initExclusionListCache } from '../src/database/exclusionListCache';
@@ -56,9 +56,7 @@ const getStartingHandler = () => {
     start: async () => {
       logApp.info('[OPENCTI] The httpServer is autostarted');
       await cacheManager.start();
-      if (isFeatureEnabled('EXCLUSION_LIST')) {
-        await initExclusionListCache();
-      }
+      await initExclusionListCache();
       await httpServer.start();
     },
     shutdown: async () => {
