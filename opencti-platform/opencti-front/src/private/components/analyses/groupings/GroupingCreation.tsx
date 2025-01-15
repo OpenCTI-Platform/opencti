@@ -34,7 +34,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
@@ -77,7 +77,7 @@ interface GroupingAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorizedMembers: { value: string, accessRight: string }[];
+  authorized_members: { value: string, accessRight: string }[] | undefined;
 }
 
 interface GroupingFormProps {
@@ -106,6 +106,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
+  const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
 
   const { isFeatureEnable } = useHelper();
   const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
@@ -145,8 +146,8 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-      ...(isAccessRestrictionCreationEnable && {
-        authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
+      ...(canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
         })),
@@ -191,9 +192,11 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
-    authorizedMembers: [],
+    authorized_members: undefined,
   });
-
+  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+    delete initialValues.authorized_members;
+  }
   return (
     <Formik<GroupingAddInput>
       initialValues={initialValues}

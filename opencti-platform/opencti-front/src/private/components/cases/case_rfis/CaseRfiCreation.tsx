@@ -39,7 +39,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -85,7 +85,7 @@ interface FormikCaseRfiAddInput {
   severity: string;
   priority: string;
   caseTemplates?: Option[];
-  authorizedMembers: { value: string, accessRight: string }[];
+  authorized_members: { value: string, accessRight: string }[] | undefined;
 }
 
 interface CaseRfiFormProps {
@@ -115,6 +115,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
 
   const { isFeatureEnable } = useHelper();
   const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
@@ -154,8 +155,8 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
-      ...(isAccessRestrictionCreationEnable && {
-        authorized_members: values.authorizedMembers.map(({ value, accessRight }) => ({
+      ...(canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
         })),
@@ -206,9 +207,11 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
-    authorizedMembers: [],
+    authorized_members: undefined,
   });
-
+  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+    delete initialValues.authorized_members;
+  }
   return (
     <Formik<FormikCaseRfiAddInput>
       initialValues={initialValues}
