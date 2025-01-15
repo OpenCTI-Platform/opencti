@@ -141,6 +141,7 @@ const Groups = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={searchTerm}
+        createButton={<GroupCreation paginationOptions={paginationOptions} />}
       >
         <QueryRenderer
           query={groupsLinesQuery}
@@ -169,7 +170,6 @@ const Groups = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Groups'), current: true }]} />
       <AccessesMenu />
       {groupState.view === 'lines' ? renderLines(paginationOptions) : ''}
-      <GroupCreation paginationOptions={paginationOptions} />
     </div>
   );
 };
