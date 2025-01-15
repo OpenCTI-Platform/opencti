@@ -915,38 +915,39 @@ class GroupingKnowledgeGraphBar extends Component {
                       />
                     )}
                     {handleToggleQueryMode && (
-                    <ToggleButtonGroup
-                      size="small"
-                      value={currentQueryMode}
-                      exclusive
-                      onChange={handleToggleQueryMode}
-                      style={{
-                        padding: '4px 8px',
-                      }}
-                    >
-                      <Tooltip title={t('Show all correlated entities')}>
-                        <ToggleButton
-                          value="all-entities"
-                          selected={currentQueryMode === 'all-entities'}
-                        >
-                          <HubOutlined
-                            fontSize="small"
-                            color={currentQueryMode === 'all-entities' ? 'secondary' : 'primary'}
-                          />
-                        </ToggleButton>
-                      </Tooltip>
-                      <Tooltip title={t('Show only correlated observables and indicators')}>
-                        <ToggleButton
-                          value="indicators-and-observables"
-                          selected={currentQueryMode === 'indicators-and-observables'}
-                        >
-                          <PolylineOutlined
-                            fontSize="small"
-                            color={currentQueryMode === 'indicators-and-observables' ? 'secondary' : 'primary'}
-                          />
-                        </ToggleButton>
-                      </Tooltip>
-                    </ToggleButtonGroup>
+                      <ToggleButtonGroup
+                        size="small"
+                        value={currentQueryMode}
+                        exclusive
+                        onChange={handleToggleQueryMode}
+                        sx={{
+                          padding: '6px 8px',
+                          marginBottom: '3px',
+                        }}
+                      >
+                        <Tooltip title={t('Show all correlated entities')}>
+                          <ToggleButton
+                            value="all-entities"
+                            selected={currentQueryMode === 'all-entities'}
+                          >
+                            <HubOutlined
+                              fontSize="small"
+                              color={currentQueryMode === 'all-entities' ? 'secondary' : 'primary'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                        <Tooltip title={t('Show only correlated observables and indicators')}>
+                          <ToggleButton
+                            value="indicators-and-observables"
+                            selected={currentQueryMode === 'indicators-and-observables'}
+                          >
+                            <PolylineOutlined
+                              fontSize="small"
+                              color={currentQueryMode === 'indicators-and-observables' ? 'secondary' : 'primary'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      </ToggleButtonGroup>
                     )}
                     <Tooltip title={t('Edit the selected item')}>
                       <span>

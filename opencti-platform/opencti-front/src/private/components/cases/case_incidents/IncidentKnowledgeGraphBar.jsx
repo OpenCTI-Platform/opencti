@@ -927,7 +927,8 @@ class IncidentKnowledgeGraphBar extends Component {
                       exclusive
                       onChange={handleToggleQueryMode}
                       style={{
-                        padding: '4px 8px',
+                        padding: '6px 8px',
+                        marginBottom: '3px',
                       }}
                     >
                       <Tooltip title={t('Show all correlated entities')}>
