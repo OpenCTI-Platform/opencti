@@ -25,7 +25,7 @@ const WidgetListRelationships = ({
   useEffect(() => {
     const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const iconWidth = 3;
-    const percentWidth = (100 - iconWidth) / (columns?.length ?? 1);
+    const percentWidth = (100 - iconWidth) / (columns.length ?? 1);
 
     const newColumns = (
       columnKeys.reduce<DataTableProps['dataColumns']>(
