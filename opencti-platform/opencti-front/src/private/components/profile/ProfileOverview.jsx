@@ -45,7 +45,7 @@ const styles = () => ({
   paper: {
     width: '100%',
     margin: '0 auto',
-    marginBottom: 30,
+    marginBottom: 24,
     padding: 20,
     textAlign: 'left',
     borderRadius: 4,

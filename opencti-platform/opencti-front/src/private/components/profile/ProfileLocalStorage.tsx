@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -13,30 +12,20 @@ import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 
-const useStyles = makeStyles(() => ({
-  paper: {
-    width: '100%',
-    margin: '0 auto',
-    marginBottom: 30,
-    padding: 20,
-    textAlign: 'left',
-    borderRadius: 4,
-    position: 'relative',
-  },
-}));
-
 const ProfileLocalStorage: React.FC = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [displayConfirmation, setDisplayConfirmation] = useState(false);
 
   return (
     <>
       <Paper
-        classes={{ root: classes.paper }}
         variant="outlined"
-        sx={{ height: 'unset' }}
+        sx={{
+          marginBottom: 3,
+          padding: '20px',
+          borderRadius: '4px',
+        }}
       >
         <Typography
           variant="h1"
