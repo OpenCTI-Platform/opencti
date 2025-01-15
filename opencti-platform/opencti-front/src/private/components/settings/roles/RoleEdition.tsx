@@ -17,6 +17,7 @@ import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEdition
 import useHelper from '../../../../utils/hooks/useHelper';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import UpdateRoleControlledDial from '../../../../components/UpdateEntityControlledDial';
 
 export const roleDeletionMutation = graphql`
   mutation RoleEditionDeletionMutation($id: ID!) {
@@ -37,19 +38,6 @@ const RoleEditionFragment = graphql`
     }
   }
 `;
-
-const UpdateRoleControlledDial = ({ onOpen }: { onOpen: () => void }) => {
-  const { t_i18n } = useFormatter();
-  return (
-    <Button
-      variant='outlined'
-      onClick={onOpen}
-      style={{ float: 'right' }}
-    >
-      {t_i18n('Update')}
-    </Button>
-  );
-};
 
 interface RoleEditionDrawerProps {
   roleRef: RolePopoverEditionQuery$data['role']
