@@ -6,7 +6,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
-import { helpId } from '@rjsf/utils';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -1039,7 +1038,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'from_entity_type',
     label: 'From entity type',
     percentWidth: 10,
-    render: ({ from }) => (<ItemEntityType showIcon entityType={from.entity_type} inList />),
+    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
   },
   from_relationship_type: {
     id: 'from_relationship_type',
@@ -1054,7 +1053,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'to_entity_type',
     label: 'To entity type',
     percentWidth: 10,
-    render: ({ to }) => (<ItemEntityType showIcon entityType={to.entity_type} inList />),
+    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
   },
   to_relationship_type: {
     id: 'to_relationship_type',
