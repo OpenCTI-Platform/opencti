@@ -496,6 +496,9 @@ export const horizontalBarsChartOptions = (
         ? 'rgba(255, 255, 255, .1)'
         : 'rgba(0, 0, 0, .1)',
     strokeDashArray: 3,
+    padding: {
+      right: 20,
+    },
   },
   legend: {
     show: legend,
@@ -506,6 +509,9 @@ export const horizontalBarsChartOptions = (
   },
   tooltip: {
     theme: theme.palette.mode,
+    x: {
+      show: stackType !== '100%',
+    },
   },
   xaxis: {
     categories: categories ?? [],
@@ -518,6 +524,9 @@ export const horizontalBarsChartOptions = (
     },
     axisBorder: {
       show: false,
+    },
+    axisTicks: {
+      show: stackType !== '100%',
     },
     tickAmount: adjustTicks ? 1 : undefined,
   },

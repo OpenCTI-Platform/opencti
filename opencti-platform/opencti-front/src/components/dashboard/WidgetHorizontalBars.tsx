@@ -21,6 +21,7 @@ interface WidgetHorizontalBarsProps {
     id?: string
     entity_type?: string
   }[]
+  stackType?: string
 }
 
 const WidgetHorizontalBars = ({
@@ -33,6 +34,7 @@ const WidgetHorizontalBars = ({
   withExport,
   readonly,
   redirectionUtils,
+  stackType,
 }: WidgetHorizontalBarsProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -64,6 +66,7 @@ const WidgetHorizontalBars = ({
         total,
         categories,
         legend,
+        stackType,
       ) as ApexOptions}
       series={series}
       type="bar"
