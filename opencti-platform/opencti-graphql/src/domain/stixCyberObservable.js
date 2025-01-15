@@ -204,7 +204,6 @@ export const addStixCyberObservable = async (context, user, input) => {
     return artifactImport(context, user, { ...input, ...input[graphQLType] });
   }
   const observableInput = {
-    internal_id,
     stix_id,
     x_opencti_score,
     x_opencti_description,
@@ -216,6 +215,9 @@ export const addStixCyberObservable = async (context, user, input) => {
     update,
     ...input[graphQLType]
   };
+  if (internal_id) {
+    observableInput.internal_id = internal_id;
+  }
   if (isNotEmptyField(payload_bin) && isNotEmptyField(url)) {
     throw FunctionalError('Cannot create observable with both payload_bin and url filled.');
   }
