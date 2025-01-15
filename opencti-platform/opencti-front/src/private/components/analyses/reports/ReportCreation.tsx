@@ -337,7 +337,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
           >
             <div style={fieldSpacingContainerStyle}>
-              <Accordion >
+              <Accordion>
                 <AccordionSummary id="accordion-panel">
                   <Typography>{t_i18n('Advanced options')}</Typography>
                 </AccordionSummary>

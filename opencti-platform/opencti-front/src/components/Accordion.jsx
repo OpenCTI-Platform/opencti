@@ -9,12 +9,15 @@ export const Accordion = styled((props) => (<MuiAccordion disableGutters elevati
   '&:before': {
     display: 'none',
   },
+  borderRadius: '4px',
+  backgroundColor: 'rgba(255, 255, 255, 0)',
 }));
 
 export const AccordionSummary = styled((props) => (
   <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props}/>
 ))(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+  // backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+  backgroundColor: 'rgba(255, 255, 255, .05)',
   flexDirection: 'row-reverse',
   '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
     transform: 'rotate(90deg)',
