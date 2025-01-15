@@ -43,6 +43,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { Form, Formik } from 'formik';
+import { ToggleButtonGroup } from '@mui/material';
+import ToggleButton from '@mui/material/ToggleButton';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
@@ -502,23 +504,6 @@ class CaseRfiKnowledgeGraphBar extends Component {
                     display: 'flex',
                   }}
                 >
-                  {handleToggleQueryMode && (
-                  <Tooltip
-                    title={
-                      currentQueryMode === 'all-entities'
-                        ? t('Show only correlated observables and indicators')
-                        : t('Show all correlated entities')
-                    }
-                  >
-                    <IconButton
-                      color={'secondary'}
-                      onClick={handleToggleQueryMode.bind(this)}
-                      size="large"
-                    >
-                      {currentQueryMode === 'all-entities' ? <HubOutlined /> : <PolylineOutlined />}
-                    </IconButton>
-                  </Tooltip>
-                  )}
                   <Tooltip
                     title={
                       currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -931,6 +916,41 @@ class CaseRfiKnowledgeGraphBar extends Component {
                         confidence={caseData.confidence}
                         enableReferences={enableReferences}
                       />
+                    )}
+                    {handleToggleQueryMode && (
+                    <ToggleButtonGroup
+                      size="small"
+                      value={currentQueryMode}
+                      exclusive
+                      onChange={handleToggleQueryMode}
+                      style={{
+                        padding: '6px 8px',
+                        marginBottom: '3px',
+                      }}
+                    >
+                      <Tooltip title={t('Show all correlated entities')}>
+                        <ToggleButton
+                          value="all-entities"
+                          selected={currentQueryMode === 'all-entities'}
+                        >
+                          <HubOutlined
+                            fontSize="small"
+                            color={currentQueryMode === 'all-entities' ? 'secondary' : 'primary'}
+                          />
+                        </ToggleButton>
+                      </Tooltip>
+                      <Tooltip title={t('Show only correlated observables and indicators')}>
+                        <ToggleButton
+                          value="indicators-and-observables"
+                          selected={currentQueryMode === 'indicators-and-observables'}
+                        >
+                          <PolylineOutlined
+                            fontSize="small"
+                            color={currentQueryMode === 'indicators-and-observables' ? 'secondary' : 'primary'}
+                          />
+                        </ToggleButton>
+                      </Tooltip>
+                    </ToggleButtonGroup>
                     )}
                     <Tooltip title={t('Edit the selected item')}>
                       <span>
