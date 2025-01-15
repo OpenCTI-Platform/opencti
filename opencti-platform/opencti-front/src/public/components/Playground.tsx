@@ -9,10 +9,10 @@ const fetcher = createGraphiQLFetcher({ url: `${APP_BASE_PATH}/graphql` });
 
 const Playground: React.FC = () => {
   return (
-    <>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicTopBar title={'GraphQL playground'} />
       <GraphiQL fetcher={fetcher} />
-    </>
+    </div>
   );
 };
 
