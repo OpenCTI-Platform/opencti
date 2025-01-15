@@ -21,8 +21,10 @@ import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewL
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import type { StoreEntityConnection } from '../../types/store';
+import type { BasicStoreEntity, StoreEntityConnection } from '../../types/store';
 import { emptyPaginationResult } from '../../database/utils';
+import { findAllMembers } from '../../domain/user';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 // -- LOADING --
 
@@ -184,5 +186,30 @@ export const queryDefaultValuesAttributesForSetting = async (
   entitySetting: BasicStoreEntityEntitySetting
 ) => {
   const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
-  return attributes.filter((a) => a.defaultValues).map((a) => ({ ...a, defaultValues: a.defaultValues ?? [] }));
+  const defaultValuesAttributes = await Promise.all(attributes.filter((a) => a.defaultValues).map(async (a) => {
+    if (a.name === authorizedMembers.name && a.defaultValues) {
+      const membersIds = a.defaultValues.map((d) => JSON.parse(d.id).id);
+      const args = {
+        connectionFormat: false,
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'internal_id', values: membersIds }],
+          filterGroups: [],
+        },
+      };
+      const members = await findAllMembers(context, user, args);
+      const membersDefaultValues = a.defaultValues.map((d) => {
+        const defaultValueObject = JSON.parse(d.id);
+        const memberId = defaultValueObject.id;
+        const member = members.find((m) => (m as BasicStoreEntity).id === memberId) as BasicStoreEntity;
+        defaultValueObject.name = member?.name ?? '';
+        defaultValueObject.entity_type = member?.entity_type ?? '';
+        const jsonValue = JSON.stringify(defaultValueObject);
+        return { ...d, id: jsonValue, name: jsonValue };
+      });
+      return { ...a, defaultValues: membersDefaultValues };
+    }
+    return { ...a, defaultValues: a.defaultValues ?? [] };
+  }));
+  return defaultValuesAttributes;
 };

@@ -22,7 +22,7 @@ export const useComputeDefaultValues = () => {
     multiple: boolean,
     type: string,
     defaultValues: readonly { id: string; name: string }[],
-    membersData?: EntitySettingAttributeEditionMembersQuery$data,
+    membersData?: EntitySettingAttributeEditionMembersQuery$data, // TODO cleanup
   ) => {
     const ovCategory = fieldToCategory(entityType, attributeName);
     // Handle createdBy
@@ -43,13 +43,10 @@ export const useComputeDefaultValues = () => {
       const defaultAuthorizedMembers: AuthorizedMembers = defaultValues
         .map((v) => {
           const parsed = JSON.parse(v.id);
-          const member = membersData?.members?.edges?.find(({ node }) => node.id === parsed.id);
-          // TODO membersData is not filled for report creation form
-          // TODO replace 'CREATOR' by current user
           return {
             id: parsed.id,
-            name: member?.node.name ?? '',
-            entity_type: member?.node.entity_type ?? '',
+            name: parsed.name ?? '',
+            entity_type: parsed.entity_type ?? '',
             access_right: parsed.access_right,
           };
         })
