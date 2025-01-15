@@ -7,7 +7,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -15,15 +14,6 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import { truncate } from '../../../../utils/String';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-}));
 
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
@@ -47,7 +37,6 @@ interface ToolDetailsProps {
 
 const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const tool = useFragment(
     ToolDetailsFragment,
     tools,
@@ -57,7 +46,15 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper
+        className={'paper-for-grid'}
+        variant="outlined"
+        style={{
+          marginTop: '8px',
+          padding: '15px',
+          borderRadius: 4,
+        }}
+      >
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>

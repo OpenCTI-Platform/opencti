@@ -15,7 +15,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
-import { ToolEditionOverview_tool$key as Tool$key } from './__generated__/ToolEditionOverview_tool.graphql';
+import { ToolEditionOverview_tool$key } from './__generated__/ToolEditionOverview_tool.graphql';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -83,7 +83,7 @@ export const toolMutationRelationDelete = graphql`
   }
 `;
 
-const ToolEditionOverviewFragment = graphql`
+const toolEditionOverviewFragment = graphql`
   fragment ToolEditionOverview_tool on Tool {
     id
     name
@@ -117,7 +117,7 @@ const ToolEditionOverviewFragment = graphql`
 `;
 
 interface ToolEditionOverviewProps {
-  toolRef: Tool$key;
+  toolRef: ToolEditionOverview_tool$key;
   context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
@@ -144,7 +144,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const tool = useFragment(ToolEditionOverviewFragment, toolRef);
+  const tool = useFragment(toolEditionOverviewFragment, toolRef);
 
   const toolValidator = useSchemaEditionValidation('Tool', {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
