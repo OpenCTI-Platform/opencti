@@ -433,7 +433,7 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
       }
       // Check restricted elements
       const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-      const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
+      const userOrganizations = user.organizations.map((o) => o.internal_id);
       // If platform organization is set
       if (settings.platform_organization) {
         // If user part of platform organization, is granted by default
@@ -488,7 +488,7 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   // Check restricted elements
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const userOrganizations = user.allowed_organizations.map((o) => o.standard_id);
+  const userOrganizations = user.organizations.map((o) => o.standard_id);
   // If platform organization is set
   if (settings.platform_organization) {
     // If user part of platform organization, is granted by default
@@ -509,8 +509,8 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
 // returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids
 export const computeUserMemberAccessIds = (user: AuthUser) => {
   const memberAccessIds = [user.id];
-  if (user.allowed_organizations) {
-    const userOrganizationsIds = user.allowed_organizations.map((org) => org.internal_id);
+  if (user.organizations) {
+    const userOrganizationsIds = user.organizations.map((org) => org.internal_id);
     memberAccessIds.push(...userOrganizationsIds);
   }
   if (user.groups) {
