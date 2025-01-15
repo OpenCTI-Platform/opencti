@@ -6,6 +6,10 @@ import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAtta
 export const ThreatActorIndividualCardFragment = graphql`
   fragment ThreatActorIndividualCard_node on ThreatActorIndividual {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     name
     aliases
     description

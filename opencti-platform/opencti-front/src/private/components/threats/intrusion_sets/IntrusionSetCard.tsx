@@ -6,6 +6,10 @@ import { IntrusionSetCard_node$key } from './__generated__/IntrusionSetCard_node
 export const IntrusionSetCardFragment = graphql`
   fragment IntrusionSetCard_node on IntrusionSet {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     name
     aliases
     entity_type

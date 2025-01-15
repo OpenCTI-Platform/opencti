@@ -422,7 +422,7 @@ const StixDomainObjectHeader = (props) => {
             </Typography>
           </Tooltip>
           {stixDomainObject.draftVersion && (
-            <DraftChip />
+            <DraftChip style={{ marginTop: 7 }}/>
           )}
           {typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>

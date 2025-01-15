@@ -22,7 +22,6 @@ export const DraftChip = ({ style }: { style?: React.CSSProperties }) => {
         display: 'inline-flex',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: theme.spacing(0.25),
         marginLeft: theme.spacing(0.5),
         padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
         borderRadius: theme.borderRadius,
