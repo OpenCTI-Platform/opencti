@@ -15,6 +15,7 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const workspaceLineFragment = graphql`
   fragment WorkspacesLine_node on Workspace {
@@ -100,6 +101,9 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(type === 'dashboard' ? t_i18n('Custom dashboards | Dashboards') : t_i18n('Investigations'));
 
   const LOCAL_STORAGE_KEY = `view-${type}-list`;
   const initialStorageValues = {
