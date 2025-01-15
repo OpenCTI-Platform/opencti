@@ -8,13 +8,12 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { Theme } from '@mui/material/styles/createTheme';
 
 import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(() => ({
   paper: {
     width: '100%',
     margin: '0 auto',
@@ -23,12 +22,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     textAlign: 'left',
     borderRadius: 4,
     position: 'relative',
-  },
-  alert: {
-    position: 'relative',
-    width: '100%',
-    marginBottom: 20,
-    color: theme.palette.text?.primary,
   },
 }));
 
@@ -81,7 +74,7 @@ const ProfileLocalStorage: React.FC = () => {
             icon={false}
             severity="warning"
             variant="outlined"
-            className={classes.alert}
+            sx={{ color: 'text.primary' }}
           >
             <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
               {t_i18n('This will erase all the views settings you have made. All these changes will be lost. Are you sure?')}
