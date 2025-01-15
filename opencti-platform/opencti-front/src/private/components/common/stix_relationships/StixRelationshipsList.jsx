@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
-import { defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { defaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
