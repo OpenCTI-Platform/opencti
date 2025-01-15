@@ -1,5 +1,5 @@
 export const FOOTER_TEMPLATE = `
-<tr>
+                        <tr>
                            <td>
                               <table id="footer" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" bgcolor="#f5f8fa" style="width: 100%; min-width: 100%;">
                                  <tbody>
