@@ -3709,11 +3709,13 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   for (let i = 0; i < elements.length; i += 1) {
     const e = elements[i];
     if (e.base_type === BASE_TYPE_RELATION) {
-      const { from, to } = e;
-      const draftFrom = await loadDraftElement(context, user, from);
+      const { from, fromId, to, toId } = e;
+      const resolvedFrom = from ?? await elLoadById(context, user, fromId);
+      const draftFrom = await loadDraftElement(context, user, resolvedFrom);
       e.from = draftFrom;
       e.fromId = draftFrom.id;
-      const draftTo = await loadDraftElement(context, user, to);
+      const resolvedTo = to ?? await elLoadById(context, user, toId);
+      const draftTo = await loadDraftElement(context, user, resolvedTo);
       e.to = draftTo;
       e.toId = draftTo.id;
     }
