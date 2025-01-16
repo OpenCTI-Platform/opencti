@@ -36,6 +36,7 @@ import { availableLanguage } from '../../../components/AppIntlProvider';
 import { maskString } from '../../../utils/String';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import ProfileLocalStorage from './ProfileLocalStorage';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const styles = () => ({
   container: {
@@ -220,6 +221,7 @@ const ProfileOverviewComponent = (props) => {
   const theme = useTheme();
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
+  const { isPlaygroundEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);
@@ -671,15 +673,17 @@ const ProfileOverviewComponent = (props) => {
               {showToken ? <VisibilityOff/> : <Visibility/>}
             </IconButton>
           </pre>
-          <Button
-            variant="contained"
-            color="primary"
-            component={Link}
-            to="/public/graphql"
-            target="_blank"
-          >
-            {t('Playground')}
-          </Button>
+          { isPlaygroundEnable() && (
+            <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              to="/public/graphql"
+              target="_blank"
+            >
+              {t('Playground')}
+            </Button>
+          )}
         </div>
       </Paper>
 
