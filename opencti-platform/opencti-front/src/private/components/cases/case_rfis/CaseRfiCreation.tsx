@@ -334,7 +334,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
                 </AccordionSummary>
                 <AccordionDetails>
                   <Field
-                    name={'authorizedMembers'}
+                    name={'authorized_members'}
                     component={AuthorizedMembersField}
                     containerstyle={{ marginTop: 20 }}
                     showAllMembersLine

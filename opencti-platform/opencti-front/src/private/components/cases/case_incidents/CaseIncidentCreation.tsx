@@ -338,7 +338,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
                 </AccordionSummary>
                 <AccordionDetails>
                   <Field
-                    name={'authorizedMembers'}
+                    name={'authorized_members'}
                     component={AuthorizedMembersField}
                     containerstyle={{ marginTop: 20 }}
                     showAllMembersLine
