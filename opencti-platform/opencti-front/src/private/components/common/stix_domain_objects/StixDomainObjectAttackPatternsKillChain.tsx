@@ -39,8 +39,10 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -81,6 +83,11 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStopTime: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixColumnsQuery>;
+  entityId: string,
+  relationshipTypes: [],
+  stixCoreObjectTypes: [],
+  entityLink: string,
+  isRelationReversed: boolean,
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -101,6 +108,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   defaultStopTime,
   storageKey,
   killChainDataQueryRef,
+  entityId,
+  relationshipTypes,
+  stixCoreObjectTypes,
+  entityLink,
+  isRelationReversed,
 }) => {
   const { t_i18n } = useFormatter();
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
@@ -169,7 +181,21 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   } else {
     activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
   }
-
+  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join(
+    '-',
+  )}-${relationshipTypes?.join('-')}`;
+  const localStorage = usePaginationLocalStorage<PaginationOptions>(
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
+      sortBy: 'created',
+      orderAsc: false,
+      openExports: false,
+      filters: emptyFilterGroup,
+      view: 'entities',
+    },
+  );
+  const { view } = localStorage.viewStorage;
   return (
     <>
       {currentView !== 'matrix-in-line' && <div
@@ -444,14 +470,20 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             coursesOfAction={true}
           />
         )}
-        {/* {(currentView === 'relationships' && ( */}
-        {/*  <EntityStixCoreRelationshipsRelationshipsView */}
-        {/*    entityId={stixDomainObjectId} */}
-        {/*    entityLink={'entityLink'} */}
-        {/*    defaultStartTime={defaultStartTime} */}
-        {/*    defaultStopTime={defaultStopTime} */}
-        {/*  /> */}
-        {/* ))} */}
+        {(currentView === 'relationships' && (
+        <EntityStixCoreRelationshipsRelationshipsView
+          entityId={entityId}
+          relationshipTypes={relationshipTypes}
+          stixCoreObjectTypes={stixCoreObjectTypes}
+          entityLink={entityLink}
+          isRelationReversed={isRelationReversed}
+          currentView={currentView}
+          defaultStartTime={defaultStartTime}
+          defaultStopTime={defaultStopTime}
+          localStorage={localStorage}
+          enableContextualView={view}
+        />
+        ))}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}

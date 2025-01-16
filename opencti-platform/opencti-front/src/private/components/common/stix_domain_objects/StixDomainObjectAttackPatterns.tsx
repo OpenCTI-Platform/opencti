@@ -20,6 +20,11 @@ interface StixDomainObjectAttackPatternsProps {
   defaultStartTime: string,
   defaultStopTime: string,
   disableExport: boolean,
+  entityId: string,
+  relationshipTypes: [],
+  stixCoreObjectTypes: [],
+  entityLink: [],
+  isRelationReversed: boolean,
 }
 
 const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPatternsProps> = ({
@@ -27,6 +32,11 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   defaultStartTime,
   defaultStopTime,
   disableExport,
+  entityId,
+  relationshipTypes,
+  stixCoreObjectTypes,
+  entityLink,
+  isRelationReversed,
 }) => {
   const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
   const {
@@ -92,6 +102,11 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
             openExports={openExports}
             availableFilterKeys={availableFilterKeys}
             storageKey={LOCAL_STORAGE_KEY}
+            entityId={entityId}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={stixCoreObjectTypes}
+            entityLink={entityLink}
+            isRelationReversed={isRelationReversed}
           />
         </React.Suspense>
       )}

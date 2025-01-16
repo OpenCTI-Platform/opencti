@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import StixDomainObjectAttackPatterns from '@components/common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
+// import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -113,6 +114,16 @@ class ThreatActorGroupKnowledgeComponent extends Component {
               />
             }
           />
+          {/* <Route */}
+          {/*  path="/attack_patterns" */}
+          {/*  element={ */}
+          {/*    <StixDomainObjectAttackPatterns */}
+          {/*      stixDomainObjectId={threatActorGroup.id} */}
+          {/*      defaultStartTime={threatActorGroup.first_seen} */}
+          {/*      defaultStopTime={threatActorGroup.last_seen} */}
+          {/*    /> */}
+          {/*  } */}
+          {/* /> */}
           <Route
             path="/attack_patterns"
             element={
@@ -120,6 +131,11 @@ class ThreatActorGroupKnowledgeComponent extends Component {
                 stixDomainObjectId={threatActorGroup.id}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
+                entityId={threatActorGroup.id}
+                relationshipTypes={['uses', 'compromises']}
+                stixCoreObjectTypes={['Attack-Pattern']}
+                entityLink={link}
+                isRelationReversed={false}
               />
             }
           />
