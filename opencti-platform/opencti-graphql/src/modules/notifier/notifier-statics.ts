@@ -194,9 +194,13 @@ ${HEADER_TEMPLATE}
                               <table cellpadding="0" border="0" cellspacing="0" width="100%" style="width: 100%; min-width:100%;">
                                  <tbody>
                                     <tr>
-                                       <td cellpadding="0" align="center" valign="middle" width="100%" style="height: 4px; background-color: #001bda; width: 100%; min-width:100%; font-size:4px; line-height: 4px;"><span style="-webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; color: transparent; background: none; user-select: none; -moz-user-select: none; -ms-user-select:none; -webkit-user-select:none; text-overflow: ellipsis; opacity: 0; width:100%; min-width: 100%; height:1; overlfow:hidden; margin: -1px 0 0 0; padding:0; font-size: 0;"> &nbsp;</span></td>
+                                      <td cellpadding="0" align="center" valign="middle" width="100%" style="height: 4px; background-color: #001bda; width: 100%; min-width:100%; font-size:4px; line-height: 4px;"><span style="-webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; color: transparent; background: none; user-select: none; -moz-user-select: none; -ms-user-select:none; -webkit-user-select:none; text-overflow: ellipsis; opacity: 0; width:100%; min-width: 100%; height:1; overlfow:hidden; margin: -1px 0 0 0; padding:0; font-size: 0;"> &nbsp;</span></td>
                                     </tr>
-                                    ${LOGO_TEMPLATE}
+                                    <tr>
+                                      <td align="center" valign="middle" width="100%" style="width: 100%; min-width:100%;" class="logo">
+                                        ${LOGO_TEMPLATE}
+                                      </td>
+                                    </tr>
                                  </tbody>
                               </table>
                               <table border="0" cellpadding="0" cellspacing="0" width="500" bgcolor="#ffffff" style="width: 500px; background-color:#ffffff;" class="emailContainer">
@@ -354,7 +358,19 @@ ${HEADER_TEMPLATE}
                               </table>
                            </td>
                         </tr>
-                       ${FOOTER_TEMPLATE}
+                        <tr>
+                           <td>
+                              ${FOOTER_TEMPLATE}
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </body>
+</html>
       `
     })
   }
