@@ -11,9 +11,6 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { logApp } from '../config/conf';
-import { findByType as findEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 
 // -- ENTITY TYPES --
 
@@ -73,8 +70,15 @@ export const findAll = (context: AuthContext, user: AuthUser, args : { type: str
   return querySubTypes(context, user, args);
 };
 
+/*
 export const getRequestAccessWorkflow = async (context: AuthContext, user: AuthUser, current: string) => {
   logApp.info('COUCOU getRequestAccessWorkflow', { current });
   const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  return rfiEntitySettings.request_access_workflow;
+  logApp.info('COUCOU rfiEntitySettings', { rfiEntitySettings });
+  return {
+    workflow: rfiEntitySettings?.request_access_workflow?.workflow,
+    approved_workflow_id: rfiEntitySettings?.request_access_workflow?.approved_workflow_id,
+    declined_workflow_id: rfiEntitySettings?.request_access_workflow?.declined_workflow_id,
+  };
 };
+*/
