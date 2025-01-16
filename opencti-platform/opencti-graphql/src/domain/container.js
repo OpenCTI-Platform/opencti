@@ -274,9 +274,6 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
   if (!entity) {
     throw FunctionalError('Cant find element to update', { entityId });
   }
-  if (entity.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK) {
-    throw UnsupportedError('This feature is disabled');
-  }
   return editAuthorizedMembers(context, user, args);
 };
 
