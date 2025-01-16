@@ -273,7 +273,6 @@ describe('Notification manager behaviors test', async () => {
     groups: [],
     capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }],
     organizations: [],
-    allowed_organizations: [{ internal_id: userOrganizationId, standard_id: userOrganizationStandardId }],
     allowed_marking: [{ internal_id: greenMarkingInternalId, standard_id: greenMarkingStandardId }],
     default_marking: [],
     all_marking: [],

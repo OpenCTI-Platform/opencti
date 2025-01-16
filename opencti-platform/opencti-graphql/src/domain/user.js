@@ -1260,7 +1260,6 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     default_hidden_types: user.default_hidden_types,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organizations: user.organizations ?? [],
-    allowed_organizations: user.allowed_organizations,
     administrated_organizations: user.administrated_organizations ?? [],
     inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
@@ -1386,7 +1385,6 @@ export const buildCompleteUser = async (context, client) => {
     default_hidden_types,
     groups,
     organizations,
-    allowed_organizations,
     administrated_organizations,
     individual_id: individualId,
     inside_platform_organization: isUserPlatform,
