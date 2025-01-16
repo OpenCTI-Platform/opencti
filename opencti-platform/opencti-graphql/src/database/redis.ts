@@ -511,7 +511,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
   if (patch.length === 0 || previousPatch.length === 0) {
     throw UnsupportedError('Update event must contains a valid previous patch');
   }
-  if (patch.length === 1 && patch[0].path === '/modified') {
+  if (patch.length === 1 && patch[0].path === '/modified' && !opts.allow_only_modified) {
     throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
   }
   return {

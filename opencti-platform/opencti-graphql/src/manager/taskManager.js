@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { buildCreateEvent, lockResource } from '../database/redis';
+import { buildCreateEvent, lockResource, storeUpdateEvent } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_ENRICHMENT,
@@ -33,7 +33,7 @@ import {
   stixLoadById,
   storeLoadByIdWithRefs
 } from '../database/middleware';
-import { now } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, ValidationError } from '../config/errors';
@@ -80,6 +80,7 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { findById as findOrganizationById } from '../modules/organization/organization-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -159,11 +160,11 @@ const computeRuleTaskElements = async (context, user, task) => {
 };
 
 export const computeQueryTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [], scope } = task;
+  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const processingElements = [];
   // Fetch the information
   // note that the query is filtered to allow only elements with matching confidence level
-  const data = await executeTaskQuery(context, user, task_filters, task_search, scope, task_position);
+  const data = await executeTaskQuery(context, user, task_filters, task_search, scope, task_order_mode, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
   // Apply the actions for each element
@@ -176,7 +177,7 @@ export const computeQueryTaskElements = async (context, user, task) => {
   return { actions, elements: processingElements };
 };
 const computeListTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_ids, scope } = task;
+  const { actions, task_position, task_ids, scope, task_order_mode } = task;
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
@@ -192,7 +193,7 @@ const computeListTaskElements = async (context, user, task) => {
   }
   const options = {
     type,
-    orderMode: 'desc',
+    orderMode: task_order_mode || 'desc',
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
   };
   const elements = await internalFindByIds(context, user, ids, options);
@@ -544,6 +545,19 @@ const executeProcessing = async (context, user, job, scope) => {
             errors.push({ id: element.id, message: `${err.message}${err.data?.reason ? ` - ${err.reason}` : ''}` });
           }
         }
+      }
+      if (type === ACTION_TYPE_SHARE && containerId) {
+        // simulate a create event to update downstream openCTI
+        const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
+        let organizationNames = '';
+        for (let i = 0; i < actionContext.values.length; i += 1) {
+          const orgId = actionContext.values[i];
+          const organization = await findOrganizationById(context, user, orgId);
+          organizationNames += `${organization.name} `;
+        }
+        const message = `Update ${organizationNames} children in \`Shared with\``;
+        const objectStoreBaseModified = { ...objectStoreBase, updated_at: utcDate() };
+        await storeUpdateEvent(context, user, objectStoreBase, objectStoreBaseModified, message, { allow_only_modified: true });
       }
     }
   }

@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { BasicStoreEntity } from '../../../src/types/store';
+import type { BasicStoreEntity, StoreEntityReport } from '../../../src/types/store';
 import { addIndicator, promoteIndicatorToObservables } from '../../../src/modules/indicator/indicator-domain';
 import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
-import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace } from '../../../src/manager/taskManager';
+import { computeQueryTaskElements, executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
@@ -13,6 +13,8 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { type OrganizationAddInput } from '../../../src/generated/graphql';
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { promoteObservableInput, promoteIndicatorInput, promoteReportInput } from './taskManager-promote-values/promoteValues';
+import { generateFiltersForSharingTask } from '../../../src/domain/stix';
+import { addStixCoreRelationship } from '../../../src/domain/stixCoreRelationship';
 
 describe('TaskManager executeReplace tests ', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
@@ -370,5 +372,72 @@ describe('TaskManager executePromote tests', () => {
       expect(createdObservables.length).greaterThan(0);
       createdObservableId = createdObservables.map(({ id }) => id);
     });
+  });
+});
+
+describe('TaskManager computeQueryTaskElements', () => {
+  let observable1;
+  let observable2;
+  let createdReport: StoreEntityReport;
+
+  it('Create data for test', async () => {
+    const observable1Data = {
+      type: 'Domain-Name',
+      DomainName: { value: 'observable-in-report-querytask.com' },
+    };
+
+    const observable2Data = {
+      type: 'Domain-Name',
+      DomainName: { value: 'observable-in-report-querytask.fr' },
+    };
+
+    observable1 = await addStixCyberObservable(testContext, ADMIN_USER, observable1Data);
+    observable2 = await addStixCyberObservable(testContext, ADMIN_USER, observable2Data);
+    createdReport = await addReport(testContext, ADMIN_USER, {
+      name: 'taskManager test - computeQueryTaskElements',
+      published: '2024-10-06T22:00:00.000Z',
+      description: 'report use for taskManager test purpose on orderMode',
+      objects: [observable1.id, observable2.id]
+    });
+    const relationShipAddInput = {
+      relationship_type: 'related-to',
+      confidence: 100,
+      description: '',
+      killChainPhases: [],
+      externalReferences: [],
+      objectMarking: [],
+      fromId: observable1.id,
+      toId: observable2.id
+    };
+    await addStixCoreRelationship(testContext, ADMIN_USER, relationShipAddInput);
+  });
+
+  it('When order mode is set to asc it should be taken', async () => {
+    const filters = generateFiltersForSharingTask(createdReport.internal_id);
+    const task = {
+      task_filters: JSON.stringify(filters),
+      task_excluded_ids: [],
+      task_order_mode: 'asc',
+      actions: [{ type: 'SHARE', context: { values: [TEST_ORGANIZATION.id] } }],
+      scope: 'KNOWLEDGE',
+    };
+    const { elements } = await computeQueryTaskElements(testContext, ADMIN_USER, task);
+    const observableOrder1: BasicStoreEntity = elements[0].element;
+    const observableOrder2: BasicStoreEntity = elements[1].element;
+    expect(observableOrder1.created_at < observableOrder2.created_at);
+  });
+
+  it('When order mode is not set, default desc should be taken', async () => {
+    const filters = generateFiltersForSharingTask(createdReport.internal_id);
+    const task = {
+      task_filters: JSON.stringify(filters),
+      task_excluded_ids: [],
+      actions: [{ type: 'SHARE', context: { values: [TEST_ORGANIZATION.id] } }],
+      scope: 'KNOWLEDGE',
+    };
+    const { elements } = await computeQueryTaskElements(testContext, ADMIN_USER, task);
+    const observableOrder1: BasicStoreEntity = elements[0].element;
+    const observableOrder2: BasicStoreEntity = elements[1].element;
+    expect(observableOrder1.created_at > observableOrder2.created_at);
   });
 });
