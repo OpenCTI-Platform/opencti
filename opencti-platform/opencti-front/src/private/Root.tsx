@@ -57,6 +57,7 @@ const rootSettingsFragment = graphql`
       id
       enable
     }
+    playground_enabled
     platform_modules {
       id
       enable
