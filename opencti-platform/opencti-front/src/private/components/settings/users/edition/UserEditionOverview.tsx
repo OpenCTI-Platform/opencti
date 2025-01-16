@@ -15,7 +15,6 @@ import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
-import { convertOrganizations } from '../../../../../utils/edition';
 import { useFormatter } from '../../../../../components/i18n';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
@@ -105,7 +104,6 @@ UserEditionOverviewComponentProps
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
   const theme = useTheme<Theme>();
-
   const [commitFocus] = useApiMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
   const [commitOrganizationAdd] = useApiMutation(userMutationOrganizationAdd);
@@ -114,8 +112,10 @@ UserEditionOverviewComponentProps
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
-  const objectOrganization = convertOrganizations(user);
-
+  const objectOrganization = (user.objectAssignedOrganization?.edges ?? []).map((n) => ({
+    label: n.node.name,
+    value: n.node.id,
+  }));
   const initialValues = {
     name: user.name,
     user_email: user.user_email,
@@ -159,7 +159,7 @@ UserEditionOverviewComponentProps
     name: string,
     values: { label: string; value: string }[],
   ) => {
-    const currentValues = (user?.objectOrganization?.edges ?? []).map((n) => ({
+    const currentValues = (user?.objectAssignedOrganization?.edges ?? []).map((n) => ({
       label: n.node.name,
       value: n.node.id,
     }));
@@ -389,7 +389,7 @@ const UserEditionOverview = createFragmentContainer(
           id
           name
         }
-        objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+        objectAssignedOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
           edges {
             node {
               id

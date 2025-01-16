@@ -234,6 +234,11 @@ export const batchCreators = async (context, user, userListIds) => {
   return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
 };
 
+export const userOrganizationsPaginatedWithoutInferences = async (context, user, userId, opts) => {
+  const args = { ...opts, withInferences: false };
+  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
+};
+
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
