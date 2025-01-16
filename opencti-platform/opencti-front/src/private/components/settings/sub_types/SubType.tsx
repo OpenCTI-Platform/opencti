@@ -7,6 +7,7 @@ import EntitySettingCustomOverview from '@components/settings/sub_types/entity_s
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
+import RequestAccessStatus from '@components/settings/sub_types/RequestAccessStatus';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -22,7 +23,6 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
-import ItemRequestAccessStatus from '../../../../components/ItemRequestAccessStatus';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -45,6 +45,7 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
+        ...RequestAccessStatusFragment_entitySetting
       }
       statuses {
         id
@@ -54,11 +55,7 @@ export const subTypeQuery = graphql`
           color
         }
       }
-      requestAccessWorkflow {
-        approved_workflow_id
-        declined_workflow_id
-        workflow
-      }
+      
     }
   }
 `;
@@ -103,8 +100,6 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
     borderRadius: theme.spacing(0.5),
     position: 'relative',
   };
-
-  console.log('ANGIE - subType.settings', { truc: subType.settings });
 
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
@@ -156,10 +151,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                     <SubTypeStatusPopover subTypeId={subType.id} />
                   </Typography>
                 </div>
-                <ItemRequestAccessStatus
-                  configuration={subType.requestAccessWorkflow}
-                  disabled={!subType.workflowEnabled}
-                />
+                <RequestAccessStatus data={subType.settings}/>
               </>
             }
           </Paper>
