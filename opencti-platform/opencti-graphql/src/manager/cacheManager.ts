@@ -42,6 +42,7 @@ import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
+import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -157,8 +158,9 @@ const platformSettings = (context: AuthContext) => {
     return listAllEntities<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false }).then((settings) => {
       return settings.map((s) => {
         const auditListenerIds = s.activity_listeners_ids ?? [];
+        const ee_info = getEnterpriseEditionInfoFromPem(s.internal_id, s.enterprise_license);
         const activity_listeners_users = auditListenerIds.map((id: string) => membersGroupMap.get(id) ?? membersOrganizationMap.get(id) ?? [id]).flat();
-        return { ...s, activity_listeners_users };
+        return { ...s, valid_enterprise_edition: ee_info.license_validated, activity_listeners_users };
       });
     });
   };

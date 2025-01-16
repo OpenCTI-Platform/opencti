@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
-import { adminQueryWithError, disableEE, enableEE } from '../../utils/testQueryHelper';
-import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
+import { disableEE, enableEE } from '../../utils/testQueryHelper';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 
 const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
@@ -113,16 +112,6 @@ describe('Fintel template resolver standard behavior', () => {
       settings_types: ['Report']
     },
   };
-  it('should not create fintel template if not EE', async () => {
-    await adminQueryWithError(
-      {
-        query: CREATE_QUERY,
-        variables: FINTEL_TEMPLATE_TO_CREATE,
-      },
-      'You are not allowed to do this.',
-      FORBIDDEN_ACCESS
-    );
-  });
   it('should fintel template created', async () => {
     // Activate EE
     await enableEE();

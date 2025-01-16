@@ -93,7 +93,6 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 import ItemMarkings from '../../../components/ItemMarkings';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 
 const styles = (theme) => ({
@@ -1685,7 +1684,7 @@ class DataTableToolBar extends Component {
           }
           // endregion
           // region EE
-          const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+          const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
           // endregion
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');

@@ -6,11 +6,11 @@ import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import { isEnterpriseEdition } from '../../utils/ee';
 import { ForbiddenAccess } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!

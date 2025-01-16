@@ -16,7 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
 import conf, { logAudit } from '../config/conf';
-import { isEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
@@ -117,7 +116,7 @@ const initActivityManager = () => {
       if (!['query', 'internal'].includes(action.user.origin.socket ?? '')) { // Subscription is not part of the listening
         return;
       }
-      if (isEmptyField(settings.enterprise_edition)) { // If enterprise edition is not activated
+      if (settings.valid_enterprise_edition !== true) { // If enterprise edition is not activated
         return;
       }
       const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
