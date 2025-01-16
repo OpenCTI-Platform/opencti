@@ -14,7 +14,7 @@ import { findById as findOrganizationById } from '../organization/organization-d
 import { elLoadById } from '../../database/engine';
 import type { BasicStoreBase } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
+import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 
 export interface RequestAccessAction {
@@ -41,33 +41,12 @@ export const findUsersThatCanShareWithOrganizations = async (context: AuthContex
   return allUserInOrgWithOrgManagementCapability;
 };
 
+/*
 interface RequestAccessWorkflowSettings {
   workflow: string[]
   approved_workflow_id: string,
   declined_workflow_id: string
-}
-
-export const generateInitialFlow = async (context: AuthContext, user: AuthUser) => {
-  const initialConfig: RequestAccessWorkflowSettings = {
-    workflow: ['a83e3917-2d09-49fa-83cc-608f37466118', '217319ad-60b3-44b3-abf6-34e1c055d686'],
-    approved_workflow_id: 'a83e3917-2d09-49fa-83cc-608f37466118',
-    declined_workflow_id: '217319ad-60b3-44b3-abf6-34e1c055d686',
-  };
-
-  const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  let updated;
-  if (rfiEntitySettings) {
-    logApp.info('ANGIE rfiEntitySettings:', { rfiEntitySettings });
-    const editInput: EditInput[] = [
-      { key: 'request_access_workflow', value: [initialConfig] }
-    ];
-    updated = await entitySettingEditField(context, user, rfiEntitySettings.id, editInput);
-  } else {
-    // TODO create it
-    updated = undefined;
-  }
-  return updated;
-};
+} */
 
 export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser, action:ActionStatus) => {
   const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
@@ -88,7 +67,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
 
   // FIXME move that away
-  await generateInitialFlow(context, user);
+  // await generateInitialFlow(context, user);
 
   const allAssignees = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members);
   const allAssigneeIds: string[] = allAssignees.map((member) => member.id);

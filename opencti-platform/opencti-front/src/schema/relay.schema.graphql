@@ -722,6 +722,7 @@ type SubType {
   statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting
+  requestAccessWorkflow: RequestAccessWorkflow
 }
 
 enum StatusTemplateOrdering {
