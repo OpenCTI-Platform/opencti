@@ -134,8 +134,8 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
       <StatusTemplateCreation
         contextual={true}
         inputValueContextual={statusTemplateInput}
-        openContextual={statusTemplateCreation}
-        handleCloseContextual={handleCloseStatusTemplateCreation}
+        open={statusTemplateCreation}
+        handleClose={handleCloseStatusTemplateCreation}
         creationCallback={({
           statusTemplateAdd: data,
         }: StatusTemplateCreationContextualMutation$data) => {
