@@ -37,6 +37,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useXTM from '../../../../utils/hooks/useXTM';
 import useAI from '../../../../utils/hooks/useAI';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = graphql`
   query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
@@ -154,6 +155,8 @@ const StixCoreObjectSimulationResult = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [resultError, setResultError] = useState(null);
+  const { me } = useAuth();
+  const disabledInDraft = !!me.draftContext;
 
   const attackPatterns = usePreloadedQuery(query, queryRef);
 
@@ -627,7 +630,7 @@ const StixCoreObjectSimulationResult = ({
 
   return (
     <>
-      {!oBasDisableDisplay && (
+      {!oBasDisableDisplay && !disabledInDraft && (
         <div className={classes.simulationResults}>
           <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
             <Button
