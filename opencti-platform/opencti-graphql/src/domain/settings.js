@@ -222,11 +222,11 @@ export const getMessagesFilteredByRecipients = (user, settings) => {
   const ee = getEnterpriseEditionInfo(settings);
   if (ee.license_enterprise) {
     if (!ee.license_validated) {
-      messages.push(buildEEMessageHeader(`The current ${ee.license_type} license has expired, Enterprise Edition is disabled.`));
+      messages.unshift(buildEEMessageHeader(`The current ${ee.license_type} license has expired, Enterprise Edition is disabled.`));
     } else if (ee.license_extra_expiration) {
-      messages.push(buildEEMessageHeader(`The current ${ee.license_type} license has expired, Enterprise Edition will be disabled in ${ee.license_extra_expiration_days} days.`));
+      messages.unshift(buildEEMessageHeader(`The current ${ee.license_type} license has expired, Enterprise Edition will be disabled in ${ee.license_extra_expiration_days} days.`));
     } else if (ee.license_type === LICENSE_OPTION_TRIAL) {
-      messages.push(buildEEMessageHeader(`This is a trial Enterprise Edition version, valid until ${utcDate(ee.license_expiration_date).format('YYYY-MM-DD')}.`, false));
+      messages.unshift(buildEEMessageHeader(`This is a trial Enterprise Edition version, valid until ${utcDate(ee.license_expiration_date).format('YYYY-MM-DD')}.`, false));
     }
   }
   return messages.filter(({ recipients }) => {
