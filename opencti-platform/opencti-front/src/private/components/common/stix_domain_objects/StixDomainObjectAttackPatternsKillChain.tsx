@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
-import { ProgressWrench } from 'mdi-material-ui';
+import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
@@ -345,6 +345,23 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </ToggleButton>
             </Tooltip>
             )}
+            {/* {enableNestedView && ( */}
+            <ToggleButton
+              value="relationships"
+              aria-label="relationships"
+            >
+              <Tooltip title={t_i18n('Relationships view')}>
+                <RelationManyToMany
+                  fontSize="small"
+                  color={
+                      currentView === 'relationships' || !currentView
+                        ? 'secondary'
+                        : 'primary'
+                    }
+                />
+              </Tooltip>
+            </ToggleButton>
+            {/* )} */}
             {typeof handleToggleExports === 'function' && exportDisabled && (
             <Tooltip
               title={`${
