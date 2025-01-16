@@ -28,6 +28,7 @@ export const rootPublicQuery = graphql`
         type
         provider
       }
+      playground_enabled
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
       ...PublicSettingsProvider_settings

@@ -8,6 +8,7 @@ import {
   getMessagesFilteredByRecipients,
   getProtectedSensitiveConfig,
   getSettings,
+  isPlaygroundEnabled,
   settingDeleteMessage,
   settingEditMessage,
   settingsCleanContext,
@@ -50,6 +51,7 @@ const settingsResolvers = {
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
+    playground_enabled: () => isPlaygroundEnabled(),
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
   },
   AppInfo: {
