@@ -746,7 +746,8 @@ const useSearchEntities = ({
                 ...result,
               ];
               // if there are not only stix cyber observables in the entity types list, add the 'Stix Cyber Observable' abstract type
-              if (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object'))) {
+              if (!availableEntityTypes
+                || (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object')))) {
                 result = [
                   {
                     label: t_i18n('entity_Stix-Cyber-Observable'),
@@ -772,7 +773,8 @@ const useSearchEntities = ({
                 ...result,
               ];
               // if there are not only stix domain objects in the entity types list, add the 'Stix Domain Object' abstract type
-              if (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object'))) {
+              if (!availableEntityTypes
+                || (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object')))) {
                 result = [
                   {
                     label: t_i18n('entity_Stix-Domain-Object'),
@@ -796,6 +798,18 @@ const useSearchEntities = ({
                 })),
                 ...result,
               ];
+              // if there are not only stix core relationships in the entity types list, add the 'Stix Core Relationship' abstract type
+              if (!availableEntityTypes
+                || (availableEntityTypes && availableEntityTypes.length > 1)) {
+                result = [
+                  {
+                    label: t_i18n('entity_Stix-Core-Relationship'),
+                    value: 'Stix-Core-Relationship',
+                    type: 'Stix-Core-Relationship',
+                  },
+                  ...result,
+                ];
+              }
             }
             // push the sighting relationship
             if (
