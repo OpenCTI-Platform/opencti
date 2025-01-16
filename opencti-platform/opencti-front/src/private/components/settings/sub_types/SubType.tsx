@@ -54,6 +54,11 @@ export const subTypeQuery = graphql`
           color
         }
       }
+      requestAccessWorkflow {
+        approved_workflow_id
+        declined_workflow_id
+        workflow
+      }
     }
   }
 `;
@@ -152,22 +157,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                   </Typography>
                 </div>
                 <ItemRequestAccessStatus
-                  statuses={[{
-                    id: '1234',
-                    order: 1,
-                    template: {
-                      color: '#ffff',
-                      name: 'patate',
-                    },
-                  }, {
-                    id: '1234',
-                    order: 1,
-                    template: {
-                      color: '#ffff',
-                      name: 'patate',
-                    },
-                  }]}
-                  disabled={false}
+                  configuration={subType.requestAccessWorkflow}
+                  disabled={!subType.workflowEnabled}
                 />
               </>
             }

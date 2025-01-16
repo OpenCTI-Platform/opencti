@@ -18,9 +18,6 @@ const useStyles = makeStyles(() => ({
     borderRadius: 4,
     width: 100,
   },
-  arrow: {
-    marginRight: 7,
-  },
   statuses: {
     display: 'inline-flex',
     flexWrap: 'wrap',
@@ -31,14 +28,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ItemStatusTemplateProps {
-  statuses: NonNullable<SubTypeQuery$data['subType']>['statuses'],
+  configuration: NonNullable<SubTypeQuery$data['subType']>['request_access_workflow'],
   disabled: boolean
 }
 
-const ItemRequestAccessStatus = ({ statuses, disabled }: ItemStatusTemplateProps) => {
+const ItemRequestAccessStatus = ({ configuration, disabled }: ItemStatusTemplateProps) => {
   const { t_i18n } = useFormatter();
+  console.log('COFNIG:', { configuration });
   const classes = useStyles();
-  if (disabled || statuses.length === 0) {
+  if (disabled || configuration?.workflow?.length === 0) {
     return (
       <Chip
         classes={{ root: classes.chip }}
@@ -50,27 +48,37 @@ const ItemRequestAccessStatus = ({ statuses, disabled }: ItemStatusTemplateProps
 
   return (
     <div className={classes.statuses}>
-      {statuses.map((status, idx) => (
-        <div key={status.id} className={classes.status}>
-          New
-          <div className={classes.arrow}>
-            <ArrowRightAltOutlined/>
-          </div>
-          Accepted :
-          <Chip
-            classes={{ root: classes.chip }}
-            variant="outlined"
-            label={status.template?.name}
-            style={{
-              color: status.template?.color,
-              borderColor: status.template?.color,
-              backgroundColor: hexToRGB(
-                status.template?.color ?? '#000000',
-              ),
-            }}
-          />
-        </div>
-      ))}
+      <div className={classes.status}>
+        Approve to status:
+        <Chip
+          classes={{ root: classes.chip }}
+          variant="outlined"
+          label={configuration?.approved_workflow_id}
+          style={{
+            color: '#fff',
+            borderColor: '#000',
+            backgroundColor: hexToRGB(
+              '#000000',
+            ),
+          }}
+        />
+      </div>
+
+      <div className={classes.status}>
+        Declined to status:
+        <Chip
+          classes={{ root: classes.chip }}
+          variant="outlined"
+          label={configuration?.declined_workflow_id}
+          style={{
+            color: '#fff',
+            borderColor: '#000',
+            backgroundColor: hexToRGB(
+              '#000000',
+            ),
+          }}
+        />
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { findAll, findById as findSubTypeById, findById } from '../domain/subType';
+import { findAll, findById as findSubTypeById, findById, getRequestAccessWorkflow } from '../domain/subType';
 import { batchStatusesByType, createStatus, getTypeStatuses, statusDelete, statusEditField } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchLoader } from '../database/middleware';
@@ -18,6 +18,7 @@ const subTypeResolvers = {
     },
     statuses: (current, _, context) => statusesByTypeLoader.load(current.id, context, context.user),
     settings: (current, _, context) => entitySettingsByTypeLoader.load(current.id, context, context.user), // Simpler before moving workflow
+    requestAccessWorkflow: (current, _, context) => getRequestAccessWorkflow(context, context.user, current),
   },
   Mutation: {
     subTypeEdit: (_, { id }, context) => ({
