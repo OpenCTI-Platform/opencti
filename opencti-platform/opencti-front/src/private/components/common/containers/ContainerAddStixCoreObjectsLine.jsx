@@ -126,6 +126,105 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
           main
         }
         created_at
+        ... on AttackPattern {
+          name
+        }
+        ... on Campaign {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+        }
+        ... on ObservedData {
+          name
+        }
+        ... on Opinion {
+          opinion
+        }
+        ... on Report {
+          name
+        }
+        ... on Grouping {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on System {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on AdministrativeArea {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on Incident {
+          name
+        }
+        ... on Event {
+          name
+        }
+        ... on Channel {
+          name
+        }
+        ... on Narrative {
+          name
+        }
+        ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
           ... on StixFile {
