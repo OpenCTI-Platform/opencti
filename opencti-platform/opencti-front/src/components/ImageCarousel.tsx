@@ -7,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import { ZoomOutMapOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
+import { IntrusionSetDetails_intrusionSet$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetDetails_intrusionSet.graphql';
 import { convertImagesToCarousel } from '../utils/edition';
 import type { Theme } from './Theme';
 import { isNotEmptyField } from '../utils/utils';
@@ -68,9 +69,7 @@ export interface ImagesData {
 }
 
 interface ImageCarouselProps {
-  data: {
-    images: ImagesData | null;
-  };
+  data: IntrusionSetDetails_intrusionSet$data
 }
 
 interface CarouselImage {
