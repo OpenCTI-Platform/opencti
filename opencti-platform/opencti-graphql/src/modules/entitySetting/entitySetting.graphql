@@ -34,10 +34,10 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type RequestAccessTransition {
-  from: String
-  to: String!
-  x_opencti_workflow_id: ID
+type RequestAccessWorkflow {
+  approved_workflow_id: String
+  declined_workflow_id: String
+  workflow: [String]
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -66,6 +66,7 @@ type EntitySetting implements InternalObject & BasicObject {
     orderMode: OrderingMode
     search: String
   ): FintelTemplateConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  request_access_workflow: RequestAccessWorkflow @auth
 }
 
 # Ordering

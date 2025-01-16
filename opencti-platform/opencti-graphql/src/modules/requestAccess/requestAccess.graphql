@@ -3,8 +3,8 @@ enum RequestAccessType {
 }
 
 enum ActionStatus {
-  ACCEPTED,
-  REFUSED,
+  APPROVED,
+  DECLINED,
   NEW,
   NOT_FOUND,
   MISSING_PARAMETERS
@@ -25,7 +25,6 @@ type RequestAccessAction {
 
 type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
-  requestAccessValidate(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  requestAccessReject(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  requestAccessReopen(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  requestAccessApprove(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  requestAccessDecline(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }

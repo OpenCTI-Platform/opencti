@@ -73,11 +73,11 @@ export type AckDetails = {
 };
 
 export enum ActionStatus {
-  Accepted = 'ACCEPTED',
+  Approved = 'APPROVED',
+  Declined = 'DECLINED',
   MissingParameters = 'MISSING_PARAMETERS',
   New = 'NEW',
-  NotFound = 'NOT_FOUND',
-  Refused = 'REFUSED'
+  NotFound = 'NOT_FOUND'
 }
 
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -7295,6 +7295,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
+  request_access_workflow?: Maybe<RequestAccessWorkflow>;
   scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String']['output'];
   target_type: Scalars['String']['output'];
@@ -13865,9 +13866,8 @@ export type Mutation = {
   reportAdd?: Maybe<Report>;
   reportEdit?: Maybe<ReportEditMutations>;
   requestAccessAdd?: Maybe<Scalars['ID']['output']>;
-  requestAccessReject?: Maybe<RequestAccessAction>;
-  requestAccessReopen?: Maybe<RequestAccessAction>;
-  requestAccessValidate?: Maybe<RequestAccessAction>;
+  requestAccessApprove?: Maybe<RequestAccessAction>;
+  requestAccessDecline?: Maybe<RequestAccessAction>;
   resetFileIndexing?: Maybe<Scalars['Boolean']['output']>;
   resetStateConnector?: Maybe<Connector>;
   retentionRuleAdd: RetentionRule;
@@ -15392,17 +15392,12 @@ export type MutationRequestAccessAddArgs = {
 };
 
 
-export type MutationRequestAccessRejectArgs = {
+export type MutationRequestAccessApproveArgs = {
   id: Scalars['ID']['input'];
 };
 
 
-export type MutationRequestAccessReopenArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationRequestAccessValidateArgs = {
+export type MutationRequestAccessDeclineArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -23293,16 +23288,16 @@ export type RequestAccessAddInput = {
   request_access_type?: InputMaybe<RequestAccessType>;
 };
 
-export type RequestAccessTransition = {
-  __typename?: 'RequestAccessTransition';
-  from?: Maybe<Scalars['String']['output']>;
-  to: Scalars['String']['output'];
-  x_opencti_workflow_id?: Maybe<Scalars['ID']['output']>;
-};
-
 export enum RequestAccessType {
   OrganizationSharing = 'organization_sharing'
 }
+
+export type RequestAccessWorkflow = {
+  __typename?: 'RequestAccessWorkflow';
+  approved_workflow_id?: Maybe<Scalars['String']['output']>;
+  declined_workflow_id?: Maybe<Scalars['String']['output']>;
+  workflow?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+};
 
 export type ResolvedInstanceFilter = {
   __typename?: 'ResolvedInstanceFilter';
@@ -31786,8 +31781,8 @@ export type ResolversTypes = ResolversObject<{
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
   RequestAccessAction: ResolverTypeWrapper<RequestAccessAction>;
   RequestAccessAddInput: RequestAccessAddInput;
-  RequestAccessTransition: ResolverTypeWrapper<RequestAccessTransition>;
   RequestAccessType: RequestAccessType;
+  RequestAccessWorkflow: ResolverTypeWrapper<RequestAccessWorkflow>;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -32584,7 +32579,7 @@ export type ResolversParentTypes = ResolversObject<{
   RepresentativeWithId: RepresentativeWithId;
   RequestAccessAction: RequestAccessAction;
   RequestAccessAddInput: RequestAccessAddInput;
-  RequestAccessTransition: RequestAccessTransition;
+  RequestAccessWorkflow: RequestAccessWorkflow;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -35260,6 +35255,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  request_access_workflow?: Resolver<Maybe<ResolversTypes['RequestAccessWorkflow']>, ParentType, ContextType>;
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -37736,9 +37732,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
   requestAccessAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRequestAccessAddArgs, 'input'>>;
-  requestAccessReject?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessRejectArgs, 'id'>>;
-  requestAccessReopen?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessReopenArgs, 'id'>>;
-  requestAccessValidate?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessValidateArgs, 'id'>>;
+  requestAccessApprove?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessApproveArgs, 'id'>>;
+  requestAccessDecline?: Resolver<Maybe<ResolversTypes['RequestAccessAction']>, ParentType, ContextType, RequireFields<MutationRequestAccessDeclineArgs, 'id'>>;
   resetFileIndexing?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;
   retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;
@@ -39613,10 +39608,10 @@ export type RequestAccessActionResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type RequestAccessTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessTransition'] = ResolversParentTypes['RequestAccessTransition']> = ResolversObject<{
-  from?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  x_opencti_workflow_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+export type RequestAccessWorkflowResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessWorkflow'] = ResolversParentTypes['RequestAccessWorkflow']> = ResolversObject<{
+  approved_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  declined_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  workflow?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42683,7 +42678,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Representative?: RepresentativeResolvers<ContextType>;
   RepresentativeWithId?: RepresentativeWithIdResolvers<ContextType>;
   RequestAccessAction?: RequestAccessActionResolvers<ContextType>;
-  RequestAccessTransition?: RequestAccessTransitionResolvers<ContextType>;
+  RequestAccessWorkflow?: RequestAccessWorkflowResolvers<ContextType>;
   ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;

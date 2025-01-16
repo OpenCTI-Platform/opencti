@@ -9030,9 +9030,8 @@ type Mutation {
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
   disseminationListSend(input: DisseminationListSendInput!): Boolean
-  requestAccessValidate(id: ID!): RequestAccessAction
-  requestAccessReject(id: ID!): RequestAccessAction
-  requestAccessReopen(id: ID!): RequestAccessAction
+  requestAccessApprove(id: ID!): RequestAccessAction
+  requestAccessDecline(id: ID!): RequestAccessAction
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -10947,10 +10946,10 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type RequestAccessTransition {
-  from: String
-  to: String!
-  x_opencti_workflow_id: ID
+type RequestAccessWorkflow {
+  approved_workflow_id: String
+  declined_workflow_id: String
+  workflow: [String]
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -10972,6 +10971,7 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  request_access_workflow: RequestAccessWorkflow
 }
 
 enum EntitySettingsOrdering {
