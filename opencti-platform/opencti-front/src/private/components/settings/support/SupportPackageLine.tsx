@@ -26,6 +26,7 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { minutesBetweenDates, now } from '../../../../utils/Time';
+import downloadAs from '../../../../utils/downloadAs';
 
 const styles = {
   bodyItem: {
@@ -164,7 +165,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
         // Check if there is a valid URL and initiate download
         if (res.supportPackageForceZip?.package_url) {
           MESSAGING$.notifySuccess('Force zip launched. Your download will start shortly.');
-          window.location.href = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(res.supportPackageForceZip.package_url)}`;
+          downloadAs(`${APP_BASE_PATH}/storage/get/${encodeURIComponent(res.supportPackageForceZip.package_url)}`, data.name);
         } else {
           MESSAGING$.notifyError('No download URL available.');
         }
@@ -231,9 +232,9 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
             <span>
               <IconButton
                 disabled={!data.package_url}
-                href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                  data.package_url || '',
-                )}`}
+                onClick={() => {
+                  downloadAs(`${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.package_url || '')}`, data.name);
+                }}
               >
                 <GetAppOutlined fontSize="small" />
               </IconButton>
