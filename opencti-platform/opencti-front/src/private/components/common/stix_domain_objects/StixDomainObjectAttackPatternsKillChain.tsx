@@ -25,6 +25,7 @@ import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_
 import { attackPatternsMatrixColumnsFragment, attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumns_data.graphql';
+import EntityStixCoreRelationshipsRelationshipsView from '@components/common/stix_core_relationships/views/EntityStixCoreRelationshipsRelationshipsView';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -443,6 +444,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             coursesOfAction={true}
           />
         )}
+        {/* {(currentView === 'relationships' && ( */}
+        {/*  <EntityStixCoreRelationshipsRelationshipsView */}
+        {/*    entityId={stixDomainObjectId} */}
+        {/*    entityLink={'entityLink'} */}
+        {/*    defaultStartTime={defaultStartTime} */}
+        {/*    defaultStopTime={defaultStopTime} */}
+        {/*  /> */}
+        {/* ))} */}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
