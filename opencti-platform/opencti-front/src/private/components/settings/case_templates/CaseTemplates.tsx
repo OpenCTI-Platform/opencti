@@ -75,6 +75,7 @@ const CaseTemplates = () => {
         handleSearch={helpers.handleSearch}
         displayImport={false}
         keyword={searchTerm}
+        createButton={<CaseTemplateCreation paginationOptions={paginationOptions} />}
       >
         {queryRef && (
           <>
@@ -110,9 +111,6 @@ const CaseTemplates = () => {
       <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
       {renderLines()}
-      <CaseTemplateCreation
-        paginationOptions={paginationOptions}
-      />
     </div>
   );
 };
