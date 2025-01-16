@@ -5,7 +5,7 @@ import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
 import convertFeedbackToStix from './feedback-converter';
 import { createdBy, objectAssignee, objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
-import { authorizedMembers } from '../../../schema/attribute-definition';
+import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
 const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> = {
   type: {
@@ -33,7 +33,8 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
   ],
   attributes: [
     { name: 'rating', label: 'Rating', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { ...authorizedMembers, editDefault: true }
+    { ...authorizedMembers, editDefault: true },
+    { ...authorizedMembersActivationDate },
   ],
   relations: [],
   relationsRefs: [
