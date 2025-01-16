@@ -502,7 +502,7 @@ const ContainerHeader = (props) => {
       ],
     },
   };
-  const isAuthorizedMembersEnabled = !disableAuthorizedMembers && (isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS') || container.entity_type === 'Feedback');
+  const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;

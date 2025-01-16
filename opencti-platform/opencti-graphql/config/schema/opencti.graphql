@@ -2352,6 +2352,7 @@ enum StixCoreObjectsOrdering {
   opinions_metrics_max
   opinions_metrics_total
   _score
+  authorized_members_activation_date
 }
 type StixCoreObjectConnection {
   pageInfo: PageInfo!

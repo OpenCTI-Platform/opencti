@@ -121,7 +121,7 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
@@ -196,7 +196,6 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
 import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -1918,11 +1917,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   // Check user access update
   let accessOperation = 'edit';
   if (updates.some((e) => e.key === 'authorized_members')) {
-    if (isStixObject(initial.entity_type)
-      && initial.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK
-      && !isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
-      throw UnsupportedError('This feature is disabled');
-    }
     accessOperation = 'manage-access';
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
       && (!initial.authorized_members || initial.authorized_members.length === 0)
