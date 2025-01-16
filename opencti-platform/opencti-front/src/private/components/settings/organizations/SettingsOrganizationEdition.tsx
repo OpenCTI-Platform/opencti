@@ -22,6 +22,8 @@ import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
+import UpdateOrganizationControlledDial from '../../../../components/UpdateEntityControlledDial';
 
 const organizationMutationFieldPatch = graphql`
   mutation SettingsOrganizationEditionMutation(
@@ -106,6 +108,8 @@ const SettingsOrganizationEdition = ({
 }: SettingsOrganizationEditionProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -187,8 +191,12 @@ const SettingsOrganizationEdition = ({
   return (
     <Drawer
       title={t_i18n('Update the organization')}
-      variant={DrawerVariant.updateWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.updateWithPanel}
       context={context}
+      controlledDial={isFABReplaced
+        ? UpdateOrganizationControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <Formik<SettingsOrganizationFormValues>
