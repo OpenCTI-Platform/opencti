@@ -1349,10 +1349,9 @@ export const buildCompleteUser = async (context, client) => {
   );
   const userGroupsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const allowed_organizations = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, client.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-  const userOrganizations = allowed_organizations.map((m) => m.internal_id);
-  const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
+  const userOrganizationIds = organizations.map((m) => m.internal_id);
+  const isUserPlatform = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
   const roles = await getRoles(context, groups);
   const capabilities = await getCapabilities(context, client.id, roles);
   const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
@@ -1365,7 +1364,7 @@ export const buildCompleteUser = async (context, client) => {
 
   // Default hidden types
   const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
-  const defaultHiddenTypesOrgs = getDefaultHiddenTypes(allowed_organizations);
+  const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
   const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
 
   // effective confidence level
