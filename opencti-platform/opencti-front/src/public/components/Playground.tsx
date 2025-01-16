@@ -2,11 +2,12 @@ import React from 'react';
 import { GraphiQL } from 'graphiql';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
 import 'graphiql/graphiql.css';
+import Box from '@mui/material/Box';
 import { APP_BASE_PATH } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
 import PublicTopBar from './PublicTopBar';
 
-const defaultQuery = `{
+const defaultQuery = `query ExampleQuery {
   intrusionSets {
     edges {
       node {
@@ -82,7 +83,16 @@ const fetcher = createGraphiQLFetcher({ url: `${APP_BASE_PATH}/graphql` });
 const Playground: React.FC = () => {
   const { t_i18n } = useFormatter();
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        pre: {
+          backgroundColor: 'transparent !important',
+        },
+      }}
+    >
       <PublicTopBar title={t_i18n('GraphQL playground')} />
       <GraphiQL
         fetcher={fetcher}
@@ -92,7 +102,7 @@ const Playground: React.FC = () => {
         ]}
         forcedTheme={'dark'}
       />
-    </div>
+    </Box>
   );
 };
 
