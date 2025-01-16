@@ -1654,6 +1654,7 @@ type User implements BasicObject & InternalObject {
   restrict_delete: Boolean
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   objectOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
+  objectAssignedOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
   updated_at: DateTime!
   sessions: [SessionDetail]

@@ -1574,6 +1574,10 @@ type User implements BasicObject & InternalObject {
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
   ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  objectAssignedOrganization(
+    orderBy: OrganizationsOrdering
+    orderMode: OrderingMode
+  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   created_at: DateTime!
   updated_at: DateTime!
   sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])

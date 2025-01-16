@@ -91,7 +91,6 @@ export const SYSTEM_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   default_marking: [],
   max_shareable_marking: [],
@@ -125,7 +124,6 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -159,7 +157,6 @@ export const RULE_MANAGER_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -193,7 +190,6 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -227,7 +223,6 @@ export const DECAY_MANAGER_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -261,7 +256,6 @@ export const GARBAGE_COLLECTION_MANAGER_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -296,7 +290,6 @@ export const REDACTED_USER: AuthUser = {
   groups: [],
   capabilities: [],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -323,7 +316,6 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
-  allowed_organizations: [],
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
@@ -433,7 +425,7 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
       }
       // Check restricted elements
       const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-      const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
+      const userOrganizations = user.organizations.map((o) => o.internal_id);
       // If platform organization is set
       if (settings.platform_organization) {
         // If user part of platform organization, is granted by default
@@ -488,7 +480,7 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   // Check restricted elements
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const userOrganizations = user.allowed_organizations.map((o) => o.standard_id);
+  const userOrganizations = user.organizations.map((o) => o.standard_id);
   // If platform organization is set
   if (settings.platform_organization) {
     // If user part of platform organization, is granted by default
@@ -509,8 +501,8 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
 // returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids
 export const computeUserMemberAccessIds = (user: AuthUser) => {
   const memberAccessIds = [user.id];
-  if (user.allowed_organizations) {
-    const userOrganizationsIds = user.allowed_organizations.map((org) => org.internal_id);
+  if (user.organizations) {
+    const userOrganizationsIds = user.organizations.map((org) => org.internal_id);
     memberAccessIds.push(...userOrganizationsIds);
   }
   if (user.groups) {

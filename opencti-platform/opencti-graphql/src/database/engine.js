@@ -26,8 +26,10 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
+  READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
+  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
@@ -41,6 +43,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   waitInSec,
   WRITE_PLATFORM_INDICES
@@ -501,7 +504,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         // Data with Empty granted_refs are not visible
         // Data with granted_refs users that participate to at least one
         const should = [excludedEntityMatches];
-        const shouldOrgs = user.allowed_organizations
+        const shouldOrgs = user.organizations
           .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
         // User individual or data created by this individual must be accessible
@@ -1474,14 +1477,20 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
-export const computeQueryIndices = (indices, typeOrTypes) => {
+const withInferencesEntities = (indices, withInferences) => {
+  return withInferences ? [READ_INDEX_INFERRED_ENTITIES, ...indices] : indices;
+};
+const withInferencesRels = (indices, withInferences) => {
+  return withInferences ? [READ_INDEX_INFERRED_RELATIONSHIPS, ...indices] : indices;
+};
+export const computeQueryIndices = (indices, typeOrTypes, withInferences = true) => {
   const types = (Array.isArray(typeOrTypes) || isEmptyField(typeOrTypes)) ? typeOrTypes : [typeOrTypes];
   // If indices are explicitly defined, just rely on the definition
   if (isEmptyField(indices)) {
     // If not and have no clue about the expected types, ask for all indices.
     // Worst case scenario that need to be avoided.
     if (isEmptyField(types)) {
-      return READ_DATA_INDICES;
+      return withInferences ? READ_DATA_INDICES : READ_DATA_INDICES_WITHOUT_INFERRED;
     }
     // If types are defined we need to infer from them the correct indices
     return R.uniq(types.map((findType) => {
@@ -1489,35 +1498,51 @@ export const computeQueryIndices = (indices, typeOrTypes) => {
       if (isAbstract(findType)) {
         // For objects
         if (isBasicObject(findType)) {
-          if (isInternalObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INTERNAL_OBJECTS];
-          if (isStixMetaObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_META_OBJECTS];
-          if (isStixDomainObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS];
-          if (isStixCoreObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
-          if (isStixObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
-          return READ_ENTITIES_INDICES;
+          if (isInternalObject(findType)) {
+            return withInferencesEntities([READ_INDEX_INTERNAL_OBJECTS], withInferences);
+          }
+          if (isStixMetaObject(findType)) {
+            return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS], withInferences);
+          }
+          if (isStixDomainObject(findType)) {
+            return withInferencesEntities([READ_INDEX_STIX_DOMAIN_OBJECTS], withInferences);
+          }
+          if (isStixCoreObject(findType)) {
+            return withInferencesEntities([READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES], withInferences);
+          }
+          if (isStixObject(findType)) {
+            return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES], withInferences);
+          }
+          return withInferences ? READ_ENTITIES_INDICES : READ_ENTITIES_INDICES_WITHOUT_INFERRED;
         }
         // For relationships
         if (isBasicRelationship(findType) || STIX_REF_RELATIONSHIP_TYPES.includes(findType)) {
-          if (isInternalRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INTERNAL_RELATIONSHIPS];
-          if (isStixSightingRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
-          if (isStixCoreRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS];
+          if (isInternalRelationship(findType)) {
+            return withInferencesRels([READ_INDEX_INTERNAL_RELATIONSHIPS], withInferences);
+          }
+          if (isStixSightingRelationship(findType)) {
+            return withInferencesRels([READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], withInferences);
+          }
+          if (isStixCoreRelationship(findType)) {
+            return withInferencesRels([READ_INDEX_STIX_CORE_RELATIONSHIPS], withInferences);
+          }
           if (isStixRefRelationship(findType) || STIX_REF_RELATIONSHIP_TYPES.includes(findType)) {
-            return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+            return withInferencesRels([READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], withInferences);
           }
           if (isStixRelationship(findType)) {
-            return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
-              READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+            return withInferencesRels([READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
+              READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], withInferences);
           }
-          return READ_RELATIONSHIPS_INDICES;
+          return withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
         }
         // Fallback
         throw UnsupportedError('Fail to compute indices for unknown type', { type: findType });
       }
       // If concrete type, infer the index from the type
       if (isBasicObject(findType)) {
-        return [READ_INDEX_INFERRED_ENTITIES, `${inferIndexFromConceptType(findType)}*`];
+        return withInferencesEntities([`${inferIndexFromConceptType(findType)}*`], withInferences);
       }
-      return [READ_INDEX_INFERRED_RELATIONSHIPS, `${inferIndexFromConceptType(findType)}*`];
+      return withInferencesRels([`${inferIndexFromConceptType(findType)}*`], withInferences);
     }).flat());
   }
   return indices;
