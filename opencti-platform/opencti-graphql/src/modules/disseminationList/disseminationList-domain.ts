@@ -30,6 +30,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   const filePath = input.email_attached_file_id;
   const file = await loadFile(context, user, filePath);
   if (file) {
+    const stream = await downloadFile(file.id);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
@@ -39,8 +40,8 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
       html: input.email_body,
       attachments: [
         {
-          // TODO : use the good path
-          path: file.id
+          filename: file.name,
+          content: stream,
         }
       ],
     };
