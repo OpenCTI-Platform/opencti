@@ -10,7 +10,7 @@ import Loader from '../../../../components/Loader';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
-  withoutRelations: boolean;
+  withoutRelations?: boolean;
 };
 
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
