@@ -443,11 +443,11 @@ const Settings = () => {
                       </Paper>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
+                      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
                         {t_i18n('License')}
                       </Typography>
                       {!isEnterpriseEditionByConfig && (
-                        <div style={{ float: 'right', marginTop: theme.spacing(-4.2), position: 'relative' }}>
+                        <div style={{ float: 'right', marginTop: theme.spacing(-1.8), position: 'relative' }}>
                           <EnterpriseEditionButton title={t_i18n('Change your Enterprise Edition license')} inLine={true} />
                         </div>
                       )}
