@@ -25,6 +25,8 @@ const FormAuthorizedMembersDialog = ({
   authorizedMembers,
   owner,
 }: FormAuthorizedMembersDialogProps) => {
+  const { me } = useAuth();
+  const disabledInDraft = !!me.draftContext;
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -65,16 +67,16 @@ const FormAuthorizedMembersDialog = ({
   const lockColor = (authorizedMembers && authorizedMembers.length > 0) ? 'warning' : 'primary';
   return (
     <>
-      <EETooltip title={t_i18n('Manage access restriction')}>
+      <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
         <ToggleButton
-          onClick={() => isEnterpriseEdition && setOpen(true)}
+          onClick={() => !disabledInDraft && isEnterpriseEdition && setOpen(true)}
           value="manage-access"
           size="small"
           style={{ marginRight: 3 }}
         >
           <LockPersonOutlined
             fontSize="small"
-            color={isEnterpriseEdition ? lockColor : 'disabled'}
+            color={!disabledInDraft && isEnterpriseEdition ? lockColor : 'disabled'}
           />
         </ToggleButton>
       </EETooltip>
