@@ -28,9 +28,8 @@ import { findById as findInvestigationById } from '../modules/workspace/workspac
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import conf, { isFeatureEnabled } from '../config/conf';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
