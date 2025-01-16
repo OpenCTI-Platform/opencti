@@ -648,7 +648,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           />
         )}
         {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
-          && dataSelection.map(({ perspective, columns }, index) => ((perspective === 'relationships' || perspective === 'entities') ? (
+          && dataSelection.map(({ perspective, columns }, index) => ((perspective === 'relationships') ? (
             <WidgetConfigColumnsCustomization
               key={index}
               availableColumns={commonWidgetColumns[perspective]}
