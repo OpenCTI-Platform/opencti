@@ -25,8 +25,6 @@ import { UserUserRenewTokenMutation } from '@components/settings/users/__generat
 import Tooltip from '@mui/material/Tooltip';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
-import UserEdition from './UserEdition';
-import { userEditionQuery } from './UserPopover';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { now, timestamp, yearsAgo } from '../../../../utils/Time';
@@ -40,7 +38,6 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import Triggers from '../common/Triggers';
 import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
-import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -784,16 +781,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           )}
         </Grid>
       </Grid>
-      <QueryRenderer
-        query={userEditionQuery}
-        variables={{ id: user.id }}
-        render={({ props }: { props: UserPopoverEditionQuery$data }) => {
-          if (props && props.user) {
-            return <UserEdition user={props.user} />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
       <Dialog
         open={displayKillSession}
         PaperProps={{ elevation: 1 }}

@@ -24,6 +24,8 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -79,6 +81,15 @@ const userValidation = (t) => Yup.object().shape({
   groups: Yup.array().nullable(),
 });
 
+const CreateOrgUserControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='User'
+    entityPrefix={false}
+    size='medium'
+    {...props}
+  />
+);
+
 const SettingsOrganizationUserCreation = ({
   paginationOptions,
   organization,
@@ -87,6 +98,8 @@ const SettingsOrganizationUserCreation = ({
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -126,19 +139,21 @@ const SettingsOrganizationUserCreation = ({
       },
     });
   };
+  let createButton = (
+    <Fab
+      onClick={() => setOpenAddUser(true)}
+      color="secondary"
+      aria-label="Add"
+      className={classes.createButtonFab}
+    >
+      <Add />
+    </Fab>
+  );
+  if (isFABReplaced) { createButton = CreateOrgUserControlledDial; }
 
   return (
     <>
-      {variant === 'fab' ? (
-        <Fab
-          onClick={() => setOpenAddUser(true)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonFab}
-        >
-          <Add />
-        </Fab>
-      ) : (
+      {variant === 'fab' ? (createButton) : (
         <IconButton
           color="primary"
           aria-label="Add"
