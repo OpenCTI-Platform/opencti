@@ -127,6 +127,7 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         }
         created_at
         ... on StixCyberObservable {
+          observable_value
           ... on StixFile {
             hashes {
               algorithm
