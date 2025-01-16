@@ -111,7 +111,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
       />
       <LabelCreation
         contextual={true}
-        inputValue={labelInput}
+        inputValueContextual={labelInput}
         required={required}
         open={labelCreation}
         handleClose={() => setLabelCreation(false)}

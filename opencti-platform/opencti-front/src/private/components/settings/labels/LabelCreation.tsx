@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
 import { useTheme } from '@mui/styles';
 import Dialog from '@mui/material/Dialog';
@@ -12,81 +11,84 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
-import TextField from '../../../../components/TextField';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import SimpleTextField from '../../../../components/SimpleTextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import type { Theme } from '../../../../components/Theme';
-import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
-import { StatusTemplateAddInput, StatusTemplateCreationContextualMutation$data } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   dialog: {
     overflow: 'hidden',
   },
 }));
 
-const statusTemplateMutation = graphql`
-  mutation StatusTemplateCreationMutation($input: StatusTemplateAddInput!) {
-    statusTemplateAdd(input: $input) {
-      ...StatusTemplateLine_node
+const labelMutation = graphql`
+  mutation LabelCreationMutation($input: LabelAddInput!) {
+    labelAdd(input: $input) {
+      ...LabelsLine_node
     }
   }
 `;
 
-const statusTemplateContextualMutation = graphql`
-  mutation StatusTemplateCreationContextualMutation( $input: StatusTemplateAddInput!) {
-    statusTemplateAdd(input: $input) {
+const labelContextualMutation = graphql`
+  mutation LabelCreationContextualMutation($input: LabelAddInput!) {
+    labelAdd(input: $input) {
       id
-      name
+      value
     }
   }
 `;
 
-const CreateStatusTemplateControlledDial = (
+const CreateLabelsControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType="Status-Template"
+    entityType="Label"
     size="medium"
     {...props}
   />
 );
 
-interface StatusTemplateCreationProps {
+interface LabelCreationProps {
   contextual: boolean;
   inputValueContextual: string;
+  required: boolean;
   creationCallback: (
-    data: StatusTemplateCreationContextualMutation$data
+    data: LabelCreationContextualMutation$data
   ) => void;
   handleClose: () => void;
   open: boolean;
-  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
+  paginationOptions?: PaginationOptions,
+  dryrun: boolean;
 }
 
-const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = ({
+const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   contextual,
   inputValueContextual,
+  required,
   creationCallback,
   handleClose,
   open,
   paginationOptions,
+  dryrun,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const statusTemplateValidation = Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
+  const labelValidation = Yup.object().shape({
+    value: Yup.string().required(t_i18n('This field is required')),
     color: Yup.string().required(t_i18n('This field is required')),
   });
   const initialValues = {
-    name: '',
+    value: '',
     color: '',
   };
   const onSubmit = (
@@ -102,15 +104,15 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     commitMutation({
       ...defaultCommitMutation,
       mutation: contextual
-        ? statusTemplateContextualMutation
-        : statusTemplateMutation,
+        ? labelContextualMutation
+        : labelMutation,
       variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
         insertNode(
           store,
-          'Pagination_statusTemplates',
+          'Pagination_labels',
           paginationOptions,
-          'statusTemplateAdd',
+          'labelAdd',
         );
       },
       setSubmitting,
@@ -121,27 +123,32 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     });
   };
 
-  const onSubmitContextual: FormikConfig<StatusTemplateAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmitContextual: FormikConfig<LabelAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = {
       ...values,
     };
+    if (dryrun && contextual) {
+      creationCallback({
+        labelAdd: values,
+      } as LabelCreationContextualMutation$data);
+      handleClose();
+      return;
+    }
     commitMutation({
       ...defaultCommitMutation,
-      mutation: statusTemplateContextualMutation,
+      mutation: labelContextualMutation,
       variables: { input: finalValues },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
       onCompleted: (
-        response: StatusTemplateCreationContextualMutation$data,
+        response: LabelCreationContextualMutation$data,
       ) => {
         setSubmitting(false);
         resetForm();
-        if (contextual) {
-          creationCallback(response);
-          handleClose();
-        }
+        creationCallback(response);
+        handleClose();
       },
     });
   };
@@ -151,24 +158,27 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('Create a status template')}
+        title={t_i18n('Create a label')}
         variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-        controlledDial={isFABReplaced ? CreateStatusTemplateControlledDial : undefined}
+        controlledDial={isFABReplaced
+          ? CreateLabelsControlledDial
+          : undefined
+        }
       >
         {({ onClose }) => (
           <Formik
             initialValues={initialValues}
-            validationSchema={statusTemplateValidation}
+            validationSchema={labelValidation}
             onSubmit={onSubmit}
             onReset={onClose}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
                 <Field
-                  component={TextField}
+                  component={SimpleTextField}
                   variant="standard"
-                  name="name"
-                  label={t_i18n('Name')}
+                  name="value"
+                  label={t_i18n('Value')}
                   fullWidth={true}
                 />
                 <Field
@@ -213,11 +223,13 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     return (
       <div>
         <Formik
-          initialValues = {{
-            name: inputValueContextual,
+          enableReinitialize={true}
+          initialValues={{
+            value: inputValueContextual,
             color: '',
           }}
-          validationSchema={statusTemplateValidation}
+          required={required}
+          validationSchema={labelValidation}
           onSubmit={onSubmitContextual}
           onReset={onResetContextual}
         >
@@ -229,13 +241,13 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                 onClose={handleClose}
                 fullWidth={true}
               >
-                <DialogTitle>{t_i18n('Create a status template')}</DialogTitle>
+                <DialogTitle>{t_i18n('Create a label')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialog }}>
                   <Field
-                    component={TextField}
+                    component={SimpleTextField}
                     variant="standard"
-                    name="name"
-                    label={t_i18n('Name')}
+                    name="value"
+                    label={t_i18n('Value')}
                     fullWidth={true}
                   />
                   <Field
@@ -269,4 +281,4 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   return contextual ? renderContextual() : renderClassic();
 };
 
-export default StatusTemplateCreation;
+export default LabelCreation;
