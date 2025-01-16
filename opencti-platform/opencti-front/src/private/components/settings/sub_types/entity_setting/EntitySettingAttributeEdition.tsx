@@ -142,7 +142,9 @@ const EntitySettingAttributeEdition = ({
   };
 
   const defaultValues = () => {
-    const values = attribute.defaultValues ? [...attribute.defaultValues] : [];
+    const defaultValueAttribute = entitySetting.defaultValuesAttributes.find((element) => element.name === attribute.name);
+    const attributeDefaultValues = defaultValueAttribute?.defaultValues ?? attribute.defaultValues;
+    const values = attributeDefaultValues ? [...attributeDefaultValues] : [];
     return computeDefaultValues(
       entitySetting.target_type,
       attribute.name,

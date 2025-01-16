@@ -22,6 +22,14 @@ const entitySettingAttributesFragment = graphql`
       ...EntitySettingAttributeLine_attribute
     }
     attributes_configuration
+    defaultValuesAttributes {
+      name
+      type
+      defaultValues {
+        id
+        name
+      }
+    }
   }
 `;
 
