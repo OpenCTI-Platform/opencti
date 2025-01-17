@@ -171,10 +171,10 @@ const FileWorkComponent = (props) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <div className={classes.itemText}>{computeLabel()}</div>
+                    <span className={classes.itemText}>{computeLabel()}</span>
                   }
                   secondary={
-                    <div className={classes.itemText}>{secondaryLabel}</div>
+                    <span className={classes.itemText}>{secondaryLabel}</span>
                   }
                 />
                 {!!work.draft_context && isDraftFeatureEnabled && (

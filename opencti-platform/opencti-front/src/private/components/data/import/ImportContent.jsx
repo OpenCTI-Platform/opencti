@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
+import React, { useState, useEffect } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
@@ -22,13 +19,14 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
+import makeStyles from '@mui/styles/makeStyles';
 import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import WorkbenchFileLine from '../../common/files/workbench/WorkbenchFileLine';
@@ -36,20 +34,13 @@ import FreeTextUploader from '../../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import withRouter from '../../../../utils/compat_router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const interval$ = interval(TEN_SECONDS);
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
+const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
   },
@@ -58,36 +49,15 @@ const styles = (theme) => ({
     borderRadius: 4,
     marginTop: 2,
   },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  linesContainer: {
-    marginTop: 10,
-  },
   itemHead: {
     paddingLeft: 10,
     textTransform: 'uppercase',
-  },
-  bodyItem: {
-    height: '100%',
-    fontSize: 13,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
   },
   createButton: {
     position: 'fixed',
     bottom: 30,
   },
-});
+}));
 
 const inlineStylesHeaders = {
   iconSort: {
@@ -123,51 +93,51 @@ const inlineStylesHeaders = {
 };
 
 const importConnectorsFragment = graphql`
-    fragment ImportContentContainer_connectorsImport on Connector
-    @relay(plural: true) {
-        id
-        name
-        active
-        only_contextual
-        connector_scope
-        updated_at
-        configurations {
-            id
-            name,
-            configuration
-        }
+  fragment ImportContentContainer_connectorsImport on Connector
+  @relay(plural: true) {
+    id
+    name
+    active
+    only_contextual
+    connector_scope
+    updated_at
+    configurations {
+      id
+      name,
+      configuration
     }
+  }
 `;
 
 export const importContentQuery = graphql`
-    query ImportContentQuery {
-        connectorsForImport {
-            ...ImportContentContainer_connectorsImport
-        }
-        importFiles(first: 100) @connection(key: "Pagination_global_importFiles") {
-            edges {
-                node {
-                    id
-                    ...FileLine_file
-                    metaData {
-                        mimetype
-                    }
-                }
-            }
-        }
-        pendingFiles(first: 100)
-        @connection(key: "Pagination_global_pendingFiles") {
-            edges {
-                node {
-                    id
-                    ...ImportWorkbenchesContentFileLine_file
-                    metaData {
-                        mimetype
-                    }
-                }
-            }
-        }
+  query ImportContentQuery {
+    connectorsForImport {
+        ...ImportContentContainer_connectorsImport
     }
+    importFiles(first: 100) @connection(key: "Pagination_global_importFiles") {
+      edges {
+        node {
+          id
+          ...FileLine_file
+          metaData {
+            mimetype
+          }
+        }
+      }
+    }
+    pendingFiles(first: 100)
+    @connection(key: "Pagination_global_pendingFiles") {
+      edges {
+        node {
+          id
+          ...ImportWorkbenchesContentFileLine_file
+          metaData {
+            mimetype
+          }
+        }
+      }
+    }
+  }
 `;
 
 const importValidation = (t, configurations) => {
@@ -183,71 +153,71 @@ const importValidation = (t, configurations) => {
   return Yup.object().shape(shape);
 };
 
-class ImportContentComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      fileToImport: null,
-      fileToValidate: null,
-      displayCreate: false,
-      sortBy: 'name',
-      orderAsc: true,
-      selectedConnector: null,
-      hasUserChoiceCsvMapper: false,
-    };
-  }
+const ImportContentComponent = ({
+  connectorsImport,
+  relay,
+  importFiles,
+  pendingFiles,
+  isNewImportScreensEnabled,
+}) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Import: Import | Data'));
 
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch();
+  const [fileToImport, setFileToImport] = useState(null);
+  const [fileToValidate, setFileToValidate] = useState(null);
+  const [displayCreate, setDisplayCreate] = useState(false);
+  const [sortBy, setSortBy] = useState('name');
+  const [orderAsc, setOrderAsc] = useState(true);
+  const [selectedConnector, setSelectedConnector] = useState(null);
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+
+  useEffect(() => {
+    const subscription = interval$.subscribe(() => {
+      relay.refetch();
     });
-  }
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
-  handleSetCsvMapper(_, csvMapper) {
+  const handleSetCsvMapper = (_, csvMapper) => {
     const parsedCsvMapper = JSON.parse(csvMapper);
     const parsedRepresentations = JSON.parse(parsedCsvMapper.representations);
     const selectedCsvMapper = {
       ...parsedCsvMapper,
       representations: [...parsedRepresentations],
     };
-    this.setState({ hasUserChoiceCsvMapper: resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper) });
-  }
+    setHasUserChoiceCsvMapper(resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper));
+  };
 
-  handleOpenImport(file) {
-    this.setState({ fileToImport: file });
-  }
+  const handleOpenImport = (file) => {
+    setFileToImport(file);
+  };
+  const handleCloseImport = () => {
+    setFileToImport(null);
+  };
 
-  handleCloseImport() {
-    this.setState({
-      fileToImport: null,
-    });
-  }
+  const handleOpenValidate = (file) => {
+    setFileToValidate(file);
+  };
+  const handleCloseValidate = () => {
+    setFileToValidate(null);
+  };
 
-  handleOpenValidate(file) {
-    this.setState({ fileToValidate: file });
-  }
+  const handleOpenCreate = () => {
+    setDisplayCreate(true);
+  };
+  const handleCloseCreate = () => {
+    setDisplayCreate(false);
+  };
 
-  handleCloseValidate() {
-    this.setState({ fileToValidate: null });
-  }
-
-  handleOpenCreate() {
-    this.setState({ displayCreate: true });
-  }
-
-  handleCloseCreate() {
-    this.setState({ displayCreate: false });
-  }
-
-  onSubmitImport(values, { setSubmitting, resetForm }) {
-    const { connector_id, configuration, objectMarking } = values;
+  const onSubmitImport = (values, { setSubmitting, resetForm }) => {
+    const { connector_id, configuration, objectMarking, validation_mode } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
-    const isCsvConnector = this.state.selectedConnector?.name === 'ImportCsv';
+    const isCsvConnector = selectedConnector?.name === 'ImportCsv';
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
@@ -258,47 +228,48 @@ class ImportContentComponent extends Component {
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
-        fileName: this.state.fileToImport.id,
+        fileName: fileToImport.id,
         connectorId: connector_id,
         configuration: config,
+        validationMode: validation_mode,
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleCloseImport();
-        MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
+        handleCloseImport();
+        MESSAGING$.notifySuccess(t_i18n('Import successfully asked'));
       },
     });
-  }
+  };
 
-  onSubmitValidate(values, { setSubmitting, resetForm }) {
+  const onSubmitValidate = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
-        fileName: this.state.fileToValidate.id,
+        fileName: fileToValidate.id,
         connectorId: values.connector_id,
         bypassValidation: true,
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleCloseValidate();
-        MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
+        handleCloseValidate();
+        MESSAGING$.notifySuccess(t_i18n('Import successfully asked'));
       },
     });
-  }
+  };
 
-  onCreateWorkbenchCompleted() {
-    this.props.relay.refetch();
-  }
+  const onCreateWorkbenchCompleted = () => {
+    relay.refetch();
+  };
 
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
-  }
+  const reverseBy = (field) => {
+    setSortBy(field);
+    setOrderAsc(!orderAsc);
+  };
 
-  SortHeader(field, label, isSortable) {
-    const { t } = this.props;
-    const sortComponent = this.state.orderAsc ? (
+  const sortHeader = (field, label, isSortable) => {
+    const sortComponent = orderAsc ? (
       <ArrowDropDown style={inlineStylesHeaders.iconSort} />
     ) : (
       <ArrowDropUp style={inlineStylesHeaders.iconSort} />
@@ -307,232 +278,241 @@ class ImportContentComponent extends Component {
       return (
         <div
           style={inlineStylesHeaders[field]}
-          onClick={this.reverseBy.bind(this, field)}
+          onClick={() => reverseBy(field)}
         >
-          <span>{t(label)}</span>
-          {this.state.sortBy === field ? sortComponent : ''}
+          <span>{t_i18n(label)}</span>
+          {sortBy === field ? sortComponent : ''}
         </div>
       );
     }
     return (
       <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
       </div>
     );
-  }
+  };
 
-  render() {
-    const {
-      classes,
-      t,
-      importFiles,
-      pendingFiles,
-      connectorsImport,
-      relay,
-      isNewImportScreensEnabled,
-    } = this.props;
-    const { edges: importFilesEdges } = importFiles;
-    const { edges: pendingFilesEdges } = pendingFiles;
-    const { fileToImport, fileToValidate, displayCreate } = this.state;
-    const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
-    const importConnsPerFormat = scopesConn(connectors);
-    const handleSelectConnector = (_, value) => {
-      const selectedConnector = connectors.find((c) => c.id === value);
-      this.setState({ selectedConnector });
-    };
-    const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
-      && this.state.selectedConnector?.configurations?.length === 0;
-    return (
-      <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
-        <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
-        {isNewImportScreensEnabled && <ImportMenu/>}
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 0 }}
-        >
-          <Grid item xs={12} style={{ paddingTop: 0 }}>
-            <div style={{ height: '100%' }} className="break">
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Uploaded files')}
-              </Typography>
-              <div style={{ float: 'left', marginTop: -15 }}>
-                <FileUploader
-                  onUploadSuccess={() => relay.refetch()}
-                  size="medium"
-                />
-                <FreeTextUploader
-                  onUploadSuccess={() => relay.refetch()}
-                  size="medium"
-                />
-              </div>
-              <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
-                {importFilesEdges.length ? (
-                  <List>
-                    {importFilesEdges.map((file) => file?.node && (
-                      <FileLine
-                        key={file.node.id}
-                        file={file.node}
-                        connectors={
-                          importConnsPerFormat[file.node.metaData.mimetype]
-                        }
-                        handleOpenImport={this.handleOpenImport.bind(this)}
-                      />
-                    ))}
-                  </List>
-                ) : (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No file for the moment')}
-                    </span>
-                  </div>
-                )}
-              </Paper>
+  const { edges: importFilesEdges } = importFiles;
+  const { edges: pendingFilesEdges } = pendingFiles;
+  const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
+  const importConnsPerFormat = scopesConn(connectors);
+  const handleSelectConnector = (_, value) => {
+    const connector = connectors.find((c) => c.id === value);
+    setSelectedConnector(connector);
+  };
+
+  const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
+
+  return (
+    <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+      />
+      {isNewImportScreensEnabled && <ImportMenu/>}
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 0 }}
+      >
+        <Grid item xs={12} style={{ paddingTop: 0 }}>
+          <div style={{ height: '100%' }} className="break">
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ float: 'left' }}
+            >
+              {t_i18n('Uploaded files')}
+            </Typography>
+            <div style={{ float: 'left', marginTop: -15 }}>
+              <FileUploader
+                onUploadSuccess={() => relay.refetch()}
+                size="medium"
+              />
+              <FreeTextUploader
+                onUploadSuccess={() => relay.refetch()}
+                size="medium"
+              />
             </div>
-          </Grid>
-          <Grid item xs={12}>
-            <div style={{ height: '100%' }} className="break">
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ marginBottom: 15 }}
-              >
-                {t('Analyst workbenches')}
-              </Typography>
-              <Paper classes={{ root: classes.paper }} variant="outlined">
+            <div className="clearfix" />
+            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+              {importFilesEdges.length ? (
                 <List>
-                  <ListItem
-                    classes={{ root: classes.itemHead }}
-                    divider={false}
-                    style={{ paddingTop: 0 }}
-                  >
-                    <ListItemIcon>
-                      <span
-                        style={{
-                          padding: '0 8px 0 8px',
-                          fontWeight: 700,
-                          fontSize: 12,
-                        }}
-                      >
-                        &nbsp;
-                      </span>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div>
-                          {this.SortHeader('name', 'Name', false)}
-                          {this.SortHeader('creator_name', 'Creator', false)}
-                          {this.SortHeader('labels', 'Labels', false)}
-                          {this.SortHeader(
-                            'lastModified',
-                            'Modification date',
-                            false,
-                          )}
-                        </div>
-                      }
-                    />
-                    <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
-                  </ListItem>
-                  {pendingFilesEdges.map((file) => (
-                    <WorkbenchFileLine
-                      key={file.node.id}
-                      file={file.node}
-                      connectors={
-                        importConnsPerFormat[file.node.metaData.mimetype]
-                      }
-                      handleOpenImport={this.handleOpenValidate.bind(this)}
-                    />
+                  {importFilesEdges.map((file) => file?.node && (
+                  <FileLine
+                    key={file.node.id}
+                    file={file.node}
+                    connectors={ importConnsPerFormat[file.node.metaData.mimetype] }
+                    handleOpenImport={handleOpenImport}
+                  />
                   ))}
                 </List>
-              </Paper>
-            </div>
-          </Grid>
-        </Grid>
-        <div>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
-            validationSchema={importValidation(t, !!this.state.selectedConnector?.configurations)}
-            onSubmit={this.onSubmitImport.bind(this)}
-            onReset={this.handleCloseImport.bind(this)}
-          >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
-              <Form style={{ margin: '0 0 20px 0' }}>
-                <Dialog
-                  open={!!fileToImport}
-                  PaperProps={{ elevation: 1 }}
-                  keepMounted={true}
-                  onClose={() => handleReset()}
-                  fullWidth={true}
+              ) : (
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
                 >
-                  <DialogTitle>{`${t('Launch an import')}`}</DialogTitle>
-                  <DialogContent>
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="connector_id"
-                      label={t('Connector')}
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                      onChange={handleSelectConnector}
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t_i18n('No file for the moment')}
+                  </span>
+                </div>
+              )}
+            </Paper>
+          </div>
+        </Grid>
+        <Grid item xs={12}>
+          <div style={{ height: '100%' }} className="break">
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ marginBottom: 15 }}
+            >
+              {t_i18n('Analyst workbenches')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <List>
+                <ListItem
+                  classes={{ root: classes.itemHead }}
+                  divider={false}
+                  style={{ paddingTop: 0 }}
+                >
+                  <ListItemIcon>
+                    <span
+                      style={{
+                        padding: '0 8px 0 8px',
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
                     >
-                      {connectors.map((connector) => {
-                        const disabled = !fileToImport
+                        &nbsp;
+                    </span>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div>
+                        {sortHeader('name', 'Name', false)}
+                        {sortHeader('creator_name', 'Creator', false)}
+                        {sortHeader('labels', 'Labels', false)}
+                        {sortHeader(
+                          'lastModified',
+                          'Modification date',
+                          false,
+                        )}
+                      </div>
+                      }
+                  />
+                  <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
+                </ListItem>
+                {pendingFilesEdges.map((file) => (
+                  <WorkbenchFileLine
+                    key={file.node.id}
+                    file={file.node}
+                    connectors={
+                        importConnsPerFormat[file.node.metaData.mimetype]
+                      }
+                    handleOpenImport={handleOpenValidate}
+                  />
+                ))}
+              </List>
+            </Paper>
+          </div>
+        </Grid>
+      </Grid>
+      <div>
+        <Formik
+          enableReinitialize={true}
+          initialValues={{ connector_id: '', validation_mode: 'workbench', configuration: '', objectMarking: [] }}
+          validationSchema={importValidation(t_i18n, !!selectedConnector?.configurations)}
+          onSubmit={onSubmitImport}
+          onReset={handleCloseImport}
+        >
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
+            <Form style={{ margin: '0 0 20px 0' }}>
+              <Dialog
+                open={!!fileToImport}
+                PaperProps={{ elevation: 1 }}
+                keepMounted={true}
+                onClose={() => handleReset()}
+                fullWidth={true}
+              >
+                <DialogTitle>{`${t_i18n('Launch an import')}`}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="connector_id"
+                    label={t_i18n('Connector')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                    onChange={handleSelectConnector}
+                  >
+                    {connectors.map((connector) => {
+                      const disabled = !fileToImport
                           || (connector.connector_scope.length > 0
-                            && !R.includes(
-                              fileToImport.metaData.mimetype,
-                              connector.connector_scope,
-                            ));
+                            && !connector.connector_scope.includes(fileToImport.metaData.mimetype));
+                      return (
+                        <MenuItem
+                          key={connector.id}
+                          value={connector.id}
+                          disabled={disabled || !connector.active}
+                        >
+                          {connector.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Field>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="validation_mode"
+                    label={t_i18n('Validation mode')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  >
+                    <MenuItem
+                      key={'workbench'}
+                      value={'workbench'}
+                    >
+                      {'Workbench'}
+                    </MenuItem>
+                    <MenuItem
+                      key={'draft'}
+                      value={'draft'}
+                    >
+                      {'Draft'}
+                    </MenuItem>
+                  </Field>
+                  {selectedConnector?.configurations?.length > 0
+                    ? <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="configuration"
+                        label={t_i18n('Configuration')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={handleSetCsvMapper}
+                      >
+                      {selectedConnector.configurations?.map((config) => {
                         return (
                           <MenuItem
-                            key={connector.id}
-                            value={connector.id}
-                            disabled={disabled || !connector.active}
+                            key={config.id}
+                            value={config.configuration}
                           >
-                            {connector.name}
+                            {config.name}
                           </MenuItem>
                         );
                       })}
                     </Field>
-                    {this.state.selectedConnector?.configurations?.length > 0
-                      ? <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="configuration"
-                          label={t('Configuration')}
-                          fullWidth={true}
-                          containerstyle={{ marginTop: 20, width: '100%' }}
-                          onChange={this.handleSetCsvMapper.bind(this)}
-                        >
-                        {this.state.selectedConnector.configurations?.map((config) => {
-                          return (
-                            <MenuItem
-                              key={config.id}
-                              value={config.configuration}
-                            >
-                              {config.name}
-                            </MenuItem>
-                          );
-                        })}
-                      </Field>
-                      : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
+                    : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                     }
-                    {this.state.selectedConnector?.name === 'ImportCsv'
-                      && this.state.hasUserChoiceCsvMapper
+                  {selectedConnector?.name === 'ImportCsv'
+                      && hasUserChoiceCsvMapper
                       && (
                         <>
                           <ObjectMarkingField
@@ -543,111 +523,98 @@ class ImportContentComponent extends Component {
                         </>
                       )
                     }
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleReset} disabled={isSubmitting}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting || !isValid || invalidCsvMapper || !this.state.selectedConnector}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Form>
-            )}
-          </Formik>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{ connector_id: '' }}
-            validationSchema={importValidation(t)}
-            onSubmit={this.onSubmitValidate.bind(this)}
-            onReset={this.handleCloseValidate.bind(this)}
-          >
-            {({ submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ margin: '0 0 20px 0' }}>
-                <Dialog
-                  open={!!fileToValidate}
-                  PaperProps={{ elevation: 1 }}
-                  keepMounted={true}
-                  onClose={this.handleCloseValidate.bind(this)}
-                  fullWidth={true}
-                >
-                  <DialogTitle>{t('Validate and send for import')}</DialogTitle>
-                  <DialogContent>
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="connector_id"
-                      label={t('Connector')}
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    >
-                      {connectors.map((connector, i) => {
-                        const disabled = !fileToValidate
-                          || (connector.connector_scope.length > 0
-                            && !R.includes(
-                              fileToValidate.metaData.mimetype,
-                              connector.connector_scope,
-                            ));
-                        return (
-                          <MenuItem
-                            key={i}
-                            value={connector.id}
-                            disabled={disabled || !connector.active}
-                          >
-                            {connector.name}
-                          </MenuItem>
-                        );
-                      })}
-                    </Field>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleReset} disabled={isSubmitting}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Form>
-            )}
-          </Formik>
-          <WorkbenchFileCreator
-            handleCloseCreate={this.handleCloseCreate.bind(this)}
-            openCreate={displayCreate}
-            onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
-          />
-        </div>
-        <Fab
-          onClick={this.handleOpenCreate.bind(this)}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-          style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting || !isValid || invalidCsvMapper || !selectedConnector}
+                  >
+                    {t_i18n('Create')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Form>
+          )}
+        </Formik>
+        <Formik
+          enableReinitialize={true}
+          initialValues={{ connector_id: '' }}
+          validationSchema={importValidation(t_i18n)}
+          onSubmit={onSubmitValidate}
+          onReset={handleCloseValidate}
         >
-          <Add />
-        </Fab>
+          {({ submitForm, handleReset, isSubmitting }) => (
+            <Form style={{ margin: '0 0 20px 0' }}>
+              <Dialog
+                open={!!fileToValidate}
+                PaperProps={{ elevation: 1 }}
+                keepMounted={true}
+                onClose={handleCloseValidate}
+                fullWidth={true}
+              >
+                <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="connector_id"
+                    label={t_i18n('Connector')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    {connectors.map((connector, i) => {
+                      const disabled = !fileToValidate
+                        || (connector.connector_scope.length > 0
+                          && !connector.connector_scope.includes(fileToValidate.metaData.mimetype));
+                      return (
+                        <MenuItem
+                          key={i}
+                          value={connector.id}
+                          disabled={disabled || !connector.active}
+                        >
+                          {connector.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Field>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Create')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Form>
+          )}
+        </Formik>
+        <WorkbenchFileCreator
+          handleCloseCreate={handleCloseCreate}
+          openCreate={displayCreate}
+          onCompleted={onCreateWorkbenchCompleted}
+        />
       </div>
-    );
-  }
-}
-
-ImportContentComponent.propTypes = {
-  connectorsImport: PropTypes.array,
-  importFiles: PropTypes.object,
-  pendingFiles: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  nsdt: PropTypes.func,
+      <Fab
+        onClick={handleOpenCreate}
+        color="primary"
+        aria-label="Add"
+        className={classes.createButton}
+        style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
+      >
+        <Add />
+      </Fab>
+    </div>
+  );
 };
 
 const ImportContent = createRefetchContainer(
@@ -658,4 +625,4 @@ const ImportContent = createRefetchContainer(
   importContentQuery,
 );
 
-export default R.compose(inject18n, withStyles(styles), withRouter)(ImportContent);
+export default ImportContent;

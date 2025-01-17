@@ -15,7 +15,7 @@ type FileImportMarkingSelectionPopupProps = {
   closePopup: () => void;
   handleUpload: (fileMarkings: string[], associatedEntityId?: string) => void;
   isOpen: boolean
-  entityId: string
+  entityId?: string
 };
 
 export type SubmittedFormValues = {

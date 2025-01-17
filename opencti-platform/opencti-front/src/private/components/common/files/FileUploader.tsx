@@ -43,7 +43,7 @@ const fileUploaderEntityMutation = graphql`
 `;
 
 interface FileUploaderProps {
-  entityId: string;
+  entityId?: string;
   onUploadSuccess: (id?: string) => unknown;
   accept?: string;
   size: 'small' | 'large' | 'medium' | undefined;
