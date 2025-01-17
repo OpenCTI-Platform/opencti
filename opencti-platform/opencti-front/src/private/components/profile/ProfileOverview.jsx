@@ -337,7 +337,7 @@ const ProfileOverviewComponent = (props) => {
                 disabled={external}
                 label={t('Email address')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
               />
               <ObjectOrganizationField
@@ -353,7 +353,7 @@ const ProfileOverviewComponent = (props) => {
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
               />
               <Field
@@ -362,7 +362,7 @@ const ProfileOverviewComponent = (props) => {
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
               />
               <Field
@@ -373,7 +373,7 @@ const ProfileOverviewComponent = (props) => {
                 fullWidth={true}
                 multiline={true}
                 rows={4}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
               />
             </Form>
@@ -546,7 +546,7 @@ const ProfileOverviewComponent = (props) => {
                   label={t('New password')}
                   type="password"
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  style={{ marginTop: 16 }}
                   disabled={external}
                 />
                 <Field
@@ -556,10 +556,10 @@ const ProfileOverviewComponent = (props) => {
                   label={t('Confirmation')}
                   type="password"
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  style={{ marginTop: 16 }}
                   disabled={external}
                 />
-                <div style={{ marginTop: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
                   <Button
                     variant="contained"
                     type="button"
@@ -580,7 +580,7 @@ const ProfileOverviewComponent = (props) => {
         <Typography variant="h1" gutterBottom={true}>
           {t('API access')}
         </Typography>
-        <div style={{ marginTop: 20 }}>
+        <div style={{ marginTop: 16 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('OpenCTI version')}
           </Typography>
@@ -588,7 +588,7 @@ const ProfileOverviewComponent = (props) => {
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ marginTop: 20 }}
+            style={{ marginTop: 16 }}
           >
             {t('API key')}
           </Typography>
@@ -628,7 +628,7 @@ const ProfileOverviewComponent = (props) => {
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ marginTop: 20 }}
+            style={{ marginTop: 16 }}
           >
             {t('Required headers')}
           </Typography>
@@ -674,15 +674,17 @@ const ProfileOverviewComponent = (props) => {
             </IconButton>
           </pre>
           { isPlaygroundEnable() && (
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to="/public/graphql"
-              target="_blank"
-            >
-              {t('Playground')}
-            </Button>
+            <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                component={Link}
+                to="/public/graphql"
+                target="_blank"
+              >
+                {t('Playground')}
+              </Button>
+            </div>
           )}
         </div>
       </Paper>

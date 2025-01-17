@@ -38,13 +38,15 @@ const ProfileLocalStorage: React.FC = () => {
             t_i18n('Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.')
           }
         </pre>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setDisplayConfirmation(true)}
-        >
-          {t_i18n('Clear local storage')}
-        </Button>
+        <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setDisplayConfirmation(true)}
+          >
+            {t_i18n('Clear local storage')}
+          </Button>
+        </div>
       </Paper>
 
       {/* Confirmation dialog */}
