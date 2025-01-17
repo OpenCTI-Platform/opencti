@@ -218,7 +218,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <Field
             component={TextField}
@@ -226,7 +226,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             name="source"
             label={t_i18n('Source')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <ObjectAssigneeField
             name="objectAssignee"

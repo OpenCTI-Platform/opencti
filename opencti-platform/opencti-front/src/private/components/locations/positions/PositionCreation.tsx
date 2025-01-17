@@ -237,7 +237,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows={4}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="Position"
@@ -249,7 +249,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               name="latitude"
               label={t_i18n('Latitude')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={TextField}
@@ -257,7 +257,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               name="longitude"
               label={t_i18n('Longitude')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={TextField}
@@ -265,7 +265,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               name="street_address"
               label={t_i18n('Street address')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={TextField}
@@ -273,7 +273,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               name="postal_code"
               label={t_i18n('Postal code')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"

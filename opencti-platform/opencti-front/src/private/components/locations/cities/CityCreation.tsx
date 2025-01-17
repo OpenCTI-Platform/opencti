@@ -223,7 +223,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows={4}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="City"
@@ -234,14 +234,14 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               name="latitude"
               label={t_i18n('Latitude')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={TextField}
               name="longitude"
               label={t_i18n('Longitude')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"

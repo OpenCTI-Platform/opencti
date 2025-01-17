@@ -230,7 +230,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               askAi={true}
             />
             <ConfidenceField

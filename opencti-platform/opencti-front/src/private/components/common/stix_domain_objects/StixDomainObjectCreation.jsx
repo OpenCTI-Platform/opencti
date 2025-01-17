@@ -797,7 +797,9 @@ const StixDomainPanel = ({
             </MenuItem>
           ))}
         </Select>
-        {renderEntityCreationInterface()}
+        <div style={{ marginTop: '20px' }}>
+          {renderEntityCreationInterface()}
+        </div>
       </DialogContent>
     </Dialog>
   );

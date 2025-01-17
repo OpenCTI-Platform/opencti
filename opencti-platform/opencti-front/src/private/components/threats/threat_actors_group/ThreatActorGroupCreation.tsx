@@ -223,12 +223,12 @@ ThreatActorGroupFormProps
               name="threat_actor_types"
               label={t_i18n('Threat actor types')}
               multiple={true}
-              containerStyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
             />
             <ConfidenceField
               entityType="Threat-Actor-Group"
-              containerStyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
             />
             <Field
               component={MarkdownField}
@@ -237,7 +237,7 @@ ThreatActorGroupFormProps
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               askAi={true}
             />
             <CreatedByField

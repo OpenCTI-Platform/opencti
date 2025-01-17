@@ -215,7 +215,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
               label: t_i18n('Request For Information Date'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <OpenVocabField
