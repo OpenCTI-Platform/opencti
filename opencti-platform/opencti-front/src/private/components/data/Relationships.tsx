@@ -86,12 +86,20 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion{
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion{
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -113,12 +121,20 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion{
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion{
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time

@@ -914,7 +914,7 @@ const LeftBar = () => {
                   { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: 'Import' },
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
-                  ...([{ granted: isGrantedToManage, link: '/dashboard/data/restriction', label: 'Restriction' }]),
+                  ...([{ granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: 'Restriction' }]),
                 ],
               )}
             </Security>
