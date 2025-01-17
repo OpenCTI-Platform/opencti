@@ -324,7 +324,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ from }, helpers) => {
       const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
-      const displayDraftChip = !!from.draftVersion;
+      const displayDraftChip = !!from?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
   },
@@ -824,7 +824,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ to }, helpers) => {
       const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
-      const displayDraftChip = !!to.draftVersion;
+      const displayDraftChip = !!to?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
   },
