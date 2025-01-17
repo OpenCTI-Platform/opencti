@@ -7,12 +7,11 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import ToolEdition from '@components/arsenal/tools/ToolEdition';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Tool from './Tool';
-import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import ToolPopover from './ToolPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -26,14 +25,14 @@ import { RootToolSubscription } from './__generated__/RootToolSubscription.graph
 import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ToolEdition from './ToolEdition';
+import ToolPopover from './ToolPopover';
+import ToolKnowledge from './ToolKnowledge';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       ... on Tool {
         ...Tool_tool
-        ...ToolEditionContainer_tool
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -140,7 +139,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <StixDomainObjectHeader
               entityType="Tool"
               stixDomainObject={tool}
-              PopoverComponent={<ToolPopover />}
+              PopoverComponent={<ToolPopover id={tool.id} />}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ToolEdition toolId={tool.id} />
