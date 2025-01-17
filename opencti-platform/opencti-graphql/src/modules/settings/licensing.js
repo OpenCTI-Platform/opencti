@@ -50,7 +50,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
       const license_expired = new Date() > clientCrt.validity.notAfter || new Date() < clientCrt.validity.notBefore;
       const license_start_date = clientCrt.validity.notBefore;
       const license_expiration_date = clientCrt.validity.notAfter;
-      const license_expiration_prevention = utcDate(clientCrt.validity.notAfter).diff(now(), 'months') < 3;
+      const license_expiration_prevention = license_type !== LICENSE_OPTION_TRIAL && utcDate(clientCrt.validity.notAfter).diff(now(), 'months') < 3;
       let license_validated = license_valid_cert && license_platform_match;
       let license_extra_expiration = false;
       let license_extra_expiration_days = 0;

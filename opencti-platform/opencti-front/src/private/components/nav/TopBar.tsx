@@ -41,6 +41,7 @@ import omtdDark from '../../../static/images/xtm/omtd_dark.png';
 import omtdLight from '../../../static/images/xtm/omtd_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -144,7 +145,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openbas_url: openBASUrl },
+    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee },
     me,
   } = useAuth();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
@@ -275,6 +276,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             {!draftModeEnabled && (
             <Security needs={[KNOWLEDGE]}>
               <>
+                { ee.license_type === 'nfr' && <ItemBoolean
+                    variant="large"
+                    label={'EE DEV LICENSE'}
+                    status={false}
+                  />
+                }
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"
