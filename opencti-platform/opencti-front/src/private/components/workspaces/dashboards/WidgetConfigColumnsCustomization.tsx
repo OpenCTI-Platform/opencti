@@ -59,7 +59,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h4">{`${t_i18n('Available Columns')} (${availableColumns.length})`}</Typography>
+            <Typography variant="h4">{`${t_i18n('Available columns')} (${availableColumns.length})`}</Typography>
             <List sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: `${theme.borderRadius}px` }}>
               {availableColumns.map((column) => (
                 <ListItem
@@ -79,7 +79,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
 
           {/* Selected Columns */}
           <Box sx={{ flex: 1, height: '100%' }}>
-            <Typography variant="h4">{`${t_i18n('Selected Columns')} (${columns.length})`}</Typography>
+            <Typography variant="h4">{`${t_i18n('Selected columns')} (${columns.length})`}</Typography>
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="selected_columns">
                 {(providedDrop) => (

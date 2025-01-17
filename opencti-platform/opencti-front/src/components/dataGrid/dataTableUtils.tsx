@@ -1036,13 +1036,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   from_entity_type: {
     id: 'from_entity_type',
-    label: 'From entity type',
+    label: 'Source type',
     percentWidth: 10,
     render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
   },
   from_relationship_type: {
     id: 'from_relationship_type',
-    label: 'From relationship type',
+    label: 'Source name',
     percentWidth: 10,
     render: ({ from }, helpers) => {
       const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
@@ -1051,13 +1051,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   to_entity_type: {
     id: 'to_entity_type',
-    label: 'To entity type',
+    label: 'Target type',
     percentWidth: 10,
     render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
   },
   to_relationship_type: {
     id: 'to_relationship_type',
-    label: 'To relationship type',
+    label: 'Target name',
     percentWidth: 10,
     render: ({ to }, helpers) => {
       const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
