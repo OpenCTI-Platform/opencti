@@ -14,7 +14,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import ImageCarousel from '../../../../components/ImageCarousel';
+import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 type IntrusionSetDetailsProps = {
@@ -24,6 +24,12 @@ type IntrusionSetDetailsProps = {
 const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps) => {
   const { t_i18n, fldt } = useFormatter();
   const theme = useTheme();
+
+  const imagesCarousel: { images: ImagesData } = {
+    images: {
+      edges: (intrusionSet.images?.edges ?? []).filter((n) => n?.node?.metaData?.inCarousel),
+    } as ImagesData,
+  };
 
   const hasImages = intrusionSet.images?.edges && intrusionSet.images.edges.filter((n) => (
     n?.node?.metaData?.inCarousel
@@ -48,7 +54,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             <Grid container spacing={3}>
               {hasImages && (
                 <Grid item xs={4}>
-                  <ImageCarousel data={intrusionSet} />
+                  <ImageCarousel data={imagesCarousel} />
                 </Grid>
               )}
               <Grid item xs={hasImages ? 8 : 12}>
