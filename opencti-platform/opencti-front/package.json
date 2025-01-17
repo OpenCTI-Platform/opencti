@@ -135,7 +135,7 @@
     "eslint-plugin-import-newlines": "1.4.0",
     "eslint-plugin-react": "7.37.3",
     "express": "4.21.0",
-    "fs-extra": "11.2.0",
+    "fs-extra": "11.3.0",
     "http-proxy-middleware": "3.0.3",
     "i18n-auto-translation": "1.10.0",
     "jsdom": "25.0.1",
