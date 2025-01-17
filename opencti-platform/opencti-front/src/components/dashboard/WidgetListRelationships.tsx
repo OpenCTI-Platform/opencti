@@ -20,12 +20,10 @@ const WidgetListRelationships = ({
   rootRef,
   columns,
 }: WidgetListRelationshipsProps) => {
-  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>();
-
-  useEffect(() => {
-    const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
+  const buildColumns = (columnsFromSelection: WidgetColumn[]): DataTableProps['dataColumns'] => {
+    const columnKeys = columnsFromSelection.map((column) => column.attribute).filter((key) => key !== null);
     const iconWidth = 3;
-    const percentWidth = (100 - iconWidth) / (columns.length ?? 1);
+    const percentWidth = (100 - iconWidth) / (columnsFromSelection.length ?? 1);
 
     const newColumns = (
       columnKeys.reduce<DataTableProps['dataColumns']>(
@@ -49,10 +47,15 @@ const WidgetListRelationships = ({
         />
       ),
     };
-    setCurrentColumns({ icon: iconColumn, ...newColumns });
+    return { icon: iconColumn, ...newColumns };
+  };
+
+  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>(buildColumns(columns));
+
+  useEffect(() => {
+    setCurrentColumns(buildColumns(columns));
   }, [columns]);
 
-  if (!currentColumns) return null;
   return (
     <div style={{ width: '100%' }}>
       <DataTableWithoutFragment
