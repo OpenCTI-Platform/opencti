@@ -5,9 +5,10 @@
 
 The platform provides a seamless process for automatically parsing data from various file formats. This capability is facilitated by two distinct mechanisms.
 
-**File import connectors:** Currently, there are two connectors designed for importing files and automatically identifying entities.
+**File import connectors:** Currently, there are three connectors designed for importing files and automatically identifying entities.
 
 - `ImportFileStix`: Designed to handle STIX-structured files (json or xml format).
+- `ImportFileMISP`: Designed to handle MISP-structured files (json format).
 - `ImportDocument`: Versatile connector supporting an array of file formats, including pdf, text, html, and markdown.
 
 **CSV mappers:** The CSV mapper is a tailored functionality to facilitate the import of data stored in CSV files. For more in-depth information on using CSV mappers, refer to the [CSV Mappers](../administration/csv-mappers.md) documentation page.

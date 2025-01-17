@@ -80,6 +80,25 @@ Additional configuration options:
 
 ![TAXII feed configuration](assets/taxii-feed-configuration.png)
 
+### TAXII Push
+
+TAXII Push ingester enables users to import STIX 2.1 objects in OpenCTI through an exposed TAXII collection, in compliance with the [“Add objects” part of the TAXII 2.1 specification](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107540).
+Here's a step-by-step guide to configure TAXII Push ingesters:
+
+1. Name: Enter a name for the TAXII Push ingester.
+2. Description (optional): Enter a description for the TAXII Push ingester. 
+3. User responsible for data creation: Define the user responsible for creating data received from this TAXII Push ingester. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information. 
+4. Accessible for: Enter the user, group or organization authorized to push data in the TAXII collection.
+5. Copy confidence level to OpenCTI scores for indicators: Enable this option to map the confidence level associate to STIX indicators to the OpenCTI scoring system.
+
+![TAXII Push configuration](assets/taxii-push-configuration.png)
+
+After creating a new TAXII Push ingester, a TAXII endpoint is generated, which can be used to publish data in STIX 2.1 format.
+To start your new ingester, click on "Start", in the burger menu.
+
+![TAXII Push creation: start](assets/taxii-push-creation-start.png)
+
+
 ### RSS feeds
 
 RSS Feeds functionality enables users to seamlessly ingest items in report form from specified RSS feeds. Configuring RSS Feeds involves providing essential details and selecting preferences to tailor the import process. Here's a step-by-step guide to configure RSS ingesters:
@@ -184,6 +203,8 @@ Users can streamline the data ingestion process using various automated import c
 - Connectors act as bridges to retrieve data from diverse sources and format it for seamless ingestion into OpenCTI.
 - Live Streams enable collaborative intelligence sharing across OpenCTI instances, fostering real-time updates and efficient data synchronization.
 - TAXII Feeds provide a standardized mechanism for ingesting threat intelligence data from TAXII servers or other OpenCTI instances.
+- TAXII Push provide a standardized mechanism for ingesting STIX 2.1 formatted intelligence data by pushing the data into dedicated TAXII collections exposed by OpenCTI.
 - RSS Feeds facilitate the import of items in report form from specified RSS feeds, offering a straightforward way to stay updated on relevant intelligence.
+- CSV Feeds facilitate the ingestion of data exposed in the form of CSV files, offering a straightforward way to ingest any CSV feeds.
 
 By leveraging these automated import functionalities, OpenCTI users can build a comprehensive, up-to-date threat intelligence database. The platform's adaptability and user-friendly configuration options ensure that intelligence workflows remain agile, scalable, and tailored to the unique needs of each organization.
