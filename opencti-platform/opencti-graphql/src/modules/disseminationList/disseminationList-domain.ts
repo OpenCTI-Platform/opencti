@@ -8,6 +8,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
+import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -46,9 +47,20 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
       ],
     };
     await sendMail(sendMailArgs);
+    // @ts-ignore
+    const data = buildContextDataForFile(null, file.id, file.name);
+    await publishUserAction({
+      event_access: 'administration',
+      user: user,
+      event_type: 'file',
+      event_scope: 'disseminate',
+      context_data: data
+    });
     return true;
   }
   return false;
+
+
 };
 
 // export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {};

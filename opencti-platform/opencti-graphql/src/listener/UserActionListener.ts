@@ -88,7 +88,7 @@ export interface UserFileActionContextData extends ElementContextData {
 }
 export interface UserFileAction extends BasicUserAction {
   event_type: 'file'
-  event_scope: 'read' | 'create' | 'delete' | 'download'
+  event_scope: 'read' | 'create' | 'delete' | 'download' | 'disseminate';
   context_data: UserFileActionContextData
 }
 // endregion

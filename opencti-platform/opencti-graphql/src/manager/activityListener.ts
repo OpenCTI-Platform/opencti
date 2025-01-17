@@ -179,6 +179,11 @@ const initActivityManager = () => {
           }
           await activityLogger(action, message);
         }
+        if (action.event_scope === 'disseminate') { // General upload
+          const { file_name, entity_name, entity_type, path } = action.context_data;
+          let message = `disseminate \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
+          await activityLogger(action, message);
+        }
       }
       if (action.event_type === 'command') {
         if (action.event_scope === 'search') {
