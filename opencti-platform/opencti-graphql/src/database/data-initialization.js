@@ -242,8 +242,7 @@ const createInitialRequestAccessFlow = async (context) => {
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (rfiEntitySettings) {
-    logApp.info('OK c est bon');
-    logApp.info('ANGIE rfiEntitySettings:', { rfiEntitySettings });
+    logApp.info('ANGIE INIT rfiEntitySettings:', { rfiEntitySettings });
     const editInput = [
       { key: 'request_access_workflow', value: [initialConfig] }
     ];

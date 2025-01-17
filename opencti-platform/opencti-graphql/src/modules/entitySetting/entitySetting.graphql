@@ -35,6 +35,7 @@ type OverviewWidgetCustomization {
 }
 
 type RequestAccessWorkflow {
+  approved_workflow_status: String
   approved_workflow_id: String
   declined_workflow_id: String
   workflow: [String]
@@ -67,6 +68,7 @@ type EntitySetting implements InternalObject & BasicObject {
     search: String
   ): FintelTemplateConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
   request_access_workflow: RequestAccessWorkflow @auth
+  requestAccessStatus: [StatusTemplate] @auth
 }
 
 # Ordering

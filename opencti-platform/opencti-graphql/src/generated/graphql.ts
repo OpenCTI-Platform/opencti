@@ -7295,6 +7295,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
+  requestAccessStatus?: Maybe<Array<Maybe<StatusTemplate>>>;
   request_access_workflow?: Maybe<RequestAccessWorkflow>;
   scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String']['output'];
@@ -23295,6 +23296,7 @@ export enum RequestAccessType {
 export type RequestAccessWorkflow = {
   __typename?: 'RequestAccessWorkflow';
   approved_workflow_id?: Maybe<Scalars['String']['output']>;
+  approved_workflow_status?: Maybe<Scalars['String']['output']>;
   declined_workflow_id?: Maybe<Scalars['String']['output']>;
   workflow?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
@@ -35256,6 +35258,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  requestAccessStatus?: Resolver<Maybe<Array<Maybe<ResolversTypes['StatusTemplate']>>>, ParentType, ContextType>;
   request_access_workflow?: Resolver<Maybe<ResolversTypes['RequestAccessWorkflow']>, ParentType, ContextType>;
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39611,6 +39614,7 @@ export type RequestAccessActionResolvers<ContextType = any, ParentType extends R
 
 export type RequestAccessWorkflowResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessWorkflow'] = ResolversParentTypes['RequestAccessWorkflow']> = ResolversObject<{
   approved_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  approved_workflow_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   declined_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workflow?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

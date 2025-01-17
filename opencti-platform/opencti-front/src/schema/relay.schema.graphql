@@ -10948,6 +10948,7 @@ type OverviewWidgetCustomization {
 }
 
 type RequestAccessWorkflow {
+  approved_workflow_status: String
   approved_workflow_id: String
   declined_workflow_id: String
   workflow: [String]
@@ -10973,6 +10974,7 @@ type EntitySetting implements InternalObject & BasicObject {
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   request_access_workflow: RequestAccessWorkflow
+  requestAccessStatus: [StatusTemplate]
 }
 
 enum EntitySettingsOrdering {
