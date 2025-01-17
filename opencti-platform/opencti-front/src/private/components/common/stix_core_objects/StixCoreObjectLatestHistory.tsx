@@ -70,7 +70,6 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
                     key={`latest_history_skel_${i}`}
                     dense
                     divider
-                    button={false}
                   >
                     <ListItemIcon>
                       <Avatar>{i}</Avatar>
