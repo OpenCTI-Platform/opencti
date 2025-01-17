@@ -48,6 +48,11 @@ const SUB_TYPE_FIND_BY_ID_QUERY = gql`
                     declined_workflow_id
                     workflow
                 }
+                requestAccessStatus {
+                    id
+                    color
+                    name
+                }
             }
             statuses {
                 id
@@ -81,7 +86,9 @@ describe('SubType resolver standard behavior', () => {
     expect(mandatoryAttributes.includes('name')).toBeTruthy();
     expect(mandatoryAttributes.length).toEqual(1);
   });
+});
 
+describe.only('SubType resolver for RFI and request access use case', () => {
   it('should request access configuration for case RFI exists', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: SUB_TYPE_FIND_BY_ID_QUERY, variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI } });
 
@@ -89,5 +96,8 @@ describe('SubType resolver standard behavior', () => {
     expect(requestAccessWorkflowConfiguration.workflow.length).toEqual(2); // 2 status: accepted and declined
     expect(requestAccessWorkflowConfiguration.approved_workflow_id).toBeDefined();
     expect(requestAccessWorkflowConfiguration.declined_workflow_id).toBeDefined();
+
+    const requestAccessStatus = queryResult?.data?.subType.settings.requestAccessStatus;
+    console.log('requestAccessStatus:', requestAccessStatus);
   });
 });
