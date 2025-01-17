@@ -9,7 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { truncate } from '../../../utils/String';
 import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
@@ -44,9 +44,10 @@ const DraftContextBanner = () => {
   const [commitValidateDraft] = useApiMutation(draftContextBannerValidateDraftMutation);
   const [displayApprove, setDisplayApprove] = useState(false);
   const [approving, setApproving] = useState(false);
-  const { me } = useAuth();
   const navigate = useNavigate();
-  const currentDraftContextName = me.draftContext ? me.draftContext.name : '';
+  const draftContext = useDraftContext();
+  const currentDraftContextName = draftContext?.name ?? '';
+  const currentDraftContextId = draftContext?.id ?? '';
 
   const handleExitDraft = () => {
     commitExitDraft({
@@ -61,10 +62,10 @@ const DraftContextBanner = () => {
 
   const handleValidateDraft = () => {
     setApproving(true);
-    if (me.draftContext) {
+    if (draftContext) {
       commitValidateDraft({
         variables: {
-          id: me.draftContext.id,
+          id: draftContext.id,
         },
         onCompleted: () => {
           setApproving(false);
@@ -76,7 +77,6 @@ const DraftContextBanner = () => {
   };
 
   const navigateToDraft = () => {
-    const currentDraftContextId = me.draftContext ? me.draftContext.id : '';
     navigate(`/dashboard/drafts/${currentDraftContextId}`);
   };
 

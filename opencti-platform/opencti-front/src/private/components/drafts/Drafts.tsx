@@ -13,7 +13,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
-import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const DraftLineFragment = graphql`
@@ -87,7 +87,7 @@ const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
 const Drafts: React.FC = () => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
+  const draftContext = useDraftContext();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
@@ -157,7 +157,7 @@ const Drafts: React.FC = () => {
         lineFragment={DraftLineFragment}
         exportContext={{ entity_type: 'DraftWorkspace' }}
         redirectionModeEnabled
-        createButton={!me.draftContext && isFABReplaced && (
+        createButton={!draftContext && isFABReplaced && (
           <DraftCreation paginationOptions={queryPaginationOptions} />
         )}
         actions={(row) => (
@@ -168,7 +168,7 @@ const Drafts: React.FC = () => {
         )}
       />
       )}
-      {!me.draftContext && !isFABReplaced && (
+      {!draftContext && !isFABReplaced && (
         <DraftCreation paginationOptions={queryPaginationOptions} />
       )}
     </span>

@@ -7,8 +7,8 @@ import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useHelper from '../../../../utils/hooks/useHelper';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
   stixCoreObjectId: string,
@@ -21,8 +21,8 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
-  const disabledInDraft = !!me.draftContext;
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
 
   const handleOpenEnrollPlaybook = () => {
     setOpenDrawer(true);

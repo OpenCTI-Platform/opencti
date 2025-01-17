@@ -1,18 +1,18 @@
 import React, { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 
 const Drafts = lazy(() => import('./Drafts'));
 const DraftRoot = lazy(() => import('./DraftRoot'));
 
 const Root = () => {
-  const { me } = useAuth();
+  const draftContext = useDraftContext();
   return (
     <Routes>
       <Route
         path="/"
-        element={me.draftContext?.id ? <Navigate to={`/dashboard/drafts/${me.draftContext.id}/`} replace={true} /> : boundaryWrapper(Drafts)}
+        element={draftContext?.id ? <Navigate to={`/dashboard/drafts/${draftContext.id}/`} replace={true} /> : boundaryWrapper(Drafts)}
       />
       <Route
         path="/:draftId/*"

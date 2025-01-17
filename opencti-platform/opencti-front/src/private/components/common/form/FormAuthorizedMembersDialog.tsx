@@ -8,6 +8,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
 import { handleErrorInForm } from '../../../../relay/environment';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -25,8 +26,8 @@ const FormAuthorizedMembersDialog = ({
   authorizedMembers,
   owner,
 }: FormAuthorizedMembersDialogProps) => {
-  const { me } = useAuth();
-  const disabledInDraft = !!me.draftContext;
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();

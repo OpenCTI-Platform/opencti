@@ -3,7 +3,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { FileExportOutline } from 'mdi-material-ui';
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import useAuth from '../../../../utils/hooks/useAuth';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface StixCoreObjectFileExportButtonProps {
   onOpen: () => void
@@ -15,8 +15,8 @@ const StixCoreObjectFileExportButton = ({
   isExportPossible,
 }: StixCoreObjectFileExportButtonProps) => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
-  const disabledInDraft = !!me.draftContext;
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
   let title = t_i18n('No export connector available to generate an export');
   if (disabledInDraft) {
     title = t_i18n('Not available in draft');

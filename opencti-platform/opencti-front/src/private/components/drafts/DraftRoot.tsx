@@ -12,7 +12,7 @@ import { draftContextBannerMutation } from '@components/drafts/DraftContextBanne
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { getCurrentTab } from '../../../utils/utils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
@@ -22,11 +22,11 @@ import { RelayError } from '../../../relay/relayTypes';
 const RootDraftComponent = ({ draftId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
+  const draftContext = useDraftContext();
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   useEffect(() => {
-    if (!me.draftContext || me.draftContext.id !== draftId) {
+    if (!draftContext || draftContext.id !== draftId) {
       commitSwitchToDraft({
         variables: {
           input: [{ key: 'draft_context', value: [draftId] }],

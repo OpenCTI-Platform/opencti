@@ -45,6 +45,7 @@ import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPo
 import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface InstanceTriggerEditionFormValues {
@@ -102,7 +103,8 @@ StixCoreObjectQuickSubscriptionContentProps
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const disabledInDraft = !!me.draftContext;
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
 
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);

@@ -28,6 +28,7 @@ import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
@@ -148,8 +149,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const {
     bannerSettings: { bannerHeightNumber },
     settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee },
-    me,
   } = useAuth();
+  const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
@@ -231,7 +232,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
   // draft
-  const draftModeEnabled = isDraftFeatureEnabled && me.draftContext;
+  const draftModeEnabled = isDraftFeatureEnabled && draftContext;
   const draftModeColor = getDraftModeColor(theme);
   return (
     <AppBar
