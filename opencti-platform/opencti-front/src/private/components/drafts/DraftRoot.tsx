@@ -1,7 +1,7 @@
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -11,18 +11,43 @@ import { DraftContextBannerMutation } from '@components/drafts/__generated__/Dra
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
+import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
+import { usePreloadedQuery } from 'react-relay';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/utils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 
-const RootDraftComponent = ({ draftId }) => {
+const draftRootQuery = graphql`
+  query DraftRootQuery($id: String!) {
+    draftWorkspace(id: $id) {
+      id
+      name
+      created_at
+      objectsCount {
+        containersCount
+        entitiesCount
+        observablesCount
+        relationshipsCount
+        sightingsCount
+        totalCount
+      }
+    }
+  }
+`;
+
+const RootDraftComponent = ({ draftId, queryRef }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+
+  const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   useEffect(() => {
@@ -42,11 +67,15 @@ const RootDraftComponent = ({ draftId }) => {
     }
   }, [commitSwitchToDraft]);
 
+  if (!draftWorkspace) {
+    return (<ErrorNotFound />);
+  }
+
   return (
     <>
       <Breadcrumbs elements={[
         { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
-        { label: draftId, current: true },
+        { label: draftWorkspace.name, current: true },
       ]}
       />
       <Box
@@ -123,8 +152,15 @@ const RootDraftComponent = ({ draftId }) => {
 
 const RootDraft = () => {
   const { draftId } = useParams() as { draftId: string };
+  const queryRef = useQueryLoading<DraftRootQuery>(draftRootQuery, { id: draftId });
   return (
-    <RootDraftComponent draftId={draftId} />
+    <>
+      {queryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootDraftComponent draftId={draftId} queryRef={queryRef} />
+        </Suspense>
+      )}
+    </>
   );
 };
 
