@@ -29,12 +29,14 @@ import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
-import conf, { isFeatureEnabled } from '../config/conf';
+import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { isEnterpriseEdition } from '../enterprise-edition/ee';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
+import { notify } from '../database/redis';
+import { AI_BUS } from '../modules/ai/ai-types';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -314,15 +316,19 @@ export const getFintelTemplates = async (context, user, container) => {
 };
 
 export const aiSummary = async (context, user, args) => {
-  const { language = 'English' } = args;
+  await checkEnterpriseEdition(context);
+
+  const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10, connectionFormat: false };
-  const identifier = toBase64(JSON.stringify(finalArgs));
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  const identifier = toBase64(JSON.stringify(R.dissoc('busId', finalArgs)));
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    logApp.info('Response found in cache', { busId });
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content: aiResponseCache[identifier].result }, user);
     return aiResponseCache[identifier];
   }
-
+  logApp.info('Response not found in cache, querying LLM', { busId });
   const content = [];
   const containers = await listEntities(context, user, types, finalArgs);
   // eslint-disable-next-line no-restricted-syntax
@@ -351,19 +357,16 @@ export const aiSummary = async (context, user, args) => {
   # Instructions
   
   ## Summarize
-  - In clear and concise language, summarize the key points and themes presented in the reports.
+  - In clear and concise language, summarize the key points and themes presented in the reports in an HTML report of approximately 500 words.
+  - Create a comprehensive report in HTML format.
   - Avoid using the general knowledge as much as possible and focus on the user input.
-  - The summary should be in ${language} language.
+  - The HTML summary should be in ${language} language.
   - Put footnotes to source as much as possible all the information you have generated referring the original reports.
   - Ensure that sources contain title, date and author.
   - Always start the report with a section "Key Findings" with 5 items.
+  - In the HTML format, don't use h1 (first level title), start with h2.
   - Your response should be only the summary and nothing else.
   - Your response should not contain any generic assumptions or recommendations, it should rely only on the given content.
-  
-  ## Report writing
-  - Create a comprehensive report in HTML format.
-  - In the HTML format, don't use h1 (first level title), start with h2.
-  - The summary should be in ${language} language.
   
   # Reports
   ${JSON.stringify(content)}  
@@ -381,12 +384,24 @@ export const aiSummary = async (context, user, args) => {
   # Reports
   ${JSON.stringify(content)}
   `;
-  const result = await queryAi(null, systemPrompt, userPromptReport, user);
+
+  const result = await queryAi(busId, systemPrompt, userPromptReport, user);
   const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
 
+  // refine result
+  const finalResult = result
+    .replace('```html', '')
+    .replace('```', '')
+    .replace('<html>', '')
+    .replace('</html>', '')
+    .replace('<body>', '')
+    .replace('</body>', '')
+    .trim();
+
   const summary = {
-    result: result.replace('```html', '').replace('```', '').trim(),
-    topics: topics.split(',').map((n) => n.trim())
+    result: finalResult,
+    topics: topics.split(',').map((n) => n.trim()),
+    updated_at: now()
   };
   aiResponseCache[identifier] = summary;
   return summary;

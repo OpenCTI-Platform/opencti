@@ -209,9 +209,11 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}
                 />
               </Box>
-              <Box sx={{ paddingTop: 4,
+              <Box sx={{
+                paddingTop: 4,
                 display: 'flex',
-                gap: 1 }}
+                gap: 1,
+              }}
               >
                 <Filters
                   availableFilterKeys={availableFilterKeys}

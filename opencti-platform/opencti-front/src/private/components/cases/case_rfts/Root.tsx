@@ -103,6 +103,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     return <ErrorNotFound />;
   }
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfts', false);
+  const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
@@ -130,6 +131,9 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
           borderBottom: 1,
           borderColor: 'divider',
           marginBottom: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItem: 'center',
         }}
       >
         <Tabs
@@ -172,10 +176,12 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             label={t_i18n('Data')}
           />
         </Tabs>
+        {!isKnowledgeOrContent && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
           <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
           <StixCoreObjectSimulationResult id={caseData.id} type="container"/>
         </div>
+        )}
       </Box>
       <Routes>
         <Route

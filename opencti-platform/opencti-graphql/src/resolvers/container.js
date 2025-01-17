@@ -48,7 +48,7 @@ const containerResolvers = {
       }
       return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER], args);
     },
-    containersAiSummary: (_, args, context) => aiSummary(context, context.user, args),
+    containersAskAiSummary: (_, args, context) => aiSummary(context, context.user, args),
   },
   Container: {
     __resolveType(obj) {

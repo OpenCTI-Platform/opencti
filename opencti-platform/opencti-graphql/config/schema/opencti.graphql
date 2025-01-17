@@ -12744,7 +12744,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
-  aiActivity(languange: String): AiActivity @auth(for: [KNOWLEDGE])
+  askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -12940,9 +12940,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiActivity(id: ID!, language: String): AiActivity @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiForecast(id: ID!, language: String): AiForecast @auth(for: [KNOWLEDGE])
-  stixCoreObjectAiHistory(id: ID!, language: String): AiHistory @auth(for: [KNOWLEDGE])
+  stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
+  stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast @auth(for: [KNOWLEDGE])
+  stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -13142,7 +13142,8 @@ type Query {
     filters: FilterGroup
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  containersAiSummary(
+  containersAskAiSummary(
+    busId: String
     first: Int
     after: ID
     orderBy: ContainersOrdering
@@ -13150,6 +13151,7 @@ type Query {
     filters: FilterGroup
     search: String
     language: String
+    forceRefresh: Boolean
   ): AiSummary @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(

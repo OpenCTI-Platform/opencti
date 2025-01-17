@@ -132,6 +132,9 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
           borderBottom: 1,
           borderColor: 'divider',
           marginBottom: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItem: 'center',
         }}
       >
         <Tabs

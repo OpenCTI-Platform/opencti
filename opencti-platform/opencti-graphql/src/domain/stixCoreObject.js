@@ -75,6 +75,8 @@ import { queryAi } from '../database/ai-llm';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
+import { AI_BUS } from '../modules/ai/ai-types';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -858,10 +860,13 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 
 // region ai
 export const aiActivity = async (context, user, args) => {
-  const { id, language = 'English' } = args;
+  await checkEnterpriseEdition(context);
+
+  const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-activity`;
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: identifier, content: aiResponseCache[identifier].result }, user);
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -882,8 +887,18 @@ export const aiActivity = async (context, user, args) => {
     trend = await aiActivityTrendForVictims(context, user, stixCoreObject);
   }
 
+  // refine result
+  const finalResult = result
+    .replace('```html', '')
+    .replace('```', '')
+    .replace('<html>', '')
+    .replace('</html>', '')
+    .replace('<body>', '')
+    .replace('</body>', '')
+    .trim();
+
   const activity = {
-    result: result.replace('```html', '').replace('```', '').trim(),
+    result: finalResult,
     trend,
     updated_at: now()
   };
@@ -892,10 +907,12 @@ export const aiActivity = async (context, user, args) => {
 };
 
 export const aiForecast = async (context, user, args) => {
-  const { id, language = 'English' } = args;
+  await checkEnterpriseEdition(context);
+
+  const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-forecast`;
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -909,8 +926,18 @@ export const aiForecast = async (context, user, args) => {
     result = await aiForecastForVictims(context, user, stixCoreObject, language);
   }
 
+  // refine result
+  const finalResult = result
+    .replace('```html', '')
+    .replace('```', '')
+    .replace('<html>', '')
+    .replace('</html>', '')
+    .replace('<body>', '')
+    .replace('</body>', '')
+    .trim();
+
   const activity = {
-    result: result.replace('```html', '').replace('```', '').trim(),
+    result: finalResult,
     updated_at: now()
   };
   aiResponseCache[identifier] = activity;
@@ -918,10 +945,11 @@ export const aiForecast = async (context, user, args) => {
 };
 
 export const aiHistory = async (context, user, args) => {
-  const { id, language = 'English' } = args;
+  await checkEnterpriseEdition(context);
+  const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
-  if (aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     return aiResponseCache[identifier];
   }
   // Resolve the entity
@@ -951,8 +979,19 @@ export const aiHistory = async (context, user, args) => {
   ${JSON.stringify(logs)}
   `;
   // Get results
-  const result = await queryAi(null, systemPrompt, userPrompt, user);
-  const history = { result: result.replace('```html', '').replace('```', '').trim(), updated_at: now() };
+  const result = await queryAi(identifier, systemPrompt, userPrompt, user);
+
+  // refine result
+  const finalResult = result
+    .replace('```html', '')
+    .replace('```', '')
+    .replace('<html>', '')
+    .replace('</html>', '')
+    .replace('<body>', '')
+    .replace('</body>', '')
+    .trim();
+
+  const history = { result: finalResult, updated_at: now() };
   aiResponseCache[identifier] = history;
   return history;
 };
@@ -984,7 +1023,7 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   
   # Instructions
 
-  - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - You have to compute a summary of approximately 500 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
   - The summary should be about the latest activities of the ${stixCoreObject.entity_type} and highlight the variations of numbers over time.
   - The summary should not repeat numbers, but aggregate them in a meaningful way to stay short and comprehensive.
   - The summary should be in ${language} language.
@@ -1027,7 +1066,7 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   ${JSON.stringify(topRegions)}
   `;
 
-  return queryAi(null, systemPrompt, userPrompt, user);
+  return queryAi(`${stixCoreObject.id}-activity`, systemPrompt, userPrompt, user);
 };
 
 export const aiActivityTrendForThreats = async (context, user, stixCoreObject) => {
@@ -1071,7 +1110,7 @@ export const aiActivityTrendForThreats = async (context, user, stixCoreObject) =
   ${JSON.stringify(victimologyStats)}
   `;
 
-  return queryAi(null, systemPrompt, userPrompt, user);
+  return queryAi(`${stixCoreObject.id}-activity`, systemPrompt, userPrompt, user);
 };
 
 export const aiForecastForThreats = async (context, user, stixCoreObject, language) => {
@@ -1100,7 +1139,7 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
   
   # Instructions
 
-  - You have to compute a forecast report of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - You have to compute a forecast report of approximately 500 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
   - The summary should be about the potential upcoming activities of the ${stixCoreObject.entity_type}.
   - The summary should be in ${language} language.
   - The summary should be formatted in HTML and highlight important numbers with bold.
@@ -1142,7 +1181,7 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
   ${JSON.stringify(topRegions)}
   `;
 
-  return queryAi(null, systemPrompt, userPrompt, user);
+  return queryAi(`${stixCoreObject.id}-forecast`, systemPrompt, userPrompt, user);
 };
 // endregion
 
@@ -1168,7 +1207,7 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   
   # Instructions
 
-  - You have to compute a summary of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - You have to compute a summary of approximately 500 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
   - The summary should be about the latest activities of the ${stixCoreObject.entity_type} and highlight the variations of numbers over time.
   - The summary should not repeat numbers, but aggregate them in a meaningful way to stay short and comprehensive.
   - The summary should be in ${language} language.
@@ -1207,7 +1246,7 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   ${JSON.stringify(topMalwares)}
   `;
 
-  return queryAi(null, systemPrompt, userPrompt, user);
+  return queryAi(`${stixCoreObject.id}-activity`, systemPrompt, userPrompt, user);
 };
 
 export const aiActivityTrendForVictims = async (context, user, stixCoreObject) => {
@@ -1251,7 +1290,7 @@ export const aiActivityTrendForVictims = async (context, user, stixCoreObject) =
   ${JSON.stringify(targetingStats)}
   `;
 
-  return queryAi(null, systemPrompt, userPrompt, user);
+  return queryAi(`${stixCoreObject.id}-activity`, systemPrompt, userPrompt, user);
 };
 
 export const aiForecastForVictims = async (context, user, stixCoreObject, language) => {
@@ -1275,7 +1314,7 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   
   # Instructions
 
-  - You have to compute a forecast report of approximately 1000 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
+  - You have to compute a forecast report of approximately 500 words based on the following statistics / trends about a ${stixCoreObject.entity_type}.
   - The summary should be about the potential upcoming activities and targeting of the ${stixCoreObject.entity_type}.
   - The summary should be in ${language} language.
   - The summary should be formatted in HTML and highlight important numbers with bold.
@@ -1313,6 +1352,6 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   ${JSON.stringify(topMalwares)}
   `;
 
-  return queryAi(null, systemPrompt, userPrompt, user);
+  return queryAi(`${stixCoreObject.id}-forecast`, systemPrompt, userPrompt, user);
 };
 // endregion

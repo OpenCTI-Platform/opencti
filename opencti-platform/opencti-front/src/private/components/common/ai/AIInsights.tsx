@@ -12,7 +12,6 @@ import IconButton from '@mui/material/IconButton';
 import { AutoAwesomeOutlined, Close } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
-import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -21,14 +20,15 @@ import AISummaryActivity from '@components/common/ai/AISummaryActivity';
 import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import AISummaryForecast from '@components/common/ai/AISummaryForecast';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
-import { aiName, aiUrl } from '../../../../utils/ai/Common';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -93,6 +93,26 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
       color: theme.palette.ai.light,
     },
   },
+  chipNoAction: {
+    display: 'flex',
+    alignItems: 'center',
+    textWrap: 'nowrap',
+    position: 'absolute',
+    right: 10,
+    fontWeight: 600,
+    justifyContent: 'center',
+    fontSize: 12,
+    marginLeft: 6,
+    borderRadius: theme.borderRadius,
+    border: `1px solid ${theme.palette.ai.main}`,
+    color: theme.palette.ai.main,
+    backgroundColor: theme.palette.ai.background,
+    cursor: 'default',
+    '&:hover': {
+      border: `1px solid ${theme.palette.ai.light}`,
+      color: theme.palette.ai.light,
+    },
+  },
 }));
 
 interface AIInsightProps {
@@ -121,8 +141,14 @@ const AIInsights = ({
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayAIDialog, setDisplayAIDialog] = useState(false);
   const [currentTab, setCurrentTab] = useState(defaultTab);
+  const [containersBusId] = useState(uuid());
+  const [loading, setLoading] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
 
+  const handleClose = () => {
+    setLoading(false);
+    setDisplay(false);
+  };
   const handleChangeTab = (_: React.SyntheticEvent, newValue: 'activity' | 'containers' | 'forecast' | 'history') => {
     setCurrentTab(newValue);
   };
@@ -138,7 +164,7 @@ const AIInsights = ({
     mode: 'and',
     filters: [{
       key: 'entity_type',
-      values: ['Report', 'Case', 'Observed-Data', 'Grouping', 'Task'],
+      values: ['Report', 'Case-Incident'],
     },
     {
       key: 'objects',
@@ -263,13 +289,13 @@ const AIInsights = ({
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => setDisplay(false)}
+        onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
-            onClick={() => setDisplay(false)}
+            onClick={handleClose}
             size="large"
             color="primary"
           >
@@ -278,42 +304,66 @@ const AIInsights = ({
           <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
             {t_i18n('AI Insights')}
           </Typography>
-          <Typography variant="caption" style={{
-            display: 'flex',
-            alignItems: 'center',
-            textWrap: 'nowrap',
-            position: 'absolute',
-            right: 10,
-          }}
+          <Button
+            variant="outlined"
+            size="small"
+            className={classes.chipNoAction}
+            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
           >
-            {t_i18n('Powered by')}&nbsp;<a href={aiUrl} target='_blank' rel='noreferrer'>{aiName}</a>
-            <Chip label="beta" color="secondary" size="small" style={{ marginLeft: 10, borderRadius: 4, fontSize: 10 }} />
-          </Typography>
+            {t_i18n('XTM AI')}
+          </Button>
         </div>
         <div className={classes.container}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Box sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItem: 'center',
+          }}
+          >
             <Tabs value={currentTab} onChange={handleChangeTab}>
               {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
               {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
               {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
               {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
             </Tabs>
+            {loading && (
+              <div style={{ paddingTop: 10 }}>
+                <Loader variant={LoaderVariant.inline} />
+              </div>
+            )}
           </Box>
           {currentTab === 'activity' && (
-            <AISummaryActivity id={id} />
+            <AISummaryActivity
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'containers' && (
             <AISummaryContainers
-              first={isContainer ? 1 : 10}
+              busId={containersBusId}
+              isContainer={isContainer}
               filters={containersFilters}
               helpers={containersFiltersHelpers}
+              loading={loading}
+              setLoading={setLoading}
             />
           )}
           {currentTab === 'forecast' && (
-            <AISummaryForecast id={id} />
+            <AISummaryForecast
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'history' && (
-            <AISummaryHistory id={id} />
+            <AISummaryHistory
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
         </div>
       </Drawer>

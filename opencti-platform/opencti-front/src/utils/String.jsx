@@ -81,7 +81,11 @@ export const isValidStixBundle = (bundle) => {
 
 export const toB64 = (str) => Base64.encodeURI(str);
 
+export const toBase64 = (str) => Base64.encode(str);
+
 export const fromB64 = (str) => Base64.decode(str);
+
+export const fromBase64 = (str) => Base64.encode(str);
 
 export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
 
