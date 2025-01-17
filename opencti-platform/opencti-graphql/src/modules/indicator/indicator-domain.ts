@@ -52,7 +52,7 @@ import {
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
-import { checkObservableValue } from '../../database/exclusionListCache';
+import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -223,15 +223,18 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   }
 
   // Check that indicator is not excluded from an exclusion list
-  const observableValues = getObservableValuesFromPattern(formattedPattern);
-  for (let i = 0; i < observableValues.length; i += 1) {
-    const exclusionListCheck = await checkObservableValue(observableValues[i]);
-    if (exclusionListCheck) {
-      throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
-        doc_code: 'INDICATOR_PATTERN_EXCLUDED',
-        excludedValue: exclusionListCheck.value,
-        exclusionList: exclusionListCheck.listId
-      });
+  // no need to check if the exclusion list cache is empty
+  if (!isCacheEmpty()) {
+    const observableValues = getObservableValuesFromPattern(formattedPattern);
+    for (let i = 0; i < observableValues.length; i += 1) {
+      const exclusionListCheck = await checkObservableValue(observableValues[i]);
+      if (exclusionListCheck) {
+        throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
+          doc_code: 'INDICATOR_PATTERN_EXCLUDED',
+          excludedValue: exclusionListCheck.value,
+          exclusionList: exclusionListCheck.listId
+        });
+      }
     }
   }
 
