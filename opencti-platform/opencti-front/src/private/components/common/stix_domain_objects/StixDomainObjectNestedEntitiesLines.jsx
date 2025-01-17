@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { DraftChip } from '../draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixNestedRefRelationshipPopover from '../stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
@@ -101,6 +102,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                         style={{ width: '40%' }}
                       >
                         {getMainRepresentative(stixCoreObject)}
+                        {stixCoreObject.draftVersion && (<DraftChip/>)}
                       </div>
                       <div className={classes.bodyItem}>
                         {fsd(node.start_time)}
@@ -182,6 +184,10 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                   parent_types
                 }
                 ... on StixObject {
+                  draftVersion {
+                    draft_id
+                    draft_operation
+                  }
                   created_at
                   updated_at
                 }
@@ -301,6 +307,10 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                   parent_types
                 }
                 ... on StixObject {
+                  draftVersion {
+                    draft_id
+                    draft_operation
+                  }
                   created_at
                   updated_at
                 }
