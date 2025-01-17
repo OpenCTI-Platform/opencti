@@ -1,10 +1,13 @@
 import React from 'react';
 import { makeStyles } from '@mui/styles';
 import { Chip, Grid, Paper, Typography } from '@mui/material';
+import AddThreatActorIndividualDemographic from '@components/threats/threat_actors_individual/AddThreatActorIndividualDemographic';
 import { useFormatter } from '../../../../components/i18n';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import type { Theme } from '../../../../components/Theme';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -67,9 +70,24 @@ const ThreatActorIndividualDemographics = ({
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={4}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Country of Residence')}
-            </Typography>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+            }}
+            >
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Country of Residence')}
+              </Typography>
+              <Security
+                needs={[KNOWLEDGE_KNUPDATE]}
+                placeholder={<div style={{ height: 29 }}/>}
+              >
+                <AddThreatActorIndividualDemographic
+                  threatActorIndividual={threatActorIndividual}
+                  relType='resides-in'
+                />
+              </Security>
+            </div>
             <div id="country_of_residence_list">
               {countryRelationship.country_of_residence.length > 0
                 ? countryRelationship.country_of_residence.map(
@@ -85,9 +103,24 @@ const ThreatActorIndividualDemographics = ({
             </div>
           </Grid>
           <Grid item xs={4}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Citizenship')}
-            </Typography>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+            }}
+            >
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Citizenship')}
+              </Typography>
+              <Security
+                needs={[KNOWLEDGE_KNUPDATE]}
+                placeholder={<div style={{ height: 29 }}/>}
+              >
+                <AddThreatActorIndividualDemographic
+                  threatActorIndividual={threatActorIndividual}
+                  relType='citizen-of'
+                />
+              </Security>
+            </div>
             <div id="citizenship_list">
               {countryRelationship.citizenship.length > 0
                 ? countryRelationship.citizenship.map(
@@ -121,9 +154,24 @@ const ThreatActorIndividualDemographics = ({
             </div>
           </Grid>
           <Grid item xs={4}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Nationality')}
-            </Typography>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+            }}
+            >
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Nationality')}
+              </Typography>
+              <Security
+                needs={[KNOWLEDGE_KNUPDATE]}
+                placeholder={<div style={{ height: 29 }}/>}
+              >
+                <AddThreatActorIndividualDemographic
+                  threatActorIndividual={threatActorIndividual}
+                  relType='national-of'
+                />
+              </Security>
+            </div>
             <div id="nationality">
               {countryRelationship.nationality
               && countryRelationship.nationality.length > 0
