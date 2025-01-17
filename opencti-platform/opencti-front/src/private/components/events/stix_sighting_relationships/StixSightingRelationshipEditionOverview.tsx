@@ -219,6 +219,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
       .integer(t_i18n('The value must be a number'))
       .required(t_i18n('This field is required')),
     confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
       .typeError(t_i18n('The value must be a number'))
       .integer(t_i18n('The value must be a number'))
       .required(t_i18n('This field is required')),
@@ -325,7 +327,6 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 disabled={inferred}
               />
               <ConfidenceField
-                variant="edit"
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
                 editContext={editContext}

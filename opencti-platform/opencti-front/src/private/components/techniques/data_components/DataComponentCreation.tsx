@@ -96,6 +96,8 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     description: Yup.string()
       .nullable(),
     confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
       .nullable(),
   };
   const dataComponentValidator = useSchemaCreationValidation(

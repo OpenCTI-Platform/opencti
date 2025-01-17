@@ -100,7 +100,10 @@ const ReportEditionOverviewComponent = (props) => {
     published: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     report_types: Yup.array().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),

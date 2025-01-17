@@ -215,7 +215,10 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
   const { editContext } = stixCoreRelationship;
 
   const basicShape = {
-    confidence: Yup.number().nullable(),
+    confidence: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .nullable(),
     start_time: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
@@ -337,7 +340,6 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
             <Form>
               <AlertConfidenceForEntity entity={stixCoreRelationship} />
               <ConfidenceField
-                variant="edit"
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
                 containerStyle={{ width: '100%' }}
