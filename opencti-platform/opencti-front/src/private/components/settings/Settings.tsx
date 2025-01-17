@@ -26,10 +26,8 @@ import { commitMutation, defaultCommitMutation } from '../../../relay/environmen
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
-import Loader from '../../../components/Loader';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
@@ -37,13 +35,15 @@ import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
+import ItemCopy from '../../../components/ItemCopy';
+import Loader from '../../../components/Loader';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import ThemesEditor, { refetchableThemesQuery } from './ThemesEditor';
-import type { Theme } from '../../../components/Theme';
 import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
 import { ThemesEditor_themes$key } from './__generated__/ThemesEditor_themes.graphql';
+import ThemesEditor, { refetchableThemesQuery } from './ThemesEditor';
+import type { Theme } from '../../../components/Theme';
 
-export const settingsQuery = graphql`
+const settingsQuery = graphql`
   query SettingsQuery {
     settings {
       id
@@ -155,14 +155,13 @@ export const settingsMutationFieldPatch = graphql`
         platform_whitemark
         platform_enterprise_edition {
           license_enterprise
-          license_by_configuration
-          license_valid_cert
           license_validated
-          license_expiration_prevention
           license_customer
+          license_valid_cert
+          license_expiration_prevention
+          license_platform_match
           license_expiration_date
           license_start_date
-          license_platform_match
           license_expired
           license_type
           license_creator
@@ -187,10 +186,44 @@ const settingsFocus = graphql`
   }
 `;
 
+const settingsValidation = (t: (s: string) => string) => Yup.object().shape({
+  platform_title: Yup.string().required(t('This field is required')),
+  platform_favicon: Yup.string().nullable(),
+  platform_email: Yup.string()
+    .required(t('This field is required'))
+    .email(t('The value must be an email address')),
+  platform_theme: Yup.string().nullable(),
+  platform_theme_dark_background: Yup.string().nullable(),
+  platform_theme_dark_paper: Yup.string().nullable(),
+  platform_theme_dark_nav: Yup.string().nullable(),
+  platform_theme_dark_primary: Yup.string().nullable(),
+  platform_theme_dark_secondary: Yup.string().nullable(),
+  platform_theme_dark_accent: Yup.string().nullable(),
+  platform_theme_dark_logo: Yup.string().nullable(),
+  platform_theme_dark_logo_collapsed: Yup.string().nullable(),
+  platform_theme_dark_logo_login: Yup.string().nullable(),
+  platform_theme_light_background: Yup.string().nullable(),
+  platform_theme_light_paper: Yup.string().nullable(),
+  platform_theme_light_nav: Yup.string().nullable(),
+  platform_theme_light_primary: Yup.string().nullable(),
+  platform_theme_light_secondary: Yup.string().nullable(),
+  platform_theme_light_accent: Yup.string().nullable(),
+  platform_theme_light_logo: Yup.string().nullable(),
+  platform_theme_light_logo_collapsed: Yup.string().nullable(),
+  platform_theme_light_logo_login: Yup.string().nullable(),
+  platform_language: Yup.string().nullable(),
+  platform_whitemark: Yup.string().nullable(),
+  enterprise_license: Yup.string().nullable(),
+  platform_login_message: Yup.string().nullable(),
+  platform_banner_text: Yup.string().nullable(),
+  platform_banner_level: Yup.string().nullable(),
+  analytics_google_analytics_v4: Yup.string().nullable(),
+});
+
 const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   const theme = useTheme<Theme>();
 
-  const { isSensitive, isAllowed } = useSensitiveModifications('ce_ee_toggle');
+  const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
 
   const data = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
@@ -202,44 +235,9 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
     data,
   );
 
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Parameters | Settings'));
-
-  const settingsValidation = Yup.object().shape({
-    platform_title: Yup.string().required(t_i18n('This field is required')),
-    platform_favicon: Yup.string().nullable(),
-    platform_email: Yup.string()
-      .required(t_i18n('This field is required'))
-      .email(t_i18n('The value must be an email address')),
-    platform_theme: Yup.string().nullable(),
-    platform_theme_dark_background: Yup.string().nullable(),
-    platform_theme_dark_paper: Yup.string().nullable(),
-    platform_theme_dark_nav: Yup.string().nullable(),
-    platform_theme_dark_primary: Yup.string().nullable(),
-    platform_theme_dark_secondary: Yup.string().nullable(),
-    platform_theme_dark_accent: Yup.string().nullable(),
-    platform_theme_dark_logo: Yup.string().nullable(),
-    platform_theme_dark_logo_collapsed: Yup.string().nullable(),
-    platform_theme_dark_logo_login: Yup.string().nullable(),
-    platform_theme_light_background: Yup.string().nullable(),
-    platform_theme_light_paper: Yup.string().nullable(),
-    platform_theme_light_nav: Yup.string().nullable(),
-    platform_theme_light_primary: Yup.string().nullable(),
-    platform_theme_light_secondary: Yup.string().nullable(),
-    platform_theme_light_accent: Yup.string().nullable(),
-    platform_theme_light_logo: Yup.string().nullable(),
-    platform_theme_light_logo_collapsed: Yup.string().nullable(),
-    platform_theme_light_logo_login: Yup.string().nullable(),
-    platform_language: Yup.string().nullable(),
-    platform_whitemark: Yup.string().nullable(),
-    enterprise_edition: Yup.string().nullable(),
-    platform_login_message: Yup.string().nullable(),
-    platform_banner_text: Yup.string().nullable(),
-    platform_banner_level: Yup.string().nullable(),
-    analytics_google_analytics_v4: Yup.string().nullable(),
-  });
-
   const handleChangeFocus = (id: string, name: string) => {
     commitMutation({
       ...defaultCommitMutation,
@@ -279,7 +277,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
         finalValue = '#000000';
       }
     }
-    settingsValidation
+    settingsValidation(t_i18n)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
         commitMutation({
@@ -336,9 +334,10 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   }, {} as Record<keyof typeof settings, unknown>);
   const modules = settings.platform_modules;
   const { version, dependencies } = about;
-  const isEnterpriseEdition = isNotEmptyField(
-    settings.enterprise_edition,
-  );
+  const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
+  const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
+  const isEnterpriseEditionValid = settings.platform_enterprise_edition.license_validated;
+
   let aiPoweredLabel = t_i18n('Disabled');
   if (settings.platform_ai_enabled) {
     if (settings.platform_ai_has_token) {
@@ -351,26 +350,203 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
+      {isEnterpriseEditionActivated && (
+        <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
+          <Grid item xs={6}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+              {t_i18n('Enterprise Edition')}
+            </Typography>
+            {!isEnterpriseEditionByConfig && (
+              <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
+                <DangerZoneBlock
+                  type='ce_ee_toggle'
+                  sx={{
+                    root: { border: 'none', padding: 0, margin: 0 },
+                    title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                  }}
+                >
+                  {({ disabled }) => (
+                    <>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color='warning'
+                        onClick={() => setOpenEEChanges(true)}
+                        disabled={disabled}
+                        style={{
+                          color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
+                          borderColor: theme.palette.dangerZone.main,
+                        }}
+                      >
+                        {t_i18n('Disable Enterprise Edition')}
+                      </Button>
+                      <Dialog
+                        PaperProps={{ elevation: 1 }}
+                        open={openEEChanges}
+                        keepMounted
+                        TransitionComponent={Transition}
+                        onClose={() => setOpenEEChanges(false)}
+                      >
+                        <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                        <DialogContent>
+                          <DialogContentText>
+                            <Alert
+                              severity="warning"
+                              variant="outlined"
+                              color="dangerZone"
+                              style={{ borderColor: theme.palette.dangerZone.main }}
+                            >
+                              {t_i18n('You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).')}
+                              <br /><br />
+                              <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+                            </Alert>
+                          </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button
+                            onClick={() => {
+                              setOpenEEChanges(false);
+                            }}
+                          >
+                            {t_i18n('Cancel')}
+                          </Button>
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              setOpenEEChanges(false);
+                              handleSubmitField(id, 'enterprise_license', '');
+                            }}
+                          >
+                            {t_i18n('Validate')}
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+                    </>
+                  )}
+                </DangerZoneBlock>
+              </div>
+            )}
+            <div className="clearfix" />
+            <Paper
+              variant="outlined"
+              className='paper-for-grid'
+              style={{
+                marginTop: theme.spacing(1),
+                padding: 20,
+                borderRadius: 4,
+              }}
+            >
+              <List style={{ marginTop: -20 }}>
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('Organization')} />
+                  <ItemBoolean
+                    variant="large"
+                    neutralLabel={settings.platform_enterprise_edition.license_customer}
+                    status={null}
+                  />
+                </ListItem>
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('Creator')} />
+                  <ItemBoolean
+                    variant="large"
+                    neutralLabel={settings.platform_enterprise_edition.license_creator}
+                    status={null}
+                  />
+                </ListItem>
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('Scope')} />
+                  <ItemBoolean
+                    variant="large"
+                    neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
+                    status={null}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+              {t_i18n('License')}
+            </Typography>
+            {!isEnterpriseEditionByConfig && (
+              <div style={{ float: 'right', marginTop: theme.spacing(-1.8), position: 'relative' }}>
+                <EnterpriseEditionButton title={t_i18n('Change your Enterprise Edition license')} inLine={true} />
+              </div>
+            )}
+            <div className="clearfix"/>
+            <Paper
+              variant="outlined"
+              className='paper-for-grid'
+              style={{
+                marginTop: theme.spacing(1),
+                padding: 20,
+                borderRadius: 4,
+              }}
+            >
+              <List style={{ marginTop: -20 }}>
+                {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
+                  <ListItem divider={false}>
+                    <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
+                      {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
+                    </Alert>
+                  </ListItem>
+                )}
+                {!settings.platform_enterprise_edition.license_validated && settings.platform_enterprise_edition.license_valid_cert && (
+                  <ListItem divider={false}>
+                    <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
+                      {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
+                    </Alert>
+                  </ListItem>
+                )}
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('Start date')}/>
+                  <ItemBoolean
+                    variant="xlarge"
+                    label={fldt(settings.platform_enterprise_edition.license_start_date)}
+                    status={!settings.platform_enterprise_edition.license_expired}
+                  />
+                </ListItem>
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('Expiration date')}/>
+                  <ItemBoolean
+                    variant="xlarge"
+                    label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
+                    status={!settings.platform_enterprise_edition.license_expired}
+                  />
+                </ListItem>
+                <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
+                  <ListItemText primary={t_i18n('License type')}/>
+                  <ItemBoolean
+                    variant="large"
+                    neutralLabel={settings.platform_enterprise_edition.license_type}
+                    status={null}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
+          </Grid>
+        </Grid>
+      )}
       <Grid container={true} spacing={3}>
         <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
           </Typography>
           <Paper
+            variant="outlined"
+            className='paper-for-grid'
             style={{
               marginTop: theme.spacing(1),
               padding: 20,
               borderRadius: 4,
             }}
-            variant="outlined"
-            className={'paper-for-grid'}
           >
             <Formik
               onSubmit={() => {
               }}
               enableReinitialize={true}
               initialValues={initialValues}
-              validationSchema={settingsValidation}
+              validationSchema={settingsValidation(t_i18n)}
             >
               {() => (
                 <Form>
@@ -381,14 +557,13 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     label={t_i18n('Platform title')}
                     fullWidth
                     onFocus={(name: string) => handleChangeFocus(id, name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(id, name, value)
-                    }
-                    helperText={
+                    onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)}
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_title"
                       />
-                    }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -398,14 +573,13 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     fullWidth
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(id, name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(id, name, value)
-                    }
-                    helperText={
+                    onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)}
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_favicon"
                       />
-                    }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -415,14 +589,13 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     fullWidth
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(id, name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(id, name, value)
-                    }
-                    helperText={
+                    onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)}
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_email"
                       />
-                    }
+                    )}
                   />
                   <Field
                     component={SelectField}
@@ -453,20 +626,18 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     fullWidth
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(id, name)}
-                    onChange={(name: string, value: string) => handleSubmitField(id, name, value)}
-                    helpertext={
+                    onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)}
+                    helpertext={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_language"
                       />
-                    }
+                    )}
                   >
                     <MenuItem value="auto">
                       <em>{t_i18n('Automatic')}</em>
                     </MenuItem>
-                    {
-                      availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
-                    }
+                    {availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
                   </Field>
                   <HiddenTypesField />
                 </Form>
@@ -478,103 +649,36 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
             {t_i18n('OpenCTI platform')}
           </Typography>
-          <div style={{ float: 'right', marginTop: isSensitive ? theme.spacing(-5) : theme.spacing(-4.5), position: 'relative' }}>
-            {!isEnterpriseEdition ? (
-              <EnterpriseEditionButton disabled={!isAllowed} inLine />
-            ) : (
-              <DangerZoneBlock
-                type={'ce_ee_toggle'}
-                sx={{
-                  root: { border: 'none', padding: 0, margin: 0 },
-                  title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                }}
-              >
-                {({ disabled }) => (
-                  <>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color={isSensitive ? 'warning' : 'primary'}
-                      onClick={() => setOpenEEChanges(true)}
-                      disabled={disabled}
-                      style={isSensitive
-                        ? {
-                          color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                          borderColor: theme.palette.dangerZone.main,
-                        }
-                        : undefined}
-                    >
-                      {t_i18n('Disable Enterprise Edition')}
-                    </Button>
-                    <Dialog
-                      PaperProps={{ elevation: 1 }}
-                      open={openEEChanges}
-                      keepMounted
-                      TransitionComponent={Transition}
-                      onClose={() => setOpenEEChanges(false)}
-                    >
-                      <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                      <DialogContent>
-                        <DialogContentText>
-                          <Alert
-                            severity="warning"
-                            variant="outlined"
-                            color="dangerZone"
-                            style={{
-                              borderColor: theme.palette.dangerZone.main,
-                            }}
-                          >
-                            {t_i18n(
-                              'You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.',
-                            )}
-                          </Alert>
-                        </DialogContentText>
-                      </DialogContent>
-                      <DialogActions>
-                        <Button
-                          onClick={() => {
-                            setOpenEEChanges(false);
-                          }}
-                        >
-                          {t_i18n('Cancel')}
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            setOpenEEChanges(false);
-                            handleSubmitField(id, 'enterprise_edition', '');
-                          }}
-                        >
-                          {t_i18n('Validate')}
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                  </>
-                )}
-              </DangerZoneBlock>
+          <div style={{ float: 'right', marginTop: theme.spacing(-4.5), position: 'relative' }}>
+            {!isEnterpriseEditionActivated && (
+              <EnterpriseEditionButton title={t_i18n('Activate Enterprise Edition')} inLine={true} />
             )}
           </div>
+          <div className="clearfix"/>
           <Paper
+            className='paper-for-grid'
+            variant="outlined"
             style={{
               marginTop: theme.spacing(1),
               padding: 20,
               borderRadius: 4,
             }}
-            className={'paper-for-grid'}
-            variant="outlined"
           >
             <Formik
-              onSubmit={() => {
-              }}
+              onSubmit={() => {}}
               enableReinitialize={true}
               initialValues={initialValues}
-              validationSchema={settingsValidation}
+              validationSchema={settingsValidation(t_i18n)}
             >
               {() => (
                 <Form>
                   <List style={{ marginTop: -20 }}>
+                    <ListItem divider={true} style={{ paddingRight: 24 }}>
+                      <ListItemText primary={t_i18n('Platform identifier')}/>
+                      <ItemCopy content={settings.id} variant="inLine"/>
+                    </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Version')} />
+                      <ListItemText primary={t_i18n('Version')}/>
                       <ItemBoolean
                         variant="large"
                         neutralLabel={version}
@@ -582,14 +686,14 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                       />
                     </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Edition')} />
+                      <ListItemText primary={t_i18n('Edition')}/>
                       <ItemBoolean
                         variant="large"
                         neutralLabel={
-                          isEnterpriseEdition
-                            ? t_i18n('Enterprise')
-                            : t_i18n('Community')
-                        }
+                                isEnterpriseEditionValid
+                                  ? t_i18n('Enterprise')
+                                  : t_i18n('Community')
+                              }
                         status={null}
                       />
                     </ListItem>
@@ -600,11 +704,11 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                       <ItemBoolean
                         variant="large"
                         neutralLabel={
-                          settings.platform_cluster.instances_number
-                          > 1
-                            ? t_i18n('Cluster')
-                            : t_i18n('Standalone')
-                        }
+                                settings.platform_cluster.instances_number
+                                > 1
+                                  ? t_i18n('Cluster')
+                                  : t_i18n('Standalone')
+                              }
                         status={null}
                       />
                     </ListItem>
@@ -615,8 +719,8 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                       <ItemBoolean
                         variant="large"
                         neutralLabel={
-                          `${settings.platform_cluster.instances_number}`
-                        }
+                                `${settings.platform_cluster.instances_number}`
+                              }
                         status={null}
                       />
                     </ListItem>
@@ -632,40 +736,29 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                       />
                     </ListItem>
                     <ListItem divider={true}>
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        disabled={true}
-                        name="filigran_support_key"
-                        label={t_i18n('Filigran support key')}
-                        fullWidth={true}
-                      />
-                    </ListItem>
-                    <ListItem divider={true}>
                       <ListItemText
                         primary={
                           <>
                             {t_i18n('Remove Filigran logos')}
-                            <EEChip />
+                            <EEChip/>
                           </>
-                        }
-                      ></ListItemText>
+                              }
+                      />
                       <Field
                         component={Switch}
                         variant="standard"
                         name="platform_whitemark"
-                        disabled={!isEnterpriseEdition}
+                        disabled={!isEnterpriseEditionValid}
                         checked={
-                          settings.platform_whitemark
-                          && isEnterpriseEdition
-                        }
-                        onChange={(_: React.ChangeEvent, value: string) => handleSubmitField(
+                                  settings.platform_whitemark
+                                  && isEnterpriseEditionValid
+                              }
+                        onChange={(_: unknown, value: string | null) => handleSubmitField(
                           id,
                           'platform_whitemark',
                           value,
                         )
-                        }
+                              }
                       />
                     </ListItem>
                   </List>
@@ -675,14 +768,14 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           </Paper>
         </Grid>
         <Grid item xs={8}>
-          <SettingsMessages settings={settings} />
+          <SettingsMessages settings={settings}/>
         </Grid>
         <Grid item xs={4}>
           <SettingsAnalytics
             settings={settings}
             handleChangeFocus={handleChangeFocus}
             handleSubmitField={handleSubmitField}
-            isEnterpriseEdition={isEnterpriseEdition}
+            isEnterpriseEdition={isEnterpriseEditionValid}
           />
         </Grid>
         <Grid item xs={8}>
@@ -703,20 +796,20 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
             {t_i18n('Tools')}
           </Typography>
           <Paper
+            className={'paper-for-grid'}
+            variant="outlined"
             style={{
               marginTop: theme.spacing(1),
               padding: 20,
               borderRadius: 4,
             }}
-            className={'paper-for-grid'}
-            variant="outlined"
           >
             <List style={{ marginTop: -20 }}>
-              {modules?.map((module) => {
+              {(modules ?? []).map((module) => {
                 const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);
-                let status = module.enable;
-                if (!isEnterpriseEdition && isEeModule) {
-                  status = true;
+                let status: string | boolean = module.enable;
+                if (!isEnterpriseEditionActivated && isEeModule) {
+                  status = 'ee';
                 }
                 return (
                   <ListItem key={module.id} divider={true}>
