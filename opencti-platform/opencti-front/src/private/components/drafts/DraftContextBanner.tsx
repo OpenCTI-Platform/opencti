@@ -81,9 +81,9 @@ const DraftContextBanner = () => {
   };
 
   return (
-    <div style={{ padding: '0 12px' }}>
+    <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-        <div style={{ padding: '0 12px' }}>
+        <div style={{ padding: '0 12px', flex: 1 }}>
           <DraftBlock body={truncate(currentDraftContextName, 40)}/>
         </div>
         <div>
@@ -120,11 +120,11 @@ const DraftContextBanner = () => {
         <div style={{ padding: '0 12px' }}>
           <Button
             variant="contained"
-            color="primary"
+            color="secondary"
             style={{ width: '100%' }}
             onClick={navigateToDraft}
           >
-            {t_i18n('Go to overview')}
+            {t_i18n('View draft')}
           </Button>
         </div>
         <div>
