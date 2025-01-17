@@ -1,0 +1,214 @@
+import React, { useEffect, useState } from 'react';
+import { graphql, useRefetchableFragment } from 'react-relay';
+import Loader from 'src/components/Loader';
+import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
+import { CheckCircle } from '@mui/icons-material';
+import ItemIcon from 'src/components/ItemIcon';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
+import { defaultCommitMutation } from 'src/relay/environment';
+import {
+  AddThreatActorIndividualDemographicLines_data$key,
+} from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLines_data.graphql';
+import { ThreatActorIndividual_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+
+export const scoRelationshipAdd = graphql`
+  mutation AddThreatActorIndividualDemographicLinesRelationAddMutation(
+    $input: StixCoreRelationshipAddInput
+  ) {
+    stixCoreRelationshipAdd(input: $input) {
+      from {
+        ... on ThreatActorIndividual {
+          id
+          stixCoreRelationships {
+            edges {
+              node {
+                id
+                fromId
+                toId
+                entity_type
+                relationship_type
+              }
+            }
+          }
+        }
+      }
+      to {
+        ... on Country {
+          id
+        }
+      }
+    }
+  }
+`;
+
+export const scoRelationshipDelete = graphql`
+  mutation AddThreatActorIndividualDemographicLinesRelationDeleteMutation(
+    $fromId: StixRef!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId,
+      toId: $toId,
+      relationship_type: $relationship_type
+    )
+  }
+`;
+
+export const addIndividualsThreatActorIndividualLinesQuery = graphql`
+  query AddThreatActorIndividualDemographicLinesQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+  ) {
+    ...AddThreatActorIndividualDemographicLines_data
+    @arguments(search: $search, count: $count, cursor: $cursor)
+  }
+`;
+
+const AddThreatActorIndividualDemographicLinesFragment = graphql`
+  fragment AddThreatActorIndividualDemographicLines_data on Query
+  @refetchable(queryName: "AddThreatActorIndividualDemographicLinesRefetchQuery")
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 },
+    cursor: { type: "ID" },
+  ) {
+    countries (
+      search: $search,
+      first: $count,
+      after: $cursor,
+    ) @connection(key: "Pagination_countries") {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const AddThreatActorIndividualDemographicLine = ({
+  id,
+  name,
+  currentTargets,
+  handleClick,
+}: {
+  id: string,
+  name: string,
+  currentTargets: string[],
+  handleClick: () => void,
+}) => {
+  const theme = useTheme();
+  return (
+    <ListItemButton
+      divider={true}
+      onClick={handleClick}
+    >
+      <ListItemIcon>
+        {currentTargets.includes(id)
+          ? <CheckCircle style={{ color: theme.palette.primary.main }} />
+          : <ItemIcon type='Country' />
+        }
+      </ListItemIcon>
+      <ListItemText
+        primary={name}
+      />
+    </ListItemButton>
+  );
+};
+
+const AddThreatActorIndividualDemographicLines = ({
+  threatActorIndividual,
+  fragmentKey,
+  relType,
+}: {
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
+  fragmentKey: AddThreatActorIndividualDemographicLines_data$key,
+  relType: string,
+}) => {
+  const [data, refetch] = useRefetchableFragment(
+    AddThreatActorIndividualDemographicLinesFragment,
+    fragmentKey,
+  );
+  const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
+  const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
+  useEffect(() => {
+    refetch({});
+  }, [data]);
+
+  const initialTargets = (threatActorIndividual
+    .stixCoreRelationships?.edges
+    .filter(({ node }) => node.relationship_type === relType)
+    ?? []).map(({ node }) => node.to?.id ?? '');
+
+  const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
+
+  const updateDelete = (store: RecordSourceSelectorProxy, path: string, rootId: string, deleteId: string) => {
+    const node = store.get(rootId);
+    const records = node?.getLinkedRecord(path);
+    const edges = records?.getLinkedRecords('edges');
+    if (!records || !edges) { return; }
+    const newEdges = edges.filter((n) => n.getLinkedRecord('node')?.getValue('toId') !== deleteId);
+    records.setLinkedRecords(newEdges, 'edges');
+  };
+
+  const handleToggle = (toId: string) => {
+    const isSelected = currentTargets.includes(toId);
+    const input = {
+      fromId: threatActorIndividual.id,
+      toId,
+      relationship_type: relType,
+    };
+    if (isSelected) {
+      commitRelationDelete({
+        ...defaultCommitMutation,
+        variables: { ...input },
+        updater: (store) => updateDelete(
+          store,
+          'stixCoreRelationships',
+          threatActorIndividual.id,
+          toId,
+        ),
+        onCompleted: () => {
+          setCurrentTargets(currentTargets.filter((id) => id !== toId));
+        },
+      });
+    } else {
+      commitRelationAdd({
+        ...defaultCommitMutation,
+        variables: { input },
+        onCompleted: () => {
+          setCurrentTargets([...currentTargets, toId]);
+        },
+      });
+    }
+  };
+
+  if (data.countries?.edges) {
+    const availableTargets = data.countries.edges;
+    return (
+      <List>
+        {availableTargets.map((node, i) => {
+          if (node) {
+            return (
+              <AddThreatActorIndividualDemographicLine
+                key={node.node.id}
+                id={node.node.id}
+                name={node.node.name}
+                currentTargets={currentTargets}
+                handleClick={() => handleToggle(node.node.id)}
+              />
+            );
+          }
+          return <div key={i} />;
+        })}
+      </List>
+    );
+  }
+  return (<Loader />);
+};
+
+export default AddThreatActorIndividualDemographicLines;
