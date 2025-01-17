@@ -87,8 +87,8 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     value: Yup.string().required(t_i18n('This field is required')),
     color: Yup.string().required(t_i18n('This field is required')),
   });
-  const initialValues = {
-    value: '',
+  const initialValues: LabelAddInput = {
+    value: contextual ? inputValueContextual : '',
     color: '',
   };
   const onSubmit = (
@@ -224,10 +224,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{
-            value: inputValueContextual,
-            color: '',
-          }}
+          initialValues={initialValues}
           required={required}
           validationSchema={labelValidation}
           onSubmit={onSubmitContextual}
