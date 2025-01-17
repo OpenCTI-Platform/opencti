@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
+import { StixCoreObjectHistoryLines_data$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import { useFormatter } from '../../../../components/i18n';
@@ -43,7 +44,7 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
           orderBy: 'timestamp',
           orderMode: 'desc',
         }}
-        render={({ props }) => {
+        render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
           if (props) {
             return (
               <StixCoreObjectHistoryLines

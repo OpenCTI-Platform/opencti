@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
+import { StixCoreObjectHistoryLines_data$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import SearchInput from '../../../../components/SearchInput';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -74,7 +75,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
               orderMode: 'desc',
               search: entitySearchTerm,
             }}
-            render={({ props }) => {
+            render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
@@ -84,7 +85,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <Loader variant={LoaderVariant.inElement} />;
             }}
           />
         </Grid>
@@ -151,7 +152,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
               orderMode: 'desc',
               search: relationsSearchTerm,
             }}
-            render={({ props }) => {
+            render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
@@ -161,7 +162,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <Loader variant={LoaderVariant.inElement} />;
             }}
           />
         </Grid>
