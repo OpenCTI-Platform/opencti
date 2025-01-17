@@ -9,6 +9,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
+import { DraftChip } from '../../common/draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -72,7 +73,10 @@ class SectorLineComponent extends Component {
           <ListItemText
             primary={
               <div>
-                <div className={classes.name}>{node.name}</div>
+                <div className={classes.name}>
+                  {node.name}
+                  {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }}/>)}
+                </div>
                 <div className={classes.description}>
                   {node.description?.length > 0
                     ? node.description
