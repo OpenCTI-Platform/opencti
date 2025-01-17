@@ -44,7 +44,7 @@ You can find below the digram of all types of entities and relationships availab
 
 ### Attributes and properties
 
-To get a comprehensive list of available properties for a given type of entity or relationship, you can use the GraphQL playground schema available in your "Profile > Playground". Then you can click on schema. You can for instance search for the keyword `IntrusionSet`:
+To get a comprehensive list of available properties for a given type of entity or relationship, you can use the GraphQL playground schema available in your "Profile > Playground". Then you can click on the Documentation button on the left. You can for instance search for the keyword `IntrusionSet`:
 
 ![STIX meta model](assets/schema.png)
 

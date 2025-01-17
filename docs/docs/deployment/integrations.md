@@ -92,7 +92,7 @@ Authorization: Bearer 6b6554c4-bb2c-4c80-9cd3-30288c8bf424
 
 #### Playground
 
-The playground is available on the `/graphql` endpoint. A link button is also available in the profile of your user.
+The playground is available on the `/public/graphql` endpoint. A link button is also available in the profile of your user.
 
 ![Playground](assets/playground.png)
 

@@ -124,7 +124,7 @@ Here are the configuration keys, for both containers (environment variables) and
 
 | Parameter                                           | Environment variable                                     | Default value | Description                                                                 |
 |:----------------------------------------------------|:---------------------------------------------------------|:--------------|:----------------------------------------------------------------------------|
-| app:graphql:playground:enabled                      | APP__GRAPHQL__PLAYGROUND__ENABLED                        | `true`        | Enable the playground on /graphql                                           |
+| app:graphql:playground:enabled                      | APP__GRAPHQL__PLAYGROUND__ENABLED                        | `true`        | Enable the playground on /public/graphql                                    |
 | app:graphql:playground:force_disabled_introspection | APP__GRAPHQL__PLAYGROUND__FORCE_DISABLED_INTROSPECTION   | `true`        | Introspection is allowed to auth users but can be disabled in needed        |
 | app:concurrency:retry_count                         | APP__CONCURRENCY__RETRY_COUNT                            | 200           | Number of try to get the lock to work an element (create/update/merge, ...) |
 | app:concurrency:retry_delay                         | APP__CONCURRENCY__RETRY_DELAY                            | 100           | Delay between 2 lock retry (in milliseconds)                                |
