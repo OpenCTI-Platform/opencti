@@ -1,6 +1,5 @@
-import React, { RefObject, useRef, useState } from 'react';
-import ApexChart, { Props } from 'react-apexcharts';
-import type ReactApexChart from 'react-apexcharts';
+import React, { useState } from 'react';
+import ApexChart, { Props as ApexProps } from 'react-apexcharts';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -27,49 +26,51 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-interface ChartType extends ReactApexChart {
-  chart: { ctx: ApexCharts, opts: ApexOptions }
-}
-
 interface ExportPopoverProps {
-  chartRef: RefObject<ChartType>;
+  chart?: ApexCharts;
   series?: ApexOptions['series'];
   isReadOnly?: boolean;
 }
 
 const ExportPopover = ({
+  chart,
   isReadOnly,
-  chartRef,
   series,
 }: ExportPopoverProps) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
   const handleExportToSVG = () => {
     setAnchorEl(null);
-    if (chartRef.current) {
-      chartRef.current.chart.ctx.exports.exportToSVG();
+    if (chart) {
+      chart.exports.exportToSVG();
     }
   };
+
   const handleExportToPng = () => {
     setAnchorEl(null);
-    if (chartRef.current) {
-      chartRef.current.chart.ctx.exports.exportToPng();
+    if (chart) {
+      chart.exports.exportToPng();
     }
   };
+
   const handleExportToCSV = () => {
     setAnchorEl(null);
-    if (chartRef.current) {
-      const currentFormatter = chartRef.current.chart.opts.xaxis?.labels?.formatter;
+    if (chart) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const currentFormatter = chart.opts.xaxis?.labels?.formatter;
       if (currentFormatter) {
-        chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: (value: string) => value } } }, false, false, false);
-        chartRef.current.chart.ctx.exports.exportToCSV({ series });
-        chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: currentFormatter } } }, false);
+        chart.updateOptions({ xaxis: { labels: { formatter: (value: string) => value } } }, false, false, false);
+        chart.exports.exportToCSV({ series });
+        chart.updateOptions({ xaxis: { labels: { formatter: currentFormatter } } }, false);
       } else {
-        chartRef.current.chart.ctx.exports.exportToCSV({ series });
+        chart.exports.exportToCSV({ series });
       }
     }
   };
+
   return (
     <div className={isReadOnly ? classes.containerReadOnly : classes.container}>
       <IconButton
@@ -100,7 +101,7 @@ const ExportPopover = ({
   );
 };
 
-interface OpenCTIChartProps extends Props {
+interface OpenCTIChartProps extends ApexProps {
   withExportPopover?: boolean;
   isReadOnly?: boolean;
 }
@@ -114,12 +115,27 @@ const Chart = ({
   withExportPopover,
   isReadOnly,
 }: OpenCTIChartProps) => {
-  const chartRef = useRef<ChartType>(null);
+  const [chart, setChart] = useState<ApexCharts>();
+
+  // Add in config a callback on 'mounted event' to retrieve chart context.
+  // This context is used to export in different format.
+  const apexOptions: ApexProps['options'] = {
+    ...options,
+    chart: {
+      ...options?.chart,
+      events: {
+        ...options?.chart?.events,
+        mounted(c) {
+          setChart(c);
+        },
+      },
+    },
+  };
+
   return (
     <>
       <ApexChart
-        ref={chartRef}
-        options={options}
+        options={apexOptions}
         series={series}
         type={type}
         width={width}
@@ -127,7 +143,7 @@ const Chart = ({
       />
       {withExportPopover === true && (
         <ExportPopover
-          chartRef={chartRef}
+          chart={chart}
           series={series}
           isReadOnly={isReadOnly}
         />
