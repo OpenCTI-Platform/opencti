@@ -15,6 +15,7 @@ import {
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import { Theme } from '@mui/material/styles/createTheme';
+import { DraftChip } from '@components/common/draft/DraftChip';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
@@ -66,6 +67,10 @@ const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
       matchedString
       matchedEntity{
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         standard_id
         entity_type
         ... on StixObject {
@@ -137,6 +142,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
               style={{ width: dataColumns.value.width }}
             >
               {matchedEntity.representative?.main}
+              {matchedEntity.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
