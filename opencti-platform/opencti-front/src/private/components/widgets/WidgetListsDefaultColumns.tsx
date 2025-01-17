@@ -2,8 +2,7 @@ import type { WidgetColumn } from '../../../utils/widget/widget';
 
 export const commonWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
-    { attribute: 'entity_type' },
-    { attribute: 'relationship_type' },
+    { attribute: 'entity_type', label: 'Type' },
     { attribute: 'from_entity_type', label: 'From entity type' },
     { attribute: 'from_relationship_type', label: 'From relationship type' },
     { attribute: 'to_entity_type', label: 'To entity type' },
@@ -18,8 +17,7 @@ export const commonWidgetColumns: Record<string, WidgetColumn[]> = {
 
 export const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
-    { attribute: 'entity_type' },
-    { attribute: 'relationship_type' },
+    { attribute: 'entity_type', label: 'Type' },
     { attribute: 'from_entity_type', label: 'From entity type' },
     { attribute: 'from_relationship_type', label: 'From relationship type' },
     { attribute: 'to_entity_type', label: 'To entity type' },
