@@ -48,8 +48,13 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
   const draftContext = useDraftContext();
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
+  if (!draftWorkspace) {
+    return (<ErrorNotFound />);
+  }
+
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
+
   useEffect(() => {
     if (!draftContext || draftContext.id !== draftId) {
       commitSwitchToDraft({
@@ -66,10 +71,6 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
       });
     }
   }, [commitSwitchToDraft]);
-
-  if (!draftWorkspace) {
-    return (<ErrorNotFound />);
-  }
 
   return (
     <>
@@ -92,31 +93,41 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             component={Link}
             to={`/dashboard/drafts/${draftId}/entities`}
             value={`/dashboard/drafts/${draftId}/entities`}
-            label={t_i18n('Entities')}
+            label={
+              <span>{t_i18n('Entities')} ({draftWorkspace.objectsCount.entitiesCount})</span>
+            }
           />
           <Tab
             component={Link}
             to={`/dashboard/drafts/${draftId}/observables`}
             value={`/dashboard/drafts/${draftId}/observables`}
-            label={t_i18n('Observables')}
+            label={
+              <span>{t_i18n('Observables')} ({draftWorkspace.objectsCount.observablesCount})</span>
+            }
           />
           <Tab
             component={Link}
             to={`/dashboard/drafts/${draftId}/relationships`}
             value={`/dashboard/drafts/${draftId}/relationships`}
-            label={t_i18n('Relationships')}
+            label={
+              <span>{t_i18n('Relationships')} ({draftWorkspace.objectsCount.relationshipsCount})</span>
+            }
           />
           <Tab
             component={Link}
             to={`/dashboard/drafts/${draftId}/sightings`}
             value={`/dashboard/drafts/${draftId}/sightings`}
-            label={t_i18n('Sightings')}
+            label={
+              <span>{t_i18n('Sightings')} ({draftWorkspace.objectsCount.sightingsCount})</span>
+            }
           />
           <Tab
             component={Link}
             to={`/dashboard/drafts/${draftId}/containers`}
             value={`/dashboard/drafts/${draftId}/containers`}
-            label={t_i18n('Containers')}
+            label={
+              <span>{t_i18n('Containers')} ({draftWorkspace.objectsCount.containersCount})</span>
+            }
           />
         </Tabs>
       </Box>

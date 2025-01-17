@@ -82,7 +82,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'end',
-    flex: 1,
+    marginLeft: 'auto',
   },
   barRightContainer: {
     float: 'left',
