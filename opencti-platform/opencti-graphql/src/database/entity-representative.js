@@ -1,9 +1,10 @@
 import moment from 'moment';
-import { isEmptyField, isNotEmptyField } from './utils';
+import { isEmptyField, isNotEmptyField, REDACTED_INFORMATION } from './utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { observableValue } from '../utils/format';
+import { ENABLED_DEMO_MODE } from '../config/conf';
 
 export const extractRepresentativeDescription = (entityData) => {
   let secondValue;
@@ -40,7 +41,9 @@ const extractRelationshipRepresentative = (relationshipData) => {
 // TODO migrate to extractStixRepresentative from convertStoreToStix
 export const extractEntityRepresentativeName = (entityData) => {
   let mainValue;
-  if (isStixCyberObservable(entityData.entity_type)) {
+  if (entityData.entity_type === ENTITY_TYPE_USER) {
+    mainValue = ENABLED_DEMO_MODE ? REDACTED_INFORMATION : entityData.name;
+  } else if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
   } else if (entityData.entity_type === ENTITY_TYPE_STATUS && entityData.name && entityData.type) {
     mainValue = `${entityData.type} - ${entityData.name}`;

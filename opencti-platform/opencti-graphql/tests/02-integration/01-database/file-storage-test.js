@@ -111,7 +111,6 @@ describe('File storage file listing', () => {
       user_email: 'user-no-capa@opencti.io',
       inside_platform_organization: true,
       allowed_marking: [],
-      allowed_organizations: [],
       roles: [{ internal_id: '08f558bc-b93d-40dc-8e86-f70309d9e1a6', id: '08f558bc-b93d-40dc-8e86-f70309d9e1a6', name: 'No capa' }],
       groups: [],
       capabilities: [],

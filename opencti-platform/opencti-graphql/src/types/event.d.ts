@@ -20,6 +20,7 @@ interface CreateEventOpts extends EventOpts {
 interface UpdateEventOpts extends EventOpts {
   commit?: CommitContext | undefined;
   related_restrictions?: { markings: string[] };
+  allow_only_modified?: boolean
 }
 
 interface RelationCreation {

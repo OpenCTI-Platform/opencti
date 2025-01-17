@@ -22,8 +22,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1155;
-export const SYNC_LIVE_EVENTS_SIZE = 608;
+export const RAW_EVENTS_SIZE = 1160;
+export const SYNC_LIVE_EVENTS_SIZE = 612;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -114,7 +114,13 @@ export const ROLE_EDITOR: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration and edit/delete' }),
   name: 'Access knowledge/exploration and edit/delete',
   description: 'Knowledge/exploration edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE_PUBLISH', 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS']
+  capabilities: [
+    'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'EXPLORE_EXUPDATE_EXDELETE',
+    'EXPLORE_EXUPDATE_PUBLISH',
+    'TAXIIAPI_SETCOLLECTIONS',
+    'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'
+  ]
 };
 TESTING_ROLES.push(ROLE_EDITOR);
 
@@ -317,7 +323,6 @@ export const ADMIN_USER: AuthUser = {
   groups: [],
   capabilities: [{ name: BYPASS }],
   all_marking: [],
-  allowed_organizations: [],
   inside_platform_organization: true,
   allowed_marking: [],
   default_marking: [],
@@ -693,7 +698,6 @@ export const buildStandardUser = (
     groups: [],
     capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
     all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],
-    allowed_organizations: [],
     inside_platform_organization: true,
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],

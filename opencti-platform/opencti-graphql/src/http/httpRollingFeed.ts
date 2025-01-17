@@ -5,9 +5,8 @@ import nconf from 'nconf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { findById as findFeed } from '../domain/feed';
-import type { AuthUser } from '../types/user';
 import { listAllThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
@@ -25,10 +24,6 @@ const errorConverter = (e: any) => {
     http_status: e.data?.http_status || 500,
     details,
   };
-};
-const userHaveAccess = (user: AuthUser) => {
-  const capabilities = user.capabilities.map((c) => c.name);
-  return capabilities.includes(BYPASS) || capabilities.includes(TAXIIAPI);
 };
 
 const dataFormat = (separator: string, data: string) => {
@@ -58,7 +53,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       // If feed is not public, we need to ensure the user access
       if (!feed.feed_public) {
         const userFeed = await findFeed(context, authUser, id);
-        if (!userHaveAccess(authUser) || !userFeed) {
+        if (!isUserHasCapability(authUser, TAXIIAPI) || !userFeed) {
           throw ForbiddenAccess();
         }
       }

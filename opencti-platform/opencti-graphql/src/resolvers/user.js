@@ -52,6 +52,7 @@ import {
   userGroupsPaginated,
   userIdDeleteRelation,
   userOrganizationsPaginated,
+  userOrganizationsPaginatedWithoutInferences,
   userRenewToken,
   userWithOrigin
 } from '../domain/user';
@@ -88,6 +89,7 @@ const userResolvers = {
     roles: (current, args, context) => rolesUsersLoader.load(current.id, context, context.user, args),
     groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
+    objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, args, context) => usersConfidenceLoader.load(current, context, context.user),

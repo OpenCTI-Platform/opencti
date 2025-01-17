@@ -90,8 +90,12 @@ const syncManagerInstance = (syncId) => {
     for (let index = 0; index < entityFiles.length; index += 1) {
       const entityFile = entityFiles[index];
       const { uri: fileUri } = entityFile;
-      const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
-      entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
+      try {
+        const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
+        entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
+      } catch (e) {
+        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
+      }
     }
     return { data: processingData, previous_standard: idOperation?.value };
   };

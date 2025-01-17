@@ -35,7 +35,6 @@ interface AuthUser extends BasicStoreIdentifier {
   roles: Array<UserRole>
   groups: Array<Group>
   organizations: Array<BasicStoreCommon>
-  allowed_organizations: Array<BasicStoreCommon>
   administrated_organizations: Array<BasicStoreCommon>
   capabilities: Array<UserCapability>
   allowed_marking: Array<StoreMarkingDefinition>

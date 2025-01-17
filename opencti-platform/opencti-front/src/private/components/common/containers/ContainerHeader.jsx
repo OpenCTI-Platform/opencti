@@ -663,7 +663,6 @@ const ContainerHeader = (props) => {
               containerId={container.id}
               currentMode={currentMode}
               onApplied={onApplied}
-              instanceName={getMainRepresentative(container)}
               containerHeaderObjectsQuery={containerHeaderObjectsQuery}
               container={container}
             />

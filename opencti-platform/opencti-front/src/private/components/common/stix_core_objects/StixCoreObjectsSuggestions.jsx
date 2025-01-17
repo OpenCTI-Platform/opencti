@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { AddTaskOutlined, AssistantOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../containers/ContainerAddStixCoreObjectsLines';
@@ -33,7 +34,6 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
     container,
     currentMode,
     onApplied,
-    instanceName,
     containerHeaderObjectsQuery,
   } = props;
   const theme = useTheme();
@@ -370,8 +370,11 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                               value={selectedEntity[suggestion.type]}
                             >
                               {suggestion.data.map((object) => (
-                                <MenuItem key={object.id} value={object.id}>
-                                  {instanceName}
+                                <MenuItem
+                                  key={object.id}
+                                  value={object.id}
+                                >
+                                  {getMainRepresentative(object)}
                                 </MenuItem>
                               ))}
                             </Select>

@@ -94,6 +94,7 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
   ids?: Array<string>
   indices?: Array<string>
   includeAuthorities?: boolean | null
+  withInferences?: boolean
   includeDeletedInDraft?: boolean | null
 }
 
@@ -313,7 +314,7 @@ export const listRelationsPaginated = async <T extends BasicStoreRelation>(conte
 export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
-  const computedIndices = computeQueryIndices(indices, type);
+  const computedIndices = computeQueryIndices(indices, type, args.withInferences);
   const paginateArgs = buildRelationsFilter(type, args);
   return elList(context, user, computedIndices, paginateArgs);
 };
@@ -525,7 +526,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
       }],
     filterGroups: [],
   };
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
+  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { withInferences: args.withInferences, filters, connectionFormat: false });
   if (connectedRelations.length === 0) {
     // no connection found (because of relation direction), just return an empty result
     return emptyPaginationResult();

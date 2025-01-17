@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "6.4.7",
+  "version": "6.4.8",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
@@ -18,9 +18,9 @@
     "@mui/styles": "5.16.13",
     "@mui/utils": "5.16.13",
     "@mui/x-date-pickers": "6.20.2",
-    "@rjsf/core": "5.23.2",
-    "@rjsf/mui": "5.23.2",
-    "@rjsf/utils": "5.23.2",
+    "@rjsf/core": "5.24.1",
+    "@rjsf/mui": "5.24.1",
+    "@rjsf/utils": "5.24.1",
     "analytics": "0.8.16",
     "apexcharts": "3.54.1",
     "axios": "1.7.9",
@@ -35,7 +35,7 @@
     "date-fns": "3.6.0",
     "dompurify": "3.2.1",
     "extract-files": "13.0.0",
-    "filigran-icon": "0.10.1",
+    "filigran-icon": "0.11.0",
     "filigran-ui": "0.25.2",
     "formik": "2.4.6",
     "formik-mui": "5.0.0-alpha.0",
@@ -69,7 +69,7 @@
     "react-csv": "2.2.2",
     "react-dom": "18.3.1",
     "react-draggable": "4.4.6",
-    "react-force-graph-2d": "1.26.1",
+    "react-force-graph-2d": "1.27.0",
     "react-force-graph-3d": "1.24.4",
     "react-grid-layout": "1.5.0",
     "react-intl": "6.8.9",
@@ -78,7 +78,7 @@
     "react-material-ui-carousel": "3.4.2",
     "react-mde": "11.5.0",
     "react-otp-input": "3.1.1",
-    "react-pdf": "9.1.1",
+    "react-pdf": "9.2.1",
     "react-rectangle-selection": "1.0.4",
     "react-relay": "17.0.0",
     "react-relay-network-modern": "6.2.2",
@@ -104,11 +104,11 @@
     "@rollup/plugin-graphql": "2.0.5",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
-    "@testing-library/react": "16.1.0",
-    "@testing-library/user-event": "14.5.2",
+    "@testing-library/react": "16.2.0",
+    "@testing-library/user-event": "14.6.0",
     "@types/d3-scale": "4.0.8",
     "@types/html-to-pdfmake": "2.4.4",
-    "@types/node": "20.17.12",
+    "@types/node": "20.17.14",
     "@types/qrcode": "1.5.5",
     "@types/ramda": "0.30.2",
     "@types/react": "18.3.18",
@@ -138,7 +138,7 @@
     "eslint-plugin-import-newlines": "1.4.0",
     "eslint-plugin-react": "7.37.3",
     "express": "4.21.0",
-    "fs-extra": "11.2.0",
+    "fs-extra": "11.3.0",
     "http-proxy-middleware": "3.0.3",
     "i18n-auto-translation": "1.10.0",
     "jsdom": "25.0.1",
@@ -205,5 +205,5 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@4.5.3"
+  "packageManager": "yarn@4.6.0"
 }

@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.4.7",
+  "version": "6.4.8",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -98,7 +98,7 @@
     "ejs": "3.1.10",
     "eventsource": "2.0.2",
     "express": "4.21.0",
-    "express-rate-limit": "7.4.1",
+    "express-rate-limit": "7.5.0",
     "express-session": "1.18.1",
     "fast-json-patch": "3.1.1",
     "file-type": "19.6.0",
@@ -151,7 +151,7 @@
     "set-interval-async": "3.0.3",
     "showdown": "2.1.0",
     "source-map-support": "0.5.21",
-    "tough-cookie": "5.0.0",
+    "tough-cookie": "5.1.0",
     "turndown": "7.2.0",
     "unzipper": "0.12.3",
     "uuid": "11.0.3",
@@ -163,11 +163,11 @@
     "xml2js": "0.6.2"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "5.0.2",
-    "@graphql-codegen/client-preset": "4.3.3",
+    "@graphql-codegen/cli": "5.0.3",
+    "@graphql-codegen/client-preset": "4.5.1",
     "@graphql-codegen/introspection": "4.0.3",
-    "@graphql-codegen/typescript": "4.0.9",
-    "@graphql-codegen/typescript-resolvers": "4.2.1",
+    "@graphql-codegen/typescript": "4.1.2",
+    "@graphql-codegen/typescript-resolvers": "4.4.1",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
     "@types/archiver": "6.0.3",
@@ -212,7 +212,7 @@
     "cross-spawn": "7.0.6",
     "body-parser": "1.20.3",
     "cookie": "0.7.2",
-    "cross-fetch": "4.0.0",
+    "cross-fetch": "4.1.0",
     "jose": "5.9.6",
     "source-map": "0.7.4",
     "json5": "2.2.3",
@@ -227,5 +227,5 @@
     "@datadog/pprof": "patch:@datadog/pprof@5.4.1#./patch/@datadog-pprof-5.4.1.patch",
     "path-to-regexp": "0.1.12"
   },
-  "packageManager": "yarn@4.5.3"
+  "packageManager": "yarn@4.6.0"
 }

@@ -58,7 +58,7 @@ describe('Check organization access for element.', () => {
     };
 
     const user: Partial<AuthUser> = {
-      allowed_organizations: [],
+      organizations: [],
       internal_id: uuid()
     };
 
@@ -82,7 +82,7 @@ describe('Check organization access for element.', () => {
 
     const user: Partial<AuthUser> = {
       inside_platform_organization: true,
-      allowed_organizations: allOrgs,
+      organizations: allOrgs,
       internal_id: uuid()
     };
 
@@ -106,7 +106,7 @@ describe('Check organization access for element.', () => {
 
     const user: Partial<AuthUser> = {
       inside_platform_organization: false,
-      allowed_organizations: allOrgs,
+      organizations: allOrgs,
       internal_id: uuid()
     };
 
@@ -132,7 +132,7 @@ describe('Check organization access for element.', () => {
 
     const user: Partial<AuthUser> = {
       inside_platform_organization: false,
-      allowed_organizations: allOrgs,
+      organizations: allOrgs,
       internal_id: uuid()
     };
 
