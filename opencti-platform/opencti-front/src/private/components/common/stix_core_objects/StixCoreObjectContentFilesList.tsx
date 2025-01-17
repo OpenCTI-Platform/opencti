@@ -1,8 +1,8 @@
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemButton, ListItemIcon, IconButton, List, ListItemText, ListItemSecondaryAction } from '@mui/material';
+import { IconButton, List, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
 import { MoreVert } from '@mui/icons-material';
-import React, { useState, MouseEvent, Fragment } from 'react';
+import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
@@ -14,6 +14,9 @@ import DeleteDialog from 'src/components/DeleteDialog';
 import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
+import EmailIcon from '@mui/icons-material/Email';
+import Drawer from '@components/common/drawer/Drawer';
+import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -76,6 +79,7 @@ const StixCoreObjectContentFilesList = ({
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const openPopover = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
@@ -107,6 +111,10 @@ const StixCoreObjectContentFilesList = ({
   const handleClose = () => {
     deletion.handleCloseDelete();
     closePopover();
+  };
+
+  const toggleDrawer = (open: boolean) => () => {
+    setDrawerOpen(open);
   };
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
@@ -146,6 +154,31 @@ const StixCoreObjectContentFilesList = ({
                   </div>
                 )}
               />
+              <Tooltip title={'Disseminate'}>
+                <IconButton
+                  onClick={toggleDrawer(true)}
+                  color="primary"
+                  size="small"
+                  style={{
+                    marginRight: theme.spacing(4),
+                  }}
+                  aria-label="disseminate"
+                >
+                  <EmailIcon />
+                </IconButton>
+              </Tooltip>
+              <Drawer
+                title={t_i18n('Disseminate')}
+                open={isDrawerOpen}
+                onClose={toggleDrawer(false)}
+              >
+                <div style={{ width: 300, padding: theme.spacing(2) }}>
+                  <StixCoreObjectContentFilesDissemination
+                    fileId={file.id}
+                    onClose={toggleDrawer(false)}
+                  />
+                </div>
+              </Drawer>
               <ListItemSecondaryAction>
                 <IconButton
                   onClick={(e) => openPopover(e, file)}
@@ -167,36 +200,36 @@ const StixCoreObjectContentFilesList = ({
         onClose={closePopover}
       >
         {menuFile && (
-          <MenuItem
-            component={Link}
-            to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
-            onClick={closePopover}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t_i18n('Download file')}
-          </MenuItem>
+        <MenuItem
+          component={Link}
+          to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
+          onClick={closePopover}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t_i18n('Download file')}
+        </MenuItem>
         )}
         {canDownloadAsPdf && (
-          <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
-            <StixCoreObjectFileExport
-              onClose={() => setAnchorEl(null)}
-              scoId={stixCoreObjectId}
-              scoName={stixCoreObjectName}
-              scoEntityType={stixCoreObjectType}
-              defaultValues={{
-                connector: BUILT_IN_HTML_TO_PDF.value,
-                format: 'application/pdf',
-                fileToExport: menuFile.id,
-              }}
-              onExportCompleted={onFileChange}
-              OpenFormComponent={({ onOpen }) => (
-                <MenuItem onClick={onOpen}>
-                  {t_i18n('Generate a PDF export')}
-                </MenuItem>
-              )}
-            />
-          </Security>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+          <StixCoreObjectFileExport
+            onClose={() => setAnchorEl(null)}
+            scoId={stixCoreObjectId}
+            scoName={stixCoreObjectName}
+            scoEntityType={stixCoreObjectType}
+            defaultValues={{
+              connector: BUILT_IN_HTML_TO_PDF.value,
+              format: 'application/pdf',
+              fileToExport: menuFile.id,
+            }}
+            onExportCompleted={onFileChange}
+            OpenFormComponent={({ onOpen }) => (
+              <MenuItem onClick={onOpen}>
+                {t_i18n('Generate a PDF export')}
+              </MenuItem>
+            )}
+          />
+        </Security>
         )}
         <Security needs={[KNOWLEDGE_KNASKIMPORT]} matchAll>
           <MenuItem onClick={handleDelete}>
