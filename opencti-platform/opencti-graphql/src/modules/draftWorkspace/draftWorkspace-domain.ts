@@ -12,7 +12,7 @@ import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { computeSumOfList, isDraftIndex, pascalize, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
@@ -55,11 +55,21 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   const draftContext = { ...context, draft_context: draft.id };
   const distributionResult = await elAggregationCount(draftContext, context.user, READ_INDEX_DRAFT_OBJECTS, opts);
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
-  const entitiesCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label)).map((r: { count: number }) => r.count));
-  const observablesCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count));
-  const relationshipsCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count));
-  const sightingsCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixSightingRelationship(r.label)).map((r: { count: number }) => r.count));
-  const containersCount = computeSumOfList(distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count));
+  const entitiesCount = computeSumOfList(
+    distributionResult.filter((r: { label: string }) => isStixDomainObject(pascalize(r.label))).map((r: { count: number }) => r.count)
+  );
+  const observablesCount = computeSumOfList(
+    distributionResult.filter((r: { label: string }) => isStixCyberObservable(pascalize(r.label))).map((r: { count: number }) => r.count)
+  );
+  const relationshipsCount = computeSumOfList(
+    distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count)
+  );
+  const sightingsCount = computeSumOfList(
+    distributionResult.filter((r: { label: string }) => isStixSightingRelationship(r.label)).map((r: { count: number }) => r.count)
+  );
+  const containersCount = computeSumOfList(
+    distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(pascalize(r.label))).map((r: { count: number }) => r.count)
+  );
   return {
     totalCount,
     entitiesCount,
