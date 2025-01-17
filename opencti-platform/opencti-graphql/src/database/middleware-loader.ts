@@ -83,6 +83,7 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
   ids?: Array<string>
   indices?: Array<string>
   includeAuthorities?: boolean | null
+  withInferences?: boolean
 }
 
 // relations
@@ -298,7 +299,8 @@ export const listRelationsPaginated = async <T extends BasicStoreRelation>(conte
 
 export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
-  const { indices = READ_RELATIONSHIPS_INDICES } = args;
+  const defaultIndices = args.withInferences === false ? READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED : READ_RELATIONSHIPS_INDICES;
+  const indices = args.indices ?? defaultIndices;
   const paginateArgs = buildRelationsFilter(type, args);
   return elList(context, user, indices, paginateArgs);
 };
@@ -505,7 +507,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
       }],
     filterGroups: [],
   };
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
+  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { withInferences: args.withInferences, filters, connectionFormat: false });
   const relationsEntityMap = new Map();
   connectedRelations.forEach((relation) => {
     const id = reverse_relation ? relation.fromId : relation.toId;
