@@ -25,8 +25,8 @@ class MarkingDefinition:
         """
 
     @staticmethod
-    def generate_id(definition, definition_type):
-        data = {"definition": definition, "definition_type": definition_type}
+    def generate_id(definition_type, definition):
+        data = {"definition_type": definition_type, "definition": definition}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "marking-definition--" + id
@@ -34,7 +34,7 @@ class MarkingDefinition:
     @staticmethod
     def generate_id_from_data(data):
         return MarkingDefinition.generate_id(
-            data["definition"], data["definition_type"]
+            data["definition_type"], data["definition"]
         )
 
     """
