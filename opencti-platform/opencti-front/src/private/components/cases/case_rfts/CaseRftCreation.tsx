@@ -216,7 +216,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               label: t_i18n('Request For Takedown Date'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <OpenVocabField

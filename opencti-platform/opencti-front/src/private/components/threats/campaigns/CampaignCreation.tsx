@@ -224,7 +224,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               askAi={true}
             />
             <CreatedByField

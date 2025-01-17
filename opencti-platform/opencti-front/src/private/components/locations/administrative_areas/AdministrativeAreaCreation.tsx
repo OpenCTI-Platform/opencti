@@ -232,7 +232,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               fullWidth={true}
               multiline={true}
               rows={4}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="Administrative-Area"
@@ -244,7 +244,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               name="latitude"
               label={t_i18n('Latitude')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={TextField}
@@ -252,7 +252,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               name="longitude"
               label={t_i18n('Longitude')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
