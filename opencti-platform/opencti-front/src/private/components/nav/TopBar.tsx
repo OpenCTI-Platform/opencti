@@ -276,12 +276,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             {!draftModeEnabled && (
             <Security needs={[KNOWLEDGE]}>
               <>
-                { ee.license_type === 'nfr' && <ItemBoolean
-                    variant="large"
-                    label={'EE DEV LICENSE'}
-                    status={false}
-                  />
-                }
+                { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"
