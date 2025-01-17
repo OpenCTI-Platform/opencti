@@ -609,7 +609,7 @@ workflows:
             - build_platform_musl
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?(-[a-z]+)*/
             branches:
               ignore: /.*/
       - docker_build_platform_rolling:
@@ -645,7 +645,7 @@ workflows:
             - build_frontend
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?(-[a-z]+)*/
             branches:
               ignore: /.*/
       - docker_build_worker:
@@ -653,7 +653,7 @@ workflows:
             - build_frontend
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?(-[a-z]+)*/
             branches:
               ignore: /.*/
       - docker_build_platform_fips:
@@ -661,7 +661,7 @@ workflows:
             - build_frontend
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?(-[a-z]+)*/
             branches:
               ignore: /.*/
       - docker_build_worker_fips:
@@ -669,7 +669,7 @@ workflows:
             - build_frontend
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?(-[a-z]+)*/
             branches:
               ignore: /.*/              
       - deploy_testing:
@@ -691,6 +691,6 @@ workflows:
             - docker_build_worker_fips
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?(-[a-z]+)*/
             branches:
               ignore: /.*/
