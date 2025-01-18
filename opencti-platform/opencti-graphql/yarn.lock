@@ -10500,10 +10500,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:11.0.0":
-  version: 11.0.0
-  resolution: "lru-cache@npm:11.0.0"
-  checksum: 10/41f36fbff8b6f199cce3e9cb2b625714f97a535dfd7f16d0988c2627f9ed4c38b6dc8f9ea7fdba19262a7c917ba41c89cad15ca3e3791fc9a2068af472b5bc8d
+"lru-cache@npm:11.0.2":
+  version: 11.0.2
+  resolution: "lru-cache@npm:11.0.2"
+  checksum: 10/25fcb66e9d91eaf17227c6abfe526a7bed5903de74f93bfde380eb8a13410c5e8d3f14fe447293f3f322a7493adf6f9f015c6f1df7a235ff24ec30f366e1c058
   languageName: node
   linkType: hard
 
@@ -11490,7 +11490,7 @@ __metadata:
     js-deep-equals: "npm:2.1.1"
     json-to-plain-text: "npm:1.1.4"
     jwt-decode: "npm:4.0.0"
-    lru-cache: "npm:11.0.0"
+    lru-cache: "npm:11.0.2"
     migrate: "npm:2.1.0"
     mime-types: "npm:2.1.35"
     moment: "npm:2.30.1"
