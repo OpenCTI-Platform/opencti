@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
@@ -15,6 +15,7 @@ import {
   useDataTableToggle,
 } from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -78,7 +79,10 @@ const DataTableComponent = ({
     viewStorage: { pageSize },
     helpers,
   } = paginationLocalStorage;
-
+  const { schema } = useContext(UserContext);
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const buildColumns = (withLocalStorage = true) => {
     return [
       // Checkbox if necessary
@@ -88,13 +92,27 @@ const DataTableComponent = ({
         const currentColumn = localStorageColumns?.[key];
         let percentWidth = column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth;
         if (withLocalStorage && currentColumn?.percentWidth) percentWidth = currentColumn?.percentWidth;
-        return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
+        const dataTableColumn = R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
           ...column,
           // Override column config with what we have in local storage
           order: withLocalStorage && currentColumn?.index ? currentColumn?.index : index,
           visible: withLocalStorage && currentColumn?.visible ? currentColumn?.visible : true,
           percentWidth,
         });
+        // For new column with mappings
+        if (!dataTableColumn.id && dataTableColumn.mappings) {
+          dataTableColumn.id = dataTableColumn.mappings[0].attribute; // Get the first attribute mapping for identifier
+          dataTableColumn.order = index; // Index only rely on configuration
+          dataTableColumn.label = key; // Label is just the key
+          dataTableColumn.isSortable = dataTableColumn.mappings // compute the sorting
+            .map((m) => {
+              if (m.attribute === 'objectLabel') return false; // Special case for labels with no runtime
+              const refAttributes = schema?.schemaRelationsRefTypesMapping.get(m.entity_type)?.map((ref) => ref.name);
+              return refAttributes?.includes(m.attribute) ? isRuntimeFieldEnable() : true;
+            })
+            .reduce((accumulator, currentValue) => accumulator && currentValue);
+        }
+        return dataTableColumn;
       }),
       // inject "navigate" action (chevron) if navigable and no specific actions defined
       ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),

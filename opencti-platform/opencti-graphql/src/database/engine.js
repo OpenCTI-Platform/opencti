@@ -2947,7 +2947,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const orderCriteria = orderCriterion[index];
       if (orderCriteria === '_score') {
         ordering = R.append({ [orderCriteria]: scoreSearchOrder }, ordering);
-      } else {
+      } else if (schemaAttributesDefinition.getAttributeByName(orderCriteria)) {
         const sortingForCriteria = buildElasticSortingForAttributeCriteria(orderCriteria, orderMode);
         ordering = R.append(sortingForCriteria, ordering);
       }

@@ -11,6 +11,7 @@ import {
   externalReferencesPaginated,
   findAll,
   findAllAuthMemberRestricted,
+  findAllRepresentatives,
   findById,
   groupingsPaginated,
   notesPaginated,
@@ -63,6 +64,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjectsRepresentatives: (_, args, context) => findAllRepresentatives(context, context.user, args),
     stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {

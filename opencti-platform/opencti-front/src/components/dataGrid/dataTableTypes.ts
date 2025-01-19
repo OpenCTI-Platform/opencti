@@ -29,6 +29,7 @@ export interface DataTableColumn {
   isSortable?: boolean
   label?: string
   percentWidth: number
+  mappings: { entity_type: string, attribute: string }[]
   render?: (v: any, helpers?: any, draftVersion?: boolean) => React.ReactNode
   visible?: boolean
   order: number

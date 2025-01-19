@@ -120,6 +120,14 @@ enum FilterOperator {
 }
 
 # noinspection GraphQLSchemaValidation
+input CoreObjectDefinition {
+  entity_type: String!
+  attribute: String!
+}
+input CoreColumnDefinition {
+  column: String!
+  definition: [CoreObjectDefinition!]!
+}
 input FilterGroup {
   mode: FilterMode!
   filters: [Filter!]!
@@ -2362,11 +2370,35 @@ type StixCoreObjectConnection {
   pageInfo: PageInfo!
   edges: [StixCoreObjectEdge!]!
 }
+type StixCoreObjectRepresentativeConnection {
+  pageInfo: PageInfo!
+  edges: [StixCoreObjectRepresentativeEdge!]!
+}
 type StixCoreObjectEdge {
   cursor: String!
   node: StixCoreObject!
 }
+type StixCoreObjectRepresentativeEdge {
+  cursor: String!
+  node: StixCoreObjectRepresentative!
+}
 union OrganizationOrIndividual = Organization | Individual
+
+type FlatRepresentative {
+  id: String
+  value: String!
+  color: String
+}
+type StixCoreRepresentativeColumn {
+  attribute: String!
+  type: String!
+  representatives: [FlatRepresentative]!
+}
+type StixCoreObjectRepresentative {
+  id: ID! # internal_id
+  entity_type: String!
+  columns: [StixCoreRepresentativeColumn!]!
+}
 interface StixCoreObject {
   id: ID! # internal_id
   standard_id: String!
@@ -12956,6 +12988,15 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+ stixCoreObjectsRepresentatives(
+    first: Int
+    after: ID
+    attributes: [CoreColumnDefinition!]!
+    orderBy: String
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): StixCoreObjectRepresentativeConnection @auth(for: [KNOWLEDGE])
   stixCoreObjectsRestricted(
     first: Int
     after: ID

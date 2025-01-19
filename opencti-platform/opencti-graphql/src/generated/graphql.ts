@@ -4087,6 +4087,16 @@ export type ContextData = {
   to_id?: Maybe<Scalars['String']['output']>;
 };
 
+export type CoreColumnDefinition = {
+  column: Scalars['String']['input'];
+  definition: Array<CoreObjectDefinition>;
+};
+
+export type CoreObjectDefinition = {
+  attribute: Scalars['String']['input'];
+  entity_type: Scalars['String']['input'];
+};
+
 export enum CountriesOrdering {
   Score = '_score',
   Created = 'created',
@@ -8281,6 +8291,13 @@ export type FintelTemplateWidget = {
 export type FintelTemplateWidgetAddInput = {
   variable_name: Scalars['String']['input'];
   widget: Scalars['Any']['input'];
+};
+
+export type FlatRepresentative = {
+  __typename?: 'FlatRepresentative';
+  color?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  value: Scalars['String']['output'];
 };
 
 export enum Format {
@@ -19671,6 +19688,7 @@ export type Query = {
   stixCoreObjectsMultiNumber?: Maybe<Array<Maybe<Number>>>;
   stixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   stixCoreObjectsNumber?: Maybe<Number>;
+  stixCoreObjectsRepresentatives?: Maybe<StixCoreObjectRepresentativeConnection>;
   stixCoreObjectsRestricted?: Maybe<StixCoreObjectConnection>;
   stixCoreObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixCoreRelationship?: Maybe<StixCoreRelationship>;
@@ -21520,6 +21538,17 @@ export type QueryStixCoreObjectsNumberArgs = {
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixCoreObjectsRepresentativesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  attributes: Array<CoreColumnDefinition>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -24359,6 +24388,25 @@ export type StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs = {
 
 export type StixCoreObjectOrStixCoreRelationship = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Position | Process | PublicDashboard | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
 
+export type StixCoreObjectRepresentative = {
+  __typename?: 'StixCoreObjectRepresentative';
+  columns: Array<StixCoreRepresentativeColumn>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+};
+
+export type StixCoreObjectRepresentativeConnection = {
+  __typename?: 'StixCoreObjectRepresentativeConnection';
+  edges: Array<StixCoreObjectRepresentativeEdge>;
+  pageInfo: PageInfo;
+};
+
+export type StixCoreObjectRepresentativeEdge = {
+  __typename?: 'StixCoreObjectRepresentativeEdge';
+  cursor: Scalars['String']['output'];
+  node: StixCoreObjectRepresentative;
+};
+
 export type StixCoreObjectsDistributionParameters = {
   filters?: InputMaybe<FilterGroup>;
   objectId?: InputMaybe<Scalars['String']['input']>;
@@ -24706,6 +24754,13 @@ export type StixCoreRelationshipsTimeSeriesParameters = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+export type StixCoreRepresentativeColumn = {
+  __typename?: 'StixCoreRepresentativeColumn';
+  attribute: Scalars['String']['output'];
+  representatives: Array<Maybe<FlatRepresentative>>;
+  type: Scalars['String']['output'];
 };
 
 export type StixCyberObservable = {
@@ -31136,6 +31191,8 @@ export type ResolversTypes = ResolversObject<{
   ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, investigationAdd?: Maybe<ResolversTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversTypes['Container']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
   ContainersOrdering: ContainersOrdering;
   ContextData: ResolverTypeWrapper<Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversTypes['ExternalReference']>> }>;
+  CoreColumnDefinition: CoreColumnDefinition;
+  CoreObjectDefinition: CoreObjectDefinition;
   CountriesOrdering: CountriesOrdering;
   Country: ResolverTypeWrapper<Omit<Country, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, region?: Maybe<ResolversTypes['Region']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   CountryAddInput: CountryAddInput;
@@ -31298,6 +31355,7 @@ export type ResolversTypes = ResolversObject<{
   FintelTemplateOrdering: FintelTemplateOrdering;
   FintelTemplateWidget: ResolverTypeWrapper<FintelTemplateWidget>;
   FintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput;
+  FlatRepresentative: ResolverTypeWrapper<FlatRepresentative>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Format: Format;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
@@ -31654,6 +31712,9 @@ export type ResolversTypes = ResolversObject<{
   StixCoreObjectEdge: ResolverTypeWrapper<Omit<StixCoreObjectEdge, 'node'> & { node: ResolversTypes['StixCoreObject'] }>;
   StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversTypes['File']>, askAnalysis?: Maybe<ResolversTypes['Work']>, askEnrichment?: Maybe<ResolversTypes['Work']>, exportAsk?: Maybe<Array<ResolversTypes['File']>>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
   StixCoreObjectOrStixCoreRelationship: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['StixCoreObjectOrStixCoreRelationship']>;
+  StixCoreObjectRepresentative: ResolverTypeWrapper<StixCoreObjectRepresentative>;
+  StixCoreObjectRepresentativeConnection: ResolverTypeWrapper<StixCoreObjectRepresentativeConnection>;
+  StixCoreObjectRepresentativeEdge: ResolverTypeWrapper<StixCoreObjectRepresentativeEdge>;
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
   StixCoreObjectsNumberParameters: StixCoreObjectsNumberParameters;
@@ -31668,6 +31729,7 @@ export type ResolversTypes = ResolversObject<{
   StixCoreRelationshipsExportAskInput: StixCoreRelationshipsExportAskInput;
   StixCoreRelationshipsOrdering: StixCoreRelationshipsOrdering;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
+  StixCoreRepresentativeColumn: ResolverTypeWrapper<StixCoreRepresentativeColumn>;
   StixCyberObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCyberObservable']>;
   StixCyberObservableConnection: ResolverTypeWrapper<Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversTypes['StixCyberObservableEdge']> }>;
   StixCyberObservableEdge: ResolverTypeWrapper<Omit<StixCyberObservableEdge, 'node'> & { node: ResolversTypes['StixCyberObservable'] }>;
@@ -31987,6 +32049,8 @@ export type ResolversParentTypes = ResolversObject<{
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
   ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, investigationAdd?: Maybe<ResolversParentTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversParentTypes['Container']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContextData: Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
+  CoreColumnDefinition: CoreColumnDefinition;
+  CoreObjectDefinition: CoreObjectDefinition;
   Country: Omit<Country, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, region?: Maybe<ResolversParentTypes['Region']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   CountryAddInput: CountryAddInput;
   CountryConnection: Omit<CountryConnection, 'edges'> & { edges: Array<ResolversParentTypes['CountryEdge']> };
@@ -32125,6 +32189,7 @@ export type ResolversParentTypes = ResolversObject<{
   FintelTemplateEdge: FintelTemplateEdge;
   FintelTemplateWidget: FintelTemplateWidget;
   FintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput;
+  FlatRepresentative: FlatRepresentative;
   Float: Scalars['Float']['output'];
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'allowed_marking' | 'default_dashboard' | 'default_marking' | 'max_shareable_marking' | 'members'> & { allowed_marking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, default_marking?: Maybe<Array<ResolversParentTypes['DefaultMarking']>>, max_shareable_marking: Array<ResolversParentTypes['MarkingDefinition']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
@@ -32429,6 +32494,9 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreObjectEdge: Omit<StixCoreObjectEdge, 'node'> & { node: ResolversParentTypes['StixCoreObject'] };
   StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversParentTypes['File']>, askAnalysis?: Maybe<ResolversParentTypes['Work']>, askEnrichment?: Maybe<ResolversParentTypes['Work']>, exportAsk?: Maybe<Array<ResolversParentTypes['File']>>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
   StixCoreObjectOrStixCoreRelationship: ResolversUnionTypes<ResolversParentTypes>['StixCoreObjectOrStixCoreRelationship'];
+  StixCoreObjectRepresentative: StixCoreObjectRepresentative;
+  StixCoreObjectRepresentativeConnection: StixCoreObjectRepresentativeConnection;
+  StixCoreObjectRepresentativeEdge: StixCoreObjectRepresentativeEdge;
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
   StixCoreObjectsNumberParameters: StixCoreObjectsNumberParameters;
@@ -32441,6 +32509,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
   StixCoreRelationshipsExportAskInput: StixCoreRelationshipsExportAskInput;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
+  StixCoreRepresentativeColumn: StixCoreRepresentativeColumn;
   StixCyberObservable: ResolversInterfaceTypes<ResolversParentTypes>['StixCyberObservable'];
   StixCyberObservableConnection: Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCyberObservableEdge']> };
   StixCyberObservableEdge: Omit<StixCyberObservableEdge, 'node'> & { node: ResolversParentTypes['StixCyberObservable'] };
@@ -35444,6 +35513,13 @@ export type FintelTemplateEdgeResolvers<ContextType = any, ParentType extends Re
 export type FintelTemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateWidget'] = ResolversParentTypes['FintelTemplateWidget']> = ResolversObject<{
   variable_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   widget?: Resolver<ResolversTypes['Widget'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type FlatRepresentativeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FlatRepresentative'] = ResolversParentTypes['FlatRepresentative']> = ResolversObject<{
+  color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -39016,6 +39092,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectsMultiNumber?: Resolver<Maybe<Array<Maybe<ResolversTypes['Number']>>>, ParentType, ContextType, Partial<QueryStixCoreObjectsMultiNumberArgs>>;
   stixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsMultiTimeSeriesArgs, 'interval' | 'startDate'>>;
   stixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCoreObjectsNumberArgs>>;
+  stixCoreObjectsRepresentatives?: Resolver<Maybe<ResolversTypes['StixCoreObjectRepresentativeConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsRepresentativesArgs, 'attributes'>>;
   stixCoreObjectsRestricted?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsRestrictedArgs>>;
   stixCoreObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipArgs>>;
@@ -39872,6 +39949,25 @@ export type StixCoreObjectOrStixCoreRelationshipResolvers<ContextType = any, Par
   __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'Feedback' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
+export type StixCoreObjectRepresentativeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectRepresentative'] = ResolversParentTypes['StixCoreObjectRepresentative']> = ResolversObject<{
+  columns?: Resolver<Array<ResolversTypes['StixCoreRepresentativeColumn']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixCoreObjectRepresentativeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectRepresentativeConnection'] = ResolversParentTypes['StixCoreObjectRepresentativeConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['StixCoreObjectRepresentativeEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixCoreObjectRepresentativeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectRepresentativeEdge'] = ResolversParentTypes['StixCoreObjectRepresentativeEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['StixCoreObjectRepresentative'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRelationship'] = ResolversParentTypes['StixCoreRelationship']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -39946,6 +40042,13 @@ export type StixCoreRelationshipEditMutationsResolvers<ContextType = any, Parent
   relationsAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRelationsAddArgs, 'input'>>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixCoreRepresentativeColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRepresentativeColumn'] = ResolversParentTypes['StixCoreRepresentativeColumn']> = ResolversObject<{
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representatives?: Resolver<Array<Maybe<ResolversTypes['FlatRepresentative']>>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42219,6 +42322,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   FintelTemplateConnection?: FintelTemplateConnectionResolvers<ContextType>;
   FintelTemplateEdge?: FintelTemplateEdgeResolvers<ContextType>;
   FintelTemplateWidget?: FintelTemplateWidgetResolvers<ContextType>;
+  FlatRepresentative?: FlatRepresentativeResolvers<ContextType>;
   GetMetrics?: GetMetricsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupConnection?: GroupConnectionResolvers<ContextType>;
@@ -42455,10 +42559,14 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixCoreObjectEdge?: StixCoreObjectEdgeResolvers<ContextType>;
   StixCoreObjectEditMutations?: StixCoreObjectEditMutationsResolvers<ContextType>;
   StixCoreObjectOrStixCoreRelationship?: StixCoreObjectOrStixCoreRelationshipResolvers<ContextType>;
+  StixCoreObjectRepresentative?: StixCoreObjectRepresentativeResolvers<ContextType>;
+  StixCoreObjectRepresentativeConnection?: StixCoreObjectRepresentativeConnectionResolvers<ContextType>;
+  StixCoreObjectRepresentativeEdge?: StixCoreObjectRepresentativeEdgeResolvers<ContextType>;
   StixCoreRelationship?: StixCoreRelationshipResolvers<ContextType>;
   StixCoreRelationshipConnection?: StixCoreRelationshipConnectionResolvers<ContextType>;
   StixCoreRelationshipEdge?: StixCoreRelationshipEdgeResolvers<ContextType>;
   StixCoreRelationshipEditMutations?: StixCoreRelationshipEditMutationsResolvers<ContextType>;
+  StixCoreRepresentativeColumn?: StixCoreRepresentativeColumnResolvers<ContextType>;
   StixCyberObservable?: StixCyberObservableResolvers<ContextType>;
   StixCyberObservableConnection?: StixCyberObservableConnectionResolvers<ContextType>;
   StixCyberObservableEdge?: StixCyberObservableEdgeResolvers<ContextType>;

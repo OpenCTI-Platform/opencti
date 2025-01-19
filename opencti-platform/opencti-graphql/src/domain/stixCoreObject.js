@@ -40,7 +40,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
@@ -56,7 +56,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { INTERNAL_USERS, isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
@@ -77,6 +77,8 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -122,6 +124,129 @@ export const findAll = async (context, user, args) => {
     });
   }
   return listEntitiesPaginated(context, user, types, args);
+};
+
+export const findAllRepresentatives = async (context, user, args) => {
+  const types = args.attributes.map((a) => a.definition).flat().map((e) => e.entity_type);
+  if (args.globalSearch) {
+    const contextData = {
+      input: R.omit(['search'], args)
+    };
+    if (args.search && args.search.length > 0) {
+      contextData.search = args.search;
+    }
+    await publishUserAction({
+      user,
+      event_type: 'command',
+      event_scope: 'search',
+      event_access: 'extended',
+      context_data: contextData,
+    });
+  }
+  // 01. Get the query result
+  const result = await listEntitiesPaginated(context, user, types, args);
+  // 02. Process each line depending on expected attributes
+  const transformedEdges = [];
+  const refToResolves = [];
+  // -- First round trip to get primitives and refs to resolve
+  for (let index = 0; index < result.edges.length; index += 1) {
+    const { node, cursor } = result.edges[index];
+    // const attributes = attributesPerEntityType.get(node.entity_type);
+    const newNode = { id: node.id, entity_type: node.entity_type };
+    const columns = [];
+    for (let attrIndex = 0; attrIndex < args.attributes.length; attrIndex += 1) {
+      const { column: requestedColumn, definition } = args.attributes[attrIndex];
+      const attributePerEntityType = new Map(definition.map((m) => [m.entity_type, m.attribute]));
+      const attrName = attributePerEntityType.get(node.entity_type);
+      if (attrName) {
+        const attrDef = schemaAttributesDefinition.getAttribute(node.entity_type, attrName);
+        if (attrDef) {
+          if (attrDef.name === 'x_opencti_workflow_id' && node[attrName]) {
+            // Specific case for workflow resolution
+            const statusMap = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_STATUS);
+            const template = statusMap.get(node[attrName]);
+            if (template) {
+              refToResolves.push(template.template_id);
+              columns.push({
+                attribute: requestedColumn,
+                type: 'chip',
+                representatives: [],
+                refId: template.template_id
+              });
+            } else {
+              columns.push({ attribute: requestedColumn, type: 'chip', representatives: [] });
+            }
+          } else if (attrDef.name === 'creator_id' && node[attrName]) {
+            // Specific case for creator resolution
+            const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+            const users = node[attrName].map((u) => INTERNAL_USERS[u] || platformUsers.get(u) || SYSTEM_USER);
+            columns.push({
+              attribute: requestedColumn,
+              type: 'text',
+              representatives: users.map((u) => ({ id: u.id, value: u.name, color: u.x_opencti_color || u.color }))
+            });
+          } else {
+            const toSingleValue = node[attrName] ? [node[attrName]] : [];
+            const values = attrDef.multiple ? node[attrName] : toSingleValue;
+            const representatives = values.map((v) => ({
+              value: (v ? String(v) : v),
+              color: v.x_opencti_color || v.color
+            }));
+            const finalType = attrDef.type === 'string' ? attrDef.format : attrDef.type;
+            columns.push({ attribute: requestedColumn, type: finalType, representatives });
+          }
+        } else {
+          const relRef = schemaRelationsRefDefinition.getRelationRef(node.entity_type, attrName);
+          if (relRef) {
+            if (relRef.multiple) {
+              const refIds = node[relRef.databaseName];
+              if (isNotEmptyField(refIds)) {
+                refToResolves.push(...refIds);
+                columns.push({ attribute: requestedColumn, type: 'chip', representatives: [], refIds });
+              } else {
+                columns.push({ attribute: requestedColumn, type: 'chip', representatives: [] });
+              }
+            } else {
+              const refId = node[relRef.databaseName];
+              if (refId) {
+                refToResolves.push(refId);
+                columns.push({ attribute: requestedColumn, type: 'text', representatives: [], refId });
+              } else {
+                columns.push({ attribute: requestedColumn, type: 'text', representatives: [] });
+              }
+            }
+          } else {
+            throw UnsupportedError('Asking for not defined attribute', {
+              type: node.entity_type,
+              attribute: requestedColumn
+            });
+          }
+        }
+      } else {
+        columns.push({ attribute: requestedColumn, type: 'text', representatives: [] });
+      }
+    }
+    newNode.columns = columns;
+    transformedEdges.push({ node: newNode, cursor });
+  }
+  // -- Resolve the refs
+  const refsMap = await internalFindByIds(context, user, R.uniq(refToResolves), { toMap: true });
+  // -- Second round trip to set refs result
+  for (let index = 0; index < transformedEdges.length; index += 1) {
+    const { node } = transformedEdges[index];
+    for (let columnIndex = 0; columnIndex < node.columns.length; columnIndex += 1) {
+      const column = node.columns[columnIndex];
+      if (column.refId) {
+        const e = refsMap[column.refId];
+        column.representatives = [{ id: column.id ?? e.id, value: e ? extractEntityRepresentativeName(e) : e, color: e?.x_opencti_color || e?.color }];
+      }
+      if (column.refIds) {
+        const elements = column.refIds.map((id) => refsMap[id]);
+        column.representatives = elements.map((e) => ({ id: e.id, value: e ? extractEntityRepresentativeName(e) : e, color: e?.x_opencti_color || e?.color }));
+      }
+    }
+  }
+  return { edges: transformedEdges, pageInfo: result.pageInfo };
 };
 
 export const findAllAuthMemberRestricted = async (context, user, args) => {

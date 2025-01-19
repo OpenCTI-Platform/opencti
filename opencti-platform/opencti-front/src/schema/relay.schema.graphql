@@ -128,6 +128,16 @@ enum FilterOperator {
   search
 }
 
+input CoreObjectDefinition {
+  entity_type: String!
+  attribute: String!
+}
+
+input CoreColumnDefinition {
+  column: String!
+  definition: [CoreObjectDefinition!]!
+}
+
 input FilterGroup {
   mode: FilterMode!
   filters: [Filter!]!
@@ -2415,12 +2425,40 @@ type StixCoreObjectConnection {
   edges: [StixCoreObjectEdge!]!
 }
 
+type StixCoreObjectRepresentativeConnection {
+  pageInfo: PageInfo!
+  edges: [StixCoreObjectRepresentativeEdge!]!
+}
+
 type StixCoreObjectEdge {
   cursor: String!
   node: StixCoreObject!
 }
 
+type StixCoreObjectRepresentativeEdge {
+  cursor: String!
+  node: StixCoreObjectRepresentative!
+}
+
 union OrganizationOrIndividual = Organization | Individual
+
+type FlatRepresentative {
+  id: String
+  value: String!
+  color: String
+}
+
+type StixCoreRepresentativeColumn {
+  attribute: String!
+  type: String!
+  representatives: [FlatRepresentative]!
+}
+
+type StixCoreObjectRepresentative {
+  id: ID!
+  entity_type: String!
+  columns: [StixCoreRepresentativeColumn!]!
+}
 
 interface StixCoreObject {
   id: ID!
@@ -7942,6 +7980,7 @@ type Query {
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  stixCoreObjectsRepresentatives(first: Int, after: ID, attributes: [CoreColumnDefinition!]!, orderBy: String, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectRepresentativeConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection

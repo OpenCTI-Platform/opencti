@@ -6,7 +6,6 @@ import { ReportsLines_data$data } from '@components/analyses/__generated__/Repor
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -17,52 +16,66 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
+// TODO JRI Make this configurable through UI
+// Its the only source of truth for query and display
+// Table is now able to support result coming from stixCoreObjectsRepresentatives
+// stixCoreObjectsRepresentatives $orderBy CHANGED to string instead of enum
+// --> Backend is not throwing an error in this mode if attribute doesnt exist
+// Be careful to use the real schema definition and NOT the filtering schema.
+// - Remaining jobs
+// -- /!\ Add line after creation, broken for now because of fragment change
+// -- Standard chip display must be change to use the append + tooltip instead of limit 3
+// -- Not sure whats going on with table sizing
+// -- Looks like sort by author is not working but no idea why
+const COLUMNS_DEFINITION: DataTableProps['dataColumns'] = {
+  'Report name': {
+    mappings: [{ entity_type: 'Report', attribute: 'name' }, { entity_type: 'Case-Incident', attribute: 'name' }],
+  },
+  type: {
+    mappings: [{ entity_type: 'Report', attribute: 'report_types' }],
+  },
+  Author: {
+    mappings: [{ entity_type: 'Report', attribute: 'createdBy' }],
+  },
+  Creators: {
+    mappings: [{ entity_type: 'Report', attribute: 'creator_id' }],
+  },
+  Labels: {
+    mappings: [{ entity_type: 'Report', attribute: 'objectLabel' }],
+  },
+  Published: {
+    mappings: [
+      { entity_type: 'Report', attribute: 'published' },
+      { entity_type: 'Case-Incident', attribute: 'created' },
+    ],
+  },
+  Status: {
+    mappings: [
+      { entity_type: 'Report', attribute: 'x_opencti_workflow_id' },
+      { entity_type: 'Case-Incident', attribute: 'x_opencti_workflow_id' },
+    ],
+  },
+  Markings: {
+    mappings: [
+      { entity_type: 'Report', attribute: 'objectMarking' },
+      { entity_type: 'Case-Incident', attribute: 'objectMarking' },
+    ],
+  },
+};
+
 const reportLineFragment = graphql`
-  fragment ReportsLine_node on Report {
-    id
-    entity_type
-    name
-    description
-    published
-    report_types
-    draftVersion {
-      draft_id
-      draft_operation
-    }
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
+  fragment ReportsLine_node on StixCoreObjectRepresentative {
+      id
+      entity_type
+      columns {
+        attribute
+        type
+        representatives {
+           id
+           color
+           value
+        }
       }
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    objectLabel {
-      id
-      value
-      color
-    }
-    creators {
-      id
-      name
-    }
-    status {
-      id
-      order
-      template {
-        id
-        name
-        color
-      }
-    }
-    workflowEnabled
-    created_at
   }
 `;
 
@@ -71,9 +84,10 @@ const reportsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: ReportsOrdering
+    $orderBy: String
     $orderMode: OrderingMode
     $filters: FilterGroup
+    $attributes: [CoreColumnDefinition!]!
   ) {
     ...ReportsLines_data
     @arguments(
@@ -83,47 +97,42 @@ const reportsLinesQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      attributes: $attributes
     )
   }
 `;
-
 const reportsLineFragment = graphql`
   fragment ReportsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "ReportsOrdering", defaultValue: name }
+    orderBy: { type: "String", defaultValue: "name" }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
+    attributes: { type: "[CoreColumnDefinition!]!" }
   )
   @refetchable(queryName: "ReportsLinesRefetchQuery") {
-    reports(
+    stixCoreObjectsRepresentatives(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_reports") {
+      attributes:$attributes
+    ) @connection(key: "Pagination_stixCoreObjectsRepresentatives") {
       edges {
         node {
           id
-          name
-          published
-          createdBy {
-            ... on Identity {
+          entity_type
+          columns {
+            attribute
+            representatives {
               id
-              name
-              entity_type
+              color
+              value
             }
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
           }
           ...ReportsLine_node
         }
@@ -145,9 +154,6 @@ const Reports: FunctionComponent = () => {
   setTitle(t_i18n('Reports | Analyses'));
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -166,9 +172,12 @@ const Reports: FunctionComponent = () => {
   } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Report', filters);
+  const attributes = Object.entries(COLUMNS_DEFINITION)
+    .map(([k, v]) => ({ column: k, definition: v.mappings })).flat();
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
+    attributes,
   } as unknown as ReportsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
     reportsLinesQuery,
@@ -179,40 +188,19 @@ const Reports: FunctionComponent = () => {
     linesQuery: reportsLinesQuery,
     linesFragment: reportsLineFragment,
     queryRef,
-    nodePath: ['reports', 'pageInfo', 'globalCount'],
+    nodePath: ['stixCoreObjectsRepresentatives', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ReportsLinesPaginationQuery>;
 
-  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const dataColumns: DataTableProps['dataColumns'] = {
-    name: {
-      percentWidth: 25,
-      isSortable: true,
-    },
-    report_types: {},
-    createdBy: {
-      percentWidth: 12,
-      isSortable: isRuntimeSort,
-    },
-    creator: {
-      percentWidth: 12,
-      isSortable: isRuntimeSort,
-    },
-    objectLabel: { percentWidth: 15 },
-    published: {},
-    x_opencti_workflow_id: { percentWidth: 8 },
-    objectMarking: {
-      isSortable: isRuntimeSort,
-      percentWidth: 8,
-    },
-  };
+  // const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+
   return (
     <span data-testid="report-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {queryRef && (
         <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: ReportsLines_data$data) => data.reports?.edges?.map((n) => n?.node)}
+          dataColumns={COLUMNS_DEFINITION}
+          resolvePath={(data: ReportsLines_data$data) => data.stixCoreObjectsRepresentatives?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
