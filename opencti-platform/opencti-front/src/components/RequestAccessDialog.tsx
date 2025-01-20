@@ -42,7 +42,14 @@ interface RequestAccessFormAddInput {
 
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
+  let meResolvedId;
+  try {
+    // FIXME find why it's breaking GraphIQL
+    const { me } = useAuth();
+    meResolvedId = me.id;
+  } catch (e) {
+    // When called from public, no useAuth()
+  }
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
@@ -76,76 +83,78 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   };
 
   return (
-    <Dialog
-      open={open}
-      PaperProps={{ variant: 'elevation', elevation: 1 }}
-      keepMounted={true}
-      fullWidth={true}
-      TransitionComponent={Transition}
-      onClose={onClose}
-    >
-      <DialogContent>
-        <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access for entity')}</DialogTitle>
-        <Formik
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-        >
-          {({ isSubmitting, submitForm }) => {
-            return (
-              <Form>
-                <DialogContent style={{ padding: 0 }}>
-                  <DialogContentText>
-                    {t_i18n(
-                      'Your account/organization does not have permission to create/update the entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
-                    )}
-                  </DialogContentText>
-                  <Field
-                    component={TextField}
-                    name="request_access_reason"
-                    label={t_i18n('Enter justification for requesting this entity')}
-                    fullWidth={true}
-                    variant="standard"
-                    style={{ marginTop: 20 }}
-                    askAi={true}
-                    multiline={true}
-                    minRows={5}
-                  />
-                  <ObjectOrganizationField
-                    name="organizations"
-                    style={{ width: '100%', paddingTop: '16px', marginBottom: 20 }}
-                    label={t_i18n('Select the organization of your choice for requesting this entity')}
-                    multiple={false}
-                    alert={false}
-                    filters={{
-                      mode: 'and',
-                      filters: [
-                        { key: 'entity_type', values: ['Organization'], mode: 'or', operator: 'eq' },
-                        {
-                          key: 'regardingOf',
-                          values: [
-                            { key: 'id', values: [me.id], mode: 'and', operator: 'eq' },
-                            { key: 'relationship_type', values: ['participate-to'], mode: 'and', operator: 'eq' },
-                          ],
-                        },
-                      ],
-                      filterGroups: [],
-                    }}
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={onClose} disabled={isSubmitting}>
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
-                    {t_i18n('Request Access')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            );
-          }}
-        </Formik>
-      </DialogContent>
-    </Dialog>
+    <> {meResolvedId && (
+      <Dialog
+        open={open}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        keepMounted={true}
+        fullWidth={true}
+        TransitionComponent={Transition}
+        onClose={onClose}
+      >
+        <DialogContent>
+          <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access for entity')}</DialogTitle>
+          <Formik
+            initialValues={initialValues}
+            onSubmit={onSubmit}
+          >
+            {({ isSubmitting, submitForm }) => {
+              return (
+                <Form>
+                  <DialogContent style={{ padding: 0 }}>
+                    <DialogContentText>
+                      {t_i18n(
+                        'Your account/organization does not have permission to create/update the entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
+                      )}
+                    </DialogContentText>
+                    <Field
+                      component={TextField}
+                      name="request_access_reason"
+                      label={t_i18n('Enter justification for requesting this entity')}
+                      fullWidth={true}
+                      variant="standard"
+                      style={{ marginTop: 20 }}
+                      askAi={true}
+                      multiline={true}
+                      minRows={5}
+                    />
+                    <ObjectOrganizationField
+                      name="organizations"
+                      style={{ width: '100%', paddingTop: '16px', marginBottom: 20 }}
+                      label={t_i18n('Select the organization of your choice for requesting this entity')}
+                      multiple={false}
+                      alert={false}
+                      filters={{
+                        mode: 'and',
+                        filters: [
+                          { key: 'entity_type', values: ['Organization'], mode: 'or', operator: 'eq' },
+                          {
+                            key: 'regardingOf',
+                            values: [
+                              { key: 'id', values: [meResolvedId], mode: 'and', operator: 'eq' },
+                              { key: 'relationship_type', values: ['participate-to'], mode: 'and', operator: 'eq' },
+                            ],
+                          },
+                        ],
+                        filterGroups: [],
+                      }}
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={onClose} disabled={isSubmitting}>
+                      {t_i18n('Cancel')}
+                    </Button>
+                    <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+                      {t_i18n('Request Access')}
+                    </Button>
+                  </DialogActions>
+                </Form>
+              );
+            }}
+          </Formik>
+        </DialogContent>
+      </Dialog>)}
+    </>
   );
 };
 
