@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import moment from 'moment/moment';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
@@ -52,7 +52,7 @@ import {
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
-import { checkObservableValue } from '../../database/exclusionListCache';
+import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -223,7 +223,8 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   }
 
   // Check that indicator is not excluded from an exclusion list
-  if (isFeatureEnabled('EXCLUSION_LIST')) {
+  // no need to check if the exclusion list cache is empty
+  if (!isCacheEmpty()) {
     const observableValues = getObservableValuesFromPattern(formattedPattern);
     for (let i = 0; i < observableValues.length; i += 1) {
       const exclusionListCheck = await checkObservableValue(observableValues[i]);

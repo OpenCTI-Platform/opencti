@@ -1,5 +1,5 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { redisGetExclusionListStatus } from '../database/redis';
 import { executionContext } from '../utils/access';
 import { rebuildExclusionListCache } from '../database/exclusionListCache';
@@ -40,6 +40,5 @@ const EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   }
 };
-if (isFeatureEnabled('EXCLUSION_LIST')) {
-  registerManager(EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION);
-}
+
+registerManager(EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION);

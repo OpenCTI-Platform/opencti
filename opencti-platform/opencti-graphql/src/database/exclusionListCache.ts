@@ -20,6 +20,8 @@ let exclusionListCache: ExclusionListCacheItem[] | null = null;
 
 export const getIsCacheInitialized = (): boolean => exclusionListCache !== null;
 
+export const isCacheEmpty = (): boolean => !exclusionListCache || exclusionListCache.length === 0;
+
 const isIPExclusionList = (exclusionList: BasicStoreEntityExclusionList) => {
   return exclusionList.exclusion_list_entity_types.some((t) => ENTITY_IPV4_ADDR === t || ENTITY_IPV6_ADDR === t);
 };
