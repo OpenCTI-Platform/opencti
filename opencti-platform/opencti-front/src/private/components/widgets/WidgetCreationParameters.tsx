@@ -606,7 +606,6 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         />
                       </Tooltip>
                     )}
-                    TOTO
                   </div>
                 )}
               </div>
