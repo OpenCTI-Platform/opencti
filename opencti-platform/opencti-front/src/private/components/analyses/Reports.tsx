@@ -30,27 +30,35 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 // -- Looks like sort by author is not working but no idea why
 const COLUMNS_DEFINITION: DataTableProps['dataColumns'] = {
   'Report name': {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'name' }],
   },
   type: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'report_types' }],
   },
   Author: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'createdBy' }],
   },
   Creators: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'creator_id' }],
   },
   Labels: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'objectLabel' }],
   },
   Published: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'published' }],
   },
   Status: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'x_opencti_workflow_id' }],
   },
   Markings: {
+    percentWidth: 12.5,
     mappings: [{ entity_type: 'Report', attribute: 'objectMarking' }],
   },
 };
