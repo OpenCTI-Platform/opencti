@@ -24,6 +24,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -76,6 +77,7 @@ const StixCoreObjectContentFilesList = ({
   const theme = useTheme<Theme>();
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
@@ -154,6 +156,7 @@ const StixCoreObjectContentFilesList = ({
                   </div>
                 )}
               />
+              {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
               <Tooltip title={'Disseminate'}>
                 <IconButton
                   onClick={toggleDrawer(true)}
@@ -167,18 +170,7 @@ const StixCoreObjectContentFilesList = ({
                   <EmailIcon />
                 </IconButton>
               </Tooltip>
-              <Drawer
-                title={t_i18n('Disseminate')}
-                open={isDrawerOpen}
-                onClose={toggleDrawer(false)}
-              >
-                <div style={{ width: 300, padding: theme.spacing(2) }}>
-                  <StixCoreObjectContentFilesDissemination
-                    fileId={file.id}
-                    onClose={toggleDrawer(false)}
-                  />
-                </div>
-              </Drawer>
+              )}
               <ListItemSecondaryAction>
                 <IconButton
                   onClick={(e) => openPopover(e, file)}
@@ -191,6 +183,19 @@ const StixCoreObjectContentFilesList = ({
               </ListItemSecondaryAction>
             </ListItemButton>
           </Tooltip>
+          {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
+          <Drawer
+            title={t_i18n('Disseminate a file')}
+            open={isDrawerOpen}
+            onClose={toggleDrawer(false)}
+          >
+            <StixCoreObjectContentFilesDissemination
+              fileId={file.id}
+              fileName={file.name}
+              onClose={toggleDrawer(false)}
+            />
+          </Drawer>
+          )}
         </Fragment>
       ))}
 

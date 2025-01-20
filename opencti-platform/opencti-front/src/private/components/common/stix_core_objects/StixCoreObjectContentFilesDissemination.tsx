@@ -2,9 +2,11 @@ import React from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
 import { graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
+  fileName: string;
   onClose: () => void;
 }
 
@@ -18,6 +20,7 @@ export const DisseminationListSendInputMutation = graphql`
 
 const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFilesDisseminationProps> = ({
   fileId,
+  fileName,
 }) => {
   const [commitMutation] = useMutation(DisseminationListSendInputMutation);
 
@@ -59,10 +62,9 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
     >
       {({ values, handleChange, isSubmitting }) => (
         <Form>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant="h6"> Diffusion Form </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Field
-              as={TextField}
+              component={TextField}
               label="Email Address"
               name="emailAddress"
               type="email"
@@ -72,16 +74,17 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
               required
             />
             <Field
-              as={TextField}
+              component={TextField}
               label="Object"
               name="emailObject"
               fullWidth
               value={values.emailObject}
               onChange={handleChange}
               required
+              style={fieldSpacingContainerStyle}
             />
             <Field
-              as={TextField}
+              component={TextField}
               label="Body"
               name="emailBody"
               multiline
@@ -90,15 +93,31 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
               value={values.emailBody}
               onChange={handleChange}
               required
+              style={fieldSpacingContainerStyle}
             />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isSubmitting}
+            <Field
+              component={TextField}
+              label="file"
+              name="file"
+              fullWidth
+              value={fileName}
+              disabled
+              style={fieldSpacingContainerStyle}
+            />
+            <div style={{
+              marginTop: 20,
+              textAlign: 'right',
+            }}
             >
-              {isSubmitting ? 'Sending...' : 'Send Email'}
-            </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending...' : 'Send Email'}
+              </Button>
+            </div>
           </Box>
         </Form>
       )}
