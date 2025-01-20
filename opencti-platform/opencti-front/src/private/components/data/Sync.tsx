@@ -2,6 +2,7 @@ import React from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import { DataTableProps } from 'src/components/dataGrid/dataTableTypes';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
@@ -11,6 +12,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
+import AlertInfo from '../../../components/AlertInfo';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
@@ -18,22 +20,14 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 
 const LOCAL_STORAGE_KEY = 'sync';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
-
 const Sync = () => {
   const theme = useTheme();
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: Remote OCTI Streams | Data'));
   const { platformModuleHelpers } = useAuth();
+
+  setTitle(t_i18n('Ingestion: Remote OCTI Streams | Data'));
+
   const {
     viewStorage,
     paginationOptions,
@@ -43,6 +37,7 @@ const Sync = () => {
     orderAsc: false,
     searchTerm: '',
   });
+
   const dataColumns = {
     name: {
       label: 'Name',
@@ -70,9 +65,14 @@ const Sync = () => {
       isSortable: true,
     },
   };
+
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
-      <div className={classes.container}>
+      <div style={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+      >
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
         </Alert>
@@ -80,10 +80,30 @@ const Sync = () => {
       </div>
     );
   }
+
   return (
-    <div className={classes.container}>
+    <div style={{
+      margin: 0,
+      padding: '0 200px 50px 0',
+    }}
+    >
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]} />
       <IngestionMenu/>
+      <AlertInfo content={
+        <>
+          {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
+          <a
+            href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
+            target="_blank"
+            style={{ color: theme.palette.secondary.main }}
+            rel="noreferrer"
+          >
+            OpenCTI ecosystem space
+          </a>
+          .
+        </>
+      }
+      />
       <ListLines
         sortBy={viewStorage.sortBy}
         orderAsc={viewStorage.orderAsc}
@@ -93,20 +113,6 @@ const Sync = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-        message={
-          <>
-            {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
-            <a
-              href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-              rel="noreferrer"
-            >
-              OpenCTI ecosystem space
-            </a>
-            .
-          </>
-                }
       >
         <QueryRenderer
           query={SyncLinesQuery}
