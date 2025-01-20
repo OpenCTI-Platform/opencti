@@ -87,6 +87,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
         }}
       >
         <Tabs
+          id="tabs-container"
           value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts/entities')}
         >
           <Tab
