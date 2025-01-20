@@ -10606,6 +10606,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   information_types: [String!]
   severity: String
   priority: String
+  x_opencti_request_access: String
 }
 
 enum CaseRfisOrdering {
