@@ -166,7 +166,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     description: humanDescription,
     information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
     x_opencti_request_access: `${JSON.stringify(action)}`,
-    authorized_members,
+    // FIXME authorized_members,
     x_opencti_workflow_id
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
