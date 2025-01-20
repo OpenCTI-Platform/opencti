@@ -2442,6 +2442,7 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseIncidentAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -2745,6 +2746,7 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseRfiAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -3047,6 +3049,7 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseRftAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -8639,6 +8642,7 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
 };
 
 export type GroupingAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -23026,6 +23030,7 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
 };
 
 export type ReportAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;

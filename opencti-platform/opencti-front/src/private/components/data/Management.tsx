@@ -170,7 +170,7 @@ const Management = () => {
       isSortable: true,
     },
     name: {
-      percentWidth: 20,
+      percentWidth: 15,
     },
     createdBy: {
       isSortable: isRuntimeSort,
@@ -187,7 +187,7 @@ const Management = () => {
       percentWidth: 20,
     },
     authorized_members_activation_date: {
-      percentWidth: 10,
+      percentWidth: 15,
     },
     objectMarking: {
       percentWidth: 10,

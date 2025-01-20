@@ -124,6 +124,7 @@ const meUserFragment = graphql`
   fragment RootMe_data on MeUser {
     id
     name
+    entity_type
     lastname
     language
     theme

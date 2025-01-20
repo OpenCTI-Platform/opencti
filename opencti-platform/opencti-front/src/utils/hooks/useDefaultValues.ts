@@ -1,6 +1,5 @@
 import { head, isEmpty } from 'ramda';
 import { FormikValues } from 'formik/dist/types';
-import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import { useCallback } from 'react';
 import useEntitySettings from './useEntitySettings';
@@ -22,7 +21,6 @@ export const useComputeDefaultValues = () => {
     multiple: boolean,
     type: string,
     defaultValues: readonly { id: string; name: string }[],
-    membersData?: EntitySettingAttributeEditionMembersQuery$data,
   ) => {
     const ovCategory = fieldToCategory(entityType, attributeName);
     // Handle createdBy
@@ -43,11 +41,10 @@ export const useComputeDefaultValues = () => {
       const defaultAuthorizedMembers: AuthorizedMembers = defaultValues
         .map((v) => {
           const parsed = JSON.parse(v.id);
-          const member = membersData?.members?.edges?.find(({ node }) => node.id === parsed.id);
           return {
             id: parsed.id,
-            name: member?.node.name ?? '',
-            entity_type: member?.node.entity_type ?? '',
+            name: parsed.name ?? '',
+            entity_type: parsed.entity_type ?? '',
             access_right: parsed.access_right,
           };
         })
@@ -91,6 +88,7 @@ const useDefaultValues = <Values extends FormikValues>(
 ) => {
   const computeDefaultValues = useComputeDefaultValues();
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
+  const { me } = useAuth();
 
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
@@ -119,6 +117,14 @@ const useDefaultValues = <Values extends FormikValues>(
           attr.type,
           attr.defaultValues,
         );
+        if (attr.name === INPUT_AUTHORIZED_MEMBERS) {
+          const creatorRule = (defaultValues[attr.name] as Option[])?.find((v) => v.value === 'CREATOR');
+          if (creatorRule) {
+            creatorRule.value = me.id;
+            creatorRule.label = me.name;
+            creatorRule.type = me.entity_type;
+          }
+        }
       }
     },
   );
@@ -139,7 +145,6 @@ const useDefaultValues = <Values extends FormikValues>(
     defaultValues.created = now();
   }
 
-  const { me } = useAuth();
   const defaultMarkings = me.default_marking;
   if (
     keys.includes('objectMarking')

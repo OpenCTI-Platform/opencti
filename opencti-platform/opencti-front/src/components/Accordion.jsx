@@ -9,6 +9,8 @@ export const Accordion = styled((props) => (<MuiAccordion disableGutters elevati
   '&:before': {
     display: 'none',
   },
+  borderRadius: '4px',
+  backgroundColor: 'rgba(255, 255, 255, 0)',
 }));
 
 export const AccordionSummary = styled((props) => (

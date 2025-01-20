@@ -10,6 +10,9 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseRftsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRftsLinesCasesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -35,6 +38,9 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import Security from '../../../../utils/Security';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -79,6 +85,7 @@ interface FormikCaseRftAddInput {
   severity: string;
   priority: string;
   caseTemplates?: Option[];
+  authorized_members: { value: string, accessRight: string }[] | undefined;
 }
 
 interface CaseRftFormProps {
@@ -108,10 +115,15 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+  const { isFeatureEnable } = useHelper();
+  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
+
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
+    authorized_members: Yup.array().nullable(),
   };
   const caseRftValidator = useSchemaCreationValidation(
     CASE_RFT_TYPE,
@@ -144,6 +156,12 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
+      ...(canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
+          id: value,
+          access_right: accessRight,
+        })),
+      }),
     };
     commit({
       variables: {
@@ -190,8 +208,11 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    authorized_members: undefined,
   });
-
+  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+    delete initialValues.authorized_members;
+  }
   return (
     <Formik<FormikCaseRftAddInput>
       initialValues={initialValues}
@@ -300,6 +321,30 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isAccessRestrictionCreationEnable && (
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+          >
+            <div style={fieldSpacingContainerStyle}>
+              <Accordion >
+                <AccordionSummary id="accordion-panel">
+                  <Typography>{t_i18n('Advanced options')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Field
+                    name={'authorized_members'}
+                    component={AuthorizedMembersField}
+                    containerstyle={{ marginTop: 20 }}
+                    showAllMembersLine
+                    canDeactivate
+                    disabled={isSubmitting}
+                    addMeUserWithAdminRights
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"
