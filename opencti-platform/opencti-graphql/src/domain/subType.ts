@@ -69,16 +69,3 @@ export const findById = (subTypeId: string) => querySubType(subTypeId);
 export const findAll = (context: AuthContext, user: AuthUser, args : { type: string | null, search?: string | null }) => {
   return querySubTypes(context, user, args);
 };
-
-/*
-export const getRequestAccessWorkflow = async (context: AuthContext, user: AuthUser, current: string) => {
-  logApp.info('COUCOU getRequestAccessWorkflow', { current });
-  const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  logApp.info('COUCOU rfiEntitySettings', { rfiEntitySettings });
-  return {
-    workflow: rfiEntitySettings?.request_access_workflow?.workflow,
-    approved_workflow_id: rfiEntitySettings?.request_access_workflow?.approved_workflow_id,
-    declined_workflow_id: rfiEntitySettings?.request_access_workflow?.declined_workflow_id,
-  };
-};
-*/
