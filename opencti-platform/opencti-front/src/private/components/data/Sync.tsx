@@ -103,7 +103,7 @@ const Sync = () => {
             style={{ color: theme.palette.secondary.main }}
             rel="noreferrer"
           >
-            OpenCTI ecosystem space
+            {t_i18n('OpenCTI ecosystem space')}
           </a>
           .
         </>
