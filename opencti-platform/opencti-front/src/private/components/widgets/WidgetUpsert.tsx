@@ -18,12 +18,14 @@ interface WidgetUpsertProps {
   open: boolean,
   onCancel: () => void,
   onSubmit: (conf: WidgetConfigType) => void,
+  isUpdate: boolean
 }
 
 const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   open,
   onCancel,
   onSubmit,
+  isUpdate,
 }) => {
   const { t_i18n } = useFormatter();
   const { config, step } = useWidgetConfigContext();
@@ -62,7 +64,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
           onClick={() => onSubmit(config)}
           disabled={!isFormValid}
         >
-          {config.widget ? t_i18n('Update') : t_i18n('Create')}
+          {isUpdate ? t_i18n('Update') : t_i18n('Create')}
         </Button>
       </DialogActions>
     </Dialog>

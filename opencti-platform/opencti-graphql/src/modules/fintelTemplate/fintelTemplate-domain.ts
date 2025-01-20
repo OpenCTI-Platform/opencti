@@ -11,6 +11,7 @@ import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { SELF_ID } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -60,7 +61,7 @@ export const addFintelTemplate = async (
           attribute: 'representative.main',
           variableName: 'containerRepresentative'
         }],
-        instance_id: 'SELF_ID',
+        instance_id: SELF_ID,
       }],
       parameters: {
         title: 'Attributes of the instance',

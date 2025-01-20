@@ -52,6 +52,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
         open={open}
         onCancel={close}
         onSubmit={onSubmit}
+        isUpdate={!!widget}
       />
     </WidgetConfigProvider>
   );

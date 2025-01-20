@@ -22,6 +22,7 @@ const useStyles = makeStyles({
 
 const SearchScopeElement = ({
   name,
+  disabled = false,
   searchScope,
   setSearchScope,
   availableRelationFilterTypes,
@@ -58,17 +59,16 @@ const SearchScopeElement = ({
         : [...(searchScope[key] || []), value],
     }));
   };
+
+  let color = searchScope[name] && searchScope[name].length > 0
+    ? 'secondary'
+    : 'primary';
+  if (disabled) color = undefined;
+
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
-      <IconButton onClick={handleOpenSearchScope} size="small" edge="end">
-        <PaletteOutlined
-          fontSize="small"
-          color={
-            searchScope[name] && searchScope[name].length > 0
-              ? 'secondary'
-              : 'primary'
-          }
-        />
+      <IconButton disabled={disabled} onClick={handleOpenSearchScope} size="small" edge="end">
+        <PaletteOutlined fontSize="small" color={color} />
       </IconButton>
       <Popover
         classes={{ paper: classes.container2 }}

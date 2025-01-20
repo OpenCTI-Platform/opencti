@@ -18,6 +18,7 @@ import {
   isNumericFilter,
   isStixObjectTypes,
   SELF_ID,
+  SELF_ID_VALUE,
   useFilterDefinition,
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
@@ -289,29 +290,32 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
 
   const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string): ReactNode => {
-    const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
+    const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
-    const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
-    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
     const shouldAddSelfId = fintelTemplatesContext
-      && filterDefinition?.type === 'id'
+      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
       && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
-    const options = shouldAddSelfId
+
+    const getOptions = shouldAddSelfId
       ? [
-        ...selectedOptions,
         {
           value: SELF_ID,
-          label: SELF_ID,
+          label: SELF_ID_VALUE,
           group: 'Instance',
           parentTypes: [],
           color: 'primary',
           type: 'Instance',
         },
-        ...entitiesOptions,
+        ...getEntitiesOptions,
       ]
-      : [...selectedOptions, ...entitiesOptions];
+      : getEntitiesOptions;
+
+    const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
+    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+
+    const options = [...selectedOptions, ...entitiesOptions];
 
     const groupByEntities = (option: OptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);

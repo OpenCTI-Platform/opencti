@@ -1,5 +1,8 @@
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../generated/graphql';
 
+export const SELF_ID = 'SELF_ID';
+export const SELF_ID_VALUE = 'CURRENT ENTITY';
+
 // hardcoded widgets
 
 export const containerColumns = [
@@ -27,7 +30,7 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
         { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reportReliability' },
         { label: 'Report types', attribute: 'report_types', variableName: 'types' },
       ],
-      instance_id: 'SELF_ID',
+      instance_id: SELF_ID,
     }],
     parameters: {
       title: 'widgetReportMultiAttributes',
@@ -46,7 +49,7 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
         ...containerColumns,
         { label: 'Context', attribute: 'context', variableName: 'context' },
       ],
-      instance_id: 'SELF_ID',
+      instance_id: SELF_ID,
     }],
     parameters: {
       title: 'widgetGroupingMultiAttributes',
@@ -65,7 +68,7 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
         ...containerColumns,
         { label: 'Information types', attribute: 'information_types', variableName: 'types' },
       ],
-      instance_id: 'SELF_ID',
+      instance_id: SELF_ID,
     }],
     parameters: {
       title: 'widgetRFIMultiAttributes',
@@ -84,7 +87,7 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
         ...containerColumns,
         { label: 'Takedown types', attribute: 'takedown_types', variableName: 'types' },
       ],
-      instance_id: 'SELF_ID',
+      instance_id: SELF_ID,
     }],
     parameters: {
       title: 'widgetRFTMultiAttributes',
@@ -105,7 +108,7 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput
         { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
         { label: 'Incident type', attribute: 'response_types', variableName: 'types' },
       ],
-      instance_id: 'SELF_ID',
+      instance_id: SELF_ID,
     }],
     parameters: {
       title: 'widgetIncidentResponseMultiAttributes',
@@ -125,7 +128,7 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -150,7 +153,7 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -174,7 +177,7 @@ export const widgetIndicators: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Indicator'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -202,7 +205,7 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Task'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -228,7 +231,7 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Attack-Pattern'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -253,7 +256,7 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -282,7 +285,7 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Sector', 'Individual', 'Organization'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),
@@ -308,7 +311,7 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
           mode: 'and',
           filters: [
             { key: ['entity_type'], values: ['Stix-Core-Object', 'Stix-Cyber-Observable'] },
-            { key: ['objects'], values: ['SELF_ID'] },
+            { key: ['objects'], values: [SELF_ID] },
           ],
           filterGroups: [],
         }),

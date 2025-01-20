@@ -1,7 +1,6 @@
 import * as R from 'ramda';
-import { Dispatch, useState } from 'react';
+import { BaseSyntheticEvent, Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '@components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domain_objects/StixDomainObjectsLines';
 import { labelsSearchQuery } from '@components/settings/LabelsQuery';
@@ -28,7 +27,8 @@ import { KillChainPhasesSearchQuery$data } from '@components/settings/__generate
 import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
 import { triggersQueriesSearchQuery } from '@components/profile/triggers/TriggersQueries';
 import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchQuery.graphql';
-import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/MarkingDefinitionsQuery';
+import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { markingDefinitionsLinesSearchQuery } from '@components/settings/MarkingDefinitionsQuery';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -240,19 +240,7 @@ const workspacesQuery = graphql`
   }
 `;
 
-export interface EntityValue {
-  label?: string | null;
-  value?: string | null;
-  type?: string;
-  group?: string;
-  color?: string | null;
-}
-
-interface EntityWithLabelValue {
-  label: string;
-  value: string;
-  type: string;
-}
+export type EntityValue = OptionValue;
 
 const useSearchEntities = ({
   availableEntityTypes,
@@ -291,7 +279,7 @@ const useSearchEntities = ({
     filterKey: string,
     cacheEntities: Record< string, { label: string; value: string; type: string }[] >,
     setCacheEntities: Dispatch< Record<string, { label: string; value: string; type: string }[]> >,
-    event: SelectChangeEvent<string | number>,
+    event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
     if (!event) {
@@ -339,18 +327,18 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const objectLabelEntities = (
+          const objectLabelEntities: EntityValue[] = (
             (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.value,
-            value: n?.node.id,
+          ).flatMap(({ node }) => ((!node.value || !node.id) ? [] : {
+            label: node.value,
+            value: node.id,
             type: 'Label',
-            color: n?.node.color,
+            color: node.color ?? undefined,
           }));
           unionSetEntities(key, [
             {
               label: t_i18n('No label'),
-              value: null,
+              value: '',
               type: 'Label',
               color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
             },
@@ -366,13 +354,13 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const markedByEntities = (
+          const markedByEntities: EntityValue[] = (
             (data as MarkingDefinitionsQuerySearchQuery$data)?.markingDefinitions?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.definition,
-            value: n?.node.id,
+          ).flatMap(({ node }) => (!node.definition ? [] : {
+            label: node.definition,
+            value: node.id,
             type: 'Marking-Definition',
-            color: n?.node.x_opencti_color,
+            color: node.x_opencti_color ?? undefined,
           }));
           unionSetEntities(key, markedByEntities);
         });
@@ -444,13 +432,13 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const elementIdEntities = (
+          const elementIdEntities: EntityValue[] = (
             (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? []
-          ).map((n) => ({
-            label: getMainRepresentative(n?.node),
-            value: n?.node.id,
-            type: n?.node.entity_type,
-            parentTypes: n?.node.parent_types,
+          ).map(({ node }) => ({
+            label: getMainRepresentative(node),
+            value: node.id,
+            type: node.entity_type,
+            parentTypes: node.parent_types.flatMap((t) => (t || [])),
           }));
           unionSetEntities(key, elementIdEntities);
         });
@@ -465,13 +453,13 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const createdByEntities = (
+          const createdByEntities: EntityValue[] = (
             (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
               ?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.name,
-            value: n?.node.id,
-            type: n?.node.entity_type,
+          ).flatMap((n) => (!n ? [] : {
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
           }));
           unionSetEntities(key, createdByEntities);
         });
@@ -646,12 +634,12 @@ const useSearchEntities = ({
           })
             .toPromise()
             .then((data) => {
-              const sightedByEntities = (
+              const sightedByEntities: EntityValue[] = (
                 (data as StixDomainObjectsLinesSearchQuery$data)?.stixDomainObjects?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name,
-                value: n?.node.id,
-                type: n?.node.entity_type,
+              ).flatMap((n) => ((!n || !n.node) ? [] : {
+                label: n.node.name ?? '',
+                value: n.node.id,
+                type: n.node.entity_type,
               }));
               unionSetEntities('sightedBy', sightedByEntities);
             });
@@ -667,8 +655,7 @@ const useSearchEntities = ({
           break;
         // region entity and relation types
         case 'contextEntityType': {
-          let elementTypeResult = [] as EntityWithLabelValue[];
-          elementTypeResult = [
+          const elementTypeResult = [
             ...(schema.scos ?? []).map((n) => ({
               label: t_i18n(`entity_${n.label}`),
               value: n.label,
@@ -689,7 +676,6 @@ const useSearchEntities = ({
               value: 'Group',
               type: 'Group',
             },
-            ...elementTypeResult,
           ];
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities(filterKey, elementTypeTypes);
@@ -732,7 +718,7 @@ const useSearchEntities = ({
               .sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, entitiesTypes);
           } else { // case abstract types
-            let result = [] as EntityWithLabelValue[];
+            let result: EntityValue[] = [];
             // push the observables
             if (
               !availableEntityTypes
@@ -998,15 +984,14 @@ const useSearchEntities = ({
               })
                 .toPromise()
                 .then((data) => {
-                  const statusTemplateEntities = (
+                  const statusTemplateEntities: EntityValue[] = (
                     (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges
                     ?? []
                   )
-                    .filter((n) => !R.isNil(n?.node))
-                    .map((n) => ({
-                      label: n?.node.name,
-                      color: n?.node.color,
-                      value: n?.node.id,
+                    .flatMap((n) => (!n ? [] : {
+                      label: n.node.name,
+                      color: n.node.color,
+                      value: n.node.id,
                       type: 'Vocabulary',
                     }))
                     .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
@@ -1043,7 +1028,7 @@ const useSearchEntities = ({
       }
     }
   };
-  return [entities, searchEntities];
+  return [entities, searchEntities] as const;
 };
 
 export default useSearchEntities;

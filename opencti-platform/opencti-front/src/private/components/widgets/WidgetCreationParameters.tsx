@@ -24,7 +24,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, SELF_ID } from '../../../utils/filters/filtersUtils';
+import { findFiltersFromKeys, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
@@ -223,54 +223,51 @@ const WidgetCreationParameters = () => {
               <div key={i}>
                 {type === 'attribute' && (
                   <div style={{ marginTop: 20 }}>
-                    <InputLabel required>
-                      {t_i18n('Instance')}
-                    </InputLabel>
-                    <div
-                      style={{
-                        display: 'flex',
-                        width: '100%',
-                      }}
-                    >
-                      <FormControl
-                        fullWidth={true}
-                      >
-                        {(currentInstanceId && currentInstanceId !== SELF_ID)
-                          ? (<QueryRenderer
-                              query={widgetAttributesInputInstanceQuery}
-                              variables={{
-                                id: currentInstanceId,
-                              }}
-                              render={({ props: instanceProps }: { props: WidgetAttributesInputContainerInstanceQuery$data }) => {
-                                const selectedInstance = instanceProps?.stixCoreObject;
-                                return (
-                                  <EntitySelectWithTypes
-                                    key="id"
-                                    label={t_i18n('Instance')}
-                                    initialInstance={selectedInstance}
-                                    alreadyUsedInstances={alreadyUsedInstances}
-                                    handleChange={(value) => handleChangeDataValidationParameter(
-                                      i,
-                                      'instance_id',
-                                      value,
-                                    )}
-                                  />
-                                );
-                              }}
-                             />)
-                          : (<EntitySelectWithTypes
-                              key="id"
-                              label={t_i18n('Instance')}
-                              alreadyUsedInstances={alreadyUsedInstances}
-                              handleChange={(value) => handleChangeDataValidationParameter(
-                                i,
-                                'instance_id',
-                                value,
-                              )}
-                             />)
-                      }
-                      </FormControl>
-                    </div>
+                    <FormControl fullWidth={true}>
+                      {(currentInstanceId && currentInstanceId !== SELF_ID) ? (
+                        <QueryRenderer
+                          query={widgetAttributesInputInstanceQuery}
+                          variables={{ id: currentInstanceId }}
+                          render={({ props: instanceProps }: { props: WidgetAttributesInputContainerInstanceQuery$data }) => {
+                            const selectedInstance = instanceProps?.stixCoreObject;
+                            return (
+                              <EntitySelectWithTypes
+                                key="id"
+                                label={t_i18n('Instance')}
+                                value={selectedInstance ? {
+                                  value: selectedInstance.id,
+                                  label: selectedInstance.representative.main,
+                                  type: selectedInstance.entity_type,
+                                } : null}
+                                entitiesToExclude={alreadyUsedInstances}
+                                handleChange={(value) => handleChangeDataValidationParameter(
+                                  i,
+                                  'instance_id',
+                                  value.value,
+                                )}
+                              />
+                            );
+                          }}
+                        />
+                      ) : (
+                        <EntitySelectWithTypes
+                          key="id"
+                          label={t_i18n('Instance')}
+                          disabled={currentInstanceId === SELF_ID}
+                          entitiesToExclude={alreadyUsedInstances}
+                          value={currentInstanceId === SELF_ID ? {
+                            value: SELF_ID,
+                            type: 'undefined',
+                            label: SELF_ID_VALUE,
+                          } : null}
+                          handleChange={(value) => handleChangeDataValidationParameter(
+                            i,
+                            'instance_id',
+                            value.value,
+                          )}
+                        />
+                      )}
+                    </FormControl>
                   </div>
                 )}
 

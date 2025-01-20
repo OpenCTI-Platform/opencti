@@ -4,6 +4,7 @@ import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { disableEE, enableEE } from '../../utils/testQueryHelper';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
+import { SELF_ID } from '../../../src/utils/fintelTemplate/__fintelTemplateWidgets';
 
 const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
   query entitySettings(
@@ -131,7 +132,11 @@ describe('Fintel template resolver standard behavior', () => {
     expect(queryResult.data?.fintelTemplate).not.toBeNull();
     expect(queryResult.data?.fintelTemplate.id).toEqual(fintelTemplateInternalId);
     expect(queryResult.data?.fintelTemplate.name).toEqual('Fintel template 1');
-    expect(queryResult.data?.fintelTemplate.fintel_template_widgets.length).toEqual(0);
+  });
+  it('should fintel template created with built-in attributes widget for self instance', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(queryResult.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1); // built-in self attribute widget
+    expect(queryResult.data?.fintelTemplate.fintel_template_widgets[0].variable_name).toEqual('widgetSelfAttributes');
   });
   it('should list fintel templates in entity settings', async () => {
     const queryResult = await queryAsAdmin({
@@ -174,7 +179,7 @@ describe('Fintel template resolver standard behavior', () => {
               mode: 'and',
               filters: [
                 { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
-                { key: ['objects'], values: ['SELF_ID'] },
+                { key: ['objects'], values: [SELF_ID] },
               ],
               filterGroups: [],
             }),

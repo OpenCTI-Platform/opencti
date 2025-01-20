@@ -52,7 +52,7 @@ const FintelTemplateWidgetAttribute = ({
         </Tooltip>
 
         <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
-          {variableName}
+          {widget.parameters?.title ?? variableName}
         </Typography>
 
         <div>

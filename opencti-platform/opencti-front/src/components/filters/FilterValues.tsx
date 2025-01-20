@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { FiltersRestrictions, isFilterEditable, SELF_ID, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -109,6 +109,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
+    const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     return (
       <Fragment key={id}>
         <FilterValuesContent
@@ -116,7 +117,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           isFilterTooltip={!!tooltip}
           filterKey={filterKey}
           id={id}
-          value={filtersRepresentativesMap.get(id) && id !== SELF_ID ? filtersRepresentativesMap.get(id)?.value : id}
+          value={value}
           filterDefinition={filterDefinition}
           filterOperator={filterOperator}
         />
