@@ -1,3 +1,4 @@
+import { fork } from 'child_process';
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
 import platformInit, { checkFeatureFlags, checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
@@ -37,6 +38,60 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] Modules startup failed', { cause: modulesError });
       throw modulesError;
     }
+    // -- Start the control lock manager
+    const forked = fork('./build/child-lock.manager.js', { test: 'test' }, {});
+    const lockResources = async (operation, ids) => {
+      return new Promise((resolve, reject) => {
+        forked.send({ type: 'lock', operation, ids },);
+        forked.on('message', (msg) => {
+          if (msg.operation === operation && msg.type === 'lock') {
+            if (msg.success) {
+              resolve(msg);
+            } else {
+              reject(msg.error);
+            }
+          }
+        });
+      });
+    };
+    const unlockResources = async (operation) => {
+      return new Promise((resolve, reject) => {
+        forked.send({ type: 'unlock', operation },);
+        forked.on('message', (msg) => {
+          if (msg.operation === operation && msg.type === 'unlock') {
+            if (msg.success) {
+              resolve(msg);
+            } else {
+              reject(msg.error);
+            }
+          }
+        });
+      });
+    };
+    try {
+      const d = await lockResources('operation_id', ['id1', 'id2']);
+      console.log('success locking ???? ', d);
+    } catch (err) {
+      console.log('err locking ???? ', err);
+    }
+
+    setTimeout(async () => {
+      try {
+        const d = await lockResources('operation_id', ['id1']);
+        console.log('success unlocking ???? ', d);
+      } catch (err) {
+        console.log('err unlocking ???? ', err);
+      }
+    }, 15000);
+
+    setTimeout(async () => {
+      try {
+        const d = await unlockResources('operation_id');
+        console.log('success unlocking ???? ', d);
+      } catch (err) {
+        console.log('err unlocking ???? ', err);
+      }
+    }, 75000);
   } catch (mainError) {
     process.exit(1);
   }
