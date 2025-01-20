@@ -88,7 +88,7 @@ describe('SubType resolver standard behavior', () => {
   });
 });
 
-describe.only('SubType resolver for RFI and request access use case', () => {
+describe('SubType resolver for RFI and request access use case', () => {
   it('should request access configuration for case RFI exists', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: SUB_TYPE_FIND_BY_ID_QUERY, variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI } });
 
@@ -98,6 +98,5 @@ describe.only('SubType resolver for RFI and request access use case', () => {
     expect(requestAccessWorkflowConfiguration.declined_workflow_id).toBeDefined();
 
     const requestAccessStatus = queryResult?.data?.subType.settings.requestAccessStatus;
-    console.log('requestAccessStatus:', requestAccessStatus);
   });
 });

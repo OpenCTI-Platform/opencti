@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import Chip from '@mui/material/Chip';
 import { graphql, useFragment } from 'react-relay';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
@@ -42,9 +41,9 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
     declinedStatus = dataResolved.requestAccessStatus.find((status) => status?.id === dataResolved?.request_access_workflow?.declined_workflow_id);
   }
 
-  const [displayStatusList, setDisplayStatusList] = useState<boolean>(false);
-  const handleOpenDeclineUpdate = () => { setDisplayStatusList(true); };
-  const handleOpenApproveUpdate = () => { setDisplayStatusList(true); };
+  // const [displayStatusList, setDisplayStatusList] = useState<boolean>(false);
+  // const handleOpenDeclineUpdate = () => { setDisplayStatusList(true); };
+  // const handleOpenApproveUpdate = () => { setDisplayStatusList(true); };
   return (
     <>
       <div>
@@ -73,7 +72,6 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
             aria-label="Workflow"
             aria-haspopup="true"
             size="large"
-            onClick={handleOpenApproveUpdate}
           >
             <Edit fontSize="small" />
           </IconButton>
@@ -104,7 +102,6 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
             aria-label="Workflow"
             aria-haspopup="true"
             size="large"
-            onClick={handleOpenDeclineUpdate}
           >
             <Edit fontSize="small" />
           </IconButton>
