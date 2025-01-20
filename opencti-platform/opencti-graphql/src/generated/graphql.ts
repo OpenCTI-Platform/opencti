@@ -2583,6 +2583,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_request_access?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
@@ -33725,6 +33726,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_request_access?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
