@@ -10,7 +10,8 @@ import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
-import { DISSEMINATION_EMAIL_TEMPLATE } from '../../utils/emailTemplates/disseminationList';
+import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
+import conf from '../../config/conf';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -36,11 +37,12 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     const stream = await downloadFile(file.id);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
-    const generatedEmail = ejs.render(DISSEMINATION_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+    const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+    const fromEmail = conf.get('smtp:from_email');
     const sendMailArgs: SendMailArgs = {
-      from: settings.platform_email,
-      to: user.user_email,
-      bcc: [input.email_address],
+      from: fromEmail ? fromEmail : settings.platform_email,
+      to: settings.platform_email,
+      bcc: [input.email_address, user.user_email],
       subject: input.email_object,
       html: generatedEmail,
       attachments: [

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Button } from '@mui/material';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -8,6 +8,8 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import * as Yup from 'yup';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -35,9 +37,22 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const [commitMutation] = useMutation(DisseminationListSendInputMutation);
+  const basicShape = {
+    emailAddress: Yup.string().required(t_i18n('This field is required')),
+    emailObject: Yup.string().required(t_i18n('This field is required')),
+    emailBody: Yup.string().required(t_i18n('This field is required')),
+  };
+  const validator = Yup.object().shape(basicShape);
+  const [commitMutation] = useApiMutation(
+    DisseminationListSendInputMutation,
+    undefined,
+    { successMessage: `${t_i18n('Email sent')}` }
+  );
 
-  const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
+  const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = (
+    values
+    , { setSubmitting, resetForm, setErrors }
+  ) => {
     setSubmitting(true);
     commitMutation({
       variables: {
@@ -52,7 +67,6 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         setSubmitting(false);
         resetForm();
         onClose();
-        // TODO afficher une popup
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -60,15 +74,18 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
       },
     });
   };
-
+  const initialValues = {
+    emailAddress: '',
+    emailObject: '',
+    emailBody: '',
+  };
   return (
     <Formik
-      initialValues={{
-        emailAddress: '',
-        emailObject: '',
-        emailBody: '',
-      }}
+      initialValues={initialValues}
+      validationSchema={validator}
+      validateOnChange={true}
       onSubmit={handleSubmit}
+      onReset={onClose}
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -82,7 +99,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           />
           <Field
             component={TextField}
-            label={t_i18n('Object')}
+            label={t_i18n('Email object')}
             name="emailObject"
             fullWidth
             required
@@ -90,7 +107,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           />
           <Field
             component={MarkdownField}
-            label={t_i18n('Body')}
+            label={t_i18n('Email body')}
             name="emailBody"
             multiline
             rows="4"
