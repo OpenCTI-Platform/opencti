@@ -300,7 +300,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights
-                    owner={values.createdBy}
                   />
                 </AccordionDetails>
               </Accordion>

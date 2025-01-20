@@ -345,7 +345,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights
-                    owner={values.createdBy}
                   />
                 </AccordionDetails>
               </Accordion>

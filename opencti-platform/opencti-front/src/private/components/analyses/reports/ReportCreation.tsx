@@ -350,7 +350,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights
-                    owner={values.createdBy}
                   />
                 </AccordionDetails>
               </Accordion>

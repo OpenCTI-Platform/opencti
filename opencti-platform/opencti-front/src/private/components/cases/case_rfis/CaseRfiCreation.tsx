@@ -341,7 +341,6 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
                     canDeactivate
                     disabled={isSubmitting}
                     addMeUserWithAdminRights
-                    owner={values.createdBy}
                   />
                 </AccordionDetails>
               </Accordion>
