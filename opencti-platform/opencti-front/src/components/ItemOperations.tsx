@@ -35,7 +35,7 @@ const operationStylesLight = {
     color: '#ffffff',
   },
   lightYellow: {
-    backgroundColor: '#e5ce6b',
+    backgroundColor: '#ec7629',
     color: '#ffffff',
   },
   grey: {
@@ -55,7 +55,7 @@ const operationStylesDark = {
     backgroundColor: '#ff9800',
   },
   lightYellow: {
-    backgroundColor: '#e5ce6b',
+    backgroundColor: '#ec7629',
   },
   grey: {
     backgroundColor: '#6c6c7a',
@@ -94,6 +94,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
   };
   return (
     <Chip
+      title={draftOperation}
       label={draftOperation}
       classes={{ root: classes.chipInList }}
       variant="outlined"
