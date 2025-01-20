@@ -99,17 +99,37 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
   return result;
 };
 
+const computeAuthorizedMembersForRequestAccess = (grantedOrganizationsIds) => {
+  const authorizedMembers = [];
+  // TODO get admin orga from request access entity settings
+  if (grantedOrganizationsIds.length < 1) {
+    authorizedMembers.push({
+      id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      access_right: 'admin',
+    });
+  }
+  if (grantedOrganizationsIds.length < 1) {
+    // Todo: if no granted ref => use main platform orga
+  }
+  if (grantedOrganizationsIds.length > 0) {
+    grantedOrganizationsIds.map((organizationId) => authorizedMembers.push({
+      id: organizationId,
+      access_right: 'edit',
+    }));
+  }
+  return authorizedMembers;
+};
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
 
   // FIXME move that away
   // await generateInitialFlow(context, user);
 
-  const allAssignees = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members);
-  const allAssigneeIds: string[] = allAssignees.map((member) => member.id);
-  if (allAssigneeIds.length < 1) {
-    logApp.warn('[OPENCTI-MODULE][Request access] Cannot set Assignee in Request Access RFI', { input });
-  }
+  const allUsers = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members); // TODO modifify findUsersThatCanShareWithOrganizations
+  const grantedOrganizationsIds: string[] = allUsers.map((user) => user.organizations); // TODO fix this
+  const authorized_members = computeAuthorizedMembersForRequestAccess(grantedOrganizationsIds);
+
   const requestedEntities = input.request_access_entities;
   const allActionStatuses = await getRFIStatusMap(context, user);
 
@@ -130,14 +150,16 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
   const humanDescription = `Access requested:\n - by user: ${user.name} \n - for organization: ${organizationData.name} \n - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}`;
 
+  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.New);
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
     objects: requestedEntities,
-    objectAssignee: allAssigneeIds,
     description: humanDescription,
     information_types: ['Request sharing'],
     x_opencti_request_access: `${JSON.stringify(action)}`,
+    authorized_members,
+    x_opencti_workflow_id
   };
   logApp.info('[OPENCTI-MODULE][Request access] - rfiInput', { rfiInput });
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
