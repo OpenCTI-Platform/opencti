@@ -23,13 +23,14 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 // --> Backend is not throwing an error in this mode if attribute doesnt exist
 // Be careful to use the real schema definition and NOT the filtering schema.
 // - Remaining jobs
+// -- Add testing suite for API (+ e2e? )
 // -- /!\ Add line after creation, broken for now because of fragment change
 // -- Standard chip display must be change to use the append + tooltip instead of limit 3
 // -- Not sure whats going on with table sizing
 // -- Looks like sort by author is not working but no idea why
 const COLUMNS_DEFINITION: DataTableProps['dataColumns'] = {
   'Report name': {
-    mappings: [{ entity_type: 'Report', attribute: 'name' }, { entity_type: 'Case-Incident', attribute: 'name' }],
+    mappings: [{ entity_type: 'Report', attribute: 'name' }],
   },
   type: {
     mappings: [{ entity_type: 'Report', attribute: 'report_types' }],
@@ -44,22 +45,13 @@ const COLUMNS_DEFINITION: DataTableProps['dataColumns'] = {
     mappings: [{ entity_type: 'Report', attribute: 'objectLabel' }],
   },
   Published: {
-    mappings: [
-      { entity_type: 'Report', attribute: 'published' },
-      { entity_type: 'Case-Incident', attribute: 'created' },
-    ],
+    mappings: [{ entity_type: 'Report', attribute: 'published' }],
   },
   Status: {
-    mappings: [
-      { entity_type: 'Report', attribute: 'x_opencti_workflow_id' },
-      { entity_type: 'Case-Incident', attribute: 'x_opencti_workflow_id' },
-    ],
+    mappings: [{ entity_type: 'Report', attribute: 'x_opencti_workflow_id' }],
   },
   Markings: {
-    mappings: [
-      { entity_type: 'Report', attribute: 'objectMarking' },
-      { entity_type: 'Case-Incident', attribute: 'objectMarking' },
-    ],
+    mappings: [{ entity_type: 'Report', attribute: 'objectMarking' }],
   },
 };
 
@@ -101,6 +93,7 @@ const reportsLinesQuery = graphql`
     )
   }
 `;
+
 const reportsLineFragment = graphql`
   fragment ReportsLines_data on Query
   @argumentDefinitions(

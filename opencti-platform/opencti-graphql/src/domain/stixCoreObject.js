@@ -126,6 +126,20 @@ export const findAll = async (context, user, args) => {
   return listEntitiesPaginated(context, user, types, args);
 };
 
+const computeAttrName = (node, attributePerEntityType) => {
+  let attrName;
+  const types = [node.entity_type, ...node.parent_types];
+  for (let parentIndex = 0; parentIndex < types.length; parentIndex += 1) {
+    const parentType = types[parentIndex];
+    const expected = attributePerEntityType.get(parentType);
+    if (expected) {
+      attrName = expected;
+      break;
+    }
+  }
+  return attrName;
+};
+
 export const findAllRepresentatives = async (context, user, args) => {
   const types = args.attributes.map((a) => a.definition).flat().map((e) => e.entity_type);
   if (args.globalSearch) {
@@ -157,7 +171,7 @@ export const findAllRepresentatives = async (context, user, args) => {
     for (let attrIndex = 0; attrIndex < args.attributes.length; attrIndex += 1) {
       const { column: requestedColumn, definition } = args.attributes[attrIndex];
       const attributePerEntityType = new Map(definition.map((m) => [m.entity_type, m.attribute]));
-      const attrName = attributePerEntityType.get(node.entity_type);
+      const attrName = computeAttrName(node, attributePerEntityType);
       if (attrName) {
         const attrDef = schemaAttributesDefinition.getAttribute(node.entity_type, attrName);
         if (attrDef) {
