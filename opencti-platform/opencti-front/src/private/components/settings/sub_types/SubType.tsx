@@ -145,10 +145,9 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
             {subType.settings?.availableSettings.includes('request_access_workflow')
               && <>
-                <div style={{ marginTop: 10 }}>
+                <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} />
                   </Typography>
                 </div>
                 <RequestAccessStatus data={subType.settings}/>
