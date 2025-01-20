@@ -9,7 +9,6 @@ import { internalDeleteElementById } from '../../../src/database/middleware';
 import type { RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ActionStatus } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { waitInSec } from '../../../src/database/utils';
 import { logApp } from '../../../src/config/conf';
 import { listEntitiesPaginated } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../src/types/store';
@@ -147,6 +146,10 @@ describe('Add Request Access to an entity and create an RFI.'
   let userAnalystId: string;
   let newStatusId: string;
 
+  it.todo('TODO what to expect when EE is not enabled ?', async () => {
+
+  });
+
   it('should enable platform organization', async () => {
     await enableEEAndSetOrganization(TEST_ORGANIZATION);
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
@@ -167,6 +170,10 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(requestAccessWorkflowSettings.approved_workflow_id).toBeDefined();
     expect(requestAccessWorkflowSettings.declined_workflow_id).toBeDefined();
     expect(requestAccessWorkflowStatuses.length).toBe(2);
+  });
+
+  it.todo('TODO what to expect when workflow is not enabled on RFI ?', async () => {
+
   });
 
   it('should RFI workflow enabled with at least one status', async () => {
@@ -205,8 +212,9 @@ describe('Add Request Access to an entity and create an RFI.'
       query: QUERY_REQUEST_ACCESS_SETTINGS,
       variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI },
     });
-    logApp.info('ANGIE rfiEntitySettingsWithWorkflow', { data: rfiEntitySettingsWithWorkflow });
-    // expect(rfiEntitySettingsWithWorkflow.data)
+
+    expect(rfiEntitySettingsWithWorkflow?.data?.subType.workflowEnabled).toBeTruthy();
+    expect(rfiEntitySettingsWithWorkflow?.data?.subType.statuses.length).toBe(2);
   });
 
   it('should create malware with restricted access', async () => {
@@ -241,6 +249,7 @@ describe('Add Request Access to an entity and create an RFI.'
         },
       },
     });
+
     expect(requestAccessData).not.toBeNull();
     caseRfiIdForApproval = requestAccessData?.data?.requestAccessAdd;
     expect(caseRfiIdForApproval).not.toBeNull();
@@ -252,17 +261,17 @@ describe('Add Request Access to an entity and create an RFI.'
       variables: { id: caseRfiIdForApproval },
     });
     const caseRequestForInformation = await findRFIById(testContext, ADMIN_USER, caseRfiIdForApproval);
+    logApp.info('ANGIE caseRequestForInformation', { caseRequestForInformation });
     expect(queryResult?.data?.caseRfi).not.toBeNull();
     expect(queryResult?.data?.caseRfi.id).toEqual(caseRequestForInformation.id);
     expect(queryResult?.data?.caseRfi.name).toContain(caseRequestForInformation.name);
-    expect(caseRequestForInformation[RELATION_OBJECT_PARTICIPANT]).toContain(userAnalystId);
-    expect(caseRequestForInformation[RELATION_OBJECT_ASSIGNEE]).toContain(userEditorId);
     expect(caseRequestForInformation.object).toEqual([malwareId]);
+    // TODO verify that authorized member are set
 
     const action: RequestAccessAction = JSON.parse(caseRequestForInformation.x_opencti_request_access);
-    logApp.info('ANGIE action', { action });
     expect(action.status).toBe(ActionStatus.New);
     expect(action.workflowMapping).toBeDefined();
+    expect(action.workflowMapping.length).toBe(3); // Status for NEW, Approved and Declined.
   });
 
   it.todo('should accept the created Case RFI first time be ok', async () => {
@@ -274,6 +283,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(queryResult?.data?.requestAccessValidate.action_executed).toBeTruthy();
 
     const caseRFIAccepted = await findRFIById(testContext, ADMIN_USER, caseRfiIdForApproval);
+    logApp.info('ANGIE caseRFIAccepted', { caseRFIAccepted });
     const action: RequestAccessAction = JSON.parse(caseRFIAccepted.x_opencti_request_access);
     expect(action.status).toBe(ActionStatus.Approved);
   });

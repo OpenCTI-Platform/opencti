@@ -16,7 +16,8 @@ import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
-import { batchStatusesByType } from '../../domain/status';
+
+export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
 export interface RequestAccessActionStatus {
   rfiStatusId: string,
@@ -109,7 +110,7 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
   return result;
 };
 
-const computeAuthorizedMembersForRequestAccess = (grantedOrganizationsIds) => {
+const computeAuthorizedMembersForRequestAccess = (grantedOrganizationsIds: any[]) => {
   const authorizedMembers = [];
   // TODO get admin orga from request access entity settings
   if (grantedOrganizationsIds.length < 1) {
@@ -134,7 +135,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
 
   const allUsers = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members); // TODO modifify findUsersThatCanShareWithOrganizations
-  const grantedOrganizationsIds: string[] = allUsers.map((user) => user.organizations); // TODO fix this
+  const grantedOrganizationsIds: string[] = allUsers.map((member) => member.organizations); // TODO fix this
   const authorized_members = computeAuthorizedMembersForRequestAccess(grantedOrganizationsIds);
 
   const requestedEntities = input.request_access_entities;
@@ -145,7 +146,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     members: input.request_access_members,
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
-    status: ActionStatus.New, // TODO set workflow status id instead
+    status: ActionStatus.New,
     workflowMapping: allActionStatuses
   };
 
@@ -163,25 +164,20 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     objectParticipant: [user.id],
     objects: requestedEntities,
     description: humanDescription,
-    information_types: ['Request sharing'],
+    information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
     x_opencti_request_access: `${JSON.stringify(action)}`,
     authorized_members,
     x_opencti_workflow_id
   };
-  logApp.info('[OPENCTI-MODULE][Request access] - rfiInput', { rfiInput });
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   return requestForInformation.id;
 };
 
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
-  logApp.info(`'[OPENCTI-MODULE][Request access] 1 - Validation for RFI ${id}`);
   const rfi = await findRFIById(context, user, id);
-  logApp.info(`'[OPENCTI-MODULE][Request access] 2 -Validation for RFI ${id}`, { rfiFound: rfi });
   if (rfi.x_opencti_request_access) {
     const actionData = rfi.x_opencti_request_access;
-    logApp.info('[OPENCTI-MODULE][Request access] 3 Action data', { actionData });
     const action: RequestAccessAction = JSON.parse(actionData);
-    logApp.info(`'[OPENCTI-MODULE][Request access] 4 Action parsed on RFI ${id}`, action);
 
     if (action.entities && action.members) {
       await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
@@ -229,7 +225,6 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
   const rfi = await findRFIById(context, user, id);
   const actionData = rfi.x_opencti_request_access;
   const action: RequestAccessAction = JSON.parse(actionData);
-  logApp.info(`Action on RFI ${id}`, action);
 
   if (action.entities && action.members) {
     const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Declined);

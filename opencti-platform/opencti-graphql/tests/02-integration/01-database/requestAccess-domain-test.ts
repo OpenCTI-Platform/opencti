@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findFirstWorkflowStatus, findUsersThatCanShareWithOrganizations } from '../../../src/modules/requestAccess/requestAccess-domain';
+import { findUsersThatCanShareWithOrganizations } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -24,16 +24,6 @@ describe('Request access domain  - initialized status', async () => {
       const statusData = await findTemplateById(testContext, ADMIN_USER, declinedStatusId);
       expect(statusData.name).toBe('DECLINED');
     }
-  });
-});
-
-describe('Request access domain - workflow integration', async () => {
-  it('should enable workflow for RFI by setting one status', async () => {
-
-  });
-
-  it.todo('should find first RFI status', async () => {
-    const myFirst = findFirstWorkflowStatus(testContext, ADMIN_USER);
   });
 });
 
