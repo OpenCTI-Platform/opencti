@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Chip from '@mui/material/Chip';
 import { graphql, useFragment } from 'react-relay';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
+import { Edit } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
 
@@ -31,15 +33,18 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
   const dataResolved = useFragment(requestAccessFragment, data);
   if (!dataResolved) return null;
   let approvedStatus;
-  if (dataResolved && dataResolved.requestAccessStatus && dataResolved.request_access_workflow) {
+  if (dataResolved.requestAccessStatus && dataResolved.request_access_workflow) {
     approvedStatus = dataResolved.requestAccessStatus.find((status) => status?.id === dataResolved?.request_access_workflow?.approved_workflow_id);
   }
 
   let declinedStatus;
-  if (dataResolved && dataResolved.requestAccessStatus && dataResolved.request_access_workflow) {
+  if (dataResolved.requestAccessStatus && dataResolved.request_access_workflow) {
     declinedStatus = dataResolved.requestAccessStatus.find((status) => status?.id === dataResolved?.request_access_workflow?.declined_workflow_id);
   }
 
+  const [displayStatusList, setDisplayStatusList] = useState<boolean>(false);
+  const handleOpenDeclineUpdate = () => { setDisplayStatusList(true); };
+  const handleOpenApproveUpdate = () => { setDisplayStatusList(true); };
   return (
     <>
       <div>
@@ -63,6 +68,15 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
               ),
             }}
           />
+          <IconButton
+            color="primary"
+            aria-label="Workflow"
+            aria-haspopup="true"
+            size="large"
+            onClick={handleOpenApproveUpdate}
+          >
+            <Edit fontSize="small" />
+          </IconButton>
         </div>
 
         <div>
@@ -85,6 +99,15 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
               ),
             }}
           />
+          <IconButton
+            color="primary"
+            aria-label="Workflow"
+            aria-haspopup="true"
+            size="large"
+            onClick={handleOpenDeclineUpdate}
+          >
+            <Edit fontSize="small" />
+          </IconButton>
         </div>
       </div>
     </>
