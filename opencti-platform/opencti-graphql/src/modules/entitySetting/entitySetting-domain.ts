@@ -25,6 +25,7 @@ import type { BasicStoreEntity, StoreEntityConnection } from '../../types/store'
 import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { findTemplateById } from '../../domain/status';
 
 // -- LOADING --
 
@@ -228,3 +229,4 @@ export const getRequestAccessStatus = async (
     return [approvedDetail, declinedDetail];
   }
   return [];
+};
