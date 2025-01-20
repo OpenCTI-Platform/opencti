@@ -204,7 +204,7 @@ export const findAllRepresentatives = async (context, user, args) => {
             const values = attrDef.multiple ? node[attrName] : toSingleValue;
             const representatives = values.map((v) => ({
               value: (v ? String(v) : v),
-              color: v.x_opencti_color || v.color
+              color: v?.x_opencti_color || v?.color
             }));
             const finalType = attrDef.type === 'string' ? attrDef.format : attrDef.type;
             columns.push({ attribute: requestedColumn, type: finalType, representatives });
@@ -252,11 +252,11 @@ export const findAllRepresentatives = async (context, user, args) => {
       const column = node.columns[columnIndex];
       if (column.refId) {
         const e = refsMap[column.refId];
-        column.representatives = [{ id: column.id ?? e.id, value: e ? extractEntityRepresentativeName(e) : e, color: e?.x_opencti_color || e?.color }];
+        column.representatives = [{ id: column.id ?? e?.id, value: e ? extractEntityRepresentativeName(e) : e, color: e?.x_opencti_color || e?.color }];
       }
       if (column.refIds) {
         const elements = column.refIds.map((id) => refsMap[id]);
-        column.representatives = elements.map((e) => ({ id: e.id, value: e ? extractEntityRepresentativeName(e) : e, color: e?.x_opencti_color || e?.color }));
+        column.representatives = elements.map((e) => ({ id: e?.id, value: e ? extractEntityRepresentativeName(e) : e, color: e?.x_opencti_color || e?.color }));
       }
     }
   }
