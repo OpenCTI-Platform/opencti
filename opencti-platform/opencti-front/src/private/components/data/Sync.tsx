@@ -32,7 +32,7 @@ const Sync = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+  } = usePaginationLocalStorage<SyncLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     sortBy: 'name',
     orderAsc: false,
     searchTerm: '',

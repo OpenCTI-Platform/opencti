@@ -204,7 +204,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideSearch,
     hideFilters,
     taskScope,
-    storageKey,
     removeAuthMembersEnabled,
   } = props;
 
@@ -250,7 +249,6 @@ const DataTable = (props: OCTIDataTableProps) => {
             currentView={currentView}
             exportContext={exportContext}
             searchContextFinal={computedSearchContextFinal}
-            storageKey={storageKey}
           />
       )}
         dataTableToolBarComponent={(
