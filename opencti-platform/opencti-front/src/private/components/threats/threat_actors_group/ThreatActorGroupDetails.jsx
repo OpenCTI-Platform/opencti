@@ -12,12 +12,14 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   paper: {
@@ -206,7 +208,11 @@ class ThreatActorGroupDetailsComponent extends Component {
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            <pre className={classes.smallPre}>{goal}</pre>
+                            <pre className={classes.smallPre}>
+                              <Tooltip title={goal}>
+                                {truncate(goal, 12)}
+                              </Tooltip>
+                            </pre>
                           }
                         />
                       </ListItem>
