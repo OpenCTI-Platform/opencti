@@ -1,10 +1,10 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ActionStatus, type CaseRfiAddInput, type EditInput, type RequestAccessAddInput } from '../../generated/graphql';
+import { ActionStatus, type CaseRfiAddInput, type EditInput, FilterMode, OrderingMode, type RequestAccessAddInput, StatusOrdering } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../../utils/access';
-import { listAllFromEntitiesThroughRelations } from '../../database/middleware-loader';
+import { listAllEntities, listAllFromEntitiesThroughRelations } from '../../database/middleware-loader';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { findById as findUserById } from '../../domain/user';
 import { logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
@@ -12,7 +12,7 @@ import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
 import { elLoadById } from '../../database/engine';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
@@ -48,13 +48,6 @@ export const findUsersThatCanShareWithOrganizations = async (context: AuthContex
   return allUserInOrgWithOrgManagementCapability;
 };
 
-/*
-interface RequestAccessWorkflowSettings {
-  workflow: string[]
-  approved_workflow_id: string,
-  declined_workflow_id: string
-} */
-
 export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser, action:ActionStatus) => {
   const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
   const requestAccessWorkflow = rfiEntitySettings.request_access_workflow;
@@ -68,6 +61,23 @@ export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser
     }
   }
   return undefined;
+};
+
+export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUser) => {
+  const args = {
+    orderBy: StatusOrdering.Order,
+    orderMode: OrderingMode.Asc,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
+      filterGroups: [],
+      first: 1
+    },
+    connectionFormat: false
+  };
+  const allWorkflowStatus = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+  logApp.info('ANGIE allWorkflowStatus', { allWorkflowStatus });
+  return allWorkflowStatus[0];
 };
 
 export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
@@ -89,13 +99,13 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
       });
     }
   }
-  // const workflowConfig = rfiEntitySettings.workflow_configuration;
-  const allWorkflowStatus = await batchStatusesByType(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFI]);
-  console.log('ANGIE allWorkflowStatus', allWorkflowStatus);
+  if (rfiEntitySettings.workflow_configuration) {
+    const firstStatus = await findFirstWorkflowStatus(context, user);
+    result.push({
+      rfiStatusId: firstStatus.internal_id,
+      actionStatus: ActionStatus.New });
+  }
 
-  result.push({
-    rfiStatusId: 'TODO',
-    actionStatus: ActionStatus.New });
   return result;
 };
 
@@ -122,9 +132,6 @@ const computeAuthorizedMembersForRequestAccess = (grantedOrganizationsIds) => {
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
-
-  // FIXME move that away
-  // await generateInitialFlow(context, user);
 
   const allUsers = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members); // TODO modifify findUsersThatCanShareWithOrganizations
   const grantedOrganizationsIds: string[] = allUsers.map((user) => user.organizations); // TODO fix this
@@ -197,30 +204,9 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
       }
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
 
-      /*
-        const elementData = await stixLoadById(context, SYSTEM_USER, action.entities[0]) as StixObject;
-        const userToNotify : NotificationUser = {
-          user_id: '',
-          user_email: 'angelique.jard@filigran.io',
-          notifiers: []
-        };
-        const target = {
-          user: userToNotify,
-          type: 'live',
-          message: 'Coucou'
-        };
-        const notificationEvent: KnowledgeNotificationEvent = {
-          origin: undefined,
-          type: 'live',
-          notification_id: '1234',
-          data: elementData,
-          targets: [target],
-          version: '1.0' };
-        await storeNotificationEvent(context, notificationEvent);
-        */
       return {
         action_executed: true,
-        action_status: ActionStatus.Approved, // TODO set workflow status id instead
+        action_status: requestAccessAction.status,
         action_date: requestAccessAction.executionDate
       };
     }
