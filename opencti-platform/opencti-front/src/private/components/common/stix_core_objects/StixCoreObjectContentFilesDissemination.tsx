@@ -69,8 +69,6 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
               name="emailAddress"
               type="email"
               fullWidth
-              value={values.emailAddress}
-              onChange={handleChange}
               required
             />
             <Field
@@ -78,8 +76,6 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
               label="Object"
               name="emailObject"
               fullWidth
-              value={values.emailObject}
-              onChange={handleChange}
               required
               style={fieldSpacingContainerStyle}
             />
@@ -90,8 +86,6 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
               multiline
               rows={6}
               fullWidth
-              value={values.emailBody}
-              onChange={handleChange}
               required
               style={fieldSpacingContainerStyle}
             />
