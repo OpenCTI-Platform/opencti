@@ -15,6 +15,7 @@ import SearchInput from '../../../../components/SearchInput';
 interface AddThreatActorIndividualDemographicProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
   relType: string,
+  title:string,
 }
 
 const AddThreatActorIndividualDemographic: FunctionComponent<
@@ -22,6 +23,7 @@ AddThreatActorIndividualDemographicProps
 > = ({
   threatActorIndividual,
   relType,
+  title,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
@@ -51,7 +53,7 @@ AddThreatActorIndividualDemographicProps
     <Drawer
       open={open}
       onClose={handleClose}
-      title={t_i18n('Add country')}
+      title={t_i18n(title)}
       header={
         <div
           style={{
