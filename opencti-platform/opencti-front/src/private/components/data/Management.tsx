@@ -184,7 +184,7 @@ const Management = () => {
       percentWidth: 10,
     },
     created_at: {
-      percentWidth: 15,
+      percentWidth: 20,
     },
     authorized_members_activation_date: {
       percentWidth: 15,
