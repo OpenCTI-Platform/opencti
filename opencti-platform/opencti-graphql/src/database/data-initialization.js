@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { isFeatureEnabled, logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { entitySettingEditField, findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
@@ -359,7 +359,9 @@ export const initializeData = async (context, withMarkings = true) => {
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
-  await createInitialRequestAccessFlow(context);
+  if (isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
+    await createInitialRequestAccessFlow(context);
+  }
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
   if (withMarkings) {
