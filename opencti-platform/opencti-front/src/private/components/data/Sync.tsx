@@ -1,8 +1,6 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import { DataTableProps } from 'src/components/dataGrid/dataTableTypes';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
