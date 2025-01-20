@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../src/schema/stixRefRelationship';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { internalDeleteElementById } from '../../../src/database/middleware';

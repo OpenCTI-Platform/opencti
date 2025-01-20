@@ -137,6 +137,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const allUsers = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members); // TODO modifify findUsersThatCanShareWithOrganizations
   const grantedOrganizationsIds: string[] = allUsers.map((member) => member.organizations); // TODO fix this
   const authorized_members = computeAuthorizedMembersForRequestAccess(grantedOrganizationsIds);
+  logApp.info('[OPENCTI-MODULE][Request access] - authorized_members', { authorized_members });
 
   const requestedEntities = input.request_access_entities;
   const allActionStatuses = await getRFIStatusMap(context, user);
