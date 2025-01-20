@@ -1,14 +1,24 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Button } from '@mui/material';
 import { graphql, useMutation } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Field, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { handleErrorInForm } from '../../../../relay/environment';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
   fileName: string;
   onClose: () => void;
+}
+
+interface DisseminationInput {
+  emailAddress: string;
+  emailObject: string;
+  emailBody: string;
 }
 
 export const DisseminationListSendInputMutation = graphql`
@@ -19,15 +29,16 @@ export const DisseminationListSendInputMutation = graphql`
     }
 `;
 
-const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFilesDisseminationProps> = ({
+const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectContentFilesDisseminationProps> = ({
   fileId,
   fileName,
+  onClose,
 }) => {
+  const { t_i18n } = useFormatter();
   const [commitMutation] = useMutation(DisseminationListSendInputMutation);
 
-  const handleSubmit = (values: any, { setSubmitting }: any) => {
+  const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
     setSubmitting(true);
-
     commitMutation({
       variables: {
         input: {
@@ -37,16 +48,14 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
           email_attached_file_id: fileId,
         },
       },
-      onCompleted: (response) => {
-        if (response) {
-          // TODO
-        } else {
-          // TODO
-        }
+      onCompleted: () => {
         setSubmitting(false);
+        resetForm();
+        onClose();
+        // TODO afficher une popup
       },
       onError: (error) => {
-        // TODO
+        handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
     });
@@ -61,11 +70,11 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
       }}
       onSubmit={handleSubmit}
     >
-      {({ isSubmitting, submitForm }) => (
+      {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Field
             component={TextField}
-            label="Email Address"
+            label={t_i18n('Email address')}
             name="emailAddress"
             type="email"
             fullWidth
@@ -73,25 +82,25 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
           />
           <Field
             component={TextField}
-            label="Object"
+            label={t_i18n('Object')}
             name="emailObject"
             fullWidth
             required
             style={fieldSpacingContainerStyle}
           />
           <Field
-            component={TextField}
-            label="Body"
+            component={MarkdownField}
+            label={t_i18n('Body')}
             name="emailBody"
             multiline
-            rows={6}
+            rows="4"
             fullWidth
             required
             style={fieldSpacingContainerStyle}
           />
           <Field
             component={TextField}
-            label="file"
+            label={t_i18n('File')}
             name="file"
             fullWidth
             value={fileName}
@@ -104,12 +113,20 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
           }}
           >
             <Button
-              onClick={submitForm}
               variant="contained"
-              color="primary"
+              onClick={handleReset}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Sending...' : 'Send Email'}
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              style={{ marginLeft: 16 }}
+            >
+              {t_i18n('Send')}
             </Button>
           </div>
         </Box>

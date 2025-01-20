@@ -1,3 +1,4 @@
+import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { DisseminationListSendInput, QueryDisseminationListsArgs } from '../../generated/graphql';
@@ -10,7 +11,6 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { DISSEMINATION_EMAIL_TEMPLATE } from '../../utils/emailTemplates/disseminationList';
-import ejs from "ejs";
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -35,7 +35,8 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   if (file) {
     const stream = await downloadFile(file.id);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const generatedEmail = ejs.render(DISSEMINATION_EMAIL_TEMPLATE, { settings, body: input.email_body });
+    const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
+    const generatedEmail = ejs.render(DISSEMINATION_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: user.user_email,
@@ -50,11 +51,12 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
       ],
     };
     await sendMail(sendMailArgs);
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     const data = buildContextDataForFile(null, file.id, file.name);
     await publishUserAction({
       event_access: 'administration',
-      user: user,
+      user,
       event_type: 'file',
       event_scope: 'disseminate',
       context_data: data
@@ -62,8 +64,6 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     return true;
   }
   return false;
-
-
 };
 
 // export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {};

@@ -81,7 +81,7 @@ ${HEADER_TEMPLATE}
                                              </tbody>
                                           </table>
                                           <div style="padding: 20px;">
-                                            <%= body %>
+                                            <%- body %>
                                           </div>
                                           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 0; height: 50px; width: 100%; min-width: 100%; line-height: 0;">
                                              <tbody>
