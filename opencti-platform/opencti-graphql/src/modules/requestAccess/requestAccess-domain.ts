@@ -16,6 +16,12 @@ import type { BasicStoreBase } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { batchStatusesByType } from '../../domain/status';
+
+export interface RequestAccessActionStatus {
+  rfiStatusId: string,
+  actionStatus: ActionStatus
+}
 
 export interface RequestAccessAction {
   reason?: string
@@ -23,7 +29,8 @@ export interface RequestAccessAction {
   members?: string[]
   type?: string,
   status: string,
-  executionDate?: Date
+  executionDate?: Date,
+  workflowMapping: RequestAccessActionStatus[]
 }
 
 export const findUsersThatCanShareWithOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[]) => {
@@ -63,6 +70,35 @@ export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser
   return undefined;
 };
 
+export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
+  const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  const requestAccessWorkflow = rfiEntitySettings.request_access_workflow;
+  const result : RequestAccessActionStatus[] = [];
+  if (requestAccessWorkflow) {
+    if (requestAccessWorkflow.approved_workflow_id) {
+      result.push({
+        rfiStatusId: requestAccessWorkflow.approved_workflow_id,
+        actionStatus: ActionStatus.Approved,
+      });
+    }
+
+    if (requestAccessWorkflow.declined_workflow_id) {
+      result.push({
+        rfiStatusId: requestAccessWorkflow.declined_workflow_id,
+        actionStatus: ActionStatus.Declined,
+      });
+    }
+  }
+  // const workflowConfig = rfiEntitySettings.workflow_configuration;
+  const allWorkflowStatus = await batchStatusesByType(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFI]);
+  console.log('ANGIE allWorkflowStatus', allWorkflowStatus);
+
+  result.push({
+    rfiStatusId: 'TODO',
+    actionStatus: ActionStatus.New });
+  return result;
+};
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
 
@@ -75,13 +111,15 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     logApp.warn('[OPENCTI-MODULE][Request access] Cannot set Assignee in Request Access RFI', { input });
   }
   const requestedEntities = input.request_access_entities;
+  const allActionStatuses = await getRFIStatusMap(context, user);
 
   const action: RequestAccessAction = {
     reason: input.request_access_reason || 'no reason',
     members: input.request_access_members,
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
-    status: ActionStatus.New,
+    status: ActionStatus.New, // TODO set workflow status id instead
+    workflowMapping: allActionStatuses
   };
 
   const organizationId = input.request_access_members[0];
@@ -92,8 +130,6 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
   const humanDescription = `Access requested:\n - by user: ${user.name} \n - for organization: ${organizationData.name} \n - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}`;
 
-  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.New);
-
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
@@ -102,7 +138,6 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     description: humanDescription,
     information_types: ['Request sharing'],
     x_opencti_request_access: `${JSON.stringify(action)}`,
-    x_opencti_workflow_id
   };
   logApp.info('[OPENCTI-MODULE][Request access] - rfiInput', { rfiInput });
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
@@ -122,12 +157,19 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
     if (action.entities && action.members) {
       await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
 
+      const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Approved);
+      const allActionStatuses = await getRFIStatusMap(context, user);
       // Moving RFI to approved
-      const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Approved, executionDate: new Date() };
+      const requestAccessAction: RequestAccessAction = {
+        ...action,
+        status: ActionStatus.Approved,
+        executionDate: new Date(),
+        workflowMapping: allActionStatuses
+      };
       const RFIFieldPatch :EditInput[] = [
         { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
       ];
-      const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Approved);
+
       if (x_opencti_workflow_id) {
         RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
       }
@@ -156,7 +198,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
         */
       return {
         action_executed: true,
-        action_status: ActionStatus.Approved,
+        action_status: ActionStatus.Approved, // TODO set workflow status id instead
         action_date: requestAccessAction.executionDate
       };
     }
@@ -182,11 +224,18 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
   logApp.info(`Action on RFI ${id}`, action);
 
   if (action.entities && action.members) {
-    const requestAccessAction: RequestAccessAction = { ...action, status: ActionStatus.Declined, executionDate: new Date() };
+    const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Declined);
+    const allActionStatuses = await getRFIStatusMap(context, user);
+    const requestAccessAction: RequestAccessAction = {
+      ...action,
+      status: ActionStatus.Declined,
+      executionDate: new Date(),
+      workflowMapping: allActionStatuses
+    };
     const RFIFieldPatch :EditInput[] = [
       { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] }
     ];
-    const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Declined);
+
     if (x_opencti_workflow_id) {
       RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
     }
