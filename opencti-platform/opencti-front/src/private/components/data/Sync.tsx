@@ -1,6 +1,8 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
+import { Theme } from 'src/components/Theme';
+import { SyncLinesPaginationQuery$data, SyncLinesPaginationQuery$variables } from '@components/data/sync/__generated__/SyncLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
@@ -19,7 +21,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 const LOCAL_STORAGE_KEY = 'sync';
 
 const Sync = () => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers } = useAuth();
@@ -63,6 +65,11 @@ const Sync = () => {
       isSortable: true,
     },
   };
+
+  const variables = {
+    ...paginationOptions,
+    count: 200,
+  } as unknown as SyncLinesPaginationQuery$variables;
 
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
@@ -114,12 +121,12 @@ const Sync = () => {
       >
         <QueryRenderer
           query={SyncLinesQuery}
-          variables={{ count: 200, ...paginationOptions }}
-          render={({ props }) => (
+          variables={variables}
+          render={({ props }: { props: SyncLinesPaginationQuery$data }) => (
             <SyncLines
               data={props}
               paginationOptions={paginationOptions}
-              refetchPaginationOptions={{ count: 200, ...paginationOptions }}
+              refetchPaginationOptions={variables}
               dataColumns={dataColumns}
               initialLoading={props === null}
             />
