@@ -85,6 +85,7 @@ const ThreatActorIndividualDemographics = ({
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
                   relType='resides-in'
+                  title={'Add country of residence'}
                 />
               </Security>
             </div>
@@ -118,6 +119,7 @@ const ThreatActorIndividualDemographics = ({
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
                   relType='citizen-of'
+                  title={'Add citizenship'}
                 />
               </Security>
             </div>
@@ -169,6 +171,7 @@ const ThreatActorIndividualDemographics = ({
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
                   relType='national-of'
+                  title={'Add nationality'}
                 />
               </Security>
             </div>
