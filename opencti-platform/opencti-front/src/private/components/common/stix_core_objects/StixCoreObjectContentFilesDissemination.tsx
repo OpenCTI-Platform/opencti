@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import TextField from '../../../../components/TextField';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -38,14 +39,14 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
       },
       onCompleted: (response) => {
         if (response) {
-          console.log('Email sent successfully');
+          // TODO
         } else {
-          console.error('Email failed to be sent');
+          // TODO
         }
         setSubmitting(false);
       },
       onError: (error) => {
-        console.error('Error sending email', error);
+        // TODO
         setSubmitting(false);
       },
     });
@@ -60,60 +61,58 @@ const StixCoreObjectContentFilesDissemination: React.FC<StixCoreObjectContentFil
       }}
       onSubmit={handleSubmit}
     >
-      {({ values, handleChange, isSubmitting }) => (
-        <Form>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Field
-              component={TextField}
-              label="Email Address"
-              name="emailAddress"
-              type="email"
-              fullWidth
-              required
-            />
-            <Field
-              component={TextField}
-              label="Object"
-              name="emailObject"
-              fullWidth
-              required
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={TextField}
-              label="Body"
-              name="emailBody"
-              multiline
-              rows={6}
-              fullWidth
-              required
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={TextField}
-              label="file"
-              name="file"
-              fullWidth
-              value={fileName}
-              disabled
-              style={fieldSpacingContainerStyle}
-            />
-            <div style={{
-              marginTop: 20,
-              textAlign: 'right',
-            }}
+      {({ isSubmitting, submitForm }) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Field
+            component={TextField}
+            label="Email Address"
+            name="emailAddress"
+            type="email"
+            fullWidth
+            required
+          />
+          <Field
+            component={TextField}
+            label="Object"
+            name="emailObject"
+            fullWidth
+            required
+            style={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={TextField}
+            label="Body"
+            name="emailBody"
+            multiline
+            rows={6}
+            fullWidth
+            required
+            style={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={TextField}
+            label="file"
+            name="file"
+            fullWidth
+            value={fileName}
+            disabled
+            style={fieldSpacingContainerStyle}
+          />
+          <div style={{
+            marginTop: 20,
+            textAlign: 'right',
+          }}
+          >
+            <Button
+              onClick={submitForm}
+              variant="contained"
+              color="primary"
+              disabled={isSubmitting}
             >
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Sending...' : 'Send Email'}
-              </Button>
-            </div>
-          </Box>
-        </Form>
+              {isSubmitting ? 'Sending...' : 'Send Email'}
+            </Button>
+          </div>
+        </Box>
       )}
     </Formik>
   );
