@@ -40,7 +40,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
     const fromEmail = conf.get('smtp:from_email');
     const sendMailArgs: SendMailArgs = {
-      from: fromEmail ? fromEmail : settings.platform_email,
+      from: fromEmail || settings.platform_email,
       to: settings.platform_email,
       bcc: [input.email_address, user.user_email],
       subject: input.email_object,

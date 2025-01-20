@@ -3,13 +3,13 @@ import { Box, Button } from '@mui/material';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
+import * as Yup from 'yup';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import * as Yup from 'yup';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -46,12 +46,12 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const [commitMutation] = useApiMutation(
     DisseminationListSendInputMutation,
     undefined,
-    { successMessage: `${t_i18n('Email sent')}` }
+    { successMessage: `${t_i18n('Email sent')}` },
   );
 
   const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = (
-    values
-    , { setSubmitting, resetForm, setErrors }
+    values,
+    { setSubmitting, resetForm, setErrors },
   ) => {
     setSubmitting(true);
     commitMutation({
