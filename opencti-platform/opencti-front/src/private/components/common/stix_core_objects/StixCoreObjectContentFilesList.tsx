@@ -25,7 +25,6 @@ import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useAuth from '../../../../utils/hooks/useAuth';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 
 const renderIcon = (mimeType: string) => {
