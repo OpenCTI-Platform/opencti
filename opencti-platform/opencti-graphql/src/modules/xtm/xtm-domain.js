@@ -372,11 +372,19 @@ export const generateOpenBasScenarioWithInjectPlaceholders = async (
 
   if (filteredObasAttackPatterns.length === 0) {
     hasInjectPlaceholders = false;
-    attackPatternsNotAvailableInOpenBAS.push(attackPatternsMitreIds);
-    logApp.info(`[OPENCTI-MODULE][XTM] No attack patterns available on OpenBAS linked to these Mitre ids : ${attackPatternsMitreIds.join(', ')}`);
+    let attackPatternsForPlaceholders = attackPatternsMitreIds;
+    if (attackPatternsMitreIds.length === 0) {
+      const attackPatternsNames = finalAttackPatterns.filter((n) => isNotEmptyField(n.name)).map((n) => n.name);
+      attackPatternsForPlaceholders = attackPatternsNames;
+      attackPatternsNotAvailableInOpenBAS.push(attackPatternsNames);
+      logApp.info(`[OPENCTI-MODULE][XTM] No external ID for : ${attackPatternsNames.join(', ')}`);
+    } else {
+      attackPatternsNotAvailableInOpenBAS.push(attackPatternsMitreIds);
+      logApp.info(`[OPENCTI-MODULE][XTM] No attack patterns available on OpenBAS linked to these Mitre ids : ${attackPatternsMitreIds.join(', ')}`);
+    }
     if (simulationType !== 'simulated') {
       hasInjectPlaceholders = true;
-      attackPatternsMitreIds.forEach((attackNotAvailable) => {
+      attackPatternsForPlaceholders.forEach((attackNotAvailable) => {
         createAndInjectScenarioPromises.push(generatePlaceholder(
           attackNotAvailable,
           platforms,
