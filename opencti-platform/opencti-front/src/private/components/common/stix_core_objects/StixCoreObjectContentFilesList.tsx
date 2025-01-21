@@ -17,7 +17,6 @@ import { useTheme } from '@mui/styles';
 import EmailIcon from '@mui/icons-material/Email';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
-import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -27,6 +26,7 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -85,7 +85,6 @@ const StixCoreObjectContentFilesList = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [isEEOpen, setEEOpen] = useState(false);
 
   const openPopover = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
@@ -121,7 +120,7 @@ const StixCoreObjectContentFilesList = ({
 
   const handleDisseminate = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    return isEnterpriseEdition ? setDrawerOpen(true) : setEEOpen(true);
+    return setDrawerOpen(true);
   };
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
@@ -161,22 +160,23 @@ const StixCoreObjectContentFilesList = ({
                   </div>
                 )}
               />
-              {file.metaData?.mimetype === 'application/pdf' && (
-                <Tooltip title={'Disseminate'}>
-                  <IconButton
-                    onClick={(e) => handleDisseminate(e)}
-                    size="small"
-                    style={{
-                      marginRight: theme.spacing(4),
-                      color: theme.palette.ee.main,
-                    }}
-                    aria-label="disseminate"
-                  >
-                    <EmailIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
               <ListItemSecondaryAction>
+                {file.metaData?.mimetype === 'application/pdf' && (
+                  <>
+                    <Tooltip title={'Disseminate'}>
+                      <IconButton
+                        onClick={(e) => handleDisseminate(e)}
+                        size="small"
+                        style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
+                        aria-label="disseminate"
+                        disabled={!isEnterpriseEdition}
+                      >
+                        <EmailIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <EEChip />
+                  </>
+                )}
                 <IconButton
                   onClick={(e) => openPopover(e, file)}
                   aria-haspopup="true"
@@ -200,9 +200,6 @@ const StixCoreObjectContentFilesList = ({
                 onClose={() => setDrawerOpen(false)}
               />
             </Drawer>
-          )}
-          {file.metaData?.mimetype === 'application/pdf' && !isEnterpriseEdition && (
-            <EnterpriseEditionAgreement open={isEEOpen} onClose={() => setEEOpen(false)} settingsId={settingsId} />
           )}
         </Fragment>
       ))}
