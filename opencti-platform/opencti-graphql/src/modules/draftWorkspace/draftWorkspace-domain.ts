@@ -12,7 +12,7 @@ import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { computeSumOfList, isDraftIndex, pascalize, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
@@ -36,6 +36,7 @@ import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { generateInternalType } from '../../schema/schemaUtils';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -57,10 +58,10 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
   const entitiesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObject(pascalize(r.label))).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObject(generateInternalType(r.label))).map((r: { count: number }) => r.count)
   );
   const observablesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixCyberObservable(pascalize(r.label))).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixCyberObservable(generateInternalType(r.label))).map((r: { count: number }) => r.count)
   );
   const relationshipsCount = computeSumOfList(
     distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count)
@@ -69,7 +70,7 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
     distributionResult.filter((r: { label: string }) => isStixSightingRelationship(r.label)).map((r: { count: number }) => r.count)
   );
   const containersCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(pascalize(r.label))).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(generateInternalType(r.label))).map((r: { count: number }) => r.count)
   );
   return {
     totalCount,
