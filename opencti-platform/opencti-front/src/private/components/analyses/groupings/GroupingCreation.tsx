@@ -37,6 +37,7 @@ import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeCo
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -110,6 +111,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const { isFeatureEnable } = useHelper();
   const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
@@ -149,7 +151,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-      ...(canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
@@ -285,29 +287,29 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isAccessRestrictionCreationEnable && (
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-          >
-            <div style={fieldSpacingContainerStyle}>
-              <Accordion >
-                <AccordionSummary id="accordion-panel">
-                  <Typography>{t_i18n('Advanced options')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Field
-                    name={'authorized_members'}
-                    component={AuthorizedMembersField}
-                    containerstyle={{ marginTop: 20 }}
-                    showAllMembersLine
-                    canDeactivate
-                    disabled={isSubmitting}
-                    addMeUserWithAdminRights
-                  />
-                </AccordionDetails>
-              </Accordion>
-            </div>
-          </Security>
+          {isEnterpriseEdition && isAccessRestrictionCreationEnable && (
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+            >
+              <div style={fieldSpacingContainerStyle}>
+                <Accordion >
+                  <AccordionSummary id="accordion-panel">
+                    <Typography>{t_i18n('Advanced options')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Field
+                      name={'authorized_members'}
+                      component={AuthorizedMembersField}
+                      containerstyle={{ marginTop: 20 }}
+                      showAllMembersLine
+                      canDeactivate
+                      disabled={isSubmitting}
+                      addMeUserWithAdminRights
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </div>
+            </Security>
           )}
           <div className={classes.buttons}>
             <Button

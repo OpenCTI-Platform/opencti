@@ -41,6 +41,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -119,6 +120,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const { isFeatureEnable } = useHelper();
   const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
@@ -326,29 +328,29 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isAccessRestrictionCreationEnable && (
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-          >
-            <div style={fieldSpacingContainerStyle}>
-              <Accordion >
-                <AccordionSummary id="accordion-panel">
-                  <Typography>{t_i18n('Advanced options')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Field
-                    name={'authorized_members'}
-                    component={AuthorizedMembersField}
-                    containerstyle={{ marginTop: 20 }}
-                    showAllMembersLine
-                    canDeactivate
-                    disabled={isSubmitting}
-                    addMeUserWithAdminRights
-                  />
-                </AccordionDetails>
-              </Accordion>
-            </div>
-          </Security>
+          {isEnterpriseEdition && isAccessRestrictionCreationEnable && (
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+            >
+              <div style={fieldSpacingContainerStyle}>
+                <Accordion >
+                  <AccordionSummary id="accordion-panel">
+                    <Typography>{t_i18n('Advanced options')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Field
+                      name={'authorized_members'}
+                      component={AuthorizedMembersField}
+                      containerstyle={{ marginTop: 20 }}
+                      showAllMembersLine
+                      canDeactivate
+                      disabled={isSubmitting}
+                      addMeUserWithAdminRights
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </div>
+            </Security>
           )}
           <div className={classes.buttons}>
             <Button
