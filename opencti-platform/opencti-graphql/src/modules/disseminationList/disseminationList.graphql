@@ -41,7 +41,7 @@ type Query {
 
 input DisseminationListAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
-  emails: [String]!
+  emails: [String!]!
 }
 
 input DisseminationListSendInput {
@@ -52,8 +52,8 @@ input DisseminationListSendInput {
 }
 
 type Mutation {
-  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
-  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  #  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  #  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
+  #  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationListSend(input: DisseminationListSendInput!): Boolean @auth(for: [KNOWLEDGE_KNDISSEMINATION])
 }
