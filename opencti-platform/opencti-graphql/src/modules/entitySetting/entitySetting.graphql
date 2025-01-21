@@ -39,6 +39,7 @@ type RequestAccessWorkflow {
   approved_workflow_id: String
   declined_workflow_id: String
   workflow: [String]
+  approval_admin: String
 }
 
 type EntitySetting implements InternalObject & BasicObject {

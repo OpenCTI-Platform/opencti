@@ -23296,6 +23296,7 @@ export enum RequestAccessType {
 
 export type RequestAccessWorkflow = {
   __typename?: 'RequestAccessWorkflow';
+  approval_admin?: Maybe<Scalars['String']['output']>;
   approved_workflow_id?: Maybe<Scalars['String']['output']>;
   approved_workflow_status?: Maybe<Scalars['String']['output']>;
   declined_workflow_id?: Maybe<Scalars['String']['output']>;
@@ -39616,6 +39617,7 @@ export type RequestAccessActionResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type RequestAccessWorkflowResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessWorkflow'] = ResolversParentTypes['RequestAccessWorkflow']> = ResolversObject<{
+  approval_admin?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   approved_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   approved_workflow_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   declined_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
