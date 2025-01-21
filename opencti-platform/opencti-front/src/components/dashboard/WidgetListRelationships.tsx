@@ -3,6 +3,7 @@ import { DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTa
 import { WidgetColumn } from 'src/utils/widget/widget';
 import ItemIcon from '../ItemIcon';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
+import { computeLink } from '../../utils/Entity';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,6 +57,12 @@ const WidgetListRelationships = ({
     setCurrentColumns(buildColumns(columns));
   }, [columns]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getRedirectionLink = (stixRelationship: any) => {
+    const remoteNode = stixRelationship.from ?? stixRelationship.to;
+    return !publicWidget && remoteNode ? computeLink(remoteNode) : '';
+  };
+
   return (
     <div style={{ width: '100%' }}>
       <DataTableWithoutFragment
@@ -64,6 +71,7 @@ const WidgetListRelationships = ({
         data={data.map(({ node }) => node)}
         globalCount={data.length}
         variant={DataTableVariant.widget}
+        useComputeLink={getRedirectionLink}
         pageSize='50'
         disableNavigation={publicWidget}
         rootRef={rootRef}
