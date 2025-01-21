@@ -310,6 +310,12 @@ export interface TaxiiResponseData {
   addedLastHeader: string | undefined | null
 }
 
+interface TaxiiGetParams {
+  next: string | undefined,
+  added_after: Date | undefined,
+  limit?: string | undefined
+}
+
 /**
  *  Compute HTTP GET parameters to send to taxii server.
  *
@@ -323,7 +329,7 @@ export interface TaxiiResponseData {
  * @param ingestion
  */
 export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) => {
-  const params = { next: ingestion.current_state_cursor, added_after: ingestion.added_after_start, limit: undefined };
+  const params: TaxiiGetParams = { next: ingestion.current_state_cursor, added_after: ingestion.added_after_start };
   if (INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST > 0) {
     params.limit = INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST;
   }
