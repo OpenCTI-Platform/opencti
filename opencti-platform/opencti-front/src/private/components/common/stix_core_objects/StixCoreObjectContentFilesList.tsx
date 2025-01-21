@@ -80,7 +80,6 @@ const StixCoreObjectContentFilesList = ({
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { settings: { id: settingsId } } = useAuth();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
