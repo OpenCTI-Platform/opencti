@@ -120,6 +120,9 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
   // const settings = await getSettings(context);
   // const platformSettings: BasicStoreSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const platformOrganization = settings.platform_organization;
+  if (!platformOrganization) {
+    throw FunctionalError('This feature requires data segregation by organization. Please contact you administrator.');
+  }
 
   if (rfiEntitySettings && rfiEntitySettings.request_access_workflow) {
     const requestAccessAdmin = rfiEntitySettings.request_access_workflow.approval_admin;
@@ -135,14 +138,10 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
       }));
     } else {
     // If no granted organization we use platform organization
-
-      if (platformOrganization) {
-        authorizedMembers.push({
-          id: platformOrganization,
-          access_right: 'edit',
-        });
-      }
-      throw FunctionalError('This feature requires data segregation by organization. Please contact you administrator.');
+      authorizedMembers.push({
+        id: platformOrganization,
+        access_right: 'edit',
+      });
     }
 
     // set Admin
