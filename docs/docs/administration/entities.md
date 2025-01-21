@@ -44,6 +44,31 @@ For now, OpenCTI has a simple workflow approach. They're represented by the "Pro
 In addition, the available statuses are defined by a collection of status templates visible in "Settings > Taxonomies > Status templates". This collection can be customized.
 
 
+<a id="fintelTemplates-section"></a>
+## Fintel templates
+
+In Entreprise Edition, you can now define templates for your containers.
+You can access this feature via the Customization page (Setting/Customization/Entity types). As a result, you are required to have the Manage customization capability (or the Bypass capability) to either create, update, view or delete a template.
+
+![Fintel templates](./assets/fintelTemplates-list.png)
+
+Clicking on a fintel template line redirects to its edition page.
+In the 'Content editor' tab, you can write and format the content of your template via CK Editor.
+![Fintel templates edition](./assets/fintelTemplates-edition.png)
+
+In the 'Content Preview' tab, you can preview what a file generated from your Fintel template will look like for a given container.
+![Fintel templates preview](./assets/fintelTemplates-preview.png)
+
+In the right panel, the widgets saved in your template are displayed.
+- To add an existing widget in your content, copy the variable name and paste it in your content.
+- To add a widget, click on the 'add data in content' button and follow the steps to create a visualization. For more information on how to create a widget, please read  [Widget creation](../usage/widgets.md).
+- You can only delete widgets that are not used in your content (they are highlighted with a warning icon).
+
+![Fintel templates widgets](./assets/fintelTemplates-widgets.png)
+
+Note that every template has a built-in widget of type 'attribute' that can't be deleted. This widget enables to display attributes of the container for which the template will be used.
+
+
 <a id="attributes-section"></a>
 ## Attributes
 
