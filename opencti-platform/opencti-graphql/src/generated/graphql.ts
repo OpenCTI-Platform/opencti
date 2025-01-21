@@ -8283,6 +8283,7 @@ export enum FilterOperator {
 
 export type FintelTemplate = BasicObject & InternalObject & {
   __typename?: 'FintelTemplate';
+  configuration_export: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   fintel_template_widgets: Array<FintelTemplateWidget>;
@@ -13714,6 +13715,7 @@ export type Mutation = {
   fintelTemplateAdd?: Maybe<FintelTemplate>;
   fintelTemplateDelete?: Maybe<Scalars['ID']['output']>;
   fintelTemplateFieldPatch?: Maybe<FintelTemplate>;
+  fintelTemplateImport: Scalars['String']['output'];
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
@@ -14607,6 +14609,11 @@ export type MutationFintelTemplateDeleteArgs = {
 export type MutationFintelTemplateFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationFintelTemplateImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -35565,6 +35572,7 @@ export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type FintelTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplate'] = ResolversParentTypes['FintelTemplate']> = ResolversObject<{
+  configuration_export?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
@@ -37522,6 +37530,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   fintelTemplateAdd?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateAddArgs, 'input'>>;
   fintelTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFintelTemplateDeleteArgs, 'id'>>;
   fintelTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateFieldPatchArgs, 'id' | 'input'>>;
+  fintelTemplateImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationFintelTemplateImportArgs, 'file'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;

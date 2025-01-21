@@ -16,6 +16,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   template_content: String!
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
+  configuration_export: String!
 }
 
 # Mutation
@@ -58,4 +59,5 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelTemplateImport(file: Upload!): String! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

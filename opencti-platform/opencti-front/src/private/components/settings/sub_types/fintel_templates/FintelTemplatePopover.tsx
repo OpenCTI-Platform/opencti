@@ -6,11 +6,24 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import useFintelTemplateDelete from '@components/settings/sub_types/fintel_templates/useFintelTemplateDelete';
+import { graphql } from 'react-relay';
+import { FintelTemplatePopoverExportQuery$data } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplatePopoverExportQuery.graphql';
+import fileDownload from 'js-file-download';
+import useFintelTemplateDelete from './useFintelTemplateDelete';
 import Transition from '../../../../../components/Transition';
 import stopEvent from '../../../../../utils/domEvent';
 import { useFormatter } from '../../../../../components/i18n';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
+import { fetchQuery } from '../../../../../relay/environment';
+
+const fintelTemplatePopoverExportQuery = graphql`
+  query FintelTemplatePopoverExportQuery($id: ID!) {
+    fintelTemplate(id: $id) {
+      name
+      configuration_export
+    }
+  }
+`;
 
 interface FintelTemplatePopoverProps {
   onUpdate: () => void,
@@ -80,6 +93,21 @@ const FintelTemplatePopover = ({
     });
   };
 
+  const onExport = async (e: UIEvent) => {
+    stopEvent(e);
+
+    const { fintelTemplate } = await fetchQuery(
+      fintelTemplatePopoverExportQuery,
+      { id: templateId },
+    ).toPromise() as FintelTemplatePopoverExportQuery$data;
+    if (fintelTemplate) {
+      const blob = new Blob([fintelTemplate.configuration_export], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_fintel_${fintelTemplate.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
   return (
     <>
       {inline ? (
@@ -100,6 +128,7 @@ const FintelTemplatePopover = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={onHandleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
 
       <Dialog
