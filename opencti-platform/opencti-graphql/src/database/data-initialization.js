@@ -15,6 +15,7 @@ import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -231,13 +232,18 @@ const createDefaultStatusTemplates = async (context) => {
 };
 
 const createInitialRequestAccessFlow = async (context) => {
-  const statusDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
-  const statusApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
+  // TODO Maybe use createEntity instead
+  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
+  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
+
+  // FIXME find entity toi use instead of ENTITY_TYPE_CONTAINER_CASE (RFI not possible)
+  const statusEntityRFIDeclined = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateDeclined.id, order: 0 });
+  const statusEntityRFIApproved = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateApproved.id, order: 0 });
 
   const initialConfig = {
-    workflow: [statusApproved.id, statusDeclined.id],
-    approved_workflow_id: statusApproved.id,
-    declined_workflow_id: statusDeclined.id,
+    workflow: [statusEntityRFIApproved.id, statusEntityRFIDeclined.id],
+    approved_workflow_id: statusEntityRFIApproved.id,
+    declined_workflow_id: statusEntityRFIDeclined.id,
   };
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
