@@ -101,7 +101,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           />
           <Field
             component={TextField}
-            label={t_i18n('Email object')}
+            label={t_i18n('Email subject')}
             name="emailObject"
             fullWidth
             required
