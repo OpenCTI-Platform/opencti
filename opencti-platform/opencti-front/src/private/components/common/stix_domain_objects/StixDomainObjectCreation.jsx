@@ -50,6 +50,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { CaseRfiCreationForm } from '../../cases/case_rfis/CaseRfiCreation';
 import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
 import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
@@ -815,6 +816,8 @@ const StixDomainObjectCreation = ({
   display,
   open,
   speeddial,
+  fabReplaced = false,
+  controlledDialStyles = {},
   handleClose,
   paginationKey,
   paginationOptions,
@@ -857,34 +860,44 @@ const StixDomainObjectCreation = ({
   };
 
   return (
-    <div style={{ display: display ? 'block' : 'none' }}>
-      {!speeddial && (
-        <Fab
-          onClick={stateHandleOpen}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
+    <>
+      {fabReplaced && !speeddial && (
+        <CreateEntityControlledDial
+          entityType={'Entities'}
+          onOpen={stateHandleOpen}
+          onClose={() => {}}
+          style={controlledDialStyles}
+        />
       )}
-      {isOpen && queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixDomainPanel
-            queryRef={queryRef}
-            inputValue={inputValue}
-            confidence={confidence}
-            defaultCreatedBy={defaultCreatedBy}
-            defaultMarkingDefinitions={defaultMarkingDefinitions}
-            stixDomainObjectTypes={stixDomainObjectTypes}
-            creationUpdater={creationUpdater}
-            onCompleted={onCompleted}
-            onClose={speeddial ? handleClose : stateHandleClose}
-            isFromBulkRelation={isFromBulkRelation}
-          />
-        </React.Suspense>
-      )}
-    </div>
+      <div style={{ display: display ? 'block' : 'none' }}>
+        {!fabReplaced && !speeddial && (
+          <Fab
+            onClick={stateHandleOpen}
+            color="primary"
+            aria-label="Add"
+            className={classes.createButton}
+          >
+            <Add />
+          </Fab>
+        )}
+        {isOpen && queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixDomainPanel
+              queryRef={queryRef}
+              inputValue={inputValue}
+              confidence={confidence}
+              defaultCreatedBy={defaultCreatedBy}
+              defaultMarkingDefinitions={defaultMarkingDefinitions}
+              stixDomainObjectTypes={stixDomainObjectTypes}
+              creationUpdater={creationUpdater}
+              onCompleted={onCompleted}
+              onClose={speeddial ? handleClose : stateHandleClose}
+              isFromBulkRelation={isFromBulkRelation}
+            />
+          </React.Suspense>
+        )}
+      </div>
+    </>
   );
 };
 

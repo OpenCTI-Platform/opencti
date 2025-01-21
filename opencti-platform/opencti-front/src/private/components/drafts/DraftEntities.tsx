@@ -222,66 +222,42 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           redirectionModeEnabled
           disableSelectAll // TODO: To handle selectAll
           createButton={
-            isFABReplaced && (
-              entitiesType === 'Stix-Cyber-Observable' ? (
-                <>
-                  <Fab
-                    onClick={() => setOpenCreateObservable(true)}
-                    color="primary"
-                    aria-label="Add"
-                    style={{
-                      position: 'fixed',
-                      bottom: 30,
-                      right: 30,
-                      zIndex: 2000,
-                    }}
-                  >
-                    <Add/>
-                  </Fab>
-                  <StixCyberObservableCreation
-                    display={open}
-                    contextual={true}
-                    inputValue={searchTerm}
-                    paginationKey="Pagination_draftWorkspaceEntities"
-                    paginationOptions={queryPaginationOptions}
-                    speeddial={true}
-                    open={openCreateObservable}
-                    handleClose={handleCloseCreateObservable}
-                  />
-                </>
-              ) : (
-                <>
-                  <Fab
-                    onClick={() => setOpenCreateEntity(true)}
-                    color="primary"
-                    aria-label="Add"
-                    style={{
-                      position: 'fixed',
-                      bottom: 30,
-                      right: 30,
-                      zIndex: 2000,
-                    }}
-                  >
-                    <Add/>
-                  </Fab>
-                  <StixDomainObjectCreation
-                    display={open}
-                    inputValue={searchTerm}
-                    paginationKey="Pagination_draftWorkspaceEntities"
-                    paginationOptions={queryPaginationOptions}
-                    speeddial={true}
-                    open={openCreateEntity}
-                    handleClose={handleCloseCreateEntity}
-                    onCompleted={() => setOpenCreateEntity(false)}
-                    creationCallback={undefined}
-                    confidence={undefined}
-                    defaultCreatedBy={undefined}
-                    isFromBulkRelation={undefined}
-                    defaultMarkingDefinitions={undefined}
-                    stixDomainObjectTypes={undefined}
-                  />
-                </>
-              ))
+            entitiesType === 'Stix-Cyber-Observable' ? (
+              <>
+                <StixCyberObservableCreation
+                  display={open}
+                  contextual={false}
+                  inputValue={searchTerm}
+                  paginationKey="Pagination_draftWorkspaceEntities"
+                  paginationOptions={queryPaginationOptions}
+                  speeddial={false}
+                  open={openCreateObservable}
+                  controlledDialStyles={{ marginLeft: 1 }}
+                  handleClose={handleCloseCreateObservable}
+                />
+              </>
+            ) : (
+              <>
+                <StixDomainObjectCreation
+                  display={true}
+                  inputValue={searchTerm}
+                  paginationKey="Pagination_draftWorkspaceEntities"
+                  paginationOptions={queryPaginationOptions}
+                  speeddial={false}
+                  fabReplaced={isFABReplaced}
+                  controlledDialStyles={{ marginLeft: 1 }}
+                  open={openCreateEntity}
+                  handleClose={handleCloseCreateEntity}
+                  onCompleted={() => setOpenCreateEntity(false)}
+                  creationCallback={undefined}
+                  confidence={undefined}
+                  defaultCreatedBy={undefined}
+                  isFromBulkRelation={undefined}
+                  defaultMarkingDefinitions={undefined}
+                  stixDomainObjectTypes={undefined}
+                />
+              </>
+            )
           }
         />
       )}
