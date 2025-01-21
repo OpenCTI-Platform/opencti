@@ -470,7 +470,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
             </Typography>
             {!isEnterpriseEditionByConfig && (
               <div style={{ float: 'right', marginTop: theme.spacing(-1.8), position: 'relative' }}>
-                <EnterpriseEditionButton title={t_i18n('Change your Enterprise Edition license')} inLine={true} />
+                <EnterpriseEditionButton inLine={true} />
               </div>
             )}
             <div className="clearfix"/>
@@ -651,7 +651,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           </Typography>
           <div style={{ float: 'right', marginTop: theme.spacing(-4.5), position: 'relative' }}>
             {!isEnterpriseEditionActivated && (
-              <EnterpriseEditionButton title={t_i18n('Activate Enterprise Edition')} inLine={true} />
+              <EnterpriseEditionButton inLine={true} />
             )}
           </div>
           <div className="clearfix"/>
@@ -782,6 +782,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Theme Settings')}
             <ThemesEditor
+              currentTheme={settings.platform_theme}
               themes={themes}
               refetch={handleRefetch}
               editContext={editContext as {
