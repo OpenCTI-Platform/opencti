@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findUsersThatCanShareWithOrganizations } from '../../../src/modules/requestAccess/requestAccess-domain';
-import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { getOrganizationEntity } from '../../utils/domainQueryHelper';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { findTemplateById } from '../../../src/domain/status';
@@ -24,13 +22,5 @@ describe('Request access domain  - initialized status', async () => {
       const statusData = await findTemplateById(testContext, ADMIN_USER, declinedStatusId);
       expect(statusData.name).toBe('DECLINED');
     }
-  });
-});
-
-describe('Request access domain level test coverage', async () => {
-  it.todo('should find users that can share knowledge with an org', async () => {
-    const testOrgEntity = await getOrganizationEntity(TEST_ORGANIZATION);
-    const result = await findUsersThatCanShareWithOrganizations(testContext, ADMIN_USER, [testOrgEntity.id]);
-    expect(result[0].user_email).toBe(USER_EDITOR.email);
   });
 });

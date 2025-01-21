@@ -16,13 +16,14 @@ import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
-import { getSettings } from '../../domain/settings';
 import { FunctionalError } from '../../config/errors';
 import { getEntityFromCache } from '../../database/cache';
 import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { createStatus, createStatusTemplate } from '../../domain/status';
+import type { BasicStoreSettings } from '../../types/settings';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -49,21 +50,6 @@ export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUse
   // 4. Request access status should be configured
   // 5. Auth member admin should be configured.
   return isEnterpriseEdition(context);
-};
-
-export const findUsersThatCanShareWithOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[]) => {
-  const allUserInOrgWithOrgManagementCapability = [];
-  for (let orgI = 0; orgI < organizationIds.length; orgI += 1) {
-    const organizationId = organizationIds[orgI];
-    const allUserInOrg = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
-    for (let userI = 0; userI < allUserInOrg.length; userI += 1) {
-      const authUserFromUserId = await findUserById(context, user, allUserInOrg[userI].id);
-      if (isUserHasCapability(authUserFromUserId, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-        allUserInOrgWithOrgManagementCapability.push(authUserFromUserId);
-      }
-    }
-  }
-  return allUserInOrgWithOrgManagementCapability;
 };
 
 export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser, action:ActionStatus) => {
@@ -129,39 +115,39 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
 
 const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, user: AuthUser, requestAcessEntities: string[]) => {
   const authorizedMembers = [];
-  // const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  const settings: BasicStoreSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS); // TODO should we get from cache?
+  // const settings = await getSettings(context);
+  // const platformSettings: BasicStoreSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const platformOrganization = settings.platform_organization;
 
-  if (rfiEntitySettings) {
-    const requestAccessAdmin = rfiEntitySettings.approval_admin;
-    const grantedOrganizationsIds = [];
+  if (rfiEntitySettings && rfiEntitySettings.request_access_workflow) {
+    const requestAccessAdmin = rfiEntitySettings.request_access_workflow.approval_admin;
+    const grantedOrganizationsIds: string[] = [];
     const entity = await elLoadById(context, user, requestAcessEntities[0]); // TODO remove requestAcessEntities[0]
     const objectOrganizations = await loadThroughDenormalized(context, user, entity, INPUT_GRANTED_REFS);
-    objectOrganizations.map((org) => grantedOrganizationsIds.push(org.id));
-
-    // If no granted organization we use platform organization
-    if (grantedOrganizationsIds.length < 1) {
-      // const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS); // TODO should we get from cache?
-      const settings = await getSettings(context);
-      const platformOrganization = settings.platform_organization;
-      if (platformOrganization) {
-        authorizedMembers.push({
-          id: platformOrganization,
-          access_right: 'admin',
-        });
-      }
-      throw FunctionalError('This feature requires data segregation by organization. Please contact you administrator.');
-    }
+    objectOrganizations.map((org: any) => grantedOrganizationsIds.push(org.id));
 
     if (grantedOrganizationsIds.length > 0) {
       grantedOrganizationsIds.map((organizationId) => authorizedMembers.push({
         id: organizationId,
         access_right: 'edit',
       }));
+    } else {
+    // If no granted organization we use platform organization
+
+      if (platformOrganization) {
+        authorizedMembers.push({
+          id: platformOrganization,
+          access_right: 'edit',
+        });
+      }
+      throw FunctionalError('This feature requires data segregation by organization. Please contact you administrator.');
     }
 
     // set Admin
     authorizedMembers.push({
-      id: requestAccessAdmin,
+      id: requestAccessAdmin || platformOrganization, // TODO remove platformOrganization here when settings are done.
       access_right: 'admin',
     });
 
@@ -169,8 +155,7 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
   }
   throw FunctionalError('Please set an approval admin fro request access');
 };
-
-const initForDev = async (context: AuthContext, user: AuthUser) => {
+const initForDev = async (context: AuthContext) => {
   const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
   const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
   const statusEntityRFIDeclined = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateDeclined.id, order: 0 });
@@ -199,9 +184,8 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   if (!await isRequestAccessEnabled(context, user)) {
     throw FunctionalError('[OPENCTI-MODULE][Request access] Request access feature is missing configuration.');
   }
-
+  await initForDev(context);
   const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
-  await initForDev(context, user);
 
   // const authorized_members = computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
   // logApp.info('[OPENCTI-MODULE][Request access] - authorized_members', { authorized_members });
