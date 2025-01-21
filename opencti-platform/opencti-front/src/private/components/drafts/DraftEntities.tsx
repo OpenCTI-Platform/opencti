@@ -5,8 +5,6 @@ import { graphql } from 'react-relay';
 import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
-import { Add } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
