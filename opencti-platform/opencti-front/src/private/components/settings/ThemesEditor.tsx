@@ -70,12 +70,14 @@ interface ThemesEditorProps {
     name: string,
     focusOn?: string,
   }[];
+  currentTheme?: string | null;
 }
 
 const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   themes,
   refetch,
   editContext,
+  currentTheme,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -142,18 +144,22 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
     URL.revokeObjectURL(href);
   };
 
+  const currentThemeOptions = currentTheme
+    ? themeOptions.filter(({ name }) => name === currentTheme)[0]
+    : themeOptions[0];
+
   const initialValues: ThemeType = {
-    id: themeOptions[0].id,
-    name: themeOptions[0].name,
-    theme_background: themeOptions[0].theme_background,
-    theme_paper: themeOptions[0].theme_paper,
-    theme_nav: themeOptions[0].theme_nav,
-    theme_primary: themeOptions[0].theme_primary,
-    theme_secondary: themeOptions[0].theme_secondary,
-    theme_accent: themeOptions[0].theme_accent,
-    theme_logo: themeOptions[0].theme_logo ?? undefined,
-    theme_logo_collapsed: themeOptions[0].theme_logo_collapsed ?? undefined,
-    theme_logo_login: themeOptions[0].theme_logo_login ?? undefined,
+    id: currentThemeOptions.id,
+    name: currentThemeOptions.name,
+    theme_background: currentThemeOptions.theme_background,
+    theme_paper: currentThemeOptions.theme_paper,
+    theme_nav: currentThemeOptions.theme_nav,
+    theme_primary: currentThemeOptions.theme_primary,
+    theme_secondary: currentThemeOptions.theme_secondary,
+    theme_accent: currentThemeOptions.theme_accent,
+    theme_logo: currentThemeOptions.theme_logo ?? undefined,
+    theme_logo_collapsed: currentThemeOptions.theme_logo_collapsed ?? undefined,
+    theme_logo_login: currentThemeOptions.theme_logo_login ?? undefined,
   };
 
   return (
