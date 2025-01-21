@@ -124,6 +124,10 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         setIsCreatingIndicator(false);
         handleCloseCreateIndicatorMenu();
       },
+      onError: () => {
+        setIsCreatingIndicator(false);
+        handleCloseCreateIndicatorMenu();
+      },
     });
   };
 
