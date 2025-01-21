@@ -4,6 +4,7 @@ import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
+import { marked } from 'marked';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -54,12 +55,13 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     { setSubmitting, resetForm, setErrors },
   ) => {
     setSubmitting(true);
+    const emailBodyFormatted = marked(values.emailBody);
     commitMutation({
       variables: {
         input: {
           email_address: values.emailAddress,
           email_object: values.emailObject,
-          email_body: values.emailBody,
+          email_body: emailBodyFormatted,
           email_attached_file_id: fileId,
         },
       },
