@@ -14,7 +14,7 @@ import { findById as findOrganizationById } from '../organization/organization-d
 import { elLoadById } from '../../database/engine';
 import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
+import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { getSettings } from '../../domain/settings';
 import { FunctionalError } from '../../config/errors';
@@ -22,6 +22,7 @@ import { getEntityFromCache } from '../../database/cache';
 import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { loadThroughDenormalized } from '../../resolvers/stix';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -128,7 +129,7 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
 
 const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, user: AuthUser, requestAcessEntities: string[]) => {
   const authorizedMembers = [];
-  const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  // const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
   if (rfiEntitySettings) {
     const requestAccessAdmin = rfiEntitySettings.approval_admin;
@@ -169,11 +170,41 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
   throw FunctionalError('Please set an approval admin fro request access');
 };
 
+const initForDev = async (context: AuthContext, user: AuthUser) => {
+  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
+  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
+  const statusEntityRFIDeclined = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateDeclined.id, order: 0 });
+  const statusEntityRFIApproved = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateApproved.id, order: 0 });
+
+  const initialConfig = {
+    workflow: [statusEntityRFIApproved.id, statusEntityRFIDeclined.id],
+    approved_workflow_id: statusEntityRFIApproved.id,
+    declined_workflow_id: statusEntityRFIDeclined.id,
+  };
+
+  const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  if (rfiEntitySettings) {
+    logApp.info('ANGIE INIT rfiEntitySettings:', { rfiEntitySettings, initialConfig });
+    const editInput = [
+      { key: 'request_access_workflow', value: [initialConfig] }
+    ];
+    // TODO use updateAttribute instead
+    // await updateAttribute(context, user, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, {request_access_workflow});
+    await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
+  }
+};
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
+  if (!await isRequestAccessEnabled(context, user)) {
+    throw FunctionalError('[OPENCTI-MODULE][Request access] Request access feature is missing configuration.');
+  }
 
   const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
-  logApp.info('[OPENCTI-MODULE][Request access] - authorized_members', { authorized_members });
+  await initForDev(context, user);
+
+  // const authorized_members = computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
+  // logApp.info('[OPENCTI-MODULE][Request access] - authorized_members', { authorized_members });
 
   const requestedEntities = input.request_access_entities;
   const allActionStatuses = await getRFIStatusMap(context, user);

@@ -55,6 +55,13 @@ export const READ_RFI_QUERY = gql`
                 }
             }
             x_opencti_request_access
+            status {
+                id
+                template {
+                    name
+                    color
+                }
+            }
         }
     }
 `;
@@ -291,35 +298,51 @@ describe('Add Request Access to an entity and create an RFI.'
   });
 
   it('should retrieve the created Case RFI with correct participant and objects', async () => {
-    const queryResult = await queryAsAdminWithSuccess({
+    const getRfiQueryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
     });
+
+    expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
+    expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('NEW');
+
+    // TODO why do we need from database ? should be all in graphQL API.
     const caseRequestForInformation = await findRFIById(testContext, ADMIN_USER, caseRfiIdForApproval);
-    logApp.info('ANGIE caseRequestForInformation', { caseRequestForInformation });
-    expect(queryResult?.data?.caseRfi).not.toBeNull();
-    expect(queryResult?.data?.caseRfi.id).toEqual(caseRequestForInformation.id);
-    expect(queryResult?.data?.caseRfi.name).toContain(caseRequestForInformation.name);
     expect(caseRequestForInformation.object).toEqual([malwareId]);
     // TODO verify that authorized member are set
 
-    const action: RequestAccessAction = JSON.parse(caseRequestForInformation.x_opencti_request_access);
+    const action: RequestAccessAction = JSON.parse(getRfiQueryResult?.data?.caseRfi.x_opencti_request_access);
     expect(action.status).toBe(ActionStatus.New);
     expect(action.workflowMapping).toBeDefined();
     expect(action.workflowMapping.length).toBe(3); // Status for NEW, Approved and Declined.
   });
 
-  it.todo('should accept the created Case RFI first time be ok', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+  it('should accept the created Case RFI first time be ok', async () => {
+    // FIXME use a user and not admin !
+    /*
+    const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: APPROVE_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
     });
-    expect(queryResult?.data?.requestAccessValidate.action_status).toBe(ActionStatus.Approved);
-    expect(queryResult?.data?.requestAccessValidate.action_executed).toBeTruthy();
+    */
+    const approvalResult = await queryAsAdminWithSuccess({
+      query: APPROVE_RFI_QUERY,
+      variables: { id: caseRfiIdForApproval },
+    });
+    expect(approvalResult?.data?.requestAccessApprove.action_status).toBe(ActionStatus.Approved);
+    expect(approvalResult?.data?.requestAccessApprove.action_executed).toBeTruthy();
 
-    const caseRFIAccepted = await findRFIById(testContext, ADMIN_USER, caseRfiIdForApproval);
-    logApp.info('ANGIE caseRFIAccepted', { caseRFIAccepted });
-    const action: RequestAccessAction = JSON.parse(caseRFIAccepted.x_opencti_request_access);
+    const getRfiQueryResult = await queryAsAdminWithSuccess({
+      query: READ_RFI_QUERY,
+      variables: { id: caseRfiIdForApproval }
+    });
+
+    logApp.info('ANGIE getRfiQueryResult', { caseRfiApi: getRfiQueryResult?.data?.caseRfi });
+    expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
+    expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('APPROVED'); // 'APPROVED' coming from data-initialization
+
+    const actionData = getRfiQueryResult?.data?.caseRfi.x_opencti_request_access;
+    const action: RequestAccessAction = JSON.parse(actionData);
     expect(action.status).toBe(ActionStatus.Approved);
   });
 

@@ -52,6 +52,7 @@ export interface RequestAccessFlow {
   approved_workflow_id?: string;
   declined_workflow_id?: string;
   workflow: string[];
+  approval_admin: string;
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {

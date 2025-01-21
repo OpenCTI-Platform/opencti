@@ -25,7 +25,7 @@ import type { BasicStoreEntity, StoreEntityConnection } from '../../types/store'
 import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { findTemplateById } from '../../domain/status';
+import { findTemplateById, findById as findStatusById } from '../../domain/status';
 
 // -- LOADING --
 
@@ -224,8 +224,11 @@ export const getRequestAccessStatus = async (
   const declinedId = entitySetting.request_access_workflow?.declined_workflow_id;
 
   if (approvedId && declinedId) {
-    const approvedDetail = await findTemplateById(context, user, approvedId);
-    const declinedDetail = await findTemplateById(context, user, declinedId);
+    const approvedStatus = await findStatusById(context, user, approvedId);
+    const declinedStatus = await findStatusById(context, user, declinedId);
+
+    const approvedDetail = await findTemplateById(context, user, approvedStatus.template_id);
+    const declinedDetail = await findTemplateById(context, user, declinedStatus.template_id);
     return [approvedDetail, declinedDetail];
   }
   return [];
