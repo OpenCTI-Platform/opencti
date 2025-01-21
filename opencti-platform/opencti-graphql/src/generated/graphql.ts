@@ -13715,7 +13715,7 @@ export type Mutation = {
   fintelTemplateAdd?: Maybe<FintelTemplate>;
   fintelTemplateDelete?: Maybe<Scalars['ID']['output']>;
   fintelTemplateFieldPatch?: Maybe<FintelTemplate>;
-  fintelTemplateImport: Scalars['String']['output'];
+  fintelTemplateImport?: Maybe<FintelTemplate>;
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
@@ -37530,7 +37530,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   fintelTemplateAdd?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateAddArgs, 'input'>>;
   fintelTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFintelTemplateDeleteArgs, 'id'>>;
   fintelTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateFieldPatchArgs, 'id' | 'input'>>;
-  fintelTemplateImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationFintelTemplateImportArgs, 'file'>>;
+  fintelTemplateImport?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateImportArgs, 'file'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
