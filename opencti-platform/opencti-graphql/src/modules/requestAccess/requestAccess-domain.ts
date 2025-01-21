@@ -9,7 +9,7 @@ import { findById as findUserById } from '../../domain/user';
 import { logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { updateAttribute } from '../../database/middleware';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_GRANTED_REFS } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
 import { elLoadById } from '../../database/engine';
 import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
@@ -21,6 +21,7 @@ import { FunctionalError } from '../../config/errors';
 import { getEntityFromCache } from '../../database/cache';
 import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { loadThroughDenormalized } from '../../resolvers/stix';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -128,24 +129,15 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
 const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, user: AuthUser, requestAcessEntities: string[]) => {
   const authorizedMembers = [];
   const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  // const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
+
   if (rfiEntitySettings) {
-    // const requestAccessAdmin = rfiEntitySettings.approval_admin; // TODO not set yet
-    const requestAccessAdmin = '88ec0c6a-13ce-5e39-b486-354fe4a7084f'; // TODO remove when approval_admin is set
+    const requestAccessAdmin = rfiEntitySettings.approval_admin;
     const grantedOrganizationsIds = [];
-    /*    requestAcessEntities.map((entityId) => { // TODO fix
-      const entity = elLoadById(context, user, entityId);
-      grantedOrganizationsIds.push(entity.objectOrganization.id);
-      return grantedOrganizationsIds;
-    }); */
-    const entity = await elLoadById(context, user, requestAcessEntities[0]); // TODO remove when code above is fixed
-    grantedOrganizationsIds.push(entity.objectOrganization.id);
-    if (grantedOrganizationsIds.length < 1) {
-      authorizedMembers.push({
-        id: requestAccessAdmin,
-        access_right: 'admin',
-      });
-    }
+    const entity = await elLoadById(context, user, requestAcessEntities[0]); // TODO remove requestAcessEntities[0]
+    const objectOrganizations = await loadThroughDenormalized(context, user, entity, INPUT_GRANTED_REFS);
+    objectOrganizations.map((org) => grantedOrganizationsIds.push(org.id));
+
+    // If no granted organization we use platform organization
     if (grantedOrganizationsIds.length < 1) {
       // const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS); // TODO should we get from cache?
       const settings = await getSettings(context);
@@ -158,12 +150,20 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
       }
       throw FunctionalError('This feature requires data segregation by organization. Please contact you administrator.');
     }
+
     if (grantedOrganizationsIds.length > 0) {
       grantedOrganizationsIds.map((organizationId) => authorizedMembers.push({
         id: organizationId,
         access_right: 'edit',
       }));
     }
+
+    // set Admin
+    authorizedMembers.push({
+      id: requestAccessAdmin,
+      access_right: 'admin',
+    });
+
     return authorizedMembers;
   }
   throw FunctionalError('Please set an approval admin fro request access');
