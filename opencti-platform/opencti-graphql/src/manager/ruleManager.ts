@@ -3,7 +3,8 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
@@ -287,7 +288,7 @@ const initRuleManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([RULE_ENGINE_KEY], { retryCount: 0 });
+      lock = await lockResources([RULE_ENGINE_KEY], { retryCount: 0 });
       running = true;
       const ruleManager = await getInitRuleManager();
       const { lastEventId } = ruleManager;

@@ -19,7 +19,8 @@ import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor, lockResource, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
@@ -377,7 +378,7 @@ const initPlaybookManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
+      lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler);
@@ -502,7 +503,7 @@ const initPlaybookManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PLAYBOOK_CRON_KEY], { retryCount: 0 });
+      lock = await lockResources([PLAYBOOK_CRON_KEY], { retryCount: 0 });
       logApp.info('[OPENCTI-MODULE] Running playbook manager (cron)');
       while (!shutdown) {
         lock.signal.throwIfAborted();

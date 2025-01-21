@@ -88,7 +88,7 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID
 } from '../schema/identifier';
-import { lockResource, notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
+import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -210,6 +210,7 @@ import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage 
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
+import { lockResources } from '../lock/master-lock';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -1468,7 +1469,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     const target = { ...initialInstance };
@@ -1991,7 +1992,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities = [];
@@ -2819,7 +2820,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -3000,7 +3001,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
@@ -3197,7 +3198,7 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
   const participantIds = [draftElement.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
 
     await elDeleteElements(context, user, [draftElement]);
   } catch (err) {
@@ -3248,7 +3249,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);

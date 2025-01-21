@@ -19,7 +19,8 @@ import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_TYPE_UPDATE, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import { createStreamProcessor, lockResource, type StreamProcessor, } from '../database/redis';
+import { createStreamProcessor, type StreamProcessor, } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -147,7 +148,7 @@ const initFileIndexManager = () => {
       let lock;
       try {
         // Lock the manager
-        lock = await lockResource([FILE_INDEX_MANAGER_KEY], { retryCount: 0 });
+        lock = await lockResources([FILE_INDEX_MANAGER_KEY], { retryCount: 0 });
         running = true;
         logApp.debug('[OPENCTI-MODULE] Running file index manager');
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
@@ -178,7 +179,7 @@ const initFileIndexManager = () => {
       let lock;
       try {
         // Lock the manager
-        lock = await lockResource([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
+        lock = await lockResources([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
         streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents);
