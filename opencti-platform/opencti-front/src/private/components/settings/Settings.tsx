@@ -782,6 +782,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Theme Settings')}
             <ThemesEditor
+              currentTheme={settings.platform_theme}
               themes={themes}
               refetch={handleRefetch}
               editContext={editContext as {
