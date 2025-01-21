@@ -170,7 +170,6 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftEntitiesLinesPaginationQuery>;
 
-  console.log("Preloaded: ", {preloadedPaginationProps});
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     draftVersion: {
