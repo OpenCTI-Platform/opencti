@@ -8,6 +8,7 @@ import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
 import RequestAccessStatus from '@components/settings/sub_types/RequestAccessStatus';
+import RequestAccessWorkflowPopover from '@components/settings/sub_types/RequestAccessWorkflowPopover';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -148,6 +149,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access workflow')}
+                    <RequestAccessWorkflowPopover />
                   </Typography>
                 </div>
                 <RequestAccessStatus data={subType.settings}/>
