@@ -130,9 +130,16 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
   const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
   // const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (rfiEntitySettings) {
-    const requestAccessAdmin = rfiEntitySettings.approval_admin;
+    // const requestAccessAdmin = rfiEntitySettings.approval_admin; // TODO not set yet
+    const requestAccessAdmin = '88ec0c6a-13ce-5e39-b486-354fe4a7084f'; // TODO remove when approval_admin is set
     const grantedOrganizationsIds = [];
-    requestAcessEntities.map((entity) => grantedOrganizationsIds.push(entity.objectOrganization.id));
+    /*    requestAcessEntities.map((entityId) => { // TODO fix
+      const entity = elLoadById(context, user, entityId);
+      grantedOrganizationsIds.push(entity.objectOrganization.id);
+      return grantedOrganizationsIds;
+    }); */
+    const entity = await elLoadById(context, user, requestAcessEntities[0]); // TODO remove when code above is fixed
+    grantedOrganizationsIds.push(entity.objectOrganization.id);
     if (grantedOrganizationsIds.length < 1) {
       authorizedMembers.push({
         id: requestAccessAdmin,
@@ -165,7 +172,7 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
 
-  const authorized_members = computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
+  const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
   logApp.info('[OPENCTI-MODULE][Request access] - authorized_members', { authorized_members });
 
   const requestedEntities = input.request_access_entities;
@@ -196,7 +203,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     description: humanDescription,
     information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
     x_opencti_request_access: `${JSON.stringify(action)}`,
-    // FIXME authorized_members,
+    authorized_members,
     x_opencti_workflow_id
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
