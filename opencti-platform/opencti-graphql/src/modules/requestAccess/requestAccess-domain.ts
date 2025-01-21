@@ -16,6 +16,7 @@ import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -33,6 +34,16 @@ export interface RequestAccessAction {
   executionDate?: Date,
   workflowMapping: RequestAccessActionStatus[]
 }
+
+export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
+  // TODO check all requirements
+  // 1. EE must be enabled
+  // 2. Platform organization should be set up
+  // 3. Workflow should be enabled
+  // 4. Request access status should be configured
+  // 5. Auth member admin should be configured.
+  return isEnterpriseEdition(context);
+};
 
 export const findUsersThatCanShareWithOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[]) => {
   const allUserInOrgWithOrgManagementCapability = [];

@@ -134,6 +134,35 @@ export const MUTATION_ENABLE_RFI_WORKFLOW = gql`
     }
 }`;
 
+export const QUERY_ROOT_SETTINGS = gql`
+    query RootPrivateQuery {
+        settings {
+            id
+            platform_organization {
+                id
+            }
+            platform_enterprise_edition {
+                license_validated
+                license_expired
+                license_expiration_date
+                license_start_date
+                license_expiration_prevention
+                license_valid_cert
+                license_customer
+                license_enterprise
+                license_platform
+                license_platform_match
+                license_type
+            }
+            platform_organization {
+                id
+                name
+            }
+            request_access_enabled
+        }
+    }
+`;
+
 describe('Add Request Access to an entity and create an RFI.'
   + 'USER_EDITOR is used as platform admin (in TEST_ORGANIZATION org),'
   + 'USER_DISINFORMATION_ANALYST is used as user that request access to knowledge.', async () => {
@@ -145,8 +174,15 @@ describe('Add Request Access to an entity and create an RFI.'
   let userAnalystId: string;
   let newStatusId: string;
 
-  it.todo('TODO what to expect when EE is not enabled ?', async () => {
-
+  it('Request access feature must be disabled when plateforme orga is not set ?', async () => {
+    const platformSettings = await queryAsAdminWithSuccess({
+      query: QUERY_ROOT_SETTINGS,
+      variables: {}
+    });
+    logApp.info('ANGIE platformSettings', { platformSettings });
+    // If default configuration for test changes and platform_organization is setup, this it step has no meaning anymore.
+    expect(platformSettings?.data?.settings.platform_organization).toBeNull();
+    // TODO implement and => expect(platformSettings?.data?.settings.request_access_enabled).toBeFalsy();
   });
 
   it('should enable platform organization', async () => {
