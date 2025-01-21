@@ -5,8 +5,6 @@ import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import Alert from '@mui/material/Alert';
-import Typography from '@mui/material/Typography';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
@@ -18,12 +16,9 @@ import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
-import { useFormatter } from '../i18n';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
-| 'message'
-| 'storageKey'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -48,11 +43,8 @@ const DataTableInternalFilters = ({
   additionalHeaderButtons,
   currentView,
   exportContext,
-  storageKey,
-  message,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
   const {
     availableFilterKeys,
     useDataTablePaginationLocalStorage: {
@@ -95,30 +87,6 @@ const DataTableInternalFilters = ({
           />
         )}
       </div>
-      {message && (
-        <div style={{ width: '100%', marginTop: 20 }}>
-          <Alert
-            severity="info"
-            variant="outlined"
-            style={{ padding: '0px 10px' }}
-          >
-            <Typography>
-              {message}
-            </Typography>
-          </Alert>
-        </div>
-      )}
-      {storageKey === 'restrictedEntities' && (
-        <div style={{ width: '100%', marginBottom: 20 }}>
-          <Alert
-            severity="info"
-            variant="outlined"
-            style={{ padding: '0px 10px 0px 10px' }}
-          >
-            {t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
-          </Alert>
-        </div>
-      )}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}
@@ -128,7 +96,6 @@ const DataTableInternalFilters = ({
           entityTypes={computedEntityTypes}
         />
       )}
-
     </>
   );
 };
@@ -207,7 +174,6 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
-| 'message'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -238,8 +204,6 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideSearch,
     hideFilters,
     taskScope,
-    message,
-    storageKey,
     removeAuthMembersEnabled,
   } = props;
 
@@ -263,40 +227,41 @@ const DataTable = (props: OCTIDataTableProps) => {
   }
 
   return (
-    <DataTableComponent
-      {...props}
-      availableFilterKeys={availableFilterKeys}
-      dataQueryArgs={{ ...dataQueryArgs }}
-      useLineData={useLineData(lineFragment)}
-      useDataTable={useDataTable}
-      settingsMessagesBannerHeight={settingsMessagesBannerHeight}
-      filtersComponent={(
-        <DataTableInternalFilters
-          entityTypes={entityTypes}
-          additionalFilterKeys={additionalFilterKeys}
-          additionalHeaderButtons={additionalHeaderButtons}
-          availableEntityTypes={availableEntityTypes}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          hideFilters={hideFilters}
-          hideSearch={hideSearch}
-          availableRelationshipTypes={availableRelationshipTypes}
-          currentView={currentView}
-          exportContext={exportContext}
-          searchContextFinal={computedSearchContextFinal}
-          storageKey={storageKey}
-          message={message}
-        />
+    <>
+
+      <DataTableComponent
+        {...props}
+        availableFilterKeys={availableFilterKeys}
+        dataQueryArgs={{ ...dataQueryArgs }}
+        useLineData={useLineData(lineFragment)}
+        useDataTable={useDataTable}
+        settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+        filtersComponent={(
+          <DataTableInternalFilters
+            entityTypes={entityTypes}
+            additionalFilterKeys={additionalFilterKeys}
+            additionalHeaderButtons={additionalHeaderButtons}
+            availableEntityTypes={availableEntityTypes}
+            availableRelationFilterTypes={availableRelationFilterTypes}
+            hideFilters={hideFilters}
+            hideSearch={hideSearch}
+            availableRelationshipTypes={availableRelationshipTypes}
+            currentView={currentView}
+            exportContext={exportContext}
+            searchContextFinal={computedSearchContextFinal}
+          />
       )}
-      dataTableToolBarComponent={(
-        <DataTableInternalToolbar
-          handleCopy={handleCopy}
-          taskScope={taskScope}
-          toolbarFilters={toolbarFilters}
-          globalSearch={globalSearch}
-          removeAuthMembersEnabled={removeAuthMembersEnabled}
-        />
+        dataTableToolBarComponent={(
+          <DataTableInternalToolbar
+            handleCopy={handleCopy}
+            taskScope={taskScope}
+            toolbarFilters={toolbarFilters}
+            globalSearch={globalSearch}
+            removeAuthMembersEnabled={removeAuthMembersEnabled}
+          />
       )}
-    />
+      />
+    </>
   );
 };
 

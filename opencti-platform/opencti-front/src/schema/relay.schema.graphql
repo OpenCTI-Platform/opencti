@@ -12448,6 +12448,7 @@ enum ExclusionListOrdering {
   name
   created_at
   enabled
+  exclusion_list_values_count
   _score
 }
 

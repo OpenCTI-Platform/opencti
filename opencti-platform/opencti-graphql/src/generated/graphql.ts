@@ -7566,6 +7566,7 @@ export enum ExclusionListOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
   Enabled = 'enabled',
+  ExclusionListValuesCount = 'exclusion_list_values_count',
   Name = 'name'
 }
 

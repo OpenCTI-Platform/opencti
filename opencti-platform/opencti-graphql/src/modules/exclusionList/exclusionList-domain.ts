@@ -31,10 +31,13 @@ export const getCacheStatus = async () => {
   const cacheVersion = redisCacheStatus.last_cache_date ?? '';
   const clusterConfig = await getClusterInstances();
   const allNodeIds = clusterConfig.map((c) => c.platform_id);
-  let isCacheRebuildInProgress = refreshVersion !== cacheVersion;
-  for (let i = 0; i < clusterConfig.length; i += 1) {
-    const platformInstanceId = allNodeIds[i];
-    isCacheRebuildInProgress = isCacheRebuildInProgress || refreshVersion !== redisCacheStatus[platformInstanceId];
+  let isCacheRebuildInProgress = false;
+  if (refreshVersion) {
+    isCacheRebuildInProgress = refreshVersion !== cacheVersion;
+    for (let i = 0; i < clusterConfig.length; i += 1) {
+      const platformInstanceId = allNodeIds[i];
+      isCacheRebuildInProgress = isCacheRebuildInProgress || refreshVersion !== redisCacheStatus[platformInstanceId];
+    }
   }
 
   return { refreshVersion, cacheVersion, isCacheRebuildInProgress };

@@ -14,6 +14,7 @@ import Grid from '@mui/material/Grid';
 import ExclusionListsStatus, { exclusionListsStatusQuery } from '@components/settings/exclusion_lists/ExclusionListsStatus';
 import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import AlertInfo from '../../../../components/AlertInfo';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -176,7 +177,7 @@ const ExclusionLists = () => {
       isSortable: false,
     },
     lineNumber: {
-      id: 'NumberOfElements',
+      id: 'exclusion_list_values_count',
       label: t_i18n('Number of elements'),
       percentWidth: 15,
       isSortable: true,
@@ -230,6 +231,9 @@ const ExclusionLists = () => {
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]} />
       <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
+      <AlertInfo
+        content={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -242,7 +246,6 @@ const ExclusionLists = () => {
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
-          message={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
         />
       )}
       <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />

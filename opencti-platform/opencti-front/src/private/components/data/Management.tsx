@@ -7,6 +7,7 @@ import {
 } from '@components/data/__generated__/ManagementDefinitionsLinesPaginationQuery.graphql';
 import { ManagementDefinitionsLines_data$data } from '@components/data/__generated__/ManagementDefinitionsLines_data.graphql';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import AlertInfo from '../../../components/AlertInfo';
 import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -220,6 +221,9 @@ const Management = () => {
         {isRightMenuManagementEnable && (
           <ManagementMenu/>
         )}
+        <AlertInfo
+          content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+        />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
