@@ -694,7 +694,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(39);
+    expect(entityTypeMap.get('Capability')).toBe(41);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
     expect(entityTypeMap.get('EntitySetting')).toBe(43);
