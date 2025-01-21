@@ -184,7 +184,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   if (!await isRequestAccessEnabled(context, user)) {
     throw FunctionalError('[OPENCTI-MODULE][Request access] Request access feature is missing configuration.');
   }
-  await initForDev(context);
+  // await initForDev(context);
   const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
 
   // const authorized_members = computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
