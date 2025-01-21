@@ -19,6 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
+import { declineRequestAccessMutation, validateRequestAccessMutation } from '../../cases/CaseUtils';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
@@ -132,6 +133,24 @@ const StixDomainObjectOverview = ({
     });
   };
 
+  const onSubmitValidateRequestAccess = () => {
+    commitMutation({
+      mutation: validateRequestAccessMutation,
+      variables: {
+        id: stixDomainObject.id,
+      },
+    });
+  };
+
+  const onSubmitDeclineRequestAccess = () => {
+    commitMutation({
+      mutation: declineRequestAccessMutation,
+      variables: {
+        id: stixDomainObject.id,
+      },
+    });
+  };
+
   const deleteStixId = (stixId) => {
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
@@ -161,12 +180,38 @@ const StixDomainObjectOverview = ({
     ? stixDomainObject.createdBy?.x_opencti_reliability
     : stixDomainObject.x_opencti_reliability;
 
+  let requestAccess = null;
+  if (stixDomainObject && stixDomainObject.x_opencti_request_access) {
+    requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
+  }
+  console.log('requestAccess ===> ', requestAccess);
+
+  console.log('stixDomainObjectStatus ===>', stixDomainObject.status);
   return (
     <>
       <Typography variant="h4">
         {t_i18n('Basic information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+        <Grid container={false} spacing={3}>
+          {requestAccess && (
+            <Grid item sx={12} style={{ marginBottom: 20 }}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: withPattern ? 20 : 0 }}
+              >
+                {t_i18n('Processing status')}
+              </Typography>
+              <ItemStatus
+                status={stixDomainObject.status}
+                disabled={!stixDomainObject.workflowEnabled}
+              />
+              <Button onClick={onSubmitValidateRequestAccess} color="secondary">{t_i18n('Validate')}</Button>
+              <Button onClick={onSubmitDeclineRequestAccess} color="secondary">{t_i18n('Decline')}</Button>
+            </Grid>
+          )}
+        </Grid>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             {stixDomainObject.objectMarking && (
@@ -267,17 +312,21 @@ const StixDomainObjectOverview = ({
                 <ItemPatternType label={stixDomainObject.pattern_type} />
               </>
             )}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: withPattern ? 20 : 0 }}
-            >
-              {t_i18n('Processing status')}
-            </Typography>
-            <ItemStatus
-              status={stixDomainObject.status}
-              disabled={!stixDomainObject.workflowEnabled}
-            />
+            {!requestAccess && (
+              <>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: withPattern ? 20 : 0 }}
+                >
+                  {t_i18n('Processing status')}
+                </Typography>
+                <ItemStatus
+                  status={stixDomainObject.status}
+                  disabled={!stixDomainObject.workflowEnabled}
+                />
+              </>
+            )}
             {displayAssignees && (
               <div data-testid='sdo-overview-assignees'>
                 <div style={{ display: 'flex', alignItems: 'center' }}>

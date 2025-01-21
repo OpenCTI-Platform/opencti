@@ -115,6 +115,26 @@ export const caseMutationRelationDelete = graphql`
   }
 `;
 
+export const validateRequestAccessMutation = graphql`
+  mutation CaseUtilsValidateRequestAccessMutation($id: ID!) {
+    requestAccessApprove(id: $id) {
+      action_status
+      action_date
+      action_executed
+    }
+  }
+`;
+
+export const declineRequestAccessMutation = graphql`
+  mutation CaseUtilsDeclineRequestAccessMutation($id: ID!) {
+    requestAccessDecline(id: $id) {
+      action_executed
+      action_date
+      action_status
+    }
+  }
+`;
+
 export const caseFragment = graphql`
   fragment CaseUtils_case on Case {
     id
@@ -177,6 +197,7 @@ export const caseFragment = graphql`
     ...FeedbackDetails_case
     ...CaseRftDetails_case
     ...CaseRfiDetails_case
+    ...CaseRfi_caseRfi
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container
   }
