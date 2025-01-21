@@ -122,9 +122,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { isFeatureEnable } = useHelper();
-  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
-
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
     published: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -169,7 +166,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
@@ -220,7 +217,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     file: undefined,
     authorized_members: undefined,
   });
-  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+  if (!canEditAuthorizedMembers) {
     delete initialValues.authorized_members;
   }
   return (
@@ -338,7 +335,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isEnterpriseEdition && isAccessRestrictionCreationEnable && (
+          {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >

@@ -113,9 +113,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { isFeatureEnable } = useHelper();
-  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
-
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
@@ -151,7 +148,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
@@ -199,7 +196,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     file: undefined,
     authorized_members: undefined,
   });
-  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+  if (!canEditAuthorizedMembers) {
     delete initialValues.authorized_members;
   }
   return (
@@ -287,7 +284,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isEnterpriseEdition && isAccessRestrictionCreationEnable && (
+          {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
