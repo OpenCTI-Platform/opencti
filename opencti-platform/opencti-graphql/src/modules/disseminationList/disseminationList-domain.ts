@@ -46,11 +46,11 @@ interface SendMailArgs {
 }
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const filePath = input.email_attached_file_id;
   const file = await loadFile(context, user, filePath);
-  if (file) {
+  if (file && file.metaData.mimetype === 'application/pdf' && settings.valid_enterprise_edition) {
     const stream = await downloadFile(file.id);
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
     const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
     const fromEmail = conf.get('smtp:from_email');
