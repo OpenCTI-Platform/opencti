@@ -17,6 +17,7 @@ import { useTheme } from '@mui/styles';
 import EmailIcon from '@mui/icons-material/Email';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
+import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -25,6 +26,7 @@ import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -78,10 +80,12 @@ const StixCoreObjectContentFilesList = ({
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { settings: { id: settingsId } } = useAuth();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [isEEOpen, setEEOpen] = useState(false);
 
   const openPopover = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
@@ -115,8 +119,9 @@ const StixCoreObjectContentFilesList = ({
     closePopover();
   };
 
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
+  const handleDisseminate = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    return isEnterpriseEdition ? setDrawerOpen(true) : setEEOpen(true);
   };
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
@@ -156,20 +161,20 @@ const StixCoreObjectContentFilesList = ({
                   </div>
                 )}
               />
-              {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
-              <Tooltip title={'Disseminate'}>
-                <IconButton
-                  onClick={toggleDrawer(true)}
-                  color="primary"
-                  size="small"
-                  style={{
-                    marginRight: theme.spacing(4),
-                  }}
-                  aria-label="disseminate"
-                >
-                  <EmailIcon />
-                </IconButton>
-              </Tooltip>
+              {file.metaData?.mimetype === 'application/pdf' && (
+                <Tooltip title={'Disseminate'}>
+                  <IconButton
+                    onClick={(e) => handleDisseminate(e)}
+                    size="small"
+                    style={{
+                      marginRight: theme.spacing(4),
+                      color: theme.palette.ee.main,
+                    }}
+                    aria-label="disseminate"
+                  >
+                    <EmailIcon />
+                  </IconButton>
+                </Tooltip>
               )}
               <ListItemSecondaryAction>
                 <IconButton
@@ -184,17 +189,20 @@ const StixCoreObjectContentFilesList = ({
             </ListItemButton>
           </Tooltip>
           {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
-          <Drawer
-            title={t_i18n('Disseminate a file')}
-            open={isDrawerOpen}
-            onClose={toggleDrawer(false)}
-          >
-            <StixCoreObjectContentFilesDissemination
-              fileId={file.id}
-              fileName={file.name}
-              onClose={toggleDrawer(false)}
-            />
-          </Drawer>
+            <Drawer
+              title={t_i18n('Disseminate a file')}
+              open={isDrawerOpen}
+              onClose={() => setDrawerOpen(false)}
+            >
+              <StixCoreObjectContentFilesDissemination
+                fileId={file.id}
+                fileName={file.name}
+                onClose={() => setDrawerOpen(false)}
+              />
+            </Drawer>
+          )}
+          {file.metaData?.mimetype === 'application/pdf' && !isEnterpriseEdition && (
+            <EnterpriseEditionAgreement open={isEEOpen} onClose={() => setEEOpen(false)} settingsId={settingsId} />
           )}
         </Fragment>
       ))}
