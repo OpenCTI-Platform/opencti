@@ -1,7 +1,8 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync as clearDynamicIntervalAsync, setIntervalAsync as setDynamicIntervalAsync } from 'set-interval-async/dynamic';
 import moment from 'moment/moment';
-import { createStreamProcessor, lockResource, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -60,7 +61,7 @@ const initManager = (manager: ManagerDefinition) => {
       try {
         // date
         // Lock the manager
-        lock = await lockResource([manager.cronSchedulerHandler.lockKey], { retryCount: 0 });
+        lock = await lockResources([manager.cronSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
         cronInput = cronInputFn ? await cronInputFn() : undefined;
         if (manager.cronSchedulerHandler.infiniteInterval) {
@@ -97,7 +98,7 @@ const initManager = (manager: ManagerDefinition) => {
       let lock;
       try {
       // Lock the manager
-        lock = await lockResource([manager.streamSchedulerHandler.lockKey], { retryCount: 0 });
+        lock = await lockResources([manager.streamSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
         logApp.info(`[OPENCTI-MODULE] Running ${manager.label} stream handler`);
         streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);

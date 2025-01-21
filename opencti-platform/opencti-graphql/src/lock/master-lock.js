@@ -1,11 +1,13 @@
 import { fork } from 'child_process';
 import { v4 as uuidv4 } from 'uuid';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { logApp } from '../config/conf';
 
 // -- Start the control lock manager
 let forked;
 export const initLockFork = () => {
   forked = fork('./build/child-lock.manager.js');
+  logApp.info('[CHECK] Locking fork process started', forked);
 };
 
 const unlockResources = async (operation) => {
@@ -22,7 +24,7 @@ const unlockResources = async (operation) => {
     });
   });
 };
-export const lockResources = async (ids) => {
+export const lockResources = async (ids, args = {}) => {
   if (!forked) {
     throw UnsupportedError('Lock child fork not initialize');
   }
@@ -30,7 +32,7 @@ export const lockResources = async (ids) => {
   const controller = new AbortController();
   const { signal } = controller;
   return new Promise((resolve, reject) => {
-    forked.send({ type: 'lock', operation, ids },);
+    forked.send({ type: 'lock', operation, ids, args });
     forked.on('message', (msg) => {
       if (msg.operation === operation && msg.type === 'lock') {
         if (msg.success) {

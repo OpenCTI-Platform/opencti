@@ -3,7 +3,8 @@ import { head } from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { createStreamProcessor, fetchRangeNotifications, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
@@ -630,7 +631,7 @@ const initNotificationManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([NOTIFICATION_LIVE_KEY], { retryCount: 0 });
+      lock = await lockResources([NOTIFICATION_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationLiveStreamHandler);
@@ -657,7 +658,7 @@ const initNotificationManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([NOTIFICATION_DIGEST_KEY], { retryCount: 0 });
+      lock = await lockResources([NOTIFICATION_DIGEST_KEY], { retryCount: 0 });
       logApp.info('[OPENCTI-MODULE] Running notification manager (digest)');
       while (!shutdown) {
         lock.signal.throwIfAborted();

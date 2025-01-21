@@ -6,7 +6,8 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
-import { EVENT_CURRENT_VERSION, lockResource } from '../database/redis';
+import { EVENT_CURRENT_VERSION } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
@@ -225,7 +226,7 @@ const initSyncManager = () => {
     let lock;
     try {
       logApp.debug('[OPENCTI-MODULE] Running sync manager');
-      lock = await lockResource([SYNC_MANAGER_KEY], { retryCount: 0 });
+      lock = await lockResources([SYNC_MANAGER_KEY], { retryCount: 0 });
       managerRunning = true;
       await processingLoop(lock);
     } catch (e) {

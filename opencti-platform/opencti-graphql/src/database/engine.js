@@ -177,7 +177,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { lockResource } from './redis';
+import { lockResources } from '../lock/master-lock';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -4009,7 +4009,7 @@ const loadDraftElement = async (context, user, element) => {
   const currentDraft = getDraftContext(context, user);
   const lockKey = `${draftCopyLockPrefix}_${currentDraft}_${element.internal_id}`;
   try {
-    lock = await lockResource([lockKey]);
+    lock = await lockResources([lockKey]);
     const loadedElement = await elLoadById(context, user, element.internal_id);
     if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
 
