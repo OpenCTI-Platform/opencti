@@ -1,12 +1,11 @@
 import Chip from '@mui/material/Chip';
 import { graphql, useFragment } from 'react-relay';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
-import { Edit } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
 
-const requestAccessFragment = graphql`
+export const requestAccessFragment = graphql`
     fragment RequestAccessStatusFragment_entitySetting on EntitySetting {
         id
         target_type
@@ -67,14 +66,6 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
               ),
             }}
           />
-          <IconButton
-            color="primary"
-            aria-label="Workflow"
-            aria-haspopup="true"
-            size="large"
-          >
-            <Edit fontSize="small" />
-          </IconButton>
         </div>
 
         <div>
@@ -97,15 +88,26 @@ const RequestAccessStatus = ({ data }: RequestAccessProps) => {
               ),
             }}
           />
-          <IconButton
-            color="primary"
-            aria-label="Workflow"
-            aria-haspopup="true"
-            size="large"
-          >
-            <Edit fontSize="small" />
-          </IconButton>
         </div>
+      </div>
+      <div>
+        {t_i18n('Request access admin:')}
+        <Chip
+          variant="outlined"
+          label={'TODO UNE ORGA'}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 25,
+            margin: 7,
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 100,
+            backgroundColor: hexToRGB(
+              '#000000',
+            ),
+          }}
+        />
       </div>
     </>
   );
