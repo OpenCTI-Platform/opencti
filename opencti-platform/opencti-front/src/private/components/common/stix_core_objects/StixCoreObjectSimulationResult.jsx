@@ -1,77 +1,42 @@
-import React, { useState } from 'react';
-import { makeStyles, useTheme } from '@mui/styles';
-import { CheckOutlined, ErrorOutlined, LaunchOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
-import Button from '@mui/material/Button';
+import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import React, { useState } from 'react';
+import Tooltip from '@mui/material/Tooltip';
+import { CheckOutlined, ErrorOutlined, LaunchOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
-import { graphql, useLazyLoadQuery } from 'react-relay';
-import DialogActions from '@mui/material/DialogActions';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
-import { Field, Form, Formik } from 'formik';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
-import EEChip from '../entreprise_edition/EEChip';
+import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
-import { useFormatter } from '../../../../components/i18n';
+import EEChip from '../entreprise_edition/EEChip';
+import Transition from '../../../../components/Transition';
+import obasLight from '../../../../static/images/xtm/obas_light.png';
+import obasDark from '../../../../static/images/xtm/obas_dark.png';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { extractSimpleError, fileUri, QueryRenderer } from '../../../../relay/environment';
-import obasDark from '../../../../static/images/xtm/obas_dark.png';
-import obasLight from '../../../../static/images/xtm/obas_light.png';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import TextField from '../../../../components/TextField';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import SelectField from '../../../../components/fields/SelectField';
+import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useAI from '../../../../utils/hooks/useAI';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
 import useXTM from '../../../../utils/hooks/useXTM';
-import SelectField from '../../../../components/fields/SelectField';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import TextField from '../../../../components/TextField';
-
-const useStyles = makeStyles((theme) => ({
-  simulationResults: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
-  charts: {
-    display: 'flex',
-  },
-  chartContainer: {
-    position: 'relative',
-    overflow: 'hidden',
-    width: 40,
-    height: 40,
-    padding: 4,
-  },
-  chart: {
-    position: 'absolute',
-    top: -5,
-    left: -5,
-  },
-  iconOverlay: {
-    fontSize: 18,
-    position: 'absolute',
-    top: 16,
-    left: 16,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import useAI from '../../../../utils/hooks/useAI';
 
 const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = graphql`
   query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
@@ -125,68 +90,63 @@ const stixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlacehol
   }
 `;
 
-const StixCoreObjectSimulationResultAttackPatternsForContainersQuery = graphql`
-  query StixCoreObjectSimulationResultAttackPatternsForContainersQuery($id: String!) {
-    stixCoreObject(id: $id) {
-      id
-      entity_type
-      ... on Container {
-        objects (types: ["Attack-Pattern"]){
-          edges {
-            types
-            node {
-              ... on AttackPattern {
-                id
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+const useStyles = makeStyles((theme) => ({
+  simulationResults: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  charts: {
+    display: 'flex',
+  },
+  chartContainer: {
+    position: 'relative',
+    overflow: 'hidden',
+    width: 40,
+    height: 40,
+    padding: 4,
+  },
+  chart: {
+    position: 'absolute',
+    top: -5,
+    left: -5,
+  },
+  iconOverlay: {
+    fontSize: 18,
+    position: 'absolute',
+    top: 16,
+    left: 16,
+  },
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+}));
 
-const stixCoreObjectSimulationResultAttackPatternsForThreatsQuery = graphql`
-  query StixCoreObjectSimulationResultAttackPatternsForThreatsQuery($id: Any!) {
-    stixCoreRelationships(filters: {
-      mode: and,
-      filters: [
-        {
-          key: "relationship_type",
-          values: ["uses"],
-        },
-        {
-          key: "fromOrToId",
-          values: [$id],
-        },
-        {
-          key: "elementWithTargetTypes",
-          values: ["Attack-Pattern"],
-        }
-      ],
-      filterGroups: [
-
-      ],
-    }) {
-      edges {
-        node {
-          id
-        }
-      }
-    }
-  }
-`;
-
-const StixCoreObjectSimulationResult = ({ id, type }) => {
-  const theme = useTheme();
+const StixCoreObjectSimulationResult = ({
+  id,
+  queryRef,
+  query,
+  type,
+  simulationType,
+  setSimulationType,
+}) => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const [openCallToAction, setOpenCallToAction] = useState(false);
-  const { oBasConfigured, oBasDisableDisplay } = useXTM();
+  const theme = useTheme();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
   const { enabled, configured } = useAI();
   const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
-  const [simulationType, setSimulationType] = useState('technical');
+
+  const { oBasConfigured, oBasDisableDisplay } = useXTM();
+  const [filters, helpers] = useFiltersState(emptyFilterGroup);
+
+  const [open, setOpen] = useState(false);
+  const [openCallToAction, setOpenCallToAction] = useState(false);
   const [platforms, setPlatforms] = useState([{ label: 'Windows', value: 'Windows' }]);
   const [architecture, setArchitecture] = useState('x86_64');
   const [selection, setSelection] = useState('random');
@@ -194,22 +154,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [resultError, setResultError] = useState(null);
-  const [filters, helpers] = useFiltersState(emptyFilterGroup);
-  const { t_i18n } = useFormatter();
-  const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
 
-  // Determine the query based on the type
-  let attackPatternsQuery;
-  if (type === 'container') {
-    attackPatternsQuery = StixCoreObjectSimulationResultAttackPatternsForContainersQuery;
-  } else if (type === 'threat') {
-    attackPatternsQuery = stixCoreObjectSimulationResultAttackPatternsForThreatsQuery;
-  } else {
-    throw new Error('Type of the simulation should be container or threat');
-  }
-
-  // Fetch the attackPatterns using the selected query
-  const attackPatterns = useLazyLoadQuery(attackPatternsQuery, { id });
+  const attackPatterns = usePreloadedQuery(query, queryRef);
 
   // Check if there are attack patterns in the entity
   const hasAttackPatterns = (
@@ -217,13 +163,13 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     || (type === 'threat' && attackPatterns?.stixCoreRelationships?.edges?.length > 0)
   );
 
-  const canGenerateScenario = () => {
-    return (
-      (simulationType === 'technical' && hasAttackPatterns && platforms.length > 0 && architecture)
-      || (simulationType === 'simulated' && enabled && configured && isEnterpriseEdition)
-      || (simulationType === 'mixed' && ((enabled && configured && isEnterpriseEdition) && (hasAttackPatterns && platforms.length > 0 && architecture)))
-    );
-  };
+  const platformOptions = [
+    { label: 'Windows', value: 'Windows' },
+    { label: 'Linux', value: 'Linux' },
+    { label: 'MacOS', value: 'MacOS' },
+  ];
+
+  const opacity = (!hasAttackPatterns && simulationType) === 'technical' ? 0.38 : 1;
 
   const handleClose = () => {
     setSimulationType('technical');
@@ -236,6 +182,14 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     setResult(null);
     setResultError(null);
     handleClose();
+  };
+
+  const canGenerateScenario = () => {
+    return (
+      (simulationType === 'technical' && hasAttackPatterns && platforms.length > 0 && architecture)
+      || (simulationType === 'simulated' && enabled && configured && isEnterpriseEdition)
+      || (simulationType === 'mixed' && ((enabled && configured && isEnterpriseEdition) && (hasAttackPatterns && platforms.length > 0 && architecture)))
+    );
   };
 
   const [commitMutationGenerateContainer] = useApiMutation(stixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation);
@@ -327,6 +281,14 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     }
   };
 
+  const initialValues = {
+    simulationType,
+    platforms,
+    architecture,
+    interval,
+    selection,
+  };
+
   const simulationGenerationValidator = () => {
     const basicShape = {
       simulationType: Yup.string().required(t_i18n('This field is required')),
@@ -345,22 +307,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     };
     return Yup.object().shape({ ...basicShape, ...technicalShape });
   };
-
-  const platformOptions = [
-    { label: 'Windows', value: 'Windows' },
-    { label: 'Linux', value: 'Linux' },
-    { label: 'MacOS', value: 'MacOS' },
-  ];
-
-  const initialValues = {
-    simulationType,
-    platforms,
-    architecture,
-    interval,
-    selection,
-  };
-
-  const opacity = (!hasAttackPatterns && simulationType) === 'technical' ? 0.38 : 1;
 
   const renderForm = () => {
     return (
@@ -751,4 +697,5 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
     </>
   );
 };
+
 export default StixCoreObjectSimulationResult;
