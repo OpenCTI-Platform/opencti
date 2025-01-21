@@ -4,7 +4,7 @@ import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-d
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../../utils/access';
 import { listAllEntities, listAllFromEntitiesThroughRelations } from '../../database/middleware-loader';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { findById as findUserById } from '../../domain/user';
 import { logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
@@ -16,6 +16,10 @@ import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { getSettings } from '../../domain/settings';
+import { FunctionalError } from '../../config/errors';
+import { getEntityFromCache } from '../../database/cache';
+import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
@@ -121,33 +125,47 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
   return result;
 };
 
-const computeAuthorizedMembersForRequestAccess = (grantedOrganizationsIds: any[]) => {
+const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, user: AuthUser, requestAcessEntities: string[]) => {
   const authorizedMembers = [];
-  // TODO get admin orga from request access entity settings
-  if (grantedOrganizationsIds.length < 1) {
-    authorizedMembers.push({
-      id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-      access_right: 'admin',
-    });
+  const rfiEntitySettings = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  // const rfiEntitySettings = await findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  if (rfiEntitySettings) {
+    const requestAccessAdmin = rfiEntitySettings.approval_admin;
+    const grantedOrganizationsIds = [];
+    requestAcessEntities.map((entity) => grantedOrganizationsIds.push(entity.objectOrganization.id));
+    if (grantedOrganizationsIds.length < 1) {
+      authorizedMembers.push({
+        id: requestAccessAdmin,
+        access_right: 'admin',
+      });
+    }
+    if (grantedOrganizationsIds.length < 1) {
+      // const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS); // TODO should we get from cache?
+      const settings = await getSettings(context);
+      const platformOrganization = settings.platform_organization;
+      if (platformOrganization) {
+        authorizedMembers.push({
+          id: platformOrganization,
+          access_right: 'admin',
+        });
+      }
+      throw FunctionalError('This feature requires data segregation by organization. Please contact you administrator.');
+    }
+    if (grantedOrganizationsIds.length > 0) {
+      grantedOrganizationsIds.map((organizationId) => authorizedMembers.push({
+        id: organizationId,
+        access_right: 'edit',
+      }));
+    }
+    return authorizedMembers;
   }
-  if (grantedOrganizationsIds.length < 1) {
-    // Todo: if no granted ref => use main platform orga
-  }
-  if (grantedOrganizationsIds.length > 0) {
-    grantedOrganizationsIds.map((organizationId) => authorizedMembers.push({
-      id: organizationId,
-      access_right: 'edit',
-    }));
-  }
-  return authorizedMembers;
+  throw FunctionalError('Please set an approval admin fro request access');
 };
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
 
-  const allUsers = await findUsersThatCanShareWithOrganizations(context, SYSTEM_USER, input.request_access_members); // TODO modifify findUsersThatCanShareWithOrganizations
-  const grantedOrganizationsIds: string[] = allUsers.map((member) => member.organizations); // TODO fix this
-  const authorized_members = computeAuthorizedMembersForRequestAccess(grantedOrganizationsIds);
+  const authorized_members = computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
   logApp.info('[OPENCTI-MODULE][Request access] - authorized_members', { authorized_members });
 
   const requestedEntities = input.request_access_entities;
