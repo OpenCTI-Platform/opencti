@@ -6,8 +6,12 @@ import { logApp } from '../config/conf';
 // -- Start the control lock manager
 let forked;
 export const initLockFork = () => {
-  forked = fork('./build/child-lock.manager.js');
-  logApp.info('[CHECK] Locking fork process started', forked);
+  if (!forked) {
+    forked = fork('./build/child-lock.manager.js');
+    logApp.info('[CHECK] Locking fork process started');
+  } else {
+    logApp.info('[CHECK] Locking fork process already started');
+  }
 };
 
 const unlockResources = async (operation) => {
