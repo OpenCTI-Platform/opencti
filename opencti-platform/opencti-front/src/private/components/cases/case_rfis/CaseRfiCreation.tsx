@@ -62,6 +62,9 @@ const caseRfiMutation = graphql`
       entity_type
       parent_types
       name
+      representative{
+        main
+      }
       description
       ...CaseRfisLineCase_node
     }

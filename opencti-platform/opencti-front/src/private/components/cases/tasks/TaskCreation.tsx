@@ -39,6 +39,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const taskAddMutation = graphql`
   mutation TaskCreationMutation($input: TaskAddInput!) {
     taskAdd(input: $input) {
+      id
+      representative{
+        main
+      }
       ...TasksLine_node
       ... on Task {
         objects {

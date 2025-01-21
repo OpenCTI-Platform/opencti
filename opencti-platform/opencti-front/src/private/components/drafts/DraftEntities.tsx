@@ -37,6 +37,9 @@ const draftEntitiesLineFragment = graphql`
             id
             name
         }
+        ... on Country {
+            name
+        }
     }
 `;
 
@@ -167,6 +170,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftEntitiesLinesPaginationQuery>;
 
+  console.log("Preloaded: ", {preloadedPaginationProps});
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     draftVersion: {
@@ -263,7 +267,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
                   <StixDomainObjectCreation
                     display={open}
                     inputValue={searchTerm}
-                    paginationKey="Pagination_stixCoreObjects"
+                    paginationKey="Pagination_draftWorkspaceEntities"
                     paginationOptions={queryPaginationOptions}
                     speeddial={true}
                     open={openCreateEntity}

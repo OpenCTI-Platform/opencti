@@ -138,10 +138,12 @@ const sharedUpdater = (
   newEdge,
 ) => {
   const userProxy = store.get(userId);
+  const params = { ...paginationOptions };
+  delete params.count;
   const conn = ConnectionHandler.getConnection(
     userProxy,
     paginationKey,
-    paginationOptions,
+    params,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };

@@ -59,6 +59,9 @@ export const noteCreationUserMutation = graphql`
   mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
     userNoteAdd(input: $input) {
       id
+      representative{
+        main
+      }
       standard_id
       entity_type
       parent_types

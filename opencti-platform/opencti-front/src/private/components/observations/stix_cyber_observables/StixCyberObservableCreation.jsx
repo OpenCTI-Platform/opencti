@@ -183,6 +183,13 @@ const stixCyberObservableMutation = graphql`
       Persona: $Persona
     ) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
+      representative {
+        main
+      }
       standard_id
       entity_type
       parent_types
