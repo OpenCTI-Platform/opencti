@@ -77,7 +77,7 @@ import {
   RULE_PREFIX
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
-import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_ALIASES,
@@ -3066,7 +3066,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   });
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true } = options;
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
@@ -3098,6 +3098,9 @@ export const elAggregationCount = async (context, user, indexName, options = {})
         let label = b.key;
         if (typeof label === 'number') {
           label = String(b.key);
+        } else if (field === 'entity_type' && convertEntityTypeLabel) {
+          // entity_type is returned in lowercase, we want to return the label with the right entity type.
+          label = generateInternalType({ type: b.key });
         } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
