@@ -132,9 +132,7 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
     caseTasksLinesQuery,
     queryTaskPaginationOptions,
   );
-
-
-  console.log('caseRfi', caseRfi);
+  // console.log('caseRfi', caseRfi);
   return (
     <>
       <Grid

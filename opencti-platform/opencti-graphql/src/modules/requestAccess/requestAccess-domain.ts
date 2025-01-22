@@ -46,31 +46,64 @@ export const getRfiEntitySettings = async (context: AuthContext) => {
   return getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
 };
 
-export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
+export const verifyRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
+  let message = '';
+
   // 1. EE must be enabled
   const isEEConfigured: boolean = await isEnterpriseEdition(context);
+  if (!isEEConfigured) {
+    message += 'Enterprise edition must be enabled.';
+  }
   // 2. Platform organization should be set up
-  const platformOrg: boolean = await getPlatformOrganization(context, user) !== undefined;
+  const platformOrgValue = await getPlatformOrganization(context, user);
+  const isPlatformOrgSetup: boolean = platformOrgValue !== undefined && platformOrgValue !== '';
+  if (!isPlatformOrgSetup) {
+    message += 'Platform organization must be setup.';
+  }
   // 3. Workflow should be enabled
   const rfiEntitySettings = await getRfiEntitySettings(context);
   const isWorkflowEnabled: boolean = rfiEntitySettings?.workflow_configuration !== undefined;
+  if (!isWorkflowEnabled) {
+    message += 'At least one workflow status must be configured.';
+  }
+
   // 4. Request access status should be configured
   const areRequestAccessStatusConfigured: boolean = rfiEntitySettings?.request_access_workflow !== undefined
     && rfiEntitySettings.request_access_workflow.declined_workflow_id !== undefined
     && rfiEntitySettings.request_access_workflow.approved_workflow_id !== undefined;
+  if (!areRequestAccessStatusConfigured) {
+    message += 'RFI status for decline and approval must be configured in entity settings.';
+  }
+
   // 5. Auth member admin should be configured.
   // FIXME uncomment when admin approval configuration is implemented
   const isRequestAccesApprovalAdminConfigured = true; // rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined;
-  return isEEConfigured
-    && platformOrg
+  if (!isRequestAccesApprovalAdminConfigured) {
+    message += 'At least one approval administrator must be configured in entity settings.';
+  }
+
+  const isEnabled: boolean = isEEConfigured
+    && isPlatformOrgSetup
     && isWorkflowEnabled
     && areRequestAccessStatusConfigured
     && isRequestAccesApprovalAdminConfigured;
+
+  return {
+    enabled: isEnabled,
+    message
+  };
+};
+
+export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
+  const result = await verifyRequestAccessEnabled(context, user);
+  return result.enabled;
 };
 
 export const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
-  if (!await isRequestAccessEnabled(context, user)) {
-    throw FunctionalError('[OPENCTI-MODULE][Request access] Request access feature is missing configuration.');
+  const result = await verifyRequestAccessEnabled(context, user);
+  if (!result.enabled) {
+    // TODO add doc code and doc page.
+    throw FunctionalError('[OPENCTI-MODULE][Request access] Request access feature is missing configuration.', { message: result.message, doc_code: 'REQUEST_ACCESS_CONFIGURATION' });
   }
 };
 
@@ -205,10 +238,31 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   await checkRequestAccessEnabled(context, user);
   // await initForDev(context);
 
-  const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
   const requestedEntities = input.request_access_entities;
-  const allActionStatuses = await getRFIStatusMap(context, user);
+  const organizationId = input.request_access_members[0];
+  const elementId = input.request_access_entities[0];
 
+  const elementData = await elLoadById(context, SYSTEM_USER, elementId) as unknown as BasicStoreBase;
+  if (elementData === undefined) {
+    throw ValidationError('Element not found for Access Request', 'request_access_members', input);
+  }
+
+  const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
+  if (organizationData === undefined) {
+    throw ValidationError('Organization not found for Access Request', 'request_access_entities', input);
+  }
+  const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, input.request_access_entities);
+  const mainRepresentative = extractEntityRepresentativeName(elementData);
+
+  const humanDescription = 'Access requested:\n'
+      + ` - by user: ${user.name} \n`
+      + ` - for organization: ${organizationData.name} \n`
+      + ` - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
+      + `Reason: ${input.request_access_reason}`;
+
+  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.New);
+
+  const allActionStatuses = await getRFIStatusMap(context, user);
   const action: RequestAccessAction = {
     reason: input.request_access_reason || 'no reason',
     members: input.request_access_members,
@@ -218,30 +272,18 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     workflowMapping: allActionStatuses
   };
 
-  const organizationId = input.request_access_members[0];
-  const elementId = input.request_access_entities[0];
-
-  const elementData = await elLoadById(context, SYSTEM_USER, elementId) as unknown as BasicStoreBase;
-  if (elementData && organizationId) {
-    const mainRepresentative = extractEntityRepresentativeName(elementData);
-    const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
-    const humanDescription = `Access requested:\n - by user: ${user.name} \n - for organization: ${organizationData.name} \n - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}`;
-
-    const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.New);
-    const rfiInput: CaseRfiAddInput = {
-      name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
-      objectParticipant: [user.id],
-      objects: requestedEntities,
-      description: humanDescription,
-      information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
-      x_opencti_request_access: `${JSON.stringify(action)}`,
-      authorized_members,
-      x_opencti_workflow_id
-    };
-    const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
-    return requestForInformation.id;
-  }
-  throw ValidationError('Missing parameters for Access Request', input);
+  const rfiInput: CaseRfiAddInput = {
+    name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
+    objectParticipant: [user.id],
+    objects: requestedEntities,
+    description: humanDescription,
+    information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
+    x_opencti_request_access: `${JSON.stringify(action)}`,
+    authorized_members,
+    x_opencti_workflow_id
+  };
+  const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
+  return requestForInformation.id;
 };
 
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
