@@ -1,4 +1,4 @@
-import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from './utils';
+import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { DatabaseError } from '../config/errors';
 import { elRawDeleteByQuery, elRawUpdateByQuery } from './engine';
 
@@ -31,5 +31,23 @@ export const elDeleteDraftContextFromUsers = async (context, user, draftId) => {
     },
   }).catch((err) => {
     throw DatabaseError('Error deleting users draft context', { cause: err });
+  });
+};
+
+export const elDeleteDraftContextFromWorks = async (context, user, draftId) => {
+  return elRawUpdateByQuery({
+    index: READ_INDEX_HISTORY,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: "ctx._source.remove('draft_context')" },
+      query: {
+        term: {
+          'draft_context.keyword': draftId
+        }
+      },
+    },
+  }).catch((err) => {
+    throw DatabaseError('Error deleting works draft context', { cause: err });
   });
 };
