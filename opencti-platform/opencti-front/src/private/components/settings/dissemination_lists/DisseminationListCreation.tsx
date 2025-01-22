@@ -99,8 +99,9 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
             label={t_i18n('Emails')}
             fullWidth={true}
             multiline={true}
-            rows={2}
+            rows={4}
             style={{ marginTop: 20 }}
+            required
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
