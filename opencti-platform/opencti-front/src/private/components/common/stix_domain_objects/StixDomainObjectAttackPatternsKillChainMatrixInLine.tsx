@@ -9,7 +9,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { ProgressWrench } from 'mdi-material-ui';
+import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
   StixDomainObjectAttackPatternsKillChainQuery$variables,
@@ -141,6 +141,11 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
             (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action">
               <Tooltip title={t_i18n('Courses of action view')}>
                 <ProgressWrench color="primary" fontSize="small" />
+              </Tooltip>
+            </ToggleButton>),
+            (<ToggleButton key="relationships" value="relationships" aria-label="relationships">
+              <Tooltip title={t_i18n('Relationships view')}>
+                <RelationManyToMany color="primary" fontSize="small" />
               </Tooltip>
             </ToggleButton>),
           ]}
