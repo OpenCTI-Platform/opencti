@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { DisseminationListSendInput, QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST } from './disseminationList-types';
 import { sendMail } from '../../database/smtp';
@@ -27,6 +27,8 @@ import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import conf from '../../config/conf';
+import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
+import type { BasicStoreObject } from '../../types/store';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -49,7 +51,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const filePath = input.email_attached_file_id;
   const file = await loadFile(context, user, filePath);
-  if (file && file.metaData.mimetype === 'application/pdf' && settings.valid_enterprise_edition) {
+  if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id && settings.valid_enterprise_edition) {
     const stream = await downloadFile(file.id);
     const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
     const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
@@ -68,9 +70,8 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
       ],
     };
     await sendMail(sendMailArgs);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const data = buildContextDataForFile(null, file.id, file.name);
+    const instance = await internalLoadById(context, user, file.metaData.entity_id, { indices: [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS] });
+    const data = buildContextDataForFile(instance as BasicStoreObject, file.id, file.name, file.metaData.file_markings, input);
     await publishUserAction({
       event_access: 'administration',
       user,

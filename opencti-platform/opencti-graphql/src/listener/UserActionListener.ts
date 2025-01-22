@@ -85,6 +85,7 @@ export interface UserExportAction extends BasicUserAction {
 export interface UserFileActionContextData extends ElementContextData {
   path: string
   file_name: string
+  input?: unknown;
 }
 export interface UserFileAction extends BasicUserAction {
   event_type: 'file'
@@ -190,14 +191,15 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon, C exten
   return contextData;
 };
 
-export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string, file_markings: string[] = []) => {
+export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string, file_markings: string[] = [], input: unknown = {}) => {
   const baseData: UserFileActionContextData = {
     path,
     id: entity?.internal_id,
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entity?.entity_type ?? 'global',
     file_name: filename,
-    object_marking_refs_ids: file_markings
+    object_marking_refs_ids: file_markings,
+    input,
   };
   return completeContextDataForEntity(baseData, entity);
 };
