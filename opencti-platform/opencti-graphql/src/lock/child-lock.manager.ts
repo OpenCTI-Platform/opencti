@@ -23,7 +23,9 @@ initializeOnlyRedisLockClient().then(() => {
       try {
         const lock = await lockResource(data.ids, data.args);
         activeLocks.set(data.operation, lock);
-        if (process.send) process.send({ operation: data.operation, type: data.type, success: true });
+        if (process.send) {
+          process.send({ operation: data.operation, type: data.type, success: true });
+        }
       } catch (err) {
         if (process.send) {
           process.send({ operation: data.operation, error: err, type: data.type, success: false });
@@ -34,12 +36,17 @@ initializeOnlyRedisLockClient().then(() => {
     if (data.type === 'unlock') {
       const currentLock = activeLocks.get(data.operation);
       if (currentLock) {
-        // console.log('> unlocking', data.operation);
         try {
           await currentLock.unlock();
-          if (process.send) process.send({ operation: data.operation, type: data.type, success: true });
+          if (process.send) {
+            process.send({ operation: data.operation, type: data.type, success: true });
+          }
         } catch (err) {
-          if (process.send) process.send({ operation: data.operation, error: err, type: data.type, success: false });
+          if (process.send) {
+            process.send({ operation: data.operation, error: err, type: data.type, success: false });
+          }
+        } finally {
+          activeLocks.delete(data.operation);
         }
       }
     }
