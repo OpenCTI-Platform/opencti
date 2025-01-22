@@ -125,7 +125,7 @@ const DisseminationLists = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 15,
+      percentWidth: 95,
     },
   };
 
