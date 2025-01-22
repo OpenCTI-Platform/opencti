@@ -3,12 +3,14 @@ import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
+import DataChips from '@components/common/DataChip';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
+import { useFormatter } from '../../i18n';
 
 const cellContainerStyle = (theme: Theme) => ({
   display: 'flex',
@@ -55,6 +57,7 @@ const DataTableCell = ({
   data,
 }: DataTableCellProps) => {
   const theme = useTheme<Theme>();
+  const { fsd } = useFormatter();
   const { useDataCellHelpers, tableWidthState: [tableWidth] } = useDataTableContext();
   const helpers = useDataCellHelpers(cell);
 
@@ -67,7 +70,45 @@ const DataTableCell = ({
     gap: theme.spacing(0.5),
     fontSize: '13px',
   };
-
+  // Handle result data forma columns
+  if (data.columns) {
+    const { handleAddFilter } = helpers.storageHelpers;
+    const columnData = data.columns[cell.order];
+    const renderSimpleRepresentatives = () => {
+      if (columnData.representatives.length === 0) {
+        return <>-</>;
+      }
+      if (columnData.type === 'short' || columnData.type === 'text') {
+        return columnData.representatives.map((r: { value: string }) => <>{r.value}</>);
+      }
+      if (columnData.type === 'date') {
+        return columnData.representatives.map((r: { value: string }) => <>{fsd(r.value)}</>);
+      }
+      if (columnData.type === 'numeric') {
+        return columnData.representatives.map((r: { value: string }) => <>{r.value}</>);
+      }
+      if (columnData.type === 'boolean') {
+        return columnData.representatives.map((r: { value: string }) => <>{r.value}</>);
+      }
+      return <>Unsupported</>;
+    };
+    const isChip = columnData.type === 'chip' || columnData.type === 'vocabulary';
+    return (
+      <div
+        key={`${cell.id}_${data.id}`}
+        style={{
+          ...cellContainerStyle(theme),
+          width: Math.round(tableWidth * (cell.percentWidth / 100)),
+        }}
+      >
+        <div style={cellStyle}>
+          {isChip && <DataChips onClick={handleAddFilter} attribute={cell.id} elements={columnData.representatives}/>}
+          {!isChip && renderSimpleRepresentatives()}
+        </div>
+      </div>
+    );
+  }
+  // Default representation
   return (
     <div
       key={`${cell.id}_${data.id}`}
