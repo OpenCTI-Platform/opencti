@@ -38,7 +38,6 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useXTM from '../../../../utils/hooks/useXTM';
 import useAI from '../../../../utils/hooks/useAI';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = graphql`
   query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
