@@ -18,7 +18,7 @@ import { deleteElementById, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { usersSessionRefresh } from '../../domain/user';
@@ -193,7 +193,8 @@ export const buildDraftVersion = (object: BasicStoreCommon) => {
   }
 
   if (!object.draft_ids || object.draft_ids.length === 0) {
-    throw FunctionalError('Cannot find draft ids on draft entity', { id: object.id });
+    logApp.warn('Draft entity without draft ids found', { id: object.id });
+    return null;
   }
 
   return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
