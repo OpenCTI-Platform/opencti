@@ -15901,7 +15901,7 @@ __metadata:
     rxjs: "npm:7.8.1"
     three-spritetext: "npm:1.9.3"
     typescript: "npm:5.7.2"
-    unified: "npm:11.0.4"
+    unified: "npm:11.0.5"
     use-analytics: "npm:1.1.0"
     uuid: "npm:11.0.3"
     vite: "npm:5.4.8"
@@ -19648,22 +19648,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unified@npm:11.0.4":
-  version: 11.0.4
-  resolution: "unified@npm:11.0.4"
-  dependencies:
-    "@types/unist": "npm:^3.0.0"
-    bail: "npm:^2.0.0"
-    devlop: "npm:^1.0.0"
-    extend: "npm:^3.0.0"
-    is-plain-obj: "npm:^4.0.0"
-    trough: "npm:^2.0.0"
-    vfile: "npm:^6.0.0"
-  checksum: 10/425f0618d6f5e5d2ae64ec206cb6fd11f4b86fec7a785cfe2fc3a334191a91bf837eecb32858c70bcc2c08e76ce9d6a38457319f70f77399c8f496fb8e486817
-  languageName: node
-  linkType: hard
-
-"unified@npm:^11.0.0":
+"unified@npm:11.0.5, unified@npm:^11.0.0":
   version: 11.0.5
   resolution: "unified@npm:11.0.5"
   dependencies:
