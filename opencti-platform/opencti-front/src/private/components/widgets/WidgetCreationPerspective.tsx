@@ -6,25 +6,41 @@ import { DatabaseOutline, FlaskOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import React from 'react';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../components/i18n';
 import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 
 const WidgetCreationPerspective = () => {
   const { t_i18n } = useFormatter();
-  const { config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { context, config, setStep, setConfigWidget } = useWidgetConfigContext();
   const { type, dataSelection } = config.widget;
 
   const handleSelectPerspective = (perspective: WidgetPerspective) => {
+    const fintelTemplateEntitiesInitialFilters = {
+      mode: 'and',
+      filters: [{
+        id: uuid(),
+        key: 'objects',
+        values: [SELF_ID],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const initialFilters = context === 'fintelTemplate' && perspective === 'entities'
+      ? fintelTemplateEntitiesInitialFilters
+      : emptyFilterGroup;
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective,
-      filters: perspective === n.perspective ? n.filters : emptyFilterGroup,
+      filters: perspective === n.perspective ? n.filters : initialFilters,
       dynamicFrom: perspective === n.perspective ? n.dynamicFrom : emptyFilterGroup,
       dynamicTo: perspective === n.perspective ? n.dynamicTo : emptyFilterGroup,
-    }));
+    }
+    ));
     setConfigWidget({
       ...config.widget,
       perspective,
