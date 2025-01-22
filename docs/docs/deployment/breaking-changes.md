@@ -10,6 +10,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                           | Deprecated in | Changed in |
 |:-----------------------------------------------------------------|:--------------|:-----------|
+| [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders)  | 6.5           | 6.8        |
 | [Removing bi-directional stream connectors](#removing-some-stream-connectors)  | 6.3           | 6.6        |
 | [Promote Observable API](#change-to-the-observable-promote-API)  | 6.2           | 6.5        |
 | [SAML authentication parameters](#change-to-SAML-authentication) |               | 6.2        |
@@ -17,12 +18,25 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 
 
+## OpenCTI 6.5
+
+### Deprecation
+
+<a id="generation-scenario-mutation-openti-openbas-with-placeholders"></a>
+#### GenerationScenario Mutations in OpenCTI - OpenBAS
+
+The mutations related to GenerationScenario have been deprecated due to changes in their signature and response format. These updates provide more detailed information when generating scenarios.
+
+For example, if an attack pattern does not exist in the OpenBAS catalog, the response will now include a list of the missing these attack pattern identifiers.
+
+For more details, see [this migration guide](./breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md)
+
 ## OpenCTI 6.3
 
 ### Deprecation
 
 <a id="removing-some-stream-connectors"></a>
-#### Removing some stream connectors  
+#### Removing some stream connectors
 
 Some bi-directional stream connectors have been divided into two distinct connectors:
 
