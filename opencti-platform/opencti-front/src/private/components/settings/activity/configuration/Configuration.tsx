@@ -129,7 +129,7 @@ ConfigurationComponentProps
       resetForm();
     };
   };
-  if (settings.platform_enterprise_edition.license_validated) {
+  if (!settings.platform_enterprise_edition.license_validated) {
     return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
   return (
