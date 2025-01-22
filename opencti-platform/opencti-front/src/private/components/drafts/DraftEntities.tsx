@@ -35,9 +35,6 @@ const draftEntitiesLineFragment = graphql`
             id
             name
         }
-        ... on Country {
-            name
-        }
     }
 `;
 

@@ -147,7 +147,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment 
 export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment = graphql`
   fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node on StixCoreObject {
     id
-    draftVersion{
+    draftVersion {
       draft_id
       draft_operation
     }

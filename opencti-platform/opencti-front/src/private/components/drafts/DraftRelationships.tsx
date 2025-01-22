@@ -30,7 +30,7 @@ const draftRelationshipsLineFragment = graphql`
         created_at
         updated_at
         is_inferred
-        draftVersion{
+        draftVersion {
             draft_operation
         }
         createdBy {
