@@ -201,7 +201,7 @@
     "eslint-plugin-react-hooks": "4.6.2",
     "fast-glob": "3.3.3",
     "graphql-tag": "2.12.6",
-    "ts-loader": "9.5.1",
+    "ts-loader": "9.5.2",
     "typescript": "5.7.2",
     "vitest": "2.0.5"
   },
