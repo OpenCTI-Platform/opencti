@@ -52,21 +52,21 @@ const commonWidgetColumns: Record<string, WidgetColumn[]> = {
   'Case-Incident': [
     { attribute: 'priority' },
     { attribute: 'severity', label: 'Severity' },
-    { attribute: 'response_types', label: 'Incident type' },
+    { attribute: 'response_types', label: 'Response type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
   ],
   'Case-Rfi': [
     { attribute: 'priority' },
     { attribute: 'severity', label: 'Severity' },
-    { attribute: 'response_types', label: 'Incident type' },
+    { attribute: 'information_types', label: 'Information type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
   ],
   'Case-Rft': [
     { attribute: 'priority' },
     { attribute: 'severity', label: 'Severity' },
-    { attribute: 'response_types', label: 'Incident type' },
+    { attribute: 'takedown_types', label: 'Takedown type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
   ],
@@ -98,10 +98,10 @@ const commonWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'resource_level', label: 'Resource level' },
   ],
   Malware: [
-    { attribute: 'malware_types' },
+    { attribute: 'malware_types', label: 'Malware type' },
   ],
   Channel: [
-    { attribute: 'channel_types' },
+    { attribute: 'channel_types', label: 'Channel type' },
   ],
   Tool: [
     { attribute: 'tool_types', label: 'Tool types' },
@@ -113,15 +113,17 @@ const commonWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_epss_score', label: 'EPSS Score' },
     { attribute: 'x_opencti_epss_percentile', label: 'EPSS Percentile' },
   ],
-  // ttp ?
+  'Attack-Pattern': [
+    { attribute: 'x_mitre_id', label: 'External ID' },
+  ],
   'Course-Of-Action': [
     { attribute: 'x_mitre_id', label: 'External ID' },
   ],
   Event: [
-    { attribute: 'event_types' },
+    { attribute: 'event_types', label: 'Event type' },
   ],
   Organization: [
-    { attribute: 'x_opencti_organization_type' },
+    { attribute: 'x_opencti_organization_type', label: 'Organization type' },
   ],
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import type { WidgetColumn } from '../../utils/widget/widget';
@@ -24,10 +24,9 @@ const WidgetListCoreObjects = ({
   // sortBy,
   columns,
 }: WidgetListCoreObjectsProps) => {
-  const buildColumns = (columnsFromSelection: WidgetColumn[]): DataTableProps['dataColumns'] => {
-    const columnKeys = columnsFromSelection.map((column) => column.attribute).filter((key) => key !== null);
-    const percentWidth = (100) / (columnsFromSelection.length ?? 1);
-
+  const buildColumns = useCallback((): DataTableProps['dataColumns'] => {
+    const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
+    const percentWidth = (100) / (columns.length ?? 1);
     // if (sortBy && !['entity_type', 'name', 'value', 'observable_value', 'createdBy', 'objectLabel', 'x_opencti_workflow_id', 'objectMarking'].includes(sortBy)) {
     //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //   // @ts-ignore
@@ -45,17 +44,11 @@ const WidgetListCoreObjects = ({
         {},
       )
     ) as DataTableProps['dataColumns'];
-  };
-
-  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>(buildColumns(columns));
-
-  useEffect(() => {
-    setCurrentColumns(buildColumns(columns));
   }, [columns]);
 
   return (
     <DataTableWithoutFragment
-      dataColumns={currentColumns}
+      dataColumns={buildColumns()}
       storageKey={widgetId}
       data={data.map(({ node }) => node)}
       globalCount={data.length}

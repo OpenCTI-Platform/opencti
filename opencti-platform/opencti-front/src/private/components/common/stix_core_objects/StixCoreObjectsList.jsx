@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
-import { defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { defaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -258,6 +258,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on CaseIncident {
             priority
             severity
+            response_types
             objectAssignee {
               id
               name
@@ -272,6 +273,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on CaseRfi {
             priority
             severity
+            information_types
             objectAssignee {
               id
               name
@@ -286,6 +288,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on CaseRft {
             priority
             severity
+            takedown_types
             objectAssignee {
               id
               name
