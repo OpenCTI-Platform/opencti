@@ -26,7 +26,6 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
-import conf from '../../config/conf';
 import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import type { BasicStoreObject } from '../../types/store';
 
