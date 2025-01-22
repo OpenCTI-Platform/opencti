@@ -38,10 +38,6 @@ const operationStylesLight = {
     backgroundColor: '#ec7629',
     color: '#ffffff',
   },
-  grey: {
-    backgroundColor: '#6c6c7a',
-    color: '#ffffff',
-  },
 };
 
 const operationStylesDark = {
@@ -56,9 +52,6 @@ const operationStylesDark = {
   },
   lightYellow: {
     backgroundColor: '#ec7629',
-  },
-  grey: {
-    backgroundColor: '#6c6c7a',
   },
 };
 
@@ -84,10 +77,6 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
         return theme.palette.mode === 'light'
           ? { ...operationStylesLight.red }
           : { ...operationStylesDark.red };
-      case 'unchanged':
-        return theme.palette.mode === 'light'
-          ? { ...operationStylesLight.grey }
-          : { ...operationStylesDark.grey };
       default:
         return {};
     }
