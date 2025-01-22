@@ -143,7 +143,7 @@
     "react-test-renderer": "18.3.1",
     "relay-compiler": "17.0.0",
     "relay-test-utils": "17.0.0",
-    "typescript": "5.7.2",
+    "typescript": "5.7.3",
     "vite": "5.4.12",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "2.2.0",
