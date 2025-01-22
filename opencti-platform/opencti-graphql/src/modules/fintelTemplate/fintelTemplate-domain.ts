@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FintelTemplate, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, WidgetDataSelection } from '../../generated/graphql';
+import type { EditInput, FilterGroup, FintelTemplate, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, Widget, WidgetDataSelection } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -253,9 +253,20 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
   });
 };
 
+type FintelTemplateWidgetFromImport = {
+  variable_name: string,
+  widget: Widget & {
+    dataSelection: WidgetDataSelection & {
+      filters: FilterGroup,
+      dynamicFrom: FilterGroup,
+      dynamicTo: FilterGroup,
+    }
+  }
+};
+
 export const fintelTemplateImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
-  const fintel_template_widgets = parsedData.configuration.fintel_template_widgets as [FintelTemplateWidget];
+  const fintel_template_widgets = parsedData.configuration.fintel_template_widgets as FintelTemplateWidgetFromImport[];
 
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_VERSION_FOR_IMPORT)) {
     throw FunctionalError(
