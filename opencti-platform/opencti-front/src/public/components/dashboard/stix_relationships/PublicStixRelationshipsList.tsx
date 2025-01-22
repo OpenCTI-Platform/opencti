@@ -1,5 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React from 'react';
+import React, { useRef } from 'react';
+import { defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
@@ -8,6 +9,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsListQuery } from './__generated__/PublicStixRelationshipsListQuery.graphql';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import type { WidgetColumn } from '../../../../utils/widget/widget';
 
 const publicStixRelationshipsListQuery = graphql`
   query PublicStixRelationshipsListQuery(
@@ -4348,12 +4351,16 @@ const publicStixRelationshipsListQuery = graphql`
 
 interface PublicStixRelationshipsListComponentProps {
   queryRef: PreloadedQuery<PublicStixRelationshipsListQuery>
-  dateAttribute: string
+  widgetId: string
+  rootRef: DataTableProps['rootRef']
+  columns: WidgetColumn[]
 }
 
 const PublicStixRelationshipsListComponent = ({
   queryRef,
-  dateAttribute,
+  columns,
+  widgetId,
+  rootRef,
 }: PublicStixRelationshipsListComponentProps) => {
   const { publicStixRelationships } = usePreloadedQuery(
     publicStixRelationshipsListQuery,
@@ -4364,7 +4371,9 @@ const PublicStixRelationshipsListComponent = ({
     return (
       <WidgetListRelationships
         data={[...publicStixRelationships.edges]}
-        dateAttribute={dateAttribute}
+        widgetId={widgetId}
+        columns={columns}
+        rootRef={rootRef}
         publicWidget
       />
     );
@@ -4391,23 +4400,30 @@ const PublicStixRelationshipsList = ({
     },
   );
 
-  const dateAttribute = dataSelection[0].date_attribute ?? 'created_at';
+  const selection = dataSelection[0];
+  const columns = selection.columns ?? defaultWidgetColumns.relationships;
+
+  const rootRef = useRef<HTMLDivElement>(null);
 
   return (
     <WidgetContainer
       title={parameters?.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
-      {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixRelationshipsListComponent
-            queryRef={queryRef}
-            dateAttribute={dateAttribute}
-          />
-        </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      <div ref={rootRef} style={{ height: '100%' }}>
+        {queryRef ? (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+            <PublicStixRelationshipsListComponent
+              queryRef={queryRef}
+              columns={[...columns]}
+              widgetId={id}
+              rootRef={rootRef.current ?? undefined}
+            />
+          </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement}/>
+        )}
+      </div>
     </WidgetContainer>
   );
 };

@@ -80,20 +80,30 @@ const DataTableComponent = ({
   } = paginationLocalStorage;
 
   const buildColumns = (withLocalStorage = true) => {
+    const dataColumnsKeys = Object.keys(dataColumns);
+    const localStorageColumnsKeys = Object.keys(localStorageColumns)
+      .filter((key) => key !== 'select' && key !== 'navigate');
+
+    // Check if keys order/length is the same
+    const isOrderSame = dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
+
+    // Only use localStorage if order matches and we are allowed to
+    const useLocalStorage = isOrderSame && withLocalStorage;
+
     return [
       // Checkbox if necessary
       ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
       // Our real columns
       ...Object.entries(dataColumns).map(([key, column], index) => {
         const currentColumn = localStorageColumns?.[key];
-        let percentWidth = column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth;
-        if (withLocalStorage && currentColumn?.percentWidth) percentWidth = currentColumn?.percentWidth;
+        const percentWidth = column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth;
+
         return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
           ...column,
           // Override column config with what we have in local storage
-          order: withLocalStorage && currentColumn?.index ? currentColumn?.index : index,
-          visible: withLocalStorage && currentColumn?.visible ? currentColumn?.visible : true,
-          percentWidth,
+          order: useLocalStorage && currentColumn?.index ? currentColumn?.index : index,
+          visible: useLocalStorage && currentColumn?.visible ? currentColumn?.visible : true,
+          percentWidth: useLocalStorage && currentColumn?.percentWidth ? currentColumn?.percentWidth : percentWidth,
         });
       }),
       // inject "navigate" action (chevron) if navigable and no specific actions defined
@@ -101,19 +111,24 @@ const DataTableComponent = ({
     ].sort((a, b) => a.order - b.order);
   };
 
-  const [columns, setColumns] = useState(buildColumns());
+  const [columns, setColumns] = useState(() => buildColumns());
+
+  useEffect(() => {
+    const updatedColumns = buildColumns();
+    setColumns(updatedColumns);
+  }, [dataColumns]);
+
   useEffect(() => {
     setLocalStorageColumns((curr) => {
-      const cols = { ...curr };
-      columns.forEach((c) => {
-        cols[c.id] = {
-          ...cols[c.id],
+      return columns.reduce((acc, c) => {
+        acc[c.id] = {
+          ...curr[c.id],
           percentWidth: c.percentWidth,
           visible: c.visible,
           index: c.order,
         };
-      });
-      return cols;
+        return acc;
+      }, {} as LocalStorageColumns);
     });
   }, [columns]);
 

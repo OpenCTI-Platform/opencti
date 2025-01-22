@@ -447,6 +447,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             endDate={endDate}
             dataSelection={widget.dataSelection} // dynamicFrom and dynamicTo TODO
             parameters={widget.parameters}
+            widgetId={widget.id}
             variant="inLine"
           />
         );

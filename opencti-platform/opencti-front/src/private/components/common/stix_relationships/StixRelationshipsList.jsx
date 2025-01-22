@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
+import { defaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -4473,6 +4474,7 @@ const StixRelationshipsList = ({
   startDate,
   endDate,
   dataSelection,
+  widgetId,
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
@@ -4481,36 +4483,49 @@ const StixRelationshipsList = ({
       return 'No data selection';
     }
     const selection = dataSelection[0];
+    const columns = selection.columns ?? defaultWidgetColumns.relationships;
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+
+    const rootRef = useRef(null);
+
     return (
-      <QueryRenderer
-        query={stixRelationshipsListQuery}
-        variables={{
-          first: 50,
-          orderBy: dateAttribute,
-          orderMode: 'desc',
-          filters,
-          dynamicFrom: selection.dynamicFrom,
-          dynamicTo: selection.dynamicTo,
-        }}
-        render={({ props }) => {
-          if (
-            props
+      <div ref={rootRef} style={{ height: '100%', width: '100%' }}>
+        <QueryRenderer
+          query={stixRelationshipsListQuery}
+          variables={{
+            first: 50,
+            orderBy: dateAttribute,
+            orderMode: 'desc',
+            filters,
+            dynamicFrom: selection.dynamicFrom,
+            dynamicTo: selection.dynamicTo,
+          }}
+          render={({ props }) => {
+            if (
+              props
             && props.stixRelationships
             && props.stixRelationships.edges.length > 0
-          ) {
-            const data = props.stixRelationships.edges;
-            return <WidgetListRelationships data={data} dateAttribute={dateAttribute} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+            ) {
+              const data = props.stixRelationships.edges;
+              return (
+                <WidgetListRelationships
+                  data={data}
+                  widgetId={widgetId}
+                  columns={columns}
+                  rootRef={rootRef.current ?? undefined}
+                />
+              );
+            }
+            if (props) {
+              return <WidgetNoData />;
+            }
+            return <Loader variant={LoaderVariant.inElement} />;
+          }}
+        />
+      </div>
     );
   };
   return (

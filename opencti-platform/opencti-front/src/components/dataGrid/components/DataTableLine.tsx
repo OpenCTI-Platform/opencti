@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useMemo } from 'react';
 import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -116,7 +116,8 @@ const DataTableLine = ({
 
   const data = useLineData(row);
 
-  let link = useComputeLink(data);
+  // Memoize link to avoid recomputations
+  let link = useMemo(() => useComputeLink(data), [data]);
   if (redirectionMode && redirectionMode !== 'overview') {
     link = `${link}/${redirectionMode}`;
   }

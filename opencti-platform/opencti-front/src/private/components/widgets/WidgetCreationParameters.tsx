@@ -12,6 +12,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { FunctionComponent, useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
+import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
+import { commonWidgetColumns, defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -20,11 +22,12 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import useHelper from '../../../utils/hooks/useHelper';
 
 interface WidgetCreationParametersProps {
   dataSelection: WidgetDataSelection[],
-  setDataSelection: (d: WidgetDataSelection[]) => void,
+  setDataSelection: (d: WidgetDataSelection[] | ((prevDataSelection: WidgetDataSelection[]) => WidgetDataSelection[])) => void,
   parameters: WidgetParameters,
   setParameters: (p: WidgetParameters) => void,
   type: string,
@@ -38,6 +41,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   type,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const handleChangeDataValidationParameter = (
@@ -86,6 +90,12 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
         .map((f) => f.values)
         .flat(),
     );
+  };
+
+  const setColumns = (index: number, newColumns: WidgetColumn[]) => {
+    setDataSelection((prevDataSelection) => {
+      return prevDataSelection.map((selection, i) => (i === index ? { ...selection, columns: newColumns } : selection));
+    });
   };
 
   return (
@@ -636,6 +646,16 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             label={t_i18n('Display legend')}
           />
         )}
+        {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
+          && dataSelection.map(({ perspective, columns }, index) => ((perspective === 'relationships') ? (
+            <WidgetConfigColumnsCustomization
+              key={index}
+              availableColumns={commonWidgetColumns[perspective]}
+              defaultColumns={defaultWidgetColumns[perspective]}
+              columns={[...(columns ?? defaultWidgetColumns[perspective])]}
+              setColumns={(newColumns) => setColumns(index, newColumns)}
+            />
+          ) : null))}
       </div>
     </div>
   );

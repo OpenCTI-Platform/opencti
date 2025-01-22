@@ -1037,6 +1037,42 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     render: ({ opinions_metrics }) => <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? '-'}</span>,
   },
+  from_entity_type: {
+    id: 'from_entity_type',
+    label: 'Source type',
+    percentWidth: 10,
+    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
+  },
+  from_relationship_type: {
+    id: 'from_relationship_type',
+    label: 'Source name',
+    percentWidth: 10,
+    render: ({ from }, helpers) => {
+      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
+  to_entity_type: {
+    id: 'to_entity_type',
+    label: 'Target type',
+    percentWidth: 10,
+    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
+  },
+  to_relationship_type: {
+    id: 'to_relationship_type',
+    label: 'Target name',
+    percentWidth: 10,
+    render: ({ to }, helpers) => {
+      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
+  icon: {
+    id: 'icon',
+    label: ' ',
+    percentWidth: 3,
+    isSortable: false,
+  },
 };
 
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));
