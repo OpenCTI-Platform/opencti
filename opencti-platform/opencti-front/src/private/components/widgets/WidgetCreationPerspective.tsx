@@ -53,7 +53,7 @@ const WidgetCreationPerspective = () => {
     return indexedVisualizationTypes[type]?.isEntities ?? false;
   };
   const getCurrentIsAudits = () => {
-    return indexedVisualizationTypes[type]?.isAudits ?? false;
+    return (context !== 'fintelTemplate' && indexedVisualizationTypes[type]?.isAudits) ?? false;
   };
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type]?.isRelationships ?? false;
