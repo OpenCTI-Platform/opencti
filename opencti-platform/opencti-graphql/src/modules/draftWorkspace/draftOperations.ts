@@ -1,0 +1,11 @@
+export const DRAFT_OPERATION_CREATE = 'create';
+export const DRAFT_OPERATION_UPDATE = 'update';
+export const DRAFT_OPERATION_UPDATE_LINKED = 'update_linked';
+export const DRAFT_OPERATION_DELETE = 'delete';
+export const DRAFT_OPERATION_DELETE_LINKED = 'delete_linked';
+
+const DRAFT_OPERATIONS = [DRAFT_OPERATION_CREATE, DRAFT_OPERATION_UPDATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE_LINKED, DRAFT_OPERATION_DELETE_LINKED];
+
+export const getDraftOperations = () => {
+  return [...DRAFT_OPERATIONS];
+};

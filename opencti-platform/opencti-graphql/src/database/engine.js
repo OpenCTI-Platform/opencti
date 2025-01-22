@@ -170,14 +170,8 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import {
-  buildDraftFilter,
-  DRAFT_OPERATION_CREATE,
-  DRAFT_OPERATION_DELETE_LINKED,
-  DRAFT_OPERATION_DELETE,
-  isDraftSupportedEntity,
-  DRAFT_OPERATION_UPDATE_LINKED
-} from './draft-utils';
+import { buildDraftFilter, isDraftSupportedEntity } from './draft-utils';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -3100,7 +3094,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
           label = String(b.key);
         } else if (field === 'entity_type' && convertEntityTypeLabel) {
           // entity_type is returned in lowercase, we want to return the label with the right entity type.
-          label = generateInternalType({ type: b.key });
+          label = isStixCoreRelationship(b.key) ? b.key : generateInternalType({ type: b.key });
         } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
