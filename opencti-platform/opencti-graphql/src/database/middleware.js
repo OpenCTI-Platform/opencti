@@ -58,7 +58,6 @@ import {
   ES_MAX_CONCURRENCY,
   ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
-  copyLiveElementToDraft,
   MAX_BULK_OPERATIONS,
   ROLE_FROM,
   ROLE_TO
@@ -210,7 +209,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
-import { DRAFT_OPERATION_UNCHANGED, getDraftChanges, isDraftSupportedEntity } from './draft-utils';
+import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -2182,8 +2181,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         updateAsInstance._id = lastElementVersion._id;
         updateAsInstance.draft_change = getDraftChanges(lastElementVersion, updatedInputs);
         await elUpdateElement(context, user, updateAsInstance);
-      } else if (!lastElementVersion._index.includes(INDEX_DRAFT_OBJECTS)) {
-        await copyLiveElementToDraft(context, user, initial, DRAFT_OPERATION_UNCHANGED);
       }
     } else if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
@@ -2699,10 +2696,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
     return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
-  }
-  // If no modifications needs to be done but we are in a draft, we still want to import the element to the draft but with an 'unchanged' operation
-  if (getDraftContext(context, user) && !element._index.includes(INDEX_DRAFT_OBJECTS)) {
-    await copyLiveElementToDraft(context, user, element, DRAFT_OPERATION_UNCHANGED);
   }
   // -- No modification applied
   return { element, event: null, isCreation: false };

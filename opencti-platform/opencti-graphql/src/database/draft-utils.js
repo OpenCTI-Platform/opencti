@@ -9,7 +9,6 @@ export const DRAFT_OPERATION_UPDATE = 'update';
 export const DRAFT_OPERATION_UPDATE_LINKED = 'update_linked';
 export const DRAFT_OPERATION_DELETE = 'delete';
 export const DRAFT_OPERATION_DELETE_LINKED = 'delete_linked';
-export const DRAFT_OPERATION_UNCHANGED = 'unchanged';
 
 export const buildDraftFilter = (context, user, opts = {}) => {
   const { includeDeletedInDraft = false } = opts;
