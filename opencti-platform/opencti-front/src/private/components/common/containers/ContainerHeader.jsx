@@ -633,19 +633,21 @@ const ContainerHeader = (props) => {
             {!knowledge && disableSharing !== true && (
               <StixCoreObjectSharing elementId={container.id} variant="header" disabled={disableOrgaSharingButton} />
             )}
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-              hasAccess={!!enableManageAuthorizedMembers}
-            >
-              <FormAuthorizedMembersDialog
-                id={container.id}
-                owner={container.creators?.[0]}
-                authorizedMembers={authorizedMembersToOptions(
-                  container.authorized_members,
-                )}
-                mutation={containerHeaderEditAuthorizedMembersMutation}
-              />
-            </Security>
+            {!knowledge && (
+              <Security
+                needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                hasAccess={!!enableManageAuthorizedMembers}
+              >
+                <FormAuthorizedMembersDialog
+                  id={container.id}
+                  owner={container.creators?.[0]}
+                  authorizedMembers={authorizedMembersToOptions(
+                    container.authorized_members,
+                  )}
+                  mutation={containerHeaderEditAuthorizedMembersMutation}
+                />
+              </Security>
+            )}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
