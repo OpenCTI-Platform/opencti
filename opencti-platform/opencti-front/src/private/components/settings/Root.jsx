@@ -11,6 +11,7 @@ import useGranted, {
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
   SETTINGS_SETPARAMETERS,
+  SETTINGS_SETDISSEMINATION,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -47,6 +48,7 @@ const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
 const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
+const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -222,6 +224,17 @@ const Root = () => {
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <MarkingDefinitions />
+              </Security>
+            }
+          />
+          <Route
+            path="/accesses/dissemination_list"
+            element={
+              <Security
+                needs={[SETTINGS_SETDISSEMINATION]}
+                placeholder={<Navigate to={urlWithCapabilities()} />}
+              >
+                <DisseminationLists />
               </Security>
             }
           />

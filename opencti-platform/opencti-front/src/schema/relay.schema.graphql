@@ -9029,6 +9029,9 @@ type Mutation {
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
+  disseminationListDelete(id: ID!): ID
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
   disseminationListSend(input: DisseminationListSendInput!): Boolean
 }
 
