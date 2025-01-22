@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NorthEastOutlined } from '@mui/icons-material';
 import LoupeOutlinedIcon from '@mui/icons-material/LoupeOutlined';
@@ -103,9 +103,6 @@ export const RelatedContainersFragment = graphql`
         }
       }
     }
-    pageInfo {
-      globalCount
-    }
   }
 `;
 
@@ -132,7 +129,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
   const [ref, setRef] = useState<HTMLDivElement | undefined>();
 
   const containers = (relatedContainers?.edges ?? []).filter((edge) => edge?.node.id !== containerId).map((edge) => edge?.node);
-  const containersGlobalCount = relatedContainers?.pageInfo?.globalCount ?? 0;
+  const containersGlobalCount = containers.length ?? 0;
 
   const handleOpenDetails = (container?: RelatedContainerNode) => {
     if (!container) {
@@ -140,6 +137,9 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
     }
     setSelectedContainer(container);
   };
+
+  // Data table min height, setting 50px for empty containers, 50px per container up to 3, and capping at 150px.
+  const calcMinHeight = useMemo(() => Math.max(Math.min(containersGlobalCount * 50, 150), 50), [containersGlobalCount]);
 
   return (
     <div style={{
@@ -162,7 +162,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
           </IconButton>
         </Tooltip>
       </Typography>
-      <div style={{ height: '100%' }} ref={(r) => setRef(r ?? undefined)}>
+      <div style={{ height: '100%', minHeight: calcMinHeight }} ref={(r) => setRef(r ?? undefined)}>
         {containersGlobalCount > 0 ? (
           <DataTableWithoutFragment
             dataColumns={{
