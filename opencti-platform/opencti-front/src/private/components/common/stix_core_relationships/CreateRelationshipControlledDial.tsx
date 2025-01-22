@@ -11,13 +11,13 @@ const CreateRelationshipControlledDial = ({ onOpen }: {
       onClick={onOpen}
       variant='contained'
       disableElevation
-      aria-label={t_i18n('Create Relationship')}
+      aria-label={t_i18n('Create relationship')}
       style={{
         marginLeft: '3px',
         fontSize: 'small',
       }}
     >
-      {t_i18n('Create Relationship')}
+      {t_i18n('Create relationship')}
     </Button>
   );
 };
