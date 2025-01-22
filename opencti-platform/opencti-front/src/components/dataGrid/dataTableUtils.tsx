@@ -1064,6 +1064,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  icon: {
+    id: 'icon',
+    label: ' ',
+    percentWidth: 3,
+    isSortable: false,
+  },
 };
 
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));

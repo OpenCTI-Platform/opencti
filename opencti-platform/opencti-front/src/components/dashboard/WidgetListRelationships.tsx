@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { WidgetColumn } from 'src/utils/widget/widget';
 import ItemIcon from '../ItemIcon';
@@ -21,10 +21,10 @@ const WidgetListRelationships = ({
   rootRef,
   columns,
 }: WidgetListRelationshipsProps) => {
-  const buildColumns = (columnsFromSelection: WidgetColumn[]): DataTableProps['dataColumns'] => {
-    const columnKeys = columnsFromSelection.map((column) => column.attribute).filter((key) => key !== null);
+  const buildColumns = useCallback((): DataTableProps['dataColumns'] => {
+    const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const iconWidth = 3;
-    const percentWidth = (100 - iconWidth) / (columnsFromSelection.length ?? 1);
+    const percentWidth = (100 - iconWidth) / (columns.length ?? 1);
 
     const newColumns = (
       columnKeys.reduce<DataTableProps['dataColumns']>(
@@ -38,7 +38,6 @@ const WidgetListRelationships = ({
 
     const iconColumn = {
       percentWidth: iconWidth,
-      isSortable: false,
       label: ' ',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (stixRelationship: any) => (
@@ -49,12 +48,6 @@ const WidgetListRelationships = ({
       ),
     };
     return { icon: iconColumn, ...newColumns };
-  };
-
-  const [currentColumns, setCurrentColumns] = useState<DataTableProps['dataColumns']>(buildColumns(columns));
-
-  useEffect(() => {
-    setCurrentColumns(buildColumns(columns));
   }, [columns]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +59,7 @@ const WidgetListRelationships = ({
   return (
     <div style={{ width: '100%' }}>
       <DataTableWithoutFragment
-        dataColumns={currentColumns}
+        dataColumns={buildColumns()}
         storageKey={widgetId}
         data={data.map(({ node }) => node)}
         globalCount={data.length}
@@ -75,7 +68,6 @@ const WidgetListRelationships = ({
         pageSize='50'
         disableNavigation={publicWidget}
         rootRef={rootRef}
-        isLocalStorageEnabled={false}
       />
     </div>
   );
