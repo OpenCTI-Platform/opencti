@@ -8284,7 +8284,6 @@ export enum FilterOperator {
 
 export type FintelTemplate = BasicObject & InternalObject & {
   __typename?: 'FintelTemplate';
-  configuration_export: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   fintel_template_widgets: Array<FintelTemplateWidget>;
@@ -8296,6 +8295,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   start_date?: Maybe<Scalars['DateTime']['output']>;
   template_content: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
 };
 
 export type FintelTemplateAddInput = {
@@ -35573,7 +35573,6 @@ export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type FintelTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplate'] = ResolversParentTypes['FintelTemplate']> = ResolversObject<{
-  configuration_export?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
@@ -35585,6 +35584,7 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   template_content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

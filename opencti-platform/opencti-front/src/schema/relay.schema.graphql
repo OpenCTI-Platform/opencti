@@ -12548,7 +12548,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   template_content: String!
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
-  configuration_export: String!
+  toConfigurationExport: String!
 }
 
 input FintelTemplateWidgetAddInput {

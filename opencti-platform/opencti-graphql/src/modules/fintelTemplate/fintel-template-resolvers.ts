@@ -6,7 +6,7 @@ const fintelTemplateResolvers: Resolvers = {
     fintelTemplate: (_, { id }, context) => findById(context, context.user, id),
   },
   FintelTemplate: {
-    configuration_export: (fintelTemplate, _, context) => fintelTemplateExport(context, context.user, fintelTemplate), // TODO rename toConfigurationExport
+    toConfigurationExport: (fintelTemplate, _, context) => fintelTemplateExport(context, context.user, fintelTemplate),
   },
   Mutation: {
     fintelTemplateAdd: (_, { input }, context) => {

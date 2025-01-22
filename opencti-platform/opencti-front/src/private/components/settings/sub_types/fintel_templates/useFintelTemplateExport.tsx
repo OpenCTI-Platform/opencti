@@ -7,7 +7,7 @@ const fintelTemplateExportQuery = graphql`
   query useFintelTemplateExportQuery($id: ID!) {
     fintelTemplate(id: $id) {
       name
-      configuration_export
+      toConfigurationExport
     }
   }
 `;
@@ -20,7 +20,7 @@ const useFintelTemplateExport = () => {
     ).toPromise() as useFintelTemplateExportQuery$data;
 
     if (fintelTemplate) {
-      const blob = new Blob([fintelTemplate.configuration_export], { type: 'text/json' });
+      const blob = new Blob([fintelTemplate.toConfigurationExport], { type: 'text/json' });
       const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
       const fileName = `${year}${month}${day}_fintel_${fintelTemplate.name}.json`;
       fileDownload(blob, fileName);
