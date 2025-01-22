@@ -1,8 +1,9 @@
-import { Drawer, SxProps, Toolbar } from '@mui/material';
+import { Drawer, SxProps, Toolbar, Alert } from '@mui/material';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
+import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';
 import FintelTemplateWidgetsList, { FintelTemplateWidget } from './FintelTemplateWidgetsList';
@@ -68,6 +69,7 @@ interface FintelTemplateWidetsSidebarProps {
 const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSidebarProps> = ({ data }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { editorValue } = useFintelTemplateContext();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const { id, fintel_template_widgets } = useFragment(sidebarFragment, data);
@@ -78,6 +80,8 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<FintelTemplateWidget>();
+
+  const isSelectedWidgetUsed = selectedWidget && !!editorValue?.includes(`$${selectedWidget.variable_name}`);
 
   const selectedWidgetIndex = useMemo(() => {
     return fintel_template_widgets.findIndex((w) => w.variable_name === selectedWidget?.variable_name);
@@ -237,7 +241,16 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       />
 
       <DeleteDialog
-        title={t_i18n('Are you sure you want to remove this widget?')}
+        title={(
+          <>
+            {isSelectedWidgetUsed && (
+              <Alert severity="warning" sx={{ marginBottom: 1 }}>
+                {t_i18n('You are about to delete a widget used in the content')}
+              </Alert>
+            )}
+            <span>{t_i18n('Are you sure you want to delete this widget?')}</span>
+          </>
+        )}
         deletion={deletion}
         submitDelete={submitDeleteWidget}
       />

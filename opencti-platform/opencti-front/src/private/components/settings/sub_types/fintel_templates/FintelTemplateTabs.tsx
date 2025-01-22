@@ -1,10 +1,8 @@
-import { Box, Button, Tab, Tabs, Tooltip } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import { Save } from '@mui/icons-material';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
-import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplateTabs_template$key } from './__generated__/FintelTemplateTabs_template.graphql';
 import type { Theme } from '../../../../../components/Theme';
@@ -13,7 +11,6 @@ import Security from '../../../../../utils/Security';
 
 const tabsFragment = graphql`
   fragment FintelTemplateTabs_template on FintelTemplate {
-    id
     template_content
   }
 `;
@@ -33,20 +30,11 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
   const [index, setIndex] = useState(0);
 
   const { editorValue, setEditorValue } = useFintelTemplateContext();
-  const { template_content, id } = useFragment(tabsFragment, data);
+  const { template_content } = useFragment(tabsFragment, data);
 
   useEffect(() => {
     setEditorValue(template_content);
   }, [template_content]);
-
-  const [commitEditMutation, editOnGoing] = useFintelTemplateEdit();
-
-  const onSubmit = () => {
-    const input = { key: 'template_content', value: [editorValue] };
-    commitEditMutation({
-      variables: { id, input: [input] },
-    });
-  };
 
   return (
     <>
@@ -72,23 +60,15 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         </Security>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-          {editorValue !== template_content && (
+          {editorValue !== template_content ? (
             <span style={{ color: theme.palette.warn.main }}>
               {t_i18n('You have unsaved changes')}
             </span>
+          ) : (
+            <span style={{ color: theme.palette.common.grey }}>
+              {t_i18n('Everything in content is saved')}
+            </span>
           )}
-          <Tooltip title={t_i18n('Save changes')}>
-            <div>
-              <Button
-                variant="outlined"
-                className="icon-outlined"
-                onClick={onSubmit}
-                disabled={editorValue === template_content || editOnGoing}
-              >
-                <Save fontSize="small" />
-              </Button>
-            </div>
-          </Tooltip>
         </div>
       </Box>
 

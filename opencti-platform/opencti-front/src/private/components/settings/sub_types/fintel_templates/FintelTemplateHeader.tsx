@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import { FintelTemplateHeader_template$key } from '@components/settings/sub_types/fintel_templates/__generated__/FintelTemplateHeader_template.graphql';
 import { Typography, Button } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import FintelTemplateFormDrawer from '@components/settings/sub_types/fintel_templates/FintelTemplateFormDrawer';
+import FintelTemplatePopover from './FintelTemplatePopover';
+import { FintelTemplateHeader_template$key } from './__generated__/FintelTemplateHeader_template.graphql';
+import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
+import useFintelTemplateEdit from './useFintelTemplateEdit';
+import { useFintelTemplateContext } from './FintelTemplateContext';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -17,6 +20,7 @@ const headerFragment = graphql`
     name
     description
     start_date
+    template_content
   }
 `;
 
@@ -30,6 +34,8 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const { subTypeId } = useParams<{ subTypeId?: string }>();
+  const [commitEditMutation, editOnGoing] = useFintelTemplateEdit();
+  const { editorValue } = useFintelTemplateContext();
 
   const [isFormOpen, setFormOpen] = useState(false);
 
@@ -47,6 +53,13 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
     { label: t_i18n('FINTEL Templates') },
     { label: template.name },
   ];
+
+  const onSubmit = () => {
+    const input = { key: 'template_content', value: [editorValue] };
+    commitEditMutation({
+      variables: { id: template.id, input: [input] },
+    });
+  };
 
   return (
     <>
@@ -71,11 +84,20 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
 
         <Button
           variant="outlined"
+          onClick={onSubmit}
           style={{ marginLeft: 'auto' }}
-          onClick={() => setFormOpen(true)}
+          disabled={editorValue === template.template_content || editOnGoing}
         >
-          {t_i18n('Update')}
+          {t_i18n('Save content')}
         </Button>
+
+        <FintelTemplatePopover
+          onUpdate={() => setFormOpen(true)}
+          entitySettingId={entitySettingId}
+          templateId={template.id}
+          inline={false}
+          onDeleteComplete={() => navigate(subTypeLink)}
+        />
       </div>
 
       <FintelTemplateFormDrawer

@@ -64,17 +64,15 @@ const FintelTemplateWidgetDefault = ({
             </IconButton>
           </Tooltip>
 
-          {!isUsed && (
-            <Tooltip title={t_i18n('Delete widget')}>
-              <IconButton
-                aria-haspopup="true"
-                color="primary"
-                onClick={onDelete}
-              >
-                <DeleteOutline fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
+          <Tooltip title={t_i18n('Delete widget')}>
+            <IconButton
+              aria-haspopup="true"
+              color="primary"
+              onClick={onDelete}
+            >
+              <DeleteOutline fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </div>
       </div>
 
@@ -88,9 +86,9 @@ const FintelTemplateWidgetDefault = ({
         <ListItemText secondary={`$${variableName}`} />
 
         {!isUsed && (
-        <Tooltip title={t_i18n('The widget is not called in the content')}>
-          <WarningAmber fontSize="small" color="warning" />
-        </Tooltip>
+          <Tooltip title={t_i18n('The widget is not called in the content')}>
+            <WarningAmber fontSize="small" color="warning" />
+          </Tooltip>
         )}
 
         <Tooltip title={t_i18n('Copy widget name to clipboard')}>
