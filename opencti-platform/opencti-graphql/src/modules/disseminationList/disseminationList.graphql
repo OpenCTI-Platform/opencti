@@ -52,8 +52,8 @@ input DisseminationListSendInput {
 }
 
 type Mutation {
-  #  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-  #  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
-  #  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationListSend(input: DisseminationListSendInput!): Boolean @auth(for: [KNOWLEDGE_KNDISSEMINATION])
 }

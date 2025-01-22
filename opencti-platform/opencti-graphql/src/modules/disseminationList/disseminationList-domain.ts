@@ -15,8 +15,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { internalLoadById } from '../../database/middleware-loader';
-import type { DisseminationListSendInput } from '../../generated/graphql';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import type {
+  DisseminationListAddInput,
+  DisseminationListSendInput, EditInput,
+  QueryDisseminationListsArgs
+} from '../../generated/graphql';
+import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST } from './disseminationList-types';
 import { sendMail } from '../../database/smtp';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -27,13 +32,13 @@ import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import type { BasicStoreObject } from '../../types/store';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
-// export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-//   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
-// };
+export const findById = (context: AuthContext, user: AuthUser, id: string) => {
+  return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
+};
 
-// export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
-//   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
-// };
+export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
+};
 
 interface SendMailArgs {
   from: string;
@@ -51,7 +56,9 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   const file = await loadFile(context, user, filePath);
   if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
     const stream = await downloadFile(file.id);
-    const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: input.email_body });
+    const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
+    const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+    const fromEmail = conf.get('smtp:from_email');
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: settings.platform_email,
@@ -80,6 +87,6 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   return false;
 };
 
-// export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {};
-// export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {};
-// export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {};
+export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {};
+export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {};
+export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {};
