@@ -13,7 +13,7 @@ export const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   common: [
     { attribute: 'entity_type', label: 'Type' },
-    { attribute: 'representative', label: 'Name' },
+    { attribute: 'name', label: 'Name' },
     { attribute: 'created_at', label: 'Platform creation date' },
     { attribute: 'updated_at', label: 'Modification date' },
     { attribute: 'createdBy' },
