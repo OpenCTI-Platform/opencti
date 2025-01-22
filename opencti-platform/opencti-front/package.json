@@ -81,7 +81,7 @@
     "react-relay-network-modern": "6.2.2",
     "react-router-dom": "6.28.0",
     "react-syntax-highlighter": "15.6.1",
-    "react-virtualized": "9.22.5",
+    "react-virtualized": "9.22.6",
     "react-wordcloud": "1.2.7",
     "reactflow": "11.11.4",
     "recharts": "2.15.0",
@@ -197,7 +197,7 @@
     "d3-color": "3.1.0",
     "loader-utils": "3.3.1",
     "scss-tokenizer": "0.4.3",
-    "react-virtualized": "patch:react-virtualized@9.22.5#./patch/react-virtualized-9.22.5.patch"
+    "react-virtualized": "patch:react-virtualized@9.22.6#./patch/react-virtualized-9.22.5.patch"
   },
   "workspaces": [
     "packages/*"
