@@ -6,6 +6,7 @@ import {
   ManagementDefinitionsLinesPaginationQuery$variables,
 } from '@components/data/__generated__/ManagementDefinitionsLinesPaginationQuery.graphql';
 import { ManagementDefinitionsLines_data$data } from '@components/data/__generated__/ManagementDefinitionsLines_data.graphql';
+import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import AlertInfo from '../../../components/AlertInfo';
 import { useFormatter } from '../../../components/i18n';
@@ -17,6 +18,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useAuth from '../../../utils/hooks/useAuth';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -137,6 +139,8 @@ const Management = () => {
   const { isFeatureEnable } = useHelper();
   const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
 
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
@@ -209,7 +213,7 @@ const Management = () => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
 
-  return (
+  return isEnterpriseEdition ? (
     <div data-testid='data-management-page'>
       <div style={{ paddingRight: isRightMenuManagementEnable ? '200px' : 0 }}>
         <Breadcrumbs elements={[
@@ -240,6 +244,8 @@ const Management = () => {
         )}
       </div>
     </div>
+  ) : (
+    <EnterpriseEdition feature={t_i18n('Authorized_members')}/>
   );
 };
 
