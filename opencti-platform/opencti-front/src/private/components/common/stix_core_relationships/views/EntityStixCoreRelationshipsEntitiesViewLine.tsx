@@ -9,6 +9,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
+import { DraftChip } from '@components/common/draft/DraftChip';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import type { Theme } from '../../../../../components/Theme';
@@ -55,6 +56,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const entityStixCoreRelationshipsEntitiesFragment = graphql`
   fragment EntityStixCoreRelationshipsEntitiesViewLine_node on StixCoreObject {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     entity_type
     created_at
     ... on StixDomainObject {
@@ -276,6 +281,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               }}
             >
               {getMainRepresentative(stixCoreObject)}
+              {stixCoreObject.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}

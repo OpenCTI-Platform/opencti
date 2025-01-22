@@ -7,6 +7,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { DraftChip } from '@components/common/draft/DraftChip';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionLine_node$key } from './__generated__/RegionLine_node.graphql';
 import type { Theme } from '../../../../components/Theme';
@@ -93,6 +94,7 @@ RegionLineComponentProps
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
+              {data.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}

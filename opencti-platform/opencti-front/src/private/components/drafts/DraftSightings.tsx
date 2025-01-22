@@ -273,7 +273,7 @@ const DraftSightings = () => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['toSightingId', 'x_opencti_negative'], ['stix-sighting-relationship']),
+      filters: useGetDefaultFilterObject(['draft_change.draft_operation'], ['stix-core-relationship'], ['create', 'update', 'delete']),
     },
     searchTerm: '',
     sortBy: 'last_seen',

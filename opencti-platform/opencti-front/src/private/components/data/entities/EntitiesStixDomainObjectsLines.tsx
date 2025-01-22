@@ -79,7 +79,7 @@ export const entitiesStixDomainObjectsLinesFragment = graphql`
           id
           entity_type
           created_at
-          draftVersion{
+          draftVersion {
             draft_id
             draft_operation
           }

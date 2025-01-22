@@ -20,6 +20,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { DraftChip } from '../draft/DraftChip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -93,6 +94,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
               style={{ width: dataColumns.name.width }}
             >
               {getMainRepresentative(node)}
+              {node.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
@@ -154,6 +156,10 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
           entity_type
         }
         ... on StixCoreObject {
+          draftVersion {
+            draft_id
+            draft_operation
+          }
           created_at
           createdBy {
             ... on Identity {
@@ -281,6 +287,10 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
           entity_type
         }
         ... on StixCoreRelationship {
+          draftVersion {
+            draft_id
+            draft_operation
+          }
           relationship_type
           objectMarking {
             id

@@ -59,6 +59,9 @@ export const reportCreationMutation = graphql`
       id
       standard_id
       name
+      representative {
+        main
+      }
       description
       entity_type
       confidence

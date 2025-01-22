@@ -324,7 +324,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ from }, helpers) => {
       const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
-      return defaultRender(value);
+      const displayDraftChip = !!from?.draftVersion;
+      return defaultRender(value, displayDraftChip);
     },
   },
   incident_type: {
@@ -823,7 +824,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ to }, helpers) => {
       const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
-      return defaultRender(value);
+      const displayDraftChip = !!to?.draftVersion;
+      return defaultRender(value, displayDraftChip);
     },
   },
   updated_at: {
@@ -854,7 +856,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: (node) => {
       const value = getMainRepresentative(node);
-      return defaultRender(value);
+      const displayDraftChip = !!node.draftVersion;
+      return defaultRender(value, displayDraftChip);
     },
   },
   x_mitre_id: {

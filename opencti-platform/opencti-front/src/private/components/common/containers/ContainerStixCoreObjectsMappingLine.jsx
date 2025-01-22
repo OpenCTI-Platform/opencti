@@ -21,6 +21,7 @@ import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { DraftChip } from '../draft/DraftChip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,6 +97,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
               style={{ width: dataColumns.value.width }}
             >
               {node.representative?.main}
+              {node.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
@@ -166,6 +168,10 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
     node: graphql`
       fragment ContainerStixCoreObjectsMappingLine_node on StixCoreObject {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         standard_id
         entity_type
         parent_types

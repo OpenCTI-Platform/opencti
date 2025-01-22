@@ -1,5 +1,6 @@
 import { ENTITY_TYPE_USER } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
+import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
 
 export const shortMapping = {
   type: 'text',
@@ -133,10 +134,10 @@ export const draftChange: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: false,
+  isFilterable: true,
   featureFlag: 'DRAFT_WORKSPACE',
   mappings: [
-    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'enum', values: getDraftOperations(), mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ]
 };

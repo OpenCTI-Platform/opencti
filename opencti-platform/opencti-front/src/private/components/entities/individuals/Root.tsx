@@ -51,6 +51,10 @@ const individualQuery = graphql`
   query RootIndividualQuery($id: String!) {
     individual(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       isUser
       entity_type
       name

@@ -50,6 +50,10 @@ const infrastructureQuery = graphql`
   query RootInfrastructureQuery($id: String!) {
     infrastructure(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       name
       aliases

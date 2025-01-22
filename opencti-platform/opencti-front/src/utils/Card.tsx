@@ -1,12 +1,14 @@
 import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
+import { DraftChip } from '@components/common/draft/DraftChip';
+import { DraftVersion } from '@components/common/cards/GenericAttackCard';
 import { APP_BASE_PATH } from '../relay/environment';
 
 export interface toEdgesLocated {
   edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name?: string } | null } }>;
 }
 
-export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | undefined; name: string; }) => {
+export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | undefined; name: string; draftVersion?: DraftVersion | null }) => {
   if ((entity.countryFlag?.edges ?? []).length > 0) {
     const country = entity.countryFlag?.edges[0]?.node?.to;
     const flag = country?.x_opencti_aliases
@@ -26,9 +28,20 @@ export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | 
           <div style={{ marginLeft: 10 }}>
             {entity.name}
           </div>
+          {entity.draftVersion && (
+            <DraftChip style={{ marginLeft: 10 }} />
+          )}
         </div>
       );
     }
   }
-  return entity.name;
+  return (
+    <div style={{ display: 'inline-flex' }}>
+      <div>
+        {entity.name}
+      </div>
+      {entity.draftVersion && (
+        <DraftChip style={{ marginLeft: 10 }} />
+      )}
+    </div>);
 };

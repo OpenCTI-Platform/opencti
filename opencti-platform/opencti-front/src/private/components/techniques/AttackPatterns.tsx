@@ -131,7 +131,10 @@ const AttackPatterns = () => {
     x_mitre_id: {},
     name: {
       percentWidth: 30,
-      render: ({ name }) => defaultRender(name),
+      render: (data) => {
+        const displayDraftChip = !!data.draftVersion;
+        return defaultRender(data.name, displayDraftChip);
+      },
     },
     objectLabel: {},
     created: {},

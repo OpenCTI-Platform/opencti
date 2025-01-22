@@ -9,7 +9,7 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -30,7 +30,7 @@ const draftRelationshipsLineFragment = graphql`
         created_at
         updated_at
         is_inferred
-        draftVersion{
+        draftVersion {
             draft_operation
         }
         createdBy {
@@ -193,7 +193,10 @@ const DraftRelationships = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const initialValues = {
-    filters: emptyFilterGroup,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['draft_change.draft_operation'], ['stix-core-relationship'], ['create', 'update', 'delete']),
+    },
     searchTerm: '',
     sortBy: 'created_at',
     orderAsc: false,

@@ -7,6 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -79,6 +80,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(node)}
+              {node.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
@@ -119,6 +121,10 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
     node: graphql`
       fragment ContainerAddStixCoreObjectsLine_node on StixCoreObject {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         standard_id
         parent_types
         entity_type

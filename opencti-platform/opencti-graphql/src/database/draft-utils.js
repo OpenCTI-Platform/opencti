@@ -2,14 +2,8 @@ import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
-
-export const DRAFT_OPERATION_CREATE = 'create';
-export const DRAFT_OPERATION_UPDATE = 'update';
-export const DRAFT_OPERATION_UPDATE_LINKED = 'update_linked';
-export const DRAFT_OPERATION_DELETE = 'delete';
-export const DRAFT_OPERATION_DELETE_LINKED = 'delete_linked';
-export const DRAFT_OPERATION_UNCHANGED = 'unchanged';
 
 export const buildDraftFilter = (context, user, opts = {}) => {
   const { includeDeletedInDraft = false } = opts;

@@ -8,6 +8,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
 import { handleErrorInForm } from '../../../../relay/environment';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -25,6 +26,8 @@ const FormAuthorizedMembersDialog = ({
   authorizedMembers,
   owner,
 }: FormAuthorizedMembersDialogProps) => {
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -65,16 +68,16 @@ const FormAuthorizedMembersDialog = ({
   const lockColor = (authorizedMembers && authorizedMembers.length > 0) ? 'warning' : 'primary';
   return (
     <>
-      <EETooltip title={t_i18n('Manage access restriction')}>
+      <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
         <ToggleButton
-          onClick={() => isEnterpriseEdition && setOpen(true)}
+          onClick={() => !disabledInDraft && isEnterpriseEdition && setOpen(true)}
           value="manage-access"
           size="small"
           style={{ marginRight: 3 }}
         >
           <LockPersonOutlined
             fontSize="small"
-            color={isEnterpriseEdition ? lockColor : 'disabled'}
+            color={!disabledInDraft && isEnterpriseEdition ? lockColor : 'disabled'}
           />
         </ToggleButton>
       </EETooltip>

@@ -9,6 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { interval } from 'rxjs';
+import { DraftChip } from '../../common/draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixNestedRefRelationshipPopover from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
@@ -115,6 +116,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                           style={{ width: '22%' }}
                         >
                           {getMainRepresentative(stixCoreObject)}
+                          {stixCoreObject.draftVersion && (<DraftChip/>)}
                         </div>
                         <div
                           className={classes.bodyItem}
@@ -218,6 +220,10 @@ const StixCyberObservableNestedEntitiesLines = createPaginationContainer(
                   parent_types
                 }
                 ... on StixObject {
+                  draftVersion {
+                    draft_id
+                    draft_operation
+                  }
                   created_at
                   updated_at
                 }
@@ -353,6 +359,10 @@ const StixCyberObservableNestedEntitiesLines = createPaginationContainer(
                   parent_types
                 }
                 ... on StixObject {
+                  draftVersion {
+                    draft_id
+                    draft_operation
+                  }
                   created_at
                   updated_at
                 }

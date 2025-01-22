@@ -49,6 +49,10 @@ const sectorQuery = graphql`
   query RootSectorQuery($id: String!) {
     sector(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

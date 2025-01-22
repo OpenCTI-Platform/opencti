@@ -37,7 +37,7 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
     created_at
     updated_at
     is_inferred
-    draftVersion{
+    draftVersion {
       draft_id
       draft_operation
     }
@@ -86,12 +86,20 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -113,12 +121,20 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -195,7 +211,7 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
           id
           entity_type
           created_at
-          draftVersion{
+          draftVersion {
             draft_id
             draft_operation
           }

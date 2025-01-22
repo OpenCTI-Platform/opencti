@@ -35,6 +35,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useXTM from '../../../../utils/hooks/useXTM';
 import useAI from '../../../../utils/hooks/useAI';
 
@@ -154,6 +155,8 @@ const StixCoreObjectSimulationResult = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [resultError, setResultError] = useState(null);
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
 
   const attackPatterns = usePreloadedQuery(query, queryRef);
 
@@ -627,7 +630,7 @@ const StixCoreObjectSimulationResult = ({
 
   return (
     <>
-      {!oBasDisableDisplay && (
+      {!oBasDisableDisplay && !disabledInDraft && (
         <div className={classes.simulationResults}>
           <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
             <Button

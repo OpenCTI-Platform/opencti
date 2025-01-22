@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
@@ -46,6 +47,9 @@ const StixCyberObservableHeaderComponent = ({
       >
         {truncate(stixCyberObservable.observable_value, 50)}
       </Typography>
+      {stixCyberObservable.draftVersion && (
+        <DraftChip />
+      )}
       <div className={classes.actions}>
         <div className={classes.actionButtons}>
           <StixCoreObjectSharing
@@ -85,6 +89,10 @@ const StixCyberObservableHeader = createFragmentContainer(
     stixCyberObservable: graphql`
       fragment StixCyberObservableHeader_stixCyberObservable on StixCyberObservable {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         entity_type
         observable_value
       }

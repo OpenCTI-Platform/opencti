@@ -47,6 +47,10 @@ const narrativeQuery = graphql`
   query RootNarrativeQuery($id: String!) {
     narrative(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

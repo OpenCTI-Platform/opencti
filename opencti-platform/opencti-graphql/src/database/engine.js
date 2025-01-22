@@ -77,7 +77,7 @@ import {
   RULE_PREFIX
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
-import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_ALIASES,
@@ -170,14 +170,8 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import {
-  buildDraftFilter,
-  DRAFT_OPERATION_CREATE,
-  DRAFT_OPERATION_DELETE_LINKED,
-  DRAFT_OPERATION_DELETE,
-  isDraftSupportedEntity,
-  DRAFT_OPERATION_UPDATE_LINKED
-} from './draft-utils';
+import { buildDraftFilter, isDraftSupportedEntity } from './draft-utils';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -3066,7 +3060,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   });
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true } = options;
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
@@ -3098,6 +3092,9 @@ export const elAggregationCount = async (context, user, indexName, options = {})
         let label = b.key;
         if (typeof label === 'number') {
           label = String(b.key);
+        } else if (field === 'entity_type' && convertEntityTypeLabel) {
+          // entity_type is returned in lowercase, we want to return the label with the right entity type.
+          label = isStixCoreRelationship(b.key) ? b.key : generateInternalType({ type: b.key });
         } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
@@ -3709,11 +3706,13 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   for (let i = 0; i < elements.length; i += 1) {
     const e = elements[i];
     if (e.base_type === BASE_TYPE_RELATION) {
-      const { from, to } = e;
-      const draftFrom = await loadDraftElement(context, user, from);
+      const { from, fromId, to, toId } = e;
+      const resolvedFrom = from ?? await elLoadById(context, user, fromId);
+      const draftFrom = await loadDraftElement(context, user, resolvedFrom);
       e.from = draftFrom;
       e.fromId = draftFrom.id;
-      const draftTo = await loadDraftElement(context, user, to);
+      const resolvedTo = to ?? await elLoadById(context, user, toId);
+      const draftTo = await loadDraftElement(context, user, resolvedTo);
       e.to = draftTo;
       e.toId = draftTo.id;
     }

@@ -47,6 +47,10 @@ const channelQuery = graphql`
   query RootChannelQuery($id: String!) {
     channel(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

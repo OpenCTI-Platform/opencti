@@ -35,11 +35,7 @@ const operationStylesLight = {
     color: '#ffffff',
   },
   lightYellow: {
-    backgroundColor: '#e5ce6b',
-    color: '#ffffff',
-  },
-  grey: {
-    backgroundColor: '#6c6c7a',
+    backgroundColor: '#ec7629',
     color: '#ffffff',
   },
 };
@@ -55,10 +51,7 @@ const operationStylesDark = {
     backgroundColor: '#ff9800',
   },
   lightYellow: {
-    backgroundColor: '#e5ce6b',
-  },
-  grey: {
-    backgroundColor: '#6c6c7a',
+    backgroundColor: '#ec7629',
   },
 };
 
@@ -84,16 +77,13 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
         return theme.palette.mode === 'light'
           ? { ...operationStylesLight.red }
           : { ...operationStylesDark.red };
-      case 'unchanged':
-        return theme.palette.mode === 'light'
-          ? { ...operationStylesLight.grey }
-          : { ...operationStylesDark.grey };
       default:
         return {};
     }
   };
   return (
     <Chip
+      title={draftOperation}
       label={draftOperation}
       classes={{ root: classes.chipInList }}
       variant="outlined"

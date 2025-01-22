@@ -50,6 +50,10 @@ const intrusionSetQuery = graphql`
   query RootIntrusionSetQuery($id: String!) {
     intrusionSet(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name

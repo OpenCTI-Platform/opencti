@@ -6500,19 +6500,18 @@ export type DomainNameAddInput = {
 
 export type DraftObjectsCount = {
   __typename?: 'DraftObjectsCount';
-  containersCount?: Maybe<Scalars['Int']['output']>;
-  entitiesCount?: Maybe<Scalars['Int']['output']>;
-  observablesCount?: Maybe<Scalars['Int']['output']>;
-  relationshipsCount?: Maybe<Scalars['Int']['output']>;
-  sightingsCount?: Maybe<Scalars['Int']['output']>;
-  totalCount?: Maybe<Scalars['Int']['output']>;
+  containersCount: Scalars['Int']['output'];
+  entitiesCount: Scalars['Int']['output'];
+  observablesCount: Scalars['Int']['output'];
+  relationshipsCount: Scalars['Int']['output'];
+  sightingsCount: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
 };
 
 export enum DraftOperation {
   Create = 'create',
   Delete = 'delete',
   DeleteLinked = 'delete_linked',
-  Unchanged = 'unchanged',
   Update = 'update',
   UpdateLinked = 'update_linked'
 }
@@ -6531,7 +6530,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  objectsCount?: Maybe<DraftObjectsCount>;
+  objectsCount: DraftObjectsCount;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
@@ -34856,12 +34855,12 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type DraftObjectsCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftObjectsCount'] = ResolversParentTypes['DraftObjectsCount']> = ResolversObject<{
-  containersCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  entitiesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  observablesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  relationshipsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  sightingsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  containersCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entitiesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  observablesCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationshipsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sightingsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34878,7 +34877,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  objectsCount?: Resolver<Maybe<ResolversTypes['DraftObjectsCount']>, ParentType, ContextType>;
+  objectsCount?: Resolver<ResolversTypes['DraftObjectsCount'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

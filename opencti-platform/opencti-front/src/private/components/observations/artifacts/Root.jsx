@@ -41,6 +41,10 @@ const rootArtifactQuery = graphql`
   query RootArtifactQuery($id: String!) {
     stixCyberObservable(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       observable_value

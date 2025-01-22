@@ -2069,7 +2069,6 @@ enum DraftOperation {
   update_linked
   delete
   delete_linked
-  unchanged
 }
 
 type DraftVersion {
@@ -12493,16 +12492,16 @@ type DraftWorkspace implements InternalObject & BasicObject {
   created_at: DateTime!
   creators: [Creator!]
   entity_id: String
-  objectsCount: DraftObjectsCount
+  objectsCount: DraftObjectsCount!
 }
 
 type DraftObjectsCount {
-  totalCount: Int
-  entitiesCount: Int
-  observablesCount: Int
-  relationshipsCount: Int
-  sightingsCount: Int
-  containersCount: Int
+  totalCount: Int!
+  entitiesCount: Int!
+  observablesCount: Int!
+  relationshipsCount: Int!
+  sightingsCount: Int!
+  containersCount: Int!
 }
 
 enum DraftWorkspacesOrdering {

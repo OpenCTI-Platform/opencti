@@ -13,6 +13,7 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
+import { DraftChip } from '../draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -108,6 +109,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 style={{ width: dataColumns.name.width }}
               >
                 {element.restricted ? element.name : getMainRepresentative(element)}
+                {element.draftVersion && (<DraftChip/>)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -206,6 +208,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           from {
             ... on StixDomainObject {
               id
+              draftVersion {
+                draft_id
+                draft_operation
+              }
               entity_type
               parent_types
               created_at
@@ -454,6 +460,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           to {
             ... on StixDomainObject {
               id
+              draftVersion {
+                draft_id
+                draft_operation
+              }
               entity_type
               parent_types
               created_at

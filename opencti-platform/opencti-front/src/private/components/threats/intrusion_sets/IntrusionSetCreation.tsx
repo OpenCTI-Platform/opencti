@@ -38,6 +38,9 @@ const intrusionSetMutation = graphql`
       id
       standard_id
       name
+      representative {
+        main
+      }
       entity_type
       parent_types
       description

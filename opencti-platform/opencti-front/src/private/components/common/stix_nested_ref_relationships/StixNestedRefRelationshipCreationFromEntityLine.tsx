@@ -11,6 +11,7 @@ import {
   StixNestedRefRelationshipCreationFromEntityLine_node$data,
   StixNestedRefRelationshipCreationFromEntityLine_node$key,
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipCreationFromEntityLine_node.graphql';
+import { DraftChip } from '@components/common/draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -45,6 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
   fragment StixNestedRefRelationshipCreationFromEntityLine_node on StixCoreObject {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     standard_id
     parent_types
     entity_type
@@ -300,6 +305,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(data)}
+              {data.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
