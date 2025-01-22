@@ -137,7 +137,6 @@ export interface DataTableProps {
   hideHeaders?: boolean
   canToggleLine?: boolean
   message?: string
-  isLocalStorageEnabled?: boolean
 }
 
 export interface DataTableBodyProps {
