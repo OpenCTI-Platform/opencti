@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { findTemplateById } from '../../../src/domain/status';
+import { findById as findStatusById, findTemplateById } from '../../../src/domain/status';
 
 describe('Request access domain  - initialized status', async () => {
   it('should initial data be created', async () => {
@@ -11,7 +11,8 @@ describe('Request access domain  - initialized status', async () => {
     expect(approvedStatusId).toBeDefined();
     expect(approvedStatusId?.length, 'The status id must be a string not empty').toBeGreaterThan(1);
     if (approvedStatusId) {
-      const statusData = await findTemplateById(testContext, ADMIN_USER, approvedStatusId);
+      const statusInRfi = await findStatusById(testContext, ADMIN_USER, approvedStatusId);
+      const statusData = await findTemplateById(testContext, ADMIN_USER, statusInRfi.template_id);
       expect(statusData.name).toBe('APPROVED');
     }
 
@@ -19,7 +20,8 @@ describe('Request access domain  - initialized status', async () => {
     expect(declinedStatusId).toBeDefined();
     expect(declinedStatusId?.length, 'The status id must be a string not empty').toBeGreaterThan(1);
     if (declinedStatusId) {
-      const statusData = await findTemplateById(testContext, ADMIN_USER, declinedStatusId);
+      const statusInRfi = await findStatusById(testContext, ADMIN_USER, declinedStatusId);
+      const statusData = await findTemplateById(testContext, ADMIN_USER, statusInRfi.template_id);
       expect(statusData.name).toBe('DECLINED');
     }
   });

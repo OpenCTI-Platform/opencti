@@ -444,14 +444,14 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('RuleManager')).toBe(1);
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
-    expect(entityTypeMap.get('Status')).toBe(4);
+    expect(entityTypeMap.get('Status')).toBe(6);
     expect(entityTypeMap.get('StatusTemplate')).toBe(8);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(521 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(523 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -592,14 +592,14 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('RuleManager')).toBe(1);
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
-    expect(entityTypeMap.get('Status')).toBe(4);
+    expect(entityTypeMap.get('Status')).toBe(6);
     expect(entityTypeMap.get('StatusTemplate')).toBe(8);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(530);
+    expect(data.edges.length).toEqual(532);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -705,7 +705,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('RuleManager')).toBe(1);
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
-    expect(entityTypeMap.get('Status')).toBe(4);
+    expect(entityTypeMap.get('Status')).toBe(6);
     expect(entityTypeMap.get('StatusTemplate')).toBe(8);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
@@ -736,7 +736,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(13);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
-    expect(data.edges.length).toEqual(541);
+    expect(data.edges.length).toEqual(543);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -876,7 +876,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['object-marking'].length).toEqual(28);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
-    expect(data.edges.length).toEqual(264);
+    expect(data.edges.length).toEqual(265);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
@@ -905,7 +905,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(264);
+    expect(data.length).toEqual(265);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

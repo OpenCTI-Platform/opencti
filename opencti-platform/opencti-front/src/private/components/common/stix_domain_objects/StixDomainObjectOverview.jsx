@@ -181,12 +181,12 @@ const StixDomainObjectOverview = ({
     : stixDomainObject.x_opencti_reliability;
 
   let requestAccess = null;
-  if (stixDomainObject && stixDomainObject.x_opencti_request_access) {
+  if (stixDomainObject.x_opencti_request_access) {
     requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
   }
-  console.log('requestAccess ===> ', requestAccess);
+  // console.log('requestAccess ===> ', requestAccess);
 
-  console.log('stixDomainObjectStatus ===>', stixDomainObject.status);
+  // console.log('stixDomainObjectStatus ===>', stixDomainObject.status);
   return (
     <>
       <Typography variant="h4">

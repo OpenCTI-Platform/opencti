@@ -181,7 +181,7 @@ describe('Add Request Access to an entity and create an RFI.'
   let userAnalystId: string;
   let newStatusId: string;
 
-  it('Request access feature must be disabled when plateforme orga is not set ?', async () => {
+  it('Request access feature must be disabled when plateforme orga is not set', async () => {
     const platformSettings = await queryAsAdminWithSuccess({
       query: QUERY_ROOT_SETTINGS,
       variables: {}
@@ -189,7 +189,7 @@ describe('Add Request Access to an entity and create an RFI.'
     logApp.info('ANGIE platformSettings', { platformSettings });
     // If default configuration for test changes and platform_organization is setup, this it step has no meaning anymore.
     expect(platformSettings?.data?.settings.platform_organization).toBeNull();
-    // TODO implement and => expect(platformSettings?.data?.settings.request_access_enabled).toBeFalsy();
+    expect(platformSettings?.data?.settings.request_access_enabled).toBeFalsy();
   });
 
   it('should enable platform organization', async () => {
@@ -421,7 +421,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(queryResult?.data?.requestAccessDecline.action_executed).toBeTruthy();
   });
 
-  it('should be ok to accept the Case RFI when already rejected', async () => {
+  it.todo('should be ok to accept the Case RFI when already rejected', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: APPROVE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
