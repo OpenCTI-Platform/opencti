@@ -30,11 +30,6 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   openExports?: boolean;
   availableFilterKeys: string[];
   storageKey: string;
-  entityId: string,
-  relationshipTypes: [],
-  stixCoreObjectTypes: [],
-  entityLink: [],
-  isRelationReversed: boolean,
 }
 
 export const stixDomainObjectAttackPatternsKillChainContainerLineFragment = graphql`
@@ -171,11 +166,6 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
   openExports,
   availableFilterKeys,
   storageKey,
-  entityId,
-  relationshipTypes,
-  stixCoreObjectTypes,
-  entityLink,
-  isRelationReversed,
 }) => {
   const dataPreloaded = usePreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
@@ -206,11 +196,6 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
         availableFilterKeys={availableFilterKeys}
         storageKey={storageKey}
         killChainDataQueryRef={killChainDataQueryRef}
-        entityId={entityId}
-        relationshipTypes={relationshipTypes}
-        stixCoreObjectTypes={stixCoreObjectTypes}
-        entityLink={entityLink}
-        isRelationReversed={isRelationReversed}
       />
     </React.Suspense>
   ) : (

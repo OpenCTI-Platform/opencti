@@ -25,7 +25,7 @@ import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_
 import { attackPatternsMatrixColumnsFragment, attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumns_data.graphql';
-import EntityStixCoreRelationshipsRelationshipsView from '@components/common/stix_core_relationships/views/EntityStixCoreRelationshipsRelationshipsView';
+import StixCoreRelationships from '@components/common/stix_core_relationships/StixCoreRelationships';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -39,10 +39,9 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -83,11 +82,6 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStopTime: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixColumnsQuery>;
-  entityId: string,
-  relationshipTypes: [],
-  stixCoreObjectTypes: [],
-  entityLink: string,
-  isRelationReversed: boolean,
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -108,11 +102,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   defaultStopTime,
   storageKey,
   killChainDataQueryRef,
-  entityId,
-  relationshipTypes,
-  stixCoreObjectTypes,
-  entityLink,
-  isRelationReversed,
 }) => {
   const { t_i18n } = useFormatter();
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
@@ -181,21 +170,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   } else {
     activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
   }
-  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join(
-    '-',
-  )}-${relationshipTypes?.join('-')}`;
-  const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      filters: emptyFilterGroup,
-      view: 'entities',
-    },
-  );
-  const { view } = localStorage.viewStorage;
+
   return (
     <>
       {currentView !== 'matrix-in-line' && <div
@@ -358,6 +333,20 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 />
               </ToggleButton>
             </Tooltip>
+            <ToggleButton
+              value="relationships"
+              aria-label="relationships"
+              onClick={() => handleChangeView('relationships')}
+            >
+              <Tooltip title={t_i18n('Relationships view')}>
+                <RelationManyToMany
+                  fontSize="small"
+                  color={
+                    currentView === 'relationships' ? 'secondary' : 'primary'
+                  }
+                />
+              </Tooltip>
+            </ToggleButton>
             {typeof handleToggleExports === 'function' && !exportDisabled && (
             <Tooltip title={t_i18n('Open export panel')}>
               <ToggleButton
@@ -372,23 +361,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </ToggleButton>
             </Tooltip>
             )}
-            {/* {enableNestedView && ( */}
-            <ToggleButton
-              value="relationships"
-              aria-label="relationships"
-            >
-              <Tooltip title={t_i18n('Relationships view')}>
-                <RelationManyToMany
-                  fontSize="small"
-                  color={
-                      currentView === 'relationships' || !currentView
-                        ? 'secondary'
-                        : 'primary'
-                    }
-                />
-              </Tooltip>
-            </ToggleButton>
-            {/* )} */}
             {typeof handleToggleExports === 'function' && exportDisabled && (
             <Tooltip
               title={`${
@@ -470,20 +442,28 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             coursesOfAction={true}
           />
         )}
-        {(currentView === 'relationships' && (
-        <EntityStixCoreRelationshipsRelationshipsView
-          entityId={entityId}
-          relationshipTypes={relationshipTypes}
-          stixCoreObjectTypes={stixCoreObjectTypes}
-          entityLink={entityLink}
-          isRelationReversed={isRelationReversed}
-          currentView={currentView}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          localStorage={localStorage}
-          enableContextualView={view}
-        />
-        ))}
+        {currentView === 'relationships' && (
+          <StixCoreRelationships
+            entityId={stixDomainObjectId}
+            currentView={currentView}
+            targetTypes={['Attack-Pattern']}
+            direction={'fromEntity'}
+            relationshipTypes={['uses']}
+            paginationOptions={paginationOptions as PaginationOptions}
+            storageKey={storageKey}
+          />
+        // <EntityStixCoreRelationshipsRelationshipsView
+        //   entityLink={entityLink}
+        //   currentView={currentView}
+        //   defaultStartTime={defaultStartTime}
+        //   defaultStopTime={defaultStopTime}
+        //   localStorage={localStorage}
+        //   entityId={stixDomainObjectId}
+        //   relationshipTypes={['uses']}
+        //   stixCoreObjectTypes={['Attack-Pattern']}
+        //   isRelationReversed={false}
+        // />
+        )}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}

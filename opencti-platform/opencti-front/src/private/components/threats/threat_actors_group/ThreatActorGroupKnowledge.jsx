@@ -114,16 +114,6 @@ class ThreatActorGroupKnowledgeComponent extends Component {
               />
             }
           />
-          {/* <Route */}
-          {/*  path="/attack_patterns" */}
-          {/*  element={ */}
-          {/*    <StixDomainObjectAttackPatterns */}
-          {/*      stixDomainObjectId={threatActorGroup.id} */}
-          {/*      defaultStartTime={threatActorGroup.first_seen} */}
-          {/*      defaultStopTime={threatActorGroup.last_seen} */}
-          {/*    /> */}
-          {/*  } */}
-          {/* /> */}
           <Route
             path="/attack_patterns"
             element={
@@ -131,11 +121,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
                 stixDomainObjectId={threatActorGroup.id}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
-                entityId={threatActorGroup.id}
-                relationshipTypes={['uses', 'compromises']}
-                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
-                isRelationReversed={false}
               />
             }
           />
