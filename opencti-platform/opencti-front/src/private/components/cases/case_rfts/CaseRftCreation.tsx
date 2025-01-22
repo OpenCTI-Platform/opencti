@@ -162,7 +162,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
-      ...(canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
