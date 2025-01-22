@@ -17,7 +17,7 @@ import StixCoreObjectHistoryTab from '../model/StixCoreObjectHistoryTab.pageMode
  * @param page
  */
 const navigateMalwareAnalyses = async (page: Page) => {
-  const malwareAnalysesNameFromInitData = 'Spelevo EK analysis';
+  const malwareAnalysesNameFromInitData = 'Spelevo EK analysis fail';
   const malwareAnalysesPage = new MalwareAnalysesPage(page);
   await malwareAnalysesPage.navigateFromMenu();
 
