@@ -604,13 +604,6 @@ export const filtersAfterSwitchLocalMode = (filters: FilterGroup | undefined | n
   return undefined;
 };
 
-const defaultFilterObject: Filter = {
-  id: '',
-  key: '',
-  values: [],
-  operator: '',
-  mode: 'or',
-};
 export const getDefaultOperatorFilter = (
   filterDefinition?: FilterDefinition,
 ) => {
@@ -839,23 +832,28 @@ export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core
 export const getDefaultFilterObject = (
   filterKey: string,
   filterDefinition?: FilterDefinition,
+  values?: FilterValue[],
+  mode?: string,
 ): Filter => {
   return {
-    ...defaultFilterObject,
     id: uuid(),
     key: filterKey,
     operator: getDefaultOperatorFilter(filterDefinition),
+    values: values ?? [],
+    mode: mode ?? 'or',
   };
 };
 
 export const useGetDefaultFilterObject = (
   filterKeys: string[],
   entityTypes: string[],
+  values?: FilterValue[],
+  mode?: string,
 ) => {
   const filtersDefinition = filterKeys.map((key) => useFilterDefinition(key, entityTypes));
   return (filtersDefinition
     .filter((def) => def) as FilterDefinition[])
-    .map((def) => getDefaultFilterObject(def.filterKey, def));
+    .map((def) => getDefaultFilterObject(def.filterKey, def, values, mode));
 };
 
 export const isStixObjectTypes = [

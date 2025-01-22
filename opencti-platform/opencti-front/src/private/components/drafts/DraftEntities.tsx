@@ -8,7 +8,7 @@ import StixCyberObservableCreation from '@components/observations/stix_cyber_obs
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -129,7 +129,10 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   };
 
   const initialValues = {
-    filters: emptyFilterGroup,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['draft_change.draft_operation'], ['Stix-Core-Object'], ['create', 'update', 'delete']),
+    },
     searchTerm: '',
     sortBy: 'name',
     orderAsc: false,
