@@ -133,9 +133,6 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 };
 
 export const createQueryTask = async (context, user, input) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot create background task in draft');
-  }
   const { actions, filters, excluded_ids = [], search = null, scope, orderMode } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
   const queryData = await executeTaskQuery(context, user, filters, search, scope, orderMode);
