@@ -1,14 +1,19 @@
 import * as Yup from 'yup';
 
-export const disseminationListUpdateValidator = (t: (n: string) => string) => {
+const disseminationListValidator = (t: (value: string) => string) => {
   return Yup.object().shape({
     name: Yup.string().trim().min(2).required(t('This field is required')),
-    emails: Yup.string().required(t('This field is required')),
+    emails: Yup.string()
+      .required(t('This field is required'))
+      .test(
+        'emails',
+        t('Each line must contain a valid email address'),
+        (value) => {
+          const emails = value.split('\n').map((email) => email.trim());
+          return emails.every((email) => email !== '' && Yup.string().email().isValidSync(email));
+        },
+      ),
   });
 };
-export const disseminationListCreationValidator = (t: (value: string) => string) => {
-  return Yup.object().shape({
-    name: Yup.string().trim().min(2).required(t('This field is required')),
-    emails: Yup.string().required(t('This field is required')),
-  });
-};
+
+export default disseminationListValidator;

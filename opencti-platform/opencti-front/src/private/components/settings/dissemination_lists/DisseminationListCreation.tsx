@@ -3,7 +3,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { disseminationListCreationValidator } from '@components/settings/dissemination_lists/DisseminationListUtils';
+import disseminationListValidator from '@components/settings/dissemination_lists/DisseminationListUtils';
 import { graphql } from 'react-relay';
 import { DisseminationListsLinesPaginationQuery$variables } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -80,7 +80,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
       initialValues={initialValues}
       validateOnBlur={false}
       validateOnChange={false}
-      validationSchema={disseminationListCreationValidator(t_i18n)}
+      validationSchema={disseminationListValidator(t_i18n)}
       onSubmit={onSubmit}
       onReset={onReset}
     >
