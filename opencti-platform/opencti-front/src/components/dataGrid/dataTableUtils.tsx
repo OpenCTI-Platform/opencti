@@ -181,7 +181,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ channel_types }) => {
-      const value = channel_types ? channel_types.join(', ') : '-';
+      const value = isNotEmptyField(channel_types) ? channel_types.join(', ') : '-';
       return defaultRender(value);
     },
   },
@@ -297,7 +297,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ event_types }) => {
-      const value = event_types ? event_types.join(', ') : '-';
+      const value = isNotEmptyField(event_types) ? event_types.join(', ') : '-';
       return defaultRender(value);
     },
   },
@@ -356,6 +356,72 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.preventDefault();
             e.stopPropagation();
             handleAddFilter('incident_type', incident_type ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  response_types: {
+    id: 'response_types',
+    label: 'Response type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ response_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={response_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('response_types', response_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  information_types: {
+    id: 'information_types',
+    label: 'Information type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ information_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={information_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('information_types', information_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  takedown_types: {
+    id: 'takedown_types',
+    label: 'Takedown type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ takedown_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={takedown_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('takedown_types', takedown_types?.at(0) ?? null, 'eq');
           }}
         />
       );
@@ -846,7 +912,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ threat_actor_types }) => {
-      const value = threat_actor_types ? threat_actor_types.join(', ') : '-';
+      const value = isNotEmptyField(threat_actor_types) ? threat_actor_types.join(', ') : '-';
       return defaultRender(value);
     },
   },
@@ -963,10 +1029,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'x_opencti_cisa_kev',
     label: 'CISA KEV',
     percentWidth: 15,
-    render: ({ x_opencti_cisa_kev }) => (
-      <Tooltip title={x_opencti_cisa_kev}>
-        <Truncate>{x_opencti_cisa_kev}</Truncate>
-      </Tooltip>
+    render: ({ x_opencti_cisa_kev }, { t_i18n }) => (
+      <ItemBoolean
+        status={x_opencti_cisa_kev}
+        label={x_opencti_cisa_kev ? t_i18n('Yes') : t_i18n('No')}
+      />
     ),
   },
   x_opencti_epss_score: {
@@ -981,7 +1048,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     render: ({ x_opencti_epss_percentile }) => (
       <Tooltip title={x_opencti_epss_percentile}>
-        <Truncate>{x_opencti_epss_percentile}</Truncate>
+        <Truncate>{x_opencti_epss_percentile || '-'}</Truncate>
       </Tooltip>
     ),
   },
@@ -1009,7 +1076,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           classes={{ root: classes.chipInList }}
           color="primary"
           variant="outlined"
-          label={x_opencti_organization_type ?? 'Unknown'}
+          label={x_opencti_organization_type || 'Unknown'}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1087,6 +1154,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
+  },
+  valid_from: {
+    id: 'valid_from',
+    label: 'Valid from',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ valid_from }, { nsdt }) => <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>,
   },
   draftVersion: {
     id: 'draftVersion',
