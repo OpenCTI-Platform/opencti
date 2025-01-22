@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { internalDeleteElementById } from '../../../src/database/middleware';
-import type { RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
+import { isRequestAccessEnabled, type RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ActionStatus } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { logApp } from '../../../src/config/conf';
@@ -214,8 +214,22 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(requestAccessWorkflowStatuses.length).toBe(2);
   });
 
-  it.todo('TODO what to expect when workflow is not enabled on RFI ?', async () => {
+  it.todo('should throw error when configuration is missing for Request Access feature', async () => {
+    // TODO check boolean in settings is false with graphQL
+    expect(await isRequestAccessEnabled(testContext, ADMIN_USER)).toBeFalsy();
 
+    // Calling Add access request should throw exception
+    await queryAsUserIsExpectedError(USER_EDITOR.client, {
+      query: CREATE_REQUEST_ACCESS_QUERY,
+      variables: {
+        input: {
+          request_access_reason: 'This is going to fail',
+          request_access_entities: ['1234'],
+          request_access_members: ['1234'],
+          request_access_type: 'organization_sharing',
+        },
+      },
+    });
   });
 
   it('should RFI workflow enabled with at least one status', async () => {
@@ -346,16 +360,23 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(action.status).toBe(ActionStatus.Approved);
   });
 
-  it.todo('should accept the created Case RFI second time be ok too', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+  it('should accept the created Case RFI second time be ok too', async () => {
+    // FIXME use a user and not admin !
+    /*
+    const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: APPROVE_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
     });
-    expect(queryResult?.data?.requestAccessValidate.action_status).toBe(ActionStatus.Approved);
-    expect(queryResult?.data?.requestAccessValidate.action_executed).toBeTruthy();
+    */
+    const approvalResult = await queryAsAdminWithSuccess({
+      query: APPROVE_RFI_QUERY,
+      variables: { id: caseRfiIdForApproval },
+    });
+    expect(approvalResult?.data?.requestAccessApprove.action_status).toBe(ActionStatus.Approved);
+    expect(approvalResult?.data?.requestAccessApprove.action_executed).toBeTruthy();
   });
 
-  it.todo('should create a new Request Access and associated Case RFI (For reject use case)', async () => {
+  it('should create a new Request Access and associated Case RFI (For reject use case)', async () => {
     const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
@@ -372,29 +393,35 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRfiIdForReject).not.toBeNull();
   });
 
-  it.todo('should reject the created Case RFI first time be ok', async () => {
+  it('should reject the created Case RFI first time be ok', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: DECLINE_RFI_QUERY,
       variables: { id: caseRfiIdForReject },
     });
-    expect(queryResult?.data?.requestAccessReject.action_status).toBe(ActionStatus.Declined);
-    expect(queryResult?.data?.requestAccessReject.action_executed).toBeTruthy();
+    expect(queryResult?.data?.requestAccessDecline.action_status).toBe(ActionStatus.Declined);
+    expect(queryResult?.data?.requestAccessDecline.action_executed).toBeTruthy();
 
-    const caseRFIAccepted = await findRFIById(testContext, ADMIN_USER, caseRfiIdForReject);
-    const action: RequestAccessAction = JSON.parse(caseRFIAccepted.x_opencti_request_access);
+    const getRfiQueryResult = await queryAsAdminWithSuccess({
+      query: READ_RFI_QUERY,
+      variables: { id: caseRfiIdForReject }
+    });
+    expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
+    expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('DECLINED'); // 'DECLINED' coming from data-initialization
+    const actionData = getRfiQueryResult?.data?.caseRfi.x_opencti_request_access;
+    const action: RequestAccessAction = JSON.parse(actionData);
     expect(action.status).toBe(ActionStatus.Declined);
   });
 
-  it.todo('should reject the created Case RFI second time be ok too', async () => {
+  it('should reject the created Case RFI second time be ok too', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: DECLINE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
     });
-    expect(queryResult?.data?.requestAccessReject.action_status).toBe(ActionStatus.Declined);
-    expect(queryResult?.data?.requestAccessReject.action_executed).toBeTruthy();
+    expect(queryResult?.data?.requestAccessDecline.action_status).toBe(ActionStatus.Declined);
+    expect(queryResult?.data?.requestAccessDecline.action_executed).toBeTruthy();
   });
 
-  it.todo('should be ok to accept the Case RFI when already rejected', async () => {
+  it('should be ok to accept the Case RFI when already rejected', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: APPROVE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
@@ -410,7 +437,7 @@ describe('Add Request Access to an entity and create an RFI.'
   it('should remove platform organization and test data', async () => {
     await internalDeleteElementById(testContext, ADMIN_USER, malwareId);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval);
-    // await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject);
+    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject);
     await enableCEAndUnSetOrganization();
   });
 });
