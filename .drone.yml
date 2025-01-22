@@ -122,10 +122,10 @@ steps:
       # Collect git info
       - jf rt bag $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER
       # Archive and upload each artefact that we need
-      - [[ -d "opencti-platform/opencti-front/test-results" ]] && tar -czvf frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-front/test-results
-      - [[ -d "opencti-platform/opencti-front/test-results" ]] && jf rt u frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
-      - [[ -d "opencti-platform/opencti-graphql/test-results" ]] && tar -czvf backend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-graphql/test-results
-      - [[ -d "opencti-platform/opencti-graphql/test-results" ]] && jf rt u backend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
+      - tar -czvf frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-front/test-results 2>/dev/null
+      - jf rt u frontend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
+      - tar -czvf backend-test-results-$DRONE_BUILD_NUMBER.tar.gz opencti-platform/opencti-graphql/test-results 2>/dev/null
+      - jf rt u backend-test-results-$DRONE_BUILD_NUMBER.tar.gz $JFROG_REPOSITORY --build-name=$JFROG_BUILD_NAME --build-number=$DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN
       # Next line should be done only once at the end: it's recording and gathering build info
       - jf rt bp $JFROG_BUILD_NAME $DRONE_BUILD_NUMBER --url=$JFROG_URL --access-token=$JFROG_TOKEN --build-url=$DRONE_BUILD_LINK
       # Cleaning up old build in JFrog
