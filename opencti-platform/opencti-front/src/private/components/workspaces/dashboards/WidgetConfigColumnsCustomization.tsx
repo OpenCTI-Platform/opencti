@@ -129,11 +129,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
         </Box>
 
         <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }} >
-          <Button
-            variant='outlined'
-            style={{ marginTop: '2.5px', marginLeft: '4px' }}
-            onClick={() => setColumns(defaultColumns)}
-          >
+          <Button variant='outlined' onClick={() => setColumns(defaultColumns)} >
             {t_i18n('Reset')}
           </Button>
         </Box>
