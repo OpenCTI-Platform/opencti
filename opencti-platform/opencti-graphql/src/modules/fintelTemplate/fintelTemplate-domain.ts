@@ -255,7 +255,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
 
 export const fintelTemplateImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
-  const { fintel_template_widgets } = parsedData.configuration;
+  const fintel_template_widgets = parsedData.configuration.fintel_template_widgets as [FintelTemplateWidget];
 
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_VERSION_FOR_IMPORT)) {
     throw FunctionalError(
@@ -268,7 +268,15 @@ export const fintelTemplateImport = async (context: AuthContext, user: AuthUser,
   await convertWidgetsIds(context, user, widgets, 'stix');
   const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
     variable_name,
-    widget: widgets[i]
+    widget: {
+      ...widgets[i],
+      dataSelection: widgets[i].dataSelection.map((selection) => ({
+        ...selection,
+        filters: JSON.stringify(selection.filters),
+        dynamicFrom: JSON.stringify(selection.dynamicFrom),
+        dynamicTo: JSON.stringify(selection.dynamicTo)
+      })),
+    },
   }));
 
   const fintelInput = {
