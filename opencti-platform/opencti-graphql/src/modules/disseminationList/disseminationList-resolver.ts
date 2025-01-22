@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../generated/graphql';
-import { findAll, findById, sendToDisseminationList } from './disseminationList-domain';
+import { addDisseminationList, findAll, findById, sendToDisseminationList } from './disseminationList-domain';
 
 const disseminationListResolvers: Resolvers = {
   Query: {
@@ -23,9 +23,9 @@ const disseminationListResolvers: Resolvers = {
   },
   DisseminationList: {},
   Mutation: {
-    // disseminationListAdd: (_, { input }, context) => {
-    //   return addDisseminationList(context, context.user, input);
-    // },
+    disseminationListAdd: (_, { input }, context) => {
+      return addDisseminationList(context, context.user, input);
+    },
     // disseminationListDelete: (_, { id }, context) => {
     //   return deleteDisseminationList(context, context.user, id);
     // },

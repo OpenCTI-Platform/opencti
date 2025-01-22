@@ -6,6 +6,7 @@ import {
   DisseminationListsLinesPaginationQuery$variables,
 } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
+import DisseminationListCreation from '@components/settings/dissemination_lists/DisseminationListCreation';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
@@ -155,7 +156,7 @@ const DisseminationLists = () => {
           message={t_i18n('// TODO')}
         />
       )}
-      {/* <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} /> */}
+      <DisseminationListCreation paginationOptions={queryPaginationOptions} />
     </div>
   );
 };
