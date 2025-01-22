@@ -9,13 +9,13 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_THREAT_ACTOR_GROUP
 } from '../../../schema/stixDomainObject';
-import { checkEnterpriseEdition } from '../../../utils/ee';
 import { ENTITY_TYPE_LABEL } from '../../../schema/stixMetaObject';
 import { RELATION_TARGETS, RELATION_USES } from '../../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../threatActorIndividual/threatActorIndividual-types';
 import { getDraftContext } from '../../../utils/draftContext';
 import { UnsupportedError } from '../../../config/errors';
 import { generateOpenBasScenarioWithInjectPlaceholders } from '../xtm-domain';
+import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 
 /** @deprecated [>=6.5 & <6.8]. Use `generateOpenBasScenarioWithInjectPlaceholders */
 export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection) => {
