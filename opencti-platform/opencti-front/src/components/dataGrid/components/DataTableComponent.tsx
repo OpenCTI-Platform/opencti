@@ -85,7 +85,8 @@ const DataTableComponent = ({
       .filter((key) => key !== 'select' && key !== 'navigate');
 
     // Check if keys order/length is the same
-    const isOrderSame = dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
+    const isOrderSame = dataColumnsKeys.length === localStorageColumnsKeys.length
+      && dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
 
     // Only use localStorage if order matches and we are allowed to
     const useLocalStorage = isOrderSame && withLocalStorage;
