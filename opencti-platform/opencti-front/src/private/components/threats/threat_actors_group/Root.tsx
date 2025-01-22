@@ -11,7 +11,7 @@ import { RootThreatActorsGroupSubscription } from '@components/threats/threat_ac
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import ThreatActorGroup from './ThreatActorGroup';
 import ThreatActorGroupKnowledge from './ThreatActorGroupKnowledge';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -204,7 +204,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               </Tabs>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={threatActorGroup.id}/>
-                <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat"/>
+                <StixCoreObjectSimulationResultContainer id={threatActorGroup.id} type="threat"/>
               </div>
             </Box>
             <Routes>

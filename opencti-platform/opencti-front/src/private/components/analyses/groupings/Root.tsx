@@ -10,7 +10,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
-import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSimulationResultContainer from '@components/common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -183,7 +183,7 @@ const RootGrouping = () => {
                       />
                     </Tabs>
                     {isOverview && (
-                      <StixCoreObjectSimulationResult id={grouping.id} type="container" />
+                      <StixCoreObjectSimulationResultContainer id={grouping.id} type="container" />
                     )}
                   </Box>
                   <Routes>
