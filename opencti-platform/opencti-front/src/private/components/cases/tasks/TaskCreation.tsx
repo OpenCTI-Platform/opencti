@@ -40,7 +40,7 @@ const taskAddMutation = graphql`
   mutation TaskCreationMutation($input: TaskAddInput!) {
     taskAdd(input: $input) {
       id
-      representative{
+      representative {
         main
       }
       ...TasksLine_node

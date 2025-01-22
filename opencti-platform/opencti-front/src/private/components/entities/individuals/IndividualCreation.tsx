@@ -39,7 +39,7 @@ const individualMutation = graphql`
       id
       standard_id
       name
-      representative{
+      representative {
         main
       }
       confidence

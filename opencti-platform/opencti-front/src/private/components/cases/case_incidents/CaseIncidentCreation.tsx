@@ -62,7 +62,7 @@ const caseIncidentMutation = graphql`
       entity_type
       parent_types
       name
-      representative{
+      representative {
         main
       }
       description

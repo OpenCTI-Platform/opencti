@@ -67,7 +67,7 @@ const indicatorMutation = graphql`
       id
       standard_id
       name
-      representative{
+      representative {
         main
       }
       description

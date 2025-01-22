@@ -71,7 +71,7 @@ const ThreatActorIndividualMutation = graphql`
     threatActorIndividualAdd(input: $input) {
       id
       name
-      representative{
+      representative {
         main
       }
       description

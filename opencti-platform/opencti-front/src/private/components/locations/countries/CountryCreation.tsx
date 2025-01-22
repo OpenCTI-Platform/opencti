@@ -38,7 +38,7 @@ const countryMutation = graphql`
       id
       standard_id
       name
-      representative{
+      representative {
         main
       }
       confidence

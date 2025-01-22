@@ -50,7 +50,7 @@ const attackPatternMutation = graphql`
       id
       standard_id
       name
-      representative{
+      representative {
         main
       }
       entity_type

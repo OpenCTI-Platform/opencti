@@ -59,7 +59,7 @@ export const noteCreationUserMutation = graphql`
   mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
     userNoteAdd(input: $input) {
       id
-      representative{
+      representative {
         main
       }
       standard_id
