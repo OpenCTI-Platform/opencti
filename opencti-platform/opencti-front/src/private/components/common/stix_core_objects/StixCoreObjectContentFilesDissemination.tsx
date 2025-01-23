@@ -11,6 +11,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DOMPurify from "dompurify";
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -50,12 +51,14 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     { successMessage: `${t_i18n('Email sent')}` },
   );
 
-  const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = (
+  const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
     setSubmitting(true);
-    const emailBodyFormatted = marked(values.emailBody);
+    const emailBodyMarkdown = await marked(values.emailBody);
+    const sanitizedEmailBody = DOMPurify.sanitize(emailBodyMarkdown);
+    const emailBodyFormatted = sanitizedEmailBody.replace(/(\r\n|\n|\r)/g, '<br/>');
     commitMutation({
       variables: {
         input: {

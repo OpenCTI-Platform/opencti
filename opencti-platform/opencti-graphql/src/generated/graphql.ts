@@ -19588,8 +19588,6 @@ export type Query = {
   decayRules?: Maybe<DecayRuleConnection>;
   deleteOperation?: Maybe<DeleteOperation>;
   deleteOperations?: Maybe<DeleteOperationConnection>;
-  disseminationList?: Maybe<DisseminationList>;
-  disseminationLists?: Maybe<DisseminationListConnection>;
   draftWorkspace?: Maybe<DraftWorkspace>;
   draftWorkspaceEntities?: Maybe<StixCoreObjectConnection>;
   draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
@@ -20321,21 +20319,6 @@ export type QueryDeleteOperationsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<DeleteOperationOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryDisseminationListArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryDisseminationListsArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<FilterGroup>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<DisseminationListOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -39011,8 +38994,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   decayRules?: Resolver<Maybe<ResolversTypes['DecayRuleConnection']>, ParentType, ContextType, Partial<QueryDecayRulesArgs>>;
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
-  disseminationList?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<QueryDisseminationListArgs, 'id'>>;
-  disseminationLists?: Resolver<Maybe<ResolversTypes['DisseminationListConnection']>, ParentType, ContextType, Partial<QueryDisseminationListsArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
   draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
   draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;
