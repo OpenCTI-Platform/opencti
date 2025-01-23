@@ -52,6 +52,37 @@ export const isDraftSupportedEntity = (element) => {
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
 };
 
+// Transform a raw update patched stored in a draft_updates_patch to a list of reverse field patch inputs
+export const buildReverseUpdateFieldPatch = (rawUpdatePatch) => {
+  const resulReverseFieldPatch = [];
+  if (rawUpdatePatch) {
+    const parsedUpdatePatch = JSON.parse(rawUpdatePatch);
+    const updatePatchKeys = Object.keys(parsedUpdatePatch);
+    for (let i = 0; i < updatePatchKeys.length; i += 1) {
+      const currentKey = updatePatchKeys[i];
+      const currentValues = parsedUpdatePatch[currentKey];
+      if (currentValues) {
+        if (currentValues.replaced_value && currentValues.replaced_value.length > 0) {
+          // TODO store initial replaced value to be able to reverse back to it OR get current live value to reverse to it
+          // const replaceInput = { key: currentKey, value: currentValues.replaced_value, operation: EditOperation.Replace };
+          // resulReverseFieldPatch.push(replaceInput);
+        } else {
+          if (currentValues.added_value && currentValues.added_value.length > 0) {
+            const addInput = { key: currentKey, value: currentValues.added_value, operation: EditOperation.Remove };
+            resulReverseFieldPatch.push(addInput);
+          }
+          if (currentValues.removed_value && currentValues.removed_value.length > 0) {
+            const removeInput = { key: currentKey, value: currentValues.removed_value, operation: EditOperation.Add };
+            resulReverseFieldPatch.push(removeInput);
+          }
+        }
+      }
+    }
+  }
+
+  return resulReverseFieldPatch;
+};
+
 // Transform a raw update patched stored in a draft_updates_patch to a list of field patch inputs
 export const buildUpdateFieldPatch = (rawUpdatePatch) => {
   const resultFieldPatch = [];
