@@ -12,6 +12,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from threading import Thread
+from multiprocessing.pool import ThreadPool
 from typing import Any, Dict, List, Optional, Union
 
 import pika
@@ -27,9 +28,6 @@ from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
-
-PROCESSING_COUNT: int = 4
-MAX_PROCESSING_COUNT: int = 60
 
 # Telemetry variables definition
 meter = metrics.get_meter(__name__)
@@ -83,6 +81,7 @@ class PingAlive(threading.Thread):
 
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
+    pool: ThreadPool
     connector: Dict[str, Any] = field(hash=False)
     config: Dict[str, Any] = field(hash=False)
     opencti_url: str
@@ -191,13 +190,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             "Processing a new message, launching a thread...",
             {"tag": method.delivery_tag},
         )
-        thread = Thread(
-            target=self.data_handler,
-            args=[self.pika_connection, channel, method.delivery_tag, data],
-        )
-        thread.start()
-        while thread.is_alive():  # Loop while the thread is processing
-            self.pika_connection.sleep(0.05)
+        self.pool.apply(self.data_handler, [self.pika_connection, channel, method.delivery_tag, data])
         self.worker_logger.info("Message processed, thread terminated")
 
     # Data handling
@@ -395,6 +388,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.log_level = get_config_variable(
             "WORKER_LOG_LEVEL", ["worker", "log_level"], config
         )
+        self.max_concurrent_processing = get_config_variable(
+            "WORKER_MAX_CONCURRENT_PROCESSING",
+            ["worker", "max_concurrent_processing"],
+            config,
+            True,
+            4,
+        )
         # Telemetry
         self.telemetry_enabled = get_config_variable(
             "WORKER_TELEMETRY_ENABLED",
@@ -443,6 +443,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
     # Start the main loop
     def start(self) -> None:
+        self.pool = ThreadPool(self.max_concurrent_processing)
         sleep_delay = 60
         while True:
             try:
@@ -461,6 +462,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 {"queue": queue},
                             )
                             self.consumer_threads[queue] = Consumer(
+                                self.pool,
                                 connector,
                                 self.config,
                                 self.opencti_url,
@@ -472,6 +474,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.consumer_threads[queue].start()
                     else:
                         self.consumer_threads[queue] = Consumer(
+                            self.pool,
                             connector,
                             self.config,
                             self.opencti_url,
@@ -500,6 +503,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 time.sleep(sleep_delay)
             except KeyboardInterrupt:
                 # Graceful stop
+                pool.close()
+                pool.join()
                 for thread in self.consumer_threads:
                     if thread not in self.queues:
                         self.consumer_threads[thread].terminate()

@@ -7,3 +7,4 @@ opencti:
 worker:
   log_level: 'info'
   telemetry_enabled: false
+  max_concurrent_processing: 2 # default=4
