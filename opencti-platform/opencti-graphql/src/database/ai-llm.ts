@@ -48,7 +48,6 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     const response = await (client as Mistral)?.chat.stream({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],
-      safePrompt: undefined,
     });
     let content = '';
     if (response) {
