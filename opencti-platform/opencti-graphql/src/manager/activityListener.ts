@@ -179,6 +179,12 @@ const initActivityManager = () => {
           }
           await activityLogger(action, message);
         }
+        if (action.event_scope === 'disseminate') {
+          const { file_name, entity_name, entity_type, input } = action.context_data;
+          // @ts-expect-error input type unknown
+          const message = `disseminate \`${file_name}\` to \`${input.email_address}\` for \`${entity_name}\` (${entity_type})`;
+          await activityLogger(action, message);
+        }
       }
       if (action.event_type === 'command') {
         if (action.event_scope === 'search') {

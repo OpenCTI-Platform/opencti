@@ -57,6 +57,7 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
+  KNOWLEDGE_KNDISSEMINATION
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
@@ -70,6 +71,7 @@ enum Capabilities {
   SETTINGS_SETPARAMETERS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
+  SETTINGS_SETDISSEMINATION
   SETTINGS_SETLABELS
   SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
@@ -9024,6 +9026,7 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
+  disseminationListSend(input: DisseminationListSendInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12572,4 +12575,42 @@ type FintelTemplateConnection {
 enum FintelTemplateOrdering {
   name
   start_date
+}
+
+type DisseminationList implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  emails: [String]!
+}
+
+enum DisseminationListOrdering {
+  name
+  _score
+}
+
+type DisseminationListConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListEdge!]!
+}
+
+type DisseminationListEdge {
+  cursor: String!
+  node: DisseminationList!
+}
+
+input DisseminationListAddInput {
+  name: String!
+  emails: [String!]!
+}
+
+input DisseminationListSendInput {
+  email_address: String!
+  email_object: String!
+  email_body: String!
+  email_attached_file_id: ID!
 }

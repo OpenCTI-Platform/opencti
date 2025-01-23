@@ -35,6 +35,6 @@ export const smtpIsAlive = async () => {
 };
 
 export const sendMail = async (args) => {
-  const { from, to, subject, html } = args;
-  await transporter.sendMail({ from, to, subject, html });
+  const { from, to, bcc, subject, html, attachments } = args;
+  await transporter.sendMail({ from, to, bcc, subject, html, attachments });
 };

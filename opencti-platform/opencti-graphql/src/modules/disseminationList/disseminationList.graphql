@@ -1,0 +1,59 @@
+type DisseminationList implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # DisseminationList
+  name: String!
+  emails: [String]!
+}
+
+# Ordering
+enum DisseminationListOrdering {
+  name
+  _score
+}
+
+# Relay connections
+type DisseminationListConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListEdge!]!
+}
+type DisseminationListEdge {
+  cursor: String!
+  node: DisseminationList!
+}
+
+# Queries
+#type Query {
+#    disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+#    disseminationLists(
+#      first: Int
+#      after: ID
+#      orderBy: DisseminationListOrdering
+#      orderMode: OrderingMode
+#      filters: FilterGroup
+#      search: String
+#    ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
+#}
+
+input DisseminationListAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  emails: [String!]!
+}
+
+input DisseminationListSendInput {
+  email_address: String!
+  email_object: String!
+  email_body: String!
+  email_attached_file_id: ID!
+}
+
+type Mutation {
+  #  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  #  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
+  #  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListSend(input: DisseminationListSendInput!): Boolean @auth(for: [KNOWLEDGE_KNDISSEMINATION])
+}

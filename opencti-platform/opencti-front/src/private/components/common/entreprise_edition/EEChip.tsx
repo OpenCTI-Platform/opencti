@@ -1,5 +1,5 @@
 import makeStyles from '@mui/styles/makeStyles';
-import React, { useState } from 'react';
+import React, { MouseEvent, useState } from 'react';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
@@ -50,11 +50,17 @@ const EEChip = ({ feature, clickable = true, floating = false }: { feature?: str
   const [displayDialog, setDisplayDialog] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
+
+  const onClick = (e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    return clickable && setDisplayDialog(true);
+  };
+
   return (!isEnterpriseEdition && (
     <>
       <div
         className={floating ? classes.containerFloating : classes.container}
-        onClick={() => clickable && setDisplayDialog(true)}
+        onClick={(e) => onClick(e)}
       >
         EE
       </div>
