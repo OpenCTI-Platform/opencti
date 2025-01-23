@@ -5,13 +5,13 @@ import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import DOMPurify from "dompurify";
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
