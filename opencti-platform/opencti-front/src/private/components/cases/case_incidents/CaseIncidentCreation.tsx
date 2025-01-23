@@ -123,9 +123,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { isFeatureEnable } = useHelper();
-  const isAccessRestrictionCreationEnable = isFeatureEnable('ACCESS_RESTRICTION_AT_CREATION');
-
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -162,7 +159,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       file: values.file,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && isAccessRestrictionCreationEnable && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
@@ -219,7 +216,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       authorized_members: undefined,
     },
   );
-  if (!canEditAuthorizedMembers || !isAccessRestrictionCreationEnable) {
+  if (!canEditAuthorizedMembers) {
     delete initialValues.authorized_members;
   }
   return (
@@ -333,7 +330,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isEnterpriseEdition && isAccessRestrictionCreationEnable && (
+          {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
