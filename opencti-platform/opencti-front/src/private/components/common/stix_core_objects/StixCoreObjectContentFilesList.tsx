@@ -26,7 +26,7 @@ import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useHelper from "../../../../utils/hooks/useHelper";
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
