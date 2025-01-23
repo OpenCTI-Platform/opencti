@@ -13,6 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { AutoFix } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
+import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -20,7 +21,7 @@ import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
-import { DraftChip } from '../draft/DraftChip';
+import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 
 const styles = (theme) => ({
   item: {
@@ -55,6 +56,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
       entityId,
       fsd,
       t,
+      theme,
       classes,
       dataColumns,
       node,
@@ -97,7 +99,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
+          <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null } />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -221,6 +223,10 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
     node: graphql`
       fragment EntityStixCoreRelationshipLineAll_node on StixCoreRelationship {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         entity_type
         parent_types
         relationship_type
@@ -538,6 +544,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
 export const EntityStixCoreRelationshipLineAll = R.compose(
   inject18n,
   withStyles(styles),
+  withTheme,
 )(EntityStixCoreRelationshipLineAllFragment);
 
 class EntityStixCoreRelationshipLineAllDummyComponent extends Component {

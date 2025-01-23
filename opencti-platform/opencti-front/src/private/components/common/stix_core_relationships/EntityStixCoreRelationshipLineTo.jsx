@@ -13,6 +13,7 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
+import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -20,7 +21,7 @@ import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
-import { DraftChip } from '../draft/DraftChip';
+import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 
 const styles = (theme) => ({
   item: {
@@ -54,6 +55,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
     const {
       fsd,
       t,
+      theme,
       classes,
       dataColumns,
       node,
@@ -94,7 +96,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
+          <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null } />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -216,6 +218,10 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
     node: graphql`
       fragment EntityStixCoreRelationshipLineTo_node on StixCoreRelationship {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         entity_type
         parent_types
         relationship_type
@@ -569,6 +575,7 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
 export const EntityStixCoreRelationshipLineTo = R.compose(
   inject18n,
   withStyles(styles),
+  withTheme,
 )(EntityStixCoreRelationshipLineToFragment);
 
 class EntityStixCoreRelationshipLineToDummyComponent extends Component {
