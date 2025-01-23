@@ -30,7 +30,7 @@ import type { BasicStoreObject } from '../../types/store';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { UnsupportedError } from '../../config/errors';
 import { generateInternalId } from '../../schema/identifier';
-import { createInternalObject } from '../../domain/internalObject';
+import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 
 const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
@@ -107,4 +107,10 @@ export const addDisseminationList = async (context: AuthContext, user: AuthUser,
 };
 
 export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {};
-export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {};
+
+export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
+  return deleteInternalObject(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
+};

@@ -16,6 +16,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import DisseminationListPopover from '@components/settings/dissemination_lists/DisseminationListPopover';
 
 export const disseminationListsQuery = graphql`
     query DisseminationListsLinesPaginationQuery(
@@ -152,7 +153,7 @@ const DisseminationLists = () => {
           disableLineSelection
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
-          // actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
+          actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
           message={t_i18n('// TODO')}
         />
       )}
