@@ -64,10 +64,10 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     const stream = await downloadFile(file.id);
     const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
     const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
-    const fromEmail = conf.get('smtp:from_email');
+    const toEmail = conf.get('app:dissemination_list:to_email');
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
-      to: settings.platform_email,
+      to: toEmail,
       bcc: [input.email_address, user.user_email],
       subject: input.email_object,
       html: generatedEmail,
