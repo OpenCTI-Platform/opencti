@@ -15901,7 +15901,6 @@ __metadata:
     rxjs: "npm:7.8.1"
     three-spritetext: "npm:1.9.3"
     typescript: "npm:5.7.3"
-    unified: "npm:11.0.5"
     use-analytics: "npm:1.1.0"
     uuid: "npm:11.0.3"
     vite: "npm:5.4.12"
@@ -19648,7 +19647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unified@npm:11.0.5, unified@npm:^11.0.0":
+"unified@npm:^11.0.0":
   version: 11.0.5
   resolution: "unified@npm:11.0.5"
   dependencies:
