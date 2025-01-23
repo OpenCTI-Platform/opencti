@@ -12590,7 +12590,7 @@ type DisseminationList implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  emails: [String]!
+  emails: String!
 }
 
 enum DisseminationListOrdering {

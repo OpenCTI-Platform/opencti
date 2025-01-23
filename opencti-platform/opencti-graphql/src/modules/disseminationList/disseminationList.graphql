@@ -7,7 +7,7 @@ type DisseminationList implements InternalObject & BasicObject {
   updated_at: DateTime!
   # DisseminationList
   name: String!
-  emails: [String]!
+  emails: String!
 }
 
 # Ordering
