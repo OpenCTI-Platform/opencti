@@ -28,6 +28,7 @@ import { buildContextDataForFile, publishUserAction } from '../../listener/UserA
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import type { BasicStoreObject } from '../../types/store';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -47,10 +48,11 @@ interface SendMailArgs {
 }
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
+  await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const filePath = input.email_attached_file_id;
   const file = await loadFile(context, user, filePath);
-  if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id && settings.valid_enterprise_edition) {
+  if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
     const stream = await downloadFile(file.id);
     const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
     const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
