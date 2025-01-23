@@ -33,7 +33,7 @@ const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationLi
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'DISSEMINATIONLISTS' },
-    { name: 'emails', label: 'Emails', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: true, featureFlag: 'DISSEMINATIONLISTS' },
+    { name: 'emails', label: 'Emails', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'DISSEMINATIONLISTS' },
   ],
   relations: [],
   representative: (stix: StixDisseminationList) => {
