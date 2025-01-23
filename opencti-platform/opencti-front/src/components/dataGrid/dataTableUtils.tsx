@@ -115,7 +115,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         variant="inList"
         markingDefinitions={allowed_markings ?? []}
         limit={2}
-      />),
+      />
+    ),
   },
   analyses: {
     id: 'analyses',
@@ -1046,11 +1047,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'x_opencti_epss_percentile',
     label: 'EPSS Percentile',
     percentWidth: 15,
-    render: ({ x_opencti_epss_percentile }) => (
-      <Tooltip title={x_opencti_epss_percentile}>
-        <Truncate>{x_opencti_epss_percentile || '-'}</Truncate>
-      </Tooltip>
-    ),
+    render: ({ x_opencti_epss_percentile }) => {
+      return defaultRender(x_opencti_epss_percentile || '-');
+    },
   },
   x_opencti_cvss_base_severity: {
     id: 'x_opencti_cvss_base_severity',
