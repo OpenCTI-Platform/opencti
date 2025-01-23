@@ -16,9 +16,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNDISSEMINATION, SETTINGS, SETTINGS_SETDISSEMINATION } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import type { Theme } from '../../../../components/Theme';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -84,6 +85,8 @@ interface RoleEditionCapabilitiesComponentProps {
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
+  const isDisseminationFeatureEnabled = isFeatureEnable('DISSEMINATIONLISTS');
 
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -172,6 +175,9 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {
+            if (!isDisseminationFeatureEnabled && (capability.name === KNOWLEDGE_KNDISSEMINATION || capability.name === SETTINGS_SETDISSEMINATION)) {
+              return;
+            }
             const paddingLeft = capability.name.split('_').length * 20 - 20;
             const roleCapability = roleCapabilities.find(
               (r) => r.name === capability.name,
