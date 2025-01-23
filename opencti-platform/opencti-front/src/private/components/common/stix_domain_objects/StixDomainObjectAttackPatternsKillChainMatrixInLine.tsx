@@ -140,12 +140,12 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
             ),
             (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action">
               <Tooltip title={t_i18n('Courses of action view')}>
-                <ProgressWrench color="primary" fontSize="small" />
+                <ProgressWrench color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} fontSize="small" />
               </Tooltip>
             </ToggleButton>),
             (<ToggleButton key="relationships" value="relationships" aria-label="relationships">
               <Tooltip title={t_i18n('Relationships view')}>
-                <RelationManyToMany color="primary" fontSize="small" />
+                <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
               </Tooltip>
             </ToggleButton>),
           ]}
