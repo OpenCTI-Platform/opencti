@@ -2939,6 +2939,7 @@
   "The value must be less than or equal to 100": "Der Wert muss kleiner als oder gleich 100 sein",
   "The values do not match": "Die Werte stimmen nicht überein",
   "The variable name should not contain spaces": "Der Variablenname sollte keine Leerzeichen enthalten",
+  "The variable name should not contain special characters": "Der Variablenname sollte keine Sonderzeichen enthalten",
   "The widget is not called in the content": "Das Widget wird nicht im Inhalt aufgerufen",
   "Theme": "Thema",
   "THEN": "THEN",

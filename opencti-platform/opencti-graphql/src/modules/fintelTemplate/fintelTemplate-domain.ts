@@ -35,12 +35,13 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
 };
 
+// check validity of variable_name of fintel template widgets
 const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
-  // check validity of variable_name of fintel_template_widgets
   const invalidVariableNames: string[] = [];
+  const regex = /^[A-Za-z0-9]+$/;
   (fintelTemplateWidgets ?? [])
     .forEach(({ variable_name, widget }) => {
-      if (variable_name.includes(' ')) {
+      if (!regex.test(variable_name)) {
         invalidVariableNames.push(variable_name);
       }
       if (widget.type === 'attribute') {
@@ -48,8 +49,8 @@ const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplat
           (selection.columns ?? [])
             .forEach((c) => {
               if (!c.variableName) {
-                throw FunctionalError('Attribute widgets should all have a variable name', { variable_name });
-              } else if (c.variableName.includes(' ')) {
+                throw FunctionalError('Attributes should all have a variable name', { variableNameOfTheWidget: variable_name });
+              } else if (!regex.test(c.variableName)) {
                 invalidVariableNames.push(c.variableName);
               }
             });
@@ -57,7 +58,7 @@ const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplat
       }
     });
   if (invalidVariableNames.length > 0) {
-    throw FunctionalError('Variable names should not contain spaces', { invalidVariableNames });
+    throw FunctionalError('Variable names should not contain spaces or special characters', { invalidVariableNames });
   }
 };
 
@@ -120,9 +121,12 @@ export const fintelTemplateEditField = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
-  // check fintel template widgets variables names and add widget ids
+  // for add and replace operations on widgets, check fintel template widgets variables names and add widget ids
   const formattedInput = input.map((i) => {
-    if (i.key === 'fintel_template_widgets' && (!i.object_path || i.object_path.split('/').length <= 2)) {
+    if (i.operation !== 'remove'
+      && i.key === 'fintel_template_widgets'
+      && (!i.object_path || i.object_path.split('/').length <= 2)
+    ) {
       const values = i.value as FintelTemplateWidgetAddInput[];
       checkFintelTemplateWidgetsValidity(values);
       const formattedValues = values.map((v) => ({

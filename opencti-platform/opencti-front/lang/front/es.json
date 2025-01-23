@@ -2939,6 +2939,7 @@
   "The value must be less than or equal to 100": "El valor debe ser menor o igual a 100",
   "The values do not match": "Los valores no coinciden",
   "The variable name should not contain spaces": "El nombre de la variable no debe contener espacios",
+  "The variable name should not contain special characters": "El nombre de la variable no debe contener caracteres especiales",
   "The widget is not called in the content": "El widget no se llama en el contenido",
   "Theme": "Tema",
   "THEN": "THEN",

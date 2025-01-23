@@ -2939,6 +2939,7 @@
   "The value must be less than or equal to 100": "The value must be less than or equal to 100",
   "The values do not match": "The values do not match",
   "The variable name should not contain spaces": "The variable name should not contain spaces",
+  "The variable name should not contain special characters": "The variable name should not contain special characters",
   "The widget is not called in the content": "The widget is not called in the content",
   "Theme": "Theme",
   "THEN": "THEN",

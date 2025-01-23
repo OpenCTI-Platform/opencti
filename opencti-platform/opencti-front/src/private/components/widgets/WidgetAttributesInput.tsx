@@ -141,6 +141,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
       Yup.object().shape({
         variableName: Yup.string()
           .test('no-space', 'This field cannot contain spaces', (v) => !v?.includes(' '))
+          .matches(/^[A-Za-z0-9]+$/, t_i18n('The variable name should not contain special characters'))
           .required(t_i18n('This field is required')),
       }),
     ),

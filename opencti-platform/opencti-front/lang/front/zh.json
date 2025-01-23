@@ -2939,6 +2939,7 @@
   "The value must be less than or equal to 100": "该值必须小于或等于 100",
   "The values do not match": "该值不匹配",
   "The variable name should not contain spaces": "变量名不应包含空格",
+  "The variable name should not contain special characters": "变量名不应包含特殊字符",
   "The widget is not called in the content": "在内容中不调用部件",
   "Theme": "主题",
   "THEN": "然后",

@@ -155,6 +155,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     } if (variableName.includes(' ')) {
       MESSAGING$.notifyError(t_i18n('The variable name should not contain spaces'));
       return false;
+    } if (!variableName.match(/^[A-Za-z0-9]+$/)) {
+      MESSAGING$.notifyError(t_i18n('The variable name should not contain special characters'));
+      return false;
     }
     return true;
   };
