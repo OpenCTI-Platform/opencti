@@ -23,7 +23,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -163,6 +163,7 @@ const StixCoreObjectContentFilesList = ({
               />
               <ListItemSecondaryAction>
                 {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
+                <Security needs={[KNOWLEDGE_KNDISSEMINATION]} matchAll>
                   <>
                     <Tooltip title={'Disseminate'}>
                       <IconButton
@@ -177,6 +178,7 @@ const StixCoreObjectContentFilesList = ({
                     </Tooltip>
                     <EEChip />
                   </>
+                </Security>
                 )}
                 <IconButton
                   onClick={(e) => openPopover(e, file)}
