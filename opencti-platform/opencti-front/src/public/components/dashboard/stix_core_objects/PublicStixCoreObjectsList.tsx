@@ -1,5 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { useRef } from 'react';
+import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -9,6 +10,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsListQuery } from './__generated__/PublicStixCoreObjectsListQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { WidgetColumn } from '../../../../utils/widget/widget';
 
 const publicStixCoreObjectsListQuery = graphql`
   query PublicStixCoreObjectsListQuery(
@@ -204,16 +206,16 @@ const publicStixCoreObjectsListQuery = graphql`
 
 interface PublicStixCoreObjectsListComponentProps {
   queryRef: PreloadedQuery<PublicStixCoreObjectsListQuery>
-  dateAttribute: string
   rootRef: DataTableProps['rootRef']
   widgetId: string
+  columns: WidgetColumn[]
 }
 
 const PublicStixCoreObjectsListComponent = ({
   queryRef,
-  dateAttribute,
   rootRef,
   widgetId,
+  columns,
 }: PublicStixCoreObjectsListComponentProps) => {
   const { publicStixCoreObjects } = usePreloadedQuery(
     publicStixCoreObjectsListQuery,
@@ -224,11 +226,11 @@ const PublicStixCoreObjectsListComponent = ({
     return (
       <WidgetListCoreObjects
         data={[...publicStixCoreObjects.edges]}
-        dateAttribute={dateAttribute}
         publicWidget
         rootRef={rootRef}
         widgetId={widgetId}
         pageSize={100}
+        columns={columns}
       />
     );
   }
@@ -256,7 +258,8 @@ const PublicStixCoreObjectsList = ({
     },
   );
 
-  const dateAttribute = dataSelection[0].date_attribute ?? 'created_at';
+  const selection = dataSelection[0];
+  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
 
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -270,7 +273,7 @@ const PublicStixCoreObjectsList = ({
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <PublicStixCoreObjectsListComponent
               queryRef={queryRef}
-              dateAttribute={dateAttribute}
+              columns={[...columns]}
               rootRef={rootRef.current ?? undefined}
               widgetId={id}
             />
