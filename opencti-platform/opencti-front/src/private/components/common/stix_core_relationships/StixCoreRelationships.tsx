@@ -270,7 +270,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
       ),
     },
     toName: {
-      percentWidth: 25,
+      percentWidth: 24,
     },
     createdBy: { percentWidth: 10, isSortable: isRuntimeSort },
     creator: { percentWidth: 10, isSortable: isRuntimeSort },
