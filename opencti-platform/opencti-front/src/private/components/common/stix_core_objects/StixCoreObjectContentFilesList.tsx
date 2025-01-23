@@ -163,7 +163,7 @@ const StixCoreObjectContentFilesList = ({
               />
               <ListItemSecondaryAction>
                 {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
-                <Security needs={[KNOWLEDGE_KNDISSEMINATION]} matchAll>
+                <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
                   <>
                     <Tooltip title={'Disseminate'}>
                       <IconButton
@@ -192,6 +192,7 @@ const StixCoreObjectContentFilesList = ({
             </ListItemButton>
           </Tooltip>
           {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
+          <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
             <Drawer
               title={t_i18n('Disseminate a file')}
               open={isDrawerOpen}
@@ -203,6 +204,7 @@ const StixCoreObjectContentFilesList = ({
                 onClose={() => setDrawerOpen(false)}
               />
             </Drawer>
+          </Security>
           )}
         </Fragment>
       ))}
