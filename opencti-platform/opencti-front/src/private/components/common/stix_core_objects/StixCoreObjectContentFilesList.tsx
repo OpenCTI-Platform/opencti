@@ -26,6 +26,7 @@ import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useHelper from "../../../../utils/hooks/useHelper";
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -79,6 +80,8 @@ const StixCoreObjectContentFilesList = ({
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { isFeatureEnable } = useHelper();
+  const isDisseminationFeatureEnabled = isFeatureEnable('DISSEMINATIONLISTS');
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
@@ -159,7 +162,7 @@ const StixCoreObjectContentFilesList = ({
                 )}
               />
               <ListItemSecondaryAction>
-                {file.metaData?.mimetype === 'application/pdf' && (
+                {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
                   <>
                     <Tooltip title={'Disseminate'}>
                       <IconButton
