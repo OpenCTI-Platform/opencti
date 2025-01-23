@@ -10,6 +10,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 
 export const disseminationListMutationFieldPatch = graphql`
     mutation DisseminationListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -28,6 +29,8 @@ interface DisseminationListEditionComponentProps {
 interface DisseminationListEditionFormData {
   name: string;
   emails: string;
+  description: string;
+  dissemination_list_values_count?: number;
 }
 
 const DisseminationListEdition: FunctionComponent<DisseminationListEditionComponentProps> = ({
@@ -44,6 +47,9 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
     { setSubmitting, setErrors },
   ) => {
     setSubmitting(true);
+    if (values.emails) {
+      values.dissemination_list_values_count = values.emails.split('\n').length;
+    }
 
     const input = Object.entries(values)
       .map(([key, value]) => {
@@ -72,6 +78,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
   const initialValues: DisseminationListEditionFormData = {
     name: data.name,
     emails: data.emails,
+    description: data.description || '',
   };
 
   return (
@@ -100,13 +107,22 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                   required
                 />
                 <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={2}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
                   component={TextField}
                   controlledSelectedTab='write'
                   name="emails"
                   label={t_i18n('Emails')}
                   fullWidth={true}
                   multiline={true}
-                  rows={4}
+                  rows={20}
                   style={{ marginTop: 20 }}
                   required
                 />

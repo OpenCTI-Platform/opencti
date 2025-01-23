@@ -11,6 +11,7 @@ import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 
 const disseminationListCreationMutation = graphql`
     mutation DisseminationListCreationAddMutation($input: DisseminationListAddInput!) {
@@ -23,6 +24,7 @@ const disseminationListCreationMutation = graphql`
 interface DisseminationListCreationFormData {
   name: string;
   emails: string;
+  description: string;
 }
 
 interface DisseminationListCreationFormProps {
@@ -43,9 +45,12 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
+    const count = values.emails.split('\n').length;
     const input = {
       name: values.name,
       emails: values.emails,
+      description: values.description,
+      dissemination_list_values_count: count,
     };
     commit({
       variables: {
@@ -73,6 +78,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
   const initialValues: DisseminationListCreationFormData = {
     name: '',
     emails: '',
+    description: '',
   };
 
   return (
@@ -94,12 +100,21 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
             required
           />
           <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={2}
+            style={{ marginTop: 20 }}
+          />
+          <Field
             component={TextField}
             name="emails"
             label={t_i18n('Emails')}
             fullWidth={true}
             multiline={true}
-            rows={4}
+            rows={20}
             style={{ marginTop: 20 }}
             required
           />

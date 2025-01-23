@@ -98,6 +98,8 @@ const storeAndCreateDisseminationList = async (context: AuthContext, user: AuthU
   const disseminationListToCreate = {
     name: input.name,
     emails: input.emails,
+    description: input.description,
+    dissemination_list_values_count: input.dissemination_list_values_count,
     internal_id: disseminationListInternalId,
   };
   return createInternalObject<StoreEntityDisseminationList>(context, user, disseminationListToCreate, ENTITY_TYPE_DISSEMINATION_LIST);
