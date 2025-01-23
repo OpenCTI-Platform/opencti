@@ -20,11 +20,12 @@ if (AI_ENABLED && AI_TOKEN) {
       client = new Mistral({
         serverURL: isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT,
         apiKey: AI_TOKEN,
+        /* uncomment if you need low level debug on AI
         debugLogger: {
           log: (message, args) => logApp.info(`[AI] log ${message}`, { message }),
           group: (label) => logApp.info(`[AI] group ${label} start.`),
           groupEnd: () => logApp.info('[AI] group end.'),
-        }
+        } */
       });
       break;
     case 'openai':
@@ -43,7 +44,7 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.info('[AI] Querying MistralAI with prompt', { questionStart: question });
+    logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: question.substring(0, 100) });
     const response = await (client as Mistral)?.chat.stream({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],
@@ -53,7 +54,6 @@ export const queryMistralAi = async (busId: string | null, question: string, use
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
-        logApp.info('[AI] Querying MistralAI response chunk', { chunk });
         if (chunk.data.choices[0].delta.content !== undefined) {
           const streamText = chunk.data.choices[0].delta.content;
           content += streamText;
