@@ -3619,7 +3619,7 @@ export const elDeleteInstances = async (instances) => {
     }
   }
 };
-const elRemoveRelationConnection = async (context, user, elementsImpact) => {
+export const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   const impacts = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
@@ -3660,7 +3660,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   }
 };
 
-const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
+export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
   // Update all rel connections that will remain
   const elementsImpact = {};
   let startProcessingTime = new Date().getTime();
@@ -3747,6 +3747,36 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
   });
 };
 
+export const elRemoveDraftIdFromElements = async (context, user, draftId, elementsIds) => {
+  const revertDraftIdSource = `
+    if (ctx._source.containsKey('draft_ids')) { 
+      for (int i = 0; i < ctx._source.draft_ids.length; ++i){
+        if(ctx._source.draft_ids[i] == params.draftId){
+          ctx._source.draft_ids.remove(i);
+        }
+      }
+    }  
+  `;
+
+  if (elementsIds.length > 0) {
+    await elRawUpdateByQuery({
+      index: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source: revertDraftIdSource, params: { draftId } },
+        query: {
+          terms: {
+            'id.keyword': elementsIds
+          }
+        },
+      },
+    }).catch((err) => {
+      throw DatabaseError('Revert live entities indexing fail', { cause: err });
+    });
+  }
+};
+
 export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
   const draftContext = getDraftContext(context, user);
@@ -3780,32 +3810,7 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
   // 03/ Remove draft_ids from live relations and live elements of draft reverts
   const allDraftIds = [...draftRelations, ...draftElements].map((d) => d.internal_id);
-  const revertDraftIdSource = `
-    if (ctx._source.containsKey('draft_ids')) { 
-      for (int i = 0; i < ctx._source.draft_ids.length; ++i){
-        if(ctx._source.draft_ids[i] == '${draftContext}'){
-          ctx._source.draft_ids.remove(i);
-        }
-      }
-    }  
-  `;
-  if (allDraftIds.length > 0) {
-    await elRawUpdateByQuery({
-      index: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
-      refresh: true,
-      conflicts: 'proceed',
-      body: {
-        script: { source: revertDraftIdSource },
-        query: {
-          terms: {
-            'id.keyword': allDraftIds
-          }
-        },
-      },
-    }).catch((err) => {
-      throw DatabaseError('Revert live entities indexing fail', { cause: err });
-    });
-  }
+  await elRemoveDraftIdFromElements(context, user, draftContext, allDraftIds);
 };
 
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
