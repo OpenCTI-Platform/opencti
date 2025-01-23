@@ -6295,6 +6295,8 @@ export type DisplayStep = {
 export type DisseminationList = BasicObject & InternalObject & {
   __typename?: 'DisseminationList';
   created_at: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  dissemination_list_values_count: Scalars['Int']['output'];
   emails: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -6305,6 +6307,8 @@ export type DisseminationList = BasicObject & InternalObject & {
 };
 
 export type DisseminationListAddInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  dissemination_list_values_count: Scalars['Int']['input'];
   emails: Scalars['String']['input'];
   name: Scalars['String']['input'];
 };
@@ -34888,6 +34892,8 @@ export type DisplayStepResolvers<ContextType = any, ParentType extends Resolvers
 
 export type DisseminationListResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisseminationList'] = ResolversParentTypes['DisseminationList']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dissemination_list_values_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   emails?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

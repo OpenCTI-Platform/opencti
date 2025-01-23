@@ -17,6 +17,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DisseminationListPopover from '@components/settings/dissemination_lists/DisseminationListPopover';
+import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 
 export const disseminationListsQuery = graphql`
     query DisseminationListsLinesPaginationQuery(
@@ -76,6 +77,8 @@ const disseminationListsLineFragment = graphql`
         id
         name
         emails
+      description
+      dissemination_list_values_count
     }
 `;
 
@@ -126,7 +129,20 @@ const DisseminationLists = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 95,
+      percentWidth: 20,
+    },
+    description: {
+      id: 'description',
+      label: t_i18n('Description'),
+      percentWidth: 60,
+      isSortable: false,
+    },
+    lineNumber: {
+      id: 'NumberOfElements',
+      label: t_i18n('Number of elements'),
+      percentWidth: 15,
+      isSortable: true,
+      render: (node: DisseminationListsLine_node$data) => node.dissemination_list_values_count || '-',
     },
   };
 

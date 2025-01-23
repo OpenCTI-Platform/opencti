@@ -12595,6 +12595,8 @@ type DisseminationList implements InternalObject & BasicObject {
   updated_at: DateTime!
   name: String!
   emails: String!
+  description: String
+  dissemination_list_values_count: Int!
 }
 
 enum DisseminationListOrdering {
@@ -12615,6 +12617,8 @@ type DisseminationListEdge {
 input DisseminationListAddInput {
   name: String!
   emails: String!
+  description: String
+  dissemination_list_values_count: Int!
 }
 
 input DisseminationListSendInput {

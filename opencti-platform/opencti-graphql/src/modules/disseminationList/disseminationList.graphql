@@ -8,6 +8,8 @@ type DisseminationList implements InternalObject & BasicObject {
   # DisseminationList
   name: String!
   emails: String!
+  description: String
+  dissemination_list_values_count: Int!
 }
 
 # Ordering
@@ -42,6 +44,8 @@ type DisseminationListEdge {
 input DisseminationListAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   emails: String!
+  description: String
+  dissemination_list_values_count: Int!
 }
 
 input DisseminationListSendInput {
