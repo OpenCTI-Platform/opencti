@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
-import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
+import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import type { WidgetColumn } from '../../utils/widget/widget';
 
 interface WidgetListCoreObjectsProps {
@@ -22,18 +22,19 @@ const WidgetListCoreObjects = ({
   columns,
 }: WidgetListCoreObjectsProps) => {
   const buildColumns = useCallback((): DataTableProps['dataColumns'] => {
-    const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const percentWidth = (100) / (columns.length ?? 1);
 
-    return (
-      columnKeys.reduce<DataTableProps['dataColumns']>(
-        (acc, current) => ({
-          ...acc,
-          [current]: { percentWidth, isSortable: false },
-        }),
-        {},
-      )
-    ) as DataTableProps['dataColumns'];
+    return columns
+      .reduce<Record<string, Partial<DataTableColumn>>>(
+      (acc, { attribute, label }) => {
+        if (!attribute) {
+          return acc;
+        }
+        acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+        return acc;
+      },
+      {},
+    );
   }, [columns]);
 
   return (

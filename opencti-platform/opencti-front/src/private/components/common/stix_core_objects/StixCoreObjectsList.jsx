@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
-import { defaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
+import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -357,8 +357,7 @@ const StixCoreObjectsList = ({
 }) => {
   const { t_i18n } = useFormatter();
   const selection = dataSelection[0];
-  // TODO remove defaultWidgetColumns use entityType
-  const columns = selection.columns ?? defaultWidgetColumns.common;
+  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
   const dataSelectionTypes = ['Stix-Core-Object'];
 
   const sortBy = selection.sort_by && selection.sort_by.length > 0
