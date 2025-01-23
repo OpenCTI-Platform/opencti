@@ -11987,9 +11987,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:11.0.0":
-  version: 11.0.0
-  resolution: "glob@npm:11.0.0"
+"glob@npm:11.0.1":
+  version: 11.0.1
+  resolution: "glob@npm:11.0.1"
   dependencies:
     foreground-child: "npm:^3.1.0"
     jackspeak: "npm:^4.0.1"
@@ -11999,7 +11999,7 @@ __metadata:
     path-scurry: "npm:^2.0.0"
   bin:
     glob: dist/esm/bin.mjs
-  checksum: 10/e66939201d11ae30fe97e3364ac2be5c59d6c9bfce18ac633edfad473eb6b46a7553f6f73658f67caaf6cccc1df1ae336298a45e9021fa5695fd78754cc1603e
+  checksum: 10/57b12a05cc25f1c38f3b24cf6ea7a8bacef11e782c4b9a8c5b0bef3e6c5bcb8c4548cb31eb4115592e0490a024c1bde7359c470565608dd061d3b21179740457
   languageName: node
   linkType: hard
 
@@ -12563,20 +12563,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-auto-translation@npm:1.10.0":
-  version: 1.10.0
-  resolution: "i18n-auto-translation@npm:1.10.0"
+"i18n-auto-translation@npm:1.10.1":
+  version: 1.10.1
+  resolution: "i18n-auto-translation@npm:1.10.1"
   dependencies:
     "@google-cloud/translate": "npm:8.5.0"
     axios: "npm:1.7.9"
     deep-object-diff: "npm:1.1.9"
-    glob: "npm:11.0.0"
+    glob: "npm:11.0.1"
     html-entities: "npm:2.5.2"
     just-extend: "npm:6.2.0"
     yargs: "npm:17.7.2"
   bin:
     i18n-auto-translation: dist/index.js
-  checksum: 10/2ba374991ad00b72ad61e5d9453eeabb933a50b0cdb5b975f5b6aae5734be9e118b706068dfc0329e3c7f46467b69242f4841cf16df8f6f31fe55682ce9e6bb8
+  checksum: 10/1157f6a12446da3f04a484d7acadbb0817df9bbad5925c51933d468161018efef03b6da68d4cfd2b6d29ae7a7d4bc8f7f299d081431c497c5e3cc61d4c0101ef
   languageName: node
   linkType: hard
 
@@ -15847,7 +15847,7 @@ __metadata:
     html-to-image: "npm:1.11.11"
     html-to-pdfmake: "npm:2.5.13"
     http-proxy-middleware: "npm:3.0.3"
-    i18n-auto-translation: "npm:1.10.0"
+    i18n-auto-translation: "npm:1.10.1"
     invert-color: "npm:2.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
