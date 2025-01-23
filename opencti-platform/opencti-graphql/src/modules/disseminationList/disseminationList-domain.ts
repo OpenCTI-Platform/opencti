@@ -15,9 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { internalLoadById, storeLoadById } from '../../database/middleware-loader';
+import { internalLoadById } from '../../database/middleware-loader';
 import type { DisseminationListSendInput } from '../../generated/graphql';
-import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST } from './disseminationList-types';
 import { sendMail } from '../../database/smtp';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -28,9 +27,9 @@ import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import type { BasicStoreObject } from '../../types/store';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
-export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
-};
+// export const findById = (context: AuthContext, user: AuthUser, id: string) => {
+//   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
+// };
 
 // export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
 //   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
