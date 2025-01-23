@@ -9,7 +9,12 @@ import {
   relationshipsStixCoreRelationshipsLinesQuery,
 } from '@components/data/Relationships';
 import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
-import { AutoFix } from 'mdi-material-ui';
+import { AutoFix, ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import { ViewColumnOutlined } from '@mui/icons-material';
+import FiligranIcon from '@components/common/FiligranIcon';
+import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -22,6 +27,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { useFormatter } from '../../../../components/i18n';
 
 interface StixCoreRelationshipsProps {
   storageKey: string;
@@ -47,6 +53,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const { t_i18n } = useFormatter();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     is_inferred: {
@@ -65,7 +72,9 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
         <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
       ),
     },
-    relationship_type: {},
+    relationship_type: {
+      percentWidth: 10,
+    },
     toType: {
       id: 'toType',
       label: 'To type',
@@ -75,10 +84,12 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
         <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
       ),
     },
-    toName: {},
-    createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
-    creator: { percentWidth: 7, isSortable: isRuntimeSort },
-    created_at: { percentWidth: 12 },
+    toName: {
+      percentWidth: 25,
+    },
+    createdBy: { percentWidth: 10, isSortable: isRuntimeSort },
+    creator: { percentWidth: 10, isSortable: isRuntimeSort },
+    created_at: { percentWidth: 15 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 
@@ -138,20 +149,52 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   } as UsePreloadedPaginationFragment<RelationshipsStixCoreRelationshipsLinesPaginationQuery>;
 
   return (
-    <>
-      {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
-          storageKey={storageKey}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          lineFragment={relationshipsStixCoreRelationshipsLineFragment}
-          preloadedPaginationProps={preloadedPaginationProps}
-          exportContext={{ entity_type: 'Attack-Pattern' }}
-        />
-      )}
-    </>
+    <div
+      style={{
+        transform: 'translateY(-12px)',
+      }}
+    >      {queryRef && (
+      <DataTable
+        dataColumns={dataColumns}
+        resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
+        storageKey={storageKey}
+        initialValues={initialValues}
+        toolbarFilters={contextFilters}
+        lineFragment={relationshipsStixCoreRelationshipsLineFragment}
+        preloadedPaginationProps={preloadedPaginationProps}
+        exportContext={{ entity_type: 'Attack-Pattern' }}
+        additionalHeaderButtons={[
+          (<ToggleButton key="matrix" value="matrix" aria-label="matrix">
+            <Tooltip title={t_i18n('Matrix view')}>
+              <ViewColumnOutlined fontSize="small" color="primary" />
+            </Tooltip>
+          </ToggleButton>),
+          (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')}>
+            <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line">
+              <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
+            </ToggleButton>
+          </Tooltip>
+          ),
+          (<Tooltip key="list" title={t_i18n('Kill chain view')}>
+            <ToggleButton key="list" value="list" aria-label="list">
+              <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
+            </ToggleButton>
+          </Tooltip>
+          ),
+          (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action">
+            <Tooltip title={t_i18n('Courses of action view')}>
+              <ProgressWrench color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} fontSize="small" />
+            </Tooltip>
+          </ToggleButton>),
+          (<ToggleButton key="relationships" value="relationships" aria-label="relationships">
+            <Tooltip title={t_i18n('Relationships view')}>
+              <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
+            </Tooltip>
+          </ToggleButton>),
+        ]}
+      />
+    )}
+    </div>
   );
 };
 export default StixCoreRelationships;

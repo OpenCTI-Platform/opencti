@@ -173,232 +173,232 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   return (
     <>
-      {currentView !== 'matrix-in-line' && <div
-        style={{
-          marginBottom: 20,
-          padding: 0,
-          marginTop: -12,
-        }}
-                                           >
+      {currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
         <div
           style={{
-            float: 'left',
+            marginBottom: 20,
+            padding: 0,
+            marginTop: -12,
           }}
         >
-          <SearchInput
-            variant="small"
-            keyword={searchTerm}
-            onSubmit={handleSearch}
-          />
-        </div>
-        <Box
-          style={{
-            display: 'flex',
-            float: 'left',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            marginRight: 20,
-            marginLeft: 8,
-            gap: 10,
-          }}
-        >
-          <Filters
-            availableFilterKeys={availableFilterKeys}
-            helpers={helpers}
-            searchContext={{ entityTypes: ['Attack-Pattern'] }}
-          />
-        </Box>
-        <div
-          style={{
-            float: 'left',
-            display: 'flex',
-            margin: '-6px 4px 0 0',
-          }}
-        >
-          <FilterIconButton
-            filters={filters}
-            helpers={helpers}
-            styleNumber={2}
-            redirection
-            searchContext={{ entityTypes: ['Attack-Pattern'] }}
-          />
-        </div>
-        {currentView === 'matrix' && (
-        <div
-          style={{
-            float: 'left',
-            display: 'flex',
-            padding: '0 10px 2px 10px',
-          }}
-        >
-          <InputLabel
+          <div
             style={{
-              padding: '10px 10px 0 0',
+              float: 'left',
             }}
           >
-            {t_i18n('Kill chain :')}
-          </InputLabel>
-          <FormControl
+            <SearchInput
+              variant="small"
+              keyword={searchTerm}
+              onSubmit={handleSearch}
+            />
+          </div>
+          <Box
             style={{
-              paddingTop: 10,
+              display: 'flex',
+              float: 'left',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              marginRight: 20,
+              marginLeft: 8,
+              gap: 10,
             }}
           >
-            <Select
-              size="small"
-              value={activKillChainValue}
-              onChange={handleKillChainChange}
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              helpers={helpers}
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
+          </Box>
+          <div
+            style={{
+              float: 'left',
+              display: 'flex',
+              margin: '-6px 4px 0 0',
+            }}
+          >
+            <FilterIconButton
+              filters={filters}
+              helpers={helpers}
+              styleNumber={2}
+              redirection
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
+          </div>
+          {currentView === 'matrix' && (
+          <div
+            style={{
+              float: 'left',
+              display: 'flex',
+              padding: '0 10px 2px 10px',
+            }}
+          >
+            <InputLabel
+              style={{
+                padding: '10px 10px 0 0',
+              }}
             >
-              {killChains.map((killChainName) => (
-                <MenuItem key={killChainName} value={killChainName}>
-                  {killChainName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-        )}
-        <div style={{ float: 'right', margin: 0 }}>
-          {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && (
-          <Tooltip
-            title={
+              {t_i18n('Kill chain :')}
+            </InputLabel>
+            <FormControl
+              style={{
+                paddingTop: 10,
+              }}
+            >
+              <Select
+                size="small"
+                value={activKillChainValue}
+                onChange={handleKillChainChange}
+              >
+                {killChains.map((killChainName) => (
+                  <MenuItem key={killChainName} value={killChainName}>
+                    {killChainName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+          )}
+          <div style={{ float: 'right', margin: 0 }}>
+            {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
+            <Tooltip
+              title={
                     currentColorsReversed
                       ? t_i18n('Disable invert colors')
                       : t_i18n('Enable invert colors')
                   }
-          >
-            <span
-              style={{
-                marginRight: 10,
-              }}
             >
-              <IconButton
+              <span
                 style={{
-                  transform: 'translateY(-5px)',
+                  marginRight: 10,
                 }}
-                color={currentColorsReversed ? 'secondary' : 'primary'}
-                onClick={handleToggleColorsReversed}
-                size="large"
               >
-                <InvertColorsOffOutlined fontSize="medium"/>
-              </IconButton>
-            </span>
-          </Tooltip>
-          )}
-          <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-            <Tooltip title={t_i18n('Matrix view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('matrix')}
-                value={'matrix'}
-              >
-                <ViewColumnOutlined
-                  fontSize="small"
-                  color={currentView === 'matrix' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
+                <IconButton
+                  style={{
+                    transform: 'translateY(-5px)',
+                  }}
+                  color={currentColorsReversed ? 'secondary' : 'primary'}
+                  onClick={handleToggleColorsReversed}
+                  size="large"
+                >
+                  <InvertColorsOffOutlined fontSize="medium"/>
+                </IconButton>
+              </span>
             </Tooltip>
-            <Tooltip title={t_i18n('Matrix in line view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('matrix-in-line')}
-                value={'matrix-in-line'}
-              >
-                <FiligranIcon icon={ListViewIcon}
-                  size="small"
-                  color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Kill chain view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('list')}
-                value={'list'}
-              >
-                <FiligranIcon icon={SublistViewIcon}
-                  size="small"
-                  color={currentView === 'list' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Courses of action view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('courses-of-action')}
-                value={'courses-of-action'}
-              >
-                <ProgressWrench
-                  fontSize="small"
-                  color={
+            )}
+            <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+              <Tooltip title={t_i18n('Matrix view')}>
+                <ToggleButton
+                  onClick={() => handleChangeView('matrix')}
+                  value={'matrix'}
+                >
+                  <ViewColumnOutlined
+                    fontSize="small"
+                    color={currentView === 'matrix' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Matrix in line view')}>
+                <ToggleButton
+                  onClick={() => handleChangeView('matrix-in-line')}
+                  value={'matrix-in-line'}
+                >
+                  <FiligranIcon icon={ListViewIcon}
+                    size="small"
+                    color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Kill chain view')}>
+                <ToggleButton
+                  onClick={() => handleChangeView('list')}
+                  value={'list'}
+                >
+                  <FiligranIcon icon={SublistViewIcon}
+                    size="small"
+                    color={currentView === 'list' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Courses of action view')}>
+                <ToggleButton
+                  onClick={() => handleChangeView('courses-of-action')}
+                  value={'courses-of-action'}
+                >
+                  <ProgressWrench
+                    fontSize="small"
+                    color={
                       currentView === 'courses-of-action'
                         ? 'secondary'
                         : 'primary'
                     }
-                />
-              </ToggleButton>
-            </Tooltip>
-            <ToggleButton
-              value="relationships"
-              aria-label="relationships"
-              onClick={() => handleChangeView('relationships')}
-            >
-              <Tooltip title={t_i18n('Relationships view')}>
-                <RelationManyToMany
-                  fontSize="small"
-                  color={
-                    currentView === 'relationships' ? 'secondary' : 'primary'
-                  }
-                />
+                  />
+                </ToggleButton>
               </Tooltip>
-            </ToggleButton>
-            {typeof handleToggleExports === 'function' && !exportDisabled && (
-            <Tooltip title={t_i18n('Open export panel')}>
-              <ToggleButton
-                value="export"
-                aria-label="export"
-                onClick={handleToggleExports}
-              >
-                <FileDownloadOutlined
-                  fontSize="small"
-                  color={openExports ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            )}
-            {typeof handleToggleExports === 'function' && exportDisabled && (
-            <Tooltip
-              title={`${
-                t_i18n(
-                  'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                ) + export_max_size
-              })`}
-            >
-              <span>
+              <Tooltip title={t_i18n('Relationships view')}>
                 <ToggleButton
-                  size="small"
+                  value="relationships"
+                  aria-label="relationships"
+                  onClick={() => handleChangeView('relationships')}
+                >
+                  <RelationManyToMany
+                    fontSize="small"
+                    color={currentView === 'relationships' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+              {typeof handleToggleExports === 'function' && !exportDisabled && (
+              <Tooltip title={t_i18n('Open export panel')}>
+                <ToggleButton
                   value="export"
                   aria-label="export"
-                  disabled={true}
+                  onClick={handleToggleExports}
                 >
-                  <FileDownloadOutlined fontSize="small"/>
+                  <FileDownloadOutlined
+                    fontSize="small"
+                    color={openExports ? 'secondary' : 'primary'}
+                  />
                 </ToggleButton>
-              </span>
-            </Tooltip>
-            )}
-          </ToggleButtonGroup>
+              </Tooltip>
+              )}
+              {typeof handleToggleExports === 'function' && exportDisabled && (
+              <Tooltip
+                title={`${
+                  t_i18n(
+                    'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                  ) + export_max_size
+                })`}
+              >
+                <span>
+                  <ToggleButton
+                    size="small"
+                    value="export"
+                    aria-label="export"
+                    disabled={true}
+                  >
+                    <FileDownloadOutlined fontSize="small"/>
+                  </ToggleButton>
+                </span>
+              </Tooltip>
+              )}
+            </ToggleButtonGroup>
 
-          <div
-            style={{
-              float: 'right',
-              margin: '0 0 0 20px',
-            }}
-          >
-            <ExportButtons
-              domElementId="container"
-              name={t_i18n('Attack patterns kill chain')}
-              csvData={csvData}
-              csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
-            />
+            <div
+              style={{
+                float: 'right',
+                margin: '0 0 0 20px',
+              }}
+            >
+              <ExportButtons
+                domElementId="container"
+                name={t_i18n('Attack patterns kill chain')}
+                csvData={csvData}
+                csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+              />
+            </div>
           </div>
+          <div className="clearfix"/>
         </div>
-        <div className="clearfix"/>
-      </div>}
+      )}
       <div
         style={{
           width: '100%',
