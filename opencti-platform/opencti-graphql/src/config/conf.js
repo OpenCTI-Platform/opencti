@@ -426,12 +426,10 @@ export const getPlatformHttpProxies = () => {
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
-  logApp.info('ANGIE nconf', { proxies });
   return proxies;
 };
 export const getPlatformHttpProxyAgent = (uri) => {
   const platformProxies = getPlatformHttpProxies();
-  logApp.info('ANGIE platformProxies:', { platformProxies });
   const targetUrl = new URL(uri);
   const targetProxy = platformProxies[targetUrl.protocol]; // Select the proxy according to target protocol
   if (targetProxy) {
