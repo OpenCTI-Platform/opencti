@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
@@ -24,6 +24,14 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+
+  // Ensure columns only include available columns
+  useEffect(() => {
+    const filteredColumns = columns.filter((col) => availableColumns.some((availableCol) => availableCol.attribute === col.attribute));
+    if (filteredColumns.length !== columns.length) {
+      setColumns(filteredColumns);
+    }
+  }, [availableColumns, columns]);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -55,7 +63,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
         <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
 
-      <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }} >
+      <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
@@ -128,8 +136,8 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }} >
-          <Button variant='outlined' onClick={() => setColumns(defaultColumns)} >
+        <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }}>
+          <Button variant="outlined" onClick={() => setColumns(defaultColumns)}>
             {t_i18n('Reset')}
           </Button>
         </Box>
