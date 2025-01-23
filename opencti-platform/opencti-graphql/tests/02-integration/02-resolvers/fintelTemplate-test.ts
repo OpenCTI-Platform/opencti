@@ -204,14 +204,14 @@ describe('Fintel template resolver standard behavior', () => {
     expect(fintelTemplateWidgets[1].widget.type).toEqual('list');
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult2).not.toBeNull();
-    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1);
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets.length).toEqual(2);
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].variable_name).toEqual('containerObservables');
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.type).toEqual('list');
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.dataSelection[0].perspective).toEqual(WidgetPerspective.Entities);
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.dataSelection[0].columns.length).toEqual(2);
   });
-  it('should check fintel template widgets variable names: no spaces', async () => {
-    // variable_name should not contain spaces
+  it('should check fintel template widgets variable names: no spaces and no special characters', async () => {
+    // list widget
     const fintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput = {
       variable_name: 'container of observables',
       widget: {
@@ -228,11 +228,36 @@ describe('Fintel template resolver standard behavior', () => {
       query: EDIT_QUERY,
       variables: {
         id: fintelTemplateInternalId,
-        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidgetAddInput] }],
+        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidgetAddInput], operation: 'add' }],
 
       }
     });
     expect(queryResult.errors?.length).toBe(1);
+    // attribute widget
+    const fintelTemplateAttributeWidgetAddInput: FintelTemplateWidgetAddInput = {
+      variable_name: 'MyAttributes',
+      widget: {
+        type: 'attribute',
+        perspective: WidgetPerspective.Entities,
+        dataSelection: [
+          {
+            perspective: WidgetPerspective.Entities,
+            columns: [
+              { label: 'Entity type', attribute: '$entityType' },
+              { label: 'Representative', attribute: 'representative.main' },
+            ],
+          },
+        ],
+      },
+    };
+    const attributeQueryResult = await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateAttributeWidgetAddInput], operation: 'add' }],
+      }
+    });
+    expect(attributeQueryResult.errors?.length).toBe(1);
   });
   it('should fintel template deleted', async () => {
     const DELETE_QUERY = gql`
