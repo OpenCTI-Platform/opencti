@@ -28,17 +28,12 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
   const { t_i18n } = useFormatter();
   const { subTypeId } = useParams<{ subTypeId?: string }>();
 
+  const widgetSelfInstance = widgets.find(({ widget }) => widget.dataSelection[0].instance_id === SELF_ID);
+  const widgetsNoSelf = widgets.filter(({ widget }) => widget.dataSelection[0].instance_id !== SELF_ID);
+
   return (
     <>
-      <Button
-        variant="outlined"
-        sx={{ marginLeft: 2, marginRight: 2 }}
-        onClick={onCreateWidget}
-      >
-        {t_i18n('Add data in content')}
-      </Button>
-
-      <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 1, marginBottom: 0 }}>
+      <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 0 }}>
         <Typography variant="body2" gutterBottom>
           {t_i18n('First, create widgets detailing which data to get. Then, copy paste the widget name in your content.')}
         </Typography>
@@ -54,8 +49,49 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         </Typography>
       </Alert>
 
+      {widgetSelfInstance && (
+        <>
+          <Button
+            variant="outlined"
+            sx={{ marginLeft: 2, marginRight: 2 }}
+            onClick={() => onUpdateWidget(widgetSelfInstance)}
+          >
+            {t_i18n('', {
+              id: 'Add data of the instance',
+              values: { type: subTypeId ?? '' },
+            })}
+          </Button>
+
+          <FintelTemplateWidgetAttribute
+            variableName={widgetSelfInstance.variable_name}
+            widget={widgetSelfInstance.widget}
+            title={t_i18n('', {
+              id: 'Data of the instance',
+              values: { type: subTypeId ?? '' },
+            })}
+          />
+        </>
+      )}
+
+      <Button
+        variant="outlined"
+        sx={{ marginLeft: 2, marginRight: 2, marginTop: 2 }}
+        onClick={onCreateWidget}
+      >
+        {t_i18n('', {
+          id: 'Add data related to the instance',
+          values: { type: subTypeId ?? '' },
+        })}
+      </Button>
+
       <List>
-        {widgets.map((fintelWidget) => {
+        {widgetsNoSelf.length === 0 && (
+          <Typography sx={{ marginLeft: 2, marginTop: 1 }} variant="body2">
+            {t_i18n('No related data added yet')}
+          </Typography>
+        )}
+
+        {widgetsNoSelf.map((fintelWidget) => {
           const { variable_name, widget } = fintelWidget;
           const isAttributeWidget = widget.type === 'attribute';
           const isSelfAttributeWidget = isAttributeWidget && widget.dataSelection[0].instance_id === SELF_ID;

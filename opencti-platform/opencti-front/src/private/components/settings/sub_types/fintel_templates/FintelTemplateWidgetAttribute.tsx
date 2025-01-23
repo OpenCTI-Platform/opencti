@@ -12,8 +12,9 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 interface FintelTemplateWidgetAttributeProps {
   widget: Widget
   variableName: string
-  onUpdate: () => void
+  onUpdate?: () => void
   onDelete?: () => void
+  title?: string
 }
 
 const FintelTemplateWidgetAttribute = ({
@@ -21,6 +22,7 @@ const FintelTemplateWidgetAttribute = ({
   variableName,
   onUpdate,
   onDelete,
+  title,
 }: FintelTemplateWidgetAttributeProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -52,19 +54,21 @@ const FintelTemplateWidgetAttribute = ({
         </Tooltip>
 
         <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
-          {widget.parameters?.title ?? variableName}
+          {title ?? widget.parameters?.title ?? variableName}
         </Typography>
 
-        <div>
-          <Tooltip title={t_i18n('Change which data to retrieve in this widget')}>
-            <IconButton
-              aria-haspopup="true"
-              color="primary"
-              onClick={onUpdate}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
-          </Tooltip>
+        <div style={{ height: 36 }}>
+          {onUpdate && (
+            <Tooltip title={t_i18n('Change which data to retrieve in this widget')}>
+              <IconButton
+                aria-haspopup="true"
+                color="primary"
+                onClick={onUpdate}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
 
           {onDelete && noAttributeUsed && (
             <Tooltip title={t_i18n('Delete widget')}>
