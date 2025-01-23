@@ -176,7 +176,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           const capability = edge?.node;
           if (capability) {
             if (!isDisseminationFeatureEnabled && (capability.name === KNOWLEDGE_KNDISSEMINATION || capability.name === SETTINGS_SETDISSEMINATION)) {
-              return;
+              return <div key="none" />;
             }
             const paddingLeft = capability.name.split('_').length * 20 - 20;
             const roleCapability = roleCapabilities.find(
