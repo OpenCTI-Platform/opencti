@@ -6,7 +6,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
-import ItemDueDate from 'src/components/ItemDueDate';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -24,8 +23,9 @@ import ItemScore from '../ItemScore';
 import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
-import { APP_BASE_PATH } from '../../relay/environment';
 import ItemOperations from '../ItemOperations';
+import ItemDueDate from '../ItemDueDate';
+import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
 
 const chipStyle = {
