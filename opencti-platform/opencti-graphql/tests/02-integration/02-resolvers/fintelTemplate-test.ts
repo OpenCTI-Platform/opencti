@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { disableEE, enableEE } from '../../utils/testQueryHelper';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 import { SELF_ID } from '../../../src/utils/fintelTemplate/__fintelTemplateWidgets';
-import { VALIDATION_ERROR } from '../../../src/config/errors';
 
 const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
   query entitySettings(
@@ -196,20 +195,20 @@ describe('Fintel template resolver standard behavior', () => {
       query: EDIT_QUERY,
       variables: {
         id: fintelTemplateInternalId,
-        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidgetAddInput], operation: 'add' }],
+        input: [{ key: 'fintel_template_widgets', object_path: 'fintel_template_widgets/1', value: [fintelTemplateWidgetAddInput] }],
       }
     });
     const fintelTemplateWidgets = queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets;
-    expect(fintelTemplateWidgets.length).toEqual(1);
-    expect(fintelTemplateWidgets[0].variable_name).toEqual('containerObservables');
-    expect(fintelTemplateWidgets[0].widget.type).toEqual('list');
+    expect(fintelTemplateWidgets.length).toEqual(2); // the added one and the built-in
+    expect(fintelTemplateWidgets[1].variable_name).toEqual('containerObservables');
+    expect(fintelTemplateWidgets[1].widget.type).toEqual('list');
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult2).not.toBeNull();
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1);
-    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].variable_name).toEqual('containerObservables');
-    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.type).toEqual('list');
-    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.dataSelection[0].perspective).toEqual(WidgetPerspective.Entities);
-    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[0].widget.dataSelection[0].columns.length).toEqual(2);
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].variable_name).toEqual('containerObservables');
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.type).toEqual('list');
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.dataSelection[0].perspective).toEqual(WidgetPerspective.Entities);
+    expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.dataSelection[0].columns.length).toEqual(2);
   });
   it('should check fintel template widgets variable names: no spaces', async () => {
     // variable_name should not contain spaces
