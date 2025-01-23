@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -13,7 +14,7 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
-import { DraftChip } from '../draft/DraftChip';
+import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -56,6 +57,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
       fsd,
       t,
       classes,
+      theme,
       dataColumns,
       node,
       paginationOptions,
@@ -72,6 +74,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
       name: 'Restricted',
       restricted: true,
     };
+    const draftColor = getDraftModeColor(theme);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -81,7 +84,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} isReversed={isReversed} />
+          <ItemIcon type={node.entity_type} isReversed={isReversed} color={node.draftVersion ? draftColor : null} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -183,6 +186,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
     node: graphql`
         fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node on StixCoreRelationship {
           id
+          draftVersion {
+            draft_id
+            draft_operation
+          }
           entity_type
           parent_types
           relationship_type
@@ -684,6 +691,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
 export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = compose(
   inject18n,
   withStyles(styles),
+  withTheme,
 )(SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment);
 
 class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent extends Component {
