@@ -20,7 +20,7 @@ type FintelTemplate implements BasicObject & InternalObject {
 
 # Mutation
 input FintelTemplateWidgetAddInput {
-  variable_name: String!
+  variable_name: String! @constraint(minLength: 1, format: "not-blank")
   widget: Any!
 }
 input FintelTemplateAddInput {

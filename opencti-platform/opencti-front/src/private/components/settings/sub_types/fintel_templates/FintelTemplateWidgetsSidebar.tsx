@@ -152,7 +152,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       MESSAGING$.notifyError(t_i18n('You should provide a variable name'));
       return false;
     } if (variableName.includes(' ')) {
-      MESSAGING$.notifyError(t_i18n('The variable name should not contain blanks'));
+      MESSAGING$.notifyError(t_i18n('The variable name should not contain spaces'));
       return false;
     }
     return true;

@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FintelTemplateAddInput, FintelTemplateWidgetAddInput } from '../../generated/graphql';
+import type { EditInput, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, WidgetDataSelection } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import { ForbiddenAccess } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
@@ -35,6 +35,32 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
 };
 
+const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
+  // check validity of variable_name of fintel_template_widgets
+  const invalidVariableNames: string[] = [];
+  (fintelTemplateWidgets ?? [])
+    .forEach(({ variable_name, widget }) => {
+      if (variable_name.includes(' ')) {
+        invalidVariableNames.push(variable_name);
+      }
+      if (widget.type === 'attribute') {
+        widget.dataSelection.forEach((selection: WidgetDataSelection) => {
+          (selection.columns ?? [])
+            .forEach((c) => {
+              if (!c.variableName) {
+                throw FunctionalError('Attribute widgets should all have a variable name', { variable_name });
+              } else if (c.variableName.includes(' ')) {
+                invalidVariableNames.push(c.variableName);
+              }
+            });
+        });
+      }
+    });
+  if (invalidVariableNames.length > 0) {
+    throw FunctionalError('Variable names should not contain spaces', { invalidVariableNames });
+  }
+};
+
 export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
@@ -42,7 +68,8 @@ export const addFintelTemplate = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
-
+  // check input validity
+  checkFintelTemplateWidgetsValidity(input.fintel_template_widgets ?? []);
   // add id to fintel template widgets
   const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
     ...templateWidget,
@@ -93,11 +120,11 @@ export const fintelTemplateEditField = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
-  // add id to fintel template widgets
+  // check fintel template widgets variables names and add widget ids
   const formattedInput = input.map((i) => {
-    // TODO implement case with object_path
-    if (i.key === 'fintel_template_widgets' && !i.object_path) {
+    if (i.key === 'fintel_template_widgets' && (!i.object_path || i.object_path.split('/').length <= 2)) {
       const values = i.value as FintelTemplateWidgetAddInput[];
+      checkFintelTemplateWidgetsValidity(values);
       const formattedValues = values.map((v) => ({
         ...v,
         widget: { ...v.widget, id: v.widget.id ?? uuidv4() }, // ensure widget has an id
