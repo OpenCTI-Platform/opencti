@@ -15,6 +15,7 @@ export interface WidgetConfigType {
 
 interface WidgetConfigContextProps {
   context: WidgetContext;
+  disabledSteps: number[];
   fintelWidgets?: FintelTemplateWidget[]
   step: number;
   setStep: Dispatch<React.SetStateAction<number>>;
@@ -28,6 +29,7 @@ const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(
 interface WidgetConfigProviderProps {
   children: ReactNode
   context: WidgetContext
+  disabledSteps: number[]
   fintelWidgets: FintelTemplateWidget[] | undefined
   initialWidget: Widget | undefined;
   initialVariableName: string | undefined;
@@ -63,6 +65,7 @@ export const WidgetConfigProvider = ({
   initialVariableName,
   fintelWidgets,
   open,
+  disabledSteps,
 }: WidgetConfigProviderProps) => {
   const [conf, setConfig] = useState(buildConfig(undefined, undefined));
   const [step, setStep] = useState(0);
@@ -110,6 +113,7 @@ export const WidgetConfigProvider = ({
   return (
     <WidgetConfigContext.Provider value={{
       context,
+      disabledSteps,
       fintelWidgets,
       config: conf,
       setConfigWidget,

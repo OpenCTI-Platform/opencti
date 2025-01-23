@@ -9,7 +9,7 @@ import { useWidgetConfigContext } from './WidgetConfigContext';
 
 const WidgetConfigStepper = () => {
   const { t_i18n } = useFormatter();
-  const { config, step, setStep } = useWidgetConfigContext();
+  const { config, step, setStep, disabledSteps } = useWidgetConfigContext();
   const { type } = config.widget;
 
   const isText = getCurrentCategory(type) === 'text';
@@ -20,7 +20,8 @@ const WidgetConfigStepper = () => {
       <Step>
         <StepButton
           onClick={() => setStep(0)}
-          disabled={step === 0}
+          disabled={step === 0 || disabledSteps.includes(0)}
+          sx={{ opacity: disabledSteps.includes(0) ? 0.4 : 1 }}
         >
           <StepLabel>{t_i18n('Visualization')}</StepLabel>
         </StepButton>
@@ -28,8 +29,8 @@ const WidgetConfigStepper = () => {
       <Step>
         <StepButton
           onClick={() => setStep(1)}
-          disabled={step <= 1 || isText || isAttribute}
-          sx={{ opacity: isText || isAttribute ? 0.4 : 1 }}
+          disabled={step <= 1 || isText || isAttribute || disabledSteps.includes(1)}
+          sx={{ opacity: isText || isAttribute || disabledSteps.includes(1) ? 0.4 : 1 }}
         >
           <StepLabel>{t_i18n('Perspective')}</StepLabel>
         </StepButton>
@@ -37,8 +38,8 @@ const WidgetConfigStepper = () => {
       <Step>
         <StepButton
           onClick={() => setStep(2)}
-          disabled={step <= 2 || isText || isAttribute}
-          sx={{ opacity: isText || isAttribute ? 0.4 : 1 }}
+          disabled={step <= 2 || isText || isAttribute || disabledSteps.includes(2)}
+          sx={{ opacity: isText || isAttribute || disabledSteps.includes(2) ? 0.4 : 1 }}
         >
           <StepLabel>{t_i18n('Filters')}</StepLabel>
         </StepButton>
@@ -46,7 +47,8 @@ const WidgetConfigStepper = () => {
       <Step>
         <StepButton
           onClick={() => setStep(3)}
-          disabled={step <= 3}
+          disabled={step <= 3 || disabledSteps.includes(3)}
+          sx={{ opacity: disabledSteps.includes(3) ? 0.4 : 1 }}
         >
           <StepLabel>{t_i18n('Parameters')}</StepLabel>
         </StepButton>

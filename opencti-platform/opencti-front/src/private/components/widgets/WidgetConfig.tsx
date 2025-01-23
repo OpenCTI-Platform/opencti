@@ -12,6 +12,7 @@ interface WidgetConfigProps {
   widget?: Widget,
   context: WidgetContext,
   initialVariableName?: string,
+  disabledSteps?: number[]
   fintelWidgets?: FintelTemplateWidget[] // Used to avoid identical variable names.
 }
 
@@ -23,6 +24,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   context,
   initialVariableName,
   fintelWidgets,
+  disabledSteps,
 }) => {
   const close = () => {
     setOpen(false);
@@ -45,6 +47,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
       initialWidget={widget}
       initialVariableName={initialVariableName}
       context={context}
+      disabledSteps={disabledSteps ?? []}
       fintelWidgets={fintelWidgets}
       open={open}
     >

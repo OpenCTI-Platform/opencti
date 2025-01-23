@@ -12,7 +12,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import WidgetConfig from '../../../widgets/WidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, removeIdFromFilterGroupObject, SELF_ID } from '../../../../../utils/filters/filtersUtils';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { toCamelCase } from '../../../../../utils/String';
@@ -82,6 +82,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const [selectedWidget, setSelectedWidget] = useState<FintelTemplateWidget>();
 
   const isSelectedWidgetUsed = selectedWidget && !!editorValue?.includes(`$${selectedWidget.variable_name}`);
+  const isSelectedWidgetSelfInstance = selectedWidget && selectedWidget.widget.dataSelection[0].instance_id === SELF_ID;
 
   const selectedWidgetIndex = useMemo(() => {
     return fintel_template_widgets.findIndex((w) => w.variable_name === selectedWidget?.variable_name);
@@ -238,6 +239,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         fintelWidgets={fintel_template_widgets as FintelTemplateWidget[]}
         widget={selectedWidget?.widget}
         initialVariableName={selectedWidget?.variable_name}
+        disabledSteps={isSelectedWidgetSelfInstance ? [0] : []}
       />
 
       <DeleteDialog
