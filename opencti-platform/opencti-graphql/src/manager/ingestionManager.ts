@@ -47,6 +47,7 @@ import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-ty
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
+const INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST = conf.get('ingestion_manager:taxii_feed:limit_per_request') || 0;
 
 let running = false;
 
@@ -287,6 +288,12 @@ export interface TaxiiResponseData {
   addedLastHeader: string | undefined | null
 }
 
+interface TaxiiGetParams {
+  next: string | undefined,
+  added_after: Date | undefined,
+  limit?: string | undefined
+}
+
 /**
  *  Compute HTTP GET parameters to send to taxii server.
  *
@@ -300,9 +307,11 @@ export interface TaxiiResponseData {
  * @param ingestion
  */
 export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) => {
-  const next = ingestion.current_state_cursor;
-  const added_after = ingestion.added_after_start;
-  return { next, added_after };
+  const params: TaxiiGetParams = { next: ingestion.current_state_cursor, added_after: ingestion.added_after_start };
+  if (INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST > 0) {
+    params.limit = INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST;
+  }
+  return params;
 };
 
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {

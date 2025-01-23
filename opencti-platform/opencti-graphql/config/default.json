@@ -259,7 +259,10 @@
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
-    "interval": 30000
+    "interval": 30000,
+    "taxii_feed": {
+      "limit_per_request": 0
+    }
   },
   "retention_manager": {
     "enabled": true,
