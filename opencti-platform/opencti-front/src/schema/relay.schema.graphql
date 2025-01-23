@@ -12614,7 +12614,7 @@ type DisseminationListEdge {
 
 input DisseminationListAddInput {
   name: String!
-  emails: [String!]!
+  emails: String!
 }
 
 input DisseminationListSendInput {

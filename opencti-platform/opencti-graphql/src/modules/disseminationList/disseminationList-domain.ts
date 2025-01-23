@@ -25,12 +25,16 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
-import { isFeatureEnabled } from '../../config/conf';
+import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import type { BasicStoreObject } from '../../types/store';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { UnsupportedError } from '../../config/errors';
 import { generateInternalId } from '../../schema/identifier';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
+import { updateAttribute } from '../../database/middleware';
+import { notify } from '../../database/redis';
 
 const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
@@ -106,7 +110,22 @@ export const addDisseminationList = async (context: AuthContext, user: AuthUser,
   return storeAndCreateDisseminationList(context, user, input);
 };
 
-export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {};
+export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  const disseminationList = await findById(context, user, id);
+  if (!disseminationList) {
+    throw FunctionalError(`Dissemination list ${id} cannot be found`);
+  }
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${input?.map((i) => i.key).join(', ')}\` for dissemination list \`${element.name}\``,
+    context_data: { id, entity_type: ENTITY_TYPE_DISSEMINATION_LIST, input }
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_DISSEMINATION_LIST].EDIT_TOPIC, element, user);
+};
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
   if (!isDisseminationListEnabled) {

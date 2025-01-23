@@ -76,7 +76,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
 
   return (
     <Drawer
-      title={t_i18n('Update an dissemination list')}
+      title={t_i18n('Update a dissemination list')}
       open={isOpen}
       onClose={onClose}
     >

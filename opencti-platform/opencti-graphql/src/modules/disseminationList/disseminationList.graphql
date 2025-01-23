@@ -41,7 +41,7 @@ type DisseminationListEdge {
 
 input DisseminationListAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
-  emails: [String!]!
+  emails: String!
 }
 
 input DisseminationListSendInput {
