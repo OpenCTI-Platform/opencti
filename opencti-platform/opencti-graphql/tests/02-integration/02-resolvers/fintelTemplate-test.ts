@@ -210,6 +210,33 @@ describe('Fintel template resolver standard behavior', () => {
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.dataSelection[0].perspective).toEqual(WidgetPerspective.Entities);
     expect(queryResult2.data?.fintelTemplate.fintel_template_widgets[1].widget.dataSelection[0].columns.length).toEqual(2);
   });
+  it('should check fintel template widgets variable names: variable names are mandatory for every column in attribute widgets', async () => {
+    const fintelTemplateAttributeWidgetAddInput: FintelTemplateWidgetAddInput = {
+      variable_name: 'MyAttributes',
+      widget: {
+        type: 'attribute',
+        perspective: WidgetPerspective.Entities,
+        dataSelection: [
+          {
+            perspective: WidgetPerspective.Entities,
+            columns: [
+              { label: 'Entity type', attribute: 'entity_type' },
+              { label: 'Representative', attribute: 'representative.main' },
+            ],
+          },
+        ],
+      },
+    };
+    const attributeQueryResult = await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [{ key: 'fintel_template_widgets', value: [fintelTemplateAttributeWidgetAddInput], operation: 'add' }],
+      }
+    });
+    expect(attributeQueryResult.errors?.length).toBe(1);
+    expect(attributeQueryResult.errors?.[0].message).toEqual('Attributes should all have a variable name');
+  });
   it('should check fintel template widgets variable names: no spaces and no special characters', async () => {
     // list widget
     const fintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput = {
@@ -244,8 +271,8 @@ describe('Fintel template resolver standard behavior', () => {
           {
             perspective: WidgetPerspective.Entities,
             columns: [
-              { label: 'Entity type', attribute: '$entityType' },
-              { label: 'Representative', attribute: 'representative.main' },
+              { label: 'Entity type', attribute: 'entity_type', variableName: 'EntityType' },
+              { label: 'Representative', attribute: 'representative.main', variableName: '$representative' },
             ],
           },
         ],
