@@ -360,6 +360,7 @@ const StixCoreObjectsList = ({
   // TODO remove defaultWidgetColumns use entityType
   const columns = selection.columns ?? defaultWidgetColumns.common;
   const dataSelectionTypes = ['Stix-Core-Object'];
+
   const sortBy = selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at';
@@ -399,7 +400,6 @@ const StixCoreObjectsList = ({
                   rootRef={rootRef.current ?? undefined}
                   widgetId={widgetId}
                   pageSize={selection.number ?? 10}
-                  sortBy={sortBy}
                   columns={columns}
                 />
               );
