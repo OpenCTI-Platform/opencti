@@ -4,7 +4,9 @@ import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery
+} from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -12,13 +14,19 @@ import Tooltip from '@mui/material/Tooltip';
 import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
-import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
+import {
+  StixCyberObservablesLinesAttributesQuery$data
+} from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
 import { commonWidgetColumns, defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
-import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
-import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
+import WidgetAttributesInputContainer, {
+  widgetAttributesInputInstanceQuery
+} from '@components/widgets/WidgetAttributesInputContainer';
+import {
+  WidgetAttributesInputContainerInstanceQuery$data
+} from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
@@ -27,7 +35,12 @@ import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
+import {
+  getCurrentAvailableParameters,
+  getCurrentCategory,
+  getCurrentIsRelationships,
+  isWidgetListOrTimeline
+} from '../../../utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useHelper from '../../../utils/hooks/useHelper';
 
@@ -42,6 +55,7 @@ const WidgetCreationParameters = () => {
     setConfigWidget,
     context,
     setConfigVariableName,
+    setDataSelectionWithIndex,
     fintelWidgets,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
@@ -135,9 +149,9 @@ const WidgetCreationParameters = () => {
   };
 
   const setColumns = (index: number, newColumns: WidgetColumn[]) => {
-    setDataSelection((prevDataSelection) => {
-      return prevDataSelection.map((selection, i) => (i === index ? { ...selection, columns: newColumns } : selection));
-    });
+    const prevSelection = dataSelection[index];
+    const newSelection = { ...prevSelection, columns: newColumns };
+    setDataSelectionWithIndex(newSelection, index);
   };
 
   return (

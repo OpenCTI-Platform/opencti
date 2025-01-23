@@ -22,6 +22,8 @@ interface WidgetConfigContextProps {
   config: WidgetConfigType;
   setConfigWidget: (widget: WidgetConfigType['widget']) => void;
   setConfigVariableName: (variableName: WidgetConfigType['fintelVariableName']) => void;
+  setDataSelection: (dataSelection: WidgetDataSelection[]) => void;
+  setDataSelectionWithIndex: (selection: WidgetDataSelection, index: number) => void;
 }
 
 const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(undefined);
@@ -103,6 +105,14 @@ export const WidgetConfigProvider = ({
     }));
   };
 
+  const setDataSelection = (selection: WidgetDataSelection[]) => {
+    setConfigWidget({ ...conf.widget, dataSelection: selection });
+  };
+
+  const setDataSelectionWithIndex = (data: WidgetDataSelection, index: number) => {
+    setDataSelection([...conf.widget.dataSelection.map((d, i) => (i === index ? data : d))]);
+  };
+
   const setConfigVariableName = (variableName: WidgetConfigType['fintelVariableName']) => {
     setConfig((oldConf) => ({
       ...oldConf,
@@ -118,6 +128,8 @@ export const WidgetConfigProvider = ({
       config: conf,
       setConfigWidget,
       setConfigVariableName,
+      setDataSelection,
+      setDataSelectionWithIndex,
       step,
       setStep,
     }}

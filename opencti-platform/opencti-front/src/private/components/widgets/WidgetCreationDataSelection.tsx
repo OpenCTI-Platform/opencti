@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
+import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 
@@ -47,12 +47,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const { config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
   const { type, dataSelection, perspective } = config.widget;
-
-  const setDataSelection = (selection: WidgetDataSelection[]) => {
-    setConfigWidget({ ...config.widget, dataSelection: selection });
-  };
 
   const isDataSelectionFiltersValid = () => {
     return dataSelection.length > 0;
@@ -87,10 +83,6 @@ const WidgetCreationDataSelection = () => {
         dynamicTo: emptyFilterGroup,
       },
     ]);
-  };
-
-  const setDataSelectionWithIndex = (data: WidgetDataSelection, index: number) => {
-    setDataSelection([...dataSelection.map((d, i) => (i === index ? data : d))]);
   };
 
   return (
