@@ -217,7 +217,7 @@ const generateKillChainEmailCiso = async (killChainPhaseName, killChainPhasesLis
             # Context about the attack
             ${content}
             `;
-  const responseCiso = await queryAi(null, promptCiso, user);
+  const responseCiso = await queryAi(null, SYSTEM_PROMPT, promptCiso, user);
   const promptCisoSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -228,7 +228,7 @@ const generateKillChainEmailCiso = async (killChainPhaseName, killChainPhasesLis
             # Email content
             ${responseCiso}
             `;
-  const responseCisoSubject = await queryAi(null, promptCisoSubject, user);
+  const responseCisoSubject = await queryAi(null, SYSTEM_PROMPT, promptCisoSubject, user);
   const titleCiso = `[${killChainPhaseName}] ${responseCisoSubject} - Email to the CISO`;
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
@@ -263,7 +263,7 @@ const generateKillChainEmail = async (killChainPhaseName, killChainPhasesListOfN
             # Context about the attack
             ${content}
             `;
-  const responseIncidentResponse = await queryAi(null, promptIncidentResponse, user);
+  const responseIncidentResponse = await queryAi(null, SYSTEM_PROMPT, promptIncidentResponse, user);
   const promptIncidentResponseSubject = `
             # Instructions
             - Generate a subject for the following email.
@@ -274,7 +274,7 @@ const generateKillChainEmail = async (killChainPhaseName, killChainPhasesListOfN
             # Email content
             ${responseIncidentResponse}
             `;
-  const responseIncidentResponseSubject = await queryAi(null, promptIncidentResponseSubject, user);
+  const responseIncidentResponseSubject = await queryAi(null, SYSTEM_PROMPT, promptIncidentResponseSubject, user);
   const titleIncidentResponse = `[${killChainPhaseName}] ${responseIncidentResponseSubject} - Email to the incident response team`;
   await obasCreateInjectInScenario(
     obasScenario.scenario_id,
