@@ -15899,7 +15899,7 @@ __metadata:
     remark-gfm: "npm:4.0.0"
     remark-parse: "npm:11.0.0"
     rxjs: "npm:7.8.1"
-    three-spritetext: "npm:1.9.3"
+    three-spritetext: "npm:1.9.4"
     typescript: "npm:5.7.3"
     unified: "npm:11.0.5"
     use-analytics: "npm:1.1.0"
@@ -19066,12 +19066,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three-spritetext@npm:1.9.3":
-  version: 1.9.3
-  resolution: "three-spritetext@npm:1.9.3"
+"three-spritetext@npm:1.9.4":
+  version: 1.9.4
+  resolution: "three-spritetext@npm:1.9.4"
   peerDependencies:
     three: ">=0.86.0"
-  checksum: 10/dcaac7272563558df067ec9680fe03cb1c714efeedeb8882579a5d1638ccf2e32bf2bc95280aaa174fb2f6c5012baf1ac190b31a1594e5948a0156b05fe7805c
+  checksum: 10/23fc02b16cdc4995e903fed17d01c828304a888dd01ccc7673b6774561ecaf41fcb80b267e7415d4aa104db3ad06180909b88d34f6853850c482dd65a521fd71
   languageName: node
   linkType: hard
 
