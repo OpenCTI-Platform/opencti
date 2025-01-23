@@ -140,16 +140,16 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   return (
     <>
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
-        storageKey={'relationship'}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        lineFragment={relationshipsStixCoreRelationshipsLineFragment}
-        preloadedPaginationProps={preloadedPaginationProps}
-        exportContext={{ entity_type: 'stix-core-relationship' }}
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
+          storageKey={storageKey}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={relationshipsStixCoreRelationshipsLineFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          exportContext={{ entity_type: 'Attack-Pattern' }}
+        />
       )}
     </>
   );
