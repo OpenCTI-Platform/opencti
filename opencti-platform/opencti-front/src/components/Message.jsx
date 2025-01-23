@@ -6,6 +6,7 @@ import { Form, Formik } from 'formik';
 import { MESSAGING$ } from '../relay/environment';
 import { useFormatter } from './i18n';
 import RequestAccessDialog from './RequestAccessDialog';
+import useHelper from '../utils/hooks/useHelper';
 
 const Message = () => {
   const { t_i18n } = useFormatter();
@@ -14,6 +15,15 @@ const Message = () => {
   const [fullError, setFullError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [text, setText] = useState('');
+
+  let isRequestAccessFeatureEnabled = false;
+  try {
+    // FIXME find why it's breaking GraphIQL
+    const { isFeatureEnable } = useHelper();
+    isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
+  } catch (e) {
+    // When called from public, no useAuth()
+  }
 
   useEffect(() => {
     const subscription = MESSAGING$.messages.subscribe({
@@ -99,11 +109,13 @@ const Message = () => {
           </Alert>
         )}
       </Snackbar>
-      <RequestAccessDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        entitiesIds={entityIds}
-      />
+      {isRequestAccessFeatureEnabled
+        && <RequestAccessDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          entitiesIds={entityIds}
+           />
+      }
     </>
   );
 };

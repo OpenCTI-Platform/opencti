@@ -42,6 +42,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,6 +79,9 @@ const StixDomainObjectOverview = ({
   const [openStixIds, setOpenStixIds] = useState(false);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
+
+  const { isFeatureEnable } = useHelper();
+  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const handleToggleOpenStixIds = () => {
     setOpenStixIds(!openStixIds);
@@ -194,7 +198,7 @@ const StixDomainObjectOverview = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
         <Grid container={false} spacing={3}>
-          {requestAccess && (
+          {isRequestAccessFeatureEnabled && requestAccess && (
             <Grid item sx={12} style={{ marginBottom: 20 }}>
               <Typography
                 variant="h3"
