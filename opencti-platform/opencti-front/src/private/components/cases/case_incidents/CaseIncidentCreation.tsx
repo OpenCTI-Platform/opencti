@@ -330,28 +330,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-          >
-            <div style={fieldSpacingContainerStyle}>
-              <Accordion >
-                <AccordionSummary id="accordion-panel">
-                  <Typography>{t_i18n('Advanced options')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Field
-                    name={'authorized_members'}
-                    component={AuthorizedMembersField}
-                    containerstyle={{ marginTop: 20 }}
-                    showAllMembersLine
-                    canDeactivate
-                    disabled={isSubmitting}
-                    addMeUserWithAdminRights
-                  />
-                </AccordionDetails>
-              </Accordion>
-            </div>
-          </Security>
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
