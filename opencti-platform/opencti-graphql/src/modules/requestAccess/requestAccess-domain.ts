@@ -4,7 +4,7 @@ import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-d
 import { SYSTEM_USER } from '../../utils/access';
 import { listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { logApp } from '../../config/conf';
+import { isFeatureEnabled, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_GRANTED_REFS } from '../../schema/general';
@@ -48,7 +48,9 @@ export const getRfiEntitySettings = async (context: AuthContext) => {
 
 export const verifyRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
   let message = '';
-
+  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
+    return { enabled: false };
+  }
   // 1. EE must be enabled
   const isEEConfigured: boolean = await isEnterpriseEdition(context);
   if (!isEEConfigured) {

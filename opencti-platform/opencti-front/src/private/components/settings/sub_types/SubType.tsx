@@ -69,6 +69,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
+  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -143,7 +144,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
               </>
             }
 
-            {subType.settings?.availableSettings.includes('request_access_workflow')
+            {isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
               && <>
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
