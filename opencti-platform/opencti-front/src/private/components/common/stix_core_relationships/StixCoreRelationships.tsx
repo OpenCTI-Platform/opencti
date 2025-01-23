@@ -36,188 +36,188 @@ interface StixCoreRelationshipsProps {
 }
 
 export const stixCoreRelationshipsFragment = graphql`
-    fragment StixCoreRelationships on StixCoreRelationship {
+  fragment StixCoreRelationships on StixCoreRelationship {
+    id
+    entity_type
+    parent_types
+    relationship_type
+    confidence
+    start_time
+    stop_time
+    description
+    fromRole
+    toRole
+    created_at
+    updated_at
+    is_inferred
+    draftVersion{
+      draft_id
+      draft_operation
+    }
+    createdBy {
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    creators {
+      id
+      name
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    from {
+      ... on BasicObject {
         id
         entity_type
         parent_types
-        relationship_type
-        confidence
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+        parent_types
+      }
+      ... on StixCoreObject {
+        created_at
+        representative {
+          main
+        }
+      }
+      ... on StixCoreRelationship {
+        created_at
         start_time
         stop_time
-        description
-        fromRole
-        toRole
-        created_at
-        updated_at
-        is_inferred
-        draftVersion{
-            draft_id
-            draft_operation
+        created
+        representative {
+          main
         }
-        createdBy {
-            ... on Identity {
-                name
-            }
-        }
-        objectMarking {
-            id
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        objectLabel {
-            id
-            value
-            color
-        }
-        createdBy {
-            ... on Identity {
-                id
-                name
-                entity_type
-            }
-        }
-        creators {
-            id
-            name
-        }
-        objectMarking {
-            id
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        from {
-            ... on BasicObject {
-                id
-                entity_type
-                parent_types
-            }
-            ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-            }
-            ... on StixCoreObject {
-                created_at
-                representative {
-                    main
-                }
-            }
-            ... on StixCoreRelationship {
-                created_at
-                start_time
-                stop_time
-                created
-                representative {
-                    main
-                }
-            }
-        }
-        to {
-            ... on BasicObject {
-                id
-                entity_type
-                parent_types
-            }
-            ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-            }
-            ... on StixCoreObject {
-                created_at
-                representative {
-                    main
-                }
-            }
-            ... on StixCoreRelationship {
-                created_at
-                start_time
-                stop_time
-                created
-                representative {
-                    main
-                }
-            }
-        }
+      }
     }
+    to {
+      ... on BasicObject {
+        id
+        entity_type
+        parent_types
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+        parent_types
+      }
+      ... on StixCoreObject {
+        created_at
+        representative {
+          main
+        }
+      }
+      ... on StixCoreRelationship {
+        created_at
+        start_time
+        stop_time
+        created
+        representative {
+            main
+        }
+      }
+    }
+  }
 `;
 
 export const stixCoreRelationshipsLinesQuery = graphql`
-    query StixCoreRelationshipsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixCoreRelationshipsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...StixCoreRelationshipsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query StixCoreRelationshipsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixCoreRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...StixCoreRelationshipsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const stixCoreRelationshipsLinesFragment = graphql`
-    fragment StixCoreRelationshipsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: created
-        }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "StixCoreRelationshipsLinesRefetchQuery") {
-        stixCoreRelationships(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_stixCoreRelationships") {
-            edges {
-                node {
-                    id
-                    entity_type
-                    created_at
-                    draftVersion{
-                        draft_id
-                        draft_operation
-                    }
-                    createdBy {
-                        ... on Identity {
-                            name
-                        }
-                    }
-                    objectMarking {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                    ...StixCoreRelationships
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
-        }
+  fragment StixCoreRelationshipsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixCoreRelationshipsOrdering"
+      defaultValue: created
     }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "StixCoreRelationshipsLinesRefetchQuery") {
+    stixCoreRelationships(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_stixCoreRelationships") {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          draftVersion{
+            draft_id
+            draft_operation
+          }
+          createdBy {
+            ... on Identity {
+            name
+            }
+          }
+            objectMarking {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+            ...StixCoreRelationships
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
 `;
 
 const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (

@@ -22,7 +22,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
-export const relationshipsStixCoreRelationshipsLineFragment = graphql`
+const relationshipsStixCoreRelationshipsLineFragment = graphql`
   fragment RelationshipsStixCoreRelationshipLine_node on StixCoreRelationship {
     id
     entity_type
@@ -147,7 +147,7 @@ export const relationshipsStixCoreRelationshipsLineFragment = graphql`
   }
 `;
 
-export const relationshipsStixCoreRelationshipsLinesQuery = graphql`
+const relationshipsStixCoreRelationshipsLinesQuery = graphql`
   query RelationshipsStixCoreRelationshipsLinesPaginationQuery(
     $search: String
     $fromId: [String]
