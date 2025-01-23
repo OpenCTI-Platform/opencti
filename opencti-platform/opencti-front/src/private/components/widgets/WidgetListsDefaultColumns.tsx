@@ -1,6 +1,6 @@
 import type { WidgetColumn } from '../../../utils/widget/widget';
 
-export const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
+const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
     { attribute: 'entity_type', label: 'Type' },
     { attribute: 'from_entity_type', label: 'Source type' },
@@ -126,8 +126,9 @@ const commonWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_organization_type', label: 'Organization type' },
   ],
 };
+type WidgetEntityType = 'relationships' | 'entities';
 
-export const getDefaultWidgetColumns = (type: string): WidgetColumn[] => {
+export const getDefaultWidgetColumns = (type: WidgetEntityType): WidgetColumn[] => {
   if (type === 'relationships') {
     return defaultWidgetColumns.relationships;
   }
@@ -137,7 +138,7 @@ export const getDefaultWidgetColumns = (type: string): WidgetColumn[] => {
   return [];
 };
 
-export const getWidgetColumns = (type: string, entityType?: string): WidgetColumn[] => {
+export const getWidgetColumns = (type: WidgetEntityType, entityType?: string): WidgetColumn[] => {
   if (type === 'relationships') {
     return commonWidgetColumns.relationships;
   }
