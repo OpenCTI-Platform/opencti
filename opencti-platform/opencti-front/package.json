@@ -102,7 +102,7 @@
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.2.0",
-    "@testing-library/user-event": "14.6.0",
+    "@testing-library/user-event": "14.6.1",
     "@types/d3-scale": "4.0.8",
     "@types/html-to-pdfmake": "2.4.4",
     "@types/node": "20.17.14",
