@@ -1,8 +1,7 @@
-import Markdown from 'react-markdown';
+import Markdown, { Options as MarkdownProps } from 'react-markdown';
 import remarkParse from 'remark-parse';
 import remarkFlexibleMarkers from 'remark-flexible-markers';
 import { useTheme } from '@mui/styles';
-import { PluggableList } from 'react-markdown/lib';
 import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
 import remarkGfm from 'remark-gfm';
 import type { Theme } from './Theme';
@@ -55,7 +54,7 @@ interface MarkdownWithRedirectionWarningProps {
   commonmark?: boolean;
   removeLinks?: boolean;
   removeLineBreaks?: boolean;
-  remarkPlugins?: PluggableList;
+  remarkPlugins?: MarkdownProps['remarkPlugins'];
 }
 
 const MarkdownDisplay: FunctionComponent<
@@ -115,13 +114,11 @@ MarkdownWithRedirectionWarningProps
       return (
         <Markdown
           className="markdown"
-          remarkPlugins={
-            [
-              remarkGfm,
-              remarkFlexibleMarkers,
-              [remarkParse, { commonmark: !!commonmark }],
-            ] as PluggableList
-          }
+          remarkPlugins={[
+            remarkGfm,
+            remarkFlexibleMarkers,
+            [remarkParse, { commonmark: !!commonmark }],
+          ]}
           components={MarkDownComponents(theme)}
           disallowedElements={disallowedElements}
           unwrapDisallowed={true}
@@ -133,13 +130,11 @@ MarkdownWithRedirectionWarningProps
     return (
       <Markdown
         className="markdown"
-        remarkPlugins={
-          [
-            remarkGfm,
-            remarkFlexibleMarkers,
-            [remarkParse, { commonmark: !!commonmark }],
-          ] as PluggableList
-        }
+        remarkPlugins={[
+          remarkGfm,
+          remarkFlexibleMarkers,
+          [remarkParse, { commonmark: !!commonmark }],
+        ]}
         disallowedElements={disallowedElements}
         unwrapDisallowed={true}
       >
