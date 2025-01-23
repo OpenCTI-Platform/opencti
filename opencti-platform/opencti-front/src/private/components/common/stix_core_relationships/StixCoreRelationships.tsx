@@ -1,20 +1,16 @@
 import React, { FunctionComponent } from 'react';
-import {
-  RelationshipsStixCoreRelationshipsLinesPaginationQuery,
-  RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
-} from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
-import {
-  relationshipsStixCoreRelationshipsLineFragment,
-  relationshipsStixCoreRelationshipsLinesFragment,
-  relationshipsStixCoreRelationshipsLinesQuery,
-} from '@components/data/Relationships';
-import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
 import { AutoFix, ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import { graphql } from 'react-relay';
+import {
+  StixCoreRelationshipsLinesPaginationQuery,
+  StixCoreRelationshipsLinesPaginationQuery$variables,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
+import { StixCoreRelationshipsLines_data$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLines_data.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -38,6 +34,191 @@ interface StixCoreRelationshipsProps {
   direction: 'fromEntity' | 'toEntity' | 'all'
   relationshipTypes: string[]
 }
+
+export const stixCoreRelationshipsFragment = graphql`
+    fragment StixCoreRelationships on StixCoreRelationship {
+        id
+        entity_type
+        parent_types
+        relationship_type
+        confidence
+        start_time
+        stop_time
+        description
+        fromRole
+        toRole
+        created_at
+        updated_at
+        is_inferred
+        draftVersion{
+            draft_id
+            draft_operation
+        }
+        createdBy {
+            ... on Identity {
+                name
+            }
+        }
+        objectMarking {
+            id
+            definition
+            x_opencti_order
+            x_opencti_color
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+            ... on Identity {
+                id
+                name
+                entity_type
+            }
+        }
+        creators {
+            id
+            name
+        }
+        objectMarking {
+            id
+            definition
+            x_opencti_order
+            x_opencti_color
+        }
+        from {
+            ... on BasicObject {
+                id
+                entity_type
+                parent_types
+            }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
+            }
+            ... on StixCoreObject {
+                created_at
+                representative {
+                    main
+                }
+            }
+            ... on StixCoreRelationship {
+                created_at
+                start_time
+                stop_time
+                created
+                representative {
+                    main
+                }
+            }
+        }
+        to {
+            ... on BasicObject {
+                id
+                entity_type
+                parent_types
+            }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
+            }
+            ... on StixCoreObject {
+                created_at
+                representative {
+                    main
+                }
+            }
+            ... on StixCoreRelationship {
+                created_at
+                start_time
+                stop_time
+                created
+                representative {
+                    main
+                }
+            }
+        }
+    }
+`;
+
+export const stixCoreRelationshipsLinesQuery = graphql`
+    query StixCoreRelationshipsLinesPaginationQuery(
+        $search: String
+        $count: Int!
+        $cursor: ID
+        $orderBy: StixCoreRelationshipsOrdering
+        $orderMode: OrderingMode
+        $filters: FilterGroup
+    ) {
+        ...StixCoreRelationshipsLines_data
+        @arguments(
+            search: $search
+            count: $count
+            cursor: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        )
+    }
+`;
+
+export const stixCoreRelationshipsLinesFragment = graphql`
+    fragment StixCoreRelationshipsLines_data on Query
+    @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: created
+        }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+        filters: { type: "FilterGroup" }
+    )
+    @refetchable(queryName: "StixCoreRelationshipsLinesRefetchQuery") {
+        stixCoreRelationships(
+            search: $search
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        ) @connection(key: "Pagination_stixCoreRelationships") {
+            edges {
+                node {
+                    id
+                    entity_type
+                    created_at
+                    draftVersion{
+                        draft_id
+                        draft_operation
+                    }
+                    createdBy {
+                        ... on Identity {
+                            name
+                        }
+                    }
+                    objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                    ...StixCoreRelationships
+                }
+            }
+            pageInfo {
+                endCursor
+                hasNextPage
+                globalCount
+            }
+        }
+    }
+`;
 
 const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   {
@@ -102,7 +283,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     view: currentView,
   };
 
-  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables>(
+  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixCoreRelationshipsLinesPaginationQuery$variables>(
     storageKey,
     initialValues,
   );
@@ -134,19 +315,19 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
-  } as unknown as RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables;
+  } as unknown as StixCoreRelationshipsLinesPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<RelationshipsStixCoreRelationshipsLinesPaginationQuery>(
-    relationshipsStixCoreRelationshipsLinesQuery,
+  const queryRef = useQueryLoading<StixCoreRelationshipsLinesPaginationQuery>(
+    stixCoreRelationshipsLinesQuery,
     queryPaginationOptions,
   );
   const preloadedPaginationProps = {
-    linesQuery: relationshipsStixCoreRelationshipsLinesQuery,
-    linesFragment: relationshipsStixCoreRelationshipsLinesFragment,
+    linesQuery: stixCoreRelationshipsLinesQuery,
+    linesFragment: stixCoreRelationshipsLinesFragment,
     queryRef,
     nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-  } as UsePreloadedPaginationFragment<RelationshipsStixCoreRelationshipsLinesPaginationQuery>;
+  } as UsePreloadedPaginationFragment<StixCoreRelationshipsLinesPaginationQuery>;
 
   return (
     <div
@@ -156,11 +337,11 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     >      {queryRef && (
       <DataTable
         dataColumns={dataColumns}
-        resolvePath={(data: RelationshipsStixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
+        resolvePath={(data: StixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
         storageKey={storageKey}
         initialValues={initialValues}
         toolbarFilters={contextFilters}
-        lineFragment={relationshipsStixCoreRelationshipsLineFragment}
+        lineFragment={stixCoreRelationshipsFragment}
         preloadedPaginationProps={preloadedPaginationProps}
         exportContext={{ entity_type: 'Attack-Pattern' }}
         additionalHeaderButtons={[
