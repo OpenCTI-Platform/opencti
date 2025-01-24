@@ -29,7 +29,6 @@ interface DisseminationListEditionFormData {
   name: string;
   emails: string;
   description: string;
-  dissemination_list_values_count?: number;
 }
 
 const DisseminationListEdition: FunctionComponent<DisseminationListEditionComponentProps> = ({
@@ -46,9 +45,6 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
     { setSubmitting, setErrors },
   ) => {
     setSubmitting(true);
-    if (values.emails) {
-      values.dissemination_list_values_count = values.emails.split('\n').length;
-    }
 
     const input = Object.entries(values)
       .map(([key, value]) => {

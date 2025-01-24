@@ -6308,7 +6308,6 @@ export type DisseminationList = BasicObject & InternalObject & {
 
 export type DisseminationListAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
-  dissemination_list_values_count: Scalars['Int']['input'];
   emails: Scalars['String']['input'];
   name: Scalars['String']['input'];
 };
