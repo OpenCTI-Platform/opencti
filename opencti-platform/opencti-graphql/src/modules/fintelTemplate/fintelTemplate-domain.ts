@@ -36,7 +36,7 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 };
 
 // check validity of variable_name of fintel template widgets
-const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
+export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
   const invalidVariableNames: string[] = [];
   const regex = /^[A-Za-z0-9_-]+$/;
   (fintelTemplateWidgets ?? [])
