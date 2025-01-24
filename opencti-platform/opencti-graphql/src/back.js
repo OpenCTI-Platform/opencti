@@ -58,4 +58,4 @@ if (ENABLED_EVENT_LOOP_MONITORING) {
 
 // -- Start the platform
 // noinspection JSIgnoredPromiseFromCall
-platformStart();
+platformStart().catch((reason) => logApp.error('Error occurs on platformStart', { reason }));
