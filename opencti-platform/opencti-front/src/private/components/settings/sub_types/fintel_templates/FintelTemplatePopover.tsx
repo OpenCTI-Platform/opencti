@@ -6,7 +6,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import useFintelTemplateDelete from '@components/settings/sub_types/fintel_templates/useFintelTemplateDelete';
+import useFintelTemplateExport from './useFintelTemplateExport';
+import useFintelTemplateDelete from './useFintelTemplateDelete';
 import Transition from '../../../../../components/Transition';
 import stopEvent from '../../../../../utils/domEvent';
 import { useFormatter } from '../../../../../components/i18n';
@@ -28,6 +29,7 @@ const FintelTemplatePopover = ({
   inline = true,
 }: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
+  const exportFintel = useFintelTemplateExport();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [commitDeleteMutation, deleting] = useFintelTemplateDelete(entitySettingId);
 
@@ -80,6 +82,11 @@ const FintelTemplatePopover = ({
     });
   };
 
+  const onExport = async (e: UIEvent) => {
+    stopEvent(e);
+    await exportFintel(templateId);
+  };
+
   return (
     <>
       {inline ? (
@@ -100,6 +107,7 @@ const FintelTemplatePopover = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={onHandleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
 
       <Dialog
