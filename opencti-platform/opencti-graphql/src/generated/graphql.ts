@@ -25025,7 +25025,7 @@ export type StixCyberObservableEditMutations = {
   exportPush?: Maybe<Scalars['Boolean']['output']>;
   fieldPatch?: Maybe<StixCyberObservable>;
   importPush?: Maybe<File>;
-  /** @deprecated [>=6.2 & <6.5]. Use `promoteToIndicator`. */
+  /** @deprecated [>=6.2 & <6.8]. Use `promoteToIndicator`. */
   promote?: Maybe<StixCyberObservable>;
   promoteToIndicator?: Maybe<Indicator>;
   relationAdd?: Maybe<StixRefRelationship>;

@@ -8,7 +8,7 @@ const stixCyberObservableResolvers_deprecated = {
       const baseResolvers = stixCyberObservableResolvers.Mutation.stixCyberObservableEdit(_, { id }, context);
       return {
         ...baseResolvers,
-        // region [>=6.2 & <6.5]
+        // region [>=6.2 & <6.8]
         promote: () => promoteObservableToIndicator(context, context.user, id),
         // endregion
       };

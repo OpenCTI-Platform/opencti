@@ -8637,7 +8637,7 @@ type StixCyberObservableEditMutations {
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
-  promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.5]. Use `promoteToIndicator`.")
+  promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")
 }
 
 type StixRelationshipEditMutations {
