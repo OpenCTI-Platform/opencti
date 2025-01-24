@@ -138,7 +138,7 @@ const DisseminationLists = () => {
       isSortable: false,
     },
     lineNumber: {
-      id: 'NumberOfElements',
+      id: 'dissemination_list_values_count',
       label: t_i18n('Number of elements'),
       percentWidth: 15,
       isSortable: true,
