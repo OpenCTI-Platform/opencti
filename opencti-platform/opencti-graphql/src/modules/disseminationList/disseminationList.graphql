@@ -11,6 +11,16 @@ type DisseminationList implements InternalObject & BasicObject {
   description: String
   dissemination_list_values_count: Int!
 }
+type DisseminationListName implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # DisseminationList
+  name: String!
+}
 
 # Ordering
 enum DisseminationListOrdering {
@@ -27,18 +37,34 @@ type DisseminationListEdge {
   cursor: String!
   node: DisseminationList!
 }
+type DisseminationListNamesConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListNamesEdge!]!
+}
+type DisseminationListNamesEdge {
+  cursor: String!
+  node: DisseminationListName!
+}
 
 # Queries
 type Query {
     disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-    disseminationLists(
-      first: Int
-      after: ID
-      orderBy: DisseminationListOrdering
-      orderMode: OrderingMode
-      filters: FilterGroup
-      search: String
-    ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
+  disseminationLists(
+    first: Int
+    after: ID
+    orderBy: DisseminationListOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DisseminationListConnection @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListsNames(
+    first: Int
+    after: ID
+    orderBy: DisseminationListOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DisseminationListNamesConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
 }
 
 input DisseminationListAddInput {

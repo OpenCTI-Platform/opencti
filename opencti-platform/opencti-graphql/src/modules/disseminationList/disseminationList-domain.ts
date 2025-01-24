@@ -17,7 +17,7 @@ import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { DisseminationListAddInput, DisseminationListSendInput, EditInput, QueryDisseminationListsArgs } from '../../generated/graphql';
-import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
+import { type BasicStoreEntityDisseminationList, type BasicStoreEntityDisseminationListName, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
 import { sendMail } from '../../database/smtp';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -26,7 +26,7 @@ import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import type { BasicStoreObject } from '../../types/store';
+import type { BasicStoreObject, StoreEntityConnection } from '../../types/store';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { generateInternalId } from '../../schema/identifier';
@@ -42,6 +42,17 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
+};
+
+export const findAllNames = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
+  const allLists: StoreEntityConnection<BasicStoreEntityDisseminationList> = await listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
+  const newLists: StoreEntityConnection<BasicStoreEntityDisseminationListName> = { edges: [], pageInfo: allLists.pageInfo };
+  allLists.edges.map((edge) => {
+    const { node, ...edgeRest } = edge;
+    const { emails, ...nodeRest } = node;
+    newLists.edges.push({ node: nodeRest, ...edgeRest });
+  });
+  return newLists;
 };
 
 interface SendMailArgs {
