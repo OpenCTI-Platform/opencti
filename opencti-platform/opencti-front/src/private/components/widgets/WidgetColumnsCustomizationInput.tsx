@@ -16,7 +16,7 @@ type WidgetConfigColumnsCustomizationProps = {
   onChange: (columns: WidgetColumn[]) => void;
 };
 
-const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
+const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
   availableColumns,
   defaultColumns,
   value = [],
@@ -146,4 +146,4 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
   );
 };
 
-export default WidgetConfigColumnsCustomization;
+export default WidgetColumnsCustomizationInput;
