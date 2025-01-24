@@ -28,6 +28,8 @@ import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -105,7 +107,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   const paddingRight = getPaddingRight(location.pathname, positionId, '/dashboard/locations/positions');
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {position ? (
         <>
           <Routes>
@@ -151,6 +153,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                   <PositionEdition positionId={position.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
@@ -287,7 +290,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

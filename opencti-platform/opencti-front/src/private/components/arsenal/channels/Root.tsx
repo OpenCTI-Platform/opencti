@@ -27,6 +27,8 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ChannelEdition from './ChannelEdition';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -105,7 +107,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
   const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {channel ? (
         <>
           <Routes>
@@ -150,6 +152,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                 </Security>
               )}
               enableEnricher={isFABReplaced}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -265,7 +268,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

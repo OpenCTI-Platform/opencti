@@ -30,6 +30,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -131,7 +133,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, organizationId, '/dashboard/entities/organizations', viewAs === 'knowledge');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {organization ? (
         <>
           <Routes>
@@ -181,6 +183,10 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                   <OrganizationEdition organizationId={organization.id} />
                 </Security>
               )}
+              RelateComponent={viewAs === 'knowledge'
+                ? CreateRelationshipButtonComponent
+                : undefined
+              }
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
@@ -332,7 +338,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
