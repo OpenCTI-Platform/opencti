@@ -1225,7 +1225,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         return defaultRender(t_i18n('Restricted'));
       }
       if (entity_type === 'Country') {
-        const flag = (x_opencti_aliases ?? []).filter((n: string) => n.length === 2)[0];
+        const flag = x_opencti_aliases.filter((n: string) => n.length === 2)[0];
         if (flag) {
           return (
             <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
