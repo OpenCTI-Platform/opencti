@@ -66,7 +66,6 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
       },
       onCompleted: () => {
         setSubmitting(false);
-        onClose();
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -91,8 +90,8 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
         ? (
           <Formik<DisseminationListEditionFormData>
             enableReinitialize={true}
-            validateOnBlur={false}
-            validateOnChange={false}
+            validateOnBlur={true}
+            validateOnChange={true}
             initialValues={initialValues}
             validationSchema={disseminationListValidator(t_i18n)}
             onSubmit={onSubmit}
@@ -103,6 +102,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                   component={TextField}
                   name="name"
                   label={t_i18n('Name')}
+                  onSubmit={submitForm}
                   fullWidth={true}
                   required
                 />
@@ -110,6 +110,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                   component={MarkdownField}
                   name="description"
                   label={t_i18n('Description')}
+                  onSubmit={submitForm}
                   fullWidth={true}
                   multiline={true}
                   rows={2}
@@ -120,6 +121,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                   controlledSelectedTab='write'
                   name="emails"
                   label={t_i18n('Emails')}
+                  onSubmit={submitForm}
                   fullWidth={true}
                   multiline={true}
                   rows={20}
@@ -134,15 +136,6 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                     onClick={onClose}
                   >
                     {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    style={{ marginLeft: 16 }}
-                  >
-                    {t_i18n('Update')}
                   </Button>
                 </div>
               </Form>
