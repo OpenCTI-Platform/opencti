@@ -50,7 +50,7 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   await expect(dataTable.getNumberElements(1)).toBeVisible();
   await dataTable.getCheckAll().click();
   await taskPopup.launchAddLabel('background-task-search-add-label', false);
-
+  await sleep(3000); // Wait 3 secs for task creation
   await tasksPage.goto();
   await expect(tasksPage.getPage()).toBeVisible();
 
