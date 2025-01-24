@@ -33,6 +33,10 @@ export const READ_RFI_QUERY = gql`
         caseRfi(id: $id) {
             id
             name
+            authorized_members {
+              id
+              access_right
+            }
             objectParticipant {
                 id
                 name
@@ -317,10 +321,22 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
     expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('NEW');
 
+    console.log('getRfiQueryResult', getRfiQueryResult);
+    expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toBeDefined();
+    expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toEqual([
+      {
+        id: testOrgId,
+        access_right: 'admin'
+      },
+      {
+        id: testOrgId,
+        access_right: 'edit'
+      }
+    ]);
+
     // We need data from database because JSON field x_opencti_request_access is internal (not on API)
     const caseRequestForInformation = await findRFIById(testContext, ADMIN_USER, caseRfiIdForApproval);
     expect(caseRequestForInformation.object).toEqual([malwareId]);
-    // TODO verify that authorized member are set
 
     const action: RequestAccessAction = JSON.parse(caseRequestForInformation.x_opencti_request_access);
     expect(action.status).toBe(ActionStatus.NEW);
