@@ -12,7 +12,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 |:-----------------------------------------------------------------|:--------------|:-----------|
 | [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders)  | 6.5           | 6.8        |
 | [Removing bi-directional stream connectors](#removing-some-stream-connectors)  | 6.3           | 6.6        |
-| [Promote Observable API](#change-to-the-observable-promote-API)  | 6.2           | 6.5        |
+| [Promote Observable API](#change-to-the-observable-promote-API)  | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication) |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)             |               | 5.12       |
 
