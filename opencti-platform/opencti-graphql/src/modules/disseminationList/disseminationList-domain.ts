@@ -57,9 +57,9 @@ export const findAllNames = async (context: AuthContext, user: AuthUser, args: Q
     args
   );
   const newLists: StoreEntityConnection<BasicStoreEntityDisseminationListName> = { edges: [], pageInfo: allLists.pageInfo };
-  allLists.edges.map((edge) => {
+  allLists.edges.forEach((edge) => {
     const { node, ...edgeRest } = edge;
-    const { emails, ...nodeRest } = node;
+    const { emails: _, ...nodeRest } = node;
     newLists.edges.push({ node: nodeRest, ...edgeRest });
   });
   return newLists;
