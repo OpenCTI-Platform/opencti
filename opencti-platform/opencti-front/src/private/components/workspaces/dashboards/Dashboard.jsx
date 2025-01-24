@@ -794,6 +794,11 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Not implemented yet';
     }
   };
+
+  const [idToResize, setIdToResize] = useState();
+
+  const handleResize = (updatedWidget) => setIdToResize(updatedWidget);
+
   return (
     <div
       className={classes.container}
@@ -832,6 +837,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           isResizable={!noToolbar}
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
           draggableCancel=".noDrag"
+          onResizeStart={(_, { i }) => handleResize(i)}
+          onResizeStop={handleResize}
+
         >
           {R.values(manifest.widgets).map((widget) => {
             let mainEntityTypes = ['Stix-Core-Object'];
@@ -849,33 +857,41 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
             };
-            return <Paper
-              key={widget.id}
-              data-grid={widget.layout}
-              classes={{ root: classes.paper }}
-              variant="outlined"
-                   >
-              {!noToolbar && (
-              <WorkspaceWidgetPopover
-                widget={widget}
-                manifest={manifest}
-                workspace={workspace}
-                onUpdate={handleUpdateWidget}
-                onDuplicate={handleDuplicateWidget}
-                onDelete={() => handleDeleteWidget(widget.id)}
-              />
-              )}
-              <ErrorBoundary>
-                {widget.perspective === 'entities'
-                    && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
-                {widget.perspective === 'relationships'
-                    && renderRelationshipsVisualization(removeIdFilterWidget, manifest.config)}
-                {widget.perspective === 'audits'
-                    && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
-                {widget.perspective === null
-                    && renderRawVisualization(removeIdFilterWidget)}
-              </ErrorBoundary>
-            </Paper>;
+            return (
+              <Paper
+                key={widget.id}
+                data-grid={widget.layout}
+                classes={{ root: classes.paper }}
+                variant="outlined"
+              >
+                {!noToolbar && (
+                  <WorkspaceWidgetPopover
+                    widget={widget}
+                    manifest={manifest}
+                    workspace={workspace}
+                    onUpdate={handleUpdateWidget}
+                    onDuplicate={handleDuplicateWidget}
+                    onDelete={() => handleDeleteWidget(widget.id)}
+                  />
+                )}
+                <ErrorBoundary>
+                  {widget.id === idToResize ? (
+                    <div />
+                  ) : (
+                    <>
+                      {widget.perspective === 'entities'
+                      && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
+                      {widget.perspective === 'relationships'
+                      && renderRelationshipsVisualization(removeIdFilterWidget, manifest.config)}
+                      {widget.perspective === 'audits'
+                      && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
+                      {widget.perspective === null
+                      && renderRawVisualization(removeIdFilterWidget)}
+                    </>
+                  )}
+                </ErrorBoundary>
+              </Paper>
+            );
           })}
         </ReactGridLayout>
       ) : (
