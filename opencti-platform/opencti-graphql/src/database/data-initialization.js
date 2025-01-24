@@ -232,7 +232,6 @@ const createDefaultStatusTemplates = async (context) => {
 };
 
 const createInitialRequestAccessFlow = async (context) => {
-  // TODO Maybe use createEntity instead
   const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
   const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
 
