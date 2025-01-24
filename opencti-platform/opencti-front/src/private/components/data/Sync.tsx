@@ -17,6 +17,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import PageContainer from '../../../components/PageContainer';
 
 const LOCAL_STORAGE_KEY = 'sync';
 
@@ -81,62 +82,63 @@ const Sync = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
 
   return (
-    <div style={{
-      margin: 0,
-      padding: '0 200px 50px 0',
-    }}
-    >
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]} />
-      <IngestionMenu/>
-      <AlertInfo content={
-        <>
-          {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
-          <a
-            href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
-            target="_blank"
-            style={{ color: theme.palette.secondary.main }}
-            rel="noreferrer"
-          >
-            {t_i18n('OpenCTI ecosystem space')}
-          </a>
-          .
-        </>
-      }
-      />
-      <ListLines
-        sortBy={viewStorage.sortBy}
-        orderAsc={viewStorage.orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={viewStorage.searchTerm}
-      >
-        <QueryRenderer
-          query={SyncLinesQuery}
-          variables={variables}
-          render={({ props }: { props: SyncLinesPaginationQuery$data }) => (
-            <SyncLines
-              data={props}
-              paginationOptions={paginationOptions}
-              refetchPaginationOptions={variables}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-            />
-          )}
+    <>
+      <IngestionMenu />
+      <PageContainer withRightMenu>
+        <Breadcrumbs
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
+          noMargin
         />
-      </ListLines>
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <SyncCreation paginationOptions={paginationOptions} />
-      </Security>
-    </div>
+        <AlertInfo content={
+          <>
+            {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
+            <a
+              href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
+              target="_blank"
+              style={{ color: theme.palette.secondary.main }}
+              rel="noreferrer"
+            >
+              {t_i18n('OpenCTI ecosystem space')}
+            </a>
+            .
+          </>
+        }
+        />
+        <ListLines
+          sortBy={viewStorage.sortBy}
+          orderAsc={viewStorage.orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          displayImport={false}
+          secondaryAction={true}
+          keyword={viewStorage.searchTerm}
+        >
+          <QueryRenderer
+            query={SyncLinesQuery}
+            variables={variables}
+            render={({ props }: { props: SyncLinesPaginationQuery$data }) => (
+              <SyncLines
+                data={props}
+                paginationOptions={paginationOptions}
+                refetchPaginationOptions={variables}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+              />
+            )}
+          />
+        </ListLines>
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          <SyncCreation paginationOptions={paginationOptions} />
+        </Security>
+      </PageContainer>
+    </>
   );
 };
 

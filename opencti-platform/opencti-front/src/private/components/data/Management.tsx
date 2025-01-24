@@ -19,6 +19,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import PageContainer from '../../../components/PageContainer';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
@@ -30,17 +31,17 @@ export const managementDefinitionsLinesPaginationQuery = graphql`
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    ) {
-      ...ManagementDefinitionsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
-    }
+  ) {
+    ...ManagementDefinitionsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const managementDefinitionLineFragment = graphql`
@@ -57,7 +58,7 @@ const managementDefinitionLineFragment = graphql`
     }
     createdBy {
       ... on Identity {
-          name
+        name
       }
     }
     ... on Container {
@@ -107,7 +108,7 @@ const managementDefinitionsLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) 
+    )
     @connection(key: "Pagination_stixCoreObjectsRestricted") {
       edges {
         node {
@@ -214,17 +215,19 @@ const Management = () => {
   } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
 
   return isEnterpriseEdition ? (
-    <div data-testid='data-management-page'>
-      <div style={{ paddingRight: isRightMenuManagementEnable ? '200px' : 0 }}>
-        <Breadcrumbs elements={[
-          { label: t_i18n('Data') },
-          { label: t_i18n('Restriction') },
-          { label: t_i18n('Restricted entities'), current: true },
-        ]}
+    <div data-testid="data-management-page">
+      {isRightMenuManagementEnable && (
+        <ManagementMenu />
+      )}
+      <PageContainer withRightMenu={isRightMenuManagementEnable}>
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Restriction') },
+            { label: t_i18n('Restricted entities'), current: true },
+          ]}
+          noMargin
         />
-        {isRightMenuManagementEnable && (
-          <ManagementMenu/>
-        )}
         <AlertInfo
           content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
         />
@@ -242,10 +245,10 @@ const Management = () => {
             removeAuthMembersEnabled={true}
           />
         )}
-      </div>
+      </PageContainer>
     </div>
   ) : (
-    <EnterpriseEdition feature={t_i18n('Authorized_members')}/>
+    <EnterpriseEdition feature={t_i18n('Authorized_members')} />
   );
 };
 

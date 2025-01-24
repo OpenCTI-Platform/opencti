@@ -11,7 +11,9 @@ interface DataTableProviderProps {
 export const DataTableProvider = ({ children, initialValue }: DataTableProviderProps) => {
   return (
     <DataTableContext.Provider value={initialValue}>
-      {children}
+      <div> {/* TODO: This is only temporary because of the components that defines their own margins in Filters */}
+        {children}
+      </div>
     </DataTableContext.Provider>
   );
 };

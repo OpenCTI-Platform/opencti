@@ -133,68 +133,68 @@ const useStyles = makeStyles((theme) => createStyles({
   menuItem: {
     paddingRight: 2,
     height: 35,
-    fontWeight: 500,
+    fontWeight: 400,
     fontSize: 14,
   },
   menuHoverItem: {
     height: 35,
-    fontWeight: 500,
+    fontWeight: 400,
     fontSize: 14,
   },
   menuSubItem: {
     height: 25,
-    fontWeight: 600,
+    fontWeight: 400,
     fontSize: 12,
   },
   menuSubItemWithIcon: {
     paddingLeft: 20,
     height: 25,
-    fontWeight: 600,
+    fontWeight: 400,
     fontSize: 12,
   },
   menuItemText: {
-    padding: '1px 0 0 15px',
-    fontWeight: 600,
+    padding: '1px 0 0 8px',
+    fontWeight: 400,
     fontSize: 14,
   },
   menuSubItemText: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    padding: '1px 0 0 10px',
-    fontWeight: 600,
+    padding: '1px 0 0 8px',
+    fontWeight: 400,
     fontSize: 12,
   },
   menuSubItemTextWithoutIcon: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    padding: '1px 0 0 0',
-    fontWeight: 600,
+    padding: '1px 0 0 16px',
+    fontWeight: 400,
     fontSize: 12,
   },
   menuCollapseOpen: {
     width: OPEN_BAR_WIDTH,
     height: 35,
-    fontWeight: 500,
+    fontWeight: 400,
     fontSize: 14,
   },
   menuCollapse: {
     width: SMALL_BAR_WIDTH,
     height: 35,
-    fontWeight: 500,
+    fontWeight: 400,
     fontSize: 14,
   },
   menuLogoOpen: {
     width: OPEN_BAR_WIDTH,
     height: 35,
-    fontWeight: 500,
+    fontWeight: 400,
     fontSize: 14,
   },
   menuLogo: {
     width: SMALL_BAR_WIDTH,
     height: 35,
-    fontWeight: 500,
+    fontWeight: 400,
     fontSize: 14,
   },
   menuItemSmallText: {
@@ -389,7 +389,7 @@ const LeftBar = () => {
                     </ListItemIcon>
                   )}
                   <ListItemText
-                    classes={{ primary: classes.menuSubItemText }}
+                    classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
                     primary={t_i18n(entry.label)}
                   />
                 </MenuItem>
@@ -444,7 +444,7 @@ const LeftBar = () => {
                   </ListItemIcon>
                 )}
                 <ListItemText
-                  classes={{ primary: submenu_show_icons && entry.icon ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
+                  classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
                   primary={t_i18n(entry.label)}
                 />
               </MenuItem>

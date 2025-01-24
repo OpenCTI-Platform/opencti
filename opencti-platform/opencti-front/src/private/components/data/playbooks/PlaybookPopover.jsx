@@ -146,7 +146,6 @@ const PlaybookPopover = (props) => {
       <IconButton
         onClick={(event) => setAnchorEl(event.currentTarget)}
         aria-haspopup="true"
-        style={{ marginTop: 3 }}
         size="large"
         color="primary"
       >
