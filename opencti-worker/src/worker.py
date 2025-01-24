@@ -10,6 +10,7 @@ import os
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Dict, List, Optional, Union
@@ -27,9 +28,6 @@ from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
-
-PROCESSING_COUNT: int = 4
-MAX_PROCESSING_COUNT: int = 60
 
 # Telemetry variables definition
 meter = metrics.get_meter(__name__)
@@ -83,6 +81,7 @@ class PingAlive(threading.Thread):
 
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
+    execution_pool: ThreadPoolExecutor
     connector: Dict[str, Any] = field(hash=False)
     config: Dict[str, Any] = field(hash=False)
     opencti_url: str
@@ -191,12 +190,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             "Processing a new message, launching a thread...",
             {"tag": method.delivery_tag},
         )
-        thread = Thread(
-            target=self.data_handler,
-            args=[self.pika_connection, channel, method.delivery_tag, data],
+        task_future = self.execution_pool.submit(
+            self.data_handler, self.pika_connection, channel, method.delivery_tag, data
         )
-        thread.start()
-        while thread.is_alive():  # Loop while the thread is processing
+        while task_future.running():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
         self.worker_logger.info("Message processed, thread terminated")
 
@@ -279,7 +276,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
                     push_channel.close()
                     push_pika_connection.close()
-
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
                 event_content = json.loads(event)
@@ -391,6 +387,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
         )
+        self.opencti_pool_size = get_config_variable(
+            "OPENCTI_EXECUTION_POOL_SIZE", ["opencti", "execution_pool_size"], config, default=1
+        )
         # Load worker config
         self.log_level = get_config_variable(
             "WORKER_LOG_LEVEL", ["worker", "log_level"], config
@@ -440,6 +439,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         # Initialize variables
         self.connectors: List[Any] = []
         self.queues: List[Any] = []
+        self.execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
 
     # Start the main loop
     def start(self) -> None:
@@ -461,6 +461,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 {"queue": queue},
                             )
                             self.consumer_threads[queue] = Consumer(
+                                self.execution_pool,
                                 connector,
                                 self.config,
                                 self.opencti_url,
@@ -472,6 +473,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.consumer_threads[queue].start()
                     else:
                         self.consumer_threads[queue] = Consumer(
+                            self.execution_pool,
                             connector,
                             self.config,
                             self.opencti_url,
