@@ -1484,7 +1484,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(sources.map((s) => s.internal_id));
+    await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context,user));
     // - END TRANSACTION
     return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
@@ -3333,7 +3333,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       event = await storeDeleteEvent(context, user, element, opts);
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(participantIds);
+    await redisAddDeletions(participantIds, getDraftContext(context, user));
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
