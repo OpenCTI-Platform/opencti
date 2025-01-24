@@ -621,7 +621,7 @@ export const SIMPLIFIED_EMAIL_TEMPLATE = `
                                                          <tbody>
                                                             <tr>
                                                                <td align="center" valign="middle" style="padding: 5px 0 65px;">
-                                                                  <p style="font-size: 12px; color: #516f90"><%- parseMarkdownLink(footer)%><br>Copyright &copy; 2024 OpenCTI<br>Powered by <a style="color: #001bda; text-decoration:none;" href="https://filigran.io" target="_blank">Filigran</a></p>
+                                                                  <p style="font-size: 12px; color: #516f90"><%- parseMarkdownLink(footer)%><br>Copyright &copy; 2025 OpenCTI<br>Powered by <a style="color: #001bda; text-decoration:none;" href="https://filigran.io" target="_blank">Filigran</a></p>
                                                                </td>
                                                             </tr>
                                                          </tbody>
