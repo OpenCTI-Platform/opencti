@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
-import { ProgressWrench } from 'mdi-material-ui';
+import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
@@ -25,6 +25,7 @@ import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_
 import { attackPatternsMatrixColumnsFragment, attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumns_data.graphql';
+import StixCoreRelationships from '@components/common/stix_core_relationships/StixCoreRelationships';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -40,6 +41,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -171,13 +173,13 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   return (
     <>
-      {currentView !== 'matrix-in-line' && <div
+      {currentView !== 'matrix-in-line' && currentView !== 'relationships' && <div
         style={{
           marginBottom: 20,
           padding: 0,
           marginTop: -12,
         }}
-                                           >
+                                                                              >
         <div
           style={{
             float: 'left',
@@ -256,13 +258,13 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         </div>
         )}
         <div style={{ float: 'right', margin: 0 }}>
-          {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && (
+          {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
           <Tooltip
             title={
-                    currentColorsReversed
-                      ? t_i18n('Disable invert colors')
-                      : t_i18n('Enable invert colors')
-                  }
+              currentColorsReversed
+                ? t_i18n('Disable invert colors')
+                : t_i18n('Enable invert colors')
+            }
           >
             <span
               style={{
@@ -331,6 +333,18 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 />
               </ToggleButton>
             </Tooltip>
+            <Tooltip title={t_i18n('Relationships view')}>
+              <ToggleButton
+                value="relationships"
+                aria-label="relationships"
+                onClick={() => handleChangeView('relationships')}
+              >
+                <RelationManyToMany
+                  fontSize="small"
+                  color={currentView === 'relationships' ? 'secondary' : 'primary'}
+                />
+              </ToggleButton>
+            </Tooltip>
             {typeof handleToggleExports === 'function' && !exportDisabled && (
             <Tooltip title={t_i18n('Open export panel')}>
               <ToggleButton
@@ -382,7 +396,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           </div>
         </div>
         <div className="clearfix"/>
-      </div>}
+      </div>
+      }
       <div
         style={{
           width: '100%',
@@ -424,6 +439,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             onDelete={refetch}
             searchTerm={searchTerm}
             coursesOfAction={true}
+          />
+        )}
+        {currentView === 'relationships' && (
+          <StixCoreRelationships
+            entityId={stixDomainObjectId}
+            currentView={currentView}
+            targetTypes={['Attack-Pattern']}
+            direction={'fromEntity'}
+            relationshipTypes={['uses']}
+            paginationOptions={paginationOptions as PaginationOptions}
+            storageKey={storageKey}
           />
         )}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
