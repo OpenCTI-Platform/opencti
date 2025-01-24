@@ -87,7 +87,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
           if (response.fintelTemplateImport) {
             const { id, entity_type } = response.fintelTemplateImport;
             MESSAGING$.notifySuccess(t_i18n('FINTEL template created'));
-            navigate(`${resolveLink(entity_type)}/${entityType}/templates/${id}`);
+            navigate(`${resolveLink(entity_type)}/${target_type}/templates/${id}`);
           }
         },
       });

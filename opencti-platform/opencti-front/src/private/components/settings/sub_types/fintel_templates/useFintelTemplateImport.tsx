@@ -6,11 +6,8 @@ import { useFintelTemplateImportMutation } from './__generated__/useFintelTempla
 const fintelTemplateImportMutation = graphql`
   mutation useFintelTemplateImportMutation($file: Upload!) {
     fintelTemplateImport(file: $file) {
-      ...FintelTemplateTabs_template
-      ...FintelTemplateHeader_template
-      ...FintelTemplateContentEditor_template
-      ...FintelTemplateWidgetsSidebar_template
-      ...FintelTemplatePreview_template
+      id
+      entity_type
     }
   }
 `;
