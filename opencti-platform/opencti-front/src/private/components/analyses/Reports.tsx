@@ -175,8 +175,6 @@ const Reports: FunctionComponent = () => {
     queryPaginationOptions,
   );
 
-  console.log(queryPaginationOptions);
-
   const preloadedPaginationProps = {
     linesQuery: reportsLinesQuery,
     linesFragment: reportsLineFragment,
