@@ -139,7 +139,7 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   const finalInput = [...input];
   const emailsInput = finalInput.find((editInput) => editInput.key === 'emails');
   if (emailsInput) {
-    await fieldPatchDisseminationList(context, user, id, [{ key: 'dissemination_list_values_count', value: [emailsInput.value[0].split('\n').length] }]);
+    finalInput.push({ key: 'dissemination_list_values_count', value: [emailsInput.value[0].split('\n').length] });
   }
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, finalInput);
   await publishUserAction({
