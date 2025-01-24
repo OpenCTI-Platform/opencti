@@ -9032,6 +9032,7 @@ type Mutation {
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
   disseminationListSend(input: DisseminationListSendInput!): Boolean
+  requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessApprove(id: ID!): RequestAccessAction
   requestAccessDecline(id: ID!): RequestAccessAction
 }
@@ -12635,4 +12636,29 @@ input DisseminationListSendInput {
   email_object: String!
   email_body: String!
   email_attached_file_id: ID!
+}
+
+enum RequestAccessType {
+  organization_sharing
+}
+
+enum ActionStatus {
+  APPROVED
+  DECLINED
+  NEW
+  NOT_FOUND
+  MISSING_PARAMETERS
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
+}
+
+type RequestAccessAction {
+  action_executed: Boolean
+  action_status: String
+  action_date: DateTime
 }
