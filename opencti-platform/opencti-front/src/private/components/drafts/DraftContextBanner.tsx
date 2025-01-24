@@ -6,6 +6,7 @@ import DraftBlock from '@components/common/draft/DraftBlock';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -102,6 +103,9 @@ const DraftContextBanner = () => {
             TransitionComponent={Transition}
             onClose={() => setDisplayApprove(false)}
           >
+            <DialogTitle>
+              {t_i18n('Are you sure?')}
+            </DialogTitle>
             <DialogContent>
               <DialogContentText>
                 {t_i18n('Do you want to approve this draft and send it to ingestion?')}
