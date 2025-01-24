@@ -13,7 +13,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
+import WidgetConfigColumnsCustomization from '@components/widgets/WidgetConfigColumnsCustomization';
 import { getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
@@ -792,8 +792,8 @@ const WidgetCreationParameters = () => {
                   key={index}
                   availableColumns={getWidgetColumns(perspective, entityType)}
                   defaultColumns={defaultWidgetColumnsByType}
-                  columns={[...(columns ?? defaultWidgetColumnsByType)]}
-                  setColumns={(newColumns) => setColumns(index, newColumns)}
+                  value={[...(columns ?? defaultWidgetColumnsByType)]}
+                  onChange={(newColumns) => setColumns(index, newColumns)}
                 />
               );
             }
