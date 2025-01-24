@@ -36,7 +36,7 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
-import {ENTITY_TYPE_DISSEMINATION_LIST} from "../modules/disseminationList/disseminationList-types";
+import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
