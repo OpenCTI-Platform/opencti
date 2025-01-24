@@ -51,10 +51,7 @@ const positionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Position_position
       ...PositionKnowledge_position
       ...FileImportViewer_entity
@@ -125,7 +122,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={position.stixCoreObjectsDistribution}
+                  data={position}
                 />
               }
             />
