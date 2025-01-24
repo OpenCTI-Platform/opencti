@@ -7,12 +7,25 @@ type DisseminationList implements InternalObject & BasicObject {
   updated_at: DateTime!
   # DisseminationList
   name: String!
-  emails: [String]!
+  emails: String!
+  description: String
+  dissemination_list_values_count: Int!
+}
+type DisseminationListName implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # DisseminationList
+  name: String!
 }
 
 # Ordering
 enum DisseminationListOrdering {
   name
+  dissemination_list_values_count
   _score
 }
 
@@ -25,23 +38,40 @@ type DisseminationListEdge {
   cursor: String!
   node: DisseminationList!
 }
+type DisseminationListNamesConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListNamesEdge!]!
+}
+type DisseminationListNamesEdge {
+  cursor: String!
+  node: DisseminationListName!
+}
 
 # Queries
-#type Query {
-#    disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-#    disseminationLists(
-#      first: Int
-#      after: ID
-#      orderBy: DisseminationListOrdering
-#      orderMode: OrderingMode
-#      filters: FilterGroup
-#      search: String
-#    ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
-#}
+type Query {
+  disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationLists(
+    first: Int
+    after: ID
+    orderBy: DisseminationListOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DisseminationListConnection @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListsNames(
+    first: Int
+    after: ID
+    orderBy: DisseminationListOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DisseminationListNamesConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
+}
 
 input DisseminationListAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
-  emails: [String!]!
+  emails: String!
+  description: String
 }
 
 input DisseminationListSendInput {
@@ -52,8 +82,8 @@ input DisseminationListSendInput {
 }
 
 type Mutation {
-  #  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-  #  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
-  #  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListDelete(id: ID!): ID @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationListSend(input: DisseminationListSendInput!): Boolean @auth(for: [KNOWLEDGE_KNDISSEMINATION])
 }

@@ -125,7 +125,10 @@
     "csv_ingestion": {
       "max_bundle_size": 1000
     },
-    "validation_mode" : "workbench"
+    "validation_mode": "workbench",
+    "dissemination_list": {
+      "to_email": "no-reply@filigran.io"
+    }
   },
   "demo_mode": false,
   "http_proxy": "",

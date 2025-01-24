@@ -8195,6 +8195,9 @@ type Query {
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
   fintelTemplate(id: ID!): FintelTemplate
+  disseminationList(id: String!): DisseminationList
+  disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
+  disseminationListsNames(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListNamesConnection
 }
 
 type Subscription {
@@ -9028,6 +9031,9 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
+  disseminationListDelete(id: ID!): ID
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
   disseminationListSend(input: DisseminationListSendInput!): Boolean
 }
 
@@ -12587,11 +12593,24 @@ type DisseminationList implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  emails: [String]!
+  emails: String!
+  description: String
+  dissemination_list_values_count: Int!
+}
+
+type DisseminationListName implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
 }
 
 enum DisseminationListOrdering {
   name
+  dissemination_list_values_count
   _score
 }
 
@@ -12605,9 +12624,20 @@ type DisseminationListEdge {
   node: DisseminationList!
 }
 
+type DisseminationListNamesConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListNamesEdge!]!
+}
+
+type DisseminationListNamesEdge {
+  cursor: String!
+  node: DisseminationListName!
+}
+
 input DisseminationListAddInput {
   name: String!
-  emails: [String!]!
+  emails: String!
+  description: String
 }
 
 input DisseminationListSendInput {
