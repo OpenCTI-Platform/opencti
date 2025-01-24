@@ -86,64 +86,59 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
       open={isOpen}
       onClose={onClose}
     >
-      {initialValues
-        ? (
-          <Formik<DisseminationListEditionFormData>
-            enableReinitialize={true}
-            validateOnBlur={true}
-            validateOnChange={true}
-            initialValues={initialValues}
-            validationSchema={disseminationListValidator(t_i18n)}
-            onSubmit={onSubmit}
-          >
-            {({ submitForm, isSubmitting }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  name="name"
-                  label={t_i18n('Name')}
-                  onSubmit={submitForm}
-                  fullWidth={true}
-                  required
-                />
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t_i18n('Description')}
-                  onSubmit={submitForm}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={2}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  controlledSelectedTab='write'
-                  name="emails"
-                  label={t_i18n('Emails')}
-                  onSubmit={submitForm}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={20}
-                  style={{ marginTop: 20 }}
-                  required
-                />
-                <div style={{ marginTop: 20, textAlign: 'right' }}>
-                  <Button
-                    variant="contained"
-                    disabled={isSubmitting}
-                    style={{ marginLeft: 16 }}
-                    onClick={onClose}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        )
-        : <Loader />
-      }
+      <Formik<DisseminationListEditionFormData>
+        enableReinitialize={true}
+        validateOnBlur={true}
+        validateOnChange={true}
+        initialValues={initialValues}
+        validationSchema={disseminationListValidator(t_i18n)}
+        onSubmit={onSubmit}
+      >
+        {({ submitForm, isSubmitting }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              name="name"
+              label={t_i18n('Name')}
+              onSubmit={submitForm}
+              fullWidth={true}
+              required
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              onSubmit={submitForm}
+              fullWidth={true}
+              multiline={true}
+              rows={2}
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={TextField}
+              controlledSelectedTab='write'
+              name="emails"
+              label={t_i18n('Emails')}
+              onSubmit={submitForm}
+              fullWidth={true}
+              multiline={true}
+              rows={20}
+              style={{ marginTop: 20 }}
+              required
+            />
+            <div style={{ marginTop: 20, textAlign: 'right' }}>
+              <Button
+                variant="contained"
+                disabled={isSubmitting}
+                style={{ marginLeft: 16 }}
+                onClick={onClose}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
     </Drawer>
   );
 };
