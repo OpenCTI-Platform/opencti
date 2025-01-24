@@ -181,16 +181,17 @@ const Playbooks: FunctionComponent = () => {
     },
   };
   return (
-    <div style={{ paddingRight: '200px' }}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Data') },
-        { label: t_i18n('Processing') },
-        {
-          label: t_i18n('Automation'),
-          current: true,
-        }]}
+    <div style={{ paddingRight: '200px', height: '100%' }}>
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Processing') },
+          {
+            label: t_i18n('Automation'),
+            current: true,
+          }]}
       />
-      <ProcessingMenu/>
+      <ProcessingMenu />
       {isEnterpriseEdition ? (
         <>
           {queryRef && (
@@ -204,7 +205,7 @@ const Playbooks: FunctionComponent = () => {
               lineFragment={playbookFragment}
               entityTypes={['Playbook']}
               searchContextFinal={{ entityTypes: ['Playbook'] }}
-              taskScope='PLAYBOOK'
+              taskScope="PLAYBOOK"
               actions={(row) => (
                 <PlaybookPopover
                   paginationOptions={queryPaginationOptions}
@@ -214,14 +215,14 @@ const Playbooks: FunctionComponent = () => {
               )}
               createButton={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <PlaybookCreation paginationOptions={queryPaginationOptions}/>
+                  <PlaybookCreation paginationOptions={queryPaginationOptions} />
                 </Security>
               }
             />
           )}
         </>
       ) : (
-        <EnterpriseEdition feature={t_i18n('Playbook')}/>
+        <EnterpriseEdition feature={t_i18n('Playbook')} />
       )}
     </div>
   );

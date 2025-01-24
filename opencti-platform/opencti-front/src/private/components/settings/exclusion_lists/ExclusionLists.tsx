@@ -25,6 +25,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
+import PageContainer from '../../../../components/PageContainer';
 
 export const exclusionListsQuery = graphql`
   query ExclusionListsLinesPaginationQuery(
@@ -89,7 +90,7 @@ const exclusionListsLineFragment = graphql`
     exclusion_list_entity_types
     file_id
     exclusion_list_values_count
-    exclusion_list_file_size 
+    exclusion_list_file_size
   }
 `;
 
@@ -227,29 +228,34 @@ const ExclusionLists = () => {
   }, [queryRefStatus]);
 
   return (
-    <div style={{ margin: 0, padding: '0 200px 0 0' }}>
+    <>
       <CustomizationMenu />
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]} />
-      <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
-      <AlertInfo
-        content={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
-      />
-      {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data) => data.exclusionLists?.edges?.map(({ node }: { node: ExclusionListsLine_node$data }) => node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          lineFragment={exclusionListsLineFragment}
-          disableLineSelection
-          disableNavigation
-          preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
+      <PageContainer withRightMenu>
+        <Breadcrumbs
+          noMargin
+          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]}
         />
-      )}
-      <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />
-    </div>
+        <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
+        <AlertInfo
+          content={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
+        />
+        {queryRef && (
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data) => data.exclusionLists?.edges?.map(({ node }: { node: ExclusionListsLine_node$data }) => node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            lineFragment={exclusionListsLineFragment}
+            disableLineSelection
+            disableNavigation
+            preloadedPaginationProps={preloadedPaginationProps}
+            actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
+          />
+        )}
+        <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />
+      </PageContainer>
+    </>
   );
 };
 
