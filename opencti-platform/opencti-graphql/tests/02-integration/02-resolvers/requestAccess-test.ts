@@ -11,7 +11,6 @@ import { listEntitiesPaginated } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { statusDelete } from '../../../src/domain/status';
-import { waitInSec } from '../../../src/database/utils';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -326,7 +325,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRfiIdForApproval).not.toBeNull();
   });
 
-  it('should retrieve the created Case RFI with correct participant and objects', async () => {
+  it('should retrieve the created Case RFI with correct authorize members and objects', async () => {
     const getRfiQueryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
