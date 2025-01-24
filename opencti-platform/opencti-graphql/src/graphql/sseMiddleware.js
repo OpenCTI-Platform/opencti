@@ -3,7 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
 import conf, { basePath, logApp } from '../config/conf';
-import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
+import { AUTH_BEARER, authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -63,7 +63,8 @@ const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 const sendErrorStatusAndKillSession = (req, res, httpStatus) => {
   try {
     res.status(httpStatus).end();
-    if (req.session) {
+    // only kill bearer sessions
+    if (req.session && req.session?.session_provider?.provider === AUTH_BEARER) {
       req.session.destroy();
     }
   } catch (error) {
