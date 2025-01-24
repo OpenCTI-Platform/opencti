@@ -58,7 +58,7 @@ export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: Fintel
       }
     });
   if (invalidVariableNames.length > 0) {
-    throw FunctionalError('Variable names should not contain spaces or special characters', { invalidVariableNames });
+    throw FunctionalError('Variable names should not contain spaces or special chars (except - and _)', { invalidVariableNames });
   }
 };
 

@@ -145,7 +145,7 @@ const WidgetCreationParameters = () => {
   if (isWidgetVarNameAlreadyUsed) {
     varNameError = t_i18n('This name is already used for an other widget');
   } else if (!isVariableNameValid) {
-    varNameError = t_i18n('Only letters, numbers and special chars _ - are allowed');
+    varNameError = t_i18n('Only letters, numbers and special chars _ and - are allowed');
   }
 
   return (

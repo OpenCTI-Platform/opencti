@@ -2121,6 +2121,7 @@
   "One line confirm label next to confirm checkbox": "확인 확인란 옆에 한 줄 확인 라벨",
   "one of the following requirements:": "다음 요구 사항 중 하나:",
   "Only contextual": "맥락에만",
+  "Only letters, numbers and special chars _ - are allowed": "문자, 숫자 및 특수 문자 _ -만 허용됩니다",
   "Only successful tests allow the ingestion creation.": "성공적인 테스트만 인게스트 생성을 허용합니다.",
   "Only successful tests allow the ingestion edition.": "성공적인 테스트만 인게스트 에디션을 허용합니다.",
   "Open correlation details": "상관관계 세부 정보 열기",

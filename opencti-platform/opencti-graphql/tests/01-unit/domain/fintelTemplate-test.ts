@@ -26,7 +26,7 @@ describe('fintel template domain utils', () => {
         perspective: WidgetPerspective.Entities,
       },
     }];
-    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special characters');
+    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special chars (except - and _)');
 
     // should have a variable_name with no special character
     fintelTemplateWidgets = [{
@@ -38,7 +38,7 @@ describe('fintel template domain utils', () => {
         perspective: WidgetPerspective.Entities,
       },
     }];
-    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special characters');
+    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special chars (except - and _)');
     // -- attribute widgets --
     // should have a variable_name with no special character
     fintelTemplateWidgets = [{
@@ -69,7 +69,7 @@ describe('fintel template domain utils', () => {
         type: 'attribute',
       },
     }];
-    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special characters');
+    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special chars (except - and _)');
     // all the columns should have a variable name
     fintelTemplateWidgets = [{
       variable_name: 'attribute_widget',
@@ -101,7 +101,7 @@ describe('fintel template domain utils', () => {
         type: 'attribute',
       },
     }];
-    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special characters');
+    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special chars (except - and _)');
     // the columns should have a variable name with no special character
     fintelTemplateWidgets = [{
       variable_name: 'attribute_widget',
@@ -117,6 +117,6 @@ describe('fintel template domain utils', () => {
         type: 'attribute',
       },
     }];
-    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special characters');
+    expect(() => checkFintelTemplateWidgetsValidity(fintelTemplateWidgets)).toThrowError('Variable names should not contain spaces or special chars (except - and _)');
   });
 });

@@ -260,7 +260,7 @@ describe('Fintel template resolver standard behavior', () => {
       }
     });
     expect(queryResult.errors?.length).toBe(1);
-    expect(queryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special characters');
+    expect(queryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
     // attribute widget
     const fintelTemplateAttributeWidgetAddInput: FintelTemplateWidgetAddInput = {
       variable_name: 'MyAttributes',
@@ -286,7 +286,7 @@ describe('Fintel template resolver standard behavior', () => {
       }
     });
     expect(attributeQueryResult.errors?.length).toBe(1);
-    expect(attributeQueryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special characters');
+    expect(attributeQueryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
   });
   it('should fintel template deleted', async () => {
     const DELETE_QUERY = gql`

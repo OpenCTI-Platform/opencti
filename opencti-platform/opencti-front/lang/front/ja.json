@@ -2121,6 +2121,7 @@
   "One line confirm label next to confirm checkbox": "確認チェックボックスの横にある 1 行の確認ラベル",
   "one of the following requirements:": "以下のいずれかの条件",
   "Only contextual": "条件に応じて起動",
+  "Only letters, numbers and special chars _ - are allowed": "アルファベット、数字、特殊文字 _ - のみが使用可能です。",
   "Only successful tests allow the ingestion creation.": "成功したテストのみが取り込みの作成を許可します。",
   "Only successful tests allow the ingestion edition.": "成功したテストのみがインジェスト版を許可します。",
   "Open correlation details": "相関関係の詳細を開く",

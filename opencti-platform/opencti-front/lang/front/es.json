@@ -2121,6 +2121,7 @@
   "One line confirm label next to confirm checkbox": "Etiqueta de confirmación de una línea junto a la casilla de verificación de confirmación",
   "one of the following requirements:": "uno de los siguientes requisitos:",
   "Only contextual": "Solamente contextual",
+  "Only letters, numbers and special chars _ - are allowed": "Sólo se permiten letras, números y caracteres especiales _ -",
   "Only successful tests allow the ingestion creation.": "Sólo las pruebas exitosas permiten la creación de la ingesta.",
   "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingestión.",
   "Open correlation details": "Detalles de la correlación abierta",
