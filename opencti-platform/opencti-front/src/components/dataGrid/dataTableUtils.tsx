@@ -1030,7 +1030,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ draftVersion }) => (
       <ItemOperations
-        draftOperation={draftVersion.draft_operation}
+        draftOperation={draftVersion?.draft_operation}
       />
     ),
   },
