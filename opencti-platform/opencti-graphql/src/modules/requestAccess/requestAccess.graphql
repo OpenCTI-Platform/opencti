@@ -2,14 +2,6 @@ enum RequestAccessType {
   organization_sharing
 }
 
-enum ActionStatus {
-  APPROVED,
-  DECLINED,
-  NEW,
-  NOT_FOUND,
-  MISSING_PARAMETERS
-}
-
 input RequestAccessAddInput {
   request_access_reason: String
   request_access_entities: [ID!]!
@@ -17,14 +9,6 @@ input RequestAccessAddInput {
   request_access_type: RequestAccessType
 }
 
-type RequestAccessAction {
-  action_executed: Boolean,
-  action_status: String,
-  action_date: DateTime
-}
-
 type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
-  requestAccessApprove(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  requestAccessDecline(id: ID!): RequestAccessAction @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }

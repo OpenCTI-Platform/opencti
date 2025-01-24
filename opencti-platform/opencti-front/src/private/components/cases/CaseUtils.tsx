@@ -117,20 +117,16 @@ export const caseMutationRelationDelete = graphql`
 
 export const validateRequestAccessMutation = graphql`
   mutation CaseUtilsValidateRequestAccessMutation($id: ID!) {
-    requestAccessApprove(id: $id) {
-      action_status
-      action_date
-      action_executed
+    caseRfiApprove(id: $id) {
+        id
     }
   }
 `;
 
 export const declineRequestAccessMutation = graphql`
   mutation CaseUtilsDeclineRequestAccessMutation($id: ID!) {
-    requestAccessDecline(id: $id) {
-      action_executed
-      action_date
-      action_status
+    caseRfiDecline(id: $id) {
+      id
     }
   }
 `;

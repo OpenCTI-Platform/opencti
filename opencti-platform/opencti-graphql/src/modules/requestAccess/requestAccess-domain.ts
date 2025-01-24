@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ActionStatus, type CaseRfiAddInput, type EditInput, FilterMode, OrderingMode, type RequestAccessAddInput, StatusOrdering } from '../../generated/graphql';
+import { type CaseRfiAddInput, type EditInput, FilterMode, OrderingMode, type RequestAccessAddInput, StatusOrdering } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import { SYSTEM_USER } from '../../utils/access';
 import { listAllEntities } from '../../database/middleware-loader';
@@ -21,6 +21,12 @@ import { loadThroughDenormalized } from '../../resolvers/stix';
 import type { BasicStoreSettings } from '../../types/settings';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
+
+enum ActionStatus {
+  APPROVED,
+  DECLINED,
+  NEW,
+}
 
 export interface RequestAccessActionStatus {
   rfiStatusId: string,
@@ -113,11 +119,11 @@ export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser
   const rfiEntitySettings = await getRfiEntitySettings(context);
   const requestAccessWorkflow = rfiEntitySettings?.request_access_workflow;
   if (requestAccessWorkflow) {
-    if (action === ActionStatus.Approved) {
+    if (action === ActionStatus.APPROVED) {
       return requestAccessWorkflow.approved_workflow_id;
     }
 
-    if (action === ActionStatus.Declined) {
+    if (action === ActionStatus.DECLINED) {
       return requestAccessWorkflow.declined_workflow_id;
     }
   }
@@ -149,14 +155,14 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
     if (requestAccessWorkflow.approved_workflow_id) {
       result.push({
         rfiStatusId: requestAccessWorkflow.approved_workflow_id,
-        actionStatus: ActionStatus.Approved,
+        actionStatus: ActionStatus.APPROVED,
       });
     }
 
     if (requestAccessWorkflow.declined_workflow_id) {
       result.push({
         rfiStatusId: requestAccessWorkflow.declined_workflow_id,
-        actionStatus: ActionStatus.Declined,
+        actionStatus: ActionStatus.DECLINED,
       });
     }
   }
@@ -164,7 +170,7 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
     const firstStatus = await findFirstWorkflowStatus(context, user);
     result.push({
       rfiStatusId: firstStatus.internal_id,
-      actionStatus: ActionStatus.New });
+      actionStatus: ActionStatus.NEW });
   }
 
   return result;
@@ -262,7 +268,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
       + ` - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
       + `Reason: ${input.request_access_reason}`;
 
-  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.New);
+  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.NEW);
 
   const allActionStatuses = await getRFIStatusMap(context, user);
   const action: RequestAccessAction = {
@@ -270,7 +276,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     members: input.request_access_members,
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
-    status: ActionStatus.New,
+    status: ActionStatus.NEW.toString(),
     workflowMapping: allActionStatuses
   };
 
@@ -298,12 +304,12 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
     if (action.entities && action.members) {
       await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
 
-      const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Approved);
+      const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.APPROVED);
       const allActionStatuses = await getRFIStatusMap(context, user);
       // Moving RFI to approved
       const requestAccessAction: RequestAccessAction = {
         ...action,
-        status: ActionStatus.Approved,
+        status: ActionStatus.APPROVED.toString(),
         executionDate: new Date(),
         workflowMapping: allActionStatuses
       };
@@ -315,24 +321,13 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
         RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
       }
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-
-      return {
-        action_executed: true,
-        action_status: requestAccessAction.status,
-        action_date: requestAccessAction.executionDate
-      };
     }
     logApp.error('Request Access is missing entities or members', { action, RFIId: id });
-    return {
-      action_executed: false,
-      action_status: ActionStatus.MissingParameters,
-    };
   }
   logApp.error('RFI not found for Request Access', { RFIId: id });
-  return {
-    action_executed: false,
-    action_status: ActionStatus.NotFound,
-  };
+  const rfiApproved = await findRFIById(context, user, id);
+  logApp.info('rfiApproved:', { rfiApproved });
+  return rfiApproved;
 };
 
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -344,11 +339,11 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
   const action: RequestAccessAction = JSON.parse(actionData);
 
   if (action.entities && action.members) {
-    const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.Declined);
+    const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.DECLINED);
     const allActionStatuses = await getRFIStatusMap(context, user);
     const requestAccessAction: RequestAccessAction = {
       ...action,
-      status: ActionStatus.Declined,
+      status: ActionStatus.DECLINED.toString(),
       executionDate: new Date(),
       workflowMapping: allActionStatuses
     };
@@ -360,15 +355,10 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
       RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
     }
     await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-    return {
-      action_executed: true,
-      action_status: ActionStatus.Declined,
-      action_date: requestAccessAction.executionDate
-    };
   }
   logApp.error('Request Access is missing entities or members', { action, RFIId: id });
-  return {
-    action_executed: false,
-    action_status: ActionStatus.MissingParameters,
-  };
+
+  const rfiDeclined = await findRFIById(context, user, id);
+  logApp.info('rfiDeclined:', { rfiDeclined });
+  return rfiDeclined;
 };
