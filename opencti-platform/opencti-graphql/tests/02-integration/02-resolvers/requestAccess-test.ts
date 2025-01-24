@@ -321,16 +321,15 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
     expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('NEW');
 
-    console.log('getRfiQueryResult', getRfiQueryResult);
     expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toBeDefined();
     expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toEqual([
       {
         id: testOrgId,
-        access_right: 'admin'
+        access_right: 'edit'
       },
       {
         id: testOrgId,
-        access_right: 'edit'
+        access_right: 'admin'
       }
     ]);
 
