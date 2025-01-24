@@ -7,6 +7,7 @@ import {
 } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
 import DisseminationListCreation from '@components/settings/dissemination_lists/DisseminationListCreation';
+import DisseminationListPopover from '@components/settings/dissemination_lists/DisseminationListPopover';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,8 +17,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import DisseminationListPopover from '@components/settings/dissemination_lists/DisseminationListPopover';
-import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
+import AlertInfo from '../../../../components/AlertInfo';
 
 export const disseminationListsQuery = graphql`
     query DisseminationListsLinesPaginationQuery(
@@ -158,6 +158,9 @@ const DisseminationLists = () => {
     <div style={{ margin: 0, padding: '0 200px 0 0' }}>
       <AccessesMenu/>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination Lists'), current: true }]} />
+      <AlertInfo
+        content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -170,7 +173,6 @@ const DisseminationLists = () => {
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
-          message={t_i18n('// TODO')}
         />
       )}
       <DisseminationListCreation paginationOptions={queryPaginationOptions} />
