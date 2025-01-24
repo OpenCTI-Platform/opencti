@@ -7,6 +7,7 @@ import EntitySettingCustomOverview from '@components/settings/sub_types/entity_s
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
+import RequestAccessStatus from '@components/settings/sub_types/RequestAccessStatus';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -44,6 +45,7 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
+        ...RequestAccessStatusFragment_entitySetting
       }
       statuses {
         id
@@ -53,6 +55,7 @@ export const subTypeQuery = graphql`
           color
         }
       }
+      
     }
   }
 `;
@@ -66,6 +69,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
+  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -137,6 +141,17 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                   statuses={subType.statuses}
                   disabled={!subType.workflowEnabled}
                 />
+              </>
+            }
+
+            {isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+              && <>
+                <div style={{ marginTop: 20 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Request access workflow')}
+                  </Typography>
+                </div>
+                <RequestAccessStatus data={subType.settings}/>
               </>
             }
           </Paper>
