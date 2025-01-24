@@ -58,9 +58,9 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
   // We get all relations that were created or deleted/delete_linked in draft that target this element.
   // If there are still some, it means that we need to keep the element as an UPDATE_LINKED
   const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
-
   const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
   if (draftCreatedOrDeletedRelations.length <= 0) {
+    // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
     await elDeleteInstances(context, user, [element]);
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
@@ -74,7 +74,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     return;
   }
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
-  // We get all relations that were created in draft target this element
+  // We get all relations that were delete_linked in draft target this element
   const draftCreatedRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED);
   const draftRelationsElementsImpact = await computeDeleteElementsImpacts(draftCreatedRelations, [element.internal_id], relationsToRemoveMap);
 
