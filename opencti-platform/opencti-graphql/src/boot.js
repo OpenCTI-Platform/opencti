@@ -3,6 +3,7 @@ import platformInit, { checkFeatureFlags, checkSystemDependencies } from './init
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
+import { initLockFork } from './lock/master-lock';
 
 // region platform start and stop
 export const platformStart = async () => {
@@ -15,6 +16,13 @@ export const platformStart = async () => {
     } catch (dependencyError) {
       logApp.error('[OPENCTI] System dependencies check failed', { cause: dependencyError });
       throw dependencyError; //  Re-throw the error to exit the main try block
+    }
+    // Init the lock manager
+    try {
+      initLockFork();
+    } catch (lockManagerError) {
+      logApp.error('[OPENCTI] Lock process startup failed', { cause: lockManagerError });
+      throw lockManagerError;
     }
     // Init the cache manager
     try {

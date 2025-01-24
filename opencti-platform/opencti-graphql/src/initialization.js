@@ -8,7 +8,7 @@ import { initializeBucket, storageInit } from './database/file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
-import { lockResource, redisInit } from './database/redis';
+import { redisInit } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
@@ -21,6 +21,7 @@ import { initManagerConfigurations } from './modules/managerConfiguration/manage
 import { initializeData } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
+import { lockResources } from './lock/master-lock';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -91,7 +92,7 @@ const isCompatiblePlatform = async (context) => {
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
-    lock = await lockResource([PLATFORM_LOCK_ID]);
+    lock = await lockResources([PLATFORM_LOCK_ID]);
     const context = executionContext('platform_initialization');
     logApp.info('[INIT] Starting platform initialization');
     const alreadyExists = await isExistingPlatform(context);

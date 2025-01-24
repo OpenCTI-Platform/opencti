@@ -26,6 +26,7 @@ esbuild.build({
     ],
     entryPoints: [
         'src/back.js',
+        'src/lock/child-lock.manager.ts',
         'script/script-clean-relations.js'
     ],
     entryNames: "[name]",

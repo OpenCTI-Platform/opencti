@@ -18,7 +18,7 @@ import { elUpdateRemovedFiles } from '../../database/file-search';
 import { logApp } from '../../config/conf';
 import { extractRepresentative } from '../../database/entity-representative';
 import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
-import { lockResource } from '../../database/redis';
+import { lockResources } from '../../lock/master-lock';
 import { RULE_PREFIX } from '../../schema/general';
 import { createRuleContent } from '../../rules/rules-utils';
 import { controlUserRestrictDeleteAgainstElement } from '../../utils/access';
@@ -267,7 +267,7 @@ export const confirmDelete = async (context: AuthContext, user: AuthUser, id: st
   // lock the delete operation
   let lock;
   try {
-    lock = await lockResource([id]);
+    lock = await lockResources([id]);
     return await processDeleteOperation(context, user, id, { isRestoring: false });
   } catch (e: any) {
     if (e.name === TYPE_LOCK_ERROR) {
@@ -301,7 +301,7 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
   // lock the delete operation
   let lock;
   try {
-    lock = await lockResource([id]);
+    lock = await lockResources([id]);
 
     // restore main element
     let result: any;

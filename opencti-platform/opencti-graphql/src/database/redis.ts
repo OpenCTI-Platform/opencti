@@ -141,6 +141,14 @@ type RedisConnection = Cluster | Redis ;
 interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
+// Method reserved for lock child process
+export const initializeOnlyRedisLockClient = async () => {
+  const lock = await createRedisClient('lock', true);
+  // Disable typescript check for this specific use case.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  redisClients = { lock, base: null, pubsub: null };
+};
 export const initializeRedisClients = async () => {
   const base = await createRedisClient('base', true);
   const lock = await createRedisClient('lock', true);

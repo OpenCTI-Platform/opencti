@@ -55,6 +55,7 @@ if (ENABLED_EVENT_LOOP_MONITORING) {
     }
   }, { threshold });
 }
+
 // -- Start the platform
 // noinspection JSIgnoredPromiseFromCall
 platformStart();

@@ -1,5 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import { lockResource, redisDeleteWorks, redisGetConnectorStatus, redisGetWork } from '../database/redis';
+import { redisDeleteWorks, redisGetConnectorStatus, redisGetWork } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
@@ -111,7 +112,7 @@ const connectorHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([CONNECTOR_MANAGER_KEY], { retryCount: 0 });
+    lock = await lockResources([CONNECTOR_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('connector_manager');
     // Execute the cleaning
