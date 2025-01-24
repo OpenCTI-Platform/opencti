@@ -27,7 +27,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export interface OptionValue extends Option {
   type: string;
-  parentTypes: string[];
+  parentTypes?: string[];
   group?: string;
 }
 

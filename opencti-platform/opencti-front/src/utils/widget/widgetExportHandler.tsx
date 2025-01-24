@@ -1,7 +1,7 @@
 import fileDownload from 'js-file-download';
 import { graphql } from 'react-relay';
-import type { widgetExportHandlerQuery$data } from './__generated__/widgetExportHandlerQuery.graphql';
-import { fetchQuery } from '../../../relay/environment';
+import { fetchQuery } from '../../relay/environment';
+import { widgetExportHandlerQuery$data } from './__generated__/widgetExportHandlerQuery.graphql';
 
 interface widgetToExport {
   id: string;

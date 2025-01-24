@@ -5,6 +5,7 @@ import { testRenderHook } from '../../../tests/test-render';
 import * as env from '../../../../relay/environment';
 import useBuildAttributesOutcome from './useBuildAttributesOutcome';
 import * as filterUtils from '../../../filters/filtersUtils';
+import { SELF_ID } from '../../../filters/filtersUtils';
 
 describe('Hook: useBuildAttributesOutcome', () => {
   beforeAll(() => {
@@ -54,7 +55,7 @@ describe('Hook: useBuildAttributesOutcome', () => {
     const attributesOutcome = await buildAttributesOutcome(
       'id_XX',
       {
-        instance_id: 'SELF_ID',
+        instance_id: SELF_ID,
         columns: [
           { variableName: 'reportName', attribute: 'name', label: 'Name' },
           { variableName: 'reportLabels', attribute: 'objectLabel.value' },

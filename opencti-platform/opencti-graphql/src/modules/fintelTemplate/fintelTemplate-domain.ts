@@ -1,16 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FintelTemplateAddInput, FintelTemplateWidgetAddInput } from '../../generated/graphql';
+import type { EditInput, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, WidgetDataSelection } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import { ForbiddenAccess } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { SELF_ID } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -34,6 +35,33 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
 };
 
+// check validity of variable_name of fintel template widgets
+export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
+  const invalidVariableNames: string[] = [];
+  const regex = /^[A-Za-z0-9_-]+$/;
+  (fintelTemplateWidgets ?? [])
+    .forEach(({ variable_name, widget }) => {
+      if (!regex.test(variable_name)) {
+        invalidVariableNames.push(variable_name);
+      }
+      if (widget.type === 'attribute') {
+        widget.dataSelection.forEach((selection: WidgetDataSelection) => {
+          (selection.columns ?? [])
+            .forEach((c) => {
+              if (!c.variableName) {
+                throw FunctionalError('Attributes should all have a variable name', { variableNameOfTheWidget: variable_name });
+              } else if (!regex.test(c.variableName)) {
+                invalidVariableNames.push(c.variableName);
+              }
+            });
+        });
+      }
+    });
+  if (invalidVariableNames.length > 0) {
+    throw FunctionalError('Variable names should not contain spaces or special chars (except - and _)', { invalidVariableNames });
+  }
+};
+
 export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
@@ -41,14 +69,39 @@ export const addFintelTemplate = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
+  // check input validity
+  checkFintelTemplateWidgetsValidity(input.fintel_template_widgets ?? []);
   // add id to fintel template widgets
+  const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
+    ...templateWidget,
+    widget: { ...templateWidget.widget, id: uuidv4() },
+  }));
+  // add built-in attributes widget for self instance
+  widgetsWithIds.push({
+    variable_name: 'widgetSelfAttributes',
+    widget: {
+      id: uuidv4(),
+      type: 'attribute',
+      perspective: null,
+      dataSelection: [{
+        columns: [{
+          label: 'Representative',
+          attribute: 'representative.main',
+          variableName: 'containerRepresentative'
+        }],
+        instance_id: SELF_ID,
+      }],
+      parameters: {
+        title: 'Attributes of the instance',
+        description: 'Multi attributes widget for the instance which the template is applied to.',
+      }
+    },
+  });
+
   const finalInput: FintelTemplateAddInput = {
     ...input,
     template_content: input.template_content ?? '',
-    fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
-      ...templateWidget,
-      widget: { ...templateWidget.widget, id: uuidv4() },
-    })),
+    fintel_template_widgets: widgetsWithIds,
   };
   // create the fintel template
   const created = await createEntity(
@@ -68,15 +121,17 @@ export const fintelTemplateEditField = async (
 ) => {
   // check rights
   await canCustomizeTemplate(context);
-  // add id to fintel template widgets
+  // for add and replace operations on widgets, check fintel template widgets variables names and add widget ids
   const formattedInput = input.map((i) => {
-    // TODO implement case with object_path
-    if (i.key === 'fintel_template_widgets') {
+    if (i.operation !== 'remove'
+      && i.key === 'fintel_template_widgets'
+      && (!i.object_path || i.object_path.split('/').length <= 2)
+    ) {
       const values = i.value as FintelTemplateWidgetAddInput[];
+      checkFintelTemplateWidgetsValidity(values);
       const formattedValues = values.map((v) => ({
         ...v,
-        id: uuidv4(), // add id to fintel template widgets
-        widget: { ...v.widget, id: uuidv4() }, // widget with id
+        widget: { ...v.widget, id: v.widget.id ?? uuidv4() }, // ensure widget has an id
       }));
       return { ...i, value: formattedValues };
     }

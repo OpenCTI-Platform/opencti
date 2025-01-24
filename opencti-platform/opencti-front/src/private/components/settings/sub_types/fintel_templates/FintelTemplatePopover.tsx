@@ -14,14 +14,18 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 interface FintelTemplatePopoverProps {
   onUpdate: () => void,
+  onDeleteComplete?: () => void,
   entitySettingId: string,
   templateId: string,
+  inline?: boolean
 }
 
 const FintelTemplatePopover = ({
   onUpdate,
+  onDeleteComplete,
   entitySettingId,
   templateId,
+  inline = true,
 }: FintelTemplatePopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
@@ -68,6 +72,7 @@ const FintelTemplatePopover = ({
       variables: { id: templateId },
       onCompleted: () => {
         handleCloseDelete();
+        onDeleteComplete?.();
       },
       onError: () => {
         handleCloseDelete();
@@ -77,9 +82,20 @@ const FintelTemplatePopover = ({
 
   return (
     <>
-      <IconButton onClick={onOpenMenu} aria-haspopup="true" color="primary">
-        <MoreVert />
-      </IconButton>
+      {inline ? (
+        <IconButton onClick={onOpenMenu} aria-haspopup="true" color="primary">
+          <MoreVert fontSize="small" />
+        </IconButton>
+      ) : (
+        <Button
+          onClick={onOpenMenu}
+          aria-haspopup="true"
+          className="icon-outlined"
+          variant="outlined"
+        >
+          <MoreVert fontSize="small" />
+        </Button>
+      )}
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>

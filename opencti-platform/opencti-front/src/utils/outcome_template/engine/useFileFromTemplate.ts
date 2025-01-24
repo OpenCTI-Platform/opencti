@@ -45,13 +45,17 @@ const useFileFromTemplate = () => {
       const { widget } = templateWidget;
       // attribute widgets
       if (widget.type === 'attribute') {
-        // eslint-disable-next-line no-await-in-loop
-        const attributesOutcomes = await buildAttributesOutcome(
-          containerId,
-          widget.dataSelection[0],
-        );
-        for (const outcome of attributesOutcomes) {
-          template_content = template_content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const attributesOutcomes = await buildAttributesOutcome(
+            containerId,
+            widget.dataSelection[0],
+          );
+          for (const outcome of attributesOutcomes) {
+            template_content = template_content.replaceAll(`$${outcome.variableName}`, outcome.attributeData as string);
+          }
+        } catch (error) {
+          MESSAGING$.notifyError(`One of the attribute widgets resolution raised an error. ${error}`);
         }
       // other widgets
       } else {

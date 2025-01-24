@@ -7,7 +7,7 @@ import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {
-  const { detectDuplicate, ...htmlProps } = props;
+  const { detectDuplicate, startAdornment, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
@@ -65,6 +65,7 @@ const TextField = (props) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       InputProps={{
+        startAdornment,
         endAdornment: askAi && (
           <TextFieldAskAI
             currentValue={value}

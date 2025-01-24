@@ -9,7 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import handleWidgetExportJson from '../../widgets/widgetExportHandler';
+import handleWidgetExportJson from '../../../../utils/widget/widgetExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';

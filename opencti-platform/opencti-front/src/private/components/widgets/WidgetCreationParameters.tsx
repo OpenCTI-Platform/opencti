@@ -9,41 +9,50 @@ import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
+import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
 import { commonWidgetColumns, defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from './widgetUtils';
+import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
+import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
+import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
+import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys } from '../../../utils/filters/filtersUtils';
+import { findFiltersFromKeys, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetColumn, WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
+import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useHelper from '../../../utils/hooks/useHelper';
 
-interface WidgetCreationParametersProps {
-  dataSelection: WidgetDataSelection[],
-  setDataSelection: (d: WidgetDataSelection[] | ((prevDataSelection: WidgetDataSelection[]) => WidgetDataSelection[])) => void,
-  parameters: WidgetParameters,
-  setParameters: (p: WidgetParameters) => void,
-  type: string,
-}
-
-const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps> = ({
-  dataSelection,
-  setDataSelection,
-  parameters,
-  setParameters,
-  type,
-}) => {
+const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+
+  const {
+    config,
+    setConfigWidget,
+    context,
+    setConfigVariableName,
+    setDataSelectionWithIndex,
+    fintelWidgets,
+  } = useWidgetConfigContext();
+  const { type, dataSelection, parameters } = config.widget;
+  const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
+
+  const alreadyUsedInstances = (fintelWidgets ?? []).flatMap(({ widget }) => {
+    if (widget.type !== 'attribute') return [];
+    return widget.dataSelection[0].instance_id ?? [];
+  });
+
   const handleChangeDataValidationParameter = (
     i: number,
     key: string,
@@ -62,8 +71,28 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
+  const handleChangeDataValidationColumns = (
+    i: number,
+    value: WidgetColumn[],
+  ) => {
+    if (value === null) {
+      throw Error(t_i18n('This value cannot be null'));
+    }
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        return {
+          ...data,
+          columns: value.map((v) => ({ ...v, variableName: v.variableName ?? v.attribute })),
+        };
+      }
+      return data;
+    });
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
+  };
+
   const handleToggleDataValidationIsTo = (i: number) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
@@ -71,13 +100,27 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
       }
       return data;
     });
-    setDataSelection(newDataSelection);
+    setConfigWidget({ ...config.widget, dataSelection: newDataSelection });
   };
+
   const handleToggleParameter = (parameter: keyof WidgetParameters) => {
-    setParameters({ ...parameters, [parameter]: !parameters[parameter] });
+    setConfigWidget({
+      ...config.widget,
+      parameters: {
+        ...config.widget.parameters,
+        [parameter]: !parameters[parameter],
+      },
+    });
   };
+
   const handleChangeParameter = (parameter: string, value: string) => {
-    setParameters({ ...parameters, [parameter]: value });
+    setConfigWidget({
+      ...config.widget,
+      parameters: {
+        ...config.widget.parameters,
+        [parameter]: value,
+      },
+    });
   };
 
   const getCurrentSelectedEntityTypes = (index: number) => {
@@ -93,20 +136,46 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
   };
 
   const setColumns = (index: number, newColumns: WidgetColumn[]) => {
-    setDataSelection((prevDataSelection) => {
-      return prevDataSelection.map((selection, i) => (i === index ? { ...selection, columns: newColumns } : selection));
-    });
+    const prevSelection = dataSelection[index];
+    const newSelection = { ...prevSelection, columns: newColumns };
+    setDataSelectionWithIndex(newSelection, index);
   };
+
+  let varNameError = '';
+  if (isWidgetVarNameAlreadyUsed) {
+    varNameError = t_i18n('This name is already used for an other widget');
+  } else if (!isVariableNameValid) {
+    varNameError = t_i18n('Only letters, numbers and special chars _ and - are allowed');
+  }
 
   return (
     <div style={{ marginTop: 20 }}>
       <TextField
         label={t_i18n('Title')}
+        required={context === 'fintelTemplate'}
         fullWidth={true}
         value={parameters.title}
-        onChange={(event) => handleChangeParameter('title', event.target.value)
-        }
+        disabled={dataSelection[0]?.instance_id === SELF_ID}
+        onChange={(event) => handleChangeParameter('title', event.target.value)}
       />
+
+      {(context === 'fintelTemplate' && type !== 'attribute') && (
+        <div style={{ marginTop: 20 }}>
+          <TextField
+            label={t_i18n('Variable name')}
+            required
+            fullWidth={true}
+            value={config.fintelVariableName}
+            onChange={(event) => setConfigVariableName(event.target.value)}
+            error={isWidgetVarNameAlreadyUsed || !isVariableNameValid}
+            helperText={varNameError}
+            InputProps={{
+              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            }}
+          />
+        </div>
+      )}
+
       {getCurrentCategory(type) === 'text' && (
         <div style={{ marginTop: 20 }}>
           <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
@@ -133,6 +202,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           />
         </div>
       )}
+
       {getCurrentCategory(type) === 'timeseries' && (
         <FormControl fullWidth={true} style={{ marginTop: 20 }}>
           <InputLabel id="relative">{t_i18n('Interval')}</InputLabel>
@@ -151,12 +221,64 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
           </Select>
         </FormControl>
       )}
+
       <>
         {Array(dataSelection.length)
           .fill(0)
           .map((_, i) => {
+            const currentInstanceId = dataSelection[i].instance_id;
             return (
               <div key={i}>
+                {type === 'attribute' && (
+                  <div style={{ marginTop: 20 }}>
+                    <FormControl fullWidth={true}>
+                      {(currentInstanceId && currentInstanceId !== SELF_ID) ? (
+                        <QueryRenderer
+                          query={widgetAttributesInputInstanceQuery}
+                          variables={{ id: currentInstanceId }}
+                          render={({ props: instanceProps }: { props: WidgetAttributesInputContainerInstanceQuery$data }) => {
+                            const selectedInstance = instanceProps?.stixCoreObject;
+                            return (
+                              <EntitySelectWithTypes
+                                key="id"
+                                label={t_i18n('Instance')}
+                                value={selectedInstance ? {
+                                  value: selectedInstance.id,
+                                  label: selectedInstance.representative.main,
+                                  type: selectedInstance.entity_type,
+                                } : null}
+                                entitiesToExclude={alreadyUsedInstances}
+                                handleChange={(value) => handleChangeDataValidationParameter(
+                                  i,
+                                  'instance_id',
+                                  value.value,
+                                )}
+                              />
+                            );
+                          }}
+                        />
+                      ) : (
+                        <EntitySelectWithTypes
+                          key="id"
+                          label={t_i18n('Instance')}
+                          disabled={currentInstanceId === SELF_ID}
+                          entitiesToExclude={alreadyUsedInstances}
+                          value={currentInstanceId === SELF_ID ? {
+                            value: SELF_ID,
+                            type: 'undefined',
+                            label: SELF_ID_VALUE,
+                          } : null}
+                          handleChange={(value) => handleChangeDataValidationParameter(
+                            i,
+                            'instance_id',
+                            value.value,
+                          )}
+                        />
+                      )}
+                    </FormControl>
+                  </div>
+                )}
+
                 {(getCurrentCategory(type) === 'distribution'
                   || getCurrentCategory(type) === 'list') && (
                   <TextField
@@ -174,6 +296,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     style={{ marginTop: 20 }}
                   />
                 )}
+
                 {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
                   <div
                     style={{
@@ -228,6 +351,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
+
                 {getCurrentCategory(type) === 'list' && (
                   <div
                     style={{
@@ -257,7 +381,8 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
-                {dataSelection[i].perspective !== 'audits' && (
+
+                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute'].includes(type) && (
                   <div
                     style={{
                       display: 'flex',
@@ -314,6 +439,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                     </FormControl>
                   </div>
                 )}
+
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
                     <TextField
@@ -330,6 +456,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
+
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
                     <TextField
@@ -346,6 +473,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
+
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
                     <TextField
@@ -362,6 +490,15 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                       style={{ marginTop: 20 }}
                     />
                 )}
+
+                {type === 'attribute' && (
+                  <WidgetAttributesInputContainer
+                    value={dataSelection[i]?.columns ?? []}
+                    onChange={(value) => handleChangeDataValidationColumns(i, value)}
+                    instanceId={dataSelection[i].instance_id ?? undefined}
+                  />
+                )}
+
                 {getCurrentAvailableParameters(type).includes('attribute') && (
                   <div
                     style={{ display: 'flex', width: '100%', marginTop: 20 }}
@@ -386,42 +523,24 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           )
                           }
                         >
-                          <MenuItem key="internal_id" value="internal_id">
-                            {t_i18n('Entity')}
-                          </MenuItem>
-                          <MenuItem key="entity_type" value="entity_type">
-                            {t_i18n('Entity type')}
-                          </MenuItem>
-                          <MenuItem key="relationship_type" value="relationship_type">
-                            {t_i18n('Relationship type')}
-                          </MenuItem>
-                          <MenuItem
-                            key="created-by.internal_id"
-                            value="created-by.internal_id"
-                          >
-                            {t_i18n('Author')}
-                          </MenuItem>
-                          <MenuItem
-                            key="object-marking.internal_id"
-                            value="object-marking.internal_id"
-                          >
-                            {t_i18n('Marking definition')}
-                          </MenuItem>
-                          <MenuItem
-                            key="kill-chain-phase.internal_id"
-                            value="kill-chain-phase.internal_id"
-                          >
-                            {t_i18n('Kill chain phase')}
-                          </MenuItem>
-                          <MenuItem key="creator_id" value="creator_id">
-                            {t_i18n('Creator')}
-                          </MenuItem>
-                          <MenuItem key="x_opencti_workflow_id" value="x_opencti_workflow_id">
-                            {t_i18n('Status')}
-                          </MenuItem>
+                          {[
+                            { value: 'internal_id', label: 'Entity' },
+                            { value: 'entity_type', label: 'Entity type' },
+                            { value: 'relationship_type', label: 'Relationship type' },
+                            { value: 'created-by.internal_id', label: 'Author' },
+                            { value: 'object-marking.internal_id', label: 'Marking definition' },
+                            { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
+                            { value: 'creator_id', label: 'Creator' },
+                            { value: 'x_opencti_workflow_id', label: 'Status' },
+                          ].map((n) => (
+                            <MenuItem key={n.value} value={n.value}>
+                              {t_i18n(n.label)}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     )}
+
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length > 0
                       && (
@@ -500,6 +619,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           />
                         </FormControl>
                       )}
+
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
                         <FormControl
@@ -540,6 +660,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                           </Select>
                         </FormControl>
                     )}
+
                     {dataSelection[i].perspective === 'audits' && (
                       <FormControl
                         fullWidth={true}
@@ -582,6 +703,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         </Select>
                       </FormControl>
                     )}
+
                     {dataSelection[i].perspective === 'relationships' && (
                       <FormControlLabel
                         control={
@@ -593,6 +715,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
                         label={t_i18n('Display the source')}
                       />
                     )}
+
                     {dataSelection[i].perspective === 'relationships' && (
                       <Tooltip
                         title={t_i18n(
@@ -612,6 +735,7 @@ const WidgetCreationParameters: FunctionComponent<WidgetCreationParametersProps>
             );
           })}
       </>
+
       <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
         {getCurrentAvailableParameters(type).includes('stacked') && (
           <FormControlLabel

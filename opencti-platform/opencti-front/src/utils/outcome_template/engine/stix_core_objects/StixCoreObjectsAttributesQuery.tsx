@@ -110,6 +110,11 @@ const stixCoreObjectsAttributesQuery = graphql`
                 description
                 indicator_types
             }
+            ... on CaseIncident {
+                priority
+                severity
+                response_types
+            }
             ... on Infrastructure {
                 name
                 description
@@ -168,11 +173,6 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
-            }
-            ... on CaseIncident {
-                priority
-                severity
-                response_types
             }
             ... on CaseRfi {
                 severity

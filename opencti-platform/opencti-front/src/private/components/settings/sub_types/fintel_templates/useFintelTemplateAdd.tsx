@@ -9,11 +9,6 @@ const fintelTemplateAddMutation = graphql`
   mutation useFintelTemplateAddMutation($input: FintelTemplateAddInput!) {
     fintelTemplateAdd(input: $input) {
       id
-      name
-      description
-      instance_filters
-      settings_types
-      start_date
       entity_type
     }
   }

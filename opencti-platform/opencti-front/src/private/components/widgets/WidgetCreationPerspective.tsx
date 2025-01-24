@@ -5,25 +5,55 @@ import CardContent from '@mui/material/CardContent';
 import { DatabaseOutline, FlaskOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { LibraryBooksOutlined } from '@mui/icons-material';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes, WidgetPerspective } from './widgetUtils';
+import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { useWidgetConfigContext } from './WidgetConfigContext';
+import type { WidgetPerspective } from '../../../utils/widget/widget';
+import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 
-interface WidgetCreationPerspectiveProps {
-  handleSelectPerspective: (perspective: WidgetPerspective) => void,
-  type: string,
-}
-
-const WidgetCreationPerspective: FunctionComponent<WidgetCreationPerspectiveProps> = ({
-  handleSelectPerspective,
-  type,
-}) => {
+const WidgetCreationPerspective = () => {
   const { t_i18n } = useFormatter();
+  const { context, config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { type, dataSelection } = config.widget;
+
+  const handleSelectPerspective = (perspective: WidgetPerspective) => {
+    const fintelTemplateEntitiesInitialFilters = {
+      mode: 'and',
+      filters: [{
+        id: uuid(),
+        key: 'objects',
+        values: [SELF_ID],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const initialFilters = context === 'fintelTemplate' && perspective === 'entities'
+      ? fintelTemplateEntitiesInitialFilters
+      : emptyFilterGroup;
+    const newDataSelection = dataSelection.map((n) => ({
+      ...n,
+      perspective,
+      filters: perspective === n.perspective ? n.filters : initialFilters,
+      dynamicFrom: perspective === n.perspective ? n.dynamicFrom : emptyFilterGroup,
+      dynamicTo: perspective === n.perspective ? n.dynamicTo : emptyFilterGroup,
+    }
+    ));
+    setConfigWidget({
+      ...config.widget,
+      perspective,
+      dataSelection: newDataSelection,
+    });
+    setStep(2);
+  };
+
   const getCurrentIsEntities = () => {
     return indexedVisualizationTypes[type]?.isEntities ?? false;
   };
   const getCurrentIsAudits = () => {
-    return indexedVisualizationTypes[type]?.isAudits ?? false;
+    return (context !== 'fintelTemplate' && indexedVisualizationTypes[type]?.isAudits) ?? false;
   };
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type]?.isRelationships ?? false;

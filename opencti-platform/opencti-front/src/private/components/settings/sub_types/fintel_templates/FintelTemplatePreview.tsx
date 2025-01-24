@@ -2,25 +2,65 @@ import React, { CSSProperties, useEffect, useState } from 'react';
 import { Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
+import { graphql, useFragment } from 'react-relay';
+import { useFintelTemplateContext } from './FintelTemplateContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import FintelTemplatePreviewForm, { FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
+import { FintelTemplatePreview_template$key } from './__generated__/FintelTemplatePreview_template.graphql';
+
+const previewFragment = graphql`
+  fragment FintelTemplatePreview_template on FintelTemplate {
+    fintel_template_widgets {
+      variable_name
+      widget {
+        id
+        type
+        dataSelection {
+          instance_id
+          filters
+          dynamicFrom
+          dynamicTo
+          date_attribute
+          number
+          attribute
+          isTo
+          columns {
+            label
+            variableName
+            attribute
+            displayStyle
+          }
+        }
+      }
+    }
+  }
+`;
 
 interface FintelTemplatePreviewProps {
-  template_content: string
+  data: FintelTemplatePreview_template$key;
   isTabActive: boolean
 }
 
-const FintelTemplatePreview = ({ template_content, isTabActive }: FintelTemplatePreviewProps) => {
+const FintelTemplatePreview = ({
+  data,
+  isTabActive,
+}: FintelTemplatePreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
+  const { editorValue } = useFintelTemplateContext();
 
   const [pdf, setPdf] = useState<File>();
   const [formValues, setFormValues] = useState<FintelTemplatePreviewFormInputs>();
+
+  const { fintel_template_widgets } = useFragment<FintelTemplatePreview_template$key>(
+    previewFragment,
+    data,
+  );
 
   const paperStyle: CSSProperties = {
     padding: theme.spacing(2),
@@ -34,13 +74,14 @@ const FintelTemplatePreview = ({ template_content, isTabActive }: FintelTemplate
     maxMarkings: string[],
     fileMarkings: string[],
   ) => {
-    const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, {
-      template_content,
+    const template = {
+      template_content: editorValue ?? '',
       name: 'Preview',
       id: 'preview',
-      fintel_template_widgets: [],
+      fintel_template_widgets,
       instance_filters: null,
-    });
+    };
+    const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, template);
     const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings);
     PDF.getBlob((blob) => {
       const file = new File([blob], 'Preview.pdf', { type: blob.type });
@@ -57,7 +98,7 @@ const FintelTemplatePreview = ({ template_content, isTabActive }: FintelTemplate
       (contentMaxMarkings ?? []).map((m) => m.label),
       (fileMarkings ?? []).map((m) => m.label),
     );
-  }, [formValues, template_content, isTabActive]);
+  }, [formValues, editorValue, isTabActive]);
 
   return (
     <div style={{

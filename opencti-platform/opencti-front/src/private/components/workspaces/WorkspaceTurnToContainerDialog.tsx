@@ -182,13 +182,15 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           ]}
           handleClose={() => setContainerCreation(false)}
           creationCallback={({ name, id, entity_type }: StixContainer) => {
-            const element = {
-              label: name,
-              value: id,
-              type: entity_type,
-            };
-            containersFromElements.push(element);
-            handleChangeActionInputValues(null, [element]);
+            if (name && id && entity_type) {
+              const element = {
+                label: name,
+                value: id,
+                type: entity_type,
+              };
+              containersFromElements.push(element);
+              handleChangeActionInputValues(null, [element]);
+            }
           }}
           confidence={undefined}
           defaultCreatedBy={undefined}
@@ -220,7 +222,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           options={containersFromElements}
           onInputChange={(event, userInput) => searchContainers(event, userInput)}
           inputValue={actionsInputs?.inputValue || ''}
-          onChange={(event, value) => handleChangeActionInputValues(event, value)}
+          onChange={(event, value) => handleChangeActionInputValues(event, value as EntityValue[])}
           renderOption={(props, option) => (
             <li {...props}>
               <div className={classes.icon}>

@@ -34,6 +34,9 @@ export const emptyFilterGroup = {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+export const SELF_ID = 'SELF_ID';
+export const SELF_ID_VALUE = 'CURRENT ENTITY';
+
 export const FiltersVariant = {
   list: 'list',
   dialog: 'dialog',
@@ -302,7 +305,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
     maxContentMarkingsIds: string[],
   ) => {
     // replace SELF_ID
-    let filters = inputFilters ? JSON.parse(inputFilters.replace('SELF_ID', containerId)) : undefined;
+    let filters = inputFilters ? JSON.parse(inputFilters.replace(SELF_ID, containerId)) : undefined;
     // restrict markings
     const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
     const notAllowedMarkingIds = allowedMarkings
@@ -875,7 +878,7 @@ export const getSelectedOptions = (
   t_i18n: (s: string) => string,
 ): OptionValue[] => {
   // we try to get first the element from the search
-  // and if we did not find we tried one from filterReprensentative
+  // and if we did not find we tried one from filterRepresentative
   // Most of the time element from search should be sufficient
   const mapFilterValues: OptionValue[] = [];
   filterValues.forEach((value: string) => {
@@ -884,6 +887,14 @@ export const getSelectedOptions = (
       mapFilterValues.push({
         ...mapRepresentative,
         group: capitalizeFirstLetter(t_i18n('selected')),
+      });
+    } else if (value === SELF_ID) {
+      mapFilterValues.push({
+        value,
+        type: 'instance',
+        parentTypes: [],
+        group: capitalizeFirstLetter(t_i18n('selected')),
+        label: SELF_ID_VALUE,
       });
     } else {
       const filterRepresentative = filtersRepresentativesMap.get(value);

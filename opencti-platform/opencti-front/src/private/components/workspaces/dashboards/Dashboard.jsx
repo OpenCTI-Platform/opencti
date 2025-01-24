@@ -16,7 +16,7 @@ import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted
 import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
-import WidgetText from '../../widgets/WidgetText';
+import WidgetText from '../../../../components/dashboard/WidgetText';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
