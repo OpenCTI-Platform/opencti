@@ -42,7 +42,7 @@ const WidgetListRelationships = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (stixRelationship: any) => (
         <ItemIcon
-          type={stixRelationship.entity_type}
+          type={stixRelationship.is_inferred ? 'autofix' : stixRelationship.entity_type}
           color="primary"
         />
       ),
