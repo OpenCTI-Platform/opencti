@@ -46,7 +46,7 @@ const WidgetCreationParameters = () => {
     fintelWidgets,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
-  const { isWidgetVarNameAlreadyUsed } = useWidgetConfigValidateForm();
+  const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
 
   const alreadyUsedInstances = (fintelWidgets ?? []).flatMap(({ widget }) => {
     if (widget.type !== 'attribute') return [];
@@ -141,6 +141,13 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex(newSelection, index);
   };
 
+  let varNameError = '';
+  if (isWidgetVarNameAlreadyUsed) {
+    varNameError = t_i18n('This name is already used for an other widget');
+  } else if (!isVariableNameValid) {
+    varNameError = t_i18n('Only letters, numbers and special chars _ - are allowed');
+  }
+
   return (
     <div style={{ marginTop: 20 }}>
       <TextField
@@ -160,8 +167,8 @@ const WidgetCreationParameters = () => {
             fullWidth={true}
             value={config.fintelVariableName}
             onChange={(event) => setConfigVariableName(event.target.value)}
-            error={isWidgetVarNameAlreadyUsed}
-            helperText={isWidgetVarNameAlreadyUsed ? t_i18n('This name is already used for an other widget') : undefined}
+            error={isWidgetVarNameAlreadyUsed || !isVariableNameValid}
+            helperText={varNameError}
             InputProps={{
               startAdornment: <InputAdornment position="start">$</InputAdornment>,
             }}

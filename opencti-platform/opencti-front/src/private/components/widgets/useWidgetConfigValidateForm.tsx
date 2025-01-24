@@ -24,31 +24,52 @@ const useWidgetConfigValidateForm = () => {
       || (config.widget.dataSelection[0].columns ?? []).filter((c) => c.variableName === varName).length > 1;
   };
 
+  // ======================
+  // === List of checks ===
+  // ======================
+
   // Check we are at the last step
   const isLastStep = step === 3;
+
   // Check there is a type
-  const isTypeOk = !!type && type !== '';
-  // Check all data selections has an attribute if needed
-  const isAttributeConfOk = !getCurrentAvailableParameters(type).includes('attribute')
+  const isTypeFilled = !!type && type !== '';
+
+  // Check all data selections has an attribute filled if  widget type requires it
+  const isDataSelectionAttributesFilled = !getCurrentAvailableParameters(type).includes('attribute')
     || (getCurrentAvailableParameters(type).includes('attribute') && isDataSelectionAttributesValid());
+
   // Check variable name is filled in case of fintel
-  const isVariableNameOk = (
-    (context !== 'fintelTemplate')
-    || (context === 'fintelTemplate' && type === 'attribute')
-    || (context === 'fintelTemplate' && !!config.fintelVariableName)
+  const needVariableName = context === 'fintelTemplate' && type !== 'attribute';
+  const isVariableNameFilled = !needVariableName || !!config.fintelVariableName;
+
+  // Check variable name is valid in case of fintel
+  const isVariableNameValid = (
+    !config.fintelVariableName
+    || /^[A-Za-z0-9]+$/.test(config.fintelVariableName)
   );
+
   // Check title is filled in case of fintel
-  const isTitleOk = (
+  const isTitleFilled = (
     (context !== 'fintelTemplate')
     || (context === 'fintelTemplate' && !!parameters?.title)
   );
+
   // Check if the variable name is already used in an other widget
   const isWidgetVarNameAlreadyUsed = !!config.fintelVariableName && isVarNameAlreadyUsed(config.fintelVariableName);
 
   return {
-    isFormValid: isLastStep && isAttributeConfOk && isVariableNameOk && isTitleOk && isTypeOk && !isWidgetVarNameAlreadyUsed,
+    isFormValid: (
+      isLastStep
+      && isDataSelectionAttributesFilled
+      && isVariableNameFilled
+      && isVariableNameValid
+      && isTitleFilled
+      && isTypeFilled
+      && !isWidgetVarNameAlreadyUsed
+    ),
     isWidgetVarNameAlreadyUsed,
     isVarNameAlreadyUsed,
+    isVariableNameValid,
   };
 };
 
