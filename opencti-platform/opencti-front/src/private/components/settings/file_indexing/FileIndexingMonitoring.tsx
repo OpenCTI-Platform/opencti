@@ -165,6 +165,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   return (
     <Grid container={true} spacing={3}>
       <Grid item xs={6}>
+        <Typography variant={'h4'}>{t_i18n('Status')}</Typography>
         <Paper
           variant="outlined"
           style={{
@@ -176,13 +177,10 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           }}
           className={'paper-for-grid'}
         >
-          <div>
-            <Typography variant={'h4'}>{t_i18n('Status')}</Typography>
-            <ItemBoolean
-              label={isStarted ? t_i18n('Running') : t_i18n('Stopped')}
-              status={isStarted}
-            />
-          </div>
+          <ItemBoolean
+            label={isStarted ? t_i18n('Running') : t_i18n('Stopped')}
+            status={isStarted}
+          />
           <BorderLinearProgress
             value={
               indexedFiles > 0
@@ -199,6 +197,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
         </Paper>
       </Grid>
       <Grid item xs={3}>
+        <Typography variant={'h4'}>{t_i18n('Indexed files')}</Typography>
         <Paper
           variant="outlined"
           style={{
@@ -206,20 +205,17 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: theme.spacing(2),
-            minHeight: '-webkit-fill-available',
           }}
           className={'paper-for-grid'}
         >
-          <div>
-            <Typography variant={'h4'}>{t_i18n('Indexed files')}</Typography>
-            <Typography variant={'h2'} style={{ margin: 0 }}>
-              {indexedFiles} / {totalFiles}
-            </Typography>
-          </div>
+          <Typography variant={'h2'} style={{ margin: 0 }}>
+            {indexedFiles} / {totalFiles}
+          </Typography>
           <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
         </Paper>
       </Grid>
       <Grid item xs={3}>
+        <Typography variant={'h4'}>{t_i18n('Volume indexed')}</Typography>
         <Paper
           variant="outlined"
           style={{
@@ -227,16 +223,12 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: theme.spacing(2),
-            minHeight: '-webkit-fill-available',
           }}
           className={'paper-for-grid'}
         >
-          <div>
-            <Typography variant={'h4'}>{t_i18n('Volume indexed')}</Typography>
-            <Typography variant={'h2'} style={{ margin: 0 }}>
-              {indexedFiles ? n(volumeIndexed) : 0}
-            </Typography>
-          </div>
+          <Typography variant={'h2'} style={{ margin: 0 }}>
+            {indexedFiles ? n(volumeIndexed) : 0}
+          </Typography>
           <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
         </Paper>
       </Grid>

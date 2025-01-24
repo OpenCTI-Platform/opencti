@@ -59,21 +59,24 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
   return (
     <Grid container spacing={2}>
       <Grid item xs={4}>
+        <Typography variant={'h4'}>
+          {t_i18n('Status')}
+        </Typography>
         <Paper
           variant="outlined"
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: theme.spacing(2), height: 'fit-content' }}
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
           className={'paper-for-grid'}
         >
-          <div style={{ height: 'fit-content' }}>
-            <Typography variant={'h4'}>
-              {t_i18n('Status')}
-            </Typography>
-            <ItemBoolean
-              neutralLabel={'In progress'}
-              label={'Synchronized'}
-              status={(isInProgress === false) || null}
-            />
-          </div>
+          <ItemBoolean
+            neutralLabel={'In progress'}
+            label={'Synchronized'}
+            status={(isInProgress === false) || null}
+          />
           {isInProgress && (
             <CircularProgress
               size={40}
@@ -84,32 +87,38 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
         </Paper>
       </Grid>
       <Grid item xs={4}>
+        <Typography variant={'h4'}>
+          {t_i18n('Last modification date')}
+        </Typography>
         <Paper
           variant="outlined"
-          style={{ display: 'flex', padding: theme.spacing(2), justifyContent: 'space-between', alignItems: 'center', minHeight: '-webkit-fill-available' }}
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
           className={'paper-for-grid'}
         >
-          <div>
-            <Typography variant={'h4'}>
-              {t_i18n('Last modification date')}
-            </Typography>
-            <div>{fldt(refreshDate)}</div>
-          </div>
+          <div>{fldt(refreshDate)}</div>
           <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
         </Paper>
       </Grid>
       <Grid item xs={4}>
+        <Typography variant={'h4'}>
+          {t_i18n('Current cache version date')}
+        </Typography>
         <Paper
           variant="outlined"
-          style={{ display: 'flex', padding: theme.spacing(2), justifyContent: 'space-between', alignItems: 'center', minHeight: '-webkit-fill-available', position: 'relative' }}
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
           className={'paper-for-grid'}
         >
-          <div>
-            <Typography variant={'h4'}>
-              {t_i18n('Current cache version date')}
-            </Typography>
-            <div>{fldt(cacheDate)}</div>
-          </div>
+          <div>{fldt(cacheDate)}</div>
           <EventRepeatOutlined color="primary" style={{ fontSize: 40 }} />
         </Paper>
       </Grid>
