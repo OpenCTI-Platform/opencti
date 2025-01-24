@@ -131,11 +131,11 @@ export const applyMigration = (context) => {
         logApp.info('[MIGRATION] Migration process completed');
         resolve(state);
       });
-    });
+    }).catch((reason) => logApp.error('[MIGRATION] error', { cause: reason }));
   }).then(async (state) => {
     // After migration, path the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
     await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
-  });
+  }).catch((reason) => logApp.error('[MIGRATION] error', { cause: reason }));
 };
