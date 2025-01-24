@@ -25,7 +25,7 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
 };
 
-const commonWidgetColumns: Record<string, WidgetColumn[]> = {
+const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
     ...defaultWidgetColumns.relationships,
     { attribute: 'start_time' },
@@ -140,13 +140,13 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType): WidgetColumn[] 
 
 export const getWidgetColumns = (type: WidgetEntityType, entityType?: string): WidgetColumn[] => {
   if (type === 'relationships') {
-    return commonWidgetColumns.relationships;
+    return availableWidgetColumns.relationships;
   }
   if (type === 'entities') {
-    if (entityType && commonWidgetColumns[entityType]) {
-      return [...commonWidgetColumns.common, ...commonWidgetColumns[entityType]];
+    if (entityType && availableWidgetColumns[entityType]) {
+      return [...availableWidgetColumns.common, ...availableWidgetColumns[entityType]];
     }
-    return commonWidgetColumns.common;
+    return availableWidgetColumns.common;
   }
   return [];
 };
