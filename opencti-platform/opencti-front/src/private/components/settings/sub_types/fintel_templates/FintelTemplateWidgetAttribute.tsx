@@ -29,7 +29,6 @@ const FintelTemplateWidgetAttribute = ({
   const { editorValue } = useFintelTemplateContext();
 
   const columns = widget.dataSelection[0].columns ?? [];
-  const noAttributeUsed = columns.every((c) => !editorValue?.includes(`$${c.variableName}`));
 
   const copyAttributeToClipboard = async (varName: string) => {
     await navigator.clipboard.writeText(`$${varName}`);
@@ -70,7 +69,7 @@ const FintelTemplateWidgetAttribute = ({
             </Tooltip>
           )}
 
-          {onDelete && noAttributeUsed && (
+          {onDelete && (
             <Tooltip title={t_i18n('Delete widget')}>
               <IconButton
                 aria-haspopup="true"
