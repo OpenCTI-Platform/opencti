@@ -147,7 +147,7 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input?.map((i) => i.key).join(', ')}\` for dissemination list \`${element.name}\``,
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for dissemination list \`${element.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_DISSEMINATION_LIST, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_DISSEMINATION_LIST].EDIT_TOPIC, element, user);
