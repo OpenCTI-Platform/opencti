@@ -5,11 +5,12 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
 import disseminationListValidator from '@components/settings/dissemination_lists/DisseminationListUtils';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import { parseEmailList } from '../../../../utils/email';
 
 export const disseminationListMutationFieldPatch = graphql`
     mutation DisseminationListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -124,7 +125,15 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
               rows={20}
               style={{ marginTop: 20 }}
               required
-            />
+              onBeforePaste={(pastedText: string) => {
+                // on pasting data, we try to extract emails
+                const extractedEmails = parseEmailList(pastedText);
+                if (extractedEmails.length > 0) {
+                  MESSAGING$.notifySuccess(t_i18n('', { id: '{count} email address(es) extracted from pasted text', values: { count: extractedEmails.length } }));
+                  return extractedEmails.join('\n'); // alter the pasted content
+                }
+                return pastedText; // do not alter pasted content; it's probably invalid anyway
+              }}/>
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="contained"

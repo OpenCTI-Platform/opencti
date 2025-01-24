@@ -9,9 +9,10 @@ import { DisseminationListsLinesPaginationQuery$variables } from '@components/se
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import { parseEmailList } from '../../../../utils/email';
 
 const disseminationListCreationMutation = graphql`
     mutation DisseminationListCreationAddMutation($input: DisseminationListAddInput!) {
@@ -117,6 +118,15 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
             rows={20}
             style={{ marginTop: 20 }}
             required
+            onBeforePaste={(pastedText: string) => {
+              // on pasting data, we try to extract emails
+              const extractedEmails = parseEmailList(pastedText);
+              if (extractedEmails.length > 0) {
+                MESSAGING$.notifySuccess(t_i18n('', { id: '{count} email address(es) extracted from pasted text', values: { count: extractedEmails.length } }));
+                return extractedEmails.join('\n'); // alter the pasted content
+              }
+              return pastedText; // do not alter pasted content; it's probably invalid anyway
+            }}
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
