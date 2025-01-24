@@ -8197,6 +8197,7 @@ type Query {
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: String!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
+  disseminationListsNames(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListNamesConnection
 }
 
 type Subscription {
@@ -12601,6 +12602,16 @@ type DisseminationList implements InternalObject & BasicObject {
   dissemination_list_values_count: Int!
 }
 
+type DisseminationListName implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+}
+
 enum DisseminationListOrdering {
   name
   _score
@@ -12614,6 +12625,16 @@ type DisseminationListConnection {
 type DisseminationListEdge {
   cursor: String!
   node: DisseminationList!
+}
+
+type DisseminationListNamesConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListNamesEdge!]!
+}
+
+type DisseminationListNamesEdge {
+  cursor: String!
+  node: DisseminationListName!
 }
 
 input DisseminationListAddInput {

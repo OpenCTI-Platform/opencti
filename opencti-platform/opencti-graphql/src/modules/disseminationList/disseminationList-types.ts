@@ -26,6 +26,12 @@ export interface BasicStoreEntityDisseminationList extends BasicStoreEntity {
   dissemination_list_values_count: number;
 }
 
+export interface BasicStoreEntityDisseminationListName extends BasicStoreEntity {
+  name: string;
+  description: string;
+  dissemination_list_values_count: number;
+}
+
 export interface StoreEntityDisseminationList extends StoreEntity {
   name: string;
   emails: string;
