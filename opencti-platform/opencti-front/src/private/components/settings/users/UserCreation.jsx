@@ -2,11 +2,13 @@ import React from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { makeStyles } from '@mui/styles';
-import { graphql } from 'react-relay';
+import { useTheme } from '@mui/styles';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import GroupField from '../../common/form/GroupField';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
+import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -21,18 +23,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -63,13 +54,16 @@ const userValidation = (t) => Yup.object().shape({
       then: (schema) => schema.required(t('This field is required')).nullable(),
       otherwise: (schema) => schema.nullable(),
     }),
+  prevent_default_groups: Yup.boolean(),
 });
 
-const UserCreation = ({ paginationOptions }) => {
+const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { settings } = useAuth();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+
+  const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -110,7 +104,7 @@ const UserCreation = ({ paginationOptions }) => {
       {({ onClose }) => (
         <>
           <Alert severity="info">
-            {t_i18n('Unless specific groups are selected, user will be created with default groups only.')}
+            {t_i18n('Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.')}
           </Alert>
           <br />
           <Formik
@@ -127,6 +121,7 @@ const UserCreation = ({ paginationOptions }) => {
               account_status: 'Active',
               account_lock_after_date: null,
               user_confidence_level: null,
+              prevent_default_groups: false,
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
@@ -205,6 +200,20 @@ const UserCreation = ({ paginationOptions }) => {
                   showConfidence={true}
                 />
                 <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="prevent_default_groups"
+                  label={<div style={{ display: 'flex' }}>
+                    <>{t_i18n('Don\'t add the user to the default groups')}</>
+                    <Tooltip
+                      title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
+                    >
+                      <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                    </Tooltip>
+                  </div>}
+                  containerstyle={{ marginTop: 20 }}
+                />
+                <Field
                   component={SelectField}
                   variant="standard"
                   name="account_status"
@@ -236,12 +245,16 @@ const UserCreation = ({ paginationOptions }) => {
                     label={t_i18n('Max Confidence Level')}
                   />
                 )}
-                <div className={classes.buttons}>
+                <div style={{
+                  marginTop: 20,
+                  textAlign: 'right',
+                }}
+                >
                   <Button
                     variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
@@ -250,7 +263,7 @@ const UserCreation = ({ paginationOptions }) => {
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Create')}
                   </Button>
