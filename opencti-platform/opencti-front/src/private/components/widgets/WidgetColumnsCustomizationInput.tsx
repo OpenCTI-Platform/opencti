@@ -1,48 +1,56 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@mui/material/Button';
-import type { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import type { WidgetColumn } from '../../../../utils/widget/widget';
-import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import type { WidgetColumn } from '../../../utils/widget/widget';
+import { Accordion, AccordionSummary } from '../../../components/Accordion';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
   defaultColumns: WidgetColumn[];
-  columns?: WidgetColumn[];
-  setColumns: (columns: WidgetColumn[]) => void;
+  value?: WidgetColumn[];
+  onChange: (columns: WidgetColumn[]) => void;
 };
 
-const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
+const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
   availableColumns,
   defaultColumns,
-  columns = [],
-  setColumns,
+  value = [],
+  onChange,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  // Ensure columns only include available columns
+  useEffect(() => {
+    const filteredColumns = value.filter((col) => availableColumns.some((availableCol) => availableCol.attribute === col.attribute));
+    if (filteredColumns.length !== value.length) {
+      onChange(filteredColumns);
+    }
+  }, [availableColumns, value]);
+
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
-    const reorderedColumns = Array.from(columns);
+    const reorderedColumns = Array.from(value);
     const [movedColumn] = reorderedColumns.splice(result.source.index, 1);
     reorderedColumns.splice(result.destination.index, 0, movedColumn);
 
-    setColumns(reorderedColumns);
+    onChange(reorderedColumns);
   };
 
   const handleToggleColumn = (attribute?: string | null) => {
-    const columnExists = columns.some((col) => col.attribute === attribute);
+    const columnExists = value.some((col) => col.attribute === attribute);
     if (columnExists) {
-      setColumns(columns.filter((col) => col.attribute !== attribute));
+      onChange(value.filter((col) => col.attribute !== attribute));
     } else {
       const columnToAdd = availableColumns.find((col) => col.attribute === attribute);
       if (columnToAdd) {
-        setColumns([...columns, columnToAdd]);
+        onChange([...value, columnToAdd]);
       }
     }
   };
@@ -55,7 +63,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
         <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
 
-      <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }} >
+      <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
@@ -68,7 +76,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
                   sx={{ height: 42 }}
                 >
                   <Checkbox
-                    checked={columns.some((col) => col.attribute === column.attribute)}
+                    checked={value.some((col) => col.attribute === column.attribute)}
                     onChange={() => handleToggleColumn(column.attribute)}
                   />
                   <ListItemText primary={formatColumnName(column)} />
@@ -79,7 +87,7 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
 
           {/* Selected Columns */}
           <Box sx={{ flex: 1, height: '100%' }}>
-            <Typography variant="h4">{`${t_i18n('Selected columns')} (${columns.length})`}</Typography>
+            <Typography variant="h4">{`${t_i18n('Selected columns')} (${value.length})`}</Typography>
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="selected_columns">
                 {(providedDrop) => (
@@ -92,13 +100,13 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
                       paddingBlock: theme.spacing(1),
                     }}
                   >
-                    {columns.map((column, index) => (
+                    {value.map((column, index) => (
                       <Draggable key={column.attribute} draggableId={column.attribute ?? ''} index={index}>
                         {(providedDrag, snapshotDrag) => (
                           <ListItem
                             ref={providedDrag.innerRef}
                             {...providedDrag.draggableProps}
-                            divider={index < columns.length - 1}
+                            divider={index < value.length - 1}
                             sx={{
                               ...providedDrag.draggableProps.style,
                               background: snapshotDrag.isDragging ? 'rgba(0, 0, 0, 0.05)' : 'inherit',
@@ -128,8 +136,8 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }} >
-          <Button variant='outlined' onClick={() => setColumns(defaultColumns)} >
+        <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }}>
+          <Button variant="outlined" onClick={() => onChange(defaultColumns)}>
             {t_i18n('Reset')}
           </Button>
         </Box>
@@ -138,4 +146,4 @@ const WidgetConfigColumnsCustomization: FunctionComponent<WidgetConfigColumnsCus
   );
 };
 
-export default WidgetConfigColumnsCustomization;
+export default WidgetColumnsCustomizationInput;

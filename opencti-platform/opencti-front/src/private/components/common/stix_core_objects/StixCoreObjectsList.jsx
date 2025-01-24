@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
+import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -46,10 +47,15 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             x_mitre_id
+            aliases
+          }
+          ... on Note {
+            note_types
           }
           ... on Campaign {
             name
             description
+            aliases
           }
           ... on Note {
             attribute_abstract
@@ -66,14 +72,29 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             published
+            report_types
+            objectAssignee {
+              entity_type
+              id
+              name
+            }
+            objectParticipant {
+              entity_type
+              id
+              name
+            }
           }
           ... on Grouping {
             name
             description
+            x_opencti_aliases
+            context
           }
           ... on CourseOfAction {
             name
             description
+            x_opencti_aliases
+            x_mitre_id
           }
           ... on Individual {
             name
@@ -84,10 +105,12 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             x_opencti_aliases
+            x_opencti_organization_type
           }
           ... on Sector {
             name
             description
+            x_opencti_aliases
           }
           ... on System {
             name
@@ -102,83 +125,197 @@ export const stixCoreObjectsListQuery = graphql`
             pattern_type
             valid_from
             valid_until
+            x_opencti_score
           }
           ... on Infrastructure {
             name
             description
+            aliases
           }
           ... on IntrusionSet {
             name
             description
             aliases
+            resource_level
           }
           ... on Position {
             name
             description
+            x_opencti_aliases
           }
           ... on City {
             name
             description
+            x_opencti_aliases
           }
           ... on AdministrativeArea {
             name
             description
+            x_opencti_aliases
           }
           ... on Country {
             name
             description
+            x_opencti_aliases
           }
           ... on Region {
             name
             description
+            x_opencti_aliases
           }
           ... on Malware {
             name
             description
+            malware_types
+            aliases
           }
           ... on MalwareAnalysis {
             result_name
+            product
+            objectAssignee {
+              entity_type
+              id
+              name
+            }
           }
           ... on ThreatActor {
             name
             description
             aliases
+            threat_actor_types
+          }
+          ... on ThreatActorGroup {
+            threat_actor_types
+            aliases
+          }
+          ... on ThreatActorIndividual {
+            threat_actor_types
+            aliases
           }
           ... on Tool {
             name
             description
+            tool_types
+            aliases
           }
           ... on Vulnerability {
             name
             description
+            x_opencti_aliases
+            x_opencti_cvss_base_score
+            x_opencti_cvss_base_severity
+            x_opencti_cisa_kev
+            x_opencti_epss_score
+            x_opencti_epss_percentile
           }
           ... on Incident {
             name
             description
+            incident_type
+            severity
+            aliases
           }
           ... on Event {
             name
             description
+            event_types
+            aliases
           }
           ... on Channel {
             name
             description
+            channel_types
+            aliases
           }
           ... on Narrative {
             name
             description
+            aliases
           }
           ... on Language {
             name
+            aliases
           }
           ... on DataComponent {
             name
+            aliases
           }
           ... on DataSource {
             name
+            aliases
+          }
+          ... on Task {
+            name
+            description
+            due_date
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
           }
           ... on Case {
             name
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
+          ... on CaseIncident {
+            priority
+            severity
+            response_types
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
+          ... on CaseRfi {
+            priority
+            severity
+            information_types
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
+          }
+          ... on CaseRft {
+            priority
+            severity
+            takedown_types
+            objectAssignee {
+              id
+              name
+              entity_type
+            }
+            objectParticipant {
+              id
+              name
+              entity_type
+            }
           }
           ... on Task {
             name
@@ -237,7 +374,9 @@ const StixCoreObjectsList = ({
 }) => {
   const { t_i18n } = useFormatter();
   const selection = dataSelection[0];
+  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
   const dataSelectionTypes = ['Stix-Core-Object'];
+
   const sortBy = selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at';
@@ -274,11 +413,10 @@ const StixCoreObjectsList = ({
               return (
                 <WidgetListCoreObjects
                   data={data}
-                  dateAttribute={dateAttribute}
                   rootRef={rootRef.current ?? undefined}
                   widgetId={widgetId}
                   pageSize={selection.number ?? 10}
-                  sortBy={sortBy}
+                  columns={columns}
                 />
               );
             }
