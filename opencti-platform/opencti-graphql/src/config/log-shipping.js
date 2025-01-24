@@ -1,5 +1,5 @@
 import { format } from 'winston';
-import GelfTransport from 'winston-gelf';
+import GelfTransport from './gelf-transport';
 
 /**
  * Create a new log shipping transport.
