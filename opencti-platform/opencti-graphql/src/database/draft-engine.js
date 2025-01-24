@@ -122,6 +122,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
 
   if (draftDeletedLinkedRelationsToDelete.length > 0) {
     // TODO: reapply denorm ref to all deps of relations
+    // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
     await elDeleteInstances(context, user, draftDeletedLinkedRelationsToDelete);
     const instancesToDeleteIds = draftDeletedLinkedRelationsToDelete.map((i) => i.internal_id);
     await elRemoveDraftIdFromElements(context, user, draftContext, instancesToDeleteIds);
@@ -129,6 +130,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
 
   if (draftDeletedLinkedRelationsToKeep.length === 0) {
     // TODO: reapply denorm ref if element is a rel
+    // TODO: clean up UPDATE_LINKED impacted element that no longer need to be in draft => how to know that an update_linked element can be safely removed?
     await elDeleteInstances(context, user, [element]);
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
