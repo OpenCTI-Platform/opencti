@@ -12614,6 +12614,7 @@ type DisseminationListName implements InternalObject & BasicObject {
 
 enum DisseminationListOrdering {
   name
+  dissemination_list_values_count
   _score
 }
 

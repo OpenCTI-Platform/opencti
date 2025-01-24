@@ -6350,6 +6350,7 @@ export type DisseminationListNamesEdge = {
 
 export enum DisseminationListOrdering {
   Score = '_score',
+  DisseminationListValuesCount = 'dissemination_list_values_count',
   Name = 'name'
 }
 
@@ -20378,6 +20379,31 @@ export type QueryDeleteOperationsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<DeleteOperationOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDisseminationListArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryDisseminationListsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DisseminationListOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDisseminationListsNamesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DisseminationListOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };

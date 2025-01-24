@@ -133,7 +133,8 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                   return extractedEmails.join('\n'); // alter the pasted content
                 }
                 return pastedText; // do not alter pasted content; it's probably invalid anyway
-              }}/>
+              }}
+            />
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="contained"
