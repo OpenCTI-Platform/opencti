@@ -84,11 +84,10 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
         },
         onCompleted: (response) => {
           if (inputFileRef.current) inputFileRef.current.value = '';
-          console.log(response);
           if (response.fintelTemplateImport) {
-            // const { id, entity_type } = response.fintelTemplateImport;
-            // MESSAGING$.notifySuccess(t_i18n('FINTEL template created'));
-            // navigate(`${resolveLink(entity_type)}/${entityType}/templates/${id}`);
+            const { id, entity_type } = response.fintelTemplateImport;
+            MESSAGING$.notifySuccess(t_i18n('FINTEL template created'));
+            navigate(`${resolveLink(entity_type)}/${entityType}/templates/${id}`);
           }
         },
       });

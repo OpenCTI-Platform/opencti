@@ -3,7 +3,7 @@ import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
 import { createEntity, deleteElementById, listThings, paginateAllThings, updateAttribute } from '../../database/middleware';
-import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
@@ -12,8 +12,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
-  Filter,
-  FilterGroup,
   ImportWidgetInput,
   InputMaybe,
   MemberAccessInput,
@@ -26,12 +24,10 @@ import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../.
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
-import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { isInternalId, isStixId } from '../../schema/schemaUtils';
-import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
