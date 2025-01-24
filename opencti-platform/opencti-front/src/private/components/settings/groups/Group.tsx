@@ -32,6 +32,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -125,6 +126,8 @@ const groupFragment = graphql`
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
   const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
@@ -159,9 +162,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       >
         {group.name}
       </Typography>
-      <div className={classes.popover}>
+      {!isFABReplaced && <div className={classes.popover}>
         <GroupPopover groupId={group.id} disabled={!isAllowed && isSensitive} />
-      </div>
+      </div>}
+      <GroupEdition
+        groupId={group.id}
+        disabled={!isAllowed && isSensitive}
+      />
       <div className="clearfix" />
       <Grid
         container={true}
@@ -465,10 +472,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <Triggers recipientId={group.id} filterKey="authorized_members.id" />
         <GroupUsers groupId={group.id} />
       </Grid>
-      <GroupEdition
-        groupId={group.id}
-        disabled={!isAllowed && isSensitive}
-      />
     </div>
   );
 };

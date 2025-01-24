@@ -42,6 +42,19 @@ const Users = () => {
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  let userCreateButton;
+  if (isSetAccess) {
+    userCreateButton = (
+      <UserCreation paginationOptions={paginationOptions} />
+    );
+  } else if (!isSetAccess && isAdminOrganization && isEnterpriseEdition) {
+    userCreateButton = (
+      <SettingsOrganizationUserCreation
+        paginationOptions={paginationOptions}
+        variant="fab"
+      />
+    );
+  }
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -90,6 +103,7 @@ const Users = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={viewStorage.searchTerm}
+        createButton={userCreateButton}
       >
         <QueryRenderer
           query={usersLinesQuery}
@@ -119,13 +133,6 @@ const Users = () => {
             feature="Organization sharing"
           />
         </Grid>
-      )}
-      {isSetAccess && <UserCreation paginationOptions={paginationOptions} />}
-      {!isSetAccess && isAdminOrganization && isEnterpriseEdition && (
-        <SettingsOrganizationUserCreation
-          paginationOptions={paginationOptions}
-          variant="fab"
-        />
       )}
     </div>
   );

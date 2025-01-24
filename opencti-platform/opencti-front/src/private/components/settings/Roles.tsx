@@ -96,6 +96,7 @@ const Role = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={rolesState.searchTerm}
+        createButton={<RoleCreation paginationOptions={paginationOptions} />}
       >
         <QueryRenderer
           query={rolesLinesQuery}
@@ -123,7 +124,6 @@ const Role = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Roles'), current: true }]} />
       <AccessesMenu />
       {rolesState.view === 'lines' ? renderLines(paginationOptions) : ''}
-      <RoleCreation paginationOptions={paginationOptions} />
     </div>
   );
 };

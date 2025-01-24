@@ -143,6 +143,9 @@ const SettingsOrganization = ({
   return (
     <div className={classes.container}>
       <AccessesMenu />
+      <Typography variant="h1" gutterBottom={true} className={classes.title}>
+        {organization.name}
+      </Typography>
       <Security needs={[SETTINGS_SETACCESSES]}>
         <SettingsOrganizationEdition
           organization={organization}
@@ -150,12 +153,7 @@ const SettingsOrganization = ({
           context={organization.editContext}
         />
       </Security>
-      <>
-        <Typography variant="h1" gutterBottom={true} className={classes.title}>
-          {organization.name}
-        </Typography>
-        <div className="clearfix" />
-      </>
+      <div className="clearfix" />
       <Grid
         container={true}
         spacing={3}
