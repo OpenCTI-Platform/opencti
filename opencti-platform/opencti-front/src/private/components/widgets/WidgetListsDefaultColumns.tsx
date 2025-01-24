@@ -1,4 +1,5 @@
 import type { WidgetColumn } from '../../../utils/widget/widget';
+import useAttributes from '../../../utils/hooks/useAttributes';
 
 const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
@@ -20,7 +21,6 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'creator', label: 'Creators' },
     { attribute: 'x_opencti_workflow_id' },
     { attribute: 'objectLabel' },
-    { attribute: 'x_opencti_aliases', label: 'Aliases' },
     { attribute: 'objectMarking' },
   ],
 };
@@ -126,6 +126,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_organization_type', label: 'Organization type' },
   ],
 };
+
 type WidgetEntityType = 'relationships' | 'entities';
 
 export const getDefaultWidgetColumns = (type: WidgetEntityType): WidgetColumn[] => {
@@ -139,14 +140,32 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType): WidgetColumn[] 
 };
 
 export const getWidgetColumns = (type: WidgetEntityType, entityType?: string): WidgetColumn[] => {
+  const { containerTypes, aliasedTypes } = useAttributes();
+
   if (type === 'relationships') {
     return availableWidgetColumns.relationships;
   }
+
   if (type === 'entities') {
-    if (entityType && availableWidgetColumns[entityType]) {
-      return [...availableWidgetColumns.common, ...availableWidgetColumns[entityType]];
+    if (entityType) {
+      const baseColumns = [...availableWidgetColumns.common];
+
+      // Determine the correct aliases column to add based on the entityType
+      if (!containerTypes.includes(entityType)) {
+        const aliasesColumn = aliasedTypes.includes(entityType)
+          ? { attribute: 'aliases', label: 'Aliases' }
+          : { attribute: 'x_opencti_aliases', label: 'Aliases' };
+        baseColumns.push(aliasesColumn);
+      }
+
+      if (availableWidgetColumns[entityType]) {
+        return [...baseColumns, ...availableWidgetColumns[entityType]];
+      }
+      return baseColumns;
     }
+
     return availableWidgetColumns.common;
   }
+
   return [];
 };

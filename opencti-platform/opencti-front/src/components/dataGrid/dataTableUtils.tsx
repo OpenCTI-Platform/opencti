@@ -1218,11 +1218,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'x_opencti_aliases',
     label: 'Aliases',
     percentWidth: 10,
-    render: ({ x_opencti_aliases, entity_type }, { t_i18n }) => {
+    render: ({ x_opencti_aliases, entity_type }) => {
       const theme = useTheme<Theme>();
 
       if (!x_opencti_aliases) {
-        return defaultRender(t_i18n('Restricted'));
+        return defaultRender('-');
       }
       if (entity_type === 'Country') {
         const flag = x_opencti_aliases.filter((n: string) => n.length === 2)[0];
@@ -1248,10 +1248,25 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         <Tooltip title={x_opencti_aliases.join(', ')}>
           <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
             {x_opencti_aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
-
           </div>
         </Tooltip>
       );
+    },
+  },
+  aliases: {
+    id: 'aliases',
+    label: 'Aliases',
+    percentWidth: 10,
+    render: ({ aliases }) => {
+      const theme = useTheme<Theme>();
+
+      return aliases ? (
+        <Tooltip title={aliases.join(', ')}>
+          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
+            {aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
+          </div>
+        </Tooltip>
+      ) : defaultRender('-');
     },
   },
   objectParticipant: {

@@ -47,6 +47,7 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             x_mitre_id
+            aliases
           }
           ... on Note {
             note_types
@@ -54,6 +55,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on Campaign {
             name
             description
+            aliases
           }
           ... on Note {
             attribute_abstract
@@ -128,6 +130,7 @@ export const stixCoreObjectsListQuery = graphql`
           ... on Infrastructure {
             name
             description
+            aliases
           }
           ... on IntrusionSet {
             name
@@ -164,6 +167,7 @@ export const stixCoreObjectsListQuery = graphql`
             name
             description
             malware_types
+            aliases
           }
           ... on MalwareAnalysis {
             result_name
@@ -182,11 +186,17 @@ export const stixCoreObjectsListQuery = graphql`
           }
           ... on ThreatActorGroup {
             threat_actor_types
+            aliases
+          }
+          ... on ThreatActorIndividual {
+            threat_actor_types
+            aliases
           }
           ... on Tool {
             name
             description
             tool_types
+            aliases
           }
           ... on Vulnerability {
             name
@@ -203,29 +213,36 @@ export const stixCoreObjectsListQuery = graphql`
             description
             incident_type
             severity
+            aliases
           }
           ... on Event {
             name
             description
             event_types
+            aliases
           }
           ... on Channel {
             name
             description
             channel_types
+            aliases
           }
           ... on Narrative {
             name
             description
+            aliases
           }
           ... on Language {
             name
+            aliases
           }
           ... on DataComponent {
             name
+            aliases
           }
           ... on DataSource {
             name
+            aliases
           }
           ... on Task {
             name
