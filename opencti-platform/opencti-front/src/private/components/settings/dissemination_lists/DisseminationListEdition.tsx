@@ -94,7 +94,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
         validationSchema={disseminationListValidator(t_i18n)}
         onSubmit={onSubmit}
       >
-        {({ submitForm, isSubmitting }) => (
+        {({ submitForm }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -135,16 +135,6 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                 return pastedText; // do not alter pasted content; it's probably invalid anyway
               }}
             />
-            <div style={{ marginTop: 20, textAlign: 'right' }}>
-              <Button
-                variant="contained"
-                disabled={isSubmitting}
-                style={{ marginLeft: 16 }}
-                onClick={onClose}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-            </div>
           </Form>
         )}
       </Formik>
