@@ -46,12 +46,10 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
-    const count = values.emails.split('\n').length;
     const input = {
       name: values.name,
       emails: values.emails,
       description: values.description,
-      dissemination_list_values_count: count,
     };
     commit({
       variables: {

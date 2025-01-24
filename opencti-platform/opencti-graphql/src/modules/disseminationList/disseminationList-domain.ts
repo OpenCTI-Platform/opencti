@@ -118,7 +118,7 @@ const storeAndCreateDisseminationList = async (context: AuthContext, user: AuthU
     name: input.name,
     emails: input.emails,
     description: input.description,
-    dissemination_list_values_count: input.dissemination_list_values_count,
+    dissemination_list_values_count: input.emails.split('\n').length,
     internal_id: disseminationListInternalId,
   };
   return createInternalObject<StoreEntityDisseminationList>(context, user, disseminationListToCreate, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -136,7 +136,12 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   if (!disseminationList) {
     throw FunctionalError(`Dissemination list ${id} cannot be found`);
   }
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
+  const finalInput = [...input];
+  const emailsInput = finalInput.find((editInput) => editInput.key === 'emails');
+  if (emailsInput) {
+    await fieldPatchDisseminationList(context, user, id, [{ key: 'dissemination_list_values_count', value: [emailsInput.value[0].split('\n').length] }]);
+  }
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',

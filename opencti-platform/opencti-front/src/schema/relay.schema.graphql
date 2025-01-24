@@ -12638,7 +12638,6 @@ input DisseminationListAddInput {
   name: String!
   emails: String!
   description: String
-  dissemination_list_values_count: Int!
 }
 
 input DisseminationListSendInput {
