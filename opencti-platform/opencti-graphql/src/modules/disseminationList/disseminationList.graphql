@@ -29,17 +29,17 @@ type DisseminationListEdge {
 }
 
 # Queries
-#type Query {
-#    disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
-#    disseminationLists(
-#      first: Int
-#      after: ID
-#      orderBy: DisseminationListOrdering
-#      orderMode: OrderingMode
-#      filters: FilterGroup
-#      search: String
-#    ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
-#}
+type Query {
+    disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+    disseminationLists(
+      first: Int
+      after: ID
+      orderBy: DisseminationListOrdering
+      orderMode: OrderingMode
+      filters: FilterGroup
+      search: String
+    ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
+}
 
 input DisseminationListAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
