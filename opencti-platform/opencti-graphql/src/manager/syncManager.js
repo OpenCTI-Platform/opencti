@@ -195,7 +195,7 @@ const initSyncManager = () => {
         const manager = syncManagerInstance(id);
         syncManagers.set(id, manager);
         // noinspection ES6MissingAwait
-        manager.start(context);
+        manager.start(context).catch((reason) => logApp.error('[SYNC MANAGER] error on startup.', { reason }));
       }
     }
     // endregion

@@ -308,17 +308,21 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
 // endregion
 
 // region context
-export const stixCyberObservableCleanContext = (context, user, stixCyberObservableId) => {
-  delEditContext(user, stixCyberObservableId);
-  return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
-  });
+export const stixCyberObservableCleanContext = async (context, user, stixCyberObservableId) => {
+  await delEditContext(user, stixCyberObservableId);
+  return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
+    .then((stixCyberObservable) => {
+      return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
+    })
+    .catch((reason) => logApp.error('Error on store load for stix cyber observable', { cause: reason }));
 };
-export const stixCyberObservableEditContext = (context, user, stixCyberObservableId, input) => {
-  setEditContext(user, stixCyberObservableId, input);
-  return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
-  });
+export const stixCyberObservableEditContext = async (context, user, stixCyberObservableId, input) => {
+  await setEditContext(user, stixCyberObservableId, input);
+  return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
+    .then((stixCyberObservable) => {
+      return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
+    })
+    .catch((reason) => logApp.error('Error on store load for stix cyber observable', { cause: reason }));
 };
 // endregion
 

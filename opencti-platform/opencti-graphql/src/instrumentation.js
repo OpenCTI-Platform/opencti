@@ -12,9 +12,9 @@ if (isPyroscopeEnable) {
   SourceMapper.create(['.']).then((sourceMapper) => {
     Pyroscope.init({ serverAddress: exporter, appName: node, sourceMapper });
     Pyroscope.start();
-  }).catch((err) => {
-    logApp.error('[OPENCTI] Error loading Pyroscope', { cause: err });
   }).then(() => {
     logApp.info('[OPENCTI] Pyroscope plugin successfully loaded.');
+  }).catch((err) => {
+    logApp.error('[OPENCTI] Error loading Pyroscope', { cause: err });
   });
 }

@@ -283,7 +283,7 @@ const createApp = async (app) => {
       await publishFileDownload(executeContext, auth, data);
       const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
       archive.append(await downloadFile(file), { name: filename });
-      archive.finalize();
+      await archive.finalize();
       res.attachment(`${filename}.zip`);
       archive.pipe(res);
     } catch (e) {

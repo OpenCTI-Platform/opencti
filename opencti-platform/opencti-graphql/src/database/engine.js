@@ -3772,7 +3772,7 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   const draftRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
   const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
   await elDeleteInstances(draftRelations);
-  liveRelations.map((r) => copyLiveElementToDraft(context, user, r, DRAFT_OPERATION_DELETE_LINKED));
+  await Promise.all(liveRelations.map((r) => copyLiveElementToDraft(context, user, r, DRAFT_OPERATION_DELETE_LINKED)));
   // 02/ Remove all elements: delete instances created in draft, mark as deletion for others
   const draftElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
   const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
