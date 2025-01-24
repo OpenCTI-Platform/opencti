@@ -22,10 +22,10 @@ import type { BasicStoreSettings } from '../../types/settings';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
-enum ActionStatus {
-  APPROVED,
-  DECLINED,
-  NEW,
+export enum ActionStatus {
+  APPROVED = 'APPROVED',
+  DECLINED = 'DECLINED',
+  NEW = 'NEW',
 }
 
 export interface RequestAccessActionStatus {
@@ -276,7 +276,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     members: input.request_access_members,
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
-    status: ActionStatus.NEW.toString(),
+    status: ActionStatus.NEW,
     workflowMapping: allActionStatuses
   };
 
@@ -309,7 +309,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
       // Moving RFI to approved
       const requestAccessAction: RequestAccessAction = {
         ...action,
-        status: ActionStatus.APPROVED.toString(),
+        status: ActionStatus.APPROVED,
         executionDate: new Date(),
         workflowMapping: allActionStatuses
       };
@@ -343,7 +343,7 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
     const allActionStatuses = await getRFIStatusMap(context, user);
     const requestAccessAction: RequestAccessAction = {
       ...action,
-      status: ActionStatus.DECLINED.toString(),
+      status: ActionStatus.DECLINED,
       executionDate: new Date(),
       workflowMapping: allActionStatuses
     };
