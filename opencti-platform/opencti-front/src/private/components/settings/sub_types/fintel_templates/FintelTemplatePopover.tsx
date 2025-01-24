@@ -6,7 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import useFintelTemplateExport from '@components/settings/sub_types/fintel_templates/useFintelTemplateExport';
+import useFintelTemplateExport from './useFintelTemplateExport';
 import useFintelTemplateDelete from './useFintelTemplateDelete';
 import Transition from '../../../../../components/Transition';
 import stopEvent from '../../../../../utils/domEvent';
