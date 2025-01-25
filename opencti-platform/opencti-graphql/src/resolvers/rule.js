@@ -1,4 +1,4 @@
-import { cleanRuleManager, getManagerInfo } from '../manager/ruleManager';
+import { cleanRuleManager, getManagerInfo, ruleApply, ruleClear } from '../manager/ruleManager';
 import { getRules, setRuleActivation, getRule } from '../domain/rules';
 import { internalLoadById } from '../database/middleware-loader';
 
@@ -15,6 +15,8 @@ const ruleResolvers = {
   Mutation: {
     ruleSetActivation: (_, { id, enable }, context) => setRuleActivation(context, context.user, id, enable),
     ruleManagerClean: (_, { eventId }, context) => cleanRuleManager(context, context.user, eventId),
+    ruleApply: (_, { elementId, ruleId }, context) => ruleApply(context, context.user, elementId, ruleId),
+    ruleClear: (_, { elementId, ruleId }, context) => ruleClear(context, context.user, elementId, ruleId),
   },
 };
 

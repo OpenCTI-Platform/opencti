@@ -57,7 +57,7 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
+export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
   let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));

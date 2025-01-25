@@ -9,7 +9,7 @@ import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { listAllEntities } from './middleware-loader';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -25,6 +25,7 @@ const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
 const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
 const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
 const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
+export const BACKGROUND_TASK_QUEUES = parseInt(conf.get('app:background_tasks:scale') ?? '4', 10);
 const RABBITMQ_PUSH_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}push_`;
 const RABBITMQ_LISTEN_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}listen_`;
 const HOSTNAME = conf.get('rabbitmq:hostname');
@@ -187,6 +188,17 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   const targetQueues = stats.queues.filter((queue) => queue.name.includes(connectorId));
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
+export const getBestBackgroundConnectorId = async (context, user) => {
+  let stats = metricsCache.get('cached_metrics');
+  if (!stats) {
+    stats = await metrics(context, user);
+    metricsCache.set('cached_metrics', stats);
+  }
+  // Find the least used push queue
+  const targetQueues = stats.queues.filter((queue) => queue.name.includes('push_background-task'));
+  const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
+  return bestQueue.name.substring('push_'.length);
+};
 
 export const connectorConfig = (id) => ({
   connection: config(),
@@ -264,6 +276,10 @@ export const enforceQueuesConsistency = async (context, user) => {
   for (let i = 0; i < syncs.length; i += 1) {
     const sync = syncs[i];
     await registerConnectorQueues(sync.internal_id, `Sync ${sync.internal_id} queue`, 'internal', ENTITY_TYPE_SYNC);
+  }
+  // Background task queues
+  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
+    await registerConnectorQueues(`background-task-${i}`, `Background ${i} queue`, 'internal', ENTITY_TYPE_BACKGROUND_TASK);
   }
 };
 

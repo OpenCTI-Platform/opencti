@@ -1,6 +1,6 @@
 import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
-import { connectorConfig } from './rabbitmq';
+import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
 import { listAllEntities, listEntities, storeLoadById } from './middleware-loader';
@@ -79,6 +79,16 @@ export const connectorsForWorker = async (context, user) => {
       name: `Playbook ${playbook.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(playbook.internal_id),
+      active: true
+    });
+  }
+  // Expose background task queues
+  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
+    registeredConnectors.push({
+      id: `background-task-${i}`,
+      name: `Background ${i} queue`,
+      connector_scope: [],
+      config: connectorConfig(`background-task-${i}`),
       active: true
     });
   }
