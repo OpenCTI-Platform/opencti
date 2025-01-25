@@ -21,6 +21,7 @@ import Slide from '@mui/material/Slide';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import WorkDetail from '../connectors/WorkDetail';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
@@ -135,6 +136,32 @@ const TasksListFragment = graphql`
             task_search
             scope
           }
+          work {
+            id
+            connector {
+              name
+            }
+            user {
+              name
+            }
+            completed_time
+            received_time
+            tracking {
+              import_expected_number
+              import_processed_number
+            }
+            messages {
+              timestamp
+              message
+            }
+            errors {
+              timestamp
+              message
+            }
+            status
+            timestamp
+            draft_context  
+          }
         }
       }
     }
@@ -233,9 +260,14 @@ const TasksList = ({ data }) => {
               <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
                   <Grid item xs={12}>
+                    {(task.scope ?? task.type)
+                        && <Grid item xs={2}>
+                          <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
+                        </Grid>
+                    }
+                    <br/>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)}
-                      )
+                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                     </Typography>
                     {task.task_search && (
                     <span>
@@ -353,14 +385,6 @@ const TasksList = ({ data }) => {
                     </Typography>
                     {nsdt(task.last_execution_date)}
                   </Grid>
-                  {(task.scope ?? task.type)
-                      && <Grid item xs={2}>
-                        <Typography variant="h3" gutterBottom={true}>
-                          {t_i18n('Scope')}
-                        </Typography>
-                        <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
-                      </Grid>
-                    }
                   <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
@@ -389,6 +413,8 @@ const TasksList = ({ data }) => {
                     />
                   </Grid>
                 </Grid>
+                { task.work && <><WorkDetail work={task.work} /></> }
+                <br/>
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}

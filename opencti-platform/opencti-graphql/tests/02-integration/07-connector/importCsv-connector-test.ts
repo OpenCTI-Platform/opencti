@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { describe, it, expect } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { processCSVforWorkers } from '../../../src/connector/importCsv/importCsv-connector';
@@ -79,6 +80,7 @@ describe('Verify internal importCsv connector', () => {
     expect(workUpdated).toBeDefined();
     expect(workUpdated.errors.length).toBe(0);
 
-    // Cannot validate data since there is no worker on tests.
+    // As connector is not a real one, there is no messages in queue
+    // If we want to validate the data, a new connector registration will be needed
   });
 });

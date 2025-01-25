@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-2-1-sdo';
@@ -12,6 +12,7 @@ import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
 import { readCsvFromFileStream } from '../../utils/testQueryHelper';
+import { wait } from '../../../src/database/utils';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -285,12 +286,13 @@ describe('Verify csv ingestion', () => {
       name: 'csv ingestion',
       uri: 'http://test.invalid',
       csv_mapper_id: mapperCreated.id,
-      user_id: USER_EDITOR.id
+      user_id: ADMIN_USER.id
     };
     ingestionCsv = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
     expect(ingestionCsv.id).toBeDefined();
     expect(ingestionCsv.internal_id).toBeDefined();
 
+    await wait(60000); // Wait 1 minute for worker to discover the new queue
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
     csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');

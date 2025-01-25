@@ -1,11 +1,8 @@
 /* eslint-disable camelcase */
+import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import { editAuthorizedMembers } from '../utils/authorizedMembers';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { buildCreateEvent, storeUpdateEvent } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import {
   ACTION_TYPE_ADD,
@@ -17,49 +14,25 @@ import {
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
   ACTION_TYPE_RULE_ELEMENT_RESCAN,
-  DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
-  executeTaskQuery,
+  buildQueryFilters,
   findAll,
-  MAX_TASK_ELEMENTS,
   updateTask
 } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
-import {
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listAllThings,
-  mergeEntities,
-  patchAttribute,
-  stixLoadById,
-  storeLoadByIdWithRefs
-} from '../database/middleware';
-import { now, utcDate } from '../utils/format';
-import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
-import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, ValidationError } from '../config/errors';
-import {
-  ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
-  buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER,
-  INPUT_OBJECTS,
-  RULE_PREFIX
-} from '../schema/general';
-import { BYPASS, executionContext, getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
-import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
-import { getActivatedRules, getRule } from '../domain/rules';
-import { isStixRelationship } from '../schema/stixRelationship';
-import { isStixObject } from '../schema/stixCoreObject';
+import { storeLoadByIdsWithRefs } from '../database/middleware';
+import { now } from '../utils/format';
+import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { elList } from '../database/engine';
+import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
+import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
-import { indicatorEditField, promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
-import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
-import { isStixRefRelationship, objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
+import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
@@ -74,41 +47,34 @@ import {
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE
 } from '../domain/backgroundTask-common';
-import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { processDeleteOperation, restoreDelete } from '../modules/deleteOperation/deleteOperation-domain';
-import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
-import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 import { BackgroundTaskScope } from '../generated/graphql';
-import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { deleteFile } from '../database/file-storage';
-import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { findById as findOrganizationById } from '../modules/organization/organization-domain';
 import { getDraftContext } from '../utils/draftContext';
-import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
-import { getEntityFromCache } from '../database/cache';
+import { addFilter } from '../utils/filtering/filtering-utils';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { updateExpectationsNumber } from '../domain/work';
+import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
+import { generateStandardId } from '../schema/identifier';
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { schemaTypesDefinition } from '../schema/schema-types';
+import { getParentTypes } from '../schema/schemaUtils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('task_scheduler:interval');
 const TASK_MANAGER_KEY = conf.get('task_scheduler:lock_key');
-
-const ACTION_ON_CONTAINER_FIELD = 'container-object';
-const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
-const ACTION_TYPE_RELATION = 'RELATION';
-const ACTION_TYPE_REVERSED_RELATION = 'REVERSED_RELATION';
-
-const MAX_TASK_ERRORS = 100;
+const TASK_CONCURRENCY = parseInt(conf.get('task_scheduler:max_concurrency') ?? '4', 10);
 
 let running = false;
 
-const findTaskToExecute = async (context) => {
-  const tasks = await findAll(context, SYSTEM_USER, {
+const findTasksToExecute = async (context) => {
+  return findAll(context, SYSTEM_USER, {
     connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
@@ -120,354 +86,48 @@ const findTaskToExecute = async (context) => {
     },
     noFiltersChecking: true
   });
-  if (tasks.length === 0) {
-    return null;
-  }
-  return R.head(tasks);
 };
-const computeRuleTaskElements = async (context, user, task) => {
-  const { task_position, rule, enable } = task;
-  const processingElements = [];
+
+export const taskRule = async (context, user, task, callback) => {
+  const { rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
-    const actions = [{ type: ACTION_TYPE_RULE_APPLY, context: { rule: ruleDefinition } }];
-    const options = {
-      first: MAX_TASK_ELEMENTS,
-      orderMode: 'asc',
-      orderBy: 'updated_at',
-      after: task_position,
-      ...buildEntityFilters(scan.types, scan),
-    };
-    const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
-    // Apply the actions for each element
-    for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
-      const element = elements[elementIndex];
-      processingElements.push({ element: element.node, next: element.cursor });
-    }
-    return { actions, elements: processingElements };
-  }
-  const filters = {
-    mode: 'and',
-    filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
-    filterGroups: [],
-  };
-  const actions = [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }];
-  const options = {
-    first: MAX_TASK_ELEMENTS,
-    orderMode: 'asc',
-    orderBy: 'updated_at',
-    after: task_position,
-    filters,
-  };
-  const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES, options);
-  // Apply the actions for each element
-  for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
-    const element = elements[elementIndex];
-    processingElements.push({ element: element.node, next: element.cursor });
-  }
-  return { actions, elements: processingElements };
-};
-
-export const computeQueryTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
-  const processingElements = [];
-  // Fetch the information
-  // note that the query is filtered to allow only elements with matching confidence level
-  const data = await executeTaskQuery(context, user, task_filters, task_search, scope, task_order_mode, task_position);
-  // const expectedNumber = data.pageInfo.globalCount;
-  const elements = data.edges;
-  // Apply the actions for each element
-  for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
-    const element = elements[elementIndex];
-    if (!task_excluded_ids.includes(element.node.id)) { // keep only the elements that are not excluded (via unticked checkboxes in UI)
-      processingElements.push({ element: element.node, next: element.cursor });
-    }
-  }
-  return { actions, elements: processingElements };
-};
-const computeListTaskElements = async (context, user, task) => {
-  const { actions, task_position, task_ids, scope, task_order_mode } = task;
-  const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
-  const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
-  const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
-
-  // processing elements in descending order makes possible restoring from trash elements with dependencies
-  let type = DEFAULT_ALLOWED_TASK_ENTITY_TYPES;
-  if (scope === BackgroundTaskScope.Import) {
-    type = [ENTITY_TYPE_INTERNAL_FILE];
-  } else if (scope === BackgroundTaskScope.PublicDashboard) {
-    type = [ENTITY_TYPE_PUBLIC_DASHBOARD];
-  } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
-    type = [ENTITY_TYPE_WORKSPACE];
-  }
-  const options = {
-    type,
-    orderMode: task_order_mode || 'desc',
-    orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
-    includeDeletedInDraft: true,
-  };
-  const elements = await internalFindByIds(context, user, ids, options);
-  const processingElements = elements.map((element) => ({ element, next: element.id }));
-  return { actions, elements: processingElements };
-};
-const appendTaskErrors = async (task, errors) => {
-  if (errors.length === 0) {
-    return;
-  }
-  const params = { errors: errors.map((err) => ({
-    timestamp: now(),
-    id: err.id,
-    message: err.message,
-  })) };
-  const source = `if (ctx._source.errors.length < ${MAX_TASK_ERRORS}) { ctx._source.errors.addAll(params.errors); }`;
-  await elUpdate(task._index, task.id, { script: { source, lang: 'painless', params } });
-};
-
-const generatePatch = (field, values, type) => {
-  const basicErrors = validateUpdatableAttribute(type, { [field]: values });
-  const extensionErrors = validateUpdatableAttribute(type, { [`x_opencti_${field}`]: values });
-  if (basicErrors.length === 0) {
-    return { [field]: values };
-  }
-  if (extensionErrors.length === 0) {
-    return { [`x_opencti_${field}`]: values };
-  }
-  throw ValidationError('You cannot update incompatible attribute', basicErrors.at(0) ?? extensionErrors.at(0));
-};
-
-const executeDelete = async (context, user, element, scope) => {
-  // Check the user has sufficient level of access to delete the element.
-  const userAccess = getUserAccessRight(user, element);
-  if (userAccess !== MEMBER_ACCESS_RIGHT_ADMIN) {
-    throw ForbiddenAccess();
-  }
-  // Specific case for public dashboards because need to check authorized
-  // members of the associated custom dashboard instead.
-  if (scope === BackgroundTaskScope.PublicDashboard) {
-    await checkUserIsAdminOnDashboard(context, user, element.id);
-  }
-  if (scope === BackgroundTaskScope.Import) {
-    await deleteFile(context, user, element.id);
-  } else if (element.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE) {
-    await deleteDraftWorkspace(context, user, element.id);
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan) };
+    const finalOpts = { ...options, connectionFormat: false, callback };
+    await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
-    await deleteElementById(context, user, element.internal_id, element.entity_type);
+    const filters = {
+      mode: 'and',
+      filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+      filterGroups: [],
+    };
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters };
+    const finalOpts = { ...options, connectionFormat: false, callback };
+    await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
 };
 
-const executeCompleteDelete = async (context, user, element) => {
-  await processDeleteOperation(context, user, element.internal_id, { isRestoring: false });
-};
-const executeRestore = async (context, user, element) => {
-  await restoreDelete(context, user, element.internal_id);
-};
-const executeAdd = async (context, user, actionContext, element) => {
-  const { field, type: contextType, values } = actionContext;
-  if (contextType === ACTION_TYPE_RELATION) {
-    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-      const target = values[indexCreate];
-      if (isStixRefRelationship(field)) {
-        const addRefInput = { relationship_type: field, toIds: [target] };
-        await stixObjectOrRelationshipAddRefRelations(context, user, element.id, addRefInput, element.entity_type);
-      } else {
-        await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
-      }
-    }
+export const taskQuery = async (context, user, task, callback) => {
+  const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
+  const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode);
+  if (task_excluded_ids.length > 0) {
+    options.filters = addFilter(options.filters, 'id', task_excluded_ids, 'not_eq');
   }
-  if (contextType === ACTION_TYPE_REVERSED_RELATION) {
-    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-      const target = values[indexCreate];
-      await createRelation(context, user, { fromId: target, toId: element.id, relationship_type: field });
-    }
-  }
-  if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = generatePatch(field, values, element.entity_type);
-    const operations = { [field]: UPDATE_OPERATION_ADD };
-    await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
-  }
-};
-const executeRemove = async (context, user, actionContext, element) => {
-  const { field, type: contextType, values } = actionContext;
-  if (contextType === ACTION_TYPE_RELATION) {
-    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-      const target = values[indexCreate];
-      if (isStixRefRelationship(field)) {
-        await stixObjectOrRelationshipDeleteRefRelation(context, user, element.id, target, field, element.entity_type);
-      } else {
-        await deleteRelationsByFromAndTo(context, user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
-      }
-    }
-  }
-  if (contextType === ACTION_TYPE_REVERSED_RELATION) {
-    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-      const target = values[indexCreate];
-      await deleteRelationsByFromAndTo(context, user, target, element.id, field, ABSTRACT_BASIC_RELATIONSHIP);
-    }
-  }
-  if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = generatePatch(field, values, element.entity_type);
-    const operations = { [field]: UPDATE_OPERATION_REMOVE };
-    await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
-  }
+  const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
+  await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
 
-const executeReplaceScoreForIndicator = async (context, user, id, field, values) => {
-  const input = {
-    key: field,
-    value: values
+export const taskList = async (context, user, task, callback) => {
+  const { task_ids, scope, task_order_mode } = task;
+  const options = {
+    orderMode: task_order_mode || 'desc',
+    // processing elements in descending order makes possible restoring from trash elements with dependencies
+    orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
+    baseData: true
   };
-  await indicatorEditField(context, user, id, [input]);
-};
-
-export const executeReplace = async (context, user, actionContext, element) => {
-  const { field, type: contextType, values } = actionContext;
-  // About indicators, when score is changing, it should change some other values
-  if (element.entity_type === ENTITY_TYPE_INDICATOR && field === 'x_opencti_score') {
-    await executeReplaceScoreForIndicator(context, user, element.id, field, values);
-  }
-  let input = field;
-  if (contextType === ACTION_TYPE_RELATION) {
-    input = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, field);
-  }
-  const patch = generatePatch(input, values, element.entity_type);
-  await patchAttribute(context, user, element.id, element.entity_type, patch);
-};
-const executeMerge = async (context, user, actionContext, element) => {
-  const { values } = actionContext;
-  await mergeEntities(context, user, element.internal_id, values);
-};
-const executeEnrichment = async (context, user, actionContext, element) => {
-  const askConnectors = await internalFindByIds(context, user, actionContext.values);
-  await BluePromise.map(askConnectors, async (connector) => {
-    await askElementEnrichmentForConnector(context, user, element.standard_id, connector.internal_id);
-  }, { concurrency: ES_MAX_CONCURRENCY });
-};
-
-export const executePromoteIndicatorToObservables = async (context, user, element, containerId) => {
-  const createdObservables = await promoteIndicatorToObservables(context, user, element.internal_id);
-  if (containerId && createdObservables.length > 0) {
-    await Promise.all(
-      createdObservables.map((observable) => {
-        const relationInput = {
-          toId: observable.id,
-          relationship_type: 'object'
-        };
-        return stixDomainObjectAddRelation(context, user, containerId, relationInput);
-      })
-    );
-  }
-};
-
-export const executePromoteObservableToIndicator = async (context, user, element, containerId) => {
-  const createdIndicator = await promoteObservableToIndicator(context, user, element.internal_id);
-  if (containerId && createdIndicator) {
-    const relationInput = {
-      toId: createdIndicator.id,
-      relationship_type: 'object'
-    };
-    await stixDomainObjectAddRelation(context, user, containerId, relationInput);
-  }
-};
-
-export const executePromote = async (context, user, element, containerId) => {
-  // If indicator, promote to observable
-  if (element.entity_type === ENTITY_TYPE_INDICATOR) {
-    await executePromoteIndicatorToObservables(context, user, element, containerId);
-  }
-  // If observable, promote to indicator
-  if (isStixCyberObservable(element.entity_type)) {
-    await executePromoteObservableToIndicator(context, user, element, containerId);
-  }
-};
-const executeRuleApply = async (context, user, actionContext, element) => {
-  const { rule } = actionContext;
-  // Execute rules over one element, act as element creation
-  const instance = await storeLoadByIdWithRefs(context, user, element.internal_id);
-  if (!instance) {
-    throw FunctionalError('Cant find element to scan', { id: element.internal_id });
-  }
-  const event = buildCreateEvent(user, instance, '-');
-  await rulesApplyHandler(context, user, [event], [rule]);
-};
-const executeRuleClean = async (context, user, actionContext, element) => {
-  const { rule } = actionContext;
-  await rulesCleanHandler(context, user, [element], [rule]);
-};
-const executeRuleElementRescan = async (context, user, actionContext, element) => {
-  const { rules } = actionContext ?? {};
-  const activatedRules = await getActivatedRules(context, SYSTEM_USER);
-  // Filter activated rules by context specification
-  const rulesToApply = rules ? activatedRules.filter((r) => rules.includes(r.id)) : activatedRules;
-  if (rulesToApply.length > 0) {
-    const ruleRescanTypes = rulesToApply.map((r) => r.scan.types).flat();
-    if (isStixRelationship(element.entity_type)) {
-      const needRescan = ruleRescanTypes.includes(element.entity_type);
-      if (needRescan) {
-        const data = await stixLoadById(context, user, element.internal_id);
-        const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-        await rulesApplyHandler(context, user, [event], rulesToApply);
-      }
-    } else if (isStixObject(element.entity_type)) {
-      const listCallback = async (relations) => {
-        for (let index = 0; index < relations.length; index += 1) {
-          const relation = relations[index];
-          const needRescan = ruleRescanTypes.includes(relation.entity_type);
-          if (needRescan) {
-            const data = await stixLoadById(context, user, relation.internal_id);
-            const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-            await rulesApplyHandler(context, user, [event], rulesToApply);
-          }
-        }
-      };
-      const args = { connectionFormat: false, fromId: element.internal_id, callback: listCallback };
-      await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
-    }
-  }
-};
-const executeShare = async (context, user, actionContext, element) => {
-  const { values } = actionContext;
-  for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-    const target = values[indexCreate];
-    const currentGrants = element[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
-    if (!currentGrants.includes(target) && objectOrganization.isRefExistingForTypes(element.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)) {
-      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: RELATION_GRANTED_TO });
-    }
-  }
-};
-const executeUnshare = async (context, user, actionContext, element) => {
-  const { values } = actionContext;
-  for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-    const target = values[indexCreate];
-    // resolve all containers of this element
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }],
-        filterGroups: []
-      },
-      noFiltersChecking: true
-    };
-    const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
-    const grantedTo = containers.map((n) => n[buildRefRelationKey(RELATION_GRANTED_TO)]).flat();
-    if (!grantedTo.includes(target)) {
-      await deleteRelationsByFromAndTo(context, user, element.id, target, RELATION_GRANTED_TO, ABSTRACT_BASIC_RELATIONSHIP);
-    }
-  }
-};
-const executeShareMultiple = async (context, user, actionContext, element) => {
-  await Promise.all(actionContext.values.map((organizationId) => addOrganizationRestriction(context, user, element.id, organizationId)));
-};
-const executeUnshareMultiple = async (context, user, actionContext, element) => {
-  await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
-};
-export const executeRemoveAuthMembers = async (context, user, element) => {
-  await editAuthorizedMembers(context, user, {
-    entityId: element.id,
-    entityType: element.entity_type,
-    requiredCapabilities: [BYPASS],
-    input: null
-  });
+  const elements = await internalFindByIds(context, user, task_ids, options);
+  callback(elements);
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {
@@ -487,154 +147,400 @@ const throwErrorInDraftContext = (context, user, actionType) => {
   }
 };
 
-const executeProcessing = async (context, user, job, scope) => {
-  const errors = [];
-  for (let index = 0; index < job.actions.length; index += 1) {
-    const { type, context: actionContext, containerId } = job.actions[index];
-    const { field, values, options } = actionContext ?? {};
-    // Containers specific operations
-    // Can be done in one shot patch modification.
-    if (field === ACTION_ON_CONTAINER_FIELD) {
-      for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
-        const value = values[valueIndex];
-        try {
-          const objects = job.elements.map((e) => e.element.internal_id).filter((id) => value !== id);
-          let finalObjects = objects;
-          if (options?.includeNeighbours) {
-            // For relationships, include fromId and toId
-            finalObjects = R.uniq([
-              ...finalObjects,
-              ...job.elements
-                .filter((e) => e.element.fromId && e.element.toId)
-                .filter((e) => value !== e.element.internal_id)
-                .map((e) => [e.element.fromId, e.element.toId])
-                .flat()
-            ]);
-            // For all objects, resolve stix core
-            for (let objectIndex = 0; objectIndex < objects.length; objectIndex += 1) {
-              const relations = await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, {
-                fromOrToId: objects[objectIndex],
-                baseData: true
-              });
-              finalObjects = R.uniq(
-                [
-                  ...finalObjects,
-                  ...relations.map((r) => r.id),
-                  ...relations.map((r) => (objects[objectIndex] === r.fromId ? r.toId : r.fromId))
-                ]
-              );
-            }
-          }
-          const patch = { [INPUT_OBJECTS]: finalObjects };
-          const operations = { [INPUT_OBJECTS]: type.toLowerCase() }; // add, remove, replace
-          await patchAttribute(context, user, value, ENTITY_TYPE_CONTAINER, patch, { operations });
-        } catch (err) {
-          logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: valueIndex });
-          if (errors.length < MAX_TASK_ERRORS) {
-            errors.push({ id: value, message: err.message, reason: err.reason });
-          }
-        }
-      }
-    } else { // Classic action, need to be apply on each element
-      for (let elementIndex = 0; elementIndex < job.elements.length; elementIndex += 1) {
-        const { element } = job.elements[elementIndex];
-        try {
-          throwErrorInDraftContext(context, user, type);
-          if (type === ACTION_TYPE_DELETE) {
-            await executeDelete(context, user, element, scope);
-          }
-          if (type === ACTION_TYPE_COMPLETE_DELETE) {
-            await executeCompleteDelete(context, user, element);
-          }
-          if (type === ACTION_TYPE_RESTORE) {
-            await executeRestore(context, user, element);
-          }
-          if (type === ACTION_TYPE_ADD) {
-            await executeAdd(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_REMOVE) {
-            await executeRemove(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_REPLACE) {
-            await executeReplace(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_MERGE) {
-            await executeMerge(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_PROMOTE) {
-            await executePromote(context, user, element, containerId);
-          }
-          if (type === ACTION_TYPE_ENRICHMENT) {
-            await executeEnrichment(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_RULE_APPLY) {
-            await executeRuleApply(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_RULE_CLEAR) {
-            await executeRuleClean(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-            await executeRuleElementRescan(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_SHARE) {
-            await executeShare(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_UNSHARE) {
-            await executeUnshare(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_SHARE_MULTIPLE) {
-            await executeShareMultiple(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_UNSHARE_MULTIPLE) {
-            await executeUnshareMultiple(context, user, actionContext, element);
-          }
-          if (type === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
-            await executeRemoveAuthMembers(context, user, element);
-          }
-          if (type === ACTION_TYPE_REMOVE_FROM_DRAFT) {
-            await elRemoveElementFromDraft(context, user, element);
-          }
-        } catch (err) {
-          logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: elementIndex });
-          if (errors.length < MAX_TASK_ERRORS) {
-            errors.push({ id: element.id, message: `${err.message}${err.data?.reason ? ` - ${err.reason}` : ''}` });
-          }
-        }
-      }
-      if (type === ACTION_TYPE_SHARE && containerId) {
-        // simulate a create event to update downstream openCTI
-        const objectStoreBase = await storeLoadByIdWithRefs(context, user, containerId);
-        let organizationNames = '';
-        for (let i = 0; i < actionContext.values.length; i += 1) {
-          const orgId = actionContext.values[i];
-          const organization = await findOrganizationById(context, user, orgId);
-          organizationNames += `${organization.name} `;
-        }
-        const message = `Update ${organizationNames} children in \`Shared with\``;
-        const objectStoreBaseModified = { ...objectStoreBase, updated_at: utcDate() };
-        await storeUpdateEvent(context, user, objectStoreBase, objectStoreBaseModified, message, { allow_only_modified: true });
-      }
-    }
-  }
-  return errors;
+const isShareAction = (actionType) => {
+  return actionType === ACTION_TYPE_SHARE || actionType === ACTION_TYPE_SHARE_MULTIPLE;
 };
 
-export const taskHandler = async () => {
-  let lock;
-  try {
-    // Lock the manager
-    lock = await lockResources([TASK_MANAGER_KEY], { retryCount: 0 });
-    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
-    running = true;
-    const startingTime = new Date().getMilliseconds();
-    const context = executionContext('task_manager', SYSTEM_USER);
-    const task = await findTaskToExecute(context);
-    // region Task checking
-    if (!task) {
-      // Nothing to execute.
-      logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] No task to execute found, stopping.');
-      return;
+const isUnshareAction = (actionType) => {
+  return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
+};
+
+const baseOperationBuilder = (actionType, operations, element) => {
+  const baseOperationObject = {};
+  // Knowledge management
+  if (actionType === 'KNOWLEDGE_CHANGE') {
+    baseOperationObject.opencti_operation = 'patch';
+    baseOperationObject.opencti_field_patch = operations.map((action) => {
+      const attrKey = schemaRelationsRefDefinition
+        .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+      return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
+    });
+  }
+  if (actionType === 'KNOWLEDGE_TRASH') {
+    baseOperationObject.opencti_operation = 'delete';
+  }
+  if (actionType === ACTION_TYPE_RESTORE) {
+    baseOperationObject.opencti_operation = 'restore';
+  }
+  if (actionType === 'KNOWLEDGE_REMOVE') {
+    baseOperationObject.opencti_operation = 'delete_force';
+  }
+  if (actionType === ACTION_TYPE_ENRICHMENT) {
+    baseOperationObject.opencti_operation = 'enrichment';
+    baseOperationObject.connector_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_MERGE) {
+    baseOperationObject.opencti_operation = 'merge';
+    baseOperationObject.merge_target_id = element.id; // To be compliant with current worker implementation
+    baseOperationObject.merge_source_ids = operations[0].context.values;
+  }
+  // Draft management
+  if (actionType === ACTION_TYPE_REMOVE_FROM_DRAFT) {
+    baseOperationObject.opencti_operation = 'revert_draft';
+  }
+  // Rule management
+  if (actionType === ACTION_TYPE_RULE_APPLY) {
+    baseOperationObject.opencti_operation = actionType.toLowerCase();
+    baseOperationObject.opencti_rule = operations[0].context.rule_id;
+  }
+  if (actionType === ACTION_TYPE_RULE_CLEAR) {
+    baseOperationObject.opencti_operation = actionType.toLowerCase();
+    baseOperationObject.opencti_rule = operations[0].context.rule_id;
+  }
+  if (actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
+    baseOperationObject.opencti_operation = 'rules_rescan';
+  }
+  // Share / Unshare
+  if (isShareAction(actionType)) {
+    baseOperationObject.opencti_operation = 'share';
+    baseOperationObject.sharing_organization_ids = operations[0].context.values;
+    baseOperationObject.sharing_direct_container = false;
+  }
+  if (isUnshareAction(actionType)) {
+    baseOperationObject.opencti_operation = 'unshare';
+    baseOperationObject.sharing_organization_ids = operations[0].context.values;
+    baseOperationObject.sharing_direct_container = false;
+  }
+  // Access management
+  if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
+    baseOperationObject.opencti_operation = 'clear_access_restriction';
+  }
+  return baseOperationObject;
+};
+
+const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
+  // Send actions to queue
+  const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
+  const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+  // Only add explicit expectation if the worker will not split anything
+  if (objects.length === 1 || opts.forceNoSplit) {
+    await updateExpectationsNumber(context, user, task.work_id, objects.length);
+  }
+  await pushToWorkerForConnector(task.connector_id, {
+    type: 'bundle',
+    applicant_id: user.id,
+    content,
+    work_id: task.work_id,
+    draft_id: task.draft_context ?? null,
+    no_split: opts.forceNoSplit ?? false
+  });
+};
+
+const buildBundleElement = (element, actionType, operations) => {
+  const baseObject = {
+    id: element.standard_id,
+    type: convertTypeToStixType(element.entity_type),
+    ...baseOperationBuilder(actionType, operations, element),
+    extensions: {
+      [STIX_EXT_OCTI]: {
+        id: element.internal_id,
+        type: element.entity_type
+      }
     }
+  };
+  // region Handle specific relationship attributes
+  if (isStixSightingRelationship(element.entity_type)) {
+    baseObject.sighting_of_ref = element.fromId;
+    baseObject.where_sighted_refs = [element.toId];
+  } else if (isBasicRelationship(element.entity_type)) {
+    baseObject.source_ref = element.fromId;
+    baseObject.target_ref = element.toId;
+  }
+  return baseObject;
+};
+
+const standardOperationCallback = async (context, user, task, actionType, operations) => {
+  return async (elements) => {
+    // Build limited stix object to limit memory footprint
+    const objects = [];
+    let startProcessingTime = new Date().getTime();
+    for (let index = 0; index < elements.length; index += 1) {
+      const e = elements[index];
+      const object = buildBundleElement(e, actionType, operations);
+      objects.push(object);
+      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      }
+    }
+    // Send actions to queue
+    await sendResultToQueue(context, user, task, objects);
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
+const containerOperationCallback = async (context, user, task, containers, operations) => {
+  const withNeighbours = operations[0].context.options.includeNeighbours;
+  return async (elements) => {
+    const elementIds = new Set();
+    const elementStandardIds = new Set();
+    for (let index = 0; index < elements.length; index += 1) {
+      const element = elements[index];
+      elementIds.add(element.internal_id);
+      elementStandardIds.add(element.standard_id);
+      if (withNeighbours) {
+        if (element.fromId) elementIds.add(element.fromId);
+        if (element.toId) elementIds.add(element.toId);
+        const callback = (relations) => {
+          relations.forEach((relation) => {
+            elementIds.add(relation.fromId);
+            elementIds.add(relation.toId);
+          });
+        };
+        const args = { fromOrToId: elementIds, baseData: true, callback };
+        await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
+      }
+    }
+    // Build limited stix object to limit memory footprint
+    const containerOperations = [{
+      type: 'ADD',
+      context: {
+        field: RELATION_OBJECT,
+        values: Array.from(elementIds)
+      }
+    }];
+    const objects = [];
+    for (let i = 0; i < containers.length; i += 1) {
+      const container = containers[i];
+      objects.push({
+        id: container.standard_id,
+        type: convertTypeToStixType(container.entity_type),
+        object_refs: Array.from(elementStandardIds), // object refs for split ordering
+        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: container.internal_id,
+            type: container.entity_type
+          }
+        }
+      });
+    }
+    // Send actions to queue
+    await sendResultToQueue(context, user, task, objects);
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
+const promoteOperationCallback = async (context, user, task, container) => {
+  return async (elements) => {
+    const objects = [];
+    const ids = elements.map((e) => e.internal_id);
+    const loadedElements = await storeLoadByIdsWithRefs(context, user, ids);
+    for (let index = 0; index < loadedElements.length; index += 1) {
+      const loadedElement = loadedElements[index];
+      // If indicator, promote to observable
+      if (loadedElement.entity_type === ENTITY_TYPE_INDICATOR) {
+        const indicator = loadedElement;
+        const { pattern } = indicator;
+        const observables = extractValidObservablesFromIndicatorPattern(pattern);
+        for (let obsIndex = 0; obsIndex < observables.length; obsIndex += 1) {
+          const observable = observables[obsIndex];
+          const observableToCreate = {
+            ...R.dissoc('type', observable),
+            x_opencti_description: indicator.description ? indicator.description
+              : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
+            x_opencti_score: indicator.x_opencti_score,
+            createdBy: indicator.createdBy,
+            objectMarking: indicator.objectMarking,
+            objectOrganization: indicator.objectOrganization,
+            objectLabel: indicator.objectLabel,
+            externalReferences: indicator.externalReferences,
+          };
+          observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
+          const stixObservable = convertStoreToStix(observableToCreate);
+          objects.push(stixObservable);
+          const relationToCreate = {
+            from: indicator,
+            fromId: indicator.internal_id,
+            fromType: indicator.entity_type,
+            to: observableToCreate,
+            toId: observableToCreate.internal_id,
+            toType: observableToCreate.entity_type,
+            entity_type: RELATION_BASED_ON,
+            relationship_type: RELATION_BASED_ON,
+            objectMarking: indicator.objectMarking,
+            objectOrganization: indicator.objectOrganization,
+          };
+          relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
+          const stixRelation = convertStoreToStix(relationToCreate);
+          objects.push(stixRelation);
+        }
+      }
+      // If observable, promote to indicator
+      if (isStixCyberObservable(loadedElement.entity_type)) {
+        const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
+        indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
+        indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
+        const stixIndicator = convertStoreToStix(indicatorToCreate);
+        objects.push(stixIndicator);
+        const relationToCreate = {
+          from: indicatorToCreate,
+          fromId: indicatorToCreate.internal_id,
+          fromType: indicatorToCreate.entity_type,
+          to: loadedElement,
+          toId: loadedElement.internal_id,
+          toType: loadedElement.entity_type,
+          entity_type: RELATION_BASED_ON,
+          relationship_type: RELATION_BASED_ON,
+          objectMarking: indicatorToCreate.objectMarking,
+          objectOrganization: indicatorToCreate.objectOrganization,
+        };
+        relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
+        const stixRelation = convertStoreToStix(relationToCreate);
+        objects.push(stixRelation);
+      }
+    }
+    const objectRefs = objects.map((object) => object.id);
+    if (container) {
+      const containerOperations = [{
+        type: 'ADD',
+        context: {
+          field: RELATION_OBJECT,
+          values: objects.map((object) => object.id),
+        }
+      }];
+      objects.push({
+        id: container.standard_id,
+        type: convertTypeToStixType(container.entity_type),
+        object_refs: objectRefs, // object refs for split ordering
+        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: container.internal_id,
+            type: container.entity_type
+          }
+        }
+      });
+    }
+    // Send actions to queue
+    await sendResultToQueue(context, user, task, objects);
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
+const sharingTaskFilters = (containerId) => {
+  const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((s) => {
+    if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
+    return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
+  });
+  const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
+  return {
+    mode: 'and',
+    filters: [
+      {
+        key: ['objects'],
+        values: [containerId],
+      },
+      {
+        key: ['entity_type'],
+        values: SCAN_ENTITIES,
+      }
+    ],
+    filterGroups: [],
+  };
+};
+
+const sharingOperationCallback = async (context, user, task, actionType, operations) => {
+  return async (elements) => {
+    const objects = [];
+    for (let index = 0; index < elements.length; index += 1) {
+      const element = elements[index];
+      // in case of container we need to share all inner objects
+      // We also need to push a no split bundle directly
+      if (isStixDomainObjectContainer(element.entity_type)) {
+        const containerObjects = [];
+        const filters = sharingTaskFilters(element.internal_id);
+        const sharingElements = await elList(context, user, READ_DATA_INDICES, { filters, baseData: true });
+        let startProcessingTime = new Date().getTime();
+        for (let shareIndex = 0; shareIndex < sharingElements.length; shareIndex += 1) {
+          const sharingElement = sharingElements[shareIndex];
+          containerObjects.push(buildBundleElement(sharingElement, actionType, operations));
+          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+            startProcessingTime = new Date().getTime();
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+          }
+        }
+        // Add the container at the end
+        const container = buildBundleElement(element, actionType, operations);
+        container.sharing_direct_container = true;
+        containerObjects.push(container);
+        // Send actions to queue
+        await sendResultToQueue(context, user, task, containerObjects, { forceNoSplit: true });
+      } else {
+        // If not a container add in global bundle
+        objects.push(buildBundleElement(element, actionType, operations));
+      }
+    }
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+    }
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
+const computeOperationCallback = async (context, user, task, actionType, operations) => {
+  // Handle specific case of adding elements in container
+  if (actionType === 'KNOWLEDGE_CONTAINER') {
+    const containerIds = operations[0].context.values;
+    const containers = await internalFindByIds(context, user, containerIds, { baseData: true });
+    return containerOperationCallback(context, user, task, containers, operations);
+  }
+  // Handle specific case of promoting indicator or observable
+  if (actionType === ACTION_TYPE_PROMOTE) {
+    const { containerId } = operations[0];
+    const container = containerId ? await internalLoadById(context, user, containerId, { baseData: true }) : undefined;
+    return promoteOperationCallback(context, user, task, container);
+  }
+  // Handle specific sharing operation, as container must share inner object
+  if (isShareAction(actionType) || isUnshareAction(actionType)) {
+    return sharingOperationCallback(context, user, task, actionType, operations);
+  }
+  // If not, return standard callback
+  return standardOperationCallback(context, user, task, actionType, operations);
+};
+
+const workerTaskHandler = async (context, user, task, actionType, operations) => {
+  // Generate the right callback
+  const callback = await computeOperationCallback(context, user, task, actionType, operations);
+  // Handle queries and list
+  if (task.type === TASK_TYPE_QUERY) {
+    // Task query will be enlisted step by step except for sharing/un sharing
+    await taskQuery(context, user, task, callback);
+  }
+  if (task.type === TASK_TYPE_LIST) {
+    // Task list is enlist in one shot
+    await taskList(context, user, task, callback);
+  }
+  if (task.type === TASK_TYPE_RULE) {
+    // Task rule is enlist step by step
+    await taskRule(context, user, task, callback);
+  }
+  return updateTask(context, task.id, { completed: true });
+};
+
+const taskHandlerGenerator = (context) => {
+  return async (rawTask) => {
+    const task = { ...rawTask };
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
@@ -643,46 +549,67 @@ export const taskHandler = async () => {
       return;
     }
     // endregion
+    const draftID = task.draft_context ?? '';
+    const fullContext = { ...context, draft_context: draftID };
     const startPatch = { last_execution_date: now() };
     await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
-    const draftID = task.draft_context ?? '';
-    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
-    const fullContext = { ...context, draft_context: draftID, user_inside_platform_organization };
-    let jobToExecute;
-    if (isQueryTask) {
-      jobToExecute = await computeQueryTaskElements(fullContext, user, task);
+    // region MASSIVE WORKER OPERATIONS
+    // Current format is not aligned with worker practices
+    // We need to reformat the actions to back process support
+    // Grouping at the same time to add extra checks
+    if (isRuleTask) { // Rescan is not a rule task, but a query one
+      const actionType = task.enable ? ACTION_TYPE_RULE_APPLY : ACTION_TYPE_RULE_CLEAR;
+      task.actions = [{ type: actionType, context: { rule_id: task.rule } }];
     }
-    if (isListTask) {
-      jobToExecute = await computeListTaskElements(fullContext, user, task);
+    const actionsGroup = R.groupBy((action) => {
+      // Bind global remove
+      if (isEmptyField(action.context?.field)) {
+        if (action.type === ACTION_TYPE_DELETE) {
+          return 'KNOWLEDGE_TRASH';
+        }
+        if (action.type === ACTION_TYPE_COMPLETE_DELETE) {
+          return 'KNOWLEDGE_REMOVE';
+        }
+      }
+      // Support specific container add operation
+      if (action.context?.field === 'container-object') {
+        return 'KNOWLEDGE_CONTAINER';
+      }
+      // Support generic knowledge
+      if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {
+        return 'KNOWLEDGE_CHANGE';
+      }
+      // No need for transformation
+      return action.type;
+    }, task.actions);
+    const nbTypeOfActions = Object.keys(actionsGroup).length;
+    const [actionType, operations] = Object.entries(actionsGroup)[0];
+    if (nbTypeOfActions === 1) {
+      throwErrorInDraftContext(context, user, actionType);
+      logApp.info('[TASK-MANAGER] Executing job through distributed workers');
+      await workerTaskHandler(fullContext, user, task, actionType, operations);
+    } else {
+      throw UnsupportedError('Multiple types of action inside the same background task', { actions: Object.keys(actionsGroup) });
     }
-    if (isRuleTask) {
-      jobToExecute = await computeRuleTaskElements(fullContext, user, task);
-    }
-    // Process the elements (empty = end of execution)
-    const processingElements = jobToExecute.elements;
-    logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Found ${processingElements.length} element(s) to process.`);
-    if (processingElements.length > 0) {
-      lock.signal.throwIfAborted();
-      const errors = await executeProcessing(fullContext, user, jobToExecute, task.scope);
-      await appendTaskErrors(task, errors);
-    }
-    // Update the task
-    // Get the last element processed and update task_position+ task_processed_number
-    const processedNumber = task.task_processed_number + processingElements.length;
-    const patch = {
-      task_position: processingElements.length > 0 ? R.last(processingElements).next : null,
-      task_processed_number: processedNumber,
-      completed: processingElements.length < MAX_TASK_ELEMENTS,
-    };
-    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Elements processing done, store task status.', { patch });
-    await updateTask(context, task.id, patch);
-    const totalTime = new Date().getMilliseconds() - startingTime;
-    logApp.info(`[OPENCTI-MODULE][TASK-MANAGER] Task manager done in ${totalTime} ms`);
+  };
+};
+
+const tasksHandler = async () => {
+  let lock;
+  try {
+    // Lock the manager
+    lock = await lockResources([TASK_MANAGER_KEY], { retryCount: 0 });
+    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
+    running = true;
+    const context = executionContext('task_manager', SYSTEM_USER);
+    const tasks = await findTasksToExecute(context);
+    const taskHandler = taskHandlerGenerator(context);
+    await BluePromise.map(tasks, taskHandler, { concurrency: TASK_CONCURRENCY })
+      .catch((error) => logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error', { cause: error }));
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
@@ -695,13 +622,14 @@ export const taskHandler = async () => {
     if (lock) await lock.unlock();
   }
 };
+
 const initTaskManager = () => {
   let scheduler;
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Running task manager');
       scheduler = setIntervalAsync(async () => {
-        await taskHandler();
+        await tasksHandler();
       }, SCHEDULE_TIME);
     },
     status: () => {

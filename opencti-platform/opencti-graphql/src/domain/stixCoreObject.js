@@ -1,6 +1,23 @@
 import * as R from 'ramda';
-import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import {
+  buildRestrictedEntity,
+  createEntity,
+  createRelationRaw,
+  deleteElementById,
+  distributionEntities,
+  stixLoadById,
+  storeLoadByIdWithRefs,
+  timeSeriesEntities
+} from '../database/middleware';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listEntitiesPaginated,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById,
+  storeLoadByIds
+} from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
@@ -40,13 +57,21 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_ENTITIES_INDICES,
+  READ_INDEX_HISTORY,
+  READ_INDEX_INFERRED_ENTITIES,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE
+} from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -56,7 +81,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
@@ -78,7 +103,10 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
@@ -108,6 +136,42 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
   return types;
+};
+
+export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
+  const stixElement = await stixLoadById(context, user, id);
+  // Get all not completed works associated to background task
+  const workBackgrounds = await listAllEntities(context, user, [ENTITY_TYPE_WORK], {
+    indices: [READ_INDEX_HISTORY],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['background_task_id'], values: ['EXISTS'] },
+        { key: ['status'], values: ['complete'], operator: 'not_eq' },
+      ],
+      filterGroups: [],
+    },
+  });
+  const backgroundIds = workBackgrounds.map((work) => work.background_task_id);
+  // Get all related background tasks
+  const backTasks = await internalFindByIds(context, user, backgroundIds);
+  const activeTasks = [];
+  for (let index = 0; index < backTasks.length; index += 1) {
+    const backTask = backTasks[index];
+    let isConcerned = false;
+    if (backTask.type === 'QUERY') {
+      const excludedById = (backTask.task_excluded_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);
+      const filters = JSON.parse(backTask.task_filters);
+      isConcerned = !excludedById && await isStixMatchFilterGroup(context, user, stixElement, filters);
+    }
+    if (backTask.type === 'LIST') {
+      isConcerned = (backTask.task_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);
+    }
+    if (isConcerned) {
+      activeTasks.push(backTask);
+    }
+  }
+  return activeTasks;
 };
 
 export const findAll = async (context, user, args) => {
@@ -280,8 +344,8 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
   return stixCoreObject.id;
 };
 
-export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
-  const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds) => {
+  const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.');
@@ -290,36 +354,46 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
-  const message = {
-    internal: {
-      work_id: work.id, // Related action for history
-      applicant_id: null, // No specific user asking for the import
-      draft_id: draftContext ?? null,
-    },
-    event: {
-      event_type: CONNECTOR_INTERNAL_ENRICHMENT,
-      entity_id: element.standard_id,
-      entity_type: element.entity_type,
-    },
-  };
-  await pushToConnector(connector.internal_id, message);
-  const baseData = {
-    id: enrichedId,
-    connector_id: connectorId,
-    connector_name: connector.name,
-    entity_name: extractEntityRepresentativeName(element),
-    entity_type: element.entity_type
-  };
-  const contextData = completeContextDataForEntity(baseData, element);
-  await publishUserAction({
-    user,
-    event_access: 'extended',
-    event_type: 'command',
-    event_scope: 'enrich',
-    context_data: contextData,
-  });
-  return work;
+  const works = [];
+  for (let index = 0; index < connectors.length; index += 1) {
+    const connector = connectors[index];
+    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
+    const message = {
+      internal: {
+        work_id: work.id, // Related action for history
+        applicant_id: null, // No specific user asking for the import
+        draft_id: draftContext ?? null,
+      },
+      event: {
+        event_type: CONNECTOR_INTERNAL_ENRICHMENT,
+        entity_id: element.standard_id,
+        entity_type: element.entity_type,
+      },
+    };
+    await pushToConnector(connector.internal_id, message);
+    const baseData = {
+      id: enrichedId,
+      connector_id: connector.internal_id,
+      connector_name: connector.name,
+      entity_name: extractEntityRepresentativeName(element),
+      entity_type: element.entity_type
+    };
+    const contextData = completeContextDataForEntity(baseData, element);
+    await publishUserAction({
+      user,
+      event_access: 'extended',
+      event_type: 'command',
+      event_scope: 'enrich',
+      context_data: contextData,
+    });
+    works.push(work);
+  }
+  return works;
+};
+
+export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
+  const works = await askElementEnrichmentForConnectors(context, user, enrichedId, [connectorId]);
+  return works.length > 0 ? works[0] : null;
 };
 
 // region stats
@@ -666,6 +740,20 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .filter((e) => e.matchedEntity);
 
   return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
+};
+
+export const executeRemoveAuthMembers = async (context, user, element) => {
+  await editAuthorizedMembers(context, user, {
+    entityId: element.id,
+    entityType: element.entity_type,
+    requiredCapabilities: [BYPASS],
+    input: null
+  });
+};
+
+export const stixCoreObjectRemoveAuthMembers = async (context, user, id) => {
+  const element = await internalLoadById(context, user, id);
+  return executeRemoveAuthMembers(context, user, element);
 };
 
 export const stixCoreObjectImportFile = async (context, user, id, file, args = {}) => {

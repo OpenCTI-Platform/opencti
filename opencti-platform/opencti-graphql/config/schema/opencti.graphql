@@ -1061,6 +1061,7 @@ interface BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  work: Work
 }
 
 type RuleTask implements BackgroundTask {
@@ -1077,6 +1078,7 @@ type RuleTask implements BackgroundTask {
   # RuleTask
   rule: ID!
   enable: Boolean
+  work: Work
 }
 
 type ListTask implements BackgroundTask {
@@ -1096,6 +1098,7 @@ type ListTask implements BackgroundTask {
   authorized_authorities: [String]
   # ListTask
   task_ids: [ID!]
+  work: Work
 }
 
 type QueryTask implements BackgroundTask {
@@ -1116,6 +1119,7 @@ type QueryTask implements BackgroundTask {
   # QueryTask
   task_filters: String!
   task_search: String
+  work: Work
 }
 
 type BackgroundTaskConnectionEdge {
@@ -13107,6 +13111,7 @@ type Query {
   stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast @auth(for: [KNOWLEDGE])
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory @auth(for: [KNOWLEDGE])
+  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask] @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -14141,7 +14146,7 @@ type SynchronizerEditMutations {
 
 ######## STIX OBJECT
 type StixEditMutations {
-  delete: ID
+  delete(forceDelete: Boolean): ID
   merge(stixObjectsIds: [String]!): StixObject
 }
 
@@ -14169,6 +14174,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
@@ -14216,9 +14222,11 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  clearAccessRestriction: StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -14485,8 +14493,8 @@ type StixCoreRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
@@ -14500,8 +14508,8 @@ type StixSightingRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
@@ -14554,6 +14562,9 @@ type Mutation {
   ### RULE
   ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  ruleApply(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+  ruleClear(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+  rulesRescan(elementId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
