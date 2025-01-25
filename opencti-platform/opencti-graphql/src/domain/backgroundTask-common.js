@@ -4,23 +4,25 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS, SYSTEM_USER } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
-import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
+import { BackgroundTaskScope, Capabilities, ConnectorType, FilterMode } from '../generated/graphql';
 import { extractFilterGroupValues, findFiltersFromKey, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
+import { createWork } from './work';
+import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -78,7 +80,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
-      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id, { includeDeletedInDraft: true })));
+      const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
       const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
         || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
@@ -245,8 +247,21 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   }
 };
 
-export const createDefaultTask = (user, input, taskType, taskExpectedNumber, scope = undefined) => {
+const createWorkForBackgroundTask = async (context, taskId, connectorId) => {
+  const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
+  const args = { background_task_id: taskId, receivedTime: now() };
+  return createWork(context, SYSTEM_USER, connector, `background task @ ${now()}`, connector.internal_id, args);
+};
+
+export const createDefaultTask = async (context, user, input, taskType, taskExpectedNumber, scope = undefined) => {
   const taskId = generateInternalId();
+  let work_id;
+  let connector_id;
+  if (taskExpectedNumber > 0) {
+    connector_id = await getBestBackgroundConnectorId(context, user);
+    const work = await createWorkForBackgroundTask(context, taskId, connector_id);
+    work_id = work.id;
+  }
   let task = {
     id: taskId,
     internal_id: taskId,
@@ -255,6 +270,9 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
     initiator_id: user.internal_id,
     created_at: now(),
     completed: false,
+    // Associated job
+    work_id,
+    connector_id,
     // Task related
     type: taskType,
     last_execution_date: null,
@@ -312,7 +330,7 @@ const authorizedMembersForTask = (user, scope) => {
 export const createListTask = async (context, user, input) => {
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
-  const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);
+  const task = await createDefaultTask(context, user, input, TASK_TYPE_LIST, ids.length, scope);
   const listTask = {
     ...task,
     actions,
