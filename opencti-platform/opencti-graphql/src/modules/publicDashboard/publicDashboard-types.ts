@@ -1,5 +1,5 @@
-import type { BasicStoreEntity, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import type { BasicStoreEntity, BasicStoreIdentifier, StoreEntity, StoreMarkingDefinition } from '../../types/store';
+import type { StixDomainObject, StixId, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { FilterGroup } from '../../generated/graphql';
 
@@ -75,10 +75,12 @@ export interface PublicDashboardCachedWidget {
   }[]
 }
 
-export interface PublicDashboardCached {
+export interface PublicDashboardCached extends BasicStoreIdentifier {
   id: string;
   enabled: boolean;
   internal_id: string;
+  standard_id: StixId;
+  x_opencti_stix_ids?: Array<StixId>;
   uri_key: string;
   dashboard_id: string;
   private_manifest: {
