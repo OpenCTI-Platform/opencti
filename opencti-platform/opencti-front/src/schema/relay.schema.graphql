@@ -1117,6 +1117,7 @@ interface BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  work: Work
 }
 
 type RuleTask implements BackgroundTask {
@@ -1132,6 +1133,7 @@ type RuleTask implements BackgroundTask {
   errors: [BackgroundTaskError]
   rule: ID!
   enable: Boolean
+  work: Work
 }
 
 type ListTask implements BackgroundTask {
@@ -1149,6 +1151,7 @@ type ListTask implements BackgroundTask {
   authorized_members: [MemberAccess!]
   authorized_authorities: [String]
   task_ids: [ID!]
+  work: Work
 }
 
 type QueryTask implements BackgroundTask {
@@ -1167,6 +1170,7 @@ type QueryTask implements BackgroundTask {
   authorized_authorities: [String]
   task_filters: String!
   task_search: String
+  work: Work
 }
 
 type BackgroundTaskConnectionEdge {
@@ -8708,6 +8712,8 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
   ruleManagerClean(eventId: ID): RuleManager!
+  ruleApply(elementId: ID!, ruleId: ID!): Boolean
+  ruleClear(elementId: ID!, ruleId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
   otpActivation(input: UserOTPActivationInput): MeUser

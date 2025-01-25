@@ -288,6 +288,16 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     imported_items = self.api.stix2.import_bundle(
                         bundle, True, types, work_id
                     )
+                elif event_type == "rule_apply" or event_type == "rule_clear":
+                    rule_object = event_content["data"]
+                    rule_object["opencti_operation"] = event_type
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [rule_object],
+                    }
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
                 elif event_type == "delete":
                     delete_object = event_content["data"]
                     delete_object["opencti_operation"] = event_type
@@ -308,7 +318,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
                     )
                     merge_object = event_content["data"]
-                    merge_object["opencti_operation"] = "merge"
+                    merge_object["opencti_operation"] = event_type
                     merge_object["merge_target_id"] = target_id
                     merge_object["merge_source_ids"] = source_ids
                     bundle = {

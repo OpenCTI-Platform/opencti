@@ -3,14 +3,14 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
-import { ALREADY_DELETED_ERROR, TYPE_LOCK_ERROR } from '../config/errors';
+import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -24,7 +24,7 @@ import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
-import { getActivatedRules } from '../domain/rules';
+import { getActivatedRules, getRule } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
 import { elList } from '../database/engine';
@@ -338,6 +338,30 @@ const initRuleManager = () => {
   };
 };
 const ruleEngine = initRuleManager();
+
+export const executeRuleApply = async (context: AuthContext, user: AuthUser, rule: RuleRuntime, id: string) => {
+  // Execute rules over one element, act as element creation
+  const instance = await storeLoadByIdWithRefs(context, user, id);
+  if (!instance) {
+    throw FunctionalError('Cant find element to scan', { id });
+  }
+  const event = buildCreateEvent(user, instance, '-');
+  await rulesApplyHandler(context, user, [event], [rule]);
+};
+
+export const ruleApply = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
+  const rule = await getRule(context, user, ruleId) as RuleRuntime;
+  if (!rule) {
+    throw FunctionalError('Cant find rule to scan', { id: ruleId });
+  }
+  return executeRuleApply(context, user, rule, elementId);
+};
+
+export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
+  const rule = await getRule(context, user, ruleId) as RuleRuntime;
+  const element = await internalLoadById(context, user, elementId) as BasicStoreCommon;
+  return rulesCleanHandler(context, user, [element], [rule]);
+};
 
 export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eventId: string) => {
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
