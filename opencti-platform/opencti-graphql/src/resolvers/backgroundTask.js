@@ -2,7 +2,10 @@ import { deleteTask, createQueryTask, findAll, findById } from '../domain/backgr
 import { createListTask } from '../domain/backgroundTask-common';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
+import { elBatchIds } from '../database/engine';
+import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 
+const loadByIdLoader = batchLoader(elBatchIds);
 const creatorLoader = batchLoader(batchCreator);
 
 const taskResolvers = {
@@ -25,6 +28,9 @@ const taskResolvers = {
       return 'Unknown';
     },
     initiator: (task, _, context) => creatorLoader.load(task.initiator_id, context, context.user),
+    work: (task, _, context) => {
+      return task.work_id ? loadByIdLoader.load({ id: task.work_id, type: ENTITY_TYPE_WORK }, context, context.user) : undefined;
+    },
   },
 };
 

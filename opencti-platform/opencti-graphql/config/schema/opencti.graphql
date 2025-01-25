@@ -1051,6 +1051,7 @@ interface BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  work: Work
 }
 
 type RuleTask implements BackgroundTask {
@@ -1067,6 +1068,7 @@ type RuleTask implements BackgroundTask {
   # RuleTask
   rule: ID!
   enable: Boolean
+  work: Work
 }
 
 type ListTask implements BackgroundTask {
@@ -1086,6 +1088,7 @@ type ListTask implements BackgroundTask {
   authorized_authorities: [String]
   # ListTask
   task_ids: [ID!]
+  work: Work
 }
 
 type QueryTask implements BackgroundTask {
@@ -1106,6 +1109,7 @@ type QueryTask implements BackgroundTask {
   # QueryTask
   task_filters: String!
   task_search: String
+  work: Work
 }
 
 type BackgroundTaskConnectionEdge {
@@ -14403,6 +14407,8 @@ type Mutation {
   ### RULE
   ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  ruleApply(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+  ruleClear(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth

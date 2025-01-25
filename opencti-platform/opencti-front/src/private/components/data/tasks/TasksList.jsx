@@ -31,6 +31,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import TaskScope from '../../../../components/TaskScope';
 import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
+import WorkDetail from "@components/data/connectors/WorkDetail";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -135,6 +136,32 @@ const TasksListFragment = graphql`
             task_search
             scope
           }
+          work {
+            id
+            connector {
+              name
+            }
+            user {
+              name
+            }
+            completed_time
+            received_time
+            tracking {
+              import_expected_number
+              import_processed_number
+            }
+            messages {
+              timestamp
+              message
+            }
+            errors {
+              timestamp
+              message
+            }
+            status
+            timestamp
+            draft_context  
+          }
         }
       }
     }
@@ -234,8 +261,7 @@ const TasksList = ({ data }) => {
                 <Grid container={true} spacing={1}>
                   <Grid item xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)}
-                      )
+                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                     </Typography>
                     {task.task_search && (
                     <span>
@@ -389,6 +415,8 @@ const TasksList = ({ data }) => {
                     />
                   </Grid>
                 </Grid>
+                { task.work && <><WorkDetail work={task.work} /></> }
+                <br/>
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}

@@ -146,86 +146,82 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             {t_i18n('No work')}
           </Typography>
         </Paper>
-        )}
-        {works.map((workEdge) => {
-          const work = workEdge?.node;
-          if (!work) return null;
-          const { tracking } = work;
-          return (
-            <Paper
-              key={work.id}
-              classes={{ root: classes.paper }}
-              variant="outlined"
-            >
-              <Grid container={true} spacing={3}>
-                <Grid item xs={7}>
-                  <Grid container={true} spacing={1}>
-                    <Grid item xs={8}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Name')}
+      )}
+      {works.map((workEdge) => {
+        const work = workEdge?.node;
+        if (!work) return null;
+        const { tracking } = work;
+        return (
+          <Paper key={work.id} classes={{ root: classes.paper }} variant="outlined">
+            <Grid container={true} spacing={3}>
+              <Grid item xs={7}>
+                <Grid container={true} spacing={1}>
+                  <Grid item xs={8}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Name')}
+                    </Typography>
+                    <Tooltip title={work.name}>
+                      <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
+                        {work.name}
                       </Typography>
-                      <Tooltip title={work.name}>
-                        <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
-                          {work.name}
-                        </Typography>
-                      </Tooltip>
-                    </Grid>
-                    <Grid item xs={4}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Status')}
-                      </Typography>
-                      <TaskStatus status={work.status} label={t_i18n(work.status)} />
-                    </Grid>
-                    <Grid item xs={8}>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        classes={{ root: classes.bottomTypo }}
-                      >
-                        {t_i18n('Work start time')}
-                      </Typography>
-                      {nsdt(work.received_time)}
-                    </Grid>
-                    <Grid item xs={4}>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        classes={{ root: classes.bottomTypo }}
-                      >
-                        {t_i18n('Work end time')}
-                      </Typography>
-                      {work.completed_time ? nsdt(work.completed_time) : '-'}
-                    </Grid>
+                    </Tooltip>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Status')}
+                    </Typography>
+                    <TaskStatus status={work.status} label={t_i18n(work.status)} />
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      classes={{ root: classes.bottomTypo }}
+                    >
+                      {t_i18n('Work start time')}
+                    </Typography>
+                    {nsdt(work.received_time)}
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      classes={{ root: classes.bottomTypo }}
+                    >
+                      {t_i18n('Work end time')}
+                    </Typography>
+                    {work.completed_time ? nsdt(work.completed_time) : '-'}
                   </Grid>
                 </Grid>
-                <Grid item xs={4}>
-                  <Grid container={true} spacing={3}>
-                    <Grid item xs={6}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Operations completed')}
-                      </Typography>
-                      <span className={classes.number}>
-                        {work.status === 'wait'
-                          ? '-'
-                          : tracking?.import_processed_number ?? '-'}
-                      </span>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Total number of operations')}
-                      </Typography>
-                      <span className={classes.number}>
-                        {tracking?.import_expected_number ?? '-'}
-                      </span>
-                    </Grid>
-                    <Grid item xs={11}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Progress')}
-                      </Typography>
-                      <LinearProgress
-                        classes={{ root: classes.progress }}
-                        variant="determinate"
-                        value={
+              </Grid>
+              <Grid item xs={4}>
+                <Grid container={true} spacing={3}>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Operations completed')}
+                    </Typography>
+                    <span className={classes.number}>
+                      {work.status === 'wait'
+                        ? '-'
+                        : tracking?.import_processed_number ?? '-'}
+                    </span>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Total number of operations')}
+                    </Typography>
+                    <span className={classes.number}>
+                      {tracking?.import_expected_number ?? '-'}
+                    </span>
+                  </Grid>
+                  <Grid item xs={11}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Progress')}
+                    </Typography>
+                    <LinearProgress
+                      classes={{ root: classes.progress }}
+                      variant="determinate"
+                      value={
                         tracking && !!tracking.import_expected_number && !!tracking.import_processed_number
                           ? Math.round((tracking.import_processed_number / tracking.import_expected_number) * 100)
                           : 0
