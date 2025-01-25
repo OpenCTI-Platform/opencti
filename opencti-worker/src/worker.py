@@ -33,7 +33,6 @@ from pycti.connector.opencti_connector_helper import (
 from pycti.utils.opencti_logger import logger
 from requests import RequestException, Timeout
 
-
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
@@ -53,9 +52,10 @@ max_ingestion_units_count = meter.create_gauge(
     description="Maximum number of ingestion units (configuration)",
 )
 running_ingestion_units_gauge = meter.create_gauge(
-        name="opencti_running_ingestion_units",
-        description="Number of running ingestion units",
+    name="opencti_running_ingestion_units",
+    description="Number of running ingestion units",
 )
+
 
 @dataclass(unsafe_hash=True)
 class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -325,6 +325,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.api.set_event_id(data.get("event_id"))
             self.api.set_draft_id(data.get("draft_id"))
             work_id = data["work_id"] if "work_id" in data else None
+            no_split = data["no_split"] if "no_split" in data else False
             synchronized = data["synchronized"] if "synchronized" in data else False
             self.api.set_synchronized_upsert_header(synchronized)
             previous_standard = data.get("previous_standard")
@@ -337,11 +338,13 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 else None
             )
             if event_type == "bundle":
+                # Event type bundle
+                # Standard event with STIX information
                 content = base64.b64decode(data["content"]).decode("utf-8")
                 content_json = json.loads(content)
                 if "objects" not in content_json or len(content_json["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content_json["objects"]) == 1:
+                if len(content_json["objects"]) == 1 or no_split:
                     update = data["update"] if "update" in data else False
                     imported_items = self.api.stix2.import_bundle_from_json(
                         content, update, types, work_id
@@ -387,52 +390,70 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
                     push_channel.close()
                     push_pika_connection.close()
+            # Event type event
+            # Specific OpenCTI event operation with specific operation
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
                 event_content = json.loads(event)
                 event_type = event_content["type"]
-                if event_type == "create" or event_type == "update":
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [event_content["data"]],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "delete":
-                    delete_object = event_content["data"]
-                    delete_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [delete_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "merge":
-                    # Start with a merge
-                    target_id = event_content["data"]["id"]
-                    source_ids = list(
-                        map(
-                            lambda source: source["id"],
-                            event_content["context"]["sources"],
+                match event_type:
+                    # Standard knowledge
+                    case "create" | "update":
+                        bundle = {
+                            "type": "bundle",
+                            "objects": [event_content["data"]],
+                        }
+                        imported_items = self.api.stix2.import_bundle(
+                            bundle, True, types, work_id
                         )
-                    )
-                    merge_object = event_content["data"]
-                    merge_object["opencti_operation"] = "merge"
-                    merge_object["merge_target_id"] = target_id
-                    merge_object["merge_source_ids"] = source_ids
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [merge_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                else:
-                    raise ValueError(
-                        "Unsupported operation type", {"event_type": event_type}
-                    )
+                    # Specific knowledge merge
+                    case "merge":
+                        # Start with a merge
+                        target_id = event_content["data"]["id"]
+                        source_ids = list(
+                            map(
+                                lambda source: source["id"],
+                                event_content["context"]["sources"],
+                            )
+                        )
+                        merge_object = event_content["data"]
+                        merge_object["opencti_operation"] = event_type
+                        merge_object["merge_target_id"] = target_id
+                        merge_object["merge_source_ids"] = source_ids
+                        bundle = {
+                            "type": "bundle",
+                            "objects": [merge_object],
+                        }
+                        imported_items = self.api.stix2.import_bundle(
+                            bundle, True, types, work_id
+                        )
+                    # All standard operations
+                    case (
+                        "delete"  # Standard delete
+                        | "restore"  # Restore an operation from trash
+                        | "delete_force"  # Delete with no trash
+                        | "share"  # Share an element
+                        | "unshare"  # Unshare an element
+                        | "rule_apply"  # Applying a rule (start engine)
+                        | "rule_clear"  # Clearing a rule (stop engine)
+                        | "rules_rescan"  # Rescan a rule (massive operation in UI)
+                        | "enrichment"  # Ask for enrichment (massive operation in UI)
+                        | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                        | "revert_draft"  # Cancel draft modification (massive operation in UI)
+                    ):
+                        data_object = event_content["data"]
+                        data_object["opencti_operation"] = event_type
+                        bundle = {
+                            "type": "bundle",
+                            "objects": [data_object],
+                        }
+                        imported_items = self.api.stix2.import_bundle(
+                            bundle, True, types, work_id
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported operation type", {"event_type": event_type}
+                        )
             else:
                 raise ValueError("Unsupported event type", {"event_type": event_type})
             # Ack the message
@@ -608,7 +629,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             )
             metrics.set_meter_provider(provider)
 
-
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
             url=self.opencti_url,
@@ -616,6 +636,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             log_level=self.log_level,
             ssl_verify=self.opencti_ssl_verify,
             json_logging=self.opencti_json_logging,
+            perform_health_check=False,  # No need to prevent worker start if API is not available yet
             custom_headers=self.opencti_api_custom_headers,
         )
         self.worker_logger = self.api.logger_class("worker")

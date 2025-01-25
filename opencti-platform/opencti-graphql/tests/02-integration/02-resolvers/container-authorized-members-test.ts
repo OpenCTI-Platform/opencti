@@ -54,6 +54,9 @@ const READ_QUERY = gql`
         member_id
         access_right
       }
+      objectOrganization {
+        id
+      }
       currentUserAccessRight
     }
   }
@@ -142,10 +145,11 @@ const PLATFORM_ORGANIZATION_QUERY = gql`
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
-    $organizationId: ID!
+    $organizationId: [ID!]!
+    $directContainerSharing: Boolean
   ) {
     stixCoreObjectEdit(id: $id) {
-      restrictionOrganizationAdd(organizationId: $organizationId) {
+      restrictionOrganizationAdd(organizationId: $organizationId, directContainerSharing: $directContainerSharing) {
         id
         objectOrganization {
           id
@@ -492,11 +496,15 @@ describe('Case Incident Response and organization sharing standard behavior with
     organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: caseIrId, organizationId }
+      variables: { id: caseIrId, organizationId, directContainerSharing: true }
     });
     expect(organizationSharingQueryResult).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(PLATFORM_ORGANIZATION.name);
+    // Verify Editor user has access to Case incident after sharing
+    const caseIRQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+    expect(caseIRQueryResult).not.toBeNull();
+    expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
+    expect(caseIRQueryResult?.data?.caseIncident.objectOrganization[0].id).toEqual(organizationId);
   });
   it('should Editor user from different organization access Case Incident Response', async () => {
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
@@ -652,12 +660,10 @@ describe('Case Incident Response and organization sharing standard behavior with
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: caseIrId, organizationId: testOrganizationId }
+      variables: { id: caseIrId, organizationId: testOrganizationId, directContainerSharing: true }
     });
     expect(organizationSharingQueryResult).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
-
     // Verify Editor user has access to Case incident
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
