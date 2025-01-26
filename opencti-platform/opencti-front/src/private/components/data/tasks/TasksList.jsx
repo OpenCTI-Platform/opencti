@@ -21,6 +21,7 @@ import Slide from '@mui/material/Slide';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import WorkDetail from '../connectors/WorkDetail';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,7 +32,6 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import TaskScope from '../../../../components/TaskScope';
 import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
-import WorkDetail from "@components/data/connectors/WorkDetail";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
