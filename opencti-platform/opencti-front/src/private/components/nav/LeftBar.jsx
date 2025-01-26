@@ -142,18 +142,18 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   menuSubItem: {
     height: 25,
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: 12,
   },
   menuSubItemWithIcon: {
     paddingLeft: 20,
     height: 25,
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: 12,
   },
   menuItemText: {
     padding: '1px 0 0 15px',
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: 14,
   },
   menuSubItemText: {
@@ -161,7 +161,7 @@ const useStyles = makeStyles((theme) => createStyles({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     padding: '1px 0 0 10px',
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: 12,
   },
   menuSubItemTextWithoutIcon: {
@@ -169,7 +169,7 @@ const useStyles = makeStyles((theme) => createStyles({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     padding: '1px 0 0 0',
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: 12,
   },
   menuCollapseOpen: {

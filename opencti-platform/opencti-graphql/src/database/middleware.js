@@ -1213,7 +1213,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     };
     updateConnections.push(relUpdate);
     // Update the side that will remain (RELATED_ELEMENT)
-    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_TO)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, entity.i_relation.fromType, entity.i_relation.toType, ROLE_TO)) {
       updateEntities.push({
         _index: entity._index,
         id: sideToKeep,
@@ -1224,7 +1224,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       });
     }
     // Update the MERGED TARGET (Need to add the relation side)
-    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_FROM)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, entity.i_relation.fromType, entity.i_relation.toType, ROLE_FROM)) {
       updateEntities.push({
         _index: targetEntity._index,
         id: sideTarget,
@@ -1255,7 +1255,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     };
     updateConnections.push(relUpdate);
     // Update the side that will remain (RELATED_ELEMENT)
-    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_FROM)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, entity.i_relation.fromType, entity.i_relation.toType, ROLE_FROM)) {
       updateEntities.push({
         _index: entity._index,
         id: sideToKeep,
@@ -1266,7 +1266,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       });
     }
     // Update the MERGED TARGET (Need to add the relation side)
-    if (isImpactedTypeAndSide(entity.i_relation.entity_type, ROLE_TO)) {
+    if (isImpactedTypeAndSide(entity.i_relation.entity_type, entity.i_relation.fromType, entity.i_relation.toType, ROLE_TO)) {
       updateEntities.push({
         _index: targetEntity._index,
         id: sideTarget,
@@ -2786,8 +2786,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
 
   // Build lock ids
   const inputIds = getInputIds(relationshipType, resolvedInput, fromRule);
-  if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
-  if (isImpactedTypeAndSide(relationshipType, ROLE_TO)) inputIds.push(to.internal_id);
+  if (isImpactedTypeAndSide(relationshipType, from.entity_type, to.entity_type, ROLE_FROM)) inputIds.push(from.internal_id);
+  if (isImpactedTypeAndSide(relationshipType, from.entity_type, to.entity_type, ROLE_TO)) inputIds.push(to.internal_id);
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis

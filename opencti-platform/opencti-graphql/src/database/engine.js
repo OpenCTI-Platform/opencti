@@ -89,13 +89,22 @@ import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_REGION,
   isStixDomainObject,
   STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship, RELATION_INDICATES, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import {
+  isStixCoreRelationship,
+  RELATION_INDICATES,
+  RELATION_LOCATED_AT,
+  RELATION_PUBLISHES,
+  RELATION_RELATED_TO,
+  RELATION_TARGETS,
+  STIX_CORE_RELATIONSHIPS
+} from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -170,7 +179,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
+import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -222,10 +231,36 @@ export const UNIMPACTED_ENTITIES_ROLE = [
   // RELATION_EXTERNAL_REFERENCE
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
-export const isImpactedTypeAndSide = (type, side) => {
+export const isSpecialNonImpactedCases = (relationshipType, fromType, toType, side) => {
+  if (side === ROLE_TO && relationshipType === RELATION_RELATED_TO && isStixCyberObservable(fromType)) {
+    return true;
+  }
+  if (side === ROLE_TO && relationshipType === RELATION_LOCATED_AT && toType === ENTITY_TYPE_LOCATION_REGION) {
+    return true;
+  }
+  if (side === ROLE_TO && relationshipType === RELATION_LOCATED_AT && toType === ENTITY_TYPE_LOCATION_COUNTRY) {
+    return true;
+  }
+  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && toType === ENTITY_TYPE_LOCATION_REGION) {
+    return true;
+  }
+  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && toType === ENTITY_TYPE_LOCATION_COUNTRY) {
+    return true;
+  }
+  return false;
+};
+export const isImpactedTypeAndSide = (type, fromType, toType, side) => {
+  if (isSpecialNonImpactedCases(type, fromType, toType, side)) {
+    return false;
+  }
   return !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
 };
-export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
+export const isImpactedRole = (type, fromType, toType, role) => {
+  if (isSpecialNonImpactedCases(type, fromType, toType, role.split('_').at(1))) {
+    return false;
+  }
+  return !UNIMPACTED_ENTITIES_ROLE.includes(role);
+};
 
 let engine;
 let isRuntimeSortingEnable = false;
@@ -3617,7 +3652,7 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
   for (let i = 0; i < cleanupRelations.length; i += 1) {
     const relation = cleanupRelations[i];
     const fromWillNotBeRemoved = !relationsToRemoveMap.has(relation.fromId) && !toBeRemovedIds.includes(relation.fromId);
-    const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, ROLE_FROM);
+    const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, relation.fromType, relation.toType, ROLE_FROM);
     const cleanKey = `${relation.entity_type}|${relation._index}`;
     if (isFromCleanup) {
       if (isEmptyField(elementsImpact[relation.fromId])) {
@@ -3632,7 +3667,7 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
       }
     }
     const toWillNotBeRemoved = !relationsToRemoveMap.has(relation.toId) && !toBeRemovedIds.includes(relation.toId);
-    const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, ROLE_TO);
+    const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, relation.fromType, relation.toType, ROLE_TO);
     if (isToCleanup) {
       if (isEmptyField(elementsImpact[relation.toId])) {
         elementsImpact[relation.toId] = { [cleanKey]: [relation.fromId] };
@@ -4028,7 +4063,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     const impactedEntities = R.pipe(
       R.filter((e) => e.base_type === BASE_TYPE_RELATION),
       R.map((e) => {
-        const { fromType, fromRole, toRole } = e;
+        const { fromType, fromRole, toType, toRole } = e;
         const impacts = [];
         // We impact target entities of the relation only if not global entities like
         // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
@@ -4036,13 +4071,10 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         cache[e.toId] = e.to;
         const refField = isStixRefRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
         const relationshipType = e.entity_type;
-        const isRelatedToFromObservable = isStixCyberObservable(fromType) && relationshipType === RELATION_RELATED_TO;
-        if (isImpactedRole(fromRole)) {
+        if (isImpactedRole(relationshipType, fromType, toType, fromRole)) {
           impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
         }
-        // Waiting for JRI work, we need to avoid impact rel on very large entities
-        // Slowing down the performances due to original misconception
-        if (isImpactedRole(toRole) && !isRelatedToFromObservable) {
+        if (isImpactedRole(relationshipType, fromType, toType, toRole)) {
           impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
         }
         return impacts;
