@@ -74,7 +74,7 @@ const containerHeaderSharedQuery = graphql`
 const containerHeaderSharedQueryGroupDeleteMutation = graphql`
   mutation StixCoreObjectSharingGroupDeleteMutation(
     $id: ID!
-    $organizationId: ID!
+    $organizationId: [ID!]!
   ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
@@ -91,7 +91,7 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
 const containerHeaderSharedGroupAddMutation = graphql`
   mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
-    $organizationId: ID!
+    $organizationId: [ID!]!
   ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {

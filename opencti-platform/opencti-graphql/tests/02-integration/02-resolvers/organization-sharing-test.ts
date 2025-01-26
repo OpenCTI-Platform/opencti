@@ -20,7 +20,7 @@ import { taskHandler } from '../../../src/manager/taskManager';
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
-    $organizationId: ID!
+    $organizationId: [ID!]!
   ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
