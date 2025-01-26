@@ -73,8 +73,8 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../domain/work';
-import {cleanObject, convertTypeToStixType} from '../database/stix-converter';
-import {STIX_EXT_OCTI} from "../types/stix-extensions";
+import { convertTypeToStixType } from '../database/stix-converter';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.

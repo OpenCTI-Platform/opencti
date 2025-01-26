@@ -24,6 +24,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const WorkDetail = ({ work }: { work: any }) => {
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
