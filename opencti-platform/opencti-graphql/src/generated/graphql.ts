@@ -13871,6 +13871,7 @@ export type Mutation = {
   roleEdit?: Maybe<RoleEditMutations>;
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
+  rulesRescan?: Maybe<Scalars['Boolean']['output']>;
   sectorAdd?: Maybe<Sector>;
   sectorEdit?: Maybe<SectorEditMutations>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
@@ -15436,6 +15437,11 @@ export type MutationRuleManagerCleanArgs = {
 export type MutationRuleSetActivationArgs = {
   enable: Scalars['Boolean']['input'];
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationRulesRescanArgs = {
+  elementId: Scalars['ID']['input'];
 };
 
 
@@ -24508,12 +24514,12 @@ export type StixCoreObjectEditMutationsRelationsAddArgs = {
 
 
 export type StixCoreObjectEditMutationsRestrictionOrganizationAddArgs = {
-  organizationId: Scalars['ID']['input'];
+  organizationId: Array<Scalars['ID']['input']>;
 };
 
 
 export type StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs = {
-  organizationId: Scalars['ID']['input'];
+  organizationId: Array<Scalars['ID']['input']>;
 };
 
 export type StixCoreObjectOrStixCoreRelationship = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Position | Process | PublicDashboard | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
@@ -24780,12 +24786,12 @@ export type StixCoreRelationshipEditMutationsRelationsAddArgs = {
 
 
 export type StixCoreRelationshipEditMutationsRestrictionOrganizationAddArgs = {
-  organizationId: Scalars['ID']['input'];
+  organizationId: Array<Scalars['ID']['input']>;
 };
 
 
 export type StixCoreRelationshipEditMutationsRestrictionOrganizationDeleteArgs = {
-  organizationId: Scalars['ID']['input'];
+  organizationId: Array<Scalars['ID']['input']>;
 };
 
 export type StixCoreRelationshipsDistributionParameters = {
@@ -26267,12 +26273,12 @@ export type StixSightingRelationshipEditMutationsRelationsAddArgs = {
 
 
 export type StixSightingRelationshipEditMutationsRestrictionOrganizationAddArgs = {
-  organizationId: Scalars['ID']['input'];
+  organizationId: Array<Scalars['ID']['input']>;
 };
 
 
 export type StixSightingRelationshipEditMutationsRestrictionOrganizationDeleteArgs = {
-  organizationId: Scalars['ID']['input'];
+  organizationId: Array<Scalars['ID']['input']>;
 };
 
 export type StixSightingRelationshipsEdge = {
@@ -37726,6 +37732,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
+  rulesRescan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRulesRescanArgs, 'elementId'>>;
   sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;

@@ -288,16 +288,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     imported_items = self.api.stix2.import_bundle(
                         bundle, True, types, work_id
                     )
-                elif event_type == "rule_apply" or event_type == "rule_clear":
-                    rule_object = event_content["data"]
-                    rule_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [rule_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
                 elif event_type == "delete":
                     delete_object = event_content["data"]
                     delete_object["opencti_operation"] = event_type
@@ -324,6 +314,30 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     bundle = {
                         "type": "bundle",
                         "objects": [merge_object],
+                    }
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
+                elif (
+                    event_type == "rule_apply"
+                    or event_type == "rule_clear"
+                    or event_type == "rules_rescan"
+                ):
+                    rule_object = event_content["data"]
+                    rule_object["opencti_operation"] = event_type
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [rule_object],
+                    }
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
+                elif event_type == "share" or event_type == "unshare":
+                    sharing_object = event_content["data"]
+                    sharing_object["opencti_operation"] = event_type
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [sharing_object],
                     }
                     imported_items = self.api.stix2.import_bundle(
                         bundle, True, types, work_id

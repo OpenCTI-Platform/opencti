@@ -6,17 +6,17 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import { buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
+import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
-import { RULE_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getParentTypes } from '../schema/schemaUtils';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { internalLoadById } from '../database/middleware-loader';
+import { internalLoadById, listAllRelations } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
-import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
+import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
@@ -25,9 +25,10 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { getActivatedRules, getRule } from '../domain/rules';
-import { executionContext, RULE_MANAGER_USER } from '../utils/access';
+import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
 import { elList } from '../database/engine';
+import { isStixObject } from '../schema/stixCoreObject';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -361,6 +362,48 @@ export const ruleClear = async (context: AuthContext, user: AuthUser, elementId:
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   const element = await internalLoadById(context, user, elementId) as BasicStoreCommon;
   return rulesCleanHandler(context, user, [element], [rule]);
+};
+
+export const executeRuleElementRescan = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
+  const activatedRules = await getActivatedRules(context, SYSTEM_USER);
+  if (activatedRules.length > 0) {
+    const ruleRescanTypes = activatedRules.map((r) => r.scan.types).flat();
+    if (isStixRelationship(element.entity_type)) {
+      const needRescan = ruleRescanTypes.includes(element.entity_type);
+      if (needRescan) {
+        const data = await stixLoadById(context, user, element.internal_id);
+        if (data) {
+          const event = buildInternalEvent(EVENT_TYPE_CREATE, data as StixCoreObject);
+          await rulesApplyHandler(context, user, [event], activatedRules);
+        }
+      }
+    } else if (isStixObject(element.entity_type)) {
+      const listCallback = async (relations: BasicStoreRelation[]) => {
+        for (let index = 0; index < relations.length; index += 1) {
+          const relation = relations[index];
+          const needRescan = ruleRescanTypes.includes(relation.entity_type);
+          if (needRescan) {
+            const data = await stixLoadById(context, user, relation.internal_id);
+            if (data) {
+              const event = buildInternalEvent(EVENT_TYPE_CREATE, data as StixCoreObject);
+              await rulesApplyHandler(context, user, [event], activatedRules);
+            }
+          }
+        }
+      };
+      const args = { connectionFormat: false, fromId: element.internal_id, callback: listCallback };
+      await listAllRelations<BasicStoreRelation>(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
+    }
+  }
+};
+
+export const rulesRescan = async (context: AuthContext, user: AuthUser, elementId: string) => {
+  const elem = await internalLoadById(context, user, elementId, { baseData: true });
+  if (elem) {
+    await executeRuleElementRescan(context, user, elem);
+    return true;
+  }
+  return false;
 };
 
 export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eventId: string) => {
