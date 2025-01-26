@@ -25,7 +25,7 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './backgroundTask';
 import { getParentTypes } from '../schema/schemaUtils';
-import { internalLoadById, storeLoadById } from '../database/middleware-loader';
+import { countAllThings, internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
@@ -252,7 +252,7 @@ export const generateFiltersForSharingTask = (containerId) => {
       return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
     });
   const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
-  const filters = {
+  return {
     mode: 'and',
     filters: [
       {
@@ -266,34 +266,37 @@ export const generateFiltersForSharingTask = (containerId) => {
     ],
     filterGroups: [],
   };
-  return filters;
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {
   const filters = generateFiltersForSharingTask(containerId);
-
-  // orderMode is on created_at, see buildQueryFilters in backgroundTask
-  // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
-  // containerId required to send an event after all container content is shared.
-  const input = {
-    filters: JSON.stringify(filters),
-    actions: [{ type, context: { values: [organizationId] }, containerId }],
-    scope: 'KNOWLEDGE',
-    orderMode: 'asc'
-  };
-  await createQueryTask(context, context.user, input);
+  const impactsNumber = await countAllThings(context, context.user, { filters });
+  if (impactsNumber > 0) {
+    const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
+    // orderMode is on created_at, see buildQueryFilters in backgroundTask
+    // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
+    // containerId required to send an event after all container content is shared.
+    const input = {
+      filters: JSON.stringify(filters),
+      actions: [{ type, context: { values: organizationIds }, containerId }],
+      scope: 'KNOWLEDGE',
+      orderMode: 'asc'
+    };
+    await createQueryTask(context, context.user, input);
+  }
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot restrict organization in draft');
   }
+  const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
-  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
+  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationIds, operation: UPDATE_OPERATION_ADD }];
   // We skip references validation when updating organization sharing
   const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
   if (isStixDomainObjectShareableContainer(from.entity_type)) {
-    await createSharingTask(context, 'SHARE', fromId, organizationId);
+    await createSharingTask(context, 'SHARE', from.internal_id, organizationIds);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };
@@ -302,12 +305,13 @@ export const removeOrganizationRestriction = async (context, user, fromId, organ
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot remove organization restriction in draft');
   }
+  const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
-  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
+  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationIds, operation: UPDATE_OPERATION_REMOVE }];
   // We skip references validation when updating organization sharing
   const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
   if (isStixDomainObjectShareableContainer(from.entity_type)) {
-    await createSharingTask(context, 'UNSHARE', fromId, organizationId);
+    await createSharingTask(context, 'UNSHARE', from.internal_id, organizationIds);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };

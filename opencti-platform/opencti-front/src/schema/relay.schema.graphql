@@ -8385,8 +8385,8 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
+  restrictionOrganizationAdd(organizationId: [ID!]!): StixCoreObject
+  restrictionOrganizationDelete(organizationId: [ID!]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
@@ -8665,8 +8665,8 @@ type StixCoreRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship
+  restrictionOrganizationAdd(organizationId: [ID!]!): StixCoreRelationship
+  restrictionOrganizationDelete(organizationId: [ID!]!): StixCoreRelationship
   removeFromDraft: ID
 }
 
@@ -8678,8 +8678,8 @@ type StixSightingRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship
-  restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship
+  restrictionOrganizationAdd(organizationId: [ID!]!): StixSightingRelationship
+  restrictionOrganizationDelete(organizationId: [ID!]!): StixSightingRelationship
   removeFromDraft: ID
 }
 
@@ -8718,6 +8718,7 @@ type Mutation {
   ruleManagerClean(eventId: ID): RuleManager!
   ruleApply(elementId: ID!, ruleId: ID!): Boolean
   ruleClear(elementId: ID!, ruleId: ID!): Boolean
+  rulesRescan(elementId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
   otpActivation(input: UserOTPActivationInput): MeUser

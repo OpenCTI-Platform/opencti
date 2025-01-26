@@ -27,35 +27,16 @@ import {
 } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
-import {
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listAllThings,
-  mergeEntities,
-  patchAttribute,
-  stixLoadById,
-  storeLoadByIdWithRefs
-} from '../database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo, listAllThings, mergeEntities, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
 import { now, utcDate } from '../utils/format';
-import { EVENT_TYPE_CREATE, isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elList, elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, ValidationError } from '../config/errors';
-import {
-  ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
-  buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER,
-  INPUT_OBJECTS,
-  RULE_PREFIX
-} from '../schema/general';
+import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { BYPASS, executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildInternalEvent, executeRuleApply, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
+import { executeRuleApply, executeRuleElementRescan, rulesCleanHandler } from './ruleManager';
 import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
-import { getActivatedRules, getRule } from '../domain/rules';
-import { isStixRelationship } from '../schema/stixRelationship';
-import { isStixObject } from '../schema/stixCoreObject';
+import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
@@ -94,6 +75,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../domain/work';
 import { convertTypeToStixType } from '../database/stix-converter';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 // Task manager responsible to execute long manual tasks
@@ -175,34 +157,23 @@ const computeRuleTaskElements = async (context, user, task) => {
 
 // region NEW implementation
 export const taskRule = async (context, user, task, callback) => {
-  const { task_position, rule, enable } = task;
+  const { rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
-    const options = {
-      first: MAX_TASK_ELEMENTS,
-      orderMode: 'asc',
-      orderBy: 'updated_at',
-      after: task_position,
-      ...buildEntityFilters(scan.types, scan),
-    };
+    const options = { orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan) };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
+  } else {
+    const filters = {
+      mode: 'and',
+      filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+      filterGroups: [],
+    };
+    const options = { orderMode: 'asc', orderBy: 'updated_at', filters };
+    const finalOpts = { ...options, connectionFormat: false, callback };
+    await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
-  const filters = {
-    mode: 'and',
-    filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
-    filterGroups: [],
-  };
-  const options = {
-    first: MAX_TASK_ELEMENTS,
-    orderMode: 'asc',
-    orderBy: 'updated_at',
-    after: task_position,
-    filters,
-  };
-  const finalOpts = { ...options, connectionFormat: false, callback };
-  await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
 };
 export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
@@ -441,37 +412,7 @@ const executeRuleClean = async (context, user, actionContext, element) => {
   const { rule } = actionContext;
   await rulesCleanHandler(context, user, [element], [rule]);
 };
-const executeRuleElementRescan = async (context, user, actionContext, element) => {
-  const { rules } = actionContext ?? {};
-  const activatedRules = await getActivatedRules(context, SYSTEM_USER);
-  // Filter activated rules by context specification
-  const rulesToApply = rules ? activatedRules.filter((r) => rules.includes(r.id)) : activatedRules;
-  if (rulesToApply.length > 0) {
-    const ruleRescanTypes = rulesToApply.map((r) => r.scan.types).flat();
-    if (isStixRelationship(element.entity_type)) {
-      const needRescan = ruleRescanTypes.includes(element.entity_type);
-      if (needRescan) {
-        const data = await stixLoadById(context, user, element.internal_id);
-        const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-        await rulesApplyHandler(context, user, [event], rulesToApply);
-      }
-    } else if (isStixObject(element.entity_type)) {
-      const listCallback = async (relations) => {
-        for (let index = 0; index < relations.length; index += 1) {
-          const relation = relations[index];
-          const needRescan = ruleRescanTypes.includes(relation.entity_type);
-          if (needRescan) {
-            const data = await stixLoadById(context, user, relation.internal_id);
-            const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-            await rulesApplyHandler(context, user, [event], rulesToApply);
-          }
-        }
-      };
-      const args = { connectionFormat: false, fromId: element.internal_id, callback: listCallback };
-      await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
-    }
-  }
-};
+
 const executeShare = async (context, user, actionContext, element) => {
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
@@ -621,7 +562,7 @@ const executeProcessing = async (context, user, job, scope) => {
             await executeRuleClean(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-            await executeRuleElementRescan(context, user, actionContext, element);
+            await executeRuleElementRescan(context, user, element);
           }
           if (type === ACTION_TYPE_SHARE) {
             await executeShare(context, user, actionContext, element);
@@ -677,22 +618,29 @@ const createWorkForBackgroundTask = async (context, connectorId) => {
 // 0. KNOWLEDGE_TO_CONTAINER
 // 1. ACTION_TYPE_COMPLETE_DELETE
 // 2. ACTION_TYPE_RESTORE
-// 3. ACTION_TYPE_MERGE
 // 4. ACTION_TYPE_PROMOTE
 // 5. ACTION_TYPE_ENRICHMENT
-// 6. ACTION_TYPE_RULE_APPLY / ACTION_TYPE_RULE_CLEAR / ACTION_TYPE_RULE_ELEMENT_RESCAN
-// 7. ACTION_TYPE_SHARE / ACTION_TYPE_UNSHARE / ACTION_TYPE_SHARE_MULTIPLE / ACTION_TYPE_UNSHARE_MULTIPLE
 // 8. ACTION_TYPE_REMOVE_AUTH_MEMBERS
 const CURRENT_SUPPORT_TASKS = [
   // KNOWLEDGE
   'KNOWLEDGE_CHANGE', 'KNOWLEDGE_REMOVE', ACTION_TYPE_MERGE,
-  // RULE
-  ACTION_TYPE_RULE_APPLY, ACTION_TYPE_RULE_CLEAR
+  // RULES MANAGEMENT
+  ACTION_TYPE_RULE_APPLY, ACTION_TYPE_RULE_CLEAR, ACTION_TYPE_RULE_ELEMENT_RESCAN,
+  // SHARE / UNSHARE
+  ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, ACTION_TYPE_SHARE_MULTIPLE, ACTION_TYPE_UNSHARE_MULTIPLE
 ];
 const workerTaskHandler = async (context, user, task, actionType, operations) => {
   const connectorId = await getBestBackgroundConnectorId(context, user);
   const baseOperationBuilder = (element) => {
-    const baseOperationObject = {};
+    const baseOperationObject = {
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          id: element.internal_id,
+          type: element.entity_type
+        }
+      }
+    };
+    // Knowledge management
     if (actionType === 'KNOWLEDGE_CHANGE') {
       baseOperationObject.opencti_operation = 'patch';
       baseOperationObject.opencti_field_patch = operations.map((action) => {
@@ -704,21 +652,42 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
     if (actionType === 'KNOWLEDGE_REMOVE') {
       baseOperationObject.opencti_operation = 'delete';
     }
-    if (actionType === ACTION_TYPE_RULE_APPLY || actionType === ACTION_TYPE_RULE_CLEAR) {
+    if (actionType === ACTION_TYPE_MERGE) {
+      baseOperationObject.opencti_operation = 'merge';
+      baseOperationObject.merge_target_id = element.id; // To be compliant with current worker implementation
+      baseOperationObject.merge_source_ids = operations[0].context.values;
+    }
+    // Rule management
+    if (actionType === ACTION_TYPE_RULE_APPLY) {
       baseOperationObject.opencti_operation = actionType.toLowerCase();
       baseOperationObject.opencti_rule = operations[0].context.rule_id;
     }
-    if (actionType === ACTION_TYPE_MERGE) {
-      baseOperationObject.opencti_operation = 'merge';
-      baseOperationObject.merge_target_id = element.id;
-      baseOperationObject.merge_source_ids = operations[0].context.values;
+    if (actionType === ACTION_TYPE_RULE_CLEAR) {
+      baseOperationObject.opencti_operation = actionType.toLowerCase();
+      baseOperationObject.opencti_rule = operations[0].context.rule_id;
+    }
+    if (actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
+      baseOperationObject.opencti_operation = 'rules_rescan';
+    }
+    // Sharing
+    if (actionType === ACTION_TYPE_SHARE || actionType === ACTION_TYPE_SHARE_MULTIPLE) {
+      baseOperationObject.opencti_operation = 'share';
+      baseOperationObject.organization_ids = operations[0].context.values;
+    }
+    if (actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+      baseOperationObject.opencti_operation = 'unshare';
+      baseOperationObject.organization_ids = operations[0].context.values;
     }
     return baseOperationObject;
   };
-  const work = await createWorkForBackgroundTask(context, connectorId);
-  await updateTask(context, task.id, { work_id: work.id });
   // Iterate over the full set to create and enlist bundles
+  let work;
   const operationCallback = async (elements) => {
+    // Only create work at the first iteration, preventing creating a no work job
+    if (!work) {
+      work = await createWorkForBackgroundTask(context, connectorId);
+      await updateTask(context, task.id, { work_id: work.id });
+    }
     // Build limited stix object to limit memory footprint
     const objects = elements.map((e) => ({
       id: e.standard_id,
@@ -791,7 +760,7 @@ export const taskHandler = async () => {
     // Current format is not aligned with worker practices
     // We need to reformat the actions to back process support
     // Grouping at the same time to add extra checks
-    if (task.rule) {
+    if (isRuleTask) { // Rescan is not a rule task, but a query one
       const actionType = task.enable ? ACTION_TYPE_RULE_APPLY : ACTION_TYPE_RULE_CLEAR;
       task.actions = [{ type: actionType, context: { rule_id: task.rule } }];
     }
