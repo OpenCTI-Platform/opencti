@@ -141,7 +141,7 @@ const platformUsers = (context: AuthContext) => {
   const reloadUsers = async () => {
     const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
     const allUserIds = users.map((user) => user.internal_id);
-    return Bluebird.map(allUserIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY });
+    return Bluebird.map(allUserIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY }).filter((u) => u != null);
   };
   return { values: null, fn: reloadUsers };
 };
