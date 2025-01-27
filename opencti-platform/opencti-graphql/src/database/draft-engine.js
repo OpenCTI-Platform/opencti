@@ -83,10 +83,10 @@ const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelat
     const isFromImpact = rel.fromId === dep.internal_id;
     const isToImpact = rel.toId === dep.internal_id;
     if (isFromImpact && !isImpactedRole(rel.fromRole)) {
-      return {};
+      return undefined;
     }
     if (isToImpact && !isImpactedRole(rel.toRole)) {
-      return {};
+      return undefined;
     }
     const targetId = isFromImpact ? rel.toId : rel.fromId;
     // Create params and scripted update
@@ -96,7 +96,7 @@ const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelat
     const source = script;
     const params = { [field]: [targetId] };
     return { ...dep, _id: dep._id, data: { script: { source, params } } };
-  });
+  }).filter((e) => e);
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
     { update: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     R.dissoc('_index', doc.data),
