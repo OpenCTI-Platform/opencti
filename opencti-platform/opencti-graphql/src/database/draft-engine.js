@@ -77,6 +77,7 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
 };
 
 const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelations) => {
+  // Reapply denormalized refs on elements impacted with deleteLinked rel removal
   const elementsToUpdate = deleteLinkedRelations.map((deleteLinkedRelToRemove) => {
     const { rel, dep } = deleteLinkedRelToRemove;
     const isFromImpact = rel.fromId === dep.internal_id;
@@ -91,13 +92,13 @@ const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelat
     // Create params and scripted update
     const field = buildRefRelationKey(rel.relationship_type);
     let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-    script += `ctx._source['${field}'].addAll(params['${field}'])`;
+    script += `ctx._source['${field}'].addAll(params['${field}']);`;
     const source = script;
-    const params = { [field]: targetId };
-    return { ...dep, id: dep._id, data: { script: { source, params } } };
+    const params = { [field]: [targetId] };
+    return { ...dep, _id: dep._id, data: { script: { source, params } } };
   });
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+    { update: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
@@ -133,10 +134,10 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
   // We get all of those relations dependencies (that are not the current element or the related relations)
   const draftDeleteLinkedRelationsTargetsIds = draftDeleteLinkedRelations.map((r) => {
     const { fromId, toId } = r;
-    if (!draftDeleteLinkedRelationsIds.includes(fromId)) {
+    if (!draftDeleteLinkedRelationsIds.includes(fromId) && fromId !== element.internal_id) {
       return fromId;
     }
-    if (!draftDeleteLinkedRelationsIds.includes(toId)) {
+    if (!draftDeleteLinkedRelationsIds.includes(toId) && toId !== element.internal_id) {
       return toId;
     }
     return undefined;

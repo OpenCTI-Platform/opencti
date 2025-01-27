@@ -3219,7 +3219,6 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 
 // region mutation deletion
 
-// We need to add the ability to revert deleted entities when in draft:
 const draftInternalDeleteElement = async (context, user, draftElement) => {
   let lock;
   const participantIds = [draftElement.internal_id];
