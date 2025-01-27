@@ -14,7 +14,8 @@ import {
   elReplace,
   ES_RETRY_ON_CONFLICT,
   getRelationsToRemove,
-  isImpactedRole
+  isImpactedRole,
+  prepareElementForIndexing
 } from './engine';
 import {
   DRAFT_OPERATION_CREATE,
@@ -58,7 +59,7 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
   const draftContext = getDraftContext(context, user);
 
   // apply reverse field patch
-  const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_patch);
+  const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
   const revertedElement = await updateAttributeFromLoadedWithRefs(context, user, element, reverseUpdateFieldPatch);
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
 
@@ -72,7 +73,8 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(revertedElement._index, revertedElement._id, newDraftChange);
+    const doc = prepareElementForIndexing(newDraftChange);
+    await elReplace(revertedElement._index, revertedElement._id, { doc });
   }
 };
 
@@ -121,7 +123,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
   // if current element is a relation, and if from or to are in DRAFT_OPERATION_DELETE, it means the current element needs to be switched to a delete linked
   if (isBasicRelationship(element.entity_type) && (element.from?._index._index.includes(INDEX_DRAFT_OBJECTS) || element.to?._index._index.includes(INDEX_DRAFT_OBJECTS))) {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
-    await elReplace(element._index, element._id, newDraftChange);
+    await elReplace(element._index, element._id, { doc: newDraftChange });
     return;
   }
 
@@ -178,7 +180,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(element._index, element._id, newDraftChange);
+    await elReplace(element._index, element._id, { doc: newDraftChange });
   }
 };
 

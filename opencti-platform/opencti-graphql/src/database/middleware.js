@@ -2126,7 +2126,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             relationsToCreate.push(...newRelations);
-            updatedInputs.push({ key, value: refsToCreate, operation });
+            updatedInputs.push({ key, value: refsToCreate, operation,previous: updatedInstance[key] });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
@@ -2144,7 +2144,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
 
           if (relsToDelete.length > 0) {
             relationsToDelete.push(...relsToDelete);
-            updatedInputs.push({ key, value: refs, operation });
+            updatedInputs.push({ key, value: refs, operation, previous: updatedInstance[key] });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }

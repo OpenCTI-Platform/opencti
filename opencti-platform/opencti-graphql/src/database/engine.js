@@ -3822,7 +3822,7 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   await elDeleteInstances(draftCreatedRelations);
   liveRelations.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE_LINKED));
   draftNonCreatedRelations.forEach((draftR) => {
-    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE } };
+    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
     updateOperationPromise.push(elReplace(draftR._index, draftR._id, newDraftChange));
   });
   await Promise.all(updateOperationPromise);
