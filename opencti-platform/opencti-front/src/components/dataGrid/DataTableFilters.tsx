@@ -39,7 +39,6 @@ export const DataTableDisplayFilters = ({
   availableEntityTypes,
   entityTypes,
 }: DataTableDisplayFiltersProps) => {
-  const theme = useTheme<Theme>();
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
@@ -52,7 +51,7 @@ export const DataTableDisplayFilters = ({
   }
 
   return (
-    <div id="filter-container" style={{ minHeight: 10, marginBottom: theme.spacing(2) }}>
+    <div id="filter-container" style={{ minHeight: 10 }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}

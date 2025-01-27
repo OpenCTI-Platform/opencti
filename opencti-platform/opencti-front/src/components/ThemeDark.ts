@@ -69,6 +69,7 @@ const ThemeDark = (
     fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
+      lineHeight: '1.2rem',
     },
     body1: {
       fontSize: '0.9rem',

@@ -228,7 +228,6 @@ const DataTable = (props: OCTIDataTableProps) => {
 
   return (
     <>
-
       <DataTableComponent
         {...props}
         availableFilterKeys={availableFilterKeys}

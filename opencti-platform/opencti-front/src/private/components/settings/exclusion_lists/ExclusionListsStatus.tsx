@@ -2,17 +2,18 @@ import { graphql, PreloadedQuery, usePreloadedQuery, UseQueryLoaderLoadQueryOpti
 import { ExclusionListsStatusQuery, ExclusionListsStatusQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
-import Chip from '@mui/material/Chip';
 import React, { FunctionComponent, useEffect } from 'react';
 import { EventRepeatOutlined, UpdateOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import { Theme } from 'src/components/Theme';
+import type { Theme } from 'src/components/Theme';
 import { interval } from 'rxjs';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -56,73 +57,72 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
   }, []);
 
   return (
-    <>
-      <Grid container spacing={3} style={{ marginBottom: theme.spacing(2) }}>
-        <Grid item xs={4}>
-          <Paper
-            variant="outlined"
-            style={{ display: 'flex', justifyContent: 'space-between', padding: 20, height: 100 }}
-            className={'paper-for-grid'}
-          >
-            <div>
-              <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
-                {t_i18n('Status')}
-              </div>
-              <Chip
-                style={{
-                  backgroundColor: isInProgress ? 'rgba(92, 123, 245, 0.08)' : 'rgba(76, 175, 80, 0.08)',
-                  color: isInProgress ? '#5c7bf5' : '#4caf50',
-                  fontSize: 20,
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                }}
-                label={isInProgress ? t_i18n('In progress') : t_i18n('Synchronized')}
-              />
-            </div>
-            {isInProgress && (
-              <div style={{ margin: 'auto 0' }}>
-                <CircularProgress
-                  size={40}
-                  thickness={2}
-                  color="primary"
-                />
-              </div>
-            )}
-          </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <Paper
-            variant="outlined"
-            style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
-            className={'paper-for-grid'}
-          >
-            <UpdateOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
-            <div>
-              <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
-                {t_i18n('Last modification date')}
-              </div>
-              <div>{fldt(refreshDate)}</div>
-            </div>
-          </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <Paper
-            variant="outlined"
-            style={{ display: 'flex', padding: 20, height: 100, position: 'relative' }}
-            className={'paper-for-grid'}
-          >
-            <EventRepeatOutlined color="primary" style={{ fontSize: 40, position: 'absolute', top: 25, right: 15 }} />
-            <div>
-              <div style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 500, color: theme.palette.text?.secondary }}>
-                {t_i18n('Current cache version date')}
-              </div>
-              <div>{fldt(cacheDate)}</div>
-            </div>
-          </Paper>
-        </Grid>
+    <Grid container spacing={2}>
+      <Grid item xs={4}>
+        <Typography variant={'h4'}>
+          {t_i18n('Status')}
+        </Typography>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+          className={'paper-for-grid'}
+        >
+          <ItemBoolean
+            neutralLabel={'In progress'}
+            label={'Synchronized'}
+            status={(isInProgress === false) || null}
+          />
+          {isInProgress && (
+            <CircularProgress
+              size={40}
+              thickness={2}
+              color="primary"
+            />
+          )}
+        </Paper>
       </Grid>
-    </>
+      <Grid item xs={4}>
+        <Typography variant={'h4'}>
+          {t_i18n('Last modification date')}
+        </Typography>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+          className={'paper-for-grid'}
+        >
+          <div>{fldt(refreshDate)}</div>
+          <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
+        </Paper>
+      </Grid>
+      <Grid item xs={4}>
+        <Typography variant={'h4'}>
+          {t_i18n('Current cache version date')}
+        </Typography>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+          className={'paper-for-grid'}
+        >
+          <div>{fldt(cacheDate)}</div>
+          <EventRepeatOutlined color="primary" style={{ fontSize: 40 }} />
+        </Paper>
+      </Grid>
+    </Grid>
   );
 };
 

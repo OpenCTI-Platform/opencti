@@ -1,24 +1,25 @@
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
-import React, { ReactNode } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
-import { Theme } from 'src/components/Theme';
+import type { Theme } from './Theme';
 
 type AlertInfoProps = {
-  content: string | ReactNode;
+  content: string | ReactNode
+  style?: CSSProperties
 };
 
-const AlertInfo = ({ content }: AlertInfoProps) => {
+const AlertInfo = ({ content, style }: AlertInfoProps) => {
   const theme = useTheme<Theme>();
 
   return (
-    <div style={{ width: '100%', margin: `${theme.spacing(2)} 0` }}>
+    <div style={style}>
       <Alert
         severity="info"
         variant="outlined"
-        style={{ padding: '0px 10px' }}
+        style={{ padding: `0 ${theme.spacing(1)}` }}
       >
-        <Typography>
+        <Typography variant={'body2'}>
           {content}
         </Typography>
       </Alert>
