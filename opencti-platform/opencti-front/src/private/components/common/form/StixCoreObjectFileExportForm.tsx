@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tooltip from '@mui/material/Tooltip';
-import { AutoAwesomeOutlined, HtmlOutlined } from '@mui/icons-material';
+import { AbcOutlined, AutoAwesomeOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -19,7 +19,7 @@ import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
-import { FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
+import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -76,15 +76,24 @@ export interface StixCoreObjectFileExportFormProps {
 export const renderIcon = (key: string) => {
   switch (key) {
     case 'ai':
-      return <AutoAwesomeOutlined fontSize="large" color="primary"/>;
+      return <AutoAwesomeOutlined fontSize="large" sx={{ color: 'ai.main' }} />;
     case 'application/pdf':
       return <FilePdfBox fontSize="large" color="primary"/>;
+    case 'application/json':
+    case 'application/vnd.mitre.navigator+json':
+    case 'application/vnd.oasis.stix+json':
+      return <DataObjectOutlined fontSize="large" color="primary"/>;
     case 'text/html':
       return <HtmlOutlined fontSize="large" color="primary"/>;
     case 'text/markdown':
       return <LanguageMarkdownOutline fontSize="large" color="primary"/>;
+    case 'text/plain':
+      return <AbcOutlined fontSize="large" color="primary"/>;
+    case 'text/csv':
+      return <NumbersOutlined fontSize="large" color="primary"/>;
+
     default:
-      return <div />;
+      return <FileExportOutline fontSize="large" color="primary"/>;
   }
 };
 
