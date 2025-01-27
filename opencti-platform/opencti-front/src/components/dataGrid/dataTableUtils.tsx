@@ -264,6 +264,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  creators: {
+    id: 'creators',
+    label: 'Creators',
+    percentWidth: 12,
+    render: ({ creators }) => {
+      const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
+      return defaultRender(value);
+    },
+  },
   definition: {
     id: 'definition',
     label: 'Definition',
