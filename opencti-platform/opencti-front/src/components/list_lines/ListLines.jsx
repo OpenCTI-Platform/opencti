@@ -311,7 +311,7 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                   )}
-                  {enableEntitiesView && (
+                  {(enableEntitiesView || currentView === 'relationships') && (
                     <ToggleButton
                       value="relationships"
                       aria-label="relationships"
@@ -328,13 +328,12 @@ class ListLines extends Component {
                       </Tooltip>
                     </ToggleButton>
                   )}
-                  {typeof handleChangeView === 'function'
-                    && !enableEntitiesView && (
-                      <Tooltip title={t('Lines view')}>
-                        <ToggleButton value="lines" aria-label="lines">
-                          <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
-                        </ToggleButton>
-                      </Tooltip>
+                  {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && (
+                    <Tooltip title={t('Lines view')}>
+                      <ToggleButton value="lines" aria-label="lines">
+                        <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">

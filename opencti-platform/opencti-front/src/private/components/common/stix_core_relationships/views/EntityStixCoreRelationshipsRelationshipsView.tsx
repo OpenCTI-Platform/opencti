@@ -28,6 +28,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   allDirections?: boolean
   isRelationReversed?: boolean
   enableContextualView: boolean
+  enableEntitiesView?: boolean
   enableNestedView?: boolean
   paddingRightButtonAdd?: number
   role?: string,
@@ -48,6 +49,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   currentView,
   enableNestedView,
   enableContextualView,
+  enableEntitiesView = true,
   paddingRightButtonAdd = null,
   handleChangeView,
 }) => {
@@ -194,7 +196,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         enableContextualView={enableContextualView}
         disableCards={true}
         paginationOptions={paginationOptions}
-        enableEntitiesView={true}
+        enableEntitiesView={enableEntitiesView}
         currentView={finalView}
         entityTypes={['stix-core-relationship']}
       >

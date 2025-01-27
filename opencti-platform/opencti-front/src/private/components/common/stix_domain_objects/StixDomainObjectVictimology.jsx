@@ -32,7 +32,7 @@ class StixDomainObjectVictimology extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      viewMode: 'entities',
+      viewMode: 'relationships',
     };
   }
 
@@ -124,30 +124,31 @@ class StixDomainObjectVictimology extends Component {
         <Divider style={{ marginTop: 50 }} />
         <div className={classes.container} id="container">
           {(viewMode === 'entities' || viewMode === 'relationships') && (
-          <EntityStixCoreRelationships
-            entityLink={entityLink}
-            entityId={stixDomainObjectId}
-            stixCoreObjectTypes={[
-              'System',
-              'Individual',
-              'Organization',
-              'Sector',
-              'City',
-              'Country',
-              'Region',
-              'Position',
-              'Event',
-              'Administrative-Area',
-            ]}
-            relationshipTypes={['targets']}
-            isRelationReversed={false}
-            enableExport={true}
-            currentView={viewMode}
-            handleChangeView={this.handleChangeView.bind(this)}
-            enableNestedView={true}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-          />
+            <EntityStixCoreRelationships
+              entityLink={entityLink}
+              entityId={stixDomainObjectId}
+              stixCoreObjectTypes={[
+                'System',
+                'Individual',
+                'Organization',
+                'Sector',
+                'City',
+                'Country',
+                'Region',
+                'Position',
+                'Event',
+                'Administrative-Area',
+              ]}
+              relationshipTypes={['targets']}
+              isRelationReversed={false}
+              enableExport={true}
+              currentView={viewMode}
+              handleChangeView={this.handleChangeView.bind(this)}
+              enableNestedView={true}
+              enableEntitiesView={false}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+            />
           )}
           {viewMode === 'nested' && (
           <QueryRenderer

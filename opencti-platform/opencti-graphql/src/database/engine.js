@@ -87,9 +87,12 @@ import {
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObject,
   STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED
@@ -184,7 +187,8 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -231,20 +235,17 @@ export const UNIMPACTED_ENTITIES_ROLE = [
   // RELATION_EXTERNAL_REFERENCE
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
+const LOCATED_AT_CLEANED = [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY];
+const UNSUPPORTED_LOCATED_AT = [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_TYPE_LOCATION_CITY];
 export const isSpecialNonImpactedCases = (relationshipType, fromType, toType, side) => {
   if (side === ROLE_TO && relationshipType === RELATION_RELATED_TO && isStixCyberObservable(fromType)) {
     return true;
   }
-  if (side === ROLE_TO && relationshipType === RELATION_LOCATED_AT && toType === ENTITY_TYPE_LOCATION_REGION) {
+  // eslint-disable-next-line max-len
+  if (side === ROLE_TO && relationshipType === RELATION_LOCATED_AT && UNSUPPORTED_LOCATED_AT.includes(fromType) && LOCATED_AT_CLEANED.includes(toType)) {
     return true;
   }
-  if (side === ROLE_TO && relationshipType === RELATION_LOCATED_AT && toType === ENTITY_TYPE_LOCATION_COUNTRY) {
-    return true;
-  }
-  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && toType === ENTITY_TYPE_LOCATION_REGION) {
-    return true;
-  }
-  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && toType === ENTITY_TYPE_LOCATION_COUNTRY) {
+  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_IDENTITY_SECTOR].includes(toType)) {
     return true;
   }
   return false;

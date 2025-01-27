@@ -325,11 +325,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 }}
                 style={{ margin: '7px 0 0 5px' }}
               >
-                <ToggleButton value="entities" aria-label="lines">
-                  <Tooltip title={t('Entities view')}>
-                    <LibraryBooksOutlined fontSize="small" color="primary" />
-                  </Tooltip>
-                </ToggleButton>
                 <ToggleButton value="relationships" aria-label="lines">
                   <Tooltip title={t('Relationships view')}>
                     <RelationManyToMany fontSize="small" color="primary" />
