@@ -216,6 +216,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             providerGroups: groupsToAssociate,
             providerOrganizations: organizationsToAssociate,
             autoCreateGroup: mappedConfig.auto_create_group ?? false,
+            preventDefaultGroups: mappedConfig.prevent_default_groups ?? false,
           };
           providerLoginHandler(userInfo, done, opts);
         } else {
@@ -282,6 +283,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             providerGroups: groupsToAssociate,
             providerOrganizations: organizationsToAssociate,
             autoCreateGroup: mappedConfig.auto_create_group ?? false,
+            preventDefaultGroups: mappedConfig.prevent_default_groups ?? false,
           };
           providerLoginHandler({ email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
         } else {
@@ -381,6 +383,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
                 providerGroups: groupsToAssociate,
                 providerOrganizations: organizationsToAssociate,
                 autoCreateGroup: mappedConfig.auto_create_group ?? false,
+                preventDefaultGroups: mappedConfig.prevent_default_groups ?? false,
               };
               providerLoginHandler({ email, name, firstname, lastname }, done, opts);
             } else {
@@ -567,6 +570,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           providerGroups: mappedGroups,
           providerOrganizations: organizationsToAssociate,
           autoCreateGroup: mappedConfig.auto_create_group ?? false,
+          preventDefaultGroups: mappedConfig.prevent_default_groups ?? false,
         };
         const provider_metadata = { headers_audit: mappedConfig.headers_audit };
         return new Promise((resolve) => {
