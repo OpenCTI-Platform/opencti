@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
+import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, WidgetDataSelection } from '../../generated/graphql';
+import type { EditInput, FilterGroup, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, Widget, WidgetDataSelection } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -11,6 +12,10 @@ import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { extractContentFrom } from '../../utils/fileToContent';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
+import pjson from '../../../package.json';
+import { convertWidgetsIds } from '../workspace/workspace-utils';
 import { SELF_ID } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 
 // to customize a template we need : EE, FF enabled
@@ -203,4 +208,92 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
   }));
   await Promise.all(finalInputs
     .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
+};
+
+const MINIMAL_VERSION_FOR_IMPORT = '6.4.8';
+
+export const fintelTemplateExport = async (context: AuthContext, user: AuthUser, template: BasicStoreEntityFintelTemplate) => {
+  const {
+    name,
+    description,
+    settings_types,
+    instance_filters,
+    template_content,
+    start_date,
+    fintel_template_widgets,
+  } = template;
+
+  const widgets = fintel_template_widgets.map(({ widget }) => ({
+    ...widget,
+    dataSelection: widget.dataSelection.map((selection) => ({
+      ...selection,
+      filters: JSON.parse(selection.filters ?? '{}'),
+      dynamicFrom: JSON.parse(selection.dynamicFrom ?? '{}'),
+      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}')
+    }))
+  }));
+  await convertWidgetsIds(context, user, widgets, 'internal');
+  const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
+    variable_name,
+    widget: widgets[i]
+  }));
+
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'fintelTemplate',
+    configuration: {
+      name,
+      description,
+      settings_types,
+      instance_filters,
+      template_content,
+      start_date,
+      fintel_template_widgets: exportWidgets
+    }
+  });
+};
+
+type FintelTemplateWidgetFromImport = {
+  variable_name: string,
+  widget: Widget & {
+    dataSelection: WidgetDataSelection & {
+      filters: FilterGroup,
+      dynamicFrom: FilterGroup,
+      dynamicTo: FilterGroup,
+    }
+  }
+};
+
+export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+  const fintel_template_widgets = parsedData.configuration.fintel_template_widgets as FintelTemplateWidgetFromImport[];
+
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_VERSION_FOR_IMPORT)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_VERSION_FOR_IMPORT}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  const widgets = fintel_template_widgets.map(({ widget }) => widget);
+  await convertWidgetsIds(context, user, widgets, 'stix');
+  const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
+    variable_name,
+    widget: {
+      ...widgets[i],
+      dataSelection: widgets[i].dataSelection.map((selection) => ({
+        ...selection,
+        filters: JSON.stringify(selection.filters),
+        dynamicFrom: JSON.stringify(selection.dynamicFrom),
+        dynamicTo: JSON.stringify(selection.dynamicTo)
+      })),
+    },
+  }));
+
+  const fintelInput = {
+    ...parsedData.configuration,
+    fintel_template_widgets: exportWidgets
+  };
+
+  return addFintelTemplate(context, user, fintelInput);
 };

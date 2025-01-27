@@ -1,13 +1,15 @@
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import React, { useState } from 'react';
+import React, { BaseSyntheticEvent, useRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { graphql, useFragment } from 'react-relay';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
+import { useNavigate } from 'react-router-dom';
 import FintelTemplatesLines, { TemplateType } from './FintelTemplatesLines';
 import { FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
@@ -15,6 +17,9 @@ import { FintelTemplateFormInputs } from './FintelTemplateForm';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import useFintelTemplateImport from './useFintelTemplateImport';
+import { handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { resolveLink } from '../../../../../utils/Entity';
 
 export const fintelTemplatesFragmentParams = { orderBy: 'name', orderMode: 'asc' };
 
@@ -43,9 +48,12 @@ interface FintelTemplatesGridProps {
 }
 
 const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
+  const navigate = useNavigate();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const inputFileRef = useRef<HTMLInputElement>(null);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const [commitImportMutation, importMutating] = useFintelTemplateImport();
 
   const [dataTableRef, setDataTableRef] = useState<HTMLDivElement | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -65,8 +73,35 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
     setDrawerOpen(true);
   };
 
+  const onUpload = (event: BaseSyntheticEvent) => {
+    const importedFile = event.target.files[0];
+    if (importedFile) {
+      commitImportMutation({
+        variables: { file: importedFile },
+        onError: (e) => {
+          if (inputFileRef.current) inputFileRef.current.value = '';
+          handleError(e);
+        },
+        onCompleted: (response) => {
+          if (inputFileRef.current) inputFileRef.current.value = '';
+          if (response.fintelTemplateConfigurationImport) {
+            const { id, entity_type } = response.fintelTemplateConfigurationImport;
+            MESSAGING$.notifySuccess(t_i18n('FINTEL template created'));
+            navigate(`${resolveLink(entity_type)}/${target_type}/templates/${id}`);
+          }
+        },
+      });
+    }
+  };
+
   return (
     <>
+      <VisuallyHiddenInput
+        ref={inputFileRef}
+        type="file"
+        accept={'application/JSON'}
+        onChange={onUpload}
+      />
       <Grid item xs={6}>
         <Typography
           variant="h4"
@@ -75,15 +110,27 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
         >
           <p>{t_i18n('FINTEL Templates')}</p>
           {isEnterpriseEdition && (
-            <Tooltip title={t_i18n('Create a new template')}>
-              <IconButton
-                onClick={() => setDrawerOpen(true)}
-                size="small"
-                sx={{ marginBottom: 0.25 }}
-              >
-                <AddIcon fontSize="small" color="primary" />
-              </IconButton>
-            </Tooltip>
+            <div>
+              <Tooltip title={t_i18n('Create a new template')}>
+                <IconButton
+                  onClick={() => setDrawerOpen(true)}
+                  size="small"
+                  sx={{ marginBottom: 0.25 }}
+                >
+                  <AddIcon fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Import a template')}>
+                <IconButton
+                  disabled={importMutating}
+                  onClick={() => inputFileRef.current?.click()}
+                  size="small"
+                  sx={{ marginBottom: 0.25 }}
+                >
+                  <CloudUploadOutlined fontSize="small" color="primary" />
+                </IconButton>
+              </Tooltip>
+            </div>
           )}
           <EEChip />
         </Typography>
