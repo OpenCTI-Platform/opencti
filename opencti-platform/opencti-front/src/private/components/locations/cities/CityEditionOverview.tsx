@@ -156,6 +156,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const cityValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
