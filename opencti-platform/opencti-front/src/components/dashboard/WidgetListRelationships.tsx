@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { WidgetColumn } from 'src/utils/widget/widget';
 import ItemIcon from '../ItemIcon';
@@ -21,7 +21,7 @@ const WidgetListRelationships = ({
   rootRef,
   columns,
 }: WidgetListRelationshipsProps) => {
-  const buildColumns = useCallback((): DataTableProps['dataColumns'] => {
+  const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
     const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const iconWidth = 3;
     const percentWidth = (100 - iconWidth) / (columns.length ?? 1);
@@ -59,7 +59,7 @@ const WidgetListRelationships = ({
   return (
     <div style={{ width: '100%' }}>
       <DataTableWithoutFragment
-        dataColumns={buildColumns()}
+        dataColumns={buildColumns}
         storageKey={widgetId}
         data={data.map(({ node }) => node)}
         globalCount={data.length}

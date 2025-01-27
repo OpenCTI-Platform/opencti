@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useMemo } from 'react';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import type { WidgetColumn } from '../../utils/widget/widget';
@@ -21,7 +21,7 @@ const WidgetListCoreObjects = ({
   pageSize,
   columns,
 }: WidgetListCoreObjectsProps) => {
-  const buildColumns = useCallback((): DataTableProps['dataColumns'] => {
+  const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
     const percentWidth = (100) / (columns.length ?? 1);
 
     return columns
@@ -39,7 +39,7 @@ const WidgetListCoreObjects = ({
 
   return (
     <DataTableWithoutFragment
-      dataColumns={buildColumns()}
+      dataColumns={buildColumns}
       storageKey={widgetId}
       data={data.map(({ node }) => node)}
       globalCount={data.length}
