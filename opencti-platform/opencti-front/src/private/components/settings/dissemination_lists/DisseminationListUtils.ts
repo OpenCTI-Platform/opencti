@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 
-const disseminationListValidator = (t: (value: string) => string) => {
+export const disseminationListValidator = (t: (value: string) => string) => {
   return Yup.object().shape({
     name: Yup.string().trim().min(2).required(t('This field is required')),
     emails: Yup.string()
@@ -16,4 +16,10 @@ const disseminationListValidator = (t: (value: string) => string) => {
   });
 };
 
-export default disseminationListValidator;
+export const formatEmailsForApi = (value: string) => {
+  return value.replaceAll('\n', ',');
+};
+
+export const formatEmailsForFront = (value: string) => {
+  return value.replaceAll(',', '\n');
+};

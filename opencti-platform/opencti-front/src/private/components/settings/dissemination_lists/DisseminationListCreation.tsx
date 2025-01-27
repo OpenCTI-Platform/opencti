@@ -3,7 +3,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import disseminationListValidator from '@components/settings/dissemination_lists/DisseminationListUtils';
+import { disseminationListValidator, formatEmailsForApi } from '@components/settings/dissemination_lists/DisseminationListUtils';
 import { graphql } from 'react-relay';
 import { DisseminationListsLinesPaginationQuery$variables } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -48,7 +48,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
   ) => {
     const input = {
       name: values.name,
-      emails: values.emails,
+      emails: formatEmailsForApi(values.emails),
       description: values.description,
     };
     commit({
@@ -110,7 +110,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
           <Field
             component={TextField}
             name="emails"
-            label={t_i18n('Emails')}
+            label={t_i18n('Emails (1 / line)')}
             fullWidth={true}
             multiline={true}
             rows={20}

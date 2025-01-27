@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
-import disseminationListValidator from '@components/settings/dissemination_lists/DisseminationListUtils';
+import { disseminationListValidator, formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
 import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import TextField from '../../../../components/TextField';
@@ -48,6 +48,9 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
 
     const input = Object.entries(values)
       .map(([key, value]) => {
+        if (key === 'emails') {
+          return { key, value: formatEmailsForApi(value) };
+        }
         return {
           key,
           value,
@@ -71,7 +74,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
 
   const initialValues: DisseminationListEditionFormData = {
     name: data.name,
-    emails: data.emails,
+    emails: formatEmailsForFront(data.emails),
     description: data.description || '',
   };
 
@@ -113,7 +116,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
               component={TextField}
               controlledSelectedTab='write'
               name="emails"
-              label={t_i18n('Emails')}
+              label={t_i18n('Emails (1 / line)')}
               onSubmit={submitForm}
               fullWidth={true}
               multiline={true}
