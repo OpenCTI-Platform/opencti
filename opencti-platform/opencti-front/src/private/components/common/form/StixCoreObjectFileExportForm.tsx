@@ -103,7 +103,7 @@ const StixCoreObjectFileExportForm = ({
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { fullyActive } = useAI();
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
 
   const validation = () => Yup.object().shape({
