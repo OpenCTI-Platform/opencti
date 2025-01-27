@@ -328,7 +328,7 @@ class ListLines extends Component {
                       </Tooltip>
                     </ToggleButton>
                   )}
-                  {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && (!enableEntitiesView && currentView !== 'entities') && (
+                  {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && currentView !== 'entities' && (
                     <Tooltip title={t('Lines view')}>
                       <ToggleButton value="lines" aria-label="lines">
                         <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
