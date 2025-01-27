@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
 
-const EXPECTED_RESULT_FOR_API: string = 'example1@email.com,sample.account@email.com';
-const EXPECTED_RESULT_FOR_FRONT: string = 'example1@email.com\nsample.account@email.com';
+const EXPECTED_RESULT_FOR_API = 'example1@email.com,sample.account@email.com';
+const EXPECTED_RESULT_FOR_FRONT = 'example1@email.com\nsample.account@email.com';
 
 describe('Function: formatEmailsForApi', () => {
   it('should parse line', () => {

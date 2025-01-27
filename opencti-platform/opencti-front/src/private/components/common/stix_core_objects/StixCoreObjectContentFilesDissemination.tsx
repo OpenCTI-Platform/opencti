@@ -7,14 +7,14 @@ import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import MenuItem from '@mui/material/MenuItem';
+import { StixCoreObjectContentFilesDisseminationQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import SelectField from "../../../../components/fields/SelectField";
-import { StixCoreObjectContentFilesDisseminationQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
+import SelectField from '../../../../components/fields/SelectField';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
