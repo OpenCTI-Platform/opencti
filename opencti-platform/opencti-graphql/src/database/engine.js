@@ -217,7 +217,7 @@ const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 export const BULK_TIMEOUT = '5m';
 const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
-const ES_RETRY_ON_CONFLICT = 5;
+export const ES_RETRY_ON_CONFLICT = 5;
 const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
@@ -3777,10 +3777,11 @@ export const elRemoveDraftIdFromElements = async (context, user, draftId, elemen
   }
 };
 
-export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
-  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+const elCopyRelationsTargetsToDraft = async (context, user, elements) => {
   const draftContext = getDraftContext(context, user);
-  // Relations from and to need to be elements that are also in draft.
+  if (!draftContext) {
+    return;
+  }
   for (let i = 0; i < elements.length; i += 1) {
     const e = elements[i];
     if (e.base_type === BASE_TYPE_RELATION) {
@@ -3795,26 +3796,46 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
       e.toId = draftTo.id;
     }
   }
+};
 
+export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
+  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+
+  // 01. Remove all elements that are draft creations, mark as delete for others
+  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
+  const draftCreatedElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftNonCreatedElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
+  await elDeleteInstances(draftCreatedElements);
+  const updateOperationPromise = [];
+  draftNonCreatedElements.forEach((draftE) => {
+    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE } };
+    updateOperationPromise.push(elReplace(draftE._index, draftE._id, newDraftChange));
+  });
+  await Promise.all(updateOperationPromise);
+
+  // 02. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements, { includeDeletedInDraft: true });
+  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
+  const draftCreatedRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftNonCreatedRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
+  await elDeleteInstances(draftCreatedRelations);
+  liveRelations.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE_LINKED));
+  draftNonCreatedRelations.forEach((draftR) => {
+    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE } };
+    updateOperationPromise.push(elReplace(draftR._index, draftR._id, newDraftChange));
+  });
+  await Promise.all(updateOperationPromise);
+
+  // 03. Clear all connections rel, import all dependencies into draft if not already in draft
+  await elCopyRelationsTargetsToDraft(context, user, [...elements, ...liveRelations]);
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   // Update all rel connections that will remain
   const cleanupRelations = relations.concat(basicCleanup);
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
-
   await elRemoveRelationConnection(context, user, elementsImpact);
-  // 01. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
-  const draftCreatedRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
-  const draftNonCreatedRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
-  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
-  await elDeleteInstances(draftRelations);
-  // 02/ Remove all elements: delete instances created in draft, mark as deletion for others
-  const draftElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
-  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
-  await elDeleteInstances(draftElements);
-  liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
 };
 
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
