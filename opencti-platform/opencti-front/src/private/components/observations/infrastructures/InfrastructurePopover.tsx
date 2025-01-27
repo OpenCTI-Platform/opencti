@@ -89,7 +89,7 @@ const InfrastructurePopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this intrusion set?')}
+            {t_i18n('Do you want to delete this infrastructure?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
