@@ -25,8 +25,21 @@ class MarkingDefinition:
         """
 
     @staticmethod
-    def generate_id(definition, definition_type):
-        data = {"definition": definition, "definition_type": definition_type}
+    def generate_id(definition_type, definition):
+        # Handle static IDs from OpenCTI
+        if definition_type == "TLP":
+            if definition == "TLP:CLEAR" or definition == "TLP:WHITE":
+                return "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            if definition == "TLP:GREEN":
+                return "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+            if definition == "TLP:AMBER":
+                return "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+            if definition == "TLP:AMBER+STRICT":
+                return "marking-definition--826578e1-40ad-459f-bc73-ede076f81f37"
+            if definition == "TLP:RED":
+                return "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+        # Generate IDs
+        data = {"definition_type": definition_type, "definition": definition}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "marking-definition--" + id
@@ -34,7 +47,7 @@ class MarkingDefinition:
     @staticmethod
     def generate_id_from_data(data):
         return MarkingDefinition.generate_id(
-            data["definition"], data["definition_type"]
+            data["definition_type"], data["definition"]
         )
 
     """
