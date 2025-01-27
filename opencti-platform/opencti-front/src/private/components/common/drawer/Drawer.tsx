@@ -25,7 +25,12 @@ export enum DrawerVariant {
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
   drawerPaper: {
     minHeight: '100vh',
-    width: '50%',
+    [theme.breakpoints.up('xl')]: {
+      width: '50%',
+    },
+    [theme.breakpoints.down('xl')]: {
+      width: '75%',
+    },
     position: 'fixed',
     overflow: 'auto',
     transition: theme.transitions.create('width', {
