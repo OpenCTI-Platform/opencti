@@ -16,8 +16,12 @@ import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
 import EmailIcon from '@mui/icons-material/Email';
 import Drawer from '@components/common/drawer/Drawer';
-import StixCoreObjectContentFilesDissemination, { stixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
+import StixCoreObjectContentFilesDissemination, {
+  stixCoreObjectContentFilesDisseminationQuery,
+} from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import { useLazyLoadQuery } from 'react-relay';
+import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -26,9 +30,6 @@ import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { useLazyLoadQuery } from 'react-relay';
-import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -82,7 +83,6 @@ const StixCoreObjectContentFilesList = ({
   const { fld, t_i18n } = useFormatter();
   const deletion = useDeletion({});
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isFeatureEnable } = useHelper();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
