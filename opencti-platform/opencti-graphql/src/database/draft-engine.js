@@ -15,7 +15,6 @@ import {
   ES_RETRY_ON_CONFLICT,
   getRelationsToRemove,
   isImpactedRole,
-  prepareElementForIndexing
 } from './engine';
 import {
   DRAFT_OPERATION_CREATE,
@@ -60,7 +59,7 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
 
   // apply reverse field patch
   const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
-  const revertedElement = await updateAttributeFromLoadedWithRefs(context, user, element, reverseUpdateFieldPatch);
+  await updateAttributeFromLoadedWithRefs(context, user, element, reverseUpdateFieldPatch);
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
 
   // verify if element can be entirely removed from draft or if it needs to be kept as update_linked
@@ -73,8 +72,7 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    const doc = prepareElementForIndexing(newDraftChange);
-    await elReplace(revertedElement._index, revertedElement._id, { doc });
+    await elReplace(element._index, element._id, { doc: newDraftChange });
   }
 };
 

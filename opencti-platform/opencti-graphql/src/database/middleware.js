@@ -1484,7 +1484,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context,user));
+    await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
     // - END TRANSACTION
     return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
@@ -2126,7 +2126,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             relationsToCreate.push(...newRelations);
-            updatedInputs.push({ key, value: refsToCreate, operation,previous: updatedInstance[key] });
+            updatedInputs.push({ key, value: refsToCreate, operation, previous: updatedInstance[key] });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }

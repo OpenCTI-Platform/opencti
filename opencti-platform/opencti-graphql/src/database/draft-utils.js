@@ -138,7 +138,8 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch, updatedInputsReso
       const replaced_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REPLACE ? currentNonResolvedInput.value : [];
       const added_value = currentNonResolvedInput.operation === UPDATE_OPERATION_ADD ? currentNonResolvedInput.value : [];
       const removed_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE ? currentNonResolvedInput.value : [];
-      newUpdatePatch[currentNonResolvedInput.key] = { replaced_value, added_value, removed_value, initial_value: currentNonResolvedInput.previous };
+      const initial_value = currentNonResolvedInput.previous.map((p) => p.standard_id ?? p);
+      newUpdatePatch[currentNonResolvedInput.key] = { replaced_value, added_value, removed_value, initial_value };
     }
   }
 
