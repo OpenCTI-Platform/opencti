@@ -1,7 +1,10 @@
+import * as R from 'ramda';
 import { INDEX_DRAFT_OBJECTS, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import {
+  BULK_TIMEOUT,
   computeDeleteElementsImpacts,
+  elBulk,
   elDeleteInstances,
   elFindByIds,
   elRawDeleteByQuery,
@@ -9,7 +12,9 @@ import {
   elRemoveDraftIdFromElements,
   elRemoveRelationConnection,
   elReplace,
-  getRelationsToRemove
+  ES_RETRY_ON_CONFLICT,
+  getRelationsToRemove,
+  isImpactedRole
 } from './engine';
 import {
   DRAFT_OPERATION_CREATE,
@@ -22,7 +27,8 @@ import { SYSTEM_USER } from '../utils/access';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { buildReverseUpdateFieldPatch } from './draft-utils';
-import { storeLoadByIdsWithRefs, updateAttributeFromLoadedWithRefs } from './middleware';
+import { updateAttributeFromLoadedWithRefs } from './middleware';
+import { buildRefRelationKey } from '../schema/general';
 
 const isCreateOrDraftDelete = (draftOp) => {
   return draftOp === DRAFT_OPERATION_CREATE || draftOp === DRAFT_OPERATION_DELETE || draftOp === DRAFT_OPERATION_DELETE_LINKED;
@@ -42,7 +48,7 @@ const elRemoveCreateElementFromDraft = async (context, user, element) => {
   // Clean up all denormalized rel impact of relations deletion, then delete all relations
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
   await elRemoveRelationConnection(context, user, draftRelationsElementsImpact);
-  await elDeleteInstances(context, user, [element, ...draftCreatedRelations]);
+  await elDeleteInstances([element, ...draftCreatedRelations]);
 };
 
 const elRemoveUpdateElementFromDraft = async (context, user, element) => {
@@ -62,12 +68,49 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
   const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
   const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
   if (draftCreatedOrDeletedRelations.length <= 0) {
-    await elDeleteInstances(context, user, [element]);
+    await elDeleteInstances([element]);
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
     await elReplace(revertedElement._index, revertedElement._id, newDraftChange);
   }
+};
+
+const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelations) => {
+  const elementsToUpdate = deleteLinkedRelations.map((deleteLinkedRelToRemove) => {
+    const { rel, dep } = deleteLinkedRelToRemove;
+    const isFromImpact = rel.fromId === dep.internal_id;
+    const isToImpact = rel.toId === dep.internal_id;
+    if (isFromImpact && !isImpactedRole(rel.fromRole)) {
+      return {};
+    }
+    if (isToImpact && !isImpactedRole(rel.toRole)) {
+      return {};
+    }
+    const targetId = isFromImpact ? rel.toId : rel.fromId;
+    // Create params and scripted update
+    const field = buildRefRelationKey(rel.relationship_type);
+    let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+    script += `ctx._source['${field}'].addAll(params['${field}'])`;
+    const source = script;
+    const params = { [field]: targetId };
+    return { ...dep, id: dep._id, data: { script: { source, params } } };
+  });
+  const bodyUpdate = elementsToUpdate.flatMap((doc) => [
+    { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+    R.dissoc('_index', doc.data),
+  ]);
+  if (bodyUpdate.length > 0) {
+    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    await Promise.all([bulkPromise]);
+  }
+
+  // After reapplying denormalized refs, we delete relations draft instaces and we remove draftId from live instances
+  const deleteLinkedRelationsInstances = deleteLinkedRelations.map((delRel) => delRel.rel);
+  const deleteLinkedRelationsInstancesIds = deleteLinkedRelationsInstances.map((r) => r.internal_id);
+  await elDeleteInstances(deleteLinkedRelationsInstances);
+  const draftContext = getDraftContext(context, user);
+  await elRemoveDraftIdFromElements(context, user, draftContext, deleteLinkedRelationsInstancesIds);
 };
 
 const elRemoveDeleteElementFromDraft = async (context, user, element) => {
@@ -98,9 +141,11 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     }
     return undefined;
   }).filter((i) => i);
+  // We resolve all those dependencies
   const draftDeleteDependencies = await elFindByIds(context, user, draftDeleteLinkedRelationsTargetsIds, { includeDeletedInDraft: true });
   const draftDeletedLinkedRelationsToKeep = [];
-  const draftDeletedLinkedRelationsToDelete = [];
+  const draftDeletedLinkedRelationsToRemove = [];
+  // We distinguish relations that need to be kept (from or to has a DELETE operation) from those that can be reverted in draft
   for (let i = 0; i < draftDeleteLinkedRelations.length; i += 1) {
     const { fromId, toId } = draftDeleteLinkedRelations[i];
     const fromDependency = draftDeleteDependencies.find((e) => e.internal_id === fromId);
@@ -109,32 +154,30 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
       if (fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
         draftDeletedLinkedRelationsToKeep.push(draftDeleteLinkedRelations[i]);
       } else {
-        draftDeletedLinkedRelationsToDelete.push({ rel: draftDeleteLinkedRelations[i], dep: fromDependency });
+        draftDeletedLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: fromDependency });
       }
     } else if (toDependency) {
       if (toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
         draftDeletedLinkedRelationsToKeep.push(draftDeleteLinkedRelations[i]);
       } else {
-        draftDeletedLinkedRelationsToDelete.push({ rel: draftDeleteLinkedRelations[i], dep: toDependency });
+        draftDeletedLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: toDependency });
       }
     }
   }
 
-  if (draftDeletedLinkedRelationsToDelete.length > 0) {
-    // TODO: reapply denorm ref to all deps of relations
+  // We remove all those draft delete linked relations from draft index, reverting back to live index. We need to reapply denormalized refs on dependencies also
+  if (draftDeletedLinkedRelationsToRemove.length > 0) {
     // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
-    await elDeleteInstances(context, user, draftDeletedLinkedRelationsToDelete);
-    const instancesToDeleteIds = draftDeletedLinkedRelationsToDelete.map((i) => i.internal_id);
-    await elRemoveDraftIdFromElements(context, user, draftContext, instancesToDeleteIds);
+    await removeDraftDeleteLinkedRelations(context, user, draftDeletedLinkedRelationsToRemove);
   }
 
   if (draftDeletedLinkedRelationsToKeep.length === 0) {
     // TODO: reapply denorm ref if element is a rel
     // TODO: clean up UPDATE_LINKED impacted element that no longer need to be in draft => how to know that an update_linked element can be safely removed?
-    await elDeleteInstances(context, user, [element]);
+    await elDeleteInstances([element]);
     await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   } else {
-    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
+    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
     await elReplace(element._index, element._id, newDraftChange);
   }
 };
