@@ -9,6 +9,11 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import { commitMutation } from '../../relay/environment';
 
+// Highest level of error catching, do not rely on any tierce (intl, theme, ...) pure fallback
+export const HighLevelError = () => (
+  <Alert severity="error">An unknown error occurred. Please contact your administrator or OpenCTI maintainers</Alert>
+);
+
 // Really simple error display
 export const SimpleError = () => {
   const { t_i18n } = useFormatter();
@@ -78,7 +83,7 @@ class ErrorBoundaryComponent extends React.Component {
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
-        return <DedicatedWarning title={'Complex search'} description={'Your search have too much terms to be executed. Please limit the number of words or the complexity'}/>;
+        return <DedicatedWarning title={'Complex search'} description={'Your search have too much terms to be executed. Please limit the number of words or the complexity'} />;
       }
       // Access error must be forwarded
       if (includes('FORBIDDEN_ACCESS', types) || includes('AUTH_REQUIRED', types)) {
@@ -91,6 +96,7 @@ class ErrorBoundaryComponent extends React.Component {
     return this.props.children;
   }
 }
+
 ErrorBoundaryComponent.propTypes = {
   display: PropTypes.object,
   children: PropTypes.node,
