@@ -77,7 +77,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-const AUTH_BEARER = 'Bearer';
+export const AUTH_BEARER = 'Bearer';
 const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
