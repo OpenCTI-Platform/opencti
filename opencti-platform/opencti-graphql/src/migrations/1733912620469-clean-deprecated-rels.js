@@ -43,13 +43,13 @@ export const up = async (next) => {
       }
       if (newIds.length > 0) {
         const updateQuery = [
-          { update: { _index: threat._index, _id: threat.internal_id, retry_on_conflict: 5 } },
+          { update: { _index: threat._index, _id: threat._id, retry_on_conflict: 5 } },
           { doc: { [relKeyRelatedTo]: newIds } },
         ];
         bulkOperationsRelatedTo.push(...updateQuery);
       } else {
         const updateQuery = [
-          { update: { _index: threat._index, _id: threat.internal_id, retry_on_conflict: 5 } },
+          { update: { _index: threat._index, _id: threat._id, retry_on_conflict: 5 } },
           { script: `ctx._source.remove('${relKeyRelatedTo}')` }
         ];
         bulkOperationsRelatedTo.push(...updateQuery);
@@ -97,13 +97,13 @@ export const up = async (next) => {
       }
       if (newIds.length > 0) {
         const updateQuery = [
-          { update: { _index: location._index, _id: location.internal_id, retry_on_conflict: 5 } },
+          { update: { _index: location._index, _id: location._id, retry_on_conflict: 5 } },
           { doc: { [relKeyLocatedAt]: newIds } },
         ];
         bulkOperationsLocatedAt.push(...updateQuery);
       } else {
         const updateQuery = [
-          { update: { _index: location._index, _id: location.internal_id, retry_on_conflict: 5 } },
+          { update: { _index: location._index, _id: location._id, retry_on_conflict: 5 } },
           { script: `ctx._source.remove('${relKeyLocatedAt}')` }
         ];
         bulkOperationsLocatedAt.push(...updateQuery);
