@@ -273,7 +273,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             detectDuplicate={['Indicator']}
           />
           <TypesField
@@ -288,7 +288,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
               label: t_i18n('Valid from'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <Field
@@ -298,7 +298,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
               label: t_i18n('Valid until'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <OpenVocabField
@@ -316,7 +316,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <Field
             component={MarkdownField}
@@ -325,7 +325,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <KillChainPhasesField
             name="killChainPhases"

@@ -248,7 +248,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
               required: mandatoryAttributes.includes('published'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <OpenVocabField
@@ -281,7 +281,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             askAi={true}
           />
           <Field

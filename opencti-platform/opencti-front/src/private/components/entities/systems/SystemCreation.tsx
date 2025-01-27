@@ -237,7 +237,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="System"

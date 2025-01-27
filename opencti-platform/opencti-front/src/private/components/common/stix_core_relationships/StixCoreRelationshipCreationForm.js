@@ -209,7 +209,7 @@ const StixCoreRelationshipCreationForm = ({
                   <Button
                     variant="outlined"
                     onClick={handleReverseRelation}
-                    color="secondary"
+                    color="primary"
                     size="small"
                   >
                     {t_i18n('Reverse')}

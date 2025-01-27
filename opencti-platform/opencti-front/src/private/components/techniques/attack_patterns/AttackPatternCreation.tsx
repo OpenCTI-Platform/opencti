@@ -213,7 +213,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             name="x_mitre_id"
             label={t_i18n('External ID')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <Field
             component={MarkdownField}
@@ -222,7 +222,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <ConfidenceField
             entityType="Attack-Pattern"

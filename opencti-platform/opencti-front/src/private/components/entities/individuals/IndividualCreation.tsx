@@ -234,7 +234,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="Individual"

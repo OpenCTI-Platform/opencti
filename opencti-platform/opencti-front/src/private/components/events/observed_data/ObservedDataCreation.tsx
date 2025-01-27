@@ -180,7 +180,7 @@ ObservedDataFormProps
         <Form>
           <StixCoreObjectsField
             name="objects"
-            style={{ width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objects}
           />
@@ -191,7 +191,7 @@ ObservedDataFormProps
               label: t_i18n('First observed'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <Field
@@ -201,7 +201,7 @@ ObservedDataFormProps
               label: t_i18n('Last observed'),
               variant: 'standard',
               fullWidth: true,
-              style: { marginTop: 20 },
+              style: { ...fieldSpacingContainerStyle },
             }}
           />
           <Field
@@ -211,7 +211,7 @@ ObservedDataFormProps
             type="number"
             label={t_i18n('Number observed')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
           />
           <ConfidenceField
             entityType="Observed-Data"

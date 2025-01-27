@@ -10,7 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import { Domain, ExpandLess, ExpandMore, FileDownloadOutlined, LibraryBooksOutlined } from '@mui/icons-material';
+import { Domain, ExpandLess, ExpandMore, FileDownloadOutlined } from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -325,11 +325,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 }}
                 style={{ margin: '7px 0 0 5px' }}
               >
-                <ToggleButton value="entities" aria-label="lines">
-                  <Tooltip title={t('Entities view')}>
-                    <LibraryBooksOutlined fontSize="small" color="primary" />
-                  </Tooltip>
-                </ToggleButton>
                 <ToggleButton value="relationships" aria-label="lines">
                   <Tooltip title={t('Relationships view')}>
                     <RelationManyToMany fontSize="small" color="primary" />

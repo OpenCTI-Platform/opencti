@@ -252,7 +252,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="Sector"

@@ -214,7 +214,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <ConfidenceField
               entityType="Region"
@@ -222,10 +222,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
@@ -236,10 +233,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField

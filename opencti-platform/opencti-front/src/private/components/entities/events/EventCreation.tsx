@@ -242,7 +242,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               fullWidth={true}
               multiline={true}
               rows={4}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={DateTimePickerField}
@@ -251,7 +251,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
                 label: t_i18n('Start date'),
                 variant: 'standard',
                 fullWidth: true,
-                style: { marginTop: 20 },
+                style: { ...fieldSpacingContainerStyle },
               }}
             />
             <Field
@@ -261,7 +261,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
                 label: t_i18n('End date'),
                 variant: 'standard',
                 fullWidth: true,
-                style: { marginTop: 20 },
+                style: { ...fieldSpacingContainerStyle },
               }}
             />
             <ConfidenceField

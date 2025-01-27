@@ -252,7 +252,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             />
             <ConfidenceField
               entityType="Infrastructure"
-              containerStyle={{ width: '100%', marginTop: 20 }}
+              containerStyle={fieldSpacingContainerStyle}
             />
             <Field
               component={DateTimePickerField}
@@ -261,7 +261,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
                 label: t_i18n('First seen'),
                 variant: 'standard',
                 fullWidth: true,
-                style: { marginTop: 20 },
+                style: { ...fieldSpacingContainerStyle },
               }}
             />
             <Field
@@ -271,7 +271,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
                 label: t_i18n('Last seen'),
                 variant: 'standard',
                 fullWidth: true,
-                style: { marginTop: 20 },
+                style: { ...fieldSpacingContainerStyle },
               }}
             />
             <KillChainPhasesField
@@ -285,7 +285,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
