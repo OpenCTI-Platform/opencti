@@ -1378,7 +1378,7 @@ class OpenCTIStix2:
             created=stix_sighting["created"] if "created" in stix_sighting else None,
             modified=stix_sighting["modified"] if "modified" in stix_sighting else None,
             confidence=(
-                stix_sighting["confidence"] if "confidence" in stix_sighting else 15
+                stix_sighting["confidence"] if "confidence" in stix_sighting else None
             ),
             createdBy=extras["created_by_id"] if "created_by_id" in extras else None,
             objectMarking=(
