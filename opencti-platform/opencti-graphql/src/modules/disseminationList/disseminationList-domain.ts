@@ -100,7 +100,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     };
     await sendMail(sendMailArgs);
     const instance = await internalLoadById(context, user, file.metaData.entity_id);
-    const data = buildContextDataForFile(instance as BasicStoreObject, file.id, file.name, file.metaData.file_markings, input);
+    const data = buildContextDataForFile(instance as BasicStoreObject, file.id, file.name, file.metaData.file_markings, { ...input, ...disseminationList });
     await publishUserAction({
       event_access: 'administration',
       user,

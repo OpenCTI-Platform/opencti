@@ -6,9 +6,6 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
 import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 import MenuItem from '@mui/material/MenuItem';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -79,7 +76,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   );
 
   const basicShape = {
-    disseminationList: Yup.string().required(t_i18n('This field is required')),
+    disseminationListId: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
     emailBody: Yup.string().required(t_i18n('This field is required')),
   };
