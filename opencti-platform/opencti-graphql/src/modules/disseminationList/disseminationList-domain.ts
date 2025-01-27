@@ -81,13 +81,14 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   const file = await loadFile(context, user, filePath);
   if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
     const stream = await downloadFile(file.id);
+    const disseminationList = await findById(context, user, input.dissemination_list_id);
     const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
     const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
     const toEmail = conf.get('app:dissemination_list:to_email');
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: toEmail,
-      bcc: [input.email_address, user.user_email],
+      bcc: [disseminationList.emails, user.user_email],
       subject: input.email_object,
       html: generatedEmail,
       attachments: [

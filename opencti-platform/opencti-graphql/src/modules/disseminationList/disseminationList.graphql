@@ -75,7 +75,7 @@ input DisseminationListAddInput {
 }
 
 input DisseminationListSendInput {
-  email_address: String!
+  dissemination_list_id: ID!
   email_object: String!
   email_body: String!
   email_attached_file_id: ID!

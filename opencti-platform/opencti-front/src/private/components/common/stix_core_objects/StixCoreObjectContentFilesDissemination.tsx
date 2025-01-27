@@ -17,6 +17,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import SelectField from "../../../../components/fields/SelectField";
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -39,7 +40,7 @@ export const stixCoreObjectContentFilesDisseminationQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    disseminationLists(
+    disseminationListsNames(
       first: $count
       after: $cursor
       orderBy: $orderBy
@@ -72,7 +73,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
 }) => {
   const { t_i18n } = useFormatter();
   const [selectedListId, setSelectedListId] = useState('');
-  const { disseminationLists } = useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
+  const { disseminationListsNames } = useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
     stixCoreObjectContentFilesDisseminationQuery,
     { search: '', count: 10 },
   );
@@ -100,7 +101,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     commitMutation({
       variables: {
         input: {
-          dissemination_lists: values.disseminationListId,
+          dissemination_list_id: values.disseminationListId,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
           email_attached_file_id: fileId,
@@ -124,7 +125,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   };
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{ ...initialValues, disseminationListId: selectedListId }}
       validationSchema={validator}
       validateOnChange={true}
       onSubmit={handleSubmit}
@@ -132,25 +133,18 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
-            <InputLabel id="label" variant="outlined">
-              {t_i18n('Dissemination Lists')}
-            </InputLabel>
-            <Select
-              value={selectedListId}
-              label={t_i18n('Select email address')}
-              onChange={(e) => {
-                setSelectedListId(e.target.value);
-              }}
-              required
-            >
-              {disseminationLists?.edges?.map((edge) => (
-                <MenuItem key={edge.node.id} value={edge.node.id}>
-                  {edge.node.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Field
+            component={SelectField}
+            label={t_i18n('Dissemination List')}
+            name="disseminationListId"
+            required
+          >
+            {disseminationListsNames?.edges?.map((edge) => (
+              <MenuItem key={edge.node.id} value={edge.node.id}>
+                {edge.node.name}
+              </MenuItem>
+            ))}
+          </Field>
           <Field
             component={TextField}
             label={t_i18n('Email subject')}

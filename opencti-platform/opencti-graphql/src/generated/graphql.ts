@@ -6354,7 +6354,7 @@ export enum DisseminationListOrdering {
 }
 
 export type DisseminationListSendInput = {
-  email_address: Scalars['String']['input'];
+  dissemination_list_id: Scalars['ID']['input'];
   email_attached_file_id: Scalars['ID']['input'];
   email_body: Scalars['String']['input'];
   email_object: Scalars['String']['input'];
