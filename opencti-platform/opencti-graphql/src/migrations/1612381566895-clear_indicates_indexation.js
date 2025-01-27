@@ -18,7 +18,7 @@ export const up = async (next) => {
       .filter((n) => n.entity_type !== ENTITY_TYPE_INDICATOR)
       .map((att) => {
         return [
-          { update: { _index: att._index, _id: att.id } },
+          { update: { _index: att._index, _id: att._id } },
           { doc: { [buildRefRelationKey(RELATION_INDICATES)]: null } },
         ];
       })
