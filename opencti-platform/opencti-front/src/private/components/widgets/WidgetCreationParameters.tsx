@@ -13,8 +13,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import WidgetConfigColumnsCustomization from '@components/workspaces/dashboards/WidgetConfigColumnsCustomization';
-import { commonWidgetColumns, defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import WidgetColumnsCustomizationInput from '@components/widgets/WidgetColumnsCustomizationInput';
+import { getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
@@ -24,12 +24,13 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { findFiltersFromKeys, getEntityTypeTwoFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useHelper from '../../../utils/hooks/useHelper';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
@@ -771,15 +772,41 @@ const WidgetCreationParameters = () => {
           />
         )}
         {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
-          && dataSelection.map(({ perspective, columns }, index) => ((perspective === 'relationships') ? (
-            <WidgetConfigColumnsCustomization
-              key={index}
-              availableColumns={commonWidgetColumns[perspective]}
-              defaultColumns={defaultWidgetColumns[perspective]}
-              columns={[...(columns ?? defaultWidgetColumns[perspective])]}
-              setColumns={(newColumns) => setColumns(index, newColumns)}
-            />
-          ) : null))}
+          && dataSelection.map(({ perspective, columns, filters }, index) => {
+            if (perspective === 'relationships' || perspective === 'entities') {
+              const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
+                if (!filterGroup) return undefined;
+
+                const entityTypeFilters = getEntityTypeTwoFirstLevelsFilterValues(filterGroup);
+                const hasSingleEntityType = entityTypeFilters.length === 1;
+                const otherFiltersLength = filterGroup?.filters?.filter((filter) => filter.key !== 'entity_type')?.length;
+
+                if (filterGroup.mode === 'and' && hasSingleEntityType && otherFiltersLength >= 0) {
+                  return entityTypeFilters[0];
+                }
+
+                if (filterGroup.mode === 'or' && hasSingleEntityType && otherFiltersLength === 0) {
+                  return entityTypeFilters[0];
+                }
+
+                return undefined;
+              };
+
+              const entityType = getEntityTypeFromFilters(filters);
+
+              const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective);
+              return (
+                <WidgetColumnsCustomizationInput
+                  key={index}
+                  availableColumns={getWidgetColumns(perspective, entityType || undefined)}
+                  defaultColumns={defaultWidgetColumnsByType}
+                  value={[...(columns ?? defaultWidgetColumnsByType)]}
+                  onChange={(newColumns) => setColumns(index, newColumns)}
+                />
+              );
+            }
+            return null;
+          })}
       </div>
     </div>
   );

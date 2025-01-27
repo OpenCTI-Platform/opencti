@@ -154,7 +154,7 @@ export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
   operator = 'eq',
-) => {
+): Filter[] => {
   const result = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
@@ -227,17 +227,25 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
-export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, observableTypes?: string[], domainObjectTypes?: string []) => {
+export const getEntityTypeTwoFirstLevelsFilterValues = (
+  filters?: FilterGroup,
+  observableTypes?: string[],
+  domainObjectTypes?: string [],
+): string[] => {
   if (!filters) {
     return [];
   }
-  let firstLevelValues = findFilterFromKey(filters.filters, 'entity_type', 'eq')?.values ?? [];
+  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
+    .map(({ values }) => values)
+    .flat();
   const subFiltersSeparatedWithAnd = filters.filterGroups
     .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
     .map((fg) => fg.filters)
     .flat();
   if (subFiltersSeparatedWithAnd.length > 0) {
-    const secondLevelValues = findFilterFromKey(subFiltersSeparatedWithAnd, 'entity_type', 'eq')?.values ?? [];
+    const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+      .map(({ values }) => values)
+      .flat();
     if (filters.mode === 'and') {
       // if all second values are observables sub types : remove observable from firstLevelValue
       if (secondLevelValues.every((type) => observableTypes?.includes(type))) {

@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { useRef } from 'react';
-import { defaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
@@ -4401,7 +4401,7 @@ const PublicStixRelationshipsList = ({
   );
 
   const selection = dataSelection[0];
-  const columns = selection.columns ?? defaultWidgetColumns.relationships;
+  const columns = selection.columns ?? getDefaultWidgetColumns('relationships');
 
   const rootRef = useRef<HTMLDivElement>(null);
 

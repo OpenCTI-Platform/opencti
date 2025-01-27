@@ -19,11 +19,13 @@ import ItemPatternType from '../ItemPatternType';
 import type { Theme } from '../Theme';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemEntityType from '../ItemEntityType';
+import ItemScore from '../ItemScore';
 import ItemOpenVocab from '../ItemOpenVocab';
 import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
-import { APP_BASE_PATH } from '../../relay/environment';
 import ItemOperations from '../ItemOperations';
+import ItemDueDate from '../ItemDueDate';
+import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
 
 const chipStyle = {
@@ -113,7 +115,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         variant="inList"
         markingDefinitions={allowed_markings ?? []}
         limit={2}
-      />),
+      />
+    ),
   },
   analyses: {
     id: 'analyses',
@@ -179,7 +182,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ channel_types }) => {
-      const value = channel_types ? channel_types.join(', ') : '-';
+      const value = isNotEmptyField(channel_types) ? channel_types.join(', ') : '-';
       return defaultRender(value);
     },
   },
@@ -261,6 +264,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  creators: {
+    id: 'creators',
+    label: 'Creators',
+    percentWidth: 12,
+    render: ({ creators }) => {
+      const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
+      return defaultRender(value);
+    },
+  },
   definition: {
     id: 'definition',
     label: 'Definition',
@@ -295,9 +307,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ event_types }) => {
-      const value = event_types ? event_types.join(', ') : '-';
+      const value = isNotEmptyField(event_types) ? event_types.join(', ') : '-';
       return defaultRender(value);
     },
+  },
+  due_date: {
+    id: 'due_date',
+    label: 'Due Date',
+    percentWidth: 15,
+    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant={'inList'} />,
   },
   external_id: {
     id: 'external_id',
@@ -348,6 +366,72 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.preventDefault();
             e.stopPropagation();
             handleAddFilter('incident_type', incident_type ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  response_types: {
+    id: 'response_types',
+    label: 'Response type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ response_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={response_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('response_types', response_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  information_types: {
+    id: 'information_types',
+    label: 'Information type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ information_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={information_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('information_types', information_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  takedown_types: {
+    id: 'takedown_types',
+    label: 'Takedown type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ takedown_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={takedown_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('takedown_types', takedown_types?.at(0) ?? null, 'eq');
           }}
         />
       );
@@ -476,6 +560,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.preventDefault();
             e.stopPropagation();
             handleAddFilter('note_types', note_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
+  tool_types: {
+    id: 'tool_types',
+    label: 'Type',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ tool_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={tool_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('tool_types', tool_types?.at(0) ?? null, 'eq');
           }}
         />
       );
@@ -816,7 +922,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 20,
     isSortable: true,
     render: ({ threat_actor_types }) => {
-      const value = threat_actor_types ? threat_actor_types.join(', ') : '-';
+      const value = isNotEmptyField(threat_actor_types) ? threat_actor_types.join(', ') : '-';
       return defaultRender(value);
     },
   },
@@ -923,6 +1029,37 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
+  x_opencti_cvss_base_score: {
+    id: 'x_opencti_cvss_base_score',
+    label: 'CVSS3 - Score',
+    percentWidth: 15,
+    render: ({ x_opencti_cvss_base_score }) => <ItemScore score={x_opencti_cvss_base_score} />,
+  },
+  x_opencti_cisa_kev: {
+    id: 'x_opencti_cisa_kev',
+    label: 'CISA KEV',
+    percentWidth: 15,
+    render: ({ x_opencti_cisa_kev }, { t_i18n }) => (
+      <ItemBoolean
+        status={x_opencti_cisa_kev}
+        label={x_opencti_cisa_kev ? t_i18n('Yes') : t_i18n('No')}
+      />
+    ),
+  },
+  x_opencti_epss_score: {
+    id: 'x_opencti_epss_score',
+    label: 'EPSS Score',
+    percentWidth: 15,
+    render: ({ x_opencti_epss_score }) => <ItemScore score={x_opencti_epss_score} />,
+  },
+  x_opencti_epss_percentile: {
+    id: 'x_opencti_epss_percentile',
+    label: 'EPSS Percentile',
+    percentWidth: 15,
+    render: ({ x_opencti_epss_percentile }) => {
+      return defaultRender(x_opencti_epss_percentile || '-');
+    },
+  },
   x_opencti_cvss_base_severity: {
     id: 'x_opencti_cvss_base_severity',
     label: 'CVSS3 - Severity',
@@ -947,7 +1084,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           classes={{ root: classes.chipInList }}
           color="primary"
           variant="outlined"
-          label={x_opencti_organization_type ?? 'Unknown'}
+          label={x_opencti_organization_type || 'Unknown'}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1012,8 +1149,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
         ? data.importFiles.edges[0]?.node
         : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (<Tooltip title={file?.metaData?.mimetype}><>{b(file?.size)}</>
-      </Tooltip>);
+      return (
+        <Tooltip title={file?.metaData?.mimetype}>
+          <>{b(file?.size)}</>
+        </Tooltip>
+      );
     },
   },
   valid_until: {
@@ -1022,6 +1162,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
+  },
+  valid_from: {
+    id: 'valid_from',
+    label: 'Valid from',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ valid_from }, { nsdt }) => <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>,
   },
   draftVersion: {
     id: 'draftVersion',
@@ -1075,6 +1222,77 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: ' ',
     percentWidth: 3,
     isSortable: false,
+  },
+  x_opencti_aliases: {
+    id: 'x_opencti_aliases',
+    label: 'Aliases',
+    percentWidth: 10,
+    render: ({ x_opencti_aliases, entity_type }) => {
+      const theme = useTheme<Theme>();
+
+      if (!x_opencti_aliases) {
+        return defaultRender('-');
+      }
+      if (entity_type === 'Country') {
+        const flag = x_opencti_aliases.filter((n: string) => n.length === 2)[0];
+        if (flag) {
+          return (
+            <div style={{ display: 'flex', gap: theme.spacing(1), alignItems: 'center' }}>
+              <Tooltip title={x_opencti_aliases}>
+                <img
+                  style={{ width: 20 }}
+                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  alt={x_opencti_aliases}
+                />
+              </Tooltip>
+              <div>
+                {x_opencti_aliases[0]}
+              </div>
+            </div>
+          );
+        }
+      }
+
+      return (
+        <Tooltip title={x_opencti_aliases.join(', ')}>
+          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
+            {x_opencti_aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
+          </div>
+        </Tooltip>
+      );
+    },
+  },
+  aliases: {
+    id: 'aliases',
+    label: 'Aliases',
+    percentWidth: 10,
+    render: ({ aliases }) => {
+      const theme = useTheme<Theme>();
+
+      return aliases ? (
+        <Tooltip title={aliases.join(', ')}>
+          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
+            {aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
+          </div>
+        </Tooltip>
+      ) : defaultRender('-');
+    },
+  },
+  objectParticipant: {
+    id: 'objectParticipant',
+    label: 'Participant',
+    percentWidth: 10,
+    render: ({ objectParticipant }) => {
+      const value = isNotEmptyField(objectParticipant) ? objectParticipant.map((c: { name: string }) => c.name).join(', ') : '-';
+      return defaultRender(value);
+    },
+  },
+  x_opencti_score: {
+    id: 'x_opencti_score',
+    label: 'Score',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ x_opencti_score }) => <ItemScore score={x_opencti_score} />,
   },
 };
 
