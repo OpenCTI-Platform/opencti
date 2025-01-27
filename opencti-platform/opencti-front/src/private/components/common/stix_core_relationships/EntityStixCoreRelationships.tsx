@@ -68,7 +68,7 @@ EntityStixCoreRelationshipsProps
     },
   );
   const { view } = localStorage.viewStorage;
-  const finalView = currentView || view;
+  const finalView = !enableEntitiesView && (currentView === 'entities' || view === 'entities') ? 'relationships' : currentView || view;
   return (
     <ExportContextProvider>
       <div className={classes.container}>
