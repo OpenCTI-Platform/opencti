@@ -17,7 +17,7 @@ export const disseminationListValidator = (t: (value: string) => string) => {
 };
 
 export const formatEmailsForApi = (value: string) => {
-  return value.replaceAll('\n', ',');
+  return value.replaceAll('\n', ',').replaceAll(/\s/g, '');
 };
 
 export const formatEmailsForFront = (value: string) => {
