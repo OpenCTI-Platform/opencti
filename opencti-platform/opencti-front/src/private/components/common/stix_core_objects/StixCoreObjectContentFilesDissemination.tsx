@@ -1,11 +1,16 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Button } from '@mui/material';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
+import MenuItem from '@mui/material/MenuItem';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -20,10 +25,37 @@ interface StixCoreObjectContentFilesDisseminationProps {
 }
 
 interface DisseminationInput {
-  emailAddress: string;
+  disseminationListId: string;
   emailObject: string;
   emailBody: string;
 }
+
+export const stixCoreObjectContentFilesDisseminationQuery = graphql`
+  query StixCoreObjectContentFilesDisseminationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: DisseminationListOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    disseminationLists(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      search: $search
+    ) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
 
 export const DisseminationListSendInputMutation = graphql`
     mutation StixCoreObjectContentFilesDisseminationMutation(
@@ -39,8 +71,14 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const [selectedListId, setSelectedListId] = useState('');
+  const { disseminationLists } = useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
+    stixCoreObjectContentFilesDisseminationQuery,
+    { search: '', count: 10 },
+  );
+
   const basicShape = {
-    emailAddress: Yup.string().required(t_i18n('This field is required')),
+    disseminationList: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
     emailBody: Yup.string().required(t_i18n('This field is required')),
   };
@@ -62,7 +100,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     commitMutation({
       variables: {
         input: {
-          email_address: values.emailAddress,
+          dissemination_lists: values.disseminationListId,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
           email_attached_file_id: fileId,
@@ -80,7 +118,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     });
   };
   const initialValues = {
-    emailAddress: '',
+    disseminationListId: '',
     emailObject: '',
     emailBody: '',
   };
@@ -94,14 +132,25 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Field
-            component={TextField}
-            label={t_i18n('Email address')}
-            name="emailAddress"
-            type="email"
-            fullWidth
-            required
-          />
+          <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
+            <InputLabel id="label" variant="outlined">
+              {t_i18n('Dissemination Lists')}
+            </InputLabel>
+            <Select
+              value={selectedListId}
+              label={t_i18n('Select email address')}
+              onChange={(e) => {
+                setSelectedListId(e.target.value);
+              }}
+              required
+            >
+              {disseminationLists?.edges?.map((edge) => (
+                <MenuItem key={edge.node.id} value={edge.node.id}>
+                  {edge.node.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Field
             component={TextField}
             label={t_i18n('Email subject')}
