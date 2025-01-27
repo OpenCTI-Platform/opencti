@@ -153,7 +153,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
         infrastructure_types: values.infrastructure_types,
         confidence: parseInt(String(values.confidence), 10),
         first_seen: values.first_seen ? parse(values.first_seen).format() : null,
-        last_seen: values.first_seen ? parse(values.last_seen).format() : null,
+        last_seen: values.last_seen ? parse(values.last_seen).format() : null,
         killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
         createdBy: values.createdBy?.value,
         objectMarking: values.objectMarking.map((v) => v.value),
