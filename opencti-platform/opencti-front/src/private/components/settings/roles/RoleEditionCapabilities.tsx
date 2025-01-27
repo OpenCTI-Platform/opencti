@@ -86,7 +86,6 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { isFeatureEnable } = useHelper();
-  const isDisseminationFeatureEnabled = isFeatureEnable('DISSEMINATIONLISTS');
 
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -175,9 +174,6 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {
-            if (!isDisseminationFeatureEnabled && (capability.name === KNOWLEDGE_KNDISSEMINATION || capability.name === SETTINGS_SETDISSEMINATION)) {
-              return <div key="none" />;
-            }
             const paddingLeft = capability.name.split('_').length * 20 - 20;
             const roleCapability = roleCapabilities.find(
               (r) => r.name === capability.name,

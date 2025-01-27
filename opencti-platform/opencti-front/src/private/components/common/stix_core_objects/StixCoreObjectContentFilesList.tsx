@@ -83,7 +83,6 @@ const StixCoreObjectContentFilesList = ({
   const deletion = useDeletion({});
   const isEnterpriseEdition = useEnterpriseEdition();
   const { isFeatureEnable } = useHelper();
-  const isDisseminationFeatureEnabled = isFeatureEnable('DISSEMINATIONLISTS');
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuFile, setMenuFile] = useState<ContentFile | null>(null);
@@ -168,7 +167,7 @@ const StixCoreObjectContentFilesList = ({
                 )}
               />
               <ListItemSecondaryAction>
-                {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
+                {file.metaData?.mimetype === 'application/pdf' && (
                 <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
                   <>
                     <Tooltip title={'Disseminate'}>
