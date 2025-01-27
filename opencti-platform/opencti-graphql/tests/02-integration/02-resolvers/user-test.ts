@@ -623,13 +623,14 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data?.user.capabilities.length).toEqual(1);
     expect(queryResult.data?.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
-  it('Created user should not be assigned to default group if groups are specified in the new user input', async () => {
+  it('Created user should not be assigned to default groups if prevent_default_groups = true', async () => {
     const USER_TO_CREATE = {
       input: {
         name: 'UserWithGroupsSpecified',
         password: 'UserWithGroupsSpecified',
         user_email: 'UserWithGroupsSpecified@mail.com',
         groups: [GREEN_GROUP.id],
+        prevent_default_groups: true,
       },
     };
     const userAddResult = await queryAsAdmin({
@@ -640,7 +641,7 @@ describe('User resolver standard behavior', () => {
     expect(userAddResult.data?.userAdd.groups.edges[0].node.name).toEqual(GREEN_GROUP.name);
     userToDeleteIds.push(userAddResult.data?.userAdd.id);
   });
-  it('Created user should be assigned to default group if no groups are specified in the new user input', async () => {
+  it('Created user should be assigned to default group by default', async () => {
     const USER_TO_CREATE = {
       input: {
         name: 'UserWithNoGroupsSpecified',
