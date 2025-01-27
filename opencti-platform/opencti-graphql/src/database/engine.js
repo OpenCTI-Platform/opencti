@@ -4051,7 +4051,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     const body = transformedElements.flatMap((elementDoc) => {
       const doc = elementDoc;
       return [
-        { index: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { index: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
         R.pipe(R.dissoc('_index'))(doc),
       ];
     });
@@ -4121,7 +4121,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
     const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { update: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       R.dissoc('_index', doc.data),
     ]);
     if (bodyUpdate.length > 0) {
@@ -4142,7 +4142,7 @@ export const elUpdateRelationConnections = async (elements) => {
     const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
       + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
     const bodyUpdate = elements.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { update: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
     ]);
     const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
@@ -4170,7 +4170,7 @@ export const elUpdateEntityConnections = async (elements) => {
     const bodyUpdate = elements.flatMap((doc) => {
       const refField = isStixRefRelationship(doc.relationType) && isInferredIndex(doc._index) ? ID_INFERRED : ID_INTERNAL;
       return [
-        { update: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { update: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
         {
           script: {
             source,
