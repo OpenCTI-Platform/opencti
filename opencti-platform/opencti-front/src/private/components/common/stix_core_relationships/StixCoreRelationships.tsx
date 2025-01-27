@@ -303,11 +303,9 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     predefinedFilters.push({ key: 'elementWithTargetTypes', values: targetTypes });
   } else if (direction === 'toEntity') {
     predefinedFilters.push({ key: 'toId', values: [entityId] });
-    // if (role) predefinedFilters.push({ key: 'toRole', values: [role] });
     predefinedFilters.push({ key: 'fromTypes', values: targetTypes });
   } else {
     predefinedFilters.push({ key: 'fromId', values: [entityId] });
-    // if (role) predefinedFilters.push({ key: 'fromRole', values: [role] });
     predefinedFilters.push({ key: 'toTypes', values: targetTypes });
   }
   const contextFilters: FilterGroup = {
