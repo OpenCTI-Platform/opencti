@@ -16,7 +16,7 @@ import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
 import EmailIcon from '@mui/icons-material/Email';
 import Drawer from '@components/common/drawer/Drawer';
-import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
+import StixCoreObjectContentFilesDissemination, { stixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -27,6 +27,8 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useLazyLoadQuery } from 'react-relay';
+import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -125,6 +127,10 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
+  const { disseminationListsNames } = useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
+    stixCoreObjectContentFilesDisseminationQuery,
+    { search: '', count: 10 },
+  );
 
   return (
     <List>
@@ -202,6 +208,7 @@ const StixCoreObjectContentFilesList = ({
                 fileId={file.id}
                 fileName={file.name}
                 onClose={() => setDrawerOpen(false)}
+                lists={disseminationListsNames}
               />
             </Drawer>
           </Security>

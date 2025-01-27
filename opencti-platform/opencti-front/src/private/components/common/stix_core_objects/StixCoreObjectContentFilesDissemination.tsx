@@ -1,12 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Button } from '@mui/material';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 import MenuItem from '@mui/material/MenuItem';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
@@ -15,11 +14,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SelectField from "../../../../components/fields/SelectField";
+import { StixCoreObjectContentFilesDisseminationQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
   fileName: string;
   onClose: () => void;
+  lists: StixCoreObjectContentFilesDisseminationQuery$data['disseminationListsNames'];
 }
 
 interface DisseminationInput {
@@ -67,13 +68,9 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   fileId,
   fileName,
   onClose,
+  lists,
 }) => {
   const { t_i18n } = useFormatter();
-  const [selectedListId, setSelectedListId] = useState('');
-  const { disseminationListsNames } = useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
-    stixCoreObjectContentFilesDisseminationQuery,
-    { search: '', count: 10 },
-  );
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
@@ -122,7 +119,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   };
   return (
     <Formik
-      initialValues={{ ...initialValues, disseminationListId: selectedListId }}
+      initialValues={initialValues}
       validationSchema={validator}
       validateOnChange={true}
       onSubmit={handleSubmit}
@@ -136,7 +133,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             name="disseminationListId"
             required
           >
-            {disseminationListsNames?.edges?.map((edge) => (
+            {lists?.edges?.map((edge) => (
               <MenuItem key={edge.node.id} value={edge.node.id}>
                 {edge.node.name}
               </MenuItem>
