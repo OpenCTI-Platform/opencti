@@ -18,6 +18,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import AlertInfo from '../../../../components/AlertInfo';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 export const disseminationListsQuery = graphql`
     query DisseminationListsLinesPaginationQuery(
@@ -86,6 +87,8 @@ const LOCAL_STORAGE_KEY = 'view-dissemination-lists';
 
 const DisseminationLists = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Security: Dissemination lists | Settings'));
 
   const initialValues = {
     searchTerm: '',
