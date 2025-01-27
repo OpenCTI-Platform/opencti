@@ -24,7 +24,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { findFiltersFromKeys, getEntityTypeTwoFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
@@ -774,14 +774,22 @@ const WidgetCreationParameters = () => {
         {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
           && dataSelection.map(({ perspective, columns, filters }, index) => {
             if (perspective === 'relationships' || perspective === 'entities') {
-              const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null) => {
-                if (!filterGroup) return null;
+              const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
+                if (!filterGroup) return undefined;
 
-                const entityTypeFilters = filterGroup?.filters?.filter((filter) => filter.key === 'entity_type');
-                if (entityTypeFilters?.length === 1 && entityTypeFilters[0].values.length === 1) {
-                  return entityTypeFilters[0].values[0];
+                const entityTypeFilters = getEntityTypeTwoFirstLevelsFilterValues(filterGroup);
+                const hasSingleEntityType = entityTypeFilters.length === 1;
+                const otherFiltersLength = filterGroup?.filters?.filter((filter) => filter.key !== 'entity_type')?.length;
+
+                if (filterGroup.mode === 'and' && hasSingleEntityType && otherFiltersLength >= 0) {
+                  return entityTypeFilters[0];
                 }
-                return null;
+
+                if (filterGroup.mode === 'or' && hasSingleEntityType && otherFiltersLength === 0) {
+                  return entityTypeFilters[0];
+                }
+
+                return undefined;
               };
 
               const entityType = getEntityTypeFromFilters(filters);
@@ -790,7 +798,7 @@ const WidgetCreationParameters = () => {
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType)}
+                  availableColumns={getWidgetColumns(perspective, entityType || undefined)}
                   defaultColumns={defaultWidgetColumnsByType}
                   value={[...(columns ?? defaultWidgetColumnsByType)]}
                   onChange={(newColumns) => setColumns(index, newColumns)}
