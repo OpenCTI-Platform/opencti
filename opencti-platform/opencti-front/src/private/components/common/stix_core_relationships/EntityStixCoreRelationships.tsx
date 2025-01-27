@@ -25,6 +25,7 @@ interface EntityStixCoreRelationshipsProps {
   currentView: string;
   enableNestedView?: boolean;
   enableContextualView: boolean;
+  enableEntitiesView?: boolean;
   isRelationReversed: boolean;
   allDirections?: boolean;
   role?: string;
@@ -44,6 +45,7 @@ EntityStixCoreRelationshipsProps
   currentView,
   enableNestedView,
   enableContextualView,
+  enableEntitiesView = true,
   isRelationReversed,
   allDirections,
   role,
@@ -62,11 +64,11 @@ EntityStixCoreRelationshipsProps
       orderAsc: false,
       openExports: false,
       filters: emptyFilterGroup,
-      view: 'entities',
+      view: enableEntitiesView ? 'entities' : 'relationships',
     },
   );
   const { view } = localStorage.viewStorage;
-  const finalView = currentView || view;
+  const finalView = !enableEntitiesView && (currentView === 'entities' || view === 'entities') ? 'relationships' : currentView || view;
   return (
     <ExportContextProvider>
       <div className={classes.container}>
@@ -98,6 +100,7 @@ EntityStixCoreRelationshipsProps
             currentView={currentView}
             enableNestedView={enableNestedView}
             enableContextualView={enableContextualView}
+            enableEntitiesView={enableEntitiesView}
             isRelationReversed={isRelationReversed}
             allDirections={allDirections}
             role={role}

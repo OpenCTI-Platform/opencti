@@ -136,6 +136,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               stixCoreObjectTypes={['Country']}
               entityLink={link}
               isRelationReversed={false}
+              enableEntitiesView={false}
             />
           }
         />
@@ -148,6 +149,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               stixCoreObjectTypes={['Region']}
               entityLink={link}
               isRelationReversed={false}
+              enableEntitiesView={false}
             />
           }
         />

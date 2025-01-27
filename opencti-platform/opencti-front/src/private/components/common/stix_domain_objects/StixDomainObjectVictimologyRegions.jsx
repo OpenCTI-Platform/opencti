@@ -183,15 +183,6 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
                   name
                   latitude
                   longitude
-                  country {
-                    id
-                    name
-                    x_opencti_aliases
-                    region {
-                      id
-                      name
-                    }
-                  }
                 }
                 ... on Country {
                   id

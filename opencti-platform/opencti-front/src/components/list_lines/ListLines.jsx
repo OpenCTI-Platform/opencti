@@ -276,7 +276,7 @@ class ListLines extends Component {
                 <ToggleButtonGroup
                   size="small"
                   color="secondary"
-                  value={currentView || 'lines'}
+                  value={(!enableEntitiesView && currentView === 'entities') ? 'relationships' : currentView || 'lines'}
                   exclusive={true}
                   onChange={(_, value) => {
                     if (value && value === 'export') {
@@ -311,7 +311,7 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                   )}
-                  {enableEntitiesView && (
+                  {(enableEntitiesView || (!enableEntitiesView && currentView === 'entities') || currentView === 'relationships') && (
                     <ToggleButton
                       value="relationships"
                       aria-label="relationships"
@@ -320,7 +320,7 @@ class ListLines extends Component {
                         <RelationManyToMany
                           fontSize="small"
                           color={
-                            currentView === 'relationships' || !currentView
+                            currentView === 'relationships' || (!enableEntitiesView && currentView === 'entities') || !currentView
                               ? 'secondary'
                               : 'primary'
                           }
@@ -328,13 +328,12 @@ class ListLines extends Component {
                       </Tooltip>
                     </ToggleButton>
                   )}
-                  {typeof handleChangeView === 'function'
-                    && !enableEntitiesView && (
-                      <Tooltip title={t('Lines view')}>
-                        <ToggleButton value="lines" aria-label="lines">
-                          <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
-                        </ToggleButton>
-                      </Tooltip>
+                  {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && currentView !== 'entities' && (
+                    <Tooltip title={t('Lines view')}>
+                      <ToggleButton value="lines" aria-label="lines">
+                        <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
+                      </ToggleButton>
+                    </Tooltip>
                   )}
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">
