@@ -3,7 +3,7 @@ import deprecation
 
 class StixCyberObservableDeprecatedMixin:
     """
-    deprecated [>=6.2 & <6.5]`
+    deprecated [>=6.2 & <6.8]`
     Promote a Stix-Observable to an Indicator
 
     :param id: the Stix-Observable id
