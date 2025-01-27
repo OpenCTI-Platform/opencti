@@ -48,7 +48,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES
 } from './utils';
-import conf, { booleanConf, extendedErrors, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -236,11 +236,15 @@ export const UNIMPACTED_ENTITIES_ROLE = [
 const LOCATED_AT_CLEANED = [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY];
 const UNSUPPORTED_LOCATED_AT = [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_TYPE_LOCATION_CITY];
 export const isSpecialNonImpactedCases = (relationshipType, fromType, toType, side) => {
-  // Rel on the "to" side with related-to from observable
+  // The relationship is a related-to from an observable to "something" (generally, it is an intrusion set, a malware, etc.)
+  // This is to avoid for instance Emotet having 200K related-to.
+  // As a consequence, no entities view on the observable side.
   if (side === ROLE_TO && relationshipType === RELATION_RELATED_TO && isStixCyberObservable(fromType)) {
     return true;
   }
-  // Rel on the "to" side with located-at from IP / cities to region / country
+  // This relationship is a located-at from IPv4 / IPv6 / City to a country or a region
+  // This is to avoid having too big region entities
+  // As a consequence, no entities view in city / knowledge / regions,
   if (side === ROLE_TO && relationshipType === RELATION_LOCATED_AT && UNSUPPORTED_LOCATED_AT.includes(fromType) && LOCATED_AT_CLEANED.includes(toType)) {
     return true;
   }
@@ -415,7 +419,7 @@ const elOperationForMigration = (operation) => {
   const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => oebp(r));
 
   return async (message, index, body) => {
-    logApp.info(`${message} > started`);
+    logMigration.info(`${message} > started`);
     // Execute the update by query in async mode
     const queryAsync = await operation({
       ...(index ? { index } : {}),
@@ -425,19 +429,19 @@ const elOperationForMigration = (operation) => {
     }).catch((err) => {
       throw DatabaseError('Async engine bulk migration fail', { migration: message, cause: err });
     });
-    logApp.info(`${message} > elastic running task ${queryAsync.task}`);
+    logMigration.info(`${message} > elastic running task ${queryAsync.task}`);
     // Wait 10 seconds for task to initialize
     await waitInSec(10);
     // Monitor the task until completion
     let taskStatus = await elGetTask(queryAsync.task);
     while (!taskStatus.completed) {
       const { total, updated } = taskStatus.task.status;
-      logApp.info(`${message} > in progress - ${updated}/${total}`);
+      logMigration.info(`${message} > in progress - ${updated}/${total}`);
       await waitInSec(5);
       taskStatus = await elGetTask(queryAsync.task);
     }
     const timeSec = Math.round(taskStatus.task.running_time_in_nanos / 1e9);
-    logApp.info(`${message} > done in ${timeSec} seconds`);
+    logMigration.info(`${message} > done in ${timeSec} seconds`);
   };
 };
 

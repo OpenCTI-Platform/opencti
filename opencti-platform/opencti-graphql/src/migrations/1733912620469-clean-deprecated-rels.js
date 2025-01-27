@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { BULK_TIMEOUT, elBulk, elFindByIds, elList, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -21,16 +21,19 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 const message = '[MIGRATION] Cleaning deprecated rels';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
   // 1st pass
   // Cleaning all threats from any re_related-to related to observables
+  logMigration.info('[OPENCTI] Cleaning deprecated rels for observable related-to...');
   const relKeyRelatedTo = 'rel_related-to.internal_id';
   const bulkOperationsRelatedTo = [];
   const startRelatedTo = new Date().getTime();
   const clearRelatedToObservableRels = async (threats) => {
+    let currentProcessingThreats = 0;
     for (let i = 0; i < threats.length; i += 1) {
+      logMigration.info(`[OPENCTI] Cleaning deprecated rels for related-to ${currentProcessingThreats} / ${threats.length}`);
       const threat = threats[i];
       const relatedToIds = threat[relKeyRelatedTo] ?? [];
       const newIds = [];
@@ -54,6 +57,7 @@ export const up = async (next) => {
         ];
         bulkOperationsRelatedTo.push(...updateQuery);
       }
+      currentProcessingThreats += 1;
     }
   };
   const threatTypes = [
@@ -72,19 +76,22 @@ export const up = async (next) => {
   const concurrentUpdateRelatedTo = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessingRelatedTo += bulk.length;
-    logApp.info(`[OPENCTI] Cleaning deprecated rels for observable related-to ${currentProcessingRelatedTo} / ${bulkOperationsRelatedTo.length}`);
+    logMigration.info(`[OPENCTI] Cleaning deprecated rels for observable related-to ${currentProcessingRelatedTo} / ${bulkOperationsRelatedTo.length}`);
   };
   await Promise.map(groupsOfOperationsRelatedTo, concurrentUpdateRelatedTo, { concurrency: ES_MAX_CONCURRENCY });
-  logApp.info(`[MIGRATION] Cleaning deprecated rels for observable related-to done in ${new Date() - startRelatedTo} ms`);
+  logMigration.info(`[MIGRATION] Cleaning deprecated rels for observable related-to done in ${new Date() - startRelatedTo} ms`);
 
   // 2nd pass
   // Cleaning located-at when pointing a country or a region
+  logMigration.info('[OPENCTI] Cleaning deprecated rels for located-at...');
   const relKeyLocatedAt = 'rel_located-at.internal_id';
   const bulkOperationsLocatedAt = [];
   const startLocatedAt = new Date().getTime();
   const cleanTypes = [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_TYPE_LOCATION_CITY];
   const clearLocatedAtRegionAndCountryRels = async (locations) => {
+    let currentProcessingLocations = 0;
     for (let i = 0; i < locations.length; i += 1) {
+      logMigration.info(`[OPENCTI] Cleaning deprecated rels for located-at ${currentProcessingLocations} / ${locations.length}`);
       const location = locations[i];
       const locatedAtIds = location[relKeyLocatedAt] ?? [];
       const newIds = [];
@@ -108,6 +115,7 @@ export const up = async (next) => {
         ];
         bulkOperationsLocatedAt.push(...updateQuery);
       }
+      currentProcessingLocations += 1;
     }
   };
   const opts = { types: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY], callback: clearLocatedAtRegionAndCountryRels };
@@ -118,13 +126,14 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logApp.info(`[OPENCTI] Cleaning deprecated rels for located-at to country / region ${currentProcessing} / ${bulkOperationsLocatedAt.length}`);
+    logMigration.info(`[OPENCTI] Cleaning deprecated rels for located-at to country / region ${currentProcessing} / ${bulkOperationsLocatedAt.length}`);
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  logApp.info(`[MIGRATION] Cleaning deprecated rels for located-at to country / region in ${new Date() - startLocatedAt} ms`);
+  logMigration.info(`[MIGRATION] Cleaning deprecated rels for located-at to country / region in ${new Date() - startLocatedAt} ms`);
 
   // 3rd pass
   // Cleaning all targets to countries, regions and sectors
+  logMigration.info('[OPENCTI] Cleaning deprecated rels for targets...');
   const updateQueryForTargets = {
     script: {
       params: { fieldToRemove: 'rel_targets' },
@@ -159,7 +168,7 @@ export const up = async (next) => {
     updateQueryForTargets
   );
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 

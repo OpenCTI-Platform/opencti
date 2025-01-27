@@ -198,6 +198,12 @@ if (appLogConsoleTransport) {
   appLogTransports.push(new winston.transports.Console());
 }
 
+const migrationLogger = winston.createLogger({
+  level: 'debug',
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  transports: appLogTransports,
+});
+
 const appLogger = winston.createLogger({
   level: appLogLevel,
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
@@ -263,6 +269,10 @@ export const logS3Debug = {
   debug: (message, detail) => {
     logApp._log('info', message, { detail });
   },
+};
+
+export const logMigration = {
+  info: (message) => migrationLogger.log('info', message),
 };
 
 export const logApp = {
