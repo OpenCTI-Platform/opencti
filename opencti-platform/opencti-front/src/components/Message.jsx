@@ -86,6 +86,7 @@ const Message = () => {
                     <Button
                       variant="outlined"
                       size="small"
+                      color="error"
                       sx={{ marginLeft: 2 }}
                       onClick={handleDialogOpen}
                     >

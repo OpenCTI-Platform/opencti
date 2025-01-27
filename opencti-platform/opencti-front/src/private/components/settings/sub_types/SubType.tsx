@@ -23,6 +23,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import RequestAccessWorkflowPopover from './RequestAccessWorkflowPopover';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -38,6 +39,12 @@ export const subTypeQuery = graphql`
       id
       label
       workflowEnabled
+      requestAccessWorkflow {
+        approved_workflow_id
+        declined_workflow_id
+        workflow
+        approval_admin
+      }
       settings {
         id
         availableSettings
@@ -149,6 +156,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access workflow')}
+                    <RequestAccessWorkflowPopover id={subType.id} data={subType.settings}/>
                   </Typography>
                 </div>
                 <RequestAccessStatus data={subType.settings}/>

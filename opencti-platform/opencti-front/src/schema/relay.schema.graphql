@@ -723,6 +723,7 @@ type SubType {
   workflowEnabled: Boolean
   settings: EntitySetting
   requestAccessWorkflow: RequestAccessWorkflow
+  requestAccessStatus: RequestAccessStatus
 }
 
 enum StatusTemplateOrdering {
@@ -10951,14 +10952,6 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type RequestAccessWorkflow {
-  approved_workflow_status: String
-  approved_workflow_id: String
-  declined_workflow_id: String
-  workflow: [String]
-  approval_admin: String
-}
-
 type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -12641,6 +12634,27 @@ input DisseminationListSendInput {
 
 enum RequestAccessType {
   organization_sharing
+}
+
+enum ActionStatus {
+  APPROVED
+  DECLINED
+  NEW
+  NOT_FOUND
+  MISSING_PARAMETERS
+}
+
+type RequestAccessWorkflow {
+  approved_workflow_id: String
+  declined_workflow_id: String
+  workflow: [String]
+  approval_admin: String
+}
+
+type RequestAccessStatus {
+  id: ID!
+  template_id: String
+  statusTemplate: [StatusTemplate]
 }
 
 input RequestAccessAddInput {

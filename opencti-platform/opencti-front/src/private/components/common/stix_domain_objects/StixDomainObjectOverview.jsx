@@ -19,6 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
 import { declineRequestAccessMutation, validateRequestAccessMutation } from '../../cases/CaseUtils';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
@@ -73,6 +74,7 @@ const StixDomainObjectOverview = ({
   displayConfidence = true,
   displayReliability = true,
   displayOpinions = true,
+  relay,
 }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -137,23 +139,7 @@ const StixDomainObjectOverview = ({
     });
   };
 
-  const onSubmitValidateRequestAccess = () => {
-    commitMutation({
-      mutation: validateRequestAccessMutation,
-      variables: {
-        id: stixDomainObject.id,
-      },
-    });
-  };
-
-  const onSubmitDeclineRequestAccess = () => {
-    commitMutation({
-      mutation: declineRequestAccessMutation,
-      variables: {
-        id: stixDomainObject.id,
-      },
-    });
-  };
+  console.log('stixDOmainObject', stixDomainObject);
 
   const deleteStixId = (stixId) => {
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
@@ -188,9 +174,38 @@ const StixDomainObjectOverview = ({
   if (stixDomainObject.x_opencti_request_access) {
     requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
   }
-  // console.log('requestAccess ===> ', requestAccess);
 
-  // console.log('stixDomainObjectStatus ===>', stixDomainObject.status);
+  const onSubmitValidateRequestAccess = () => {
+    commitMutation({
+      mutation: validateRequestAccessMutation,
+      variables: {
+        id: stixDomainObject.id,
+        input: '',
+      },
+      onCompleted: () => {
+        relay.refetch({ id: stixDomainObject.id });
+        MESSAGING$.notifySuccess(t_i18n('Success to approve the request'));
+      },
+      onError: () => {
+        MESSAGING$.notifyError(t_i18n('Failed to approve the request.'));
+      },
+    });
+  };
+
+  const onSubmitDeclineRequestAccess = () => {
+    commitMutation({
+      mutation: declineRequestAccessMutation,
+      variables: {
+        id: stixDomainObject.id,
+      },
+      onCompleted: () => {
+        relay.refetch({ id: stixDomainObject.id });
+        MESSAGING$.notifySuccess(t_i18n('Success to approve the request'));
+      },
+    });
+  };
+  console.log('stixDomainObject.x_opencti_request_access', stixDomainObject.x_opencti_request_access);
+  console.log('requestAccess', requestAccess);
   return (
     <>
       <Typography variant="h4">
@@ -207,28 +222,51 @@ const StixDomainObjectOverview = ({
               >
                 {t_i18n('Processing status')}
               </Typography>
-              <ItemStatus
-                status={stixDomainObject.status}
-                disabled={!stixDomainObject.workflowEnabled}
-              />
-              <Button onClick={onSubmitValidateRequestAccess} color="secondary">{t_i18n('Validate')}</Button>
-              <Button onClick={onSubmitDeclineRequestAccess} color="secondary">{t_i18n('Decline')}</Button>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+              >
+                <ItemStatus
+                  status={stixDomainObject.status}
+                  disabled={!stixDomainObject.workflowEnabled}
+                />
+                <div>
+                  <Button
+                    color="primary"
+                    variant="outlined"
+                    style={{ marginRight: 10 }}
+                    onClick={onSubmitValidateRequestAccess}
+                  >
+                    {t_i18n('Validate')}
+                  </Button>
+                  <Button
+                    color="primary"
+                    variant="outlined"
+                    onClick={onSubmitDeclineRequestAccess}
+                  >
+                    {t_i18n('Decline')}
+                  </Button>
+                </div>
+              </div>
+              <Divider style={{ marginTop: 20 }}/>
             </Grid>
           )}
         </Grid>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             {stixDomainObject.objectMarking && (
-              <>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Marking')}
-                </Typography>
-                <ItemMarkings
-                  markingDefinitions={
+            <>
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Marking')}
+              </Typography>
+              <ItemMarkings
+                markingDefinitions={
                     stixDomainObject.objectMarking ?? []
                   }
-                />
-              </>
+              />
+            </>
             )}
             <div>
               <Typography
@@ -249,45 +287,45 @@ const StixDomainObjectOverview = ({
               />
             </div>
             {(displayConfidence || displayReliability) && (
-              <Grid container={true} columnSpacing={1}>
-                {displayReliability && (
-                  <Grid item xs={6}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t_i18n('Reliability')}
-                      {isReliabilityOfSource && (
-                        <span style={{ fontStyle: 'italic' }}>
-                          {' '}
-                          ({t_i18n('of author')})
-                        </span>
-                      )}
-                    </Typography>
-                    <ItemOpenVocab
-                      displayMode="chip"
-                      type="reliability_ov"
-                      value={reliability?.toString()}
-                    />
-                  </Grid>
-                )}
-                {displayConfidence && (
-                  <Grid item xs={6}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t_i18n('Confidence level')}
-                    </Typography>
-                    <ItemConfidence
-                      confidence={stixDomainObject.confidence}
-                      entityType={stixDomainObject.entity_type}
-                    />
-                  </Grid>
-                )}
+            <Grid container={true} columnSpacing={1}>
+              {displayReliability && (
+              <Grid item xs={6}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t_i18n('Reliability')}
+                  {isReliabilityOfSource && (
+                  <span style={{ fontStyle: 'italic' }}>
+                    {' '}
+                    ({t_i18n('of author')})
+                  </span>
+                  )}
+                </Typography>
+                <ItemOpenVocab
+                  displayMode="chip"
+                  type="reliability_ov"
+                  value={reliability?.toString()}
+                />
               </Grid>
+              )}
+              {displayConfidence && (
+              <Grid item xs={6}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t_i18n('Confidence level')}
+                </Typography>
+                <ItemConfidence
+                  confidence={stixDomainObject.confidence}
+                  entityType={stixDomainObject.entity_type}
+                />
+              </Grid>
+              )}
+            </Grid>
             )}
             {displayOpinions && <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />}
             <Typography

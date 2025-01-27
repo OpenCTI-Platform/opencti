@@ -206,6 +206,15 @@ export const stixDomainObjectMutation = graphql`
             name
             entity_type
           }
+          x_opencti_request_access
+          x_opencti_workflow_id
+          status {
+            id
+            template {
+              name
+              color
+            }
+          }
         }
         ... on CaseRft {
           objectAssignee {

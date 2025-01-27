@@ -19,6 +19,9 @@ import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils'
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import type { BasicStoreSettings } from '../../types/settings';
+import { createStatus, createStatusTemplate } from '../../domain/status';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -122,7 +125,6 @@ export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser
     if (action === ActionStatus.APPROVED) {
       return requestAccessWorkflow.approved_workflow_id;
     }
-
     if (action === ActionStatus.DECLINED) {
       return requestAccessWorkflow.declined_workflow_id;
     }
@@ -136,7 +138,7 @@ export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUs
     orderMode: OrderingMode.Asc,
     filters: {
       mode: FilterMode.And,
-      filters: [{ key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
+      filters: [{ key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE] }],
       filterGroups: [],
       first: 1
     },
@@ -203,7 +205,6 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
         access_right: 'edit',
       });
     }
-
     // set Admin
     authorizedMembers.push({
       id: requestAccessAdmin || platformOrganization, // TODO remove platformOrganization here when settings are done.
@@ -212,10 +213,9 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
 
     return authorizedMembers;
   }
-  throw FunctionalError('Please set an approval admin fro request access');
+  throw FunctionalError('Please set an approval admin for request access');
 };
 
-/*
 const initForDev = async (context: AuthContext) => {
   const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
   const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
@@ -239,12 +239,11 @@ const initForDev = async (context: AuthContext) => {
     await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
   }
 };
- */
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   await checkRequestAccessEnabled(context, user);
-  // await initForDev(context);
+  await initForDev(context);
 
   const requestedEntities = input.request_access_entities;
   const organizationId = input.request_access_members[0];
@@ -265,7 +264,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const humanDescription = 'Access requested:\n'
       + ` - by user: ${user.name} \n`
       + ` - for organization: ${organizationData.name} \n`
-      + ` - for ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
+      + ` - for entity: ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
       + `Reason: ${input.request_access_reason}`;
 
   const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.NEW);

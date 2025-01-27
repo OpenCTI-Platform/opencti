@@ -119,6 +119,7 @@ export const validateRequestAccessMutation = graphql`
   mutation CaseUtilsValidateRequestAccessMutation($id: ID!) {
     caseRfiApprove(id: $id) {
         id
+        x_opencti_workflow_id
     }
   }
 `;
@@ -127,6 +128,7 @@ export const declineRequestAccessMutation = graphql`
   mutation CaseUtilsDeclineRequestAccessMutation($id: ID!) {
     caseRfiDecline(id: $id) {
       id
+      x_opencti_workflow_id
     }
   }
 `;

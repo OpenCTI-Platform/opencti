@@ -34,14 +34,6 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type RequestAccessWorkflow {
-  approved_workflow_status: String
-  approved_workflow_id: String
-  declined_workflow_id: String
-  workflow: [String]
-  approval_admin: String
-}
-
 type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
