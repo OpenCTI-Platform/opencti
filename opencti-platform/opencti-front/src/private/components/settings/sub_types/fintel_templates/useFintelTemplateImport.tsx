@@ -5,7 +5,7 @@ import { useFintelTemplateImportMutation } from './__generated__/useFintelTempla
 
 const fintelTemplateImportMutation = graphql`
   mutation useFintelTemplateImportMutation($file: Upload!) {
-    fintelTemplateImport(file: $file) {
+    fintelTemplateConfigurationImport(file: $file) {
       id
       entity_type
     }

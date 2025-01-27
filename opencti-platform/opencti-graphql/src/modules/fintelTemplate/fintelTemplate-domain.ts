@@ -264,7 +264,7 @@ type FintelTemplateWidgetFromImport = {
   }
 };
 
-export const fintelTemplateImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
   const fintel_template_widgets = parsedData.configuration.fintel_template_widgets as FintelTemplateWidgetFromImport[];
 
