@@ -108,6 +108,7 @@ const PositionEditionOverviewComponent = (props) => {
     postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const positionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
