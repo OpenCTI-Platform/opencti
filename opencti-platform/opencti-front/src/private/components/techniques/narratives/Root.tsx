@@ -27,6 +27,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -104,7 +106,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   const paddingRight = getPaddingRight(location.pathname, narrativeId, '/dashboard/techniques/narratives');
   const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {narrative ? (
         <>
           <Routes>
@@ -143,6 +145,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                   <NarrativeEdition narrativeId={narrative.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
             />
             <Box
               sx={{
@@ -250,7 +253,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

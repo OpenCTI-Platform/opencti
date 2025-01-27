@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
@@ -53,6 +53,7 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
+import { CreateRelationshipContext } from '../menus/CreateRelationshipContextProvider';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -160,6 +161,13 @@ StixDomainObjectThreatKnowledgeProps
   const [nestedRelationships, setNestedRelationships] = useState(false);
   const [openTimeField, setOpenTimeField] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const { setState } = useContext(CreateRelationshipContext);
+
+  useEffect(() => {
+    setState({
+      stixCoreObjectTypes: [],
+    });
+  }, []);
 
   const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
   const link = `${resolveLink(stixDomainObjectType)}/${stixDomainObjectId}/knowledge`;

@@ -31,6 +31,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -107,7 +109,7 @@ const RootIncidentComponent = ({ queryRef }) => {
     return 0;
   };
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {incident ? (
         <>
           <Routes>
@@ -150,6 +152,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   <IncidentEdition incidentId={incident.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
             />
             <Box
@@ -269,7 +272,7 @@ const RootIncidentComponent = ({ queryRef }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

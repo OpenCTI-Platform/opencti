@@ -33,6 +33,8 @@ import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CreateRelationshipContextProvider from '../../common/menus/CreateRelationshipContextProvider';
+import CreateRelationshipButtonComponent from '../../common/menus/CreateRelationshipButtonComponent';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -102,7 +104,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const link = `/dashboard/locations/regions/${regionId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, region?.id, '/dashboard/locations/regions');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {region ? (
         <>
           <Routes>
@@ -149,6 +151,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   <RegionEdition regionId={region.id} />
                 </Security>
               )}
+              RelateComponent={CreateRelationshipButtonComponent}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
@@ -279,7 +282,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

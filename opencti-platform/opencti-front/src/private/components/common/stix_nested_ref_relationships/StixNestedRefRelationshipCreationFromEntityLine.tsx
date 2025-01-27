@@ -43,7 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
+export const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
   fragment StixNestedRefRelationshipCreationFromEntityLine_node on StixCoreObject {
     id
     draftVersion {
