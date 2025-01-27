@@ -237,7 +237,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
   }
   let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
     .map(({ values }) => values)
-    .flat() ?? [];
+    .flat();
   const subFiltersSeparatedWithAnd = filters.filterGroups
     .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
     .map((fg) => fg.filters)
@@ -245,7 +245,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
   if (subFiltersSeparatedWithAnd.length > 0) {
     const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
       .map(({ values }) => values)
-      .flat() ?? [];
+      .flat();
     if (filters.mode === 'and') {
       // if all second values are observables sub types : remove observable from firstLevelValue
       if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
