@@ -318,6 +318,8 @@ class CaseRft:
                 modified
                 name
                 description
+                severity
+                priority
                 takedown_types
                 objects(all: true) {
                     edges {
@@ -677,6 +679,8 @@ class CaseRft:
         object_participant = kwargs.get("objectParticipant", None)
         external_references = kwargs.get("externalReferences", None)
         revoked = kwargs.get("revoked", None)
+        severity = kwargs.get("severity", None)
+        priority = kwargs.get("priority", None)
         confidence = kwargs.get("confidence", None)
         lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
@@ -715,6 +719,8 @@ class CaseRft:
                         "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
+                        "severity": severity,
+                        "priority": priority,
                         "confidence": confidence,
                         "lang": lang,
                         "created": created,
@@ -879,6 +885,8 @@ class CaseRft:
                     else None
                 ),
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
+                severity=stix_object["severity"] if "severity" in stix_object else None,
+                priority=stix_object["priority"] if "priority" in stix_object else None,
                 confidence=(
                     stix_object["confidence"] if "confidence" in stix_object else None
                 ),

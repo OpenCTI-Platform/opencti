@@ -224,8 +224,11 @@ class OpenCTIApiClient:
     def set_previous_standard_header(self, previous_standard):
         self.request_headers["previous-standard"] = previous_standard
 
-    def get_request_headers(self):
-        return self.request_headers
+    def get_request_headers(self, hide_token=True):
+        request_headers_copy = self.request_headers.copy()
+        if hide_token and "Authorization" in request_headers_copy:
+            request_headers_copy["Authorization"] = "*****"
+        return request_headers_copy
 
     def set_retry_number(self, retry_number):
         self.request_headers["opencti-retry-number"] = (
@@ -408,7 +411,7 @@ class OpenCTIApiClient:
             self.app_logger.info("Health check (platform version)...")
             test = self.query(
                 """
-                  query {
+                  query healthCheck {
                     about {
                       version
                     }
