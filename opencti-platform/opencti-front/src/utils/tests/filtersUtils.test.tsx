@@ -167,6 +167,36 @@ describe('Filters utils', () => {
       const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Malware', 'Artifact', 'Country', 'City']);
       expect(result).toEqual(['Malware']);
     });
+
+    it('should return all the types if several entity types filters', () => {
+      // filters: Report AND Malware
+      // result: Malware
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Report'] },
+          { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+        ],
+        filterGroups: [],
+      };
+      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, [], ['Malware', 'Report', 'Country', 'City']);
+      expect(result).toEqual(['Report', 'Malware']);
+    });
+
+    it('should return all the types if several entity types filters', () => {
+      // filters: (Entity OR File) AND Malware
+      // result: Malware
+      const filters = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Report', 'File'] },
+          { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+        ],
+        filterGroups: [],
+      };
+      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['File'], ['Malware', 'Report', 'Country', 'City']);
+      expect(result).toEqual(['Report', 'File', 'Malware']);
+    });
   });
 });
 
