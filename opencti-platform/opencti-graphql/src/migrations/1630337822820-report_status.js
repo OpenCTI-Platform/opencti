@@ -52,7 +52,7 @@ export const up = async (next) => {
           default:
             status = workflowStatusClosed;
         }
-        return [{ update: { _index: report._index, _id: report.id } }, { doc: { status_id: status.id } }];
+        return [{ update: { _index: report._index, _id: report._id } }, { doc: { status_id: status.id } }];
       })
       .flat();
     bulkOperations.push(...op);

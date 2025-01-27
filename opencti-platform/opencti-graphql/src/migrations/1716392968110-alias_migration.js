@@ -23,7 +23,7 @@ export const up = async (next) => {
     const bulkOperations = entities.map((entity) => {
       const aliasIds = generateAliasesIdsForInstance(entity);
       return [
-        { update: { _index: entity._index, _id: entity.id } },
+        { update: { _index: entity._index, _id: entity._id } },
         { doc: { [iAliasedIds.name]: aliasIds } },
       ];
     }).flat();

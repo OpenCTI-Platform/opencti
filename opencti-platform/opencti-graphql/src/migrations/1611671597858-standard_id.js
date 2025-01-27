@@ -17,7 +17,7 @@ export const up = async (next) => {
       .map((att) => {
         const newId = generateStandardId(att.entity_type, att);
         return [
-          { update: { _index: att._index, _id: att.id } },
+          { update: { _index: att._index, _id: att._id } },
           { doc: { standard_id: newId, x_opencti_stix_ids: [] } },
         ];
       })
