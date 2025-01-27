@@ -450,8 +450,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             relationshipTypes={['uses']}
             paginationOptions={paginationOptions as PaginationOptions}
             storageKey={storageKey}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         )}
+        {currentView !== 'relationships' && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
@@ -465,6 +468,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             defaultStopTime={defaultStopTime}
           />
         </Security>
+        )}
         {currentView !== 'matrix-in-line' && <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
           <StixCoreObjectsExports
             open={openExports}
