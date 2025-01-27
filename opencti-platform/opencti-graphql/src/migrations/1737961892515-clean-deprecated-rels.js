@@ -86,14 +86,14 @@ export const up = async (next) => {
   const clearLocatedAtRegionAndCountryRels = async (locations) => {
     for (let i = 0; i < locations.length; i += 1) {
       const location = locations[i];
-      const relatedToIds = location[relKeyLocatedAt] ?? [];
+      const locatedAtIds = location[relKeyLocatedAt] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, relatedToIds);
+      const groupIds = R.splitEvery(5000, locatedAtIds);
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
-        const entitiesIdsOnlyWithKeptTypes = entitiesBaseData.filter((n) => !cleanTypes.includes(n.entity_type)).map((n) => n.internal_id);
-        newIds.push(...entitiesIdsOnlyWithKeptTypes);
+        const entitiesIdsOnlyWithoutClearedTypes = entitiesBaseData.filter((n) => !cleanTypes.includes(n.entity_type)).map((n) => n.internal_id);
+        newIds.push(...entitiesIdsOnlyWithoutClearedTypes);
       }
       if (newIds.length > 0) {
         const updateQuery = [
