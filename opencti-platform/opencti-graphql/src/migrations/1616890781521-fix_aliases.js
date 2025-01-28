@@ -33,7 +33,7 @@ export const up = async (next) => {
             identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
           });
           return [
-            { update: { _index: entity._index, _id: entity.id } },
+            { update: { _index: entity._index, _id: entity._id } },
             {
               doc: {
                 i_aliases_ids: newAliasIds,
@@ -48,7 +48,7 @@ export const up = async (next) => {
         const newAliasIds = generateAliases([entity.name, ...(entity.x_opencti_aliases || [])], {
           x_opencti_location_type: entity.x_opencti_location_type,
         });
-        return [{ update: { _index: entity._index, _id: entity.id } }, { doc: { i_aliases_ids: newAliasIds } }];
+        return [{ update: { _index: entity._index, _id: entity._id } }, { doc: { i_aliases_ids: newAliasIds } }];
       })
       .flat();
     bulkOperations.push(...op);

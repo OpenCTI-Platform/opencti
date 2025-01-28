@@ -17,7 +17,7 @@ export const up = async (next) => {
       .map((entity) => {
         const newStandardId = generateStandardId(ENTITY_TYPE_INCIDENT, entity);
         return [
-          { update: { _index: entity._index, _id: entity.id } },
+          { update: { _index: entity._index, _id: entity._id } },
           {
             doc: {
               // Fix bad fields

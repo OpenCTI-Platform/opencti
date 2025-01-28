@@ -15,7 +15,7 @@ export const up = async (next) => {
     const op = attacks
       .map((att) => {
         return [
-          { update: { _index: att._index, _id: att.id } },
+          { update: { _index: att._index, _id: att._id } },
           { doc: { aliases: [], i_aliases_ids: [], x_opencti_stix_ids: [] } },
         ];
       })

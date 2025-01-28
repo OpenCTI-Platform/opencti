@@ -152,19 +152,19 @@ import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utc
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
-  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  canRequestAccess,
+  controlUserRestrictDeleteAgainstElement,
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
   isUserCanAccessStoreElement,
   isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
-  validateUserAccessOperation,
-  controlUserRestrictDeleteAgainstElement,
-  canRequestAccess
+  validateUserAccessOperation
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
