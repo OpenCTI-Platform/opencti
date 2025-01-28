@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import React from 'react';
 import { v4 as uuid } from 'uuid';
+import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../components/i18n';
 import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
@@ -33,12 +34,14 @@ const WidgetCreationPerspective = () => {
     const initialFilters = context === 'fintelTemplate' && perspective === 'entities'
       ? fintelTemplateEntitiesInitialFilters
       : emptyFilterGroup;
+    const initialColumns = perspective === 'entities' || perspective === 'relationships' ? getDefaultWidgetColumns(perspective) : [];
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective,
       filters: perspective === n.perspective ? n.filters : initialFilters,
       dynamicFrom: perspective === n.perspective ? n.dynamicFrom : emptyFilterGroup,
       dynamicTo: perspective === n.perspective ? n.dynamicTo : emptyFilterGroup,
+      columns: perspective === n.perspective ? n.columns : initialColumns,
     }
     ));
     setConfigWidget({
