@@ -134,19 +134,19 @@ const DisseminationLists = () => {
     },
     name: {
       id: 'name',
-      label: t_i18n('Name'),
+      label: 'Name',
       isSortable: true,
       percentWidth: 20,
     },
     description: {
       id: 'description',
-      label: t_i18n('Description'),
+      label: 'Description',
       percentWidth: 60,
       isSortable: false,
     },
     lineNumber: {
       id: 'dissemination_list_values_count',
-      label: t_i18n('Number of elements'),
+      label: 'Number of elements',
       percentWidth: 15,
       isSortable: true,
       render: (node: DisseminationListsLine_node$data) => node.dissemination_list_values_count || '-',
