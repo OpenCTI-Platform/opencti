@@ -19,6 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import AlertInfo from '../../../../components/AlertInfo';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import PageContainer from '../../../../components/PageContainer';
 
 export const disseminationListsQuery = graphql`
     query DisseminationListsLinesPaginationQuery(
@@ -158,28 +159,30 @@ const DisseminationLists = () => {
   } as UsePreloadedPaginationFragment<DisseminationListsLinesPaginationQuery>;
 
   return (
-    <div style={{ margin: 0, padding: '0 200px 0 0' }}>
+    <>
       <AccessesMenu/>
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination Lists'), current: true }]} />
-      <AlertInfo
-        content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
-      />
-      {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          lineFragment={disseminationListsLineFragment}
-          disableLineSelection
-          disableNavigation
-          preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+      <PageContainer withRightMenu>
+        <Breadcrumbs noMargin elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
+        <AlertInfo
+          content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
         />
-      )}
-      <DisseminationListCreation paginationOptions={queryPaginationOptions} />
-    </div>
+        {queryRef && (
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            lineFragment={disseminationListsLineFragment}
+            disableLineSelection
+            disableNavigation
+            preloadedPaginationProps={preloadedPaginationProps}
+            actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+          />
+        )}
+        <DisseminationListCreation paginationOptions={queryPaginationOptions} />
+      </PageContainer>
+    </>
   );
 };
 

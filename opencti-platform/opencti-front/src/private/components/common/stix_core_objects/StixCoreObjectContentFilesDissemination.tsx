@@ -129,7 +129,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Field
             component={SelectField}
-            label={t_i18n('Dissemination List')}
+            label={t_i18n('Dissemination list')}
             name="disseminationListId"
             required
           >
