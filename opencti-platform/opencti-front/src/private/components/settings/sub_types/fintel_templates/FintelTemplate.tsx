@@ -8,7 +8,6 @@ import FintelTemplateTabs from './FintelTemplateTabs';
 import FintelTemplateHeader from './FintelTemplateHeader';
 import { FintelTemplateQuery } from './__generated__/FintelTemplateQuery.graphql';
 import FintelTemplateWidgetsSidebar, { FINTEL_TEMPLATE_SIDEBAR_WIDTH } from './FintelTemplateWidgetsSidebar';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../../components/Loader';
@@ -71,10 +70,6 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
 };
 
 const FintelTemplate = () => {
-  const { isFeatureEnable } = useHelper();
-  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
-  if (!isFileFromTemplateEnabled) return null;
-
   const { templateId, subTypeId } = useParams<{ templateId?: string, subTypeId?: string }>();
   if (!templateId || !subTypeId) return <ErrorNotFound/>;
 
