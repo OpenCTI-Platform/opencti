@@ -111,9 +111,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
-      if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
-        await initFintelTemplates(context, SYSTEM_USER);
-      }
+      await initFintelTemplates(context, SYSTEM_USER);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_IS_INIT_MIGRATION) {

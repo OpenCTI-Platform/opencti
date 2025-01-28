@@ -11,7 +11,9 @@ import { graphql } from 'react-relay';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import {
+  StixCoreObjectContent_stixCoreObject$data
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
@@ -19,7 +21,10 @@ import {
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, {
+  BUILT_IN_FROM_TEMPLATE,
+  BUILT_IN_HTML_TO_PDF
+} from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import { ListItemSecondaryAction } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
@@ -27,7 +32,6 @@ import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { isNilField } from '../../../../utils/utils';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -117,8 +121,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isFeatureEnable } = useHelper();
-  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -271,7 +273,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         />
       </ContentBloc>
 
-      {isFileFromTemplateEnabled && hasOutcomesTemplate && (
+      {hasOutcomesTemplate && (
         <ContentBloc
           title={
             <>

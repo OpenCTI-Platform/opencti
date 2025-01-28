@@ -21,15 +21,27 @@ import {
   ENTITY_TYPE_IDENTITY
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES, toBase64 } from '../database/utils';
+import {
+  buildPagination,
+  READ_ENTITIES_INDICES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES,
+  toBase64
+} from '../database/utils';
 import { minutesAgo, now, truncate, utcDate } from '../utils/format';
-import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
+import {
+  elCount,
+  elFindByIds,
+  ES_DEFAULT_PAGINATION,
+  MAX_RELATED_CONTAINER_OBJECT_RESOLUTION,
+  MAX_RELATED_CONTAINER_RESOLUTION
+} from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
-import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
@@ -280,8 +292,7 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
 
 export const getFilesFromTemplate = async (context, user, container, args) => {
   const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  if (!isEE || !isFileFromTemplateEnabled) {
+  if (!isEE) {
     return null;
   }
   const { first, prefixMimeType } = args;
@@ -291,8 +302,7 @@ export const getFilesFromTemplate = async (context, user, container, args) => {
 
 export const getFintelTemplates = async (context, user, container) => {
   const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  if (!isEE || !isFileFromTemplateEnabled) {
+  if (!isEE) {
     return null;
   }
   const nowDate = new Date().getTime();

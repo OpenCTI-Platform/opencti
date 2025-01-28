@@ -5,7 +5,10 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'rea
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { useTheme } from '@mui/styles';
-import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import {
+  SubTypeQuery,
+  SubTypeQuery$variables
+} from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
@@ -18,7 +21,6 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import type { Theme } from '../../../../components/Theme';
 import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import useHelper from '../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
@@ -64,8 +66,6 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -89,7 +89,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   );
   const { searchTerm } = viewStorage;
 
-  const hasTemplates = subType.settings?.availableSettings.includes('templates') && isFileFromTemplateEnabled;
+  const hasTemplates = subType.settings?.availableSettings.includes('templates');
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
