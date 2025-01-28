@@ -3880,7 +3880,7 @@ export const prepareElementForIndexing = async (element) => {
           if (isDateAttribute(key)) { // Date is an object but natively supported
             preparedArray.push(valueElement);
           } else if (R.is(String, valueElement)) { // For string, trim by default
-            return preparedArray.push(valueElement.trim());
+            preparedArray.push(valueElement.trim());
           } else if (R.is(Object, valueElement) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
             const complexPrepared = await prepareElementForIndexing(valueElement);
             preparedArray.push(complexPrepared);
