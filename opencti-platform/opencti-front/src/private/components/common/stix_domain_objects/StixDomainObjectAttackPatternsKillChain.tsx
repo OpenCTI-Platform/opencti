@@ -448,7 +448,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             targetTypes={['Attack-Pattern']}
             direction={'fromEntity'}
             relationshipTypes={['uses']}
-            paginationOptions={paginationOptions as PaginationOptions}
+            handleChangeView={helpers.handleChangeView}
             storageKey={storageKey}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
