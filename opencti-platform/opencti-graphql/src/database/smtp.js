@@ -3,6 +3,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 
 const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
+const SMTP_ENABLE = booleanConf('smtp:enabled', true);
 
 const smtpOptions = {
   host: conf.get('smtp:hostname') || 'localhost',
@@ -26,15 +27,19 @@ if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
 export const transporter = nodemailer.createTransport(smtpOptions);
 
 export const smtpIsAlive = async () => {
-  try {
-    await transporter.verify();
-  } catch {
-    logApp.warn('SMTP seems down, email notification will may not work');
+  if (SMTP_ENABLE) {
+    try {
+      await transporter.verify();
+    } catch {
+      logApp.warn('SMTP seems down, email notification will may not work');
+    }
   }
   return true;
 };
 
 export const sendMail = async (args) => {
-  const { from, to, bcc, subject, html, attachments } = args;
-  await transporter.sendMail({ from, to, bcc, subject, html, attachments });
+  if (SMTP_ENABLE) {
+    const { from, to, bcc, subject, html, attachments } = args;
+    await transporter.sendMail({ from, to, bcc, subject, html, attachments });
+  }
 };

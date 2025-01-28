@@ -53,14 +53,13 @@ const stixResolvers = {
   },
   Mutation: {
     stixEdit: (_, { id }, context) => ({
-      delete: () => stixDelete(context, context.user, id),
+      delete: ({ forceDelete }) => stixDelete(context, context.user, id, { forceDelete }),
       merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
     stixBundlePush: (_, { connectorId, bundle }, context) => sendStixBundle(context, context.user, connectorId, bundle),
   },
   StixObject: {
-    // eslint-disable-next-line
-        __resolveType(obj) {
+    __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }

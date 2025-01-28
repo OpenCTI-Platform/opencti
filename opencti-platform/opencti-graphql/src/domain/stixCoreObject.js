@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
@@ -284,7 +284,8 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
 };
 
 export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
-  const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const connectorIds = Array.isArray(connectorId) ? connectorId : [connectorId];
+  const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.');
@@ -293,36 +294,41 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
-  const message = {
-    internal: {
-      work_id: work.id, // Related action for history
-      applicant_id: null, // No specific user asking for the import
-      draft_id: draftContext ?? null,
-    },
-    event: {
-      event_type: CONNECTOR_INTERNAL_ENRICHMENT,
-      entity_id: element.standard_id,
-      entity_type: element.entity_type,
-    },
-  };
-  await pushToConnector(connector.internal_id, message);
-  const baseData = {
-    id: enrichedId,
-    connector_id: connectorId,
-    connector_name: connector.name,
-    entity_name: extractEntityRepresentativeName(element),
-    entity_type: element.entity_type
-  };
-  const contextData = completeContextDataForEntity(baseData, element);
-  await publishUserAction({
-    user,
-    event_access: 'extended',
-    event_type: 'command',
-    event_scope: 'enrich',
-    context_data: contextData,
-  });
-  return work;
+  const works = [];
+  for (let index = 0; index < connectors.length; index += 1) {
+    const connector = connectors[index];
+    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
+    const message = {
+      internal: {
+        work_id: work.id, // Related action for history
+        applicant_id: null, // No specific user asking for the import
+        draft_id: draftContext ?? null,
+      },
+      event: {
+        event_type: CONNECTOR_INTERNAL_ENRICHMENT,
+        entity_id: element.standard_id,
+        entity_type: element.entity_type,
+      },
+    };
+    await pushToConnector(connector.internal_id, message);
+    const baseData = {
+      id: enrichedId,
+      connector_id: connectorId,
+      connector_name: connector.name,
+      entity_name: extractEntityRepresentativeName(element),
+      entity_type: element.entity_type
+    };
+    const contextData = completeContextDataForEntity(baseData, element);
+    await publishUserAction({
+      user,
+      event_access: 'extended',
+      event_type: 'command',
+      event_scope: 'enrich',
+      context_data: contextData,
+    });
+    works.push(work);
+  }
+  return works;
 };
 
 // region stats

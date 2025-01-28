@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
+import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures, storeActivityEvent, storeWorkEvent } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
@@ -227,6 +227,10 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     await elUpdate(currentWork?._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+    // Publish end of work in the stream
+    if (isComplete) {
+      await storeWorkEvent(context, user, { id: workId, status: 'complete' });
+    }
   }
   return workId;
 };

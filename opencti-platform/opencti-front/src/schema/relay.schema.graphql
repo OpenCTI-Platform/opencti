@@ -8313,7 +8313,7 @@ type SynchronizerEditMutations {
 }
 
 type StixEditMutations {
-  delete: ID
+  delete(forceDelete: Boolean): ID
   merge(stixObjectsIds: [String]!): StixObject
 }
 
@@ -8338,7 +8338,7 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
-  askEnrichment(connectorId: ID!): Work
+  askEnrichment(connectorId: [ID!]!): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
 }
 
@@ -8387,7 +8387,7 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
   restrictionOrganizationAdd(organizationId: [ID!]!): StixCoreObject
   restrictionOrganizationDelete(organizationId: [ID!]!): StixCoreObject
-  askEnrichment(connectorId: ID!): Work
+  askEnrichment(connectorId: [ID!]!): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean

@@ -13996,7 +13996,7 @@ type SynchronizerEditMutations {
 
 ######## STIX OBJECT
 type StixEditMutations {
-  delete: ID
+  delete(forceDelete: Boolean): ID
   merge(stixObjectsIds: [String]!): StixObject
 }
 
@@ -14023,7 +14023,7 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
@@ -14073,7 +14073,7 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
   restrictionOrganizationAdd(organizationId: [ID!]!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: [ID!]!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
