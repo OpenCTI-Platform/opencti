@@ -48,7 +48,7 @@ In addition, the available statuses are defined by a collection of status templa
 ## Fintel templates
 
 In Entreprise Edition, you can now define templates for your containers.
-You can access this feature via the Customization page (Setting/Customization/Entity types). As a result, you are required to have the Manage customization capability (or the Bypass capability) to either create, update, view or delete a template.
+You can access this feature via the Customization page (Setting/Customization/Entity types). As a result, you are required to have the Manage customization capability (or the Bypass capability) to either create, update, view, export or delete a template.
 
 ![Fintel templates](./assets/fintelTemplates-list.png)
 
@@ -59,14 +59,20 @@ In the 'Content editor' tab, you can write and format the content of your templa
 In the 'Content Preview' tab, you can preview what a file generated from your Fintel template will look like for a given container.
 ![Fintel templates preview](./assets/fintelTemplates-preview.png)
 
-In the right panel, the widgets saved in your template are displayed.
-- To add an existing widget in your content, copy the variable name and paste it in your content.
-- To add a widget, click on the 'add data in content' button and follow the steps to create a visualization. For more information on how to create a widget, please read  [Widget creation](../usage/widgets.md).
-- You can only delete widgets that are not used in your content (they are highlighted with a warning icon).
+### Fintel template widgets
 
+In the right panel, the widgets saved in your template are displayed.
 ![Fintel templates widgets](./assets/fintelTemplates-widgets.png)
 
+To add an existing widget in your content, copy the variable name and paste it in your content.
+
+To add a widget, click on the 'Add data related to the container' button and follow the steps to create a visualization. For more information on how to create a widget, please read  [Widget creation](../usage/widgets.md).
+
+To add an attribute of the container where the Fintel template will be used, click on the 'Add data of the container' button. In the opened pop-up you can manage the attributes you want to use in your template content.
 Note that every template has a built-in widget of type 'attribute' that can't be deleted. This widget enables to display attributes of the container for which the template will be used.
+![Fintel templates self attribute widget edition](./assets/fintelTemplates-widget-attributes.png)
+
+You can only delete widgets that are not used in your content (they are highlighted with a warning icon).
 
 
 <a id="attributes-section"></a>
