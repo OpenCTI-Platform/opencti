@@ -5,10 +5,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'rea
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { useTheme } from '@mui/styles';
-import {
-  SubTypeQuery,
-  SubTypeQuery$variables
-} from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
