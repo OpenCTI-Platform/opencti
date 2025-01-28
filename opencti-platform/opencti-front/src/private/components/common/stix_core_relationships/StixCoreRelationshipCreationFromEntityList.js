@@ -332,6 +332,10 @@ const StixCoreRelationshipCreationFromEntityList = ({
     .filter((edge) => edge.node.id !== entity.id)
     .map((edge) => edge.node);
 
+  const defaultDescription = (data) => (data.parent_types.includes('Stix-Cyber-Observable')
+    ? data.x_opencti_description
+    : data.description);
+
   return (
     <>
       {showForm ? (
@@ -383,7 +387,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={node.name}
-                        secondary={node.description}
+                        secondary={defaultDescription(node)}
                         sx={{
                           '.MuiListItemText-primary, .MuiListItemText-secondary': {
                             overflowX: 'hidden',
