@@ -22,6 +22,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   entityId: string;
   currentView?: string;
   viewButtons: ReactElement[];
+  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
@@ -29,10 +30,10 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     storageKey,
     entityId,
     currentView,
+    paginationOptions,
     viewButtons,
   },
 ) => {
-  const LOCAL_STORAGE_KEY = `${storageKey}-matrix-inline`;
   const dataColumns = {
     entity_type: { percentWidth: 11 },
     killChainPhase: { percentWidth: 22 },
@@ -52,8 +53,8 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     view: currentView ?? 'matrix-in-line',
   };
 
-  const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
-    LOCAL_STORAGE_KEY,
+  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+    storageKey,
     initialValues,
     true,
   );
@@ -104,7 +105,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
-          storageKey={LOCAL_STORAGE_KEY}
+          storageKey={storageKey}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}

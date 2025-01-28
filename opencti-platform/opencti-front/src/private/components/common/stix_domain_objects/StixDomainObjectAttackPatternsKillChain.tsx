@@ -413,6 +413,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             entityId={stixDomainObjectId}
             currentView={currentView}
             viewButtons={viewButtons}
+            paginationOptions={paginationOptions}
           />
         )}
         {currentView === 'courses-of-action' && (
