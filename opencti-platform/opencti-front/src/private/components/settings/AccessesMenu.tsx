@@ -55,8 +55,9 @@ const AccessesMenu: FunctionComponent = () => {
   const disseminationEntries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/dissemination_list',
-      label: 'Dissemination lists',
+      label: 'Dissemination',
       icon: <AttachEmailOutlined fontSize="medium" />,
+      isEE: true,
     },
   ];
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
