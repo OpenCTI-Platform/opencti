@@ -3,14 +3,7 @@ import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type
-  EditInput,
- type FilterGroup,
- type FintelTemplateAddInput,
- type FintelTemplateWidget,
- type FintelTemplateWidgetAddInput,
- type Widget,
- type WidgetDataSelection
-} from '../../generated/graphql';
+  EditInput,type FilterGroup,type FintelTemplateAddInput,type FintelTemplateWidget,type FintelTemplateWidgetAddInput,type Widget,type WidgetDataSelection } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
