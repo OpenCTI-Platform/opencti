@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { graphql } from 'react-relay';
 import Skeleton from '@mui/material/Skeleton';
 import * as R from 'ramda';
-import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
