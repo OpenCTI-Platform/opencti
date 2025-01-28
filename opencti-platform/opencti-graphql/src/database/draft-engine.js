@@ -144,7 +144,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
   }).filter((i) => i);
   // We resolve all those dependencies
   const draftDeleteDependencies = await elFindByIds(context, user, draftDeleteLinkedRelationsTargetsIds, { includeDeletedInDraft: true });
-  const draftDeletedLinkedRelationsToKeep = [];
+  let hasDraftDeletedLinkedRelationsToKeep = false;
   const draftDeletedLinkedRelationsToRemove = [];
   // We distinguish relations that need to be kept (from or to has a DELETE operation) from those that can be reverted in draft
   for (let i = 0; i < draftDeleteLinkedRelations.length; i += 1) {
@@ -153,13 +153,13 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     const toDependency = draftDeleteDependencies.find((e) => e.internal_id === toId);
     if (fromDependency) {
       if (fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
-        draftDeletedLinkedRelationsToKeep.push(draftDeleteLinkedRelations[i]);
+        hasDraftDeletedLinkedRelationsToKeep = true;
       } else {
         draftDeletedLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: fromDependency });
       }
     } else if (toDependency) {
       if (toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
-        draftDeletedLinkedRelationsToKeep.push(draftDeleteLinkedRelations[i]);
+        hasDraftDeletedLinkedRelationsToKeep = true;
       } else {
         draftDeletedLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: toDependency });
       }
@@ -172,7 +172,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     await removeDraftDeleteLinkedRelations(context, user, draftDeletedLinkedRelationsToRemove);
   }
 
-  if (draftDeletedLinkedRelationsToKeep.length === 0) {
+  if (hasDraftDeletedLinkedRelationsToKeep) {
     // TODO: reapply denorm ref if element is a rel
     // TODO: clean up UPDATE_LINKED impacted element that no longer need to be in draft => how to know that an update_linked element can be safely removed?
     await elDeleteInstances([element]);
