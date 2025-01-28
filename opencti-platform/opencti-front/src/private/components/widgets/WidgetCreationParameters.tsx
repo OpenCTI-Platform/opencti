@@ -771,7 +771,7 @@ const WidgetCreationParameters = () => {
             label={t_i18n('Display legend')}
           />
         )}
-        {isFeatureEnable('COLUMNS_CUSTOMIZATION') && getCurrentCategory(type) === 'list'
+        {getCurrentCategory(type) === 'list'
           && dataSelection.map(({ perspective, columns, filters }, index) => {
             if (perspective === 'relationships' || perspective === 'entities') {
               const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
