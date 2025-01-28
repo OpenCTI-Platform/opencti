@@ -30,16 +30,14 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
-import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import conf, { BUS_TOPICS } from '../../config/conf';
 import type { BasicStoreObject, StoreEntityConnection } from '../../types/store';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { generateInternalId } from '../../schema/identifier';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
-
-const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -126,9 +124,6 @@ const storeAndCreateDisseminationList = async (context: AuthContext, user: AuthU
 };
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   return storeAndCreateDisseminationList(context, user, input);
 };
 
@@ -155,8 +150,5 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
 };
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   return deleteInternalObject(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
