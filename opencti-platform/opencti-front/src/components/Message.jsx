@@ -34,7 +34,6 @@ const Message = () => {
             ? t_i18n(firstMessage.text)
             : firstMessage.text;
           const firstMessageError = firstMessage.type === 'error';
-          setDialogOpen(true);
           setOpen(true);
           setFullError(firstMessage.fullError || null);
           setError(firstMessageError);

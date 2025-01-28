@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Paper from '@mui/material/Paper';
@@ -74,7 +74,6 @@ const StixDomainObjectOverview = ({
   displayConfidence = true,
   displayReliability = true,
   displayOpinions = true,
-  relay,
 }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -139,8 +138,6 @@ const StixDomainObjectOverview = ({
     });
   };
 
-  console.log('stixDOmainObject', stixDomainObject);
-
   const deleteStixId = (stixId) => {
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
@@ -183,11 +180,7 @@ const StixDomainObjectOverview = ({
         input: '',
       },
       onCompleted: () => {
-        relay.refetch({ id: stixDomainObject.id });
-        MESSAGING$.notifySuccess(t_i18n('Success to approve the request'));
-      },
-      onError: () => {
-        MESSAGING$.notifyError(t_i18n('Failed to approve the request.'));
+        MESSAGING$.notifySuccess(t_i18n('This request for sharing has been approved'));
       },
     });
   };
@@ -199,13 +192,11 @@ const StixDomainObjectOverview = ({
         id: stixDomainObject.id,
       },
       onCompleted: () => {
-        relay.refetch({ id: stixDomainObject.id });
-        MESSAGING$.notifySuccess(t_i18n('Success to approve the request'));
+        MESSAGING$.notifySuccess(t_i18n('This request for sharing has been declined'));
       },
     });
   };
-  console.log('stixDomainObject.x_opencti_request_access', stixDomainObject.x_opencti_request_access);
-  console.log('requestAccess', requestAccess);
+
   return (
     <>
       <Typography variant="h4">

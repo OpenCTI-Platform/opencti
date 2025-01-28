@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useRef } from 'react';
-import {graphql, RelayRefetchProp, useFragment} from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import useHelper from 'src/utils/hooks/useHelper';
@@ -28,8 +28,6 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import type { Theme } from '../../../../components/Theme';
-import {RecordSourceSelectorProxy} from "relay-runtime";
-import {insertNode} from "../../../../utils/store";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,7 +42,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface CaseRfiProps {
   caseRfiData: CaseRfi_caseRfi$key;
   enableReferences: boolean;
-  relay?: RelayRefetchProp
 }
 
 const caseRfiFragment = graphql`
@@ -97,7 +94,7 @@ const caseRfiFragment = graphql`
   }
 `;
 
-const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences, relay }) => {
+const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
@@ -159,7 +156,6 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences, relay 
                       stixDomainObject={caseRfi}
                       displayAssignees
                       displayParticipants
-                      relay={relay}
                     />
                   </Grid>
                 );
