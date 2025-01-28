@@ -21,21 +21,9 @@ import {
   ENTITY_TYPE_IDENTITY
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import {
-  buildPagination,
-  READ_ENTITIES_INDICES,
-  READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_RELATIONSHIPS_INDICES,
-  toBase64
-} from '../database/utils';
+import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES, toBase64 } from '../database/utils';
 import { minutesAgo, now, truncate, utcDate } from '../utils/format';
-import {
-  elCount,
-  elFindByIds,
-  ES_DEFAULT_PAGINATION,
-  MAX_RELATED_CONTAINER_OBJECT_RESOLUTION,
-  MAX_RELATED_CONTAINER_RESOLUTION
-} from '../database/engine';
+import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
