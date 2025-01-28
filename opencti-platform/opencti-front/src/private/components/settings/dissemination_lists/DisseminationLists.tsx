@@ -8,6 +8,7 @@ import {
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
 import DisseminationListCreation from '@components/settings/dissemination_lists/DisseminationListCreation';
 import DisseminationListPopover from '@components/settings/dissemination_lists/DisseminationListPopover';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +21,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import AlertInfo from '../../../../components/AlertInfo';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../../components/PageContainer';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const disseminationListsQuery = graphql`
     query DisseminationListsLinesPaginationQuery(
@@ -87,6 +89,7 @@ const disseminationListsLineFragment = graphql`
 const LOCAL_STORAGE_KEY = 'view-dissemination-lists';
 
 const DisseminationLists = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Security: Dissemination lists | Settings'));
@@ -163,24 +166,30 @@ const DisseminationLists = () => {
       <AccessesMenu/>
       <PageContainer withRightMenu>
         <Breadcrumbs noMargin elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
-        <AlertInfo
-          content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
-        />
-        {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            toolbarFilters={contextFilters}
-            lineFragment={disseminationListsLineFragment}
-            disableLineSelection
-            disableNavigation
-            preloadedPaginationProps={preloadedPaginationProps}
-            actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
-          />
+        {!isEnterpriseEdition ? (
+          <EnterpriseEdition feature="File indexing" />
+        ) : (
+          <>
+            <AlertInfo
+              content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
+            />
+            {queryRef && (
+              <DataTable
+                dataColumns={dataColumns}
+                resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                toolbarFilters={contextFilters}
+                lineFragment={disseminationListsLineFragment}
+                disableLineSelection
+                disableNavigation
+                preloadedPaginationProps={preloadedPaginationProps}
+                actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+              />
+            )}
+            <DisseminationListCreation paginationOptions={queryPaginationOptions} />
+          </>
         )}
-        <DisseminationListCreation paginationOptions={queryPaginationOptions} />
       </PageContainer>
     </>
   );
