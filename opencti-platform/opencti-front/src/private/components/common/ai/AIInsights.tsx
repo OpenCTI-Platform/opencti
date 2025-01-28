@@ -58,7 +58,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
   chip: {
     display: 'inline-flex',
-    fontWeight: 600,
+    fontWeight: 500,
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: 12,
@@ -76,7 +76,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   chipFloating: {
     float: 'right',
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 500,
     height: 25,
     display: 'inline-flex',
     justifyContent: 'center',
@@ -99,7 +99,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     textWrap: 'nowrap',
     position: 'absolute',
     right: 10,
-    fontWeight: 600,
+    fontWeight: 500,
     justifyContent: 'center',
     fontSize: 12,
     marginLeft: 6,
