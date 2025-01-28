@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires, no-multi-assign, guard-for-in, no-restricted-syntax, no-param-reassign --
+/* eslint-disable */
+
+/*
  * This is a straight copy of https://github.com/fchristle/winston-gelf/blob/5420e52bc6a9830dc4a56494097c752fddcfcabc/index.js
  * with a single change, noted below.
  * We disable the eslint rules that would cause warnings in the original code.
