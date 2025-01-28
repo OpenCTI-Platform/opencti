@@ -3864,25 +3864,40 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
 };
 
 // TODO: get rid of this function and let elastic fail queries, so we can fix all of them by using the right type of data
-export const prepareElementForIndexing = (element) => {
+export const prepareElementForIndexing = async (element) => {
   const thing = {};
-  Object.keys(element).forEach((key) => {
+  const keyItems = Object.keys(element);
+  let startProcessingTime = new Date().getTime();
+  for (let index = 0; index < keyItems.length; index += 1) {
+    const key = keyItems[index];
     const value = element[key];
     if (Array.isArray(value)) { // Array of Date, objects, string or number
-      const filteredArray = value.filter((i) => i);
-      thing[key] = filteredArray.length > 0 ? filteredArray.map((f) => {
-        if (isDateAttribute(key)) { // Date is an object but natively supported
-          return f;
+      const preparedArray = [];
+      let innerProcessingTime = new Date().getTime();
+      for (let valueIndex = 0; valueIndex < value.length; valueIndex += 1) {
+        const valueElement = value[valueIndex];
+        if (valueElement) {
+          if (isDateAttribute(key)) { // Date is an object but natively supported
+            preparedArray.push(valueElement);
+          } else if (R.is(String, valueElement)) { // For string, trim by default
+            return preparedArray.push(valueElement.trim());
+          } else if (R.is(Object, valueElement) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+            const complexPrepared = await prepareElementForIndexing(valueElement);
+            preparedArray.push(complexPrepared);
+          } else {
+            // For all other types, no transform (list of boolean is not supported)
+            preparedArray.push(valueElement);
+          }
         }
-        if (R.is(String, f)) { // For string, trim by default
-          return f.trim();
+        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+        if (new Date().getTime() - innerProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          innerProcessingTime = new Date().getTime();
+          await new Promise((resolve) => {
+            setImmediate(resolve);
+          });
         }
-        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
-          return prepareElementForIndexing(f);
-        }
-        // For all other types, no transform (list of boolean is not supported)
-        return f;
-      }) : [];
+      }
+      thing[key] = preparedArray;
     } else if (isDateAttribute(key)) { // Date is an object but natively supported
       thing[key] = value;
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
@@ -3890,13 +3905,20 @@ export const prepareElementForIndexing = (element) => {
     } else if (isNumericAttribute(key)) {
       thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
     } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
-      thing[key] = prepareElementForIndexing(value);
+      thing[key] = await prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();
     } else { // For all other types (numeric, ...), no transform
       thing[key] = value;
     }
-  });
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
   return thing;
 };
 const prepareRelation = (thing) => {
@@ -4228,7 +4250,7 @@ const getInstanceToUpdate = async (context, user, instance) => {
 };
 export const elUpdateElement = async (context, user, instance) => {
   const instanceToUse = await getInstanceToUpdate(context, user, instance);
-  const esData = prepareElementForIndexing(instanceToUse);
+  const esData = await prepareElementForIndexing(instanceToUse);
   validateDataBeforeIndexing(esData);
   const dataToReplace = R.pipe(R.dissoc('representative'), R.dissoc('_id'))(esData);
   const replacePromise = elReplace(instanceToUse._index, instanceToUse._id ?? instanceToUse.internal_id, { doc: dataToReplace });
