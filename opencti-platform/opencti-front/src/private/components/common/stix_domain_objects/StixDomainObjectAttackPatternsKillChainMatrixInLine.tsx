@@ -124,8 +124,8 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
                 <ViewColumnOutlined fontSize="small" color="primary" />
               </Tooltip>
             </ToggleButton>),
-            (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')} onClick={() => handleChangeView('matrix-in-line')}>
-              <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line">
+            (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')}>
+              <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
                 <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
               </ToggleButton>
             </Tooltip>

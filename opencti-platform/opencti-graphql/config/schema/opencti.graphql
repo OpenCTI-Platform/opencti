@@ -2691,6 +2691,7 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
+  objectMarking
   x_opencti_workflow_id
   _score
 }

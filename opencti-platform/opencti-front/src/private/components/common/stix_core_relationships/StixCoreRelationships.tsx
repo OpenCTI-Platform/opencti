@@ -10,7 +10,7 @@ import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPa
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -297,7 +297,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   } = viewStorage;
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
+  const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
   const predefinedFilters = [{ key: 'relationship_type', values: relationshipTypes }];
   if (direction === 'all') {
     predefinedFilters.push({ key: 'fromOrToId', values: [entityId] });
