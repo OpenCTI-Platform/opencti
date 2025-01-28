@@ -288,7 +288,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     imported_items = self.api.stix2.import_bundle(
                         bundle, True, types, work_id
                     )
-                elif event_type == "delete":
+                elif event_type == "delete" or event_type == "delete-force":
                     delete_object = event_content["data"]
                     delete_object["opencti_operation"] = event_type
                     bundle = {
@@ -338,6 +338,16 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     bundle = {
                         "type": "bundle",
                         "objects": [sharing_object],
+                    }
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
+                elif event_type == "enrichment":
+                    enrich_object = event_content["data"]
+                    enrich_object["opencti_operation"] = event_type
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [enrich_object],
                     }
                     imported_items = self.api.stix2.import_bundle(
                         bundle, True, types, work_id

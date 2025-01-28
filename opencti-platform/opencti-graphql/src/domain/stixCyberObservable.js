@@ -119,7 +119,8 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   }
   return { key, value };
 };
-export const createIndicatorFromObservable = async (context, user, input, observable) => {
+
+export const generateIndicatorFromObservable = async (context, user, input, observable) => {
   let entityType = observable.entity_type;
   const indicatorName = observableValue(observable);
   const { key, value } = generateKeyValueForIndicator(entityType, indicatorName, observable);
@@ -130,7 +131,7 @@ export const createIndicatorFromObservable = async (context, user, input, observ
   if (!pattern) {
     throw FunctionalError('Cannot create indicator - cant generate pattern.', { key, value });
   }
-  const indicatorToCreate = {
+  return {
     pattern_type: STIX_PATTERN_TYPE,
     pattern,
     x_opencti_main_observable_type: entityType,
@@ -147,7 +148,11 @@ export const createIndicatorFromObservable = async (context, user, input, observ
     externalReferences: input.externalReferences,
     update: true,
   };
-  return await addIndicator(context, user, indicatorToCreate);
+};
+
+export const createIndicatorFromObservable = async (context, user, input, observable) => {
+  const indicatorToCreate = await generateIndicatorFromObservable(context, user, input, observable);
+  return addIndicator(context, user, indicatorToCreate);
 };
 
 export const promoteObservableToIndicator = async (context, user, observableId) => {

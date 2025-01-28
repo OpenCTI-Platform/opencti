@@ -27,7 +27,16 @@ import {
 } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
-import { createRelation, deleteElementById, deleteRelationsByFromAndTo, listAllThings, mergeEntities, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
+import {
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  listAllThings,
+  mergeEntities,
+  patchAttribute,
+  storeLoadByIdsWithRefs,
+  storeLoadByIdWithRefs
+} from '../database/middleware';
 import { now, utcDate } from '../utils/format';
 import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elList, elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
@@ -35,11 +44,11 @@ import { ForbiddenAccess, FunctionalError, TYPE_LOCK_ERROR, ValidationError } fr
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { BYPASS, executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { executeRuleApply, executeRuleElementRescan, rulesCleanHandler } from './ruleManager';
-import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
+import { generateIndicatorFromObservable, promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { indicatorEditField, promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
@@ -74,8 +83,11 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../domain/work';
-import { convertTypeToStixType } from '../database/stix-converter';
+import { convertStoreToStix, convertTypeToStixType } from '../database/stix-converter';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
+import { generateStandardId } from '../schema/identifier';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 // Task manager responsible to execute long manual tasks
@@ -615,75 +627,93 @@ const createWorkForBackgroundTask = async (context, connectorId) => {
 // Worker task handler
 // For now only support basic knowledge operations ADD / REPLACE / REMOVE
 // Support must be improved to support all operations types.
-// 0. KNOWLEDGE_TO_CONTAINER
-// 1. ACTION_TYPE_COMPLETE_DELETE
 // 2. ACTION_TYPE_RESTORE
-// 4. ACTION_TYPE_PROMOTE
-// 5. ACTION_TYPE_ENRICHMENT
 // 8. ACTION_TYPE_REMOVE_AUTH_MEMBERS
 const CURRENT_SUPPORT_TASKS = [
   // KNOWLEDGE
-  'KNOWLEDGE_CHANGE', 'KNOWLEDGE_REMOVE', ACTION_TYPE_MERGE,
+  'KNOWLEDGE_CHANGE', 'KNOWLEDGE_REMOVE', 'KNOWLEDGE_TRASH', ACTION_TYPE_MERGE,
+  'KNOWLEDGE_CONTAINER', ACTION_TYPE_PROMOTE, ACTION_TYPE_ENRICHMENT,
   // RULES MANAGEMENT
   ACTION_TYPE_RULE_APPLY, ACTION_TYPE_RULE_CLEAR, ACTION_TYPE_RULE_ELEMENT_RESCAN,
   // SHARE / UNSHARE
   ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, ACTION_TYPE_SHARE_MULTIPLE, ACTION_TYPE_UNSHARE_MULTIPLE
 ];
-const workerTaskHandler = async (context, user, task, actionType, operations) => {
-  const connectorId = await getBestBackgroundConnectorId(context, user);
-  const baseOperationBuilder = (element) => {
-    const baseOperationObject = {
-      extensions: {
-        [STIX_EXT_OCTI]: {
-          id: element.internal_id,
-          type: element.entity_type
-        }
-      }
-    };
-    // Knowledge management
-    if (actionType === 'KNOWLEDGE_CHANGE') {
-      baseOperationObject.opencti_operation = 'patch';
-      baseOperationObject.opencti_field_patch = operations.map((action) => {
-        const attrKey = schemaRelationsRefDefinition
-          .convertDatabaseNameToInputName('Stix-Core-Object', action.context.field);
-        return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
-      });
-    }
-    if (actionType === 'KNOWLEDGE_REMOVE') {
-      baseOperationObject.opencti_operation = 'delete';
-    }
-    if (actionType === ACTION_TYPE_MERGE) {
-      baseOperationObject.opencti_operation = 'merge';
-      baseOperationObject.merge_target_id = element.id; // To be compliant with current worker implementation
-      baseOperationObject.merge_source_ids = operations[0].context.values;
-    }
-    // Rule management
-    if (actionType === ACTION_TYPE_RULE_APPLY) {
-      baseOperationObject.opencti_operation = actionType.toLowerCase();
-      baseOperationObject.opencti_rule = operations[0].context.rule_id;
-    }
-    if (actionType === ACTION_TYPE_RULE_CLEAR) {
-      baseOperationObject.opencti_operation = actionType.toLowerCase();
-      baseOperationObject.opencti_rule = operations[0].context.rule_id;
-    }
-    if (actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-      baseOperationObject.opencti_operation = 'rules_rescan';
-    }
-    // Sharing
-    if (actionType === ACTION_TYPE_SHARE || actionType === ACTION_TYPE_SHARE_MULTIPLE) {
-      baseOperationObject.opencti_operation = 'share';
-      baseOperationObject.organization_ids = operations[0].context.values;
-    }
-    if (actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
-      baseOperationObject.opencti_operation = 'unshare';
-      baseOperationObject.organization_ids = operations[0].context.values;
-    }
-    return baseOperationObject;
-  };
-  // Iterate over the full set to create and enlist bundles
+
+const baseOperationBuilder = (actionType, operations, element) => {
+  const baseOperationObject = {};
+  // Knowledge management
+  if (actionType === 'KNOWLEDGE_CHANGE') {
+    baseOperationObject.opencti_operation = 'patch';
+    baseOperationObject.opencti_field_patch = operations.map((action) => {
+      const attrKey = schemaRelationsRefDefinition
+        .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+      return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
+    });
+  }
+  if (actionType === 'KNOWLEDGE_TRASH') {
+    baseOperationObject.opencti_operation = 'delete';
+  }
+  if (actionType === 'KNOWLEDGE_REMOVE') {
+    baseOperationObject.opencti_operation = 'delete-force';
+  }
+  if (actionType === ACTION_TYPE_ENRICHMENT) {
+    baseOperationObject.opencti_operation = 'enrichment';
+    baseOperationObject.connector_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_MERGE) {
+    baseOperationObject.opencti_operation = 'merge';
+    baseOperationObject.merge_target_id = element.id; // To be compliant with current worker implementation
+    baseOperationObject.merge_source_ids = operations[0].context.values;
+  }
+  // Rule management
+  if (actionType === ACTION_TYPE_RULE_APPLY) {
+    baseOperationObject.opencti_operation = actionType.toLowerCase();
+    baseOperationObject.opencti_rule = operations[0].context.rule_id;
+  }
+  if (actionType === ACTION_TYPE_RULE_CLEAR) {
+    baseOperationObject.opencti_operation = actionType.toLowerCase();
+    baseOperationObject.opencti_rule = operations[0].context.rule_id;
+  }
+  if (actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
+    baseOperationObject.opencti_operation = 'rules_rescan';
+  }
+  // Sharing
+  // TODO Manage end of sharing ....
+  if (actionType === ACTION_TYPE_SHARE || actionType === ACTION_TYPE_SHARE_MULTIPLE) {
+    baseOperationObject.opencti_operation = 'share';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+    baseOperationObject.opencti_operation = 'unshare';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  return baseOperationObject;
+};
+
+const sendResultToQueue = async (context, user, task, work, connectorId, objects) => {
+  // Send actions to queue
+  const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
+  const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+  // Only add explicit expectation if the worker will not split anything
+  if (objects.length === 1) {
+    await updateExpectationsNumber(context, user, work.id, objects.length);
+  }
+  await pushToWorkerForConnector(connectorId, {
+    type: 'bundle',
+    applicant_id: user.id,
+    content,
+    work_id: work.id
+  });
+  // Update task
+  const processedNumber = task.task_processed_number + objects.length;
+  await updateTask(context, task.id, { task_processed_number: processedNumber });
+};
+
+const standardOperationCallback = async (context, user, task, actionType, operations) => {
   let work;
-  const operationCallback = async (elements) => {
-    // Only create work at the first iteration, preventing creating a no work job
+  const connectorId = await getBestBackgroundConnectorId(context, user);
+  return async (elements) => {
+  // Only create work at the first iteration, preventing creating a no work job
     if (!work) {
       work = await createWorkForBackgroundTask(context, connectorId);
       await updateTask(context, task.id, { work_id: work.id });
@@ -692,36 +722,211 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
     const objects = elements.map((e) => ({
       id: e.standard_id,
       type: convertTypeToStixType(e.entity_type),
-      ...baseOperationBuilder(e)
+      ...baseOperationBuilder(actionType, operations, e),
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          id: e.internal_id,
+          type: e.entity_type
+        }
+      }
     }));
     // Send actions to queue
-    const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    // Only add explicit expectation if the worker will not split anything
-    if (objects.length === 1) {
-      await updateExpectationsNumber(context, context.user, work.id, objects.length);
-    }
-    await pushToWorkerForConnector(connectorId, {
-      type: 'bundle',
-      applicant_id: user.id,
-      content,
-      work_id: work.id
-    });
-    // Update task
-    const processedNumber = task.task_processed_number + objects.length;
-    await updateTask(context, task.id, { task_processed_number: processedNumber });
+    await sendResultToQueue(context, user, task, work, connectorId, objects);
   };
+};
+
+const containerOperationCallback = async (context, user, task, containers, operations) => {
+  let work;
+  const connectorId = await getBestBackgroundConnectorId(context, user);
+  const withNeighbours = operations[0].context.options.includeNeighbours;
+  return async (elements) => {
+    // Only create work at the first iteration, preventing creating a no work job
+    if (!work) {
+      work = await createWorkForBackgroundTask(context, connectorId);
+      await updateTask(context, task.id, { work_id: work.id });
+    }
+    const elementIds = new Set();
+    const elementStandardIds = new Set();
+    for (let index = 0; index < elements.length; index += 1) {
+      const element = elements[index];
+      elementIds.add(element.internal_id);
+      elementStandardIds.add(element.standard_id);
+      if (withNeighbours) {
+        if (element.fromId) elementIds.add(element.fromId);
+        if (element.toId) elementIds.add(element.toId);
+        const callback = (relations) => {
+          relations.forEach((relation) => {
+            elementIds.add(relation.fromId);
+            elementIds.add(relation.toId);
+          });
+        };
+        const args = { fromOrToId: elementIds, baseData: true, callback };
+        await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
+      }
+    }
+    // Build limited stix object to limit memory footprint
+    const containerOperations = [{
+      type: 'ADD',
+      context: {
+        field: RELATION_OBJECT,
+        values: Array.from(elementIds)
+      }
+    }];
+    const objects = [];
+    for (let i = 0; i < containers.length; i += 1) {
+      const container = containers[i];
+      objects.push({
+        id: container.standard_id,
+        type: convertTypeToStixType(container.entity_type),
+        object_refs: Array.from(elementStandardIds), // object refs for split ordering
+        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: container.internal_id,
+            type: container.entity_type
+          }
+        }
+      });
+    }
+    // Send actions to queue
+    await sendResultToQueue(context, user, task, work, connectorId, objects);
+  };
+};
+
+const promoteOperationCallback = async (context, user, task, container) => {
+  let work;
+  const connectorId = await getBestBackgroundConnectorId(context, user);
+  return async (elements) => {
+    // Only create work at the first iteration, preventing creating a no work job
+    if (!work) {
+      work = await createWorkForBackgroundTask(context, connectorId);
+      await updateTask(context, task.id, { work_id: work.id });
+    }
+    const objects = [];
+    const ids = elements.map((e) => e.internal_id);
+    const loadedElements = await storeLoadByIdsWithRefs(context, user, ids);
+    for (let index = 0; index < loadedElements.length; index += 1) {
+      const loadedElement = loadedElements[index];
+      // If indicator, promote to observable
+      if (loadedElement.entity_type === ENTITY_TYPE_INDICATOR) {
+        const indicator = loadedElement;
+        const { pattern } = indicator;
+        const observables = extractValidObservablesFromIndicatorPattern(pattern);
+        for (let obsIndex = 0; obsIndex < observables.length; obsIndex += 1) {
+          const observable = observables[obsIndex];
+          const observableToCreate = {
+            ...R.dissoc('type', observable),
+            x_opencti_description: indicator.description ? indicator.description
+              : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
+            x_opencti_score: indicator.x_opencti_score,
+            createdBy: indicator.createdBy,
+            objectMarking: indicator.objectMarking,
+            objectOrganization: indicator.objectOrganization,
+            objectLabel: indicator.objectLabel,
+            externalReferences: indicator.externalReferences,
+          };
+          observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
+          const stixObservable = convertStoreToStix(observableToCreate);
+          objects.push(stixObservable);
+          const relationToCreate = {
+            from: indicator,
+            fromId: indicator.internal_id,
+            fromType: indicator.entity_type,
+            to: observableToCreate,
+            toId: observableToCreate.internal_id,
+            toType: observableToCreate.entity_type,
+            entity_type: RELATION_BASED_ON,
+            relationship_type: RELATION_BASED_ON,
+            objectMarking: indicator.objectMarking,
+            objectOrganization: indicator.objectOrganization,
+          };
+          relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
+          const stixRelation = convertStoreToStix(relationToCreate);
+          objects.push(stixRelation);
+        }
+      }
+      // If observable, promote to indicator
+      if (isStixCyberObservable(loadedElement.entity_type)) {
+        const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
+        indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
+        indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
+        const stixIndicator = convertStoreToStix(indicatorToCreate);
+        objects.push(stixIndicator);
+        const relationToCreate = {
+          from: indicatorToCreate,
+          fromId: indicatorToCreate.internal_id,
+          fromType: indicatorToCreate.entity_type,
+          to: loadedElement,
+          toId: loadedElement.internal_id,
+          toType: loadedElement.entity_type,
+          entity_type: RELATION_BASED_ON,
+          relationship_type: RELATION_BASED_ON,
+          objectMarking: indicatorToCreate.objectMarking,
+          objectOrganization: indicatorToCreate.objectOrganization,
+        };
+        relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
+        const stixRelation = convertStoreToStix(relationToCreate);
+        objects.push(stixRelation);
+      }
+    }
+    const objectRefs = objects.map((object) => object.id);
+    if (container) {
+      const containerOperations = [{
+        type: 'ADD',
+        context: {
+          field: RELATION_OBJECT,
+          values: objects.map((object) => object.id),
+        }
+      }];
+      objects.push({
+        id: container.standard_id,
+        type: convertTypeToStixType(container.entity_type),
+        object_refs: objectRefs, // object refs for split ordering
+        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: container.internal_id,
+            type: container.entity_type
+          }
+        }
+      });
+    }
+    // Send actions to queue
+    await sendResultToQueue(context, user, task, work, connectorId, objects);
+  };
+};
+
+const computeOperationCallback = async (context, user, task, actionType, operations) => {
+  // Handle specific case of adding elements in container
+  if (actionType === 'KNOWLEDGE_CONTAINER') {
+    const containerIds = operations[0].context.values;
+    const containers = await internalFindByIds(context, user, containerIds, { baseData: true });
+    return containerOperationCallback(context, user, task, containers, operations);
+  }
+  // Handle specific case of promoting indicator or observable
+  if (actionType === ACTION_TYPE_PROMOTE) {
+    const { containerId } = operations[0];
+    const container = containerId ? await internalLoadById(context, user, containerId, { baseData: true }) : undefined;
+    return promoteOperationCallback(context, user, task, container);
+  }
+  // If not, return standard callback
+  return standardOperationCallback(context, user, task, actionType, operations);
+};
+
+const workerTaskHandler = async (context, user, task, actionType, operations) => {
+  // Generate the right callback
+  const callback = await computeOperationCallback(context, user, task, actionType, operations);
+  // Handle queries and list
   if (task.type === TASK_TYPE_QUERY) {
-    await taskQuery(context, user, task, operationCallback);
+    await taskQuery(context, user, task, callback);
   }
   if (task.type === TASK_TYPE_LIST) {
-    await taskList(context, user, task, operationCallback);
+    await taskList(context, user, task, callback);
   }
   if (task.type === TASK_TYPE_RULE) {
-    await taskRule(context, user, task, operationCallback);
+    await taskRule(context, user, task, callback);
   }
-  // Terminate action, work remains
-  await updateTask(context, task.id, { completed: true });
+  return updateTask(context, task.id, { completed: true });
 };
 
 export const taskHandler = async () => {
@@ -765,15 +970,20 @@ export const taskHandler = async () => {
       task.actions = [{ type: actionType, context: { rule_id: task.rule } }];
     }
     const actionsGroup = R.groupBy((action) => {
-      // Support global remove
-      if (isEmptyField(action.context?.field) && action.type === 'DELETE') {
-        return 'KNOWLEDGE_REMOVE';
+      // Bind global remove
+      if (isEmptyField(action.context?.field)) {
+        if (action.type === ACTION_TYPE_DELETE) {
+          return 'KNOWLEDGE_TRASH';
+        }
+        if (action.type === ACTION_TYPE_COMPLETE_DELETE) {
+          return 'KNOWLEDGE_REMOVE';
+        }
       }
       // Support specific container add operation
       if (action.context?.field === 'container-object') {
         return 'KNOWLEDGE_CONTAINER';
       }
-      // Support generic knowledge
+      // Support generic knowledge§
       if (['ADD', 'REPLACE', 'REMOVE'].includes(action.type)) {
         return 'KNOWLEDGE_CHANGE';
       }
