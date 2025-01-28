@@ -1031,17 +1031,6 @@ describe('meUser specific resolvers', async () => {
       }
     }
   `;
-  afterAll(async () => {
-    await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: ME_EDIT,
-      variables: {
-        password: USER_EDITOR.password,
-        input: [
-          { key: 'language', value: 'en-us' },
-        ]
-      },
-    });
-  });
 
   it('User should update authorized attribute', async () => {
     const variables = {
