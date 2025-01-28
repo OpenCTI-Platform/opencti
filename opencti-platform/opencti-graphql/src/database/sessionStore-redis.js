@@ -92,12 +92,12 @@ class RedisStore extends Store {
     this._getAllKeys((err, keys) => {
       if (err) return cb(err);
       return cb(null, keys.length);
-    }).catch((err) => logApp.error('ERROR', { cause: err }));
+    }).catch((err) => logApp.error('[REDIS] Error on get all keys', { cause: err }));
   }
 
   expiration(sid, cb = noop) {
     const key = this.prefix + sid;
-    getSessionTtl(key).then((ttl) => cb(null, ttl)).catch((err) => logApp.error('ERROR', { cause: err }));
+    getSessionTtl(key).then((ttl) => cb(null, ttl)).catch((err) => logApp.error('[REDIS] Error on get session TTL', { cause: err }));
   }
 
   _getAllKeys(cb = noop) {
