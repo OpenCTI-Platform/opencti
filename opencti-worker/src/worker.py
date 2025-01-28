@@ -388,7 +388,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
         )
         self.opencti_pool_size = get_config_variable(
-            "OPENCTI_EXECUTION_POOL_SIZE", ["opencti", "execution_pool_size"], config, default=1
+            "OPENCTI_EXECUTION_POOL_SIZE", ["opencti", "execution_pool_size"], config, default=5
         )
         # Load worker config
         self.log_level = get_config_variable(
