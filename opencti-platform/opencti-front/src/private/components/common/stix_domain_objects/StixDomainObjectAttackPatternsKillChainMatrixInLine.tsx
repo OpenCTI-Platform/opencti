@@ -17,7 +17,6 @@ import {
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
-import { truncate } from '../../../../utils/String';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -45,10 +44,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     entity_type: { percentWidth: 11 },
     killChainPhase: { percentWidth: 22 },
     x_mitre_id: { percentWidth: 10 },
-    name: {
-      percentWidth: 20,
-      render: ({ name }: { name: string }, { column: { size } }: { column: { size: number } }) => (<Tooltip title={name}>{truncate(name, size * 0.113)}</Tooltip>),
-    },
+    name: { percentWidth: 20 },
     objectLabel: { percentWidth: 15 },
     created: { percentWidth: 12 },
     objectMarking: { percentWidth: 10 },

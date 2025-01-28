@@ -290,6 +290,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixCoreRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
+    true,
   );
   const {
     filters,
