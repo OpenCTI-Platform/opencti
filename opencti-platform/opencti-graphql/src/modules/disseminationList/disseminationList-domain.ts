@@ -32,7 +32,7 @@ import { buildContextDataForFile, publishUserAction } from '../../listener/UserA
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import conf, { BUS_TOPICS } from '../../config/conf';
 import type { BasicStoreObject, StoreEntityConnection } from '../../types/store';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { generateInternalId } from '../../schema/identifier';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
@@ -111,20 +111,20 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   return false;
 };
 
-const storeAndCreateDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
+export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
   const disseminationListInternalId = generateInternalId();
+  const count = input.emails.split(',').length;
+  if (count > 500) {
+    throw UnsupportedError('You cannot add more than 500 e-mail addresses');
+  }
   const disseminationListToCreate = {
     name: input.name,
     emails: input.emails,
     description: input.description,
-    dissemination_list_values_count: input.emails.split(',').length,
+    dissemination_list_values_count: count,
     internal_id: disseminationListInternalId,
   };
   return createInternalObject<StoreEntityDisseminationList>(context, user, disseminationListToCreate, ENTITY_TYPE_DISSEMINATION_LIST);
-};
-
-export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
-  return storeAndCreateDisseminationList(context, user, input);
 };
 
 export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
@@ -135,7 +135,11 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   const finalInput = [...input];
   const emailsInput = finalInput.find((editInput) => editInput.key === 'emails');
   if (emailsInput) {
-    finalInput.push({ key: 'dissemination_list_values_count', value: [emailsInput.value[0].split(',').length] });
+    const count = emailsInput.value[0].split(',').length;
+    if (count > 500) {
+      throw UnsupportedError('You cannot add more than 500 e-mail addresses');
+    }
+    finalInput.push({ key: 'dissemination_list_values_count', value: [count] });
   }
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, finalInput);
   await publishUserAction({
