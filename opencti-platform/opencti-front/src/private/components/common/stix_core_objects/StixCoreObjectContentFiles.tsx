@@ -11,9 +11,7 @@ import { graphql } from 'react-relay';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import {
-  StixCoreObjectContent_stixCoreObject$data
-} from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
@@ -21,10 +19,7 @@ import {
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import StixCoreObjectFileExport, {
-  BUILT_IN_FROM_TEMPLATE,
-  BUILT_IN_HTML_TO_PDF
-} from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import { ListItemSecondaryAction } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
