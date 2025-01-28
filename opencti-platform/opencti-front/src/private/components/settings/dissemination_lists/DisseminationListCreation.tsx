@@ -170,7 +170,7 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
 
   return (
     <Drawer
-      title={t_i18n('Create an dissemination list')}
+      title={t_i18n('Create a dissemination list')}
       variant={DrawerVariant.createWithPanel}
     >
       {({ onClose }) => (
