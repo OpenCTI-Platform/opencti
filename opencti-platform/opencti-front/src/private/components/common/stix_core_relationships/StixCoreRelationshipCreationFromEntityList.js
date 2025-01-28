@@ -333,14 +333,6 @@ const StixCoreRelationshipCreationFromEntityList = ({
     .filter((edge) => edge.node.id !== entity.id)
     .map((edge) => edge.node);
 
-  const defaultDescription = (data) => truncate(
-    // eslint-disable-next-line no-nested-ternary
-    data.parent_types.includes('Stix-Cyber-Observable')
-      ? data.x_opencti_description
-      : data.description,
-    130,
-  );
-
   return (
     <>
       {showForm ? (
@@ -392,11 +384,15 @@ const StixCoreRelationshipCreationFromEntityList = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={node.name}
-                        secondary={
-                          <span style={{ whiteSpace: 'nowrap' }}>
-                            {defaultDescription(node)}
-                          </span>
-                        }
+                        secondary={node.description}
+                        sx={{
+                          '.MuiListItemText-primary, .MuiListItemText-secondary': {
+                            overflowX: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            marginRight: '20px',
+                          },
+                        }}
                       />
                     </ListItem>
                   );
