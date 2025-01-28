@@ -29,12 +29,10 @@ import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
-import useHelper from '../../../utils/hooks/useHelper';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
