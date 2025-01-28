@@ -178,6 +178,8 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                   <OrganizationEdition organizationId={organization.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />

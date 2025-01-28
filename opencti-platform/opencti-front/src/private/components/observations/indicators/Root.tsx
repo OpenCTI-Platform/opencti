@@ -119,8 +119,9 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 <IndicatorEdition indicatorId={indicator.id} />
               </Security>
             )}
-            noAliases={true}
+            enableEnricher={true}
             enableEnrollPlaybook={true}
+            noAliases={true}
           />
           <Box
             sx={{

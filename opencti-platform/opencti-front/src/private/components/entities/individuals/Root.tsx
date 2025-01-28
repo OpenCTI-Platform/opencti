@@ -179,6 +179,8 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                   <IndividualEdition individualId={individual.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
