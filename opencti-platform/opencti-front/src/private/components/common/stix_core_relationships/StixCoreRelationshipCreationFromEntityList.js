@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { graphql } from 'react-relay';
 import Skeleton from '@mui/material/Skeleton';
 import * as R from 'ramda';
-import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -333,13 +332,9 @@ const StixCoreRelationshipCreationFromEntityList = ({
     .filter((edge) => edge.node.id !== entity.id)
     .map((edge) => edge.node);
 
-  const defaultDescription = (data) => truncate(
-    // eslint-disable-next-line no-nested-ternary
-    data.parent_types.includes('Stix-Cyber-Observable')
-      ? data.x_opencti_description
-      : data.description,
-    120,
-  );
+  const defaultDescription = (data) => (data.parent_types.includes('Stix-Cyber-Observable')
+    ? data.x_opencti_description
+    : data.description);
 
   return (
     <>
@@ -393,6 +388,14 @@ const StixCoreRelationshipCreationFromEntityList = ({
                       <ListItemText
                         primary={node.name}
                         secondary={defaultDescription(node)}
+                        sx={{
+                          '.MuiListItemText-primary, .MuiListItemText-secondary': {
+                            overflowX: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            marginRight: '20px',
+                          },
+                        }}
                       />
                     </ListItem>
                   );
