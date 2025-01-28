@@ -44,6 +44,7 @@ const TextField = (props) => {
   const internalOnPaste = React.useCallback(
     (event) => {
       // onBeforePaste can be used to alter the pasted content
+      // this works for textarea or input
       if (typeof onBeforePaste === 'function') {
         event.preventDefault(); // prevent default paste
         // alter the pasted content according to onBeforePaste result
@@ -52,17 +53,17 @@ const TextField = (props) => {
         const sanitizedPastedText = pastedText.replace(/\r/g, '');
         const newPastedText = onBeforePaste(sanitizedPastedText);
         // Insert the modified text at the current cursor position
-        const textArea = event.target;
-        const start = textArea.selectionStart;
-        const end = textArea.selectionEnd;
-        const before = textArea.value.slice(0, start);
-        const after = textArea.value.slice(end);
-        textArea.value = before + newPastedText + after;
+        const input = event.target;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const before = input.value.slice(0, start);
+        const after = input.value.slice(end);
+        input.value = before + newPastedText + after;
         // Set the cursor position after the inserted text
         const cursorPosition = start + newPastedText.length;
-        textArea.setSelectionRange(cursorPosition, cursorPosition);
+        input.setSelectionRange(cursorPosition, cursorPosition);
 
-        setFieldValue(name, textArea.value);
+        setFieldValue(name, input.value);
       }
     },
     [onBeforePaste, setFieldValue, name],
