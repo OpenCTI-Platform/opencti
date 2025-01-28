@@ -27,7 +27,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
@@ -126,10 +126,11 @@ const StixCoreObjectContentFilesList = ({
   };
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
-  const { disseminationListsNames } = useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
+
+  const result = useGranted([KNOWLEDGE_KNDISSEMINATION]) ? useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
     stixCoreObjectContentFilesDisseminationQuery,
     { search: '', count: 10 },
-  );
+  ) : null;
 
   return (
     <List>
@@ -207,7 +208,7 @@ const StixCoreObjectContentFilesList = ({
                 fileId={file.id}
                 fileName={file.name}
                 onClose={() => setDrawerOpen(false)}
-                lists={disseminationListsNames}
+                lists={result ? result.disseminationListsNames : null}
               />
             </Drawer>
           </Security>
