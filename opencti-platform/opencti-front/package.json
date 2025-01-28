@@ -4,7 +4,7 @@
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
-    "@analytics/google-analytics": "1.0.7",
+    "@analytics/google-analytics": "1.1.0",
     "@ckeditor/ckeditor5-react": "9.4.0",
     "@date-fns/upgrade": "1.0.3",
     "@date-io/date-fns": "3.0.0",
