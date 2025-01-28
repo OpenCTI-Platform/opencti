@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
-import { Field, Form, Formik, FormikConfig } from 'formik';
+import { Field, Formik, FormikConfig } from 'formik';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
 import { disseminationListValidator, formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
 import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';

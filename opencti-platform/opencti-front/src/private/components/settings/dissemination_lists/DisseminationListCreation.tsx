@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik, FormikConfig } from 'formik';
+import { Field, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
