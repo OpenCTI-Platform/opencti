@@ -1,15 +1,9 @@
-import React, { FunctionComponent } from 'react';
-import Tooltip from '@mui/material/Tooltip';
+import React, { FunctionComponent, ReactElement } from 'react';
 import {
   stixDomainObjectAttackPatternsKillChainContainerFragment,
   stixDomainObjectAttackPatternsKillChainContainerLineFragment,
 } from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainContainer';
 import { stixDomainObjectAttackPatternsKillChainQuery } from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChain';
-import ToggleButton from '@mui/material/ToggleButton';
-import { ViewColumnOutlined } from '@mui/icons-material';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
-import FiligranIcon from '@components/common/FiligranIcon';
-import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
   StixDomainObjectAttackPatternsKillChainQuery$variables,
@@ -22,13 +16,12 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   storageKey: string;
   entityId: string;
   currentView?: string;
-  handleChangeView: (viewMode: string) => void;
+  viewButtons: ReactElement[];
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
@@ -36,10 +29,9 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     storageKey,
     entityId,
     currentView,
-    handleChangeView,
+    viewButtons,
   },
 ) => {
-  const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `${storageKey}-matrix-inline`;
   const dataColumns = {
     entity_type: { percentWidth: 11 },
@@ -57,7 +49,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     orderAsc: true,
     openExports: false,
     filters: emptyFilterGroup,
-    view: 'matrix-in-line',
+    view: currentView ?? 'matrix-in-line',
   };
 
   const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
@@ -118,35 +110,7 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
           exportContext={{ entity_type: 'Attack-Pattern' }}
-          additionalHeaderButtons={[
-            (<ToggleButton key="matrix" value="matrix" aria-label="matrix" onClick={() => handleChangeView('matrix')}>
-              <Tooltip title={t_i18n('Matrix view')}>
-                <ViewColumnOutlined fontSize="small" color="primary" />
-              </Tooltip>
-            </ToggleButton>),
-            (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')}>
-              <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
-                <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
-              </ToggleButton>
-            </Tooltip>
-            ),
-            (<Tooltip key="list" title={t_i18n('Kill chain view')}>
-              <ToggleButton key="list" value="list" aria-label="list" onClick={() => handleChangeView('list')}>
-                <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
-              </ToggleButton>
-            </Tooltip>
-            ),
-            (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
-              <Tooltip title={t_i18n('Courses of action view')}>
-                <ProgressWrench color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} fontSize="small" />
-              </Tooltip>
-            </ToggleButton>),
-            (<ToggleButton key="relationships" value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
-              <Tooltip title={t_i18n('Relationships view')}>
-                <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
-              </Tooltip>
-            </ToggleButton>),
-          ]}
+          additionalHeaderButtons={[...viewButtons]}
         />
       )}
     </div>

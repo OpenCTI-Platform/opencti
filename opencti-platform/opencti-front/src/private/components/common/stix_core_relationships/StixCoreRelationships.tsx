@@ -1,10 +1,5 @@
-import React, { FunctionComponent } from 'react';
-import { AutoFix, ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { ViewColumnOutlined } from '@mui/icons-material';
-import FiligranIcon from '@components/common/FiligranIcon';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import React, { FunctionComponent, ReactElement } from 'react';
+import { AutoFix } from 'mdi-material-ui';
 import { graphql } from 'react-relay';
 import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
@@ -22,18 +17,17 @@ import { itemColor } from '../../../../utils/Colors';
 import Security from '../../../../utils/Security';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import { useFormatter } from '../../../../components/i18n';
 
 interface StixCoreRelationshipsProps {
   storageKey: string;
   entityId: string;
   currentView?: string;
+  viewButtons: ReactElement[];
   targetTypes: string[]
   direction: 'fromEntity' | 'toEntity' | 'all'
   relationshipTypes: string[]
   defaultStartTime: string;
   defaultStopTime: string;
-  handleChangeView: (viewMode: string) => void;
 }
 
 export const stixCoreRelationshipsFragment = graphql`
@@ -226,7 +220,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     storageKey,
     entityId,
     currentView,
-    handleChangeView,
+    viewButtons,
     targetTypes,
     direction,
     relationshipTypes,
@@ -238,7 +232,6 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { t_i18n } = useFormatter();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     is_inferred: {
@@ -284,7 +277,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     orderAsc: true,
     openExports: false,
     filters: emptyFilterGroup,
-    view: currentView,
+    view: currentView ?? 'relationships',
   };
 
   const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixCoreRelationshipsLinesPaginationQuery$variables>(
@@ -345,35 +338,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
             lineFragment={stixCoreRelationshipsFragment}
             preloadedPaginationProps={preloadedPaginationProps}
             exportContext={{ entity_type: 'stix-core-relationship' }}
-            additionalHeaderButtons={[
-              (<ToggleButton key="matrix" value="matrix" aria-label="matrix" onClick={() => handleChangeView('matrix')}>
-                <Tooltip title={t_i18n('Matrix view')}>
-                  <ViewColumnOutlined fontSize="small" color="primary" />
-                </Tooltip>
-              </ToggleButton>),
-              (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')} >
-                <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
-                  <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
-                </ToggleButton>
-              </Tooltip>
-              ),
-              (<Tooltip key="list" title={t_i18n('Kill chain view')}>
-                <ToggleButton key="list" value="list" aria-label="list" onClick={() => handleChangeView('list')}>
-                  <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
-                </ToggleButton>
-              </Tooltip>
-              ),
-              (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
-                <Tooltip title={t_i18n('Courses of action view')}>
-                  <ProgressWrench color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} fontSize="small" />
-                </Tooltip>
-              </ToggleButton>),
-              (<ToggleButton key="relationships" value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
-                <Tooltip title={t_i18n('Relationships view')}>
-                  <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
-                </Tooltip>
-              </ToggleButton>),
-            ]}
+            additionalHeaderButtons={[...viewButtons]}
           />
         )}
       </div>

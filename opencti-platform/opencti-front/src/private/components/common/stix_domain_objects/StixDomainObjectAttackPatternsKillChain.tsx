@@ -170,6 +170,49 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
   }
 
+  const matrixViewButton = (
+    <Tooltip title={t_i18n('Matrix view')}>
+      <ToggleButton aria-label="matrix"
+        onClick={() => handleChangeView('matrix')}
+        value={'matrix'}
+      >
+        <ViewColumnOutlined
+          fontSize="small"
+          color={currentView === 'matrix' ? 'secondary' : 'primary'}
+        />
+      </ToggleButton>
+    </Tooltip>
+  );
+  const matrixInLineViewButton = (
+    <Tooltip title={t_i18n('Matrix in line view')}>
+      <ToggleButton value={'matrix-in-line'} aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
+        <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
+      </ToggleButton>
+    </Tooltip>
+  );
+  const killChainViewButton = (
+    <Tooltip title={t_i18n('Kill chain view')}>
+      <ToggleButton value={'list'} aria-label="list" onClick={() => handleChangeView('list')}>
+        <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
+      </ToggleButton>
+    </Tooltip>
+  );
+  const courseOfActionView = (
+    <Tooltip title={t_i18n('Courses of action view')}>
+      <ToggleButton value={'courses-of-action'} aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
+        <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} />
+      </ToggleButton>
+    </Tooltip>
+  );
+  const relationshipsView = (
+    <Tooltip title={t_i18n('Relationships view')}>
+      <ToggleButton value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
+        <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
+      </ToggleButton>
+    </Tooltip>
+  );
+  const viewButtons = [matrixViewButton, matrixInLineViewButton, killChainViewButton, courseOfActionView, relationshipsView];
+
   return (
     <>
       {currentView !== 'matrix-in-line' && currentView !== 'relationships' && <div
@@ -284,66 +327,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           </Tooltip>
           )}
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-            <Tooltip title={t_i18n('Matrix view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('matrix')}
-                value={'matrix'}
-              >
-                <ViewColumnOutlined
-                  fontSize="small"
-                  color={currentView === 'matrix' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Matrix in line view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('matrix-in-line')}
-                value={'matrix-in-line'}
-              >
-                <FiligranIcon icon={ListViewIcon}
-                  size="small"
-                  color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Kill chain view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('list')}
-                value={'list'}
-              >
-                <FiligranIcon icon={SublistViewIcon}
-                  size="small"
-                  color={currentView === 'list' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Courses of action view')}>
-              <ToggleButton
-                onClick={() => handleChangeView('courses-of-action')}
-                value={'courses-of-action'}
-              >
-                <ProgressWrench
-                  fontSize="small"
-                  color={
-                      currentView === 'courses-of-action'
-                        ? 'secondary'
-                        : 'primary'
-                    }
-                />
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Relationships view')}>
-              <ToggleButton
-                value="relationships"
-                aria-label="relationships"
-                onClick={() => handleChangeView('relationships')}
-              >
-                <RelationManyToMany
-                  fontSize="small"
-                  color={currentView === 'relationships' ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
+            {[...viewButtons]}
             {typeof handleToggleExports === 'function' && !exportDisabled && (
             <Tooltip title={t_i18n('Open export panel')}>
               <ToggleButton
@@ -428,7 +412,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             storageKey={storageKey}
             entityId={stixDomainObjectId}
             currentView={currentView}
-            handleChangeView={helpers.handleChangeView}
+            viewButtons={viewButtons}
           />
         )}
         {currentView === 'courses-of-action' && (
@@ -444,10 +428,10 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <StixCoreRelationships
             entityId={stixDomainObjectId}
             currentView={currentView}
+            viewButtons={viewButtons}
             targetTypes={['Attack-Pattern']}
             direction={'fromEntity'}
             relationshipTypes={['uses']}
-            handleChangeView={helpers.handleChangeView}
             storageKey={storageKey}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
