@@ -7,7 +7,7 @@ type DisseminationList implements InternalObject & BasicObject {
   updated_at: DateTime!
   # DisseminationList
   name: String!
-  emails: String!
+  emails: String! @auth(for: [SETTINGS_SETDISSEMINATION])
   description: String
   dissemination_list_values_count: Int!
 }
@@ -57,15 +57,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): DisseminationListConnection @auth(for: [SETTINGS_SETDISSEMINATION])
-  disseminationListsNames(
-    first: Int
-    after: ID
-    orderBy: DisseminationListOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-  ): DisseminationListNamesConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
+  ): DisseminationListConnection @auth(for: [KNOWLEDGE_KNDISSEMINATION, SETTINGS_SETDISSEMINATION])
 }
 
 input DisseminationListAddInput {

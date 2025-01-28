@@ -20,7 +20,7 @@ interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
   fileName: string;
   onClose: () => void;
-  lists: StixCoreObjectContentFilesDisseminationQuery$data['disseminationListsNames'];
+  lists: StixCoreObjectContentFilesDisseminationQuery$data['disseminationLists'];
 }
 
 interface DisseminationInput {
@@ -38,7 +38,7 @@ export const stixCoreObjectContentFilesDisseminationQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    disseminationListsNames(
+    disseminationLists(
       first: $count
       after: $cursor
       orderBy: $orderBy

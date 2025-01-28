@@ -19646,7 +19646,6 @@ export type Query = {
   deleteOperations?: Maybe<DeleteOperationConnection>;
   disseminationList?: Maybe<DisseminationList>;
   disseminationLists?: Maybe<DisseminationListConnection>;
-  disseminationListsNames?: Maybe<DisseminationListNamesConnection>;
   draftWorkspace?: Maybe<DraftWorkspace>;
   draftWorkspaceEntities?: Maybe<StixCoreObjectConnection>;
   draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
@@ -20389,16 +20388,6 @@ export type QueryDisseminationListArgs = {
 
 
 export type QueryDisseminationListsArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<FilterGroup>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<DisseminationListOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryDisseminationListsNamesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -39120,7 +39109,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
   disseminationList?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<QueryDisseminationListArgs, 'id'>>;
   disseminationLists?: Resolver<Maybe<ResolversTypes['DisseminationListConnection']>, ParentType, ContextType, Partial<QueryDisseminationListsArgs>>;
-  disseminationListsNames?: Resolver<Maybe<ResolversTypes['DisseminationListNamesConnection']>, ParentType, ContextType, Partial<QueryDisseminationListsNamesArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
   draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
   draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;

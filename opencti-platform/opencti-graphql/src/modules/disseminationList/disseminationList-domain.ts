@@ -19,7 +19,6 @@ import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../da
 import type { DisseminationListAddInput, DisseminationListSendInput, EditInput, QueryDisseminationListsArgs } from '../../generated/graphql';
 import {
   type BasicStoreEntityDisseminationList,
-  type BasicStoreEntityDisseminationListName,
   ENTITY_TYPE_DISSEMINATION_LIST,
   type StoreEntityDisseminationList
 } from './disseminationList-types';
@@ -45,22 +44,6 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
-};
-
-export const findAllNames = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
-  const allLists: StoreEntityConnection<BasicStoreEntityDisseminationList> = await listEntitiesPaginated<BasicStoreEntityDisseminationList>(
-    context,
-    user,
-    [ENTITY_TYPE_DISSEMINATION_LIST],
-    args
-  );
-  const newLists: StoreEntityConnection<BasicStoreEntityDisseminationListName> = { edges: [], pageInfo: allLists.pageInfo };
-  allLists.edges.forEach((edge) => {
-    const { node, ...edgeRest } = edge;
-    const { emails: _, ...nodeRest } = node;
-    newLists.edges.push({ node: nodeRest, ...edgeRest });
-  });
-  return newLists;
 };
 
 interface SendMailArgs {

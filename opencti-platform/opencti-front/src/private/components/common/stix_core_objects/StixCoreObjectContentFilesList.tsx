@@ -208,7 +208,7 @@ const StixCoreObjectContentFilesList = ({
                 fileId={file.id}
                 fileName={file.name}
                 onClose={() => setDrawerOpen(false)}
-                lists={result ? result.disseminationListsNames : null}
+                lists={result ? result.disseminationLists : null}
               />
             </Drawer>
           </Security>
