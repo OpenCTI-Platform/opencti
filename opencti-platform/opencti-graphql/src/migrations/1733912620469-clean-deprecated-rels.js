@@ -136,7 +136,7 @@ export const up = async (next) => {
   logMigration.info('[OPENCTI] Cleaning deprecated rels for targets...');
   const updateQueryForTargets = {
     script: {
-      params: { fieldToRemove: 'rel_targets' },
+      params: { fieldToRemove: 'rel_targets.internal_id' },
       source: 'ctx._source.remove(params.fieldToRemove)',
     },
     query: {
