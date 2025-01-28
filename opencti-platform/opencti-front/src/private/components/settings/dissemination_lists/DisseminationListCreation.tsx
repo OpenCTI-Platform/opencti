@@ -90,7 +90,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <>
           <Field
             component={TextField}
             name="name"
@@ -145,7 +145,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
               {t_i18n('Create')}
             </Button>
           </div>
-        </Form>
+        </>
       )}
     </Formik>
   );

@@ -93,7 +93,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
         onSubmit={onSubmit}
       >
         {({ submitForm }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <>
             <Field
               component={TextField}
               name="name"
@@ -133,7 +133,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
                 return pastedText; // do not alter pasted content; it's probably invalid anyway
               }}
             />
-          </Form>
+          </>
         )}
       </Formik>
     </Drawer>
