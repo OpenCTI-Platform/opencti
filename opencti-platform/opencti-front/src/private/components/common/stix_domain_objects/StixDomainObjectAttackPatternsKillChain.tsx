@@ -41,7 +41,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import { PaginationOptions } from '../../../../components/list_lines';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -429,7 +428,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             storageKey={storageKey}
             entityId={stixDomainObjectId}
             currentView={currentView}
-            paginationOptions={paginationOptions}
+            handleChangeView={helpers.handleChangeView}
           />
         )}
         {currentView === 'courses-of-action' && (

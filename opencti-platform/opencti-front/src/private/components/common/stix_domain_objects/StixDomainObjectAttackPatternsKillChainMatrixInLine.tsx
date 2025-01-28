@@ -28,7 +28,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   storageKey: string;
   entityId: string;
   currentView?: string;
-  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
+  handleChangeView: (viewMode: string) => void;
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
@@ -36,10 +36,11 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     storageKey,
     entityId,
     currentView,
-    paginationOptions,
+    handleChangeView,
   },
 ) => {
   const { t_i18n } = useFormatter();
+  const LOCAL_STORAGE_KEY = `${storageKey}-matrix-inline`;
   const dataColumns = {
     entity_type: { percentWidth: 11 },
     killChainPhase: { percentWidth: 22 },
@@ -59,9 +60,10 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     view: 'matrix-in-line',
   };
 
-  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
-    storageKey,
+  const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+    LOCAL_STORAGE_KEY,
     initialValues,
+    true,
   );
 
   const {
@@ -110,36 +112,36 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
-          storageKey={storageKey}
+          storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
           exportContext={{ entity_type: 'Attack-Pattern' }}
           additionalHeaderButtons={[
-            (<ToggleButton key="matrix" value="matrix" aria-label="matrix">
+            (<ToggleButton key="matrix" value="matrix" aria-label="matrix" onClick={() => handleChangeView('matrix')}>
               <Tooltip title={t_i18n('Matrix view')}>
                 <ViewColumnOutlined fontSize="small" color="primary" />
               </Tooltip>
             </ToggleButton>),
-            (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')}>
+            (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')} onClick={() => handleChangeView('matrix-in-line')}>
               <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line">
                 <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
               </ToggleButton>
             </Tooltip>
             ),
             (<Tooltip key="list" title={t_i18n('Kill chain view')}>
-              <ToggleButton key="list" value="list" aria-label="list">
+              <ToggleButton key="list" value="list" aria-label="list" onClick={() => handleChangeView('list')}>
                 <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
               </ToggleButton>
             </Tooltip>
             ),
-            (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action">
+            (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
               <Tooltip title={t_i18n('Courses of action view')}>
                 <ProgressWrench color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} fontSize="small" />
               </Tooltip>
             </ToggleButton>),
-            (<ToggleButton key="relationships" value="relationships" aria-label="relationships">
+            (<ToggleButton key="relationships" value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
               <Tooltip title={t_i18n('Relationships view')}>
                 <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
               </Tooltip>
