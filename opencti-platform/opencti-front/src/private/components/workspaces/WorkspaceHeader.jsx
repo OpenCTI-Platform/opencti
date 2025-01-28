@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { AddOutlined, CloseOutlined, Delete, LockPersonOutlined, MoveToInboxOutlined } from '@mui/icons-material';
+import { CloseOutlined, Delete, LabelOutlined, LockPersonOutlined, MoveToInboxOutlined } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
@@ -391,7 +391,7 @@ const WorkspaceHeader = ({
                 <DotsHorizontalCircleOutline fontSize="small" />
               </IconButton>
             ) : (
-              <Tooltip title={t_i18n('Add tag')}>
+              <Tooltip title={openTag ? t_i18n('Cancel') : t_i18n('Add tag')}>
                 <IconButton
                   style={{ float: 'left', marginTop: '-5px', marginRight: '3px' }}
                   color="primary"
@@ -402,7 +402,7 @@ const WorkspaceHeader = ({
                   {openTag ? (
                     <CloseOutlined fontSize="small" />
                   ) : (
-                    <AddOutlined fontSize="small" />
+                    <LabelOutlined fontSize="small" />
                   )}
                 </IconButton>
               </Tooltip>
