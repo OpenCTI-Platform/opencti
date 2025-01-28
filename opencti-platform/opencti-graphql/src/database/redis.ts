@@ -364,7 +364,12 @@ export const redisFetchLatestDeletions = async () => {
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
-interface LockOptions { automaticExtension?: boolean, retryCount?: number, draftId?: string }
+interface LockOptions {
+  automaticExtension?: boolean,
+  retryCount?: number,
+  draftId?: string
+  child_operation?: string
+}
 const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
   const obj: any = {};
@@ -404,7 +409,12 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       lock = await lock.extend(maxTtl);
       queue();
     } catch (error) {
-      controller.abort({ name: TYPE_LOCK_ERROR });
+      if (process.send) {
+        // If process.send, we use a child process
+        process.send({ operation: opts.child_operation, type: 'abort', success: false });
+      } else {
+        controller.abort({ name: TYPE_LOCK_ERROR });
+      }
     }
   };
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock

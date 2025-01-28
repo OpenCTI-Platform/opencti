@@ -26,8 +26,13 @@ export const initLockFork = () => {
       if (lockProcess.callbacks.has(messageKey)) {
         lockProcess.callbacks.get(messageKey)(msg);
       } else {
-        logApp.warn('[LOCKING] Locking message with invalid operation', { operation: msg.operation });
+        logApp.warn('[LOCKING] Locking message with invalid operation', { key: messageKey });
       }
+    });
+    lockProcess.forked.on('exit', (code) => {
+      // If exit is detected, exit the parent process
+      // It should not happen in standard situation
+      process.exit(code);
     });
     logApp.info('[LOCKING] Locking fork process started');
   } else {

@@ -21,7 +21,8 @@ initializeOnlyRedisLockClient().then(() => {
     // In case of lock
     if (data.type === 'lock') {
       try {
-        const lock = await lockResource(data.ids, data.args);
+        const options = { child_operation: data.operation, ...data.args };
+        const lock = await lockResource(data.ids, options);
         activeLocks.set(data.operation, lock);
         if (process.send) {
           process.send({ operation: data.operation, type: data.type, success: true });
@@ -51,4 +52,9 @@ initializeOnlyRedisLockClient().then(() => {
       }
     }
   });
+  // Don't do anything in exist event, process is attached to the parent
+  // The parent will close the process as an operating system behavior
+  process.on('exit', () => {});
+  process.on('SIGTERM', () => {});
+  process.on('SIGINT', () => {});
 });
