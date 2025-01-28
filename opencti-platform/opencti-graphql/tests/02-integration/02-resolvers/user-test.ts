@@ -1011,3 +1011,88 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.user).toBeNull();
   });
 });
+
+describe('meUser specific resolvers', async () => {
+  const ME_EDIT = gql`
+    mutation meEdit($input: [EditInput]!, $password: String) {
+      meEdit(input: $input, password: $password) {
+        id
+        name
+        user_email
+        external
+        firstname
+        lastname
+        language
+        theme
+        api_token
+        otp_activated
+        otp_qr
+        description
+      }
+    }
+  `;
+  afterAll(async () => {
+    await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables: {
+        password: USER_EDITOR.password,
+        input: [
+          { key: 'language', value: 'en-us' },
+        ]
+      },
+    });
+  });
+
+  it('User should update authorized attribute', async () => {
+    const variables = {
+      password: USER_EDITOR.password,
+      input: [
+        { key: 'language', value: 'fr-fr' },
+      ]
+    };
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables,
+    });
+    expect(queryResult.data.meEdit.language).toEqual('fr-fr');
+  });
+  it('User should NOT update unauthorized attribute', async () => {
+    const variables = {
+      password: USER_EDITOR.password,
+      input: [
+        { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
+      ]
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables,
+    });
+  });
+  it('User should update multiple authorized attributes', async () => {
+    const variables = {
+      password: USER_EDITOR.password,
+      input: [
+        { key: 'language', value: 'en-us' },
+        { key: 'theme', value: 'dark' },
+      ]
+    };
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables,
+    });
+    expect(queryResult.data.meEdit.language).toEqual('en-us');
+  });
+  it('User should NOT update multiple attribute when unauthorized keys in input', async () => {
+    const variables = {
+      password: USER_EDITOR.password,
+      input: [
+        { key: 'language', value: 'fr-fr' },
+        { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
+      ]
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables,
+    });
+  });
+});

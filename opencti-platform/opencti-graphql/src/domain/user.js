@@ -833,28 +833,30 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'draft_context',
 ];
 export const meEditField = async (context, user, userId, inputs, password = null) => {
-  const input = R.head(inputs);
-  const { key } = input;
-  // Check if field can be updated by the user
-  if (PROTECTED_USER_ATTRIBUTES.includes(key)) {
-    throw ForbiddenAccess();
-  }
-  // If the user is external, some extra attributes must be protected
-  if (user.external && PROTECTED_EXTERNAL_ATTRIBUTES.includes(key)) {
-    throw ForbiddenAccess();
-  }
-  // On MeUser only some fields are updatable
-  if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
-    throw ForbiddenAccess();
-  }
-  // Check password confirmation in case of password change
-  if (key === 'password') {
-    const dbPassword = user.session_password;
-    const match = bcrypt.compareSync(password, dbPassword);
-    if (!match) {
-      throw FunctionalError('The current password you have provided is not valid');
+  inputs.forEach((input) => {
+    const { key } = input;
+    // Check if field can be updated by the user
+    if (PROTECTED_USER_ATTRIBUTES.includes(key)) {
+      throw ForbiddenAccess();
     }
-  }
+    // If the user is external, some extra attributes must be protected
+    if (user.external && PROTECTED_EXTERNAL_ATTRIBUTES.includes(key)) {
+      throw ForbiddenAccess();
+    }
+    // On MeUser only some fields are updatable
+    if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
+      throw ForbiddenAccess();
+    }
+    // Check password confirmation in case of password change
+    if (key === 'password') {
+      const dbPassword = user.session_password;
+      const match = bcrypt.compareSync(password, dbPassword);
+      if (!match) {
+        throw FunctionalError('The current password you have provided is not valid');
+      }
+    }
+  });
+
   return userEditField(context, user, userId, inputs);
 };
 
