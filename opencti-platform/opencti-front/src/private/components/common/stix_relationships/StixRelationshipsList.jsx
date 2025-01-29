@@ -3379,6 +3379,10 @@ const stixRelationshipsListQuery = graphql`
               parent_types
             }
             ... on StixCoreObject {
+              representative {
+                main
+              }
+              entity_type
               created_at
             }
             ... on StixRelationship {
@@ -3813,6 +3817,10 @@ const stixRelationshipsListQuery = graphql`
                   entity_type
                 }
                 ... on StixCoreObject {
+                  representative {
+                    main
+                  }
+                  entity_type
                   created_at
                 }
                 ... on StixRelationship {
