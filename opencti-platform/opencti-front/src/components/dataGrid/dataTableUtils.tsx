@@ -6,7 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
-import ItemCvssScore from 'src/components/ItemCvssScore';
+import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
