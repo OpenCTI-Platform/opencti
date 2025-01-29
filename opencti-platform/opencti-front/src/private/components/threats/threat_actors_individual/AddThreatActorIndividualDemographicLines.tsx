@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { graphql, useRefetchableFragment } from 'react-relay';
+import React, { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import ItemIcon from 'src/components/ItemIcon';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
-import { defaultCommitMutation } from 'src/relay/environment';
 import {
   AddThreatActorIndividualDemographicLines_data$key,
 } from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLines_data.graphql';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+import { updateDelete } from '../../../../utils/store';
 
 export const scoRelationshipAdd = graphql`
   mutation AddThreatActorIndividualDemographicLinesRelationAddMutation(
@@ -129,15 +128,12 @@ const AddThreatActorIndividualDemographicLines = ({
   fragmentKey: AddThreatActorIndividualDemographicLines_data$key,
   relType: string,
 }) => {
-  const [data, refetch] = useRefetchableFragment(
+  const data = useFragment(
     AddThreatActorIndividualDemographicLinesFragment,
     fragmentKey,
   );
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
   const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
-  useEffect(() => {
-    refetch({});
-  }, [data]);
 
   const initialTargets = (threatActorIndividual
     .stixCoreRelationships?.edges
@@ -145,15 +141,6 @@ const AddThreatActorIndividualDemographicLines = ({
     ?? []).map(({ node }) => node.to?.id ?? '');
 
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
-
-  const updateDelete = (store: RecordSourceSelectorProxy, path: string, rootId: string, deleteId: string) => {
-    const node = store.get(rootId);
-    const records = node?.getLinkedRecord(path);
-    const edges = records?.getLinkedRecords('edges');
-    if (!records || !edges) { return; }
-    const newEdges = edges.filter((n) => n.getLinkedRecord('node')?.getValue('toId') !== deleteId);
-    records.setLinkedRecords(newEdges, 'edges');
-  };
 
   const handleToggle = (toId: string) => {
     const isSelected = currentTargets.includes(toId);
@@ -164,7 +151,6 @@ const AddThreatActorIndividualDemographicLines = ({
     };
     if (isSelected) {
       commitRelationDelete({
-        ...defaultCommitMutation,
         variables: { ...input },
         updater: (store) => updateDelete(
           store,
@@ -178,7 +164,6 @@ const AddThreatActorIndividualDemographicLines = ({
       });
     } else {
       commitRelationAdd({
-        ...defaultCommitMutation,
         variables: { input },
         onCompleted: () => {
           setCurrentTargets([...currentTargets, toId]);
