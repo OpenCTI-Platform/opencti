@@ -4,36 +4,36 @@ import { IconButton } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import SearchInput from 'src/components/SearchInput';
 import { useFormatter } from 'src/components/i18n';
-import { useLazyLoadQuery } from 'react-relay';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import AddIndividualsThreatActorIndividualLines, { addIndividualsThreatActorIndividualLinesQuery } from './AddIndividualsThreatActorIndividualLines';
 import { AddIndividualsThreatActorIndividualLinesQuery } from './__generated__/AddIndividualsThreatActorIndividualLinesQuery.graphql';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import IndividualCreation from '../../entities/individuals/IndividualCreation';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddIndividualsThreatActorIndividualProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+  queryRef: PreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>
 }
 
-const AddIndividualsThreatActorIndividual: FunctionComponent<
+const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
 AddIndividualsThreatActorIndividualProps
 > = ({
   threatActorIndividual,
+  queryRef,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
-  const paginationOptions = { search };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleSearch = (term: string) => setSearch(term);
 
-  const data = useLazyLoadQuery<AddIndividualsThreatActorIndividualLinesQuery>(
+  const data = usePreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>(
     addIndividualsThreatActorIndividualLinesQuery,
-    {
-      ...paginationOptions,
-      count: 50,
-    },
+    queryRef,
   );
 
   return (<div>
@@ -79,6 +79,21 @@ AddIndividualsThreatActorIndividualProps
       />
     </Drawer>
   </div>);
+};
+
+const AddIndividualsThreatActorIndividual: FunctionComponent<
+Omit<AddIndividualsThreatActorIndividualProps, 'queryRef'>
+> = (props) => {
+  const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
+    count: 50,
+  });
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <AddIndividualsThreatActorIndividualComponent {...props} queryRef={queryRef} />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default AddIndividualsThreatActorIndividual;
