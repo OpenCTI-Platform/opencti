@@ -84,7 +84,6 @@ steps:
       - yarn lint
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
-
   - name: frontend-e2e-tests
     image: node:20.18.1
     volumes:
@@ -94,6 +93,7 @@ steps:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
       TEAMS_WEBHOOK: teams-webhook-url
+    ipc: host
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
