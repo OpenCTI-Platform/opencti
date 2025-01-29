@@ -1,7 +1,7 @@
 import Tooltip from '@mui/material/Tooltip';
 import { IconButton, List, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
-import { MoreVert } from '@mui/icons-material';
+import { MoreVert, Email as EmailIcon } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
@@ -14,7 +14,6 @@ import DeleteDialog from 'src/components/DeleteDialog';
 import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
-import EmailIcon from '@mui/icons-material/Email';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import EEChip from '@components/common/entreprise_edition/EEChip';
