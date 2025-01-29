@@ -15,7 +15,7 @@ import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts, WorkEvent } from '../types/event';
+import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
@@ -489,24 +489,6 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
     telemetry(context, user, 'INSERT STREAM', {
       [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
-  }
-};
-
-// Work
-export const storeWorkEvent = async (context: AuthContext, user: AuthUser, data: EventOpts) => {
-  try {
-    const event: WorkEvent = {
-      message: 'Work event completed',
-      origin: user.origin,
-      scope: 'internal',
-      type: 'work',
-      data,
-      version: EVENT_CURRENT_VERSION
-    };
-    await pushToStream(context, user, getClientBase(), event);
-    return event;
-  } catch (e) {
-    throw DatabaseError('Error in store merge event', { cause: e });
   }
 };
 
