@@ -34,7 +34,9 @@ const WidgetCreationPerspective = () => {
     const initialFilters = context === 'fintelTemplate' && perspective === 'entities'
       ? fintelTemplateEntitiesInitialFilters
       : emptyFilterGroup;
-    const initialColumns = perspective === 'entities' || perspective === 'relationships' ? getDefaultWidgetColumns(perspective) : [];
+    const initialColumns = perspective === 'entities' || perspective === 'relationships'
+      ? getDefaultWidgetColumns(context, perspective)
+      : [];
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective,

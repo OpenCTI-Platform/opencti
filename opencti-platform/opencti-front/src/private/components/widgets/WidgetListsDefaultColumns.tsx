@@ -1,4 +1,4 @@
-import type { WidgetColumn } from '../../../utils/widget/widget';
+import type { WidgetColumn, WidgetContext } from '../../../utils/widget/widget';
 import useAttributes from '../../../utils/hooks/useAttributes';
 
 const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
@@ -22,6 +22,10 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_workflow_id' },
     { attribute: 'objectLabel' },
     { attribute: 'objectMarking' },
+  ],
+  fintelTemplate: [
+    { attribute: 'entity_type', label: 'Entity type' },
+    { attribute: 'representative.main', label: 'Representative' },
   ],
 };
 
@@ -129,7 +133,10 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
 
 type WidgetEntityType = 'relationships' | 'entities';
 
-export const getDefaultWidgetColumns = (type: WidgetEntityType): WidgetColumn[] => {
+export const getDefaultWidgetColumns = (context: WidgetContext, type: WidgetEntityType): WidgetColumn[] => {
+  if (context === 'fintelTemplate') {
+    return defaultWidgetColumns.fintelTemplate;
+  }
   if (type === 'relationships') {
     return defaultWidgetColumns.relationships;
   }

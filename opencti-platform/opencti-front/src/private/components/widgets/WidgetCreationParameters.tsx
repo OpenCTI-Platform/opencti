@@ -45,6 +45,7 @@ const WidgetCreationParameters = () => {
     fintelWidgets,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
+  console.log('data', dataSelection);
   const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
 
   const alreadyUsedInstances = (fintelWidgets ?? []).flatMap(({ widget }) => {
@@ -795,7 +796,7 @@ const WidgetCreationParameters = () => {
 
               const entityType = getEntityTypeFromFilters(filters);
 
-              const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective);
+              const defaultWidgetColumnsByType = getDefaultWidgetColumns(context, perspective);
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}

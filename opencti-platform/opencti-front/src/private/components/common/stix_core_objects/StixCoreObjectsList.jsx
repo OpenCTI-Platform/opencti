@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
+import { useWidgetConfigContext } from '../../widgets/WidgetConfigContext';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -419,8 +420,9 @@ const StixCoreObjectsList = ({
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
+  const { context } = useWidgetConfigContext();
   const selection = dataSelection[0];
-  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
+  const columns = selection.columns ?? getDefaultWidgetColumns(context, 'entities');
   const dataSelectionTypes = ['Stix-Core-Object'];
 
   const sortBy = selection.sort_by && selection.sort_by.length > 0
