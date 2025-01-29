@@ -21,7 +21,7 @@ import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } fr
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
-import { capitalizeFirstLetter } from '../../../utils/String';
+import { capitalizeFirstLetter, toCamelCase } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys, getEntityTypeTwoFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
@@ -147,6 +147,14 @@ const WidgetCreationParameters = () => {
     varNameError = t_i18n('Only letters, numbers and special chars _ and - are allowed');
   }
 
+  const handleChangeTitle = (val: string) => {
+    handleChangeParameter('title', val);
+    if (context === 'fintelTemplate') {
+      const variableNameValue = toCamelCase(val.replace(/[^A-Za-z0-9_-]/, ''));
+      setConfigVariableName(variableNameValue);
+    }
+  };
+
   return (
     <div style={{ marginTop: 20 }}>
       <TextField
@@ -155,7 +163,7 @@ const WidgetCreationParameters = () => {
         fullWidth={true}
         value={parameters.title}
         disabled={dataSelection[0]?.instance_id === SELF_ID}
-        onChange={(event) => handleChangeParameter('title', event.target.value)}
+        onChange={(event) => handleChangeTitle(event.target.value)}
       />
 
       {(context === 'fintelTemplate' && type !== 'attribute') && (
