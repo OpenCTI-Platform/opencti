@@ -37,7 +37,7 @@ export const up = async (next) => {
       const threat = threats[i];
       const relatedToIds = threat[relKeyRelatedTo] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, relatedToIds.filter((id) => isNotEmptyField(id)));
+      const groupIds = R.splitEvery(5000, relatedToIds.flat(Infinity).filter((id) => isNotEmptyField(id)));
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
@@ -95,7 +95,7 @@ export const up = async (next) => {
       const location = locations[i];
       const locatedAtIds = location[relKeyLocatedAt] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, locatedAtIds.filter((id) => isNotEmptyField(id)));
+      const groupIds = R.splitEvery(5000, locatedAtIds.flat(Infinity).filter((id) => isNotEmptyField(id)));
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });

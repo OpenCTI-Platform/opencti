@@ -1663,7 +1663,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       logApp.debug('[SEARCH] elInternalLoadById', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        logApp.error(JSON.stringify(query));
         throw DatabaseError('Find direct ids fail', { cause: err, query });
       });
       const elements = data.hits.hits;
