@@ -132,6 +132,7 @@ const depsToOptimize = [
   "d3-timer",
   "dompurify",
   "formik-mui-lab",
+  "html-react-parser",
   "html-to-image",
   "html-to-pdfmake",
   "js-base64",

@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { NorthEastOutlined } from '@mui/icons-material';
-import LoupeOutlinedIcon from '@mui/icons-material/LoupeOutlined';
+import { NorthEastOutlined, LoupeOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -191,7 +190,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
                       handleOpenDetails(row);
                     }}
                   >
-                    <LoupeOutlinedIcon fontSize="small"/>
+                    <LoupeOutlined fontSize="small"/>
                   </IconButton>
                 </Tooltip>
               </div>
