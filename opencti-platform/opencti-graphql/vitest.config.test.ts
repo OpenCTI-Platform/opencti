@@ -37,7 +37,8 @@ export const buildTestConfig = (include: string[]) => defineConfig({
         }
       },
     },
-    reporters: ['hanging-process']
+    reporters: ['json', 'default', 'hanging-process'],
+    outputFile: './test-results/test-output.json'
   },
 });
 
