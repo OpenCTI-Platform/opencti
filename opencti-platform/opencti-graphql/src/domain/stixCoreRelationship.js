@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql/index';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
@@ -138,13 +138,19 @@ export const stixCoreRelationshipDeleteRelation = async (context, user, stixCore
 // region context
 export const stixCoreRelationshipCleanContext = async (context, user, stixCoreRelationshipId) => {
   await delEditContext(user, stixCoreRelationshipId);
-  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
-  return await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+  return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP)
+    .then((stixCoreRelationship) => {
+      return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+    })
+    .catch((reason) => logApp.error('Error on store load for stix core relationship', { cause: reason }));
 };
 
 export const stixCoreRelationshipEditContext = async (context, user, stixCoreRelationshipId, input) => {
   await setEditContext(user, stixCoreRelationshipId, input);
-  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
-  return await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+  return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP)
+    .then((stixCoreRelationship) => {
+      return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+    })
+    .catch((reason) => logApp.error('Error on store load for stix core relationship', { cause: reason }));
 };
 // endregion

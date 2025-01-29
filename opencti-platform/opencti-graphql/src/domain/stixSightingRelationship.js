@@ -62,12 +62,15 @@ export const stixSightingRelationshipCleanContext = async (context, user, stixSi
   await delEditContext(user, stixSightingRelationshipId);
   return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
     return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  }).catch((reason) => logApp.error('Error on store load', reason));
+  }).catch((reason) => logApp.error('Error on store load for stix sighting relationship', { cause: reason }));
 };
 
 export const stixSightingRelationshipEditContext = async (context, user, stixSightingRelationshipId, input) => {
   await setEditContext(user, stixSightingRelationshipId, input);
-  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  return await notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP)
+    .then((stixSightingRelationship) => {
+      return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+    })
+    .catch((reason) => logApp.error('Error on store load for stix sighting relationship', { cause: reason }));
 };
 // endregion

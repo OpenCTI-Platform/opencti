@@ -2,7 +2,7 @@ import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_FEATURE_FLAGS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
+import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_FEATURE_FLAGS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION, logApp } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -151,14 +151,16 @@ export const addSettings = async (context, user, settings) => {
 
 export const settingsCleanContext = async (context, user, settingsId) => {
   await delEditContext(user, settingsId);
-  const settings = await storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS);
-  return await notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
+  return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS)
+    .then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user))
+    .catch((reason) => logApp.error('Error on store load for settings', { cause: reason }));
 };
 
 export const settingsEditContext = async (context, user, settingsId, input) => {
   await setEditContext(user, settingsId, input);
-  const settings = await storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS);
-  return await notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
+  return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS)
+    .then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user))
+    .catch((reason) => logApp.error('Error on store load for settings', { cause: reason }));
 };
 
 const ACCESS_SETTINGS_RESTRICTED_KEYS = [
