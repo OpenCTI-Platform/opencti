@@ -36,9 +36,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
           return files.sort((testA, testB) => (testA > testB ? 1 : -1));
         }
       },
-    },
-    reporters: ['json', 'default', 'hanging-process'],
-    outputFile: './test-results/test-output.json'
+    }
   },
 });
 

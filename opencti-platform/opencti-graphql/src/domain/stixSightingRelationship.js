@@ -1,7 +1,7 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, updateAttribute } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
@@ -60,9 +60,11 @@ export const stixSightingRelationshipDeleteRelation = async (context, user, stix
 // region context
 export const stixSightingRelationshipCleanContext = async (context, user, stixSightingRelationshipId) => {
   await delEditContext(user, stixSightingRelationshipId);
-  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  return await notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+  }).catch((reason) => logApp.error('Error on store load', reason));
 };
+
 export const stixSightingRelationshipEditContext = async (context, user, stixSightingRelationshipId, input) => {
   await setEditContext(user, stixSightingRelationshipId, input);
   const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);

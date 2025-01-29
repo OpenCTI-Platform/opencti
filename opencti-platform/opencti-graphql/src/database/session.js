@@ -88,11 +88,10 @@ export const findUserSessions = async (userId) => {
   return [];
 };
 
-export const killSession = async (id) => {
+export const killSession = (id) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
-    // eslint-disable-next-line no-void
-    void store.destroy(id, (_, data) => {
+    store.destroy(id, (_, data) => {
       accept(data);
     });
   });

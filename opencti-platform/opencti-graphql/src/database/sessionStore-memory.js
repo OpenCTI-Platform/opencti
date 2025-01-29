@@ -90,6 +90,7 @@ class SessionStoreMemory extends Store {
       store.delete(sid);
       return fn && fn(error, data);
     });
+    return fn && fn(null);
   }
 
   ids(fn) {
