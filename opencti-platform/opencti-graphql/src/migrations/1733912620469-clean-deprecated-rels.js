@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { logMigration } from '../config/conf';
 import { BULK_TIMEOUT, elBulk, elFindByIds, elList, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -37,7 +37,7 @@ export const up = async (next) => {
       const threat = threats[i];
       const relatedToIds = threat[relKeyRelatedTo] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, relatedToIds);
+      const groupIds = R.splitEvery(5000, relatedToIds.filter((id) => isNotEmptyField(id)));
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
@@ -95,7 +95,7 @@ export const up = async (next) => {
       const location = locations[i];
       const locatedAtIds = location[relKeyLocatedAt] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, locatedAtIds);
+      const groupIds = R.splitEvery(5000, locatedAtIds.filter((id) => isNotEmptyField(id)));
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
         const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
