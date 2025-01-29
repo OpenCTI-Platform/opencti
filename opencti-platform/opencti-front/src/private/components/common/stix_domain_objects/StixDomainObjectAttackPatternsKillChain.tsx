@@ -413,6 +413,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             entityId={stixDomainObjectId}
             currentView={currentView}
             viewButtons={viewButtons}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         )}
         {currentView === 'courses-of-action' && (
@@ -437,7 +439,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             defaultStopTime={defaultStopTime}
           />
         )}
-        {currentView !== 'relationships' && (
+        {currentView !== 'relationships' && currentView !== 'matrix-in-line' && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
