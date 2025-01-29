@@ -58,9 +58,7 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
         input,
       },
       updater: (store) => {
-        if (updater) {
-          updater(store, 'disseminationListAdd');
-        }
+        updater(store, 'disseminationListAdd');
       },
       onCompleted: () => {
         setSubmitting(false);
