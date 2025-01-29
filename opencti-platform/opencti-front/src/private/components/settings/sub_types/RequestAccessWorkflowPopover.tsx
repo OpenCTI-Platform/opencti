@@ -1,6 +1,6 @@
 import { Edit } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import React, {FunctionComponent, useState} from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import RequestAccessWorkflow, { requestAccessWorkflowEditionQuery } from '@components/settings/sub_types/RequestAccessWorkflow';
 import { RequestAccessWorkflowEditionQuery } from '@components/settings/sub_types/__generated__/RequestAccessWorkflowEditionQuery.graphql';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
