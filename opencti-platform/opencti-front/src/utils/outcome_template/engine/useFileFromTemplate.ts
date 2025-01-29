@@ -69,6 +69,7 @@ const useFileFromTemplate = () => {
                 ...widget.dataSelection[0],
                 filters,
               },
+              widget.perspective,
             );
           } else if (widget.type === 'donut') {
             const { dynamicFrom, dynamicTo } = widget.dataSelection[0];

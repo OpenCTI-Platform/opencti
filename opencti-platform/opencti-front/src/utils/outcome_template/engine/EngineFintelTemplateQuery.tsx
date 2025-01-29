@@ -9,6 +9,7 @@ const engineFintelTemplateQuery = graphql`
           variable_name
           widget {
             type
+            perspective
             dataSelection {
               number
               attribute

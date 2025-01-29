@@ -23,9 +23,18 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'objectLabel' },
     { attribute: 'objectMarking' },
   ],
-  fintelTemplate: [
+};
+
+const fintelTemplateDefaultWidgetColumns = {
+  entities: [
     { attribute: 'entity_type', label: 'Entity type' },
     { attribute: 'representative.main', label: 'Representative' },
+    { attribute: 'created_at', label: 'Creation date' },
+  ],
+  relationships: [
+    { attribute: 'relationship_type', label: 'Relationship type' },
+    { attribute: 'representative.main', label: 'Representative' },
+    { attribute: 'created_at', label: 'Creation date' },
   ],
 };
 
@@ -135,7 +144,12 @@ type WidgetEntityType = 'relationships' | 'entities';
 
 export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: WidgetContext): WidgetColumn[] => {
   if (context && context === 'fintelTemplate') {
-    return defaultWidgetColumns.fintelTemplate;
+    if (type === 'relationships') {
+      return fintelTemplateDefaultWidgetColumns.relationships;
+    }
+    if (type === 'entities') {
+      return fintelTemplateDefaultWidgetColumns.entities;
+    }
   }
   if (type === 'relationships') {
     return defaultWidgetColumns.relationships;

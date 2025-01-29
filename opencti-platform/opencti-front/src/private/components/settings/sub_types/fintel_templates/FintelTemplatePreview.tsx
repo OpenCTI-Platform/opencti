@@ -19,6 +19,7 @@ const previewFragment = graphql`
       widget {
         id
         type
+        perspective
         dataSelection {
           instance_id
           filters
