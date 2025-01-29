@@ -1,5 +1,5 @@
 type Mutation {
-    obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])@deprecated(reason: "[>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`.")
-    obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])@deprecated(reason: "[>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`.")
-    obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])@deprecated(reason: "[>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`.")
-   }
+  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE]) @deprecated(reason: "[>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`.")
+  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE]) @deprecated(reason: "[>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`.")
+  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE]) @deprecated(reason: "[>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`.")
+}
