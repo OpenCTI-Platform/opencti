@@ -7,19 +7,9 @@ type DisseminationList implements InternalObject & BasicObject {
   updated_at: DateTime!
   # DisseminationList
   name: String!
-  emails: String! @auth(for: [SETTINGS_SETDISSEMINATION])
+  emails: [String!]! @auth(for: [SETTINGS_SETDISSEMINATION])
   description: String
   dissemination_list_values_count: Int!
-}
-type DisseminationListName implements InternalObject & BasicObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  created_at: DateTime!
-  updated_at: DateTime!
-  # DisseminationList
-  name: String!
 }
 
 # Ordering
@@ -38,14 +28,6 @@ type DisseminationListEdge {
   cursor: String!
   node: DisseminationList!
 }
-type DisseminationListNamesConnection {
-  pageInfo: PageInfo!
-  edges: [DisseminationListNamesEdge!]!
-}
-type DisseminationListNamesEdge {
-  cursor: String!
-  node: DisseminationListName!
-}
 
 # Queries
 type Query {
@@ -62,7 +44,7 @@ type Query {
 
 input DisseminationListAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
-  emails: String!
+  emails: [String!]!
   description: String
 }
 

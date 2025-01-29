@@ -65,7 +65,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: toEmail,
-      bcc: [disseminationList.emails, user.user_email],
+      bcc: [...disseminationList.emails, user.user_email],
       subject: input.email_object,
       html: generatedEmail,
       attachments: [
@@ -92,7 +92,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
   const disseminationListInternalId = generateInternalId();
-  const count = input.emails.split(',').length;
+  const count = input.emails.length;
   if (count > 500) {
     throw UnsupportedError('You cannot add more than 500 e-mail addresses');
   }
@@ -114,7 +114,7 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   const finalInput = [...input];
   const emailsInput = finalInput.find((editInput) => editInput.key === 'emails');
   if (emailsInput) {
-    const count = emailsInput.value[0].split(',').length;
+    const count = emailsInput.value.length;
     if (count > 500) {
       throw UnsupportedError('You cannot add more than 500 e-mail addresses');
     }

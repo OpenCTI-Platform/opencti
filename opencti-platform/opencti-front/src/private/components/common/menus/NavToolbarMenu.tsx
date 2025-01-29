@@ -6,11 +6,11 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import EEMenu from '@components/common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
-import EEMenu from '@components/common/entreprise_edition/EEMenu';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

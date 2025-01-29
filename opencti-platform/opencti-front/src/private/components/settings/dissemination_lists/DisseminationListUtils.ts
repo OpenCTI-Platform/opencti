@@ -25,10 +25,12 @@ export const disseminationListValidator = (t: (value: string) => string) => {
   });
 };
 
+// remove white space and split on linebreaks to build an array
 export const formatEmailsForApi = (value: string) => {
-  return value.replaceAll('\n', ',').replaceAll(/\s/g, '');
+  return value.split('\n').map((elem) => elem.trim());
 };
 
-export const formatEmailsForFront = (value: string) => {
-  return value.replaceAll(',', '\n');
+// build a string with linebreaks from an array
+export const formatEmailsForFront = (value: string[]) => {
+  return value.join('\n');
 };

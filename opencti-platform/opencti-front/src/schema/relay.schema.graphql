@@ -12596,19 +12596,9 @@ type DisseminationList implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  emails: String!
+  emails: [String!]!
   description: String
   dissemination_list_values_count: Int!
-}
-
-type DisseminationListName implements InternalObject & BasicObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  created_at: DateTime!
-  updated_at: DateTime!
-  name: String!
 }
 
 enum DisseminationListOrdering {
@@ -12627,19 +12617,9 @@ type DisseminationListEdge {
   node: DisseminationList!
 }
 
-type DisseminationListNamesConnection {
-  pageInfo: PageInfo!
-  edges: [DisseminationListNamesEdge!]!
-}
-
-type DisseminationListNamesEdge {
-  cursor: String!
-  node: DisseminationListName!
-}
-
 input DisseminationListAddInput {
   name: String!
-  emails: String!
+  emails: [String!]!
   description: String
 }
 

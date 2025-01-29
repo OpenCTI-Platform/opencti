@@ -21,21 +21,21 @@ export const ENTITY_TYPE_DISSEMINATION_LIST = 'DisseminationList';
 
 export interface BasicStoreEntityDisseminationList extends BasicStoreEntity {
   name: string;
-  emails: string;
+  emails: string[];
   description: string;
   dissemination_list_values_count: number;
 }
 
 export interface StoreEntityDisseminationList extends StoreEntity {
   name: string;
-  emails: string;
+  emails: string[];
   description: string;
   dissemination_list_values_count: number;
 }
 
 export interface StixDisseminationList extends StixObject {
   name: string;
-  emails: string;
+  emails: string[];
   description: string;
   dissemination_list_values_count: number;
   extensions: {
