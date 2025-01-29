@@ -212,6 +212,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.api.set_event_id(data.get("event_id"))
         self.api.set_draft_id(data.get("draft_id"))
         work_id = data["work_id"] if "work_id" in data else None
+        no_split = data["no_split"] if "no_split" in data else False
         synchronized = data["synchronized"] if "synchronized" in data else False
         self.api.set_synchronized_upsert_header(synchronized)
         previous_standard = data.get("previous_standard")
@@ -230,7 +231,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 content_json = json.loads(content)
                 if "objects" not in content_json or len(content_json["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content_json["objects"]) == 1:
+                if len(content_json["objects"]) == 1 or no_split:
                     update = data["update"] if "update" in data else False
                     imported_items = self.api.stix2.import_bundle_from_json(
                         content, update, types, work_id
@@ -343,6 +344,16 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         bundle, True, types, work_id
                     )
                 elif event_type == "enrichment":
+                    enrich_object = event_content["data"]
+                    enrich_object["opencti_operation"] = event_type
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [enrich_object],
+                    }
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
+                elif event_type == "clear_access_restriction":
                     enrich_object = event_content["data"]
                     enrich_object["opencti_operation"] = event_type
                     bundle = {

@@ -89,8 +89,12 @@ const stixSightingRelationshipResolvers = {
       relationsAdd: ({ input, commitMessage, references }) => stixSightingRelationshipAddRelations(context, context.user, id, input, { commitMessage, references }),
       // eslint-disable-next-line max-len
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
-      restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
-      restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
+      restrictionOrganizationAdd: ({ organizationId, directContainerSharing }) => {
+        return addOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
+      },
+      restrictionOrganizationDelete: ({ organizationId, directContainerSharing }) => {
+        return removeOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
+      },
     }),
     stixSightingRelationshipAdd: (_, { input }, context) => addStixSightingRelationship(context, context.user, input),
   },
