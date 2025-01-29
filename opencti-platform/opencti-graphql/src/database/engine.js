@@ -3874,6 +3874,7 @@ export const prepareElementForIndexing = async (element) => {
     if (Array.isArray(value)) { // Array of Date, objects, string or number
       const preparedArray = [];
       let innerProcessingTime = new Date().getTime();
+      let extendLoopSplit = 0;
       for (let valueIndex = 0; valueIndex < value.length; valueIndex += 1) {
         const valueElement = value[valueIndex];
         if (valueElement) {
@@ -3891,6 +3892,12 @@ export const prepareElementForIndexing = async (element) => {
         }
         // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
         if (new Date().getTime() - innerProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          // If we extends the preparation 5 times, log an error
+          // It will help to understand what kind of key have so much elements
+          if (extendLoopSplit === 5) {
+            logApp.error('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
+          }
+          extendLoopSplit += 1;
           innerProcessingTime = new Date().getTime();
           await new Promise((resolve) => {
             setImmediate(resolve);
