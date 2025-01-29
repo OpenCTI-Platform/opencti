@@ -305,7 +305,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: predefinedFilters,
-    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+    filterGroups: isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
   const queryPaginationOptions = {
