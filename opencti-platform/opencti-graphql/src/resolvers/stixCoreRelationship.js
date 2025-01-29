@@ -100,11 +100,18 @@ const stixCoreRelationshipResolvers = {
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(context, context.user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(context, context.user, id, input),
-      relationsAdd: ({ input, commitMessage, references }) => stixCoreRelationshipAddRelations(context, context.user, id, input, { commitMessage, references }),
-      // eslint-disable-next-line max-len
-      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
-      restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
-      restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
+      relationsAdd: ({ input, commitMessage, references }) => {
+        return stixCoreRelationshipAddRelations(context, context.user, id, input, { commitMessage, references });
+      },
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => {
+        return stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references });
+      },
+      restrictionOrganizationAdd: ({ organizationId, directContainerSharing }) => {
+        return addOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
+      },
+      restrictionOrganizationDelete: ({ organizationId, directContainerSharing }) => {
+        return removeOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
+      },
       removeFromDraft: () => stixCoreRelationshipRemoveFromDraft(context, context.user, id),
     }),
     stixCoreRelationshipAdd: (_, { input }, context) => addStixCoreRelationship(context, context.user, input),

@@ -14071,8 +14071,9 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  restrictionOrganizationAdd(organizationId: [ID!]!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  restrictionOrganizationDelete(organizationId: [ID!]!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  clearAccessRestriction: StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
@@ -14339,8 +14340,8 @@ type StixCoreRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
-  restrictionOrganizationAdd(organizationId: [ID!]!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  restrictionOrganizationDelete(organizationId: [ID!]!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
@@ -14354,8 +14355,8 @@ type StixSightingRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
-  restrictionOrganizationAdd(organizationId: [ID!]!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  restrictionOrganizationDelete(organizationId: [ID!]!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 

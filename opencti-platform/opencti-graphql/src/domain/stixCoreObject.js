@@ -78,6 +78,7 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
+import { executeRemoveAuthMembers } from '../manager/taskManager';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 
@@ -675,6 +676,11 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .filter((e) => e.matchedEntity);
 
   return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
+};
+
+export const stixCoreObjectRemoveAuthMembers = async (context, user, id) => {
+  const element = await internalLoadById(context, user, id);
+  return executeRemoveAuthMembers(context, user, element);
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {

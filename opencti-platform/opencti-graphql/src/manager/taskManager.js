@@ -636,9 +636,17 @@ const CURRENT_SUPPORT_TASKS = [
   // RULES MANAGEMENT
   ACTION_TYPE_RULE_APPLY, ACTION_TYPE_RULE_CLEAR, ACTION_TYPE_RULE_ELEMENT_RESCAN,
   // SHARE / UNSHARE
-  ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, ACTION_TYPE_SHARE_MULTIPLE, ACTION_TYPE_UNSHARE_MULTIPLE
+  ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, ACTION_TYPE_SHARE_MULTIPLE, ACTION_TYPE_UNSHARE_MULTIPLE,
+  // Access
+  ACTION_TYPE_REMOVE_AUTH_MEMBERS
 ];
 
+const isShareAction = (actionType) => {
+  return actionType === ACTION_TYPE_SHARE || actionType === ACTION_TYPE_SHARE_MULTIPLE;
+};
+const isUnshareAction = (actionType) => {
+  return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
+};
 const baseOperationBuilder = (actionType, operations, element) => {
   const baseOperationObject = {};
   // Knowledge management
@@ -677,36 +685,68 @@ const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
     baseOperationObject.opencti_operation = 'rules_rescan';
   }
-  // Sharing
-  // TODO Manage end of sharing ....
-  if (actionType === ACTION_TYPE_SHARE || actionType === ACTION_TYPE_SHARE_MULTIPLE) {
+  // Share / Unshare
+  if (isShareAction(actionType)) {
     baseOperationObject.opencti_operation = 'share';
-    baseOperationObject.organization_ids = operations[0].context.values;
+    baseOperationObject.sharing_organization_ids = operations[0].context.values;
+    baseOperationObject.sharing_direct_container = false;
   }
-  if (actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+  if (isUnshareAction(actionType)) {
     baseOperationObject.opencti_operation = 'unshare';
-    baseOperationObject.organization_ids = operations[0].context.values;
+    baseOperationObject.sharing_organization_ids = operations[0].context.values;
+    baseOperationObject.sharing_direct_container = false;
+  }
+  // Access
+  if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
+    baseOperationObject.opencti_operation = 'clear_access_restriction';
   }
   return baseOperationObject;
 };
 
-const sendResultToQueue = async (context, user, task, work, connectorId, objects) => {
+const sendResultToQueue = async (context, user, task, work, connectorId, objects, opts = {}) => {
   // Send actions to queue
   const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
   // Only add explicit expectation if the worker will not split anything
-  if (objects.length === 1) {
+  if (objects.length === 1 || opts.forceNoSplit) {
     await updateExpectationsNumber(context, user, work.id, objects.length);
   }
   await pushToWorkerForConnector(connectorId, {
     type: 'bundle',
     applicant_id: user.id,
     content,
-    work_id: work.id
+    work_id: work.id,
+    no_split: opts.forceNoSplit ?? false
   });
   // Update task
   const processedNumber = task.task_processed_number + objects.length;
   await updateTask(context, task.id, { task_processed_number: processedNumber });
+};
+
+const shareUnshareExtraOperation = async (context, user, task, actionType, operations) => {
+  if (isShareAction(actionType) || isUnshareAction(actionType)) {
+    const { containerId } = operations[0];
+    if (containerId) {
+      const opts = { baseData: true, type: ENTITY_TYPE_CONTAINER };
+      const container = await internalLoadById(context, user, containerId, opts);
+      if (container) {
+        const object = {
+          id: container.standard_id,
+          type: convertTypeToStixType(container.entity_type),
+          ...baseOperationBuilder(actionType, operations, container),
+          sharing_direct_container: true,
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              id: container.internal_id,
+              type: container.entity_type
+            }
+          }
+        };
+        return { forceNoSplit: true, object };
+      }
+    }
+  }
+  return { forceNoSplit: false, object: null };
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
@@ -730,8 +770,11 @@ const standardOperationCallback = async (context, user, task, actionType, operat
         }
       }
     }));
+    // If share / unshare with container, add the container and force worker to not split the bundle
+    const { forceNoSplit, object } = await shareUnshareExtraOperation(context, user, task, actionType, operations);
+    if (object) objects.push(object);
     // Send actions to queue
-    await sendResultToQueue(context, user, task, work, connectorId, objects);
+    await sendResultToQueue(context, user, task, work, connectorId, objects, { forceNoSplit });
   };
 };
 

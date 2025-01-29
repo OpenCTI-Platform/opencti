@@ -24532,11 +24532,13 @@ export type StixCoreObjectEditMutationsRelationsAddArgs = {
 
 
 export type StixCoreObjectEditMutationsRestrictionOrganizationAddArgs = {
+  directContainerSharing?: InputMaybe<Scalars['Boolean']['input']>;
   organizationId: Array<Scalars['ID']['input']>;
 };
 
 
 export type StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs = {
+  directContainerSharing?: InputMaybe<Scalars['Boolean']['input']>;
   organizationId: Array<Scalars['ID']['input']>;
 };
 
@@ -24804,11 +24806,13 @@ export type StixCoreRelationshipEditMutationsRelationsAddArgs = {
 
 
 export type StixCoreRelationshipEditMutationsRestrictionOrganizationAddArgs = {
+  directContainerSharing?: InputMaybe<Scalars['Boolean']['input']>;
   organizationId: Array<Scalars['ID']['input']>;
 };
 
 
 export type StixCoreRelationshipEditMutationsRestrictionOrganizationDeleteArgs = {
+  directContainerSharing?: InputMaybe<Scalars['Boolean']['input']>;
   organizationId: Array<Scalars['ID']['input']>;
 };
 
@@ -26296,11 +26300,13 @@ export type StixSightingRelationshipEditMutationsRelationsAddArgs = {
 
 
 export type StixSightingRelationshipEditMutationsRestrictionOrganizationAddArgs = {
+  directContainerSharing?: InputMaybe<Scalars['Boolean']['input']>;
   organizationId: Array<Scalars['ID']['input']>;
 };
 
 
 export type StixSightingRelationshipEditMutationsRestrictionOrganizationDeleteArgs = {
+  directContainerSharing?: InputMaybe<Scalars['Boolean']['input']>;
   organizationId: Array<Scalars['ID']['input']>;
 };
 
