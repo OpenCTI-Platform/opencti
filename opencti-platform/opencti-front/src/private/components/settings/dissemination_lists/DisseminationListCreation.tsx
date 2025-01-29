@@ -6,6 +6,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { disseminationListValidator, formatEmailsForApi } from '@components/settings/dissemination_lists/DisseminationListUtils';
 import { graphql } from 'react-relay';
 import { DisseminationListsLinesPaginationQuery$variables } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
@@ -13,6 +14,7 @@ import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { parseEmailList } from '../../../../utils/email';
+import type { Theme } from '../../../../components/Theme';
 
 const disseminationListCreationMutation = graphql`
     mutation DisseminationListCreationAddMutation($input: DisseminationListAddInput!) {
@@ -41,6 +43,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
 }) => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(disseminationListCreationMutation);
+  const theme = useTheme<Theme>();
 
   const onSubmit: FormikConfig<DisseminationListCreationFormData>['onSubmit'] = (
     values,
@@ -105,7 +108,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
             fullWidth={true}
             multiline={true}
             rows={2}
-            style={{ marginTop: 20 }}
+            style={{ marginTop: theme.spacing(2) }}
           />
           <Field
             component={TextField}
@@ -114,7 +117,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
             fullWidth={true}
             multiline={true}
             rows={20}
-            style={{ marginTop: 20 }}
+            style={{ marginTop: theme.spacing(2) }}
             required
             onBeforePaste={(pastedText: string) => {
               // on pasting data, we try to extract emails
@@ -126,12 +129,12 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
               return pastedText; // do not alter pasted content; it's probably invalid anyway
             }}
           />
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
             <Button
               variant="contained"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
+              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Cancel')}
             </Button>
@@ -140,7 +143,7 @@ const DisseminationListCreationForm: FunctionComponent<DisseminationListCreation
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
+              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Create')}
             </Button>

@@ -4,12 +4,14 @@ import Drawer from '@components/common/drawer/Drawer';
 import { Field, Formik, FormikConfig } from 'formik';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
 import { disseminationListValidator, formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
+import { useTheme } from '@mui/styles';
 import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { parseEmailList } from '../../../../utils/email';
+import type { Theme } from '../../../../components/Theme';
 
 export const disseminationListMutationFieldPatch = graphql`
     mutation DisseminationListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -37,6 +39,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const [commitFieldPatch] = useApiMutation(disseminationListMutationFieldPatch);
 
@@ -110,7 +113,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
               fullWidth={true}
               multiline={true}
               rows={2}
-              style={{ marginTop: 20 }}
+              style={{ marginTop: theme.spacing(2) }}
             />
             <Field
               component={TextField}
@@ -121,7 +124,7 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
               fullWidth={true}
               multiline={true}
               rows={20}
-              style={{ marginTop: 20 }}
+              style={{ marginTop: theme.spacing(2) }}
               required
               onBeforePaste={(pastedText: string) => {
                 // on pasting data, we try to extract emails

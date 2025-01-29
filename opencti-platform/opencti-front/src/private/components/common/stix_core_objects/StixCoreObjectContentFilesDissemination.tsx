@@ -8,6 +8,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import MenuItem from '@mui/material/MenuItem';
 import { StixCoreObjectContentFilesDisseminationQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
+import { useTheme } from '@mui/styles';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -15,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SelectField from '../../../../components/fields/SelectField';
+import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -71,6 +73,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   lists,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
@@ -167,7 +170,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             style={fieldSpacingContainerStyle}
           />
           <div style={{
-            marginTop: 20,
+            marginTop: theme.spacing(2),
             textAlign: 'right',
           }}
           >
@@ -183,7 +186,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
+              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Send')}
             </Button>
