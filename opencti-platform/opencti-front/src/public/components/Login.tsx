@@ -207,7 +207,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   } else if (isAuthButtons) {
     loginHeight = 190;
   }
-  const marginTop = dimension.height / 2 - loginHeight / 2 - 100;
+  const paddingTop = dimension.height / 2 - loginHeight / 2 - 100;
   const [checked, setChecked] = useState(false);
   const handleChange = () => {
     setChecked(!checked);
@@ -344,7 +344,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   return (
     <div>
       <SystemBanners settings={settings} />
-      <div className={classes.container} style={{ marginTop }}>
+      <div className={classes.container} style={{ paddingTop }}>
         {authScreen()}
       </div>
     </div>
