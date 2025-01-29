@@ -1,5 +1,7 @@
 import { initializeOnlyRedisLockClient, lockResource } from '../database/redis';
 
+const PARENT_PROCESS_SCHEDULE_LISTENER = 2000;
+
 interface InternalLock {
   signal: AbortSignal
   extend: () => Promise<void>
@@ -53,8 +55,14 @@ initializeOnlyRedisLockClient().then(() => {
     }
   });
   // Don't do anything in exist event, process is attached to the parent
-  // The parent will close the process as an operating system behavior
   process.on('exit', () => {});
   process.on('SIGTERM', () => {});
   process.on('SIGINT', () => {});
+  // Check with standard interval if the parent process is no longer running
+  // If the parent is not available anymore, exit the process
+  setInterval(() => {
+    if (!process.ppid || process.ppid === 1) {
+      process.exit(1);
+    }
+  }, PARENT_PROCESS_SCHEDULE_LISTENER);
 });
