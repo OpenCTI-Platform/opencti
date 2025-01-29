@@ -101,6 +101,9 @@ const AttackPatternEditionOverviewComponent = (props) => {
     references: Yup.array(),
     confidence: Yup.number().nullable(),
     x_opencti_workflow_id: Yup.object(),
+    killChainPhases: Yup.array().nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const attackPatternValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -151,6 +154,9 @@ const AttackPatternEditionOverviewComponent = (props) => {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
+      }
+      if (name === 'killChainPhases') {
+        finalValue = (value.value ?? []).map(({ value_translate }) => value_translate);
       }
       attackPatternValidator
         .validateAt(name, { [name]: value })
