@@ -13,15 +13,14 @@ const useBuildListOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
 
   const buildListOutcome = async (
-    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
+    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
   ) => {
-    const dateAttribute = dataSelection.date_attribute || 'created_at';
-    console.log('dataSelection', dataSelection);
+    console.log('selection', dataSelection);
     const variables = {
       types: ['Stix-Core-Object'],
       first: dataSelection.number ?? 10,
-      orderBy: dateAttribute,
-      orderMode: 'desc',
+      orderBy: dataSelection.sort_by ?? 'created_at',
+      orderMode: dataSelection.sort_mode ?? 'asc',
       filters: dataSelection.filters,
     };
 

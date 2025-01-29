@@ -28,6 +28,9 @@ const previewFragment = graphql`
           number
           attribute
           isTo
+          sort_by
+          sort_mode
+          number
           columns {
             label
             variableName

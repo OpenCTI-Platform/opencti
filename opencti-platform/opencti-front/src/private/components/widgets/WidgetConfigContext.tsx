@@ -47,6 +47,9 @@ const buildConfig = (w?: Widget, varName?: string): WidgetConfigType => {
       parameters: w?.parameters ?? {},
       dataSelection: w?.dataSelection ?? [{
         label: '',
+        number: 10,
+        sort_by: 'created_at',
+        sort_mode: 'asc',
         attribute: 'entity_type',
         date_attribute: 'created_at',
         perspective: null,
