@@ -14,7 +14,7 @@ import SearchInput from '../../../../components/SearchInput';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-interface AddThreatActorIndividualDemographicProps {
+interface AddThreatActorIndividualDemographicComponentProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
   relType: string,
   title:string,
@@ -22,7 +22,7 @@ interface AddThreatActorIndividualDemographicProps {
 }
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
-AddThreatActorIndividualDemographicProps
+AddThreatActorIndividualDemographicComponentProps
 > = ({
   threatActorIndividual,
   relType,
@@ -88,7 +88,7 @@ AddThreatActorIndividualDemographicProps
 };
 
 const AddThreatActorIndividualDemographic: FunctionComponent<
-Omit<AddThreatActorIndividualDemographicProps, 'queryRef'>
+Omit<AddThreatActorIndividualDemographicComponentProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<AddThreatActorIndividualDemographicLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
     count: 50,
