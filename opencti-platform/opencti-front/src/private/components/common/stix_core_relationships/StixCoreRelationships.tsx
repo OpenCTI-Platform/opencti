@@ -16,7 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { itemColor } from '../../../../utils/Colors';
 import Security from '../../../../utils/Security';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 interface StixCoreRelationshipsProps {
   storageKey: string;
@@ -330,6 +330,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
       <div style={{ marginTop: -12 }}>
         {queryRef && (
           <DataTable
+            variant={DataTableVariant.inline}
             dataColumns={dataColumns}
             resolvePath={(data: StixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
             storageKey={LOCAL_STORAGE_KEY}

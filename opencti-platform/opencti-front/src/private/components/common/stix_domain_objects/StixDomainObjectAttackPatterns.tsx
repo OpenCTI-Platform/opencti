@@ -42,6 +42,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
       view: 'matrix',
       numberOfElements: { number: 0, symbol: '', original: 0 },
     },
+    true,
   );
   const { searchTerm, filters, view, openExports } = viewStorage;
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Attack-Pattern']);

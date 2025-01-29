@@ -16,13 +16,13 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   storageKey: string;
   entityId: string;
   currentView?: string;
   viewButtons: ReactElement[];
-  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
@@ -30,10 +30,10 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     storageKey,
     entityId,
     currentView,
-    paginationOptions,
     viewButtons,
   },
 ) => {
+  const LOCAL_STORAGE_KEY = `${storageKey}-stix-matrix-in-line`;
   const dataColumns = {
     entity_type: { percentWidth: 11 },
     killChainPhase: { percentWidth: 22 },
@@ -53,8 +53,8 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     view: currentView ?? 'matrix-in-line',
   };
 
-  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
-    storageKey,
+  const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+    LOCAL_STORAGE_KEY,
     initialValues,
     true,
   );
@@ -103,9 +103,10 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     >
       {queryRef && (
         <DataTable
+          variant={DataTableVariant.inline}
           dataColumns={dataColumns}
           resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
-          storageKey={storageKey}
+          storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
