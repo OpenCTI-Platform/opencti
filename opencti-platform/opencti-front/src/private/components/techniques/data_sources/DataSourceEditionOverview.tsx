@@ -163,6 +163,8 @@ DataSourceEditionOverviewProps
     collection_layers: Yup.array().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const dataSourceValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,

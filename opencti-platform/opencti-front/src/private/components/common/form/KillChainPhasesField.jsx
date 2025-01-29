@@ -49,7 +49,7 @@ class KillChainPhasesField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
+    const { t, name, style, classes, onChange, helpertext, disabled, required = false } = this.props;
     return (
       <Field
         component={AutocompleteField}
@@ -57,6 +57,7 @@ class KillChainPhasesField extends Component {
         name={name}
         multiple={true}
         disabled={disabled}
+        required={required}
         textfieldprops={{
           variant: 'standard',
           label: t('Kill chain phases'),

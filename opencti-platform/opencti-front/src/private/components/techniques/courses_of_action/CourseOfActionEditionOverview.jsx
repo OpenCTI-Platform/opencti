@@ -100,6 +100,8 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     x_mitre_id: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const courseOfActionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
@@ -188,7 +190,6 @@ const CourseOfActionEditionOverviewComponent = (props) => {
       'objectMarking',
       'confidence',
       'x_opencti_workflow_id',
-      'x_mitre_id',
     ]),
   )(courseOfAction);
   return (

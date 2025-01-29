@@ -94,6 +94,8 @@ const NarrativeEditionOverviewComponent = (props) => {
     references: Yup.array(),
     confidence: Yup.number().nullable(),
     x_opencti_workflow_id: Yup.object(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const narrativeValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
