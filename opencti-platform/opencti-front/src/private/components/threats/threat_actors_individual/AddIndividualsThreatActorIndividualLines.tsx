@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { graphql, useRefetchableFragment } from 'react-relay';
+import React, { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import ItemIcon from 'src/components/ItemIcon';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddIndividualsThreatActorIndividualLines_data$key } from './__generated__/AddIndividualsThreatActorIndividualLines_data.graphql';
+import { updateDelete } from '../../../../utils/store';
 
 export const scoRelationshipAdd = graphql`
   mutation AddIndividualsThreatActorIndividualLinesRelationAddMutation(
@@ -125,15 +125,12 @@ const AddIndividualsThreatActorIndividualLines = ({
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
   fragmentKey: AddIndividualsThreatActorIndividualLines_data$key,
 }) => {
-  const [data, refetch] = useRefetchableFragment(
+  const data = useFragment(
     AddIndividualsThreatActorIndividualLinesFragment,
     fragmentKey,
   );
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
   const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
-  useEffect(() => {
-    refetch({});
-  }, [data]);
 
   const initialTargets = (threatActorIndividual
     .stixCoreRelationships?.edges
@@ -141,15 +138,6 @@ const AddIndividualsThreatActorIndividualLines = ({
     ?? []).map(({ node }) => node.to?.id ?? '');
 
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
-
-  const updateDelete = (store: RecordSourceSelectorProxy, path: string, rootId: string, deleteId: string) => {
-    const node = store.get(rootId);
-    const records = node?.getLinkedRecord(path);
-    const edges = records?.getLinkedRecords('edges');
-    if (!records || !edges) { return; }
-    const newEdges = edges.filter((n) => n.getLinkedRecord('node')?.getValue('toId') !== deleteId);
-    records.setLinkedRecords(newEdges, 'edges');
-  };
 
   const handleToggle = (toId: string) => {
     const isSelected = currentTargets.includes(toId);
