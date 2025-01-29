@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import ItemCvssScore from 'src/components/ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
@@ -1033,7 +1034,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'x_opencti_cvss_base_score',
     label: 'CVSS3 - Score',
     percentWidth: 15,
-    render: ({ x_opencti_cvss_base_score }) => <ItemScore score={x_opencti_cvss_base_score} />,
+    render: ({ x_opencti_cvss_base_score }) => {
+      const value = x_opencti_cvss_base_score ? Math.trunc(x_opencti_cvss_base_score * 10) / 10 : null;
+      return <ItemCvssScore score={value} />;
+    },
   },
   x_opencti_cisa_kev: {
     id: 'x_opencti_cisa_kev',
@@ -1050,14 +1054,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'x_opencti_epss_score',
     label: 'EPSS Score',
     percentWidth: 15,
-    render: ({ x_opencti_epss_score }) => <ItemScore score={x_opencti_epss_score} />,
+    render: ({ x_opencti_epss_score }) => {
+      const value = x_opencti_epss_score ? Math.trunc(x_opencti_epss_score * 100000) / 100000 : '-';
+      return defaultRender(value);
+    },
   },
   x_opencti_epss_percentile: {
     id: 'x_opencti_epss_percentile',
     label: 'EPSS Percentile',
     percentWidth: 15,
     render: ({ x_opencti_epss_percentile }) => {
-      return defaultRender(x_opencti_epss_percentile || '-');
+      const value = x_opencti_epss_percentile ? Math.trunc(x_opencti_epss_percentile * 100000) / 100000 : '-';
+      return defaultRender(value);
     },
   },
   x_opencti_cvss_base_severity: {
