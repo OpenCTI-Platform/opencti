@@ -25,6 +25,7 @@ steps:
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
+      APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__SYNC_RAW_START_REMOTE_URI: http://opencti-raw-start:4100/graphql
@@ -215,6 +216,7 @@ services:
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
+      APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -249,6 +251,7 @@ services:
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
+      APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -282,6 +285,7 @@ services:
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
+      APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -335,6 +339,7 @@ services:
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
+      APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -369,6 +374,7 @@ services:
       APP__PORT: 4500
       APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__ADMIN__PASSWORD: admin
+      APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159

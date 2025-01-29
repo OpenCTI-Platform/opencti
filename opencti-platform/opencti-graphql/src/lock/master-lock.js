@@ -5,7 +5,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { lockResource } from '../database/redis';
 
 // Global variable for the child process
-const USE_CHILD_LOCK = booleanConf('app:child_locking_process:enabled', true);
+const USE_CHILD_LOCK = booleanConf('app:child_locking_process:enabled', false);
 const CHILD_PROCESS_MEMORY = conf.get('app:child_locking_process:max_memory') ?? '256';
 const lockProcess = {
   forked: undefined,
@@ -77,12 +77,8 @@ const childLockResources = async (ids, args = {}) => {
     // Set up the lock callback
     lockProcess.callbacks.set(`${operation}-lock`, (msg) => {
       if (msg.success) {
-        resolve({
-          operation,
-          signal,
-          unlock: () => childUnlockResources(msg.operation),
-          result: msg
-        });
+        const unlock = () => childUnlockResources(msg.operation);
+        resolve({ operation, signal, unlock, result: msg });
       } else {
         reject(msg.error);
       }
