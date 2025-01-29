@@ -90,13 +90,11 @@ const DisseminationListPopover: FunctionComponent<DisseminationListPopoverProps>
         deletion={deletion}
         submitDelete={submitDelete}
       />
-      {isEditionFormOpen && (
-        <DisseminationListEdition
-          data={data}
-          isOpen={isEditionFormOpen}
-          onClose={handleCloseEditionForm}
-        />
-      )}
+      <DisseminationListEdition
+        data={data}
+        isOpen={isEditionFormOpen}
+        onClose={handleCloseEditionForm}
+      />
     </>
   );
 };

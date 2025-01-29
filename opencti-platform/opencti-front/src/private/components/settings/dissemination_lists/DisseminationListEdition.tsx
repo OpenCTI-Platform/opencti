@@ -1,24 +1,20 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
-import { Field, Formik, FormikConfig } from 'formik';
+import { FormikConfig } from 'formik';
 import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
-import { disseminationListValidator, formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
-import { useTheme } from '@mui/styles';
-import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
+import { formatEmailsForApi, formatEmailsForFront } from '@components/settings/dissemination_lists/DisseminationListUtils';
+import DisseminationListForm, { DisseminationListFormData, DisseminationListFormInputKeys } from '@components/settings/dissemination_lists/DisseminationListForm';
+import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import { parseEmailList } from '../../../../utils/email';
-import type { Theme } from '../../../../components/Theme';
 
 export const disseminationListMutationFieldPatch = graphql`
-    mutation DisseminationListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
-        disseminationListFieldPatch(id: $id, input: $input) {
-            ...DisseminationListsLine_node
-        }
+  mutation DisseminationListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
+    disseminationListFieldPatch(id: $id, input: $input) {
+      ...DisseminationListsLine_node
     }
+  }
 `;
 
 interface DisseminationListEditionComponentProps {
@@ -27,7 +23,7 @@ interface DisseminationListEditionComponentProps {
   onClose: () => void;
 }
 
-interface DisseminationListEditionFormData {
+export interface DisseminationListEditionFormData {
   name: string;
   emails: string;
   description: string;
@@ -39,7 +35,6 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const [commitFieldPatch] = useApiMutation(disseminationListMutationFieldPatch);
 
@@ -75,7 +70,17 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
     });
   };
 
-  const initialValues: DisseminationListEditionFormData = {
+  const onSubmitField = (field: DisseminationListFormInputKeys, value: string) => {
+    const input = { key: field, value: field === 'emails' ? formatEmailsForApi(value) : [value] };
+    commitFieldPatch({
+      variables: {
+        id: data?.id,
+        input,
+      },
+    });
+  };
+
+  const initialValues: DisseminationListFormData = {
     name: data.name,
     emails: formatEmailsForFront(data.emails),
     description: data.description || '',
@@ -87,58 +92,11 @@ const DisseminationListEdition: FunctionComponent<DisseminationListEditionCompon
       open={isOpen}
       onClose={onClose}
     >
-      <Formik<DisseminationListEditionFormData>
-        enableReinitialize={true}
-        validateOnBlur={true}
-        validateOnChange={true}
-        initialValues={initialValues}
-        validationSchema={disseminationListValidator(t_i18n)}
+      <DisseminationListForm
         onSubmit={onSubmit}
-      >
-        {({ submitForm }) => (
-          <>
-            <Field
-              component={TextField}
-              name="name"
-              label={t_i18n('Name')}
-              onSubmit={submitForm}
-              fullWidth={true}
-              required
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t_i18n('Description')}
-              onSubmit={submitForm}
-              fullWidth={true}
-              multiline={true}
-              rows={2}
-              style={{ marginTop: theme.spacing(2) }}
-            />
-            <Field
-              component={TextField}
-              controlledSelectedTab='write'
-              name="emails"
-              label={t_i18n('Emails (1 / line)')}
-              onSubmit={submitForm}
-              fullWidth={true}
-              multiline={true}
-              rows={20}
-              style={{ marginTop: theme.spacing(2) }}
-              required
-              onBeforePaste={(pastedText: string) => {
-                // on pasting data, we try to extract emails
-                const extractedEmails = parseEmailList(pastedText);
-                if (extractedEmails.length > 0) {
-                  MESSAGING$.notifySuccess(t_i18n('', { id: '{count} email address(es) extracted from pasted text', values: { count: extractedEmails.length } }));
-                  return extractedEmails.join('\n'); // alter the pasted content
-                }
-                return pastedText; // do not alter pasted content; it's probably invalid anyway
-              }}
-            />
-          </>
-        )}
-      </Formik>
+        onSubmitField={onSubmitField}
+        defaultValues={initialValues}
+      />
     </Drawer>
   );
 };
