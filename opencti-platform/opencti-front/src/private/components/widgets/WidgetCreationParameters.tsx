@@ -796,7 +796,7 @@ const WidgetCreationParameters = () => {
 
               const entityType = getEntityTypeFromFilters(filters);
 
-              const defaultWidgetColumnsByType = getDefaultWidgetColumns(context, perspective);
+              const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, context);
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
