@@ -62,14 +62,16 @@ export default defineConfig({
       testMatch: "init.data.ts",
       use: {
         ...devices['Desktop Chrome'],
+        channel: 'chrome',
         storageState: 'tests_e2e/.setup/.auth/user.json',
       },
       dependencies: ['setup'],
     },
     {
-      name: 'chromium',
+      name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
+        channel: 'chrome',
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,

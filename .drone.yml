@@ -99,7 +99,7 @@ steps:
       - apt-get -y install netcat-traditional
       - cd opencti-platform/opencti-front
       - yarn install
-      - npx playwright install --with-deps chromium
+      - npx playwright install --with-deps chrome
       - yarn build
       - yarn test:e2e
     depends_on:
