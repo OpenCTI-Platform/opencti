@@ -61,12 +61,12 @@ const useBuildReadableAttribute = () => {
         readableAttribute = renderToString(
           <ul>
             {attributeData.map((el) => (
-              <li key={el}>{buildStringAttribute(el, attributeType)}</li>
+              <li key={el}>{buildStringAttribute(el, attributeType, inTable)}</li>
             ))}
           </ul>,
         );
       } else {
-        readableAttribute = attributeData.map((r) => buildStringAttribute(r, attributeType)).join(', ');
+        readableAttribute = attributeData.map((r) => buildStringAttribute(r, attributeType, inTable)).join(', ');
       }
     } else {
       readableAttribute = buildStringAttribute(attributeData, attributeType, inTable);
