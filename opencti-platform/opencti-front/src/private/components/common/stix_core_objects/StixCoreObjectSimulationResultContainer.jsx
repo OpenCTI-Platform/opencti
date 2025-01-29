@@ -74,7 +74,7 @@ const StixCoreObjectSimulationResultContainer = ({ id, type }) => {
   return (
     <>
       {attackPatternsQueryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <StixCoreObjectSimulationResult
             id={id}
             query={attackPatternsQuery}

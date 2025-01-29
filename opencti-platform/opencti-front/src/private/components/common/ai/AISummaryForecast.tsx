@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { AISummaryForecastStixCoreObjectAskAiForecastQuery$data } from '@components/common/ai/__generated__/AISummaryForecastStixCoreObjectAskAiForecastQuery.graphql';
+import Tooltip from '@mui/material/Tooltip';
 import { AISummaryForecastSubscription, AISummaryForecastSubscription$data } from './__generated__/AISummaryForecastSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
@@ -58,12 +59,16 @@ const AISummaryForecastComponent = ({
           <Divider />
           <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Typography variant="caption">Generated on {nsdt(result?.stixCoreObjectAskAiForecast?.updated_at)}.</Typography>
-            <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
-              <ContentCopyOutlined fontSize="small" />
-            </IconButton>
-            <IconButton size="small" color="primary" onClick={() => refetch()}>
-              <AutoModeOutlined fontSize="small" />
-            </IconButton>
+            <Tooltip title={t_i18n('Copy to clipboard')}>
+              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+                <ContentCopyOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Retry')}>
+              <IconButton size="small" color="primary" onClick={() => refetch()}>
+                <AutoModeOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </div>
         </>
       )}

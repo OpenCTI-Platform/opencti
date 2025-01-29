@@ -13,6 +13,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import Tooltip from '@mui/material/Tooltip';
 import { AISummaryContainersSubscription, AISummaryContainersSubscription$data } from './__generated__/AISummaryContainersSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
@@ -144,12 +145,16 @@ const AISummaryContainersComponent = ({
           <Divider />
           <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Typography variant="caption">Generated on {nsdt(result?.containersAskAiSummary?.updated_at)}.</Typography>
-            <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
-              <ContentCopyOutlined fontSize="small" />
-            </IconButton>
-            <IconButton size="small" color="primary" onClick={() => refetch(first, relative)}>
-              <AutoModeOutlined fontSize="small" />
-            </IconButton>
+            <Tooltip title={t_i18n('Copy to clipboard')}>
+              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+                <ContentCopyOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Retry')}>
+              <IconButton size="small" color="primary" onClick={() => refetch(first, relative)}>
+                <AutoModeOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </div>
         </>
       )}
