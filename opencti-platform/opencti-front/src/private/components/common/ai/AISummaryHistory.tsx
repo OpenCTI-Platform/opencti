@@ -1,6 +1,7 @@
 import { graphql, useSubscription } from 'react-relay';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import parse from 'html-react-parser';
 import { AISummaryHistorySubscription, AISummaryHistorySubscription$data } from '@components/common/ai/__generated__/AISummaryHistorySubscription.graphql';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -58,12 +59,16 @@ const AISummaryHistoryComponent = ({
           <Divider />
           <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Typography variant="caption">Generated on {nsdt(result?.stixCoreObjectAskAiHistory?.updated_at)}.</Typography>
-            <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
-              <ContentCopyOutlined fontSize="small" />
-            </IconButton>
-            <IconButton size="small" color="primary" onClick={() => refetch()}>
-              <AutoModeOutlined fontSize="small" />
-            </IconButton>
+            <Tooltip title={t_i18n('Copy to clipboard')}>
+              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+                <ContentCopyOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Retry')}>
+              <IconButton size="small" color="primary" onClick={() => refetch()}>
+                <AutoModeOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </div>
         </>
       )}
