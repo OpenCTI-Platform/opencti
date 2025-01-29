@@ -8966,14 +8966,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-scalars@npm:1.23.0":
-  version: 1.23.0
-  resolution: "graphql-scalars@npm:1.23.0"
+"graphql-scalars@npm:1.24.1":
+  version: 1.24.1
+  resolution: "graphql-scalars@npm:1.24.1"
   dependencies:
     tslib: "npm:^2.5.0"
   peerDependencies:
     graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: 10/6faa5dea621b708b485cb8c5047098c3daf7c092c8f1f53b87ff6999ef0b28553e5c904ddc01da54141685fcd5798672c4cf997d9738a04dd4e60529450ab707
+  checksum: 10/e142c60097ef071d26373b67955f22861a9818efd94115ff11355f5f420f19cf3ed7397d10626700801368e71cf269fb697766c5edf9a3353684c91b37ac831a
   languageName: node
   linkType: hard
 
@@ -11476,7 +11476,7 @@ __metadata:
     graphql-rate-limit-directive: "npm:2.0.5"
     graphql-redis-subscriptions: "npm:2.7.0"
     graphql-relay: "npm:0.10.2"
-    graphql-scalars: "npm:1.23.0"
+    graphql-scalars: "npm:1.24.1"
     graphql-subscriptions: "npm:2.0.0"
     graphql-tag: "npm:2.12.6"
     graphql-upload: "npm:17.0.0"
