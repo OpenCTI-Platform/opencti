@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
-import { useWidgetConfigContext } from '../../widgets/WidgetConfigContext';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -4487,13 +4486,12 @@ const StixRelationshipsList = ({
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
-  const { context } = useWidgetConfigContext();
   const renderContent = () => {
     if (!dataSelection) {
       return 'No data selection';
     }
     const selection = dataSelection[0];
-    const columns = selection.columns ?? getDefaultWidgetColumns(context, 'relationships');
+    const columns = selection.columns ?? getDefaultWidgetColumns('relationships');
 
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute

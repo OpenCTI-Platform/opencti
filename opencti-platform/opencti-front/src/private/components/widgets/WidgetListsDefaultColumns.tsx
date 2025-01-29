@@ -133,8 +133,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
 
 type WidgetEntityType = 'relationships' | 'entities';
 
-export const getDefaultWidgetColumns = (context: WidgetContext, type: WidgetEntityType): WidgetColumn[] => {
-  if (context === 'fintelTemplate') {
+export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: WidgetContext): WidgetColumn[] => {
+  if (context && context === 'fintelTemplate') {
     return defaultWidgetColumns.fintelTemplate;
   }
   if (type === 'relationships') {

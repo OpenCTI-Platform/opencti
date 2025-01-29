@@ -1,7 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { useRef } from 'react';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
-import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -453,7 +452,6 @@ const PublicStixCoreObjectsList = ({
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
-  const { context } = useWidgetConfigContext();
   const { id, parameters, dataSelection } = widget;
   const queryRef = useQueryLoading<PublicStixCoreObjectsListQuery>(
     publicStixCoreObjectsListQuery,
@@ -466,7 +464,7 @@ const PublicStixCoreObjectsList = ({
   );
 
   const selection = dataSelection[0];
-  const columns = selection.columns ?? getDefaultWidgetColumns(context, 'entities');
+  const columns = selection.columns ?? getDefaultWidgetColumns('entities');
 
   const rootRef = useRef<HTMLDivElement>(null);
 

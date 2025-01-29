@@ -16,6 +16,7 @@ const useBuildListOutcome = () => {
     dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
   ) => {
     const dateAttribute = dataSelection.date_attribute || 'created_at';
+    console.log('dataSelection', dataSelection);
     const variables = {
       types: ['Stix-Core-Object'],
       first: dataSelection.number ?? 10,
