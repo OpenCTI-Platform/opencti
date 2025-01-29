@@ -106,6 +106,7 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
       setNumberOfElements={helpers.handleSetNumberOfElements}
       containerRef={{ current: containerRef }}
       enableReferences={enableReferences}
+      onLabelClick={helpers.handleAddFilter}
     />
   );
 };

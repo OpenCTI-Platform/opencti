@@ -368,6 +368,7 @@ const ContainerAddStixCoreObjects = (props) => {
               mapping={mapping}
               containerRef={containerRef}
               enableReferences={enableReferences}
+              onLabelClick={helpers.handleAddFilter}
             />
           )}
         />
