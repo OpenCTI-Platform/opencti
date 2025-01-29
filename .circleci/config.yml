@@ -505,7 +505,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest prerelease branch code
-          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$PRE_RELEASE_VERSION|" -i {} \;
+          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;
       - run:
           name: Install buildx
           command: |
@@ -553,7 +553,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest release branch code
-          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$PRE_RELEASE_VERSION|" -i {} \;
+          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;
       - run:
           name: Install buildx
           command: |
