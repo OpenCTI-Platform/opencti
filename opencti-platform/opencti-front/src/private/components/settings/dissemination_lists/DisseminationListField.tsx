@@ -41,7 +41,7 @@ const DisseminationListField: FunctionComponent = () => {
   const fetchDisseminationLists = async () => {
     return await fetchQuery(disseminationListFieldQuery, {
       search: '',
-      count: 10,
+      count: 50,
     })
       .toPromise() as Promise<DisseminationListFieldQuery$data>;
   };
