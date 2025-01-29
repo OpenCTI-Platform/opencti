@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Button } from '@mui/material';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
@@ -6,16 +6,14 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import MenuItem from '@mui/material/MenuItem';
-import { StixCoreObjectContentFilesDisseminationQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 import { useTheme } from '@mui/styles';
+import DisseminationListField from '@components/settings/dissemination_lists/DisseminationListField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectContentFilesDisseminationProps {
@@ -29,33 +27,6 @@ interface DisseminationInput {
   emailObject: string;
   emailBody: string;
 }
-
-export const stixCoreObjectContentFilesDisseminationQuery = graphql`
-  query StixCoreObjectContentFilesDisseminationQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: DisseminationListOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-  ) {
-    disseminationLists(
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      search: $search
-    ) {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
 
 export const DisseminationListSendInputMutation = graphql`
     mutation StixCoreObjectContentFilesDisseminationMutation(
@@ -72,21 +43,6 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [lists, setLists] = useState<StixCoreObjectContentFilesDisseminationQuery$data['disseminationLists'] | null>(null);
-
-  const fetchDisseminationLists = async () => {
-    return await fetchQuery(stixCoreObjectContentFilesDisseminationQuery, {
-      search: '',
-      count: 10,
-    })
-      .toPromise() as Promise<StixCoreObjectContentFilesDisseminationQuery$data>;
-  };
-
-  useEffect(() => {
-    fetchDisseminationLists().then((response) => {
-      setLists(response?.disseminationLists ?? { edges: [] });
-    });
-  }, []);
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
@@ -143,18 +99,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Field
-            component={SelectField}
-            label={t_i18n('Dissemination list')}
-            name="disseminationListId"
-            required
-          >
-            {lists?.edges?.map((edge) => (
-              <MenuItem key={edge.node.id} value={edge.node.id}>
-                {edge.node.name}
-              </MenuItem>
-            ))}
-          </Field>
+          <DisseminationListField />
           <Field
             component={TextField}
             label={t_i18n('Email subject')}
