@@ -31,6 +31,6 @@ export const formatEmailsForApi = (value: string) => {
 };
 
 // build a string with linebreaks from an array
-export const formatEmailsForFront = (value: string[]) => {
+export const formatEmailsForFront = (value: readonly string[]) => {
   return value.join('\n');
 };

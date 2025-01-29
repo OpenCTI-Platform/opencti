@@ -34,6 +34,8 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 
+const EMAILS_LIMIT_BY_LIST = 500;
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
@@ -92,35 +94,32 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
   const disseminationListInternalId = generateInternalId();
-  const count = input.emails.length;
-  if (count > 500) {
-    throw UnsupportedError('You cannot add more than 500 e-mail addresses');
+  if (input.emails.length > EMAILS_LIMIT_BY_LIST) {
+    throw UnsupportedError(`You cannot add more than ${EMAILS_LIMIT_BY_LIST} e-mail addresses`);
   }
   const disseminationListToCreate = {
     name: input.name,
     emails: input.emails,
     description: input.description,
-    dissemination_list_values_count: count,
     internal_id: disseminationListInternalId,
   };
   return createInternalObject<StoreEntityDisseminationList>(context, user, disseminationListToCreate, ENTITY_TYPE_DISSEMINATION_LIST);
 };
 
 export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  // Get the list
   const disseminationList = await findById(context, user, id);
   if (!disseminationList) {
     throw FunctionalError(`Dissemination list ${id} cannot be found`);
   }
-  const finalInput = [...input];
-  const emailsInput = finalInput.find((editInput) => editInput.key === 'emails');
-  if (emailsInput) {
-    const count = emailsInput.value.length;
-    if (count > 500) {
-      throw UnsupportedError('You cannot add more than 500 e-mail addresses');
-    }
-    finalInput.push({ key: 'dissemination_list_values_count', value: [count] });
+  // check the limit of emails
+  const emailsInput = input.find((editInput) => editInput.key === 'emails');
+  if (emailsInput && emailsInput.value.length > EMAILS_LIMIT_BY_LIST) {
+    throw UnsupportedError(`You cannot add more than ${EMAILS_LIMIT_BY_LIST} e-mail addresses`);
   }
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, finalInput);
+  // Update the list
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
+  // Publish Activity
   await publishUserAction({
     user,
     event_type: 'mutation',

@@ -6296,7 +6296,6 @@ export type DisseminationList = BasicObject & InternalObject & {
   __typename?: 'DisseminationList';
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
-  dissemination_list_values_count: Scalars['Int']['output'];
   emails: Array<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -6326,7 +6325,6 @@ export type DisseminationListEdge = {
 
 export enum DisseminationListOrdering {
   Score = '_score',
-  DisseminationListValuesCount = 'dissemination_list_values_count',
   Name = 'name'
 }
 
@@ -34910,7 +34908,6 @@ export type DisplayStepResolvers<ContextType = any, ParentType extends Resolvers
 export type DisseminationListResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisseminationList'] = ResolversParentTypes['DisseminationList']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  dissemination_list_values_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   emails?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

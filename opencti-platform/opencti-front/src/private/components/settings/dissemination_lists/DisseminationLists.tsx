@@ -24,66 +24,65 @@ import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const disseminationListsQuery = graphql`
-    query DisseminationListsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: DisseminationListOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...DisseminationListsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query DisseminationListsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: DisseminationListOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...DisseminationListsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 export const disseminationListsFragment = graphql`
-    fragment DisseminationListsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "DisseminationListOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "FilterGroup" }
-    ) @refetchable(queryName: "DisseminationListsLinesRefetchQuery") {
-        disseminationLists(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_disseminationLists") {
-            edges {
-                node {
-                    ...DisseminationListsLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment DisseminationListsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "DisseminationListOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  ) @refetchable(queryName: "DisseminationListsLinesRefetchQuery") {
+    disseminationLists(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_disseminationLists") {
+      edges {
+        node {
+          ...DisseminationListsLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const disseminationListsLineFragment = graphql`
-    fragment DisseminationListsLine_node on DisseminationList {
-        id
-        name
-        emails
-      description
-      dissemination_list_values_count
-    }
+  fragment DisseminationListsLine_node on DisseminationList {
+    id
+    name
+    emails
+    description
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'view-dissemination-lists';
@@ -149,7 +148,7 @@ const DisseminationLists = () => {
       label: 'Number of elements',
       percentWidth: 15,
       isSortable: true,
-      render: (node: DisseminationListsLine_node$data) => node.dissemination_list_values_count || '-',
+      render: (node: DisseminationListsLine_node$data) => node.emails.length || '-',
     },
   };
 
