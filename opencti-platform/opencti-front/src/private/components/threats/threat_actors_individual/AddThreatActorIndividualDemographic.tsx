@@ -18,7 +18,7 @@ interface AddThreatActorIndividualDemographicProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
   relType: string,
   title:string,
-  queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>;
+  queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>,
 }
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
