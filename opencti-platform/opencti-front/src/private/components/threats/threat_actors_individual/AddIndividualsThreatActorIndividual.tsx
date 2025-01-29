@@ -12,13 +12,13 @@ import IndividualCreation from '../../entities/individuals/IndividualCreation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-interface AddIndividualsThreatActorIndividualProps {
+interface AddIndividualsThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
   queryRef: PreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>
 }
 
 const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
-AddIndividualsThreatActorIndividualProps
+AddIndividualsThreatActorIndividualComponentProps
 > = ({
   threatActorIndividual,
   queryRef,
@@ -82,7 +82,7 @@ AddIndividualsThreatActorIndividualProps
 };
 
 const AddIndividualsThreatActorIndividual: FunctionComponent<
-Omit<AddIndividualsThreatActorIndividualProps, 'queryRef'>
+Omit<AddIndividualsThreatActorIndividualComponentProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
     count: 50,
