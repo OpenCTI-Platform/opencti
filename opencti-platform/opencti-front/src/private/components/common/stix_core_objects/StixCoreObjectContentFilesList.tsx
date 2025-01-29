@@ -16,18 +16,14 @@ import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
 import EmailIcon from '@mui/icons-material/Email';
 import Drawer from '@components/common/drawer/Drawer';
-import StixCoreObjectContentFilesDissemination, {
-  stixCoreObjectContentFilesDisseminationQuery,
-} from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
+import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import { useLazyLoadQuery } from 'react-relay';
-import { StixCoreObjectContentFilesDisseminationQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesDisseminationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
-import useGranted, { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
@@ -127,11 +123,6 @@ const StixCoreObjectContentFilesList = ({
 
   const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
 
-  const result = useGranted([KNOWLEDGE_KNDISSEMINATION]) ? useLazyLoadQuery<StixCoreObjectContentFilesDisseminationQuery>(
-    stixCoreObjectContentFilesDisseminationQuery,
-    { search: '', count: 10 },
-  ) : null;
-
   return (
     <List>
       {files.length === 0 && <ListItem dense={true} divider={true} />}
@@ -208,7 +199,6 @@ const StixCoreObjectContentFilesList = ({
                 fileId={file.id}
                 fileName={file.name}
                 onClose={() => setDrawerOpen(false)}
-                lists={result ? result.disseminationLists : null}
               />
             </Drawer>
           </Security>

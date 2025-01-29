@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
@@ -13,7 +13,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
@@ -22,7 +22,6 @@ interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
   fileName: string;
   onClose: () => void;
-  lists: StixCoreObjectContentFilesDisseminationQuery$data['disseminationLists'];
 }
 
 interface DisseminationInput {
@@ -70,10 +69,24 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   fileId,
   fileName,
   onClose,
-  lists,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [lists, setLists] = useState<StixCoreObjectContentFilesDisseminationQuery$data['disseminationLists'] | null>(null);
+
+  const fetchDisseminationLists = async () => {
+    return await fetchQuery(stixCoreObjectContentFilesDisseminationQuery, {
+      search: '',
+      count: 10,
+    })
+      .toPromise() as Promise<StixCoreObjectContentFilesDisseminationQuery$data>;
+  };
+
+  useEffect(() => {
+    fetchDisseminationLists().then((response) => {
+      setLists(response?.disseminationLists ?? { edges: [] });
+    });
+  }, []);
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
