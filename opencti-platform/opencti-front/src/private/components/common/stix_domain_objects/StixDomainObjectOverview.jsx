@@ -36,7 +36,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemAssignees from '../../../../components/ItemAssignees';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -177,7 +177,6 @@ const StixDomainObjectOverview = ({
       mutation: validateRequestAccessMutation,
       variables: {
         id: stixDomainObject.id,
-        input: '',
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('This request for sharing has been approved'));
@@ -205,44 +204,47 @@ const StixDomainObjectOverview = ({
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
         <Grid container={false} spacing={3}>
           {isRequestAccessFeatureEnabled && requestAccess && (
-            <Grid item sx={12} style={{ marginBottom: 20 }}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: withPattern ? 20 : 0 }}
-              >
-                {t_i18n('Processing status')}
-              </Typography>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-              >
-                <ItemStatus
-                  status={stixDomainObject.status}
-                  disabled={!stixDomainObject.workflowEnabled}
-                />
-                <div>
-                  <Button
-                    color="primary"
-                    variant="outlined"
-                    style={{ marginRight: 10 }}
-                    onClick={onSubmitValidateRequestAccess}
-                  >
-                    {t_i18n('Validate')}
-                  </Button>
-                  <Button
-                    color="primary"
-                    variant="outlined"
-                    onClick={onSubmitDeclineRequestAccess}
-                  >
-                    {t_i18n('Decline')}
-                  </Button>
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+              <Grid item sx={12} style={{ marginBottom: 20 }}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: withPattern ? 20 : 0 }}
+                >
+                  {t_i18n('Processing status')}
+                </Typography>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+                >
+                  <ItemStatus
+                    status={stixDomainObject.status}
+                    disabled={!stixDomainObject.workflowEnabled}
+                  />
+                  <div>
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      style={{ marginRight: 10 }}
+                      onClick={onSubmitValidateRequestAccess}
+                    >
+                      {t_i18n('Validate')}
+                    </Button>
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      onClick={onSubmitDeclineRequestAccess}
+                    >
+                      {t_i18n('Decline')}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <Divider style={{ marginTop: 20 }}/>
-            </Grid>
+                <Divider style={{ marginTop: 20 }}/>
+              </Grid>
+            </Security>
+
           )}
         </Grid>
         <Grid container={true} spacing={3}>

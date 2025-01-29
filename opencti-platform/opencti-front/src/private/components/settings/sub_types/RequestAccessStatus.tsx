@@ -39,27 +39,26 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
 
   return (
     <>{
-      workflowStatus?.map((status) => (
-        <>
-          <Chip
-            variant="outlined"
-            label={t_i18n(status?.name) || '-'}
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              height: 25,
-              margin: 7,
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              width: 100,
-              color: status?.color,
-              borderColor: status?.color,
-              backgroundColor: hexToRGB(
-                '#000000',
-              ),
-            }}
-          />
-        </>
+      workflowStatus?.map((status, idx) => (
+        <Chip
+          key={idx}
+          variant="outlined"
+          label={t_i18n(status?.name) || '-'}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 25,
+            margin: 7,
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 100,
+            color: status?.color,
+            borderColor: status?.color,
+            backgroundColor: hexToRGB(
+              '#000000',
+            ),
+          }}
+        />
       ))
     }
     </>
