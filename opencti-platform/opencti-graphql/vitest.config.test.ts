@@ -37,6 +37,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
         }
       },
     },
+    reporters: ['hanging-process']
   },
 });
 
