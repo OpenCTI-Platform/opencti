@@ -19,6 +19,8 @@ export const stixRelationshipsListSearchQuery = graphql`
     $filters: FilterGroup
     $dynamicFrom: FilterGroup
     $dynamicTo: FilterGroup
+    $orderBy: StixRelationshipsOrdering
+    $orderMode: OrderingMode
   ) {
     stixRelationships(
       search: $search
@@ -29,6 +31,8 @@ export const stixRelationshipsListSearchQuery = graphql`
       filters: $filters
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
+      orderBy: $orderBy
+      orderMode: $orderMode
     ) {
       edges {
         node {
@@ -43,7 +47,7 @@ export const stixRelationshipsListSearchQuery = graphql`
   }
 `;
 
-const stixRelationshipsListQuery = graphql`
+export const stixRelationshipsListQuery = graphql`
   query StixRelationshipsListQuery(
     $relationship_type: [String]
     $fromId: [String]
@@ -79,6 +83,33 @@ const stixRelationshipsListQuery = graphql`
           parent_types
           relationship_type
           confidence
+          representative {
+            main
+          }
+          from {
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
+          to {
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
           ... on StixCoreRelationship {
             start_time
             stop_time

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { DataTableProps, DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { WidgetColumn } from 'src/utils/widget/widget';
+import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import ItemIcon from '../ItemIcon';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import { computeLink } from '../../utils/Entity';

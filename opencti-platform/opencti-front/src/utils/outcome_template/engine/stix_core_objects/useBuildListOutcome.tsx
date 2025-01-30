@@ -2,30 +2,42 @@ import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/S
 import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
+import { stixRelationshipsListQuery } from '@components/common/stix_relationships/StixRelationshipsList';
+import { StixRelationshipsListQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import type { Widget } from '../../../widget/widget';
+import type { Widget, WidgetPerspective } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
+
+type ListItem = object & { id: string };
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
 
   const buildListOutcome = async (
-    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns'>,
+    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
+    widgetPerspective?: WidgetPerspective | null,
   ) => {
-    const dateAttribute = dataSelection.date_attribute || 'created_at';
     const variables = {
       types: ['Stix-Core-Object'],
       first: dataSelection.number ?? 10,
-      orderBy: dateAttribute,
-      orderMode: 'desc',
+      orderBy: dataSelection.sort_by ?? 'created_at',
+      orderMode: dataSelection.sort_mode ?? 'asc',
       filters: dataSelection.filters,
     };
 
-    const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
-    const nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
+    let nodes: ListItem[] = [];
+    if (widgetPerspective === 'entities') {
+      const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
+      nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
+    } else if (widgetPerspective === 'relationships') {
+      const data = await fetchQuery(stixRelationshipsListQuery, variables).toPromise() as StixRelationshipsListQuery$data;
+      nodes = (data.stixRelationships?.edges ?? []).flatMap((n) => (n ? n.node : [])) ?? [];
+    } else {
+      throw Error(t_i18n('Perspective of fintel template list widget should be either "entities" or "relationships"'));
+    }
     const columns = dataSelection.columns ?? [
       { label: t_i18n('Entity type'), attribute: 'entity_type' },
       { label: t_i18n('Representative'), attribute: 'representative.main' },

@@ -4,6 +4,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
+import { useParams } from 'react-router-dom';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';
 import FintelTemplateWidgetsList, { FintelTemplateWidget } from './FintelTemplateWidgetsList';
@@ -70,6 +71,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { editorValue } = useFintelTemplateContext();
+  const { subTypeId } = useParams<{ subTypeId?: string }>();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const { id, fintel_template_widgets } = useFragment(sidebarFragment, data);
@@ -238,11 +240,12 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         open={isWidgetFormOpen}
         setOpen={handleWidgetConfigOpen}
         onComplete={handleUpsertWidget}
+        widget={selectedWidget?.widget}
+        disabledSteps={isSelectedWidgetSelfInstance ? [0] : []}
         context="fintelTemplate"
         fintelWidgets={fintel_template_widgets as FintelTemplateWidget[]}
-        widget={selectedWidget?.widget}
+        fintelEntityType={subTypeId}
         initialVariableName={selectedWidget?.variable_name}
-        disabledSteps={isSelectedWidgetSelfInstance ? [0] : []}
       />
 
       <DeleteDialog

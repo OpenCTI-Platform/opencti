@@ -2241,6 +2241,7 @@
   "personal-gain": "개인 이득",
   "personal-satisfaction": "개인 만족",
   "Perspective": "관점",
+  "Perspective of fintel template list widget should be either \"entities\" or \"relationships\"": "핀텔 템플릿 목록 위젯의 관점은 '엔티티' 또는 '관계' 중 하나여야 합니다;",
   "Phase name": "단계 이름",
   "Pictures Management": "사진 관리",
   "Pie chart": "원형 차트",

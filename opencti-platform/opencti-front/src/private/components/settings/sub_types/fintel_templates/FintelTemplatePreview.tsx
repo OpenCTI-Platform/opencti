@@ -19,6 +19,7 @@ const previewFragment = graphql`
       widget {
         id
         type
+        perspective
         dataSelection {
           instance_id
           filters
@@ -28,6 +29,9 @@ const previewFragment = graphql`
           number
           attribute
           isTo
+          sort_by
+          sort_mode
+          number
           columns {
             label
             variableName
@@ -95,7 +99,7 @@ const FintelTemplatePreview = ({
     buildPreview(
       entity.value,
       entity.label,
-      (contentMaxMarkings ?? []).map((m) => m.label),
+      (contentMaxMarkings ?? []).map((m) => m.value),
       (fileMarkings ?? []).map((m) => m.label),
     );
   }, [formValues, editorValue, isTabActive]);

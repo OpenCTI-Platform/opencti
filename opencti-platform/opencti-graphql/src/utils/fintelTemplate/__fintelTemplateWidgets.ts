@@ -7,11 +7,11 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
 export const containerColumns = [
   { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
-  { label: 'Description', attribute: 'description', variableName: 'containerDescription' },
+  { label: 'Description', attribute: 'representative.secondary', variableName: 'containerDescription' },
   { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
   { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
   { label: 'Modification date', attribute: 'updated_at', variableName: 'containerModificationDate' },
-  { label: 'Name', attribute: 'name', variableName: 'containerName' },
+  { label: 'Representative', attribute: 'representative.main', variableName: 'containerRepresentative' },
   { label: 'Author', attribute: 'createdBy.name', variableName: 'containerAuthor' },
   { label: 'Confidence level', attribute: 'confidence', variableName: 'containerConfidenceLevel' },
   { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'containerReliabilityOfAuthor' },

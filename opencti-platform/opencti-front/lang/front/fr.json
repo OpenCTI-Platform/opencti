@@ -2241,6 +2241,7 @@
   "personal-gain": "Gain personnel",
   "personal-satisfaction": "Satisfaction personnelle",
   "Perspective": "Perspective",
+  "Perspective of fintel template list widget should be either \"entities\" or \"relationships\"": "La perspective du widget de liste de modèles fintel doit être soit \"entities\" ; soit \"relationships\" ;",
   "Phase name": "Nom de l'étape",
   "Pictures Management": "Gestion des images",
   "Pie chart": "Camembert",

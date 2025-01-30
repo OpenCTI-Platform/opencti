@@ -75,7 +75,10 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
     <>
       {!widget && (
       <>
-        <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef}
+        <VisuallyHiddenInput
+          type="file"
+          accept={'application/JSON'}
+          ref={inputRef}
           onChange={handleWidgetImport}
         />
         <Security needs={[EXPLORE_EXUPDATE]}>
@@ -141,14 +144,11 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => 
         </MenuItem>
       )}
       <WidgetConfig
-        handleWidgetImport={handleWidgetImport}
         onComplete={onComplete}
         widget={widget}
-        closeMenu={closeMenu}
-        inputRef={inputRef}
         setOpen={setOpen}
         open={open}
-        context={'workspace'}
+        context="workspace"
       />
     </>);
 };
