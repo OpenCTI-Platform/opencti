@@ -3,7 +3,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import { graphql } from 'react-relay';
 import qrcode from 'qrcode';
-import { useTheme } from '@mui/material/styles';
 import Loader from '../../components/Loader';
 import { QueryRenderer } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
@@ -46,7 +45,6 @@ interface OtpProps {
 const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const theme = useTheme();
   const [otpQrImage, setOtpQrImage] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -70,12 +68,6 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   useEffect(() => {
     qrcode.toDataURL(
       uri,
-      {
-        color: {
-          dark: `${theme.palette.mode}` === 'dark' ? '#ffffff' : '#000000',
-          light: '#0000', // Transparent background
-        },
-      },
       (err: Error | null | undefined, imageUrl: string) => {
         if (err) {
           setOtpQrImage('');

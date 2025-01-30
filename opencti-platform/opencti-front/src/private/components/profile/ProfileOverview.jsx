@@ -151,12 +151,6 @@ const Otp = ({ closeFunction, secret, uri }) => {
   useEffect(() => {
     qrcode.toDataURL(
       uri,
-      {
-        color: {
-          dark: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-          light: '#0000', // Transparent background
-        },
-      },
       (err, imageUrl) => {
         if (err) {
           setOtpQrImage('');
