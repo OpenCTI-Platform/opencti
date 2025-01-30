@@ -33,7 +33,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
-  fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject {
+  fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
+  @argumentDefinitions(
+    relatedRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
+  ) {
     # distribution of entities without "related to" relationship
     relationshipsWithoutRelatedToDistribution: stixCoreRelationshipsDistribution(
       field: "entity_type"
@@ -56,11 +59,11 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       label
       value
     }
-    # distribution of entities with "related to" relationship
-    relationshipsRelatedToDistribution: stixCoreRelationshipsDistribution(
+    # distribution of entities with relatedRelationshipTypes ("related to" relationship by default)
+    relationshipsRelatedDistribution: stixCoreRelationshipsDistribution(
       field: "entity_type"
       operation: count
-      relationship_type: [ "related-to" ]
+      relationship_type: $relatedRelationshipTypes
     ) {
       label
       value
@@ -87,7 +90,7 @@ const StixCoreObjectKnowledgeBar = ({
   const location = useLocation();
   const { bannerSettings, schema } = useAuth();
   const isInAvailableSection = (sections) => availableSections.some((filter) => sections.includes(filter));
-  const { relationshipsWithoutRelatedToDistribution, relationshipsRelatedToDistribution, stixCoreObjectsDistribution } = useFragment(
+  const { relationshipsWithoutRelatedToDistribution, relationshipsRelatedDistribution, stixCoreObjectsDistribution } = useFragment(
     stixCoreObjectKnowledgeBarFragment,
     data,
   );
@@ -98,7 +101,7 @@ const StixCoreObjectKnowledgeBar = ({
     : {});
 
   const statisticsWithoutRelatedToRelationship = indexEntities(relationshipsWithoutRelatedToDistribution);
-  const statisticsRelatedToRelationship = indexEntities(relationshipsRelatedToDistribution);
+  const statisticsRelatedRelationship = indexEntities(relationshipsRelatedDistribution);
   const statisticsCoreObjects = indexEntities(stixCoreObjectsDistribution);
 
   const sumEntitiesByKeys = (stats, keys) => {
@@ -115,8 +118,8 @@ const StixCoreObjectKnowledgeBar = ({
   const statisticsVictims = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area']);
   const statisticsAttributions = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, attribution ?? []);
   const statisticsLocations = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Region', 'Country', 'City', 'Position', 'Administrative-Area']);
-  const statisticsObservables = sumEntitiesByKeys(statisticsRelatedToRelationship, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']);
-  const statisticsRelatedEntities = sumEntitiesByKeys(statisticsRelatedToRelationship);
+  const statisticsObservables = sumEntitiesByKeys(statisticsRelatedRelationship, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']);
+  const statisticsRelatedEntities = sumEntitiesByKeys(statisticsRelatedRelationship);
 
   return (
     <Drawer
