@@ -253,14 +253,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
-    if (taskType === TASK_TYPE_QUERY) {
-      const isDisseminationLists = entityTypeFilters.length === 1
-        && entityTypeFilters[0].values.length === 1
-        && entityTypeFilters[0].values[0] === ENTITY_TYPE_DISSEMINATION_LIST;
-      if (!isDisseminationLists) {
-        throw ForbiddenAccess('The targeted ids are not dissemination lists.');
-      }
-    } else if (taskType === TASK_TYPE_LIST) {
+    if (taskType === TASK_TYPE_LIST) {
       const objects = await internalFindByIds(context, user, ids);
       if (objects.some((o) => o.entity_type !== ENTITY_TYPE_DISSEMINATION_LIST)) {
         throw ForbiddenAccess('The targeted ids are not dissemination lists.');
