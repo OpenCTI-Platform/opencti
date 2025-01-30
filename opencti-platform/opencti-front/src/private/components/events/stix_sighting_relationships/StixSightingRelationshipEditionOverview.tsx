@@ -230,6 +230,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     description: Yup.string().nullable(),
     x_opencti_negative: Yup.boolean(),
     x_opencti_workflow_id: Yup.object(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const stixSightingRelationshipValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
