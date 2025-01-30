@@ -448,7 +448,7 @@ const Settings = () => {
                       </Typography>
                       {!isEnterpriseEditionByConfig && (
                         <div style={{ float: 'right', marginTop: theme.spacing(-1.8), position: 'relative' }}>
-                          <EnterpriseEditionButton title={t_i18n('Change your Enterprise Edition license')} inLine={true} />
+                          <EnterpriseEditionButton inLine={true} />
                         </div>
                       )}
                       <div className="clearfix"/>
@@ -618,7 +618,7 @@ const Settings = () => {
                     </Typography>
                     <div style={{ float: 'right', marginTop: theme.spacing(-4.5), position: 'relative' }}>
                       {!isEnterpriseEditionActivated && (
-                        <EnterpriseEditionButton title={t_i18n('Activate Enterprise Edition')} inLine={true} />
+                        <EnterpriseEditionButton inLine={true} />
                       )}
                     </div>
                     <div className="clearfix"/>
