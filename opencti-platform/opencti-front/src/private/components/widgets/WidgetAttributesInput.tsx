@@ -16,7 +16,6 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import FormHelperText from '@mui/material/FormHelperText';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
-import { useParams } from 'react-router-dom';
 import { widgetAttributesInputInstanceQuery } from './WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery } from './__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
