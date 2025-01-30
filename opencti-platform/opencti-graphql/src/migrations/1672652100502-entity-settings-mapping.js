@@ -50,7 +50,7 @@ export const up = async (next) => {
   settingsFromEl.platform_entities_files_ref = null;
   settingsFromEl.platform_hidden_types = null;
 
-  const esData = prepareElementForIndexing(settingsFromEl);
+  const esData = await prepareElementForIndexing(settingsFromEl);
   await elReplace(settingsFromEl._index, settingsFromEl.internal_id, { doc: esData });
 
   next();

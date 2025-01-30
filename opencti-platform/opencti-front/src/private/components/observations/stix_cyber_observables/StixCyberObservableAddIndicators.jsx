@@ -100,7 +100,7 @@ class StixCyberObservableAddIndicators extends Component {
               size="large"
               color="primary"
             >
-              <Close fontSize="small" color="primary" />
+              <Close fontSize="small" color="primary"/>
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
               {t('Add indicators')}
@@ -134,8 +134,14 @@ class StixCyberObservableAddIndicators extends Component {
               }}
             />
           </div>
+          <div className={classes.createButton}>
+            <IndicatorCreation
+              display={open}
+              contextual
+              paginationOptions={paginationOptions}
+            />
+          </div>
         </Drawer>
-        <IndicatorCreation display={open} contextual paginationOptions={paginationOptions} />
       </>
     );
   }

@@ -1,4 +1,4 @@
-import MistralClient from '@mistralai/mistralai';
+import { Mistral } from '@mistralai/mistralai';
 import OpenAI from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { isEmptyField } from './utils';
@@ -15,11 +15,20 @@ const AI_TOKEN = conf.get('ai:token');
 const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 
-let client: MistralClient | OpenAI | null = null;
+let client: Mistral | OpenAI | null = null;
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
-      client = new MistralClient(AI_TOKEN, isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT);
+      client = new Mistral({
+        serverURL: isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT,
+        apiKey: AI_TOKEN,
+        /* uncomment if you need low level debug on AI
+        debugLogger: {
+          log: (message, args) => logApp.info(`[AI] log ${message}`, { message }),
+          group: (label) => logApp.info(`[AI] group ${label} start.`),
+          groupEnd: () => logApp.info('[AI] group end.'),
+        } */
+      });
       break;
     case 'openai':
       client = new OpenAI({
@@ -38,7 +47,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
   }
   try {
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
-    const response = (client as MistralClient)?.chatStream({
+    const response = await (client as Mistral)?.chat.stream({
       model: AI_MODEL,
       messages: [
         { role: 'system', content: systemMessage },
@@ -49,8 +58,8 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
-        if (chunk.choices[0].delta.content !== undefined) {
-          const streamText = chunk.choices[0].delta.content;
+        if (chunk.data.choices[0].delta.content !== undefined) {
+          const streamText = chunk.data.choices[0].delta.content;
           content += streamText;
           if (busId !== null) {
             await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);

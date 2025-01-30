@@ -1,6 +1,7 @@
 import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
+import { HighLevelError } from './Error';
 import LoginRoot from '../../public/LoginRoot';
 import withRouter from '../../utils/compat_router/withRouter';
 
@@ -33,6 +34,7 @@ class AuthBoundaryComponent extends React.Component {
       if (includes('OTP_REQUIRED', types)) {
         return <LoginRoot type="2FA_VALIDATION" />;
       }
+      return <HighLevelError />;
     }
     return this.props.children;
   }
