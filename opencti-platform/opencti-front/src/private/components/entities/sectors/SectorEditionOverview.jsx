@@ -94,6 +94,7 @@ const SectorEditionOverviewComponent = (props) => {
     confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const sectorValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 

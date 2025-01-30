@@ -97,6 +97,7 @@ const SystemEditionOverviewComponent = (props) => {
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const systemValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 

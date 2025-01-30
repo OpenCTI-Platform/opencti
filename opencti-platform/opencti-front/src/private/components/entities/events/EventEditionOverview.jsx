@@ -96,6 +96,7 @@ const EventEditionOverviewComponent = (props) => {
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const eventValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
