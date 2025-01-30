@@ -319,6 +319,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     # All standard operations
                     case (
                         "delete"  # Standard delete
+                        | "restore"  # Restore an operation from trash
                         | "delete-force"  # Delete with no trash
                         | "share"  # Share an element
                         | "unshare"  # Unshare an element
