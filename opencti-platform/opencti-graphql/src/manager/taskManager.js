@@ -49,7 +49,7 @@ import {
 } from '../schema/general';
 import { BYPASS, executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
-import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
@@ -79,8 +79,8 @@ import { processDeleteOperation, restoreDelete } from '../modules/deleteOperatio
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 import { BackgroundTaskScope } from '../generated/graphql';
-import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { deleteFile, downloadFile, loadFile } from '../database/file-storage';
+import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
+import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { findById as findOrganizationById } from '../modules/organization/organization-domain';
@@ -88,9 +88,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
-import { sendMail } from '../database/smtp';
-import { getEntityFromCache } from '../database/cache';
-import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { sendDisseminationEmail } from '../modules/disseminationList/disseminationList-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -462,7 +460,7 @@ export const executeRemoveAuthMembers = async (context, user, element) => {
   });
 };
 
-export const executeDissemination = async (context, user, actionContext, element) => {
+const executeDissemination = async (context, user, actionContext, element) => {
   logApp.info('Executing dissemination with', { actionContext, element });
   const disseminationContext = actionContext.emailData;
   const attachFileIds = actionContext.values;
@@ -474,53 +472,7 @@ export const executeDissemination = async (context, user, actionContext, element
   if (!disseminationContext.object || !disseminationContext.body) {
     throw FunctionalError('There is no email data for disseminate', { actionContext, element });
   }
-
-  const attachementListForSendMail = [];
-  const attachementFilesForActivity = [];
-  for (let i = 0; i < attachFileIds.length; i += 1) {
-    const attachFileId = attachFileIds[i];
-    const file = await loadFile(context, user, attachFileId);
-    if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
-      const stream = await downloadFile(file.id);
-      attachementListForSendMail.push({
-        filename: file.name,
-        content: stream,
-      });
-      attachementFilesForActivity.push({
-        fileId: file.id,
-        fileName: file.name,
-        fileMarkings: file.metaData.file_markings,
-        fileEntityId: file.metaData.entity_id
-      });
-    }
-  }
-
-  const toEmail = conf.get('app:dissemination_list:to_email');
-  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  const sendMailArgs = {
-    from: settings.platform_email,
-    to: toEmail,
-    bcc: [...element.emails, user.user_email],
-    subject: disseminationContext.object,
-    html: disseminationContext.body,
-    attachments: attachementListForSendMail,
-  };
-  await sendMail(sendMailArgs);
-  logApp.info('[DISSEMINATION] email send.');
-
-  for (let i = 0; i < attachementFilesForActivity.length; i += 1) {
-    const disseminatedFile = attachementFilesForActivity[i];
-
-    const instance = await internalLoadById(context, user, disseminatedFile.fileEntityId);
-    const data = buildContextDataForFile(instance, disseminatedFile.fileId, disseminatedFile.fileName, disseminatedFile.fileMarkings, { element });
-    await publishUserAction({
-      event_access: 'administration',
-      user,
-      event_type: 'file',
-      event_scope: 'disseminate',
-      context_data: data
-    });
-  }
+  await sendDisseminationEmail(context, user, disseminationContext.object, disseminationContext.body, element.emails, attachFileIds);
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {

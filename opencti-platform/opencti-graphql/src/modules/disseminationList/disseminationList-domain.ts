@@ -18,15 +18,9 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BackgroundTaskScope, type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
-import { sendMail } from '../../database/smtp';
-import { getEntityFromCache } from '../../database/cache';
-import type { BasicStoreSettings } from '../../types/settings';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
-import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
+import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import type { BasicStoreObject } from '../../types/store';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { generateInternalId } from '../../schema/identifier';
@@ -34,6 +28,13 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { ACTION_TYPE_DISSEMINATE, createListTask } from '../../domain/backgroundTask-common';
+import { downloadFile, loadFile } from '../../database/file-storage';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
+import { sendMail } from '../../database/smtp';
+import type { BasicStoreSettings } from '../../types/settings';
+import type { BasicStoreObject } from '../../types/store';
 
 const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
@@ -46,15 +47,6 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
 };
-
-interface SendMailArgs {
-  from: string;
-  to: string;
-  bcc?: string[];
-  subject: string;
-  html: string;
-  attachments?: any[];
-}
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
   await checkEnterpriseEdition(context);
@@ -79,33 +71,68 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   return true;
 };
 
-export const sendToDisseminationListSync = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
-  await checkEnterpriseEdition(context);
+interface SendMailArgs {
+  from: string;
+  to: string;
+  bcc?: string[];
+  subject: string;
+  html: string;
+  attachments?: any[];
+}
+
+/**
+ * Actual sending of email, used by the background task.
+ * @param context
+ * @param user
+ * @param object
+ * @param body
+ * @param emails
+ * @param attachFileIds
+ */
+export const sendDisseminationEmail = async (context: AuthContext, user: AuthUser, object: string, body: string, emails: string[], attachFileIds: string[]) => {
+  logApp.info('Calling send disemination', { object, body, emails, attachFileIds });
+  const toEmail = conf.get('app:dissemination_list:to_email');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const filePath = input.email_attached_file_id;
-  const file = await loadFile(context, user, filePath);
-  if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
-    const stream = await downloadFile(file.id);
-    const disseminationList = await findById(context, user, input.dissemination_list_id);
-    const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
-    const generatedEmail = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
-    const toEmail = conf.get('app:dissemination_list:to_email');
-    const sendMailArgs: SendMailArgs = {
-      from: settings.platform_email,
-      to: toEmail,
-      bcc: [...disseminationList.emails, user.user_email],
-      subject: input.email_object,
-      html: generatedEmail,
-      attachments: [
-        {
-          filename: file.name,
-          content: stream,
-        }
-      ],
-    };
-    await sendMail(sendMailArgs);
-    const instance = await internalLoadById(context, user, file.metaData.entity_id);
-    const data = buildContextDataForFile(instance as BasicStoreObject, file.id, file.name, file.metaData.file_markings, { ...input, ...disseminationList });
+
+  const attachementListForSendMail = [];
+  const attachementFilesForActivity = [];
+  for (let i = 0; i < attachFileIds.length; i += 1) {
+    const attachFileId = attachFileIds[i];
+    const file = await loadFile(context, user, attachFileId);
+    if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
+      const stream = await downloadFile(file.id);
+      attachementListForSendMail.push({
+        filename: file.name,
+        content: stream,
+      });
+      attachementFilesForActivity.push({
+        fileId: file.id,
+        fileName: file.name,
+        fileMarkings: file.metaData.file_markings,
+        fileEntityId: file.metaData.entity_id
+      });
+    }
+  }
+
+  const emailBodyFormatted = body.replaceAll('\n', '<br/>');
+  const generatedEmailBody = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+
+  const sendMailArgs: SendMailArgs = {
+    from: settings.platform_email,
+    to: toEmail,
+    bcc: [...emails, user.user_email],
+    subject: object,
+    html: generatedEmailBody,
+    attachments: attachementListForSendMail,
+  };
+  await sendMail(sendMailArgs);
+  logApp.info('[DISSEMINATION] email send.');
+
+  for (let i = 0; i < attachementFilesForActivity.length; i += 1) {
+    const disseminatedFile = attachementFilesForActivity[i];
+
+    const instance = await internalLoadById(context, user, disseminatedFile.fileEntityId);
+    const data = buildContextDataForFile(instance as BasicStoreObject, disseminatedFile.fileId, disseminatedFile.fileName, disseminatedFile.fileMarkings);
     await publishUserAction({
       event_access: 'administration',
       user,
@@ -113,9 +140,7 @@ export const sendToDisseminationListSync = async (context: AuthContext, user: Au
       event_scope: 'disseminate',
       context_data: data
     });
-    return true;
   }
-  return false;
 };
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
