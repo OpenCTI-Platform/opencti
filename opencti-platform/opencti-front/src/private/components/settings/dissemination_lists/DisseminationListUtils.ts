@@ -1,17 +1,14 @@
 import * as Yup from 'yup';
-import { useFormatter } from '../../../../components/i18n';
 
-const { t_i18n } = useFormatter();
-
-export const disseminationListValidator = () => {
+export const disseminationListValidator = (t: (value: string) => string) => {
   return Yup.object().shape({
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t('This field is required')),
     description: Yup.string(),
     emails: Yup.string()
-      .required(t_i18n('This field is required'))
+      .required(t('This field is required'))
       .test(
         'emails',
-        t_i18n('Each line must contain a valid email address'),
+        t('Each line must contain a valid email address'),
         (value) => {
           const emails = value.split('\n').map((email) => email.trim());
           return emails.every((email) => email !== '' && Yup.string().email().isValidSync(email));
@@ -19,7 +16,7 @@ export const disseminationListValidator = () => {
       )
       .test(
         'max-emails',
-        t_i18n('You cannot have more than 500 e-mail addresses'),
+        t('You cannot have more than 500 e-mail addresses'),
         (value) => {
           const emails = value.split('\n').map((email) => email.trim());
           return emails.length <= 500;

@@ -35,7 +35,7 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEdition = !!defaultValues;
-  const validation = disseminationListValidator();
+  const validation = disseminationListValidator(t_i18n);
 
   const initialValues: DisseminationListFormData = defaultValues ?? {
     name: '',
