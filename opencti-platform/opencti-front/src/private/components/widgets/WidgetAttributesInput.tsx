@@ -186,6 +186,10 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
             onChange(values.attributes);
           }, [values]);
 
+          const filteredAttributes = availableAttributes.filter((attribute) => {
+            return !values.attributes.map((a) => a.attribute).includes(attribute.attribute);
+          });
+
           return (
             <Form>
               <FieldArray name="attributes">
@@ -256,7 +260,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             }
                           }}
                         >
-                          {availableAttributes.map((v) => (
+                          {filteredAttributes.map((v) => (
                             <MenuItem key={v.attribute} value={v.attribute ?? ''}>
                               {t_i18n(v.label)}
                             </MenuItem>
