@@ -46,7 +46,7 @@ const subscription = graphql`
 `;
 
 const ThreatActorGroupQuery = graphql`
-  query RootThreatActorGroupQuery($id: String!) {
+  query RootThreatActorGroupQuery($id: String!, $relatedRelationshipTypes: [String!]) {
     threatActorGroup(id: $id) {
       id
       standard_id
@@ -54,7 +54,7 @@ const ThreatActorGroupQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorGroup_ThreatActorGroup
       ...ThreatActorGroupKnowledge_ThreatActorGroup
       ...FileImportViewer_entity
@@ -72,6 +72,8 @@ const ThreatActorGroupQuery = graphql`
     }
   }
 `;
+
+const THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of'];
 
 type RootThreatActorGroupProps = {
   threatActorGroupId: string;
@@ -223,7 +225,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} />
+                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} related={THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES} />
                   </div>
                 }
               />
@@ -272,6 +274,7 @@ const Root = () => {
   const { threatActorGroupId } = useParams() as { threatActorGroupId: string; };
   const queryRef = useQueryLoading<RootThreatActorGroupQuery>(ThreatActorGroupQuery, {
     id: threatActorGroupId,
+    relatedRelationshipTypes: THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES,
   });
 
   return (
