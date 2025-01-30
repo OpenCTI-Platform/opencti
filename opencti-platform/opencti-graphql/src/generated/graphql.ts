@@ -1297,6 +1297,7 @@ export enum BackgroundTaskActionType {
   Add = 'ADD',
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
+  Disseminate = 'DISSEMINATE',
   Enrichment = 'ENRICHMENT',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
@@ -1356,6 +1357,7 @@ export type BackgroundTaskError = {
 
 export enum BackgroundTaskScope {
   Dashboard = 'DASHBOARD',
+  Dissemination = 'DISSEMINATION',
   Import = 'IMPORT',
   Investigation = 'INVESTIGATION',
   Knowledge = 'KNOWLEDGE',

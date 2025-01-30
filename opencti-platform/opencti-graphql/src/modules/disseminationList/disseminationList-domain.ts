@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import type { DisseminationListAddInput, DisseminationListSendInput, EditInput, QueryDisseminationListsArgs } from '../../generated/graphql';
+import { BackgroundTaskScope, type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
 import { sendMail } from '../../database/smtp';
 import { getEntityFromCache } from '../../database/cache';
@@ -33,6 +33,7 @@ import { generateInternalId } from '../../schema/identifier';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
+import { ACTION_TYPE_DISSEMINATE, createListTask } from '../../domain/backgroundTask-common';
 
 const EMAILS_LIMIT_BY_LIST = 500;
 
@@ -54,6 +55,29 @@ interface SendMailArgs {
 }
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
+  await checkEnterpriseEdition(context);
+  const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
+
+  const data = {
+    body: emailBodyFormatted,
+    object: input.email_object };
+
+  const taskInput = {
+    actions: [{
+      type: ACTION_TYPE_DISSEMINATE,
+      context: {
+        values: [input.email_attached_file_id],
+        emailData: data
+      }
+    }],
+    ids: [input.dissemination_list_id],
+    scope: BackgroundTaskScope.Dissemination
+  };
+  await createListTask(context, user, taskInput);
+  return true;
+};
+
+export const sendToDisseminationListSync = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const filePath = input.email_attached_file_id;

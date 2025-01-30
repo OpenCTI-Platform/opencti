@@ -49,7 +49,7 @@ import {
 } from '../schema/general';
 import { BYPASS, executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
-import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
@@ -62,6 +62,7 @@ import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../sch
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_DISSEMINATE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
@@ -78,14 +79,18 @@ import { processDeleteOperation, restoreDelete } from '../modules/deleteOperatio
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 import { BackgroundTaskScope } from '../generated/graphql';
-import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
-import { deleteFile } from '../database/file-storage';
+import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { deleteFile, downloadFile, loadFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { findById as findOrganizationById } from '../modules/organization/organization-domain';
 import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
+import { sendMail } from '../database/smtp';
+import { getEntityFromCache } from '../database/cache';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -195,6 +200,8 @@ const computeListTaskElements = async (context, user, task) => {
     type = [ENTITY_TYPE_PUBLIC_DASHBOARD];
   } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
     type = [ENTITY_TYPE_WORKSPACE];
+  } else if (scope === BackgroundTaskScope.Dissemination) {
+    type = [ENTITY_TYPE_DISSEMINATION_LIST];
   }
   const options = {
     type,
@@ -455,6 +462,67 @@ export const executeRemoveAuthMembers = async (context, user, element) => {
   });
 };
 
+export const executeDissemination = async (context, user, actionContext, element) => {
+  logApp.info('Executing dissemination with', { actionContext, element });
+  const disseminationContext = actionContext.emailData;
+  const attachFileIds = actionContext.values;
+
+  if (!attachFileIds || attachFileIds.length < 1) {
+    throw FunctionalError('There is no file to disseminate', { actionContext, element });
+  }
+
+  if (!disseminationContext.object || !disseminationContext.body) {
+    throw FunctionalError('There is no email data for disseminate', { actionContext, element });
+  }
+
+  const attachementListForSendMail = [];
+  const attachementFilesForActivity = [];
+  for (let i = 0; i < attachFileIds.length; i += 1) {
+    const attachFileId = attachFileIds[i];
+    const file = await loadFile(context, user, attachFileId);
+    if (file && file.metaData.mimetype === 'application/pdf' && file.metaData.entity_id) {
+      const stream = await downloadFile(file.id);
+      attachementListForSendMail.push({
+        filename: file.name,
+        content: stream,
+      });
+      attachementFilesForActivity.push({
+        fileId: file.id,
+        fileName: file.name,
+        fileMarkings: file.metaData.file_markings,
+        fileEntityId: file.metaData.entity_id
+      });
+    }
+  }
+
+  const toEmail = conf.get('app:dissemination_list:to_email');
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const sendMailArgs = {
+    from: settings.platform_email,
+    to: toEmail,
+    bcc: [...element.emails, user.user_email],
+    subject: disseminationContext.object,
+    html: disseminationContext.body,
+    attachments: attachementListForSendMail,
+  };
+  await sendMail(sendMailArgs);
+  logApp.info('[DISSEMINATION] email send.');
+
+  for (let i = 0; i < attachementFilesForActivity.length; i += 1) {
+    const disseminatedFile = attachementFilesForActivity[i];
+
+    const instance = await internalLoadById(context, user, disseminatedFile.fileEntityId);
+    const data = buildContextDataForFile(instance, disseminatedFile.fileId, disseminatedFile.fileName, disseminatedFile.fileMarkings, { element });
+    await publishUserAction({
+      event_access: 'administration',
+      user,
+      event_type: 'file',
+      event_scope: 'disseminate',
+      context_data: data
+    });
+  }
+};
+
 const throwErrorInDraftContext = (context, user, actionType) => {
   if (!getDraftContext(context, user)) {
     return;
@@ -575,6 +643,9 @@ const executeProcessing = async (context, user, job, scope) => {
           }
           if (type === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
             await executeRemoveAuthMembers(context, user, element);
+          }
+          if (type === ACTION_TYPE_DISSEMINATE) {
+            await executeDissemination(context, user, actionContext, element);
           }
         } catch (err) {
           logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: elementIndex });
