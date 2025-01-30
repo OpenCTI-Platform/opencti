@@ -782,7 +782,7 @@ describe('Elasticsearch reindex', () => {
     // noinspection ES6MissingAwait
     expect(indexPromise).rejects.toThrow();
   });
-  it('try to reindex element with unmapped fields', async () => {
+  it('should reindex sighting with unmapped fields', async () => {
     // dummy object with old fields that are not part of the strict mapping
     const jsonObject = `{
       "standard_id": "sighting--9f9dd79c-bdff-4c0f-be14-ff11d773d445",
@@ -829,5 +829,64 @@ describe('Elasticsearch reindex', () => {
     const documentBody = JSON.parse(jsonObject);
     await elIndex('test_reindex', documentBody);
     await elReindexElements(testContext, ADMIN_USER, ['de618300-4673-4719-9b53-bdf29ad1b440'], 'test_reindex', 'test_deleted_objects');
+  });
+  it('should reindex indicator with unmapped fields', async () => {
+    // object with old fields from issue/9270
+    const jsonObject = `{
+      "pattern_type": "stix",
+      "pattern": "[file:name = 'redacted']",
+      "x_opencti_main_observable_type": "StixFile",
+      "name": "redacted",
+      "description": "Simple indicator of observable {redacted}",
+      "x_opencti_score": 80,
+      "x_opencti_detection": false,
+      "valid_from": "2023-02-28T02:21:45.436Z",
+      "valid_until": "2024-02-28T02:21:45.436Z",
+      "entity_type": "Indicator",
+      "internal_id": "785e743c-b978-416a-aaba-2193f199604f",
+      "standard_id": "indicator--d6a11acd-bd10-50fa-afda-0ea341e5b92f",
+      "creator_id": "7f817b19-2bc8-482f-8662-c0db011accea",
+      "x_opencti_stix_ids": [],
+      "spec_version": "2.1",
+      "created_at": "2023-02-27T20:02:13.552Z",
+      "updated_at": "2024-02-28T02:23:46.892Z",
+      "revoked": true,
+      "confidence": 15,
+      "lang": "en",
+      "created": "2023-02-27T20:02:13.552Z",
+      "modified": "2024-02-28T02:23:46.892Z",
+      "i_valid_from_day": "2023-02-28",
+      "i_valid_from_month": "2023-02",
+      "i_valid_from_year": "2023",
+      "i_valid_until_day": "2024-02-28",
+      "i_valid_until_month": "2024-02",
+      "i_valid_until_year": "2024",
+      "i_created_at_day": "2023-02-27",
+      "i_created_at_month": "2023-02",
+      "i_created_at_year": "2023",
+      "id": "785e743c-b978-416a-aaba-2193f199604f",
+      "base_type": "ENTITY",
+      "parent_types": [
+        "Basic-Object",
+        "Stix-Object",
+        "Stix-Core-Object",
+        "Stix-Domain-Object"
+      ],
+      "rel_created-by.internal_id": [
+        "1e43f46b-449e-4d08-83e8-02bec6d5a1dc"
+      ],
+      "rel_object-marking.internal_id": [
+        "6df6a7e1-5b05-46e7-a912-38ac685d3a24"
+      ],
+      "rel_object-label.internal_id": [
+        "c6054a03-e9cc-45a6-91b8-31b9652e20a2"
+      ],
+      "rel_based-on.internal_id": [
+        "bb90da0d-ecfa-4f49-a9e9-90266d30629d"
+      ]
+    }`;
+    const documentBody = JSON.parse(jsonObject);
+    await elIndex('test_reindex', documentBody);
+    await elReindexElements(testContext, ADMIN_USER, ['785e743c-b978-416a-aaba-2193f199604f'], 'test_reindex', 'test_deleted_objects');
   });
 });
