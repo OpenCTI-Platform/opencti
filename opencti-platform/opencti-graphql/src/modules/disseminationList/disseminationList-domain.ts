@@ -35,7 +35,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreObject } from '../../types/store';
 import { emailChecker } from '../../utils/syntax';
 
-const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
+const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLISTS');
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
