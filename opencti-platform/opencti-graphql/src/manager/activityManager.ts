@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { ACTIVITY_STREAM_NAME, createStreamProcessor, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -35,6 +35,7 @@ import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, Resolve
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
 import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { lockResources } from '../lock/master-lock';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -154,7 +155,7 @@ const initActivityManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
+      lock = await lockResources([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
       const streamOpts = { streamName: ACTIVITY_STREAM_NAME };

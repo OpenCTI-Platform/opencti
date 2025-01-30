@@ -141,6 +141,14 @@ type RedisConnection = Cluster | Redis ;
 interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
+// Method reserved for lock child process
+export const initializeOnlyRedisLockClient = async () => {
+  const lock = await createRedisClient('lock', true);
+  // Disable typescript check for this specific use case.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  redisClients = { lock, base: null, pubsub: null };
+};
 export const initializeRedisClients = async () => {
   const base = await createRedisClient('base', true);
   const lock = await createRedisClient('lock', true);
@@ -356,7 +364,12 @@ export const redisFetchLatestDeletions = async () => {
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
-interface LockOptions { automaticExtension?: boolean, retryCount?: number, draftId?: string }
+interface LockOptions {
+  automaticExtension?: boolean,
+  retryCount?: number,
+  draftId?: string
+  child_operation?: string
+}
 const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
   const obj: any = {};
@@ -396,7 +409,12 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       lock = await lock.extend(maxTtl);
       queue();
     } catch (error) {
-      controller.abort({ name: TYPE_LOCK_ERROR });
+      if (process.send) {
+        // If process.send, we use a child process
+        process.send({ operation: opts.child_operation, type: 'abort', success: false });
+      } else {
+        controller.abort({ name: TYPE_LOCK_ERROR });
+      }
     }
   };
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock

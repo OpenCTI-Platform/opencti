@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
-import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
+import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
@@ -77,6 +77,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
+import { lockResources } from '../lock/master-lock';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -675,7 +676,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   const participantIds = getInstanceIds(previous);
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(participantIds);
+    lock = await lockResources(participantIds);
     const { internal_id: internalId } = previous;
     const { filename } = await file;
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
@@ -793,7 +794,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   const participantIds = getInstanceIds(previous);
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(participantIds);
+    lock = await lockResources(participantIds);
     // If external reference attached, delete first
     if (externalReferenceId) {
       try {

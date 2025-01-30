@@ -4,7 +4,8 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { createStreamProcessor, lockResource, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
 import { addNotification } from '../modules/notification/notification-domain';
@@ -231,7 +232,7 @@ const initPublisherManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
+      lock = await lockResources([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-PUBLISHER] Running publisher manager');
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };

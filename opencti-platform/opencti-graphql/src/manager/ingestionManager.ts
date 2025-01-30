@@ -7,7 +7,7 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import { AxiosError } from 'axios';
-import { lockResource } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -574,7 +574,7 @@ const ingestionHandler = async () => {
   try {
     // Lock the manager
     const turndownService = new TurndownService();
-    lock = await lockResource([INGESTION_MANAGER_KEY], { retryCount: 0 });
+    lock = await lockResources([INGESTION_MANAGER_KEY], { retryCount: 0 });
     running = true;
     // noinspection JSUnusedLocalSymbols
     const context = executionContext('ingestion_manager');

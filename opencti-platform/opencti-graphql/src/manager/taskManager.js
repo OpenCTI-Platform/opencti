@@ -5,7 +5,8 @@ import { Promise as BluePromise } from 'bluebird';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { buildCreateEvent, lockResource, storeUpdateEvent } from '../database/redis';
+import { buildCreateEvent, storeUpdateEvent } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_ENRICHMENT,
@@ -605,7 +606,7 @@ export const taskHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([TASK_MANAGER_KEY], { retryCount: 0 });
+    lock = await lockResources([TASK_MANAGER_KEY], { retryCount: 0 });
     logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
     running = true;
     const startingTime = new Date().getMilliseconds();
