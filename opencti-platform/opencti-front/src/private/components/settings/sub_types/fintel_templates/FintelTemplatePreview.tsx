@@ -99,7 +99,7 @@ const FintelTemplatePreview = ({
     buildPreview(
       entity.value,
       entity.label,
-      (contentMaxMarkings ?? []).map((m) => m.label),
+      (contentMaxMarkings ?? []).map((m) => m.value),
       (fileMarkings ?? []).map((m) => m.label),
     );
   }, [formValues, editorValue, isTabActive]);
