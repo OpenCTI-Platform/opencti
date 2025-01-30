@@ -10,6 +10,8 @@ import type { Widget, WidgetPerspective } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 
+type ListItem = object & { id: string };
+
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -26,13 +28,13 @@ const useBuildListOutcome = () => {
       filters: dataSelection.filters,
     };
 
-    let nodes: any = [];
+    let nodes: ListItem[] = [];
     if (widgetPerspective === 'entities') {
       const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
       nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
     } else if (widgetPerspective === 'relationships') {
       const data = await fetchQuery(stixRelationshipsListQuery, variables).toPromise() as StixRelationshipsListQuery$data;
-      nodes = (data.stixRelationships?.edges ?? []).map((n) => n?.node) ?? [];
+      nodes = (data.stixRelationships?.edges ?? []).flatMap((n) => (n ? n.node : [])) ?? [];
     } else {
       throw Error(t_i18n('Perspective of fintel template list widget should be either "entities" or "relationships"'));
     }
@@ -48,7 +50,7 @@ const useBuildListOutcome = () => {
           </tr>
         </thead>
         <tbody>
-          {nodes.map((n: any) => (
+          {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
                 let property;
