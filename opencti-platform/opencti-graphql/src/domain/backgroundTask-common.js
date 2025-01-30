@@ -4,7 +4,15 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS } from '../utils/access';
+import {
+  isUserHasCapability,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNDISSEMINATION,
+  KNOWLEDGE_KNUPDATE,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SETTINGS_SET_ACCESSES,
+  SETTINGS_SETLABELS
+} from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -20,6 +28,7 @@ import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filter
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -240,7 +249,23 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
     }
   } else if (scope === BackgroundTaskScope.Dissemination) {
-    // TODO check capa and input
+    const isAuthorized = isUserHasCapability(user, KNOWLEDGE_KNDISSEMINATION);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    if (taskType === TASK_TYPE_QUERY) {
+      const isDisseminationLists = entityTypeFilters.length === 1
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_DISSEMINATION_LIST;
+      if (!isDisseminationLists) {
+        throw ForbiddenAccess('The targeted ids are not dissemination lists.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids);
+      if (objects.some((o) => o.entity_type !== ENTITY_TYPE_DISSEMINATION_LIST)) {
+        throw ForbiddenAccess('The targeted ids are not dissemination lists.');
+      }
+    }
   } else { // Background task with an invalid scope
     throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.');
   }
