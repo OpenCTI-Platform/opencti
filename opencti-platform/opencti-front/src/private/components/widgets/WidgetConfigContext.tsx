@@ -17,6 +17,7 @@ interface WidgetConfigContextProps {
   context: WidgetContext;
   disabledSteps: number[];
   fintelWidgets?: FintelTemplateWidget[]
+  fintelEntityType?: string
   step: number;
   setStep: Dispatch<React.SetStateAction<number>>;
   config: WidgetConfigType;
@@ -33,6 +34,7 @@ interface WidgetConfigProviderProps {
   context: WidgetContext
   disabledSteps: number[]
   fintelWidgets: FintelTemplateWidget[] | undefined
+  fintelEntityType: string | undefined
   initialWidget: Widget | undefined;
   initialVariableName: string | undefined;
   open: boolean;
@@ -69,6 +71,7 @@ export const WidgetConfigProvider = ({
   initialWidget,
   initialVariableName,
   fintelWidgets,
+  fintelEntityType,
   open,
   disabledSteps,
 }: WidgetConfigProviderProps) => {
@@ -128,6 +131,7 @@ export const WidgetConfigProvider = ({
       context,
       disabledSteps,
       fintelWidgets,
+      fintelEntityType,
       config: conf,
       setConfigWidget,
       setConfigVariableName,

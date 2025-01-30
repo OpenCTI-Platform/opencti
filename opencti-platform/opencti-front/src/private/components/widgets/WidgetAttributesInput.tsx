@@ -119,15 +119,14 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { config } = useWidgetConfigContext();
+  const { config, fintelEntityType } = useWidgetConfigContext();
   const { isVarNameAlreadyUsed } = useWidgetConfigValidateForm();
-  const { subTypeId } = useParams<{ subTypeId?: string }>();
 
   const { stixCoreObject } = usePreloadedQuery<WidgetAttributesInputContainerInstanceQuery>(
     widgetAttributesInputInstanceQuery,
     queryRef,
   );
-  const entityType = stixCoreObject?.entity_type ?? subTypeId;
+  const entityType = stixCoreObject?.entity_type ?? fintelEntityType;
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
   const availableAttributes: { attribute: string, label: string }[] = stixCoreObjectsAvailableAttributesColumns
