@@ -119,6 +119,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const organizationValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
