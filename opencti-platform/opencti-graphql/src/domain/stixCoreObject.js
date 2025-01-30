@@ -56,7 +56,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { BYPASS, isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
@@ -78,7 +78,7 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
-import { executeRemoveAuthMembers } from '../manager/taskManager';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 
@@ -676,6 +676,15 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .filter((e) => e.matchedEntity);
 
   return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
+};
+
+export const executeRemoveAuthMembers = async (context, user, element) => {
+  await editAuthorizedMembers(context, user, {
+    entityId: element.id,
+    entityType: element.entity_type,
+    requiredCapabilities: [BYPASS],
+    input: null
+  });
 };
 
 export const stixCoreObjectRemoveAuthMembers = async (context, user, id) => {
