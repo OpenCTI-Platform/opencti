@@ -3,9 +3,8 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import { Field } from 'formik';
 import { DisseminationListFieldQuery$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListFieldQuery.graphql';
-import { fetchQuery } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/fields/SelectField';
+import { fetchQuery } from '../../relay/environment';
+import SelectField from './SelectField';
 
 export const disseminationListFieldQuery = graphql`
     query DisseminationListFieldQuery(
@@ -30,8 +29,17 @@ export const disseminationListFieldQuery = graphql`
     }
 `;
 
-const DisseminationListField: FunctionComponent = () => {
-  const { t_i18n } = useFormatter();
+interface DisseminationListFieldProps {
+  label: string,
+  name: string,
+  required?: boolean,
+}
+
+const DisseminationListField: FunctionComponent<DisseminationListFieldProps> = (
+  label,
+  name,
+  required = false,
+) => {
   const [lists, setLists] = useState<DisseminationListFieldQuery$data['disseminationLists'] | null>(null);
 
   const fetchDisseminationLists = async () => {
@@ -49,9 +57,9 @@ const DisseminationListField: FunctionComponent = () => {
   return (
     <Field
       component={SelectField}
-      label={t_i18n('Dissemination list')}
-      name="disseminationListId"
-      required
+      label={label}
+      name={name}
+      required={required}
     >
       {lists?.edges?.map((edge) => (
         <MenuItem key={edge.node.id} value={edge.node.id}>

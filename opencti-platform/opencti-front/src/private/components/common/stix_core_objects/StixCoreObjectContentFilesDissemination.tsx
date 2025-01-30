@@ -8,7 +8,7 @@ import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useTheme } from '@mui/styles';
-import DisseminationListField from '@components/settings/dissemination_lists/DisseminationListField';
+import DisseminationListField from '../../../../components/fields/DisseminationListField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -107,7 +107,11 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <DisseminationListField />
+          <DisseminationListField
+            label={t_i18n('Dissemination list')}
+            name="disseminationListId"
+            required
+          />
           <Field
             component={TextField}
             label={t_i18n('Email subject')}
