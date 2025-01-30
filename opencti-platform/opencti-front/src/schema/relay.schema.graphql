@@ -1059,6 +1059,7 @@ enum BackgroundTaskScope {
   PUBLIC_DASHBOARD
   INVESTIGATION
   PLAYBOOK
+  DISSEMINATION
 }
 
 enum BackgroundTaskActionType {
@@ -1077,6 +1078,7 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
+  DISSEMINATE
 }
 
 enum BackgroundTaskContextType {
@@ -8196,6 +8198,8 @@ type Query {
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
   draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
   fintelTemplate(id: ID!): FintelTemplate
+  disseminationList(id: String!): DisseminationList
+  disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
 }
 
 type Subscription {
@@ -9033,6 +9037,9 @@ type Mutation {
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
+  disseminationListDelete(id: ID!): ID
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
   disseminationListSend(input: DisseminationListSendInput!): Boolean
 }
 
@@ -12595,7 +12602,8 @@ type DisseminationList implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  emails: [String]!
+  emails: [String!]!
+  description: String
 }
 
 enum DisseminationListOrdering {
@@ -12616,10 +12624,11 @@ type DisseminationListEdge {
 input DisseminationListAddInput {
   name: String!
   emails: [String!]!
+  description: String
 }
 
 input DisseminationListSendInput {
-  email_address: String!
+  dissemination_list_id: ID!
   email_object: String!
   email_body: String!
   email_attached_file_id: ID!

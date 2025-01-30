@@ -63,6 +63,7 @@ import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../sch
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_DISSEMINATE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
@@ -87,6 +88,8 @@ import { findById as findOrganizationById } from '../modules/organization/organi
 import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
+import { sendDisseminationEmail } from '../modules/disseminationList/disseminationList-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -196,6 +199,8 @@ const computeListTaskElements = async (context, user, task) => {
     type = [ENTITY_TYPE_PUBLIC_DASHBOARD];
   } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
     type = [ENTITY_TYPE_WORKSPACE];
+  } else if (scope === BackgroundTaskScope.Dissemination) {
+    type = [ENTITY_TYPE_DISSEMINATION_LIST];
   }
   const options = {
     type,
@@ -456,6 +461,21 @@ export const executeRemoveAuthMembers = async (context, user, element) => {
   });
 };
 
+const executeDissemination = async (context, user, actionContext, element) => {
+  logApp.info('Executing dissemination with', { actionContext, element });
+  const disseminationContext = actionContext.emailData;
+  const attachFileIds = actionContext.values;
+
+  if (!attachFileIds || attachFileIds.length < 1) {
+    throw FunctionalError('There is no file to disseminate', { actionContext, element });
+  }
+
+  if (!disseminationContext.object || !disseminationContext.body) {
+    throw FunctionalError('There is no email data for disseminate', { actionContext, element });
+  }
+  await sendDisseminationEmail(context, user, disseminationContext.object, disseminationContext.body, element.emails, attachFileIds);
+};
+
 const throwErrorInDraftContext = (context, user, actionType) => {
   if (!getDraftContext(context, user)) {
     return;
@@ -576,6 +596,9 @@ const executeProcessing = async (context, user, job, scope) => {
           }
           if (type === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
             await executeRemoveAuthMembers(context, user, element);
+          }
+          if (type === ACTION_TYPE_DISSEMINATE) {
+            await executeDissemination(context, user, actionContext, element);
           }
         } catch (err) {
           logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: elementIndex });

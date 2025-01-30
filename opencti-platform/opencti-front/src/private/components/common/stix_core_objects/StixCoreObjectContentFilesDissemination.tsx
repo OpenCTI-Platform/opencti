@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
@@ -6,12 +7,15 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { useTheme } from '@mui/styles';
+import DisseminationListField from '../../../../components/fields/DisseminationListField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectContentFilesDisseminationProps {
   fileId: string;
@@ -20,7 +24,7 @@ interface StixCoreObjectContentFilesDisseminationProps {
 }
 
 interface DisseminationInput {
-  emailAddress: string;
+  disseminationListId: string;
   emailObject: string;
   emailBody: string;
 }
@@ -39,8 +43,10 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
   const basicShape = {
-    emailAddress: Yup.string().required(t_i18n('This field is required')),
+    disseminationListId: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
     emailBody: Yup.string().required(t_i18n('This field is required')),
   };
@@ -48,7 +54,14 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const [commitMutation] = useApiMutation(
     DisseminationListSendInputMutation,
     undefined,
-    { successMessage: `${t_i18n('Email sent')}` },
+    {
+      successMessage: (
+        <span>
+          {t_i18n('The background task has been executed. You can monitor it on')}{' '}
+          <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
+        </span>
+      ),
+    },
   );
 
   const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = async (
@@ -62,7 +75,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     commitMutation({
       variables: {
         input: {
-          email_address: values.emailAddress,
+          dissemination_list_id: values.disseminationListId,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
           email_attached_file_id: fileId,
@@ -80,7 +93,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     });
   };
   const initialValues = {
-    emailAddress: '',
+    disseminationListId: '',
     emailObject: '',
     emailBody: '',
   };
@@ -94,14 +107,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Field
-            component={TextField}
-            label={t_i18n('Email address')}
-            name="emailAddress"
-            type="email"
-            fullWidth
-            required
-          />
+          <DisseminationListField/>
           <Field
             component={TextField}
             label={t_i18n('Email subject')}
@@ -130,7 +136,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             style={fieldSpacingContainerStyle}
           />
           <div style={{
-            marginTop: 20,
+            marginTop: theme.spacing(2),
             textAlign: 'right',
           }}
           >
@@ -146,7 +152,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
+              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Send')}
             </Button>

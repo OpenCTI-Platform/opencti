@@ -996,6 +996,7 @@ enum BackgroundTaskScope {
   PUBLIC_DASHBOARD
   INVESTIGATION
   PLAYBOOK
+  DISSEMINATION
 }
 enum BackgroundTaskActionType {
   DELETE
@@ -1013,6 +1014,7 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
+  DISSEMINATE
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE

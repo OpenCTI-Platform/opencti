@@ -23,6 +23,7 @@ const convertDisseminationListToStix = (instance: StoreEntityDisseminationList):
     ...stixObject,
     name: instance.name,
     emails: instance.emails,
+    description: instance.description,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

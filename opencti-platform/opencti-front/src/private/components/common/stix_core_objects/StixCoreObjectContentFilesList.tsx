@@ -164,7 +164,7 @@ const StixCoreObjectContentFilesList = ({
                 {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
                 <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
                   <>
-                    <Tooltip title={'Disseminate'}>
+                    <Tooltip title={t_i18n('Disseminate')}>
                       <IconButton
                         onClick={(e) => handleDisseminate(e)}
                         size="small"

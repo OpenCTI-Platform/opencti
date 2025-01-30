@@ -1298,6 +1298,7 @@ export enum BackgroundTaskActionType {
   Add = 'ADD',
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
+  Disseminate = 'DISSEMINATE',
   Enrichment = 'ENRICHMENT',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
@@ -1357,6 +1358,7 @@ export type BackgroundTaskError = {
 
 export enum BackgroundTaskScope {
   Dashboard = 'DASHBOARD',
+  Dissemination = 'DISSEMINATION',
   Import = 'IMPORT',
   Investigation = 'INVESTIGATION',
   Knowledge = 'KNOWLEDGE',
@@ -6296,7 +6298,8 @@ export type DisplayStep = {
 export type DisseminationList = BasicObject & InternalObject & {
   __typename?: 'DisseminationList';
   created_at: Scalars['DateTime']['output'];
-  emails: Array<Maybe<Scalars['String']['output']>>;
+  description?: Maybe<Scalars['String']['output']>;
+  emails: Array<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -6306,6 +6309,7 @@ export type DisseminationList = BasicObject & InternalObject & {
 };
 
 export type DisseminationListAddInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
   emails: Array<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
@@ -6328,7 +6332,7 @@ export enum DisseminationListOrdering {
 }
 
 export type DisseminationListSendInput = {
-  email_address: Scalars['String']['input'];
+  dissemination_list_id: Scalars['ID']['input'];
   email_attached_file_id: Scalars['ID']['input'];
   email_body: Scalars['String']['input'];
   email_object: Scalars['String']['input'];
@@ -13693,6 +13697,9 @@ export type Mutation = {
   deleteImport?: Maybe<Scalars['ID']['output']>;
   deleteOperationConfirm?: Maybe<Scalars['ID']['output']>;
   deleteOperationRestore?: Maybe<Scalars['ID']['output']>;
+  disseminationListAdd?: Maybe<DisseminationList>;
+  disseminationListDelete?: Maybe<Scalars['ID']['output']>;
+  disseminationListFieldPatch?: Maybe<DisseminationList>;
   disseminationListSend?: Maybe<Scalars['Boolean']['output']>;
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
@@ -14468,6 +14475,22 @@ export type MutationDeleteOperationConfirmArgs = {
 
 export type MutationDeleteOperationRestoreArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationDisseminationListAddArgs = {
+  input: DisseminationListAddInput;
+};
+
+
+export type MutationDisseminationListDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDisseminationListFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -19599,6 +19622,8 @@ export type Query = {
   decayRules?: Maybe<DecayRuleConnection>;
   deleteOperation?: Maybe<DeleteOperation>;
   deleteOperations?: Maybe<DeleteOperationConnection>;
+  disseminationList?: Maybe<DisseminationList>;
+  disseminationLists?: Maybe<DisseminationListConnection>;
   draftWorkspace?: Maybe<DraftWorkspace>;
   draftWorkspaceEntities?: Maybe<StixCoreObjectConnection>;
   draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
@@ -20330,6 +20355,21 @@ export type QueryDeleteOperationsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<DeleteOperationOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDisseminationListArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryDisseminationListsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DisseminationListOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -34870,7 +34910,8 @@ export type DisplayStepResolvers<ContextType = any, ParentType extends Resolvers
 
 export type DisseminationListResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisseminationList'] = ResolversParentTypes['DisseminationList']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  emails?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  emails?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -37510,6 +37551,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteImport?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
   deleteOperationConfirm?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDeleteOperationConfirmArgs, 'id'>>;
   deleteOperationRestore?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDeleteOperationRestoreArgs, 'id'>>;
+  disseminationListAdd?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListAddArgs, 'input'>>;
+  disseminationListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDisseminationListDeleteArgs, 'id'>>;
+  disseminationListFieldPatch?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListFieldPatchArgs, 'id' | 'input'>>;
   disseminationListSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisseminationListSendArgs, 'input'>>;
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
@@ -39011,6 +39055,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   decayRules?: Resolver<Maybe<ResolversTypes['DecayRuleConnection']>, ParentType, ContextType, Partial<QueryDecayRulesArgs>>;
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
+  disseminationList?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<QueryDisseminationListArgs, 'id'>>;
+  disseminationLists?: Resolver<Maybe<ResolversTypes['DisseminationListConnection']>, ParentType, ContextType, Partial<QueryDisseminationListsArgs>>;
   draftWorkspace?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceArgs, 'id'>>;
   draftWorkspaceEntities?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceEntitiesArgs, 'draftId'>>;
   draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;
