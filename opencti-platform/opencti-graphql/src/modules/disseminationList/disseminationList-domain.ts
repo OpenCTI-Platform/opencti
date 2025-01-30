@@ -39,16 +39,27 @@ const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
-export const findById = (context: AuthContext, user: AuthUser, id: string) => {
+export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
+export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
+  await checkEnterpriseEdition(context);
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
 };
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListSendInput) => {
   await checkEnterpriseEdition(context);
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   const emailBodyFormatted = input.email_body.replaceAll('\n', '<br/>');
 
   const data = {
@@ -89,6 +100,10 @@ interface SendMailArgs {
  * @param attachFileIds
  */
 export const sendDisseminationEmail = async (context: AuthContext, user: AuthUser, object: string, body: string, emails: string[], attachFileIds: string[]) => {
+  await checkEnterpriseEdition(context);
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   logApp.info('Calling send disemination', { object, body, emails, attachFileIds });
   const toEmail = conf.get('app:dissemination_list:to_email');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
@@ -143,6 +158,7 @@ export const sendDisseminationEmail = async (context: AuthContext, user: AuthUse
 };
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
+  await checkEnterpriseEdition(context);
   if (!isDisseminationListEnabled) {
     throw UnsupportedError('Feature not yet available');
   }
@@ -160,6 +176,10 @@ export const addDisseminationList = async (context: AuthContext, user: AuthUser,
 };
 
 export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  await checkEnterpriseEdition(context);
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   // Get the list
   const disseminationList = await findById(context, user, id);
   if (!disseminationList) {
@@ -185,6 +205,7 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
 };
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
   if (!isDisseminationListEnabled) {
     throw UnsupportedError('Feature not yet available');
   }
