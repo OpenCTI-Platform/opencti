@@ -31,7 +31,7 @@ const WidgetCreationPerspective = () => {
       }],
       filterGroups: [],
     };
-    const initialFilters = context === 'fintelTemplate' && perspective === 'entities'
+    const initialFilters = context === 'fintelTemplate'
       ? fintelTemplateEntitiesInitialFilters
       : emptyFilterGroup;
     const initialColumns = perspective === 'entities' || perspective === 'relationships'
