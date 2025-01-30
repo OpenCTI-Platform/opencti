@@ -25,7 +25,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
-import conf, { BUS_TOPICS } from '../../config/conf';
+import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import type { BasicStoreObject } from '../../types/store';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -34,6 +34,8 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { ACTION_TYPE_DISSEMINATE, createListTask } from '../../domain/backgroundTask-common';
+
+const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
 const EMAILS_LIMIT_BY_LIST = 500;
 
@@ -117,6 +119,9 @@ export const sendToDisseminationListSync = async (context: AuthContext, user: Au
 };
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   const disseminationListInternalId = generateInternalId();
   if (input.emails.length > EMAILS_LIMIT_BY_LIST) {
     throw UnsupportedError(`You cannot add more than ${EMAILS_LIMIT_BY_LIST} e-mail addresses`);
@@ -156,5 +161,8 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
 };
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
+  if (!isDisseminationListEnabled) {
+    throw UnsupportedError('Feature not yet available');
+  }
   return deleteInternalObject(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
