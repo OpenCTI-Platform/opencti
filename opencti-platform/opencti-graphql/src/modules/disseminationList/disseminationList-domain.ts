@@ -19,8 +19,7 @@ import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../da
 import { BackgroundTaskScope, type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
-import conf, { BUS_TOPICS, logApp } from '../../config/conf';
-import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { generateInternalId } from '../../schema/identifier';
