@@ -38,7 +38,11 @@ const useBuildListOutcome = () => {
     } else {
       throw Error(t_i18n('Perspective of fintel template list widget should be either "entities" or "relationships"'));
     }
-    const columns = dataSelection.columns ?? [];
+    const columns = dataSelection.columns ?? [
+      { label: t_i18n('Entity type'), attribute: 'entity_type' },
+      { label: t_i18n('Representative'), attribute: 'representative.main' },
+      { label: t_i18n('Creation date'), attribute: 'created_at' },
+    ];
 
     return renderToString(
       <table>
