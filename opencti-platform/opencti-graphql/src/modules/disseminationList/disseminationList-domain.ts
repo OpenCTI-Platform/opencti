@@ -22,7 +22,6 @@ import { buildContextDataForFile, publishUserAction } from '../../listener/UserA
 import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import { generateInternalId } from '../../schema/identifier';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
@@ -34,6 +33,7 @@ import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
 import { sendMail } from '../../database/smtp';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreObject } from '../../types/store';
+import { emailChecker } from '../../utils/syntax';
 
 const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
@@ -157,20 +157,27 @@ export const sendDisseminationEmail = async (context: AuthContext, user: AuthUse
   }
 };
 
+const validationEmails = (emails: string[]) => {
+  // check the limit of emails
+  if (emails.length > MAX_DISSEMINATION_LIST_SIZE) {
+    throw UnsupportedError(`You cannot have more than ${MAX_DISSEMINATION_LIST_SIZE} e-mail addresses`);
+  }
+  // check email validity
+  if (emails.some((email) => !emailChecker.test(email))) {
+    throw UnsupportedError('Emails are not correctly formatted');
+  }
+};
+
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
   await checkEnterpriseEdition(context);
   if (!isDisseminationListEnabled) {
     throw UnsupportedError('Feature not yet available');
   }
-  const disseminationListInternalId = generateInternalId();
-  if (input.emails.length > MAX_DISSEMINATION_LIST_SIZE) {
-    throw UnsupportedError(`You cannot add more than ${MAX_DISSEMINATION_LIST_SIZE} e-mail addresses`);
-  }
+  validationEmails(input.emails);
   const disseminationListToCreate = {
     name: input.name,
     emails: input.emails,
     description: input.description,
-    internal_id: disseminationListInternalId,
   };
   return createInternalObject<StoreEntityDisseminationList>(context, user, disseminationListToCreate, ENTITY_TYPE_DISSEMINATION_LIST);
 };
@@ -185,11 +192,9 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   if (!disseminationList) {
     throw FunctionalError(`Dissemination list ${id} cannot be found`);
   }
-  // check the limit of emails
+  // Validation emails
   const emailsInput = input.find((editInput) => editInput.key === 'emails');
-  if (emailsInput && emailsInput.value.length > MAX_DISSEMINATION_LIST_SIZE) {
-    throw UnsupportedError(`You cannot have more than ${MAX_DISSEMINATION_LIST_SIZE} e-mail addresses`);
-  }
+  if (emailsInput) validationEmails(emailsInput.value);
   // Update the list
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
   // Publish Activity
