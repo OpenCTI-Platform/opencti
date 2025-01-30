@@ -2917,6 +2917,7 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "最大置信度目前是在用户级别定义的。它覆盖用户组的最大置信度。",
   "The Max Confidence Level is currently inherited from...": "当前最大置信度是从组 {link} 继承的。",
   "The min value cannot be greater than max value": "最小值不能大于最大值",
+  "The number of results should be lower than 100": "结果数量应少于 100",
   "The operators and modes are restricted for these filters.": "这些过滤器的运算符和模式受到限制。",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意见在您的词汇中没有定义值。请先添加意见，才能添加观点。",
   "The password has been updated": "密码已更新",

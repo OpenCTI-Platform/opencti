@@ -226,6 +226,7 @@ const WidgetCreationParameters = () => {
           .fill(0)
           .map((_, i) => {
             const currentInstanceId = dataSelection[i].instance_id;
+            const isNumberError = (dataSelection[i].number ?? 10) > 100;
             return (
               <div key={i}>
                 {type === 'attribute' && (
@@ -284,6 +285,8 @@ const WidgetCreationParameters = () => {
                     label={t_i18n('Number of results')}
                     fullWidth={true}
                     type="number"
+                    error={isNumberError}
+                    helperText={t_i18n('The number of results should be lower than 100')}
                     value={dataSelection[i].number ?? 10}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,

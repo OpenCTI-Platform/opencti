@@ -18,7 +18,7 @@ const useBuildListOutcome = () => {
     const dateAttribute = dataSelection.date_attribute || 'created_at';
     const variables = {
       types: ['Stix-Core-Object'],
-      first: dataSelection.number ?? 1000,
+      first: dataSelection.number ?? 10,
       orderBy: dateAttribute,
       orderMode: 'desc',
       filters: dataSelection.filters,

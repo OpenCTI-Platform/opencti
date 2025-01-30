@@ -2917,6 +2917,7 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "최대 신뢰 수준이 현재 사용자 수준에서 정의되어 있습니다. 사용자 그룹의 최대 신뢰 수준을 재정의합니다.",
   "The Max Confidence Level is currently inherited from...": "최대 신뢰 수준은 현재 {link} 그룹에서 상속됩니다.",
   "The min value cannot be greater than max value": "최소 값은 최대 값보다 클 수 없습니다",
+  "The number of results should be lower than 100": "결과 수는 100보다 작아야 합니다",
   "The operators and modes are restricted for these filters.": "이 필터의 연산자 및 모드는 제한됩니다.",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "의견에 대한 값이 정의되어 있지 않습니다. 의견을 추가할 수 있도록 먼저 추가하십시오.",
   "The password has been updated": "비밀번호가 업데이트되었습니다",
