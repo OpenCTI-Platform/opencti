@@ -628,7 +628,6 @@ const createWorkForBackgroundTask = async (context, connectorId) => {
 // For now only support basic knowledge operations ADD / REPLACE / REMOVE
 // Support must be improved to support all operations types.
 // 2. ACTION_TYPE_RESTORE
-// 8. ACTION_TYPE_REMOVE_AUTH_MEMBERS
 const CURRENT_SUPPORT_TASKS = [
   // KNOWLEDGE
   'KNOWLEDGE_CHANGE', 'KNOWLEDGE_REMOVE', 'KNOWLEDGE_TRASH', ACTION_TYPE_MERGE,

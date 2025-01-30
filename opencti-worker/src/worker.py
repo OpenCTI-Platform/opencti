@@ -226,6 +226,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             else None
         )
         try:
+            # Event type bundle
+            # Standard event with STIX information
             if event_type == "bundle":
                 content = base64.b64decode(data["content"]).decode("utf-8")
                 content_json = json.loads(content)
@@ -277,96 +279,68 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
                     push_channel.close()
                     push_pika_connection.close()
+            # Event type event
+            # Specific OpenCTI event operation with specific operation
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
                 event_content = json.loads(event)
                 event_type = event_content["type"]
-                if event_type == "create" or event_type == "update":
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [event_content["data"]],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "delete" or event_type == "delete-force":
-                    delete_object = event_content["data"]
-                    delete_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [delete_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "merge":
-                    # Start with a merge
-                    target_id = event_content["data"]["id"]
-                    source_ids = list(
-                        map(
-                            lambda source: source["id"],
-                            event_content["context"]["sources"],
+                match event_type:
+                    # Standard knowledge
+                    case "create" | "update":
+                        bundle = {
+                            "type": "bundle",
+                            "objects": [event_content["data"]],
+                        }
+                        imported_items = self.api.stix2.import_bundle(
+                            bundle, True, types, work_id
                         )
-                    )
-                    merge_object = event_content["data"]
-                    merge_object["opencti_operation"] = event_type
-                    merge_object["merge_target_id"] = target_id
-                    merge_object["merge_source_ids"] = source_ids
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [merge_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif (
-                    event_type == "rule_apply"
-                    or event_type == "rule_clear"
-                    or event_type == "rules_rescan"
-                ):
-                    rule_object = event_content["data"]
-                    rule_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [rule_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "share" or event_type == "unshare":
-                    sharing_object = event_content["data"]
-                    sharing_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [sharing_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "enrichment":
-                    enrich_object = event_content["data"]
-                    enrich_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [enrich_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                elif event_type == "clear_access_restriction":
-                    enrich_object = event_content["data"]
-                    enrich_object["opencti_operation"] = event_type
-                    bundle = {
-                        "type": "bundle",
-                        "objects": [enrich_object],
-                    }
-                    imported_items = self.api.stix2.import_bundle(
-                        bundle, True, types, work_id
-                    )
-                else:
-                    raise ValueError(
-                        "Unsupported operation type", {"event_type": event_type}
-                    )
+                    # Specific knowledge merge
+                    case "merge":
+                        # Start with a merge
+                        target_id = event_content["data"]["id"]
+                        source_ids = list(
+                            map(
+                                lambda source: source["id"],
+                                event_content["context"]["sources"],
+                            )
+                        )
+                        merge_object = event_content["data"]
+                        merge_object["opencti_operation"] = event_type
+                        merge_object["merge_target_id"] = target_id
+                        merge_object["merge_source_ids"] = source_ids
+                        bundle = {
+                            "type": "bundle",
+                            "objects": [merge_object],
+                        }
+                        imported_items = self.api.stix2.import_bundle(
+                            bundle, True, types, work_id
+                        )
+                    # All standard operations
+                    case (
+                        "delete"  # Standard delete
+                        | "delete-force"  # Delete with no trash
+                        | "share"  # Share an element
+                        | "unshare"  # Unshare an element
+                        | "rule_apply"  # Applying a rule (start engine)
+                        | "rule_clear"  # Clearing a rule (stop engine)
+                        | "rules_rescan"  # Rescan a rule (massive operation in UI)
+                        | "enrichment"  # Ask for enrichment (massive operation in UI)
+                        | "clear_access_restriction"  # Clear access members ((massive operation in UI)
+                    ):
+                        data_object = event_content["data"]
+                        data_object["opencti_operation"] = event_type
+                        bundle = {
+                            "type": "bundle",
+                            "objects": [data_object],
+                        }
+                        imported_items = self.api.stix2.import_bundle(
+                            bundle, True, types, work_id
+                        )
+                    case _:
+                        raise ValueError(
+                            "Unsupported operation type", {"event_type": event_type}
+                        )
             else:
                 raise ValueError("Unsupported event type", {"event_type": event_type})
         except Exception as ex:
