@@ -16,6 +16,7 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import FormHelperText from '@mui/material/FormHelperText';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
+import { useParams } from 'react-router-dom';
 import { widgetAttributesInputInstanceQuery } from './WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery } from './__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
@@ -120,12 +121,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
   const { t_i18n } = useFormatter();
   const { config } = useWidgetConfigContext();
   const { isVarNameAlreadyUsed } = useWidgetConfigValidateForm();
+  const { subTypeId } = useParams<{ subTypeId?: string }>();
 
   const { stixCoreObject } = usePreloadedQuery<WidgetAttributesInputContainerInstanceQuery>(
     widgetAttributesInputInstanceQuery,
     queryRef,
   );
-  const entityType = stixCoreObject?.entity_type;
+  const entityType = stixCoreObject?.entity_type ?? subTypeId;
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
   const availableAttributes: { attribute: string, label: string }[] = stixCoreObjectsAvailableAttributesColumns

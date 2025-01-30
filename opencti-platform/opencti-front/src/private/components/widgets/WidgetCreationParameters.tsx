@@ -45,7 +45,6 @@ const WidgetCreationParameters = () => {
     fintelWidgets,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
-  console.log('data', dataSelection);
   const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
 
   const alreadyUsedInstances = (fintelWidgets ?? []).flatMap(({ widget }) => {
