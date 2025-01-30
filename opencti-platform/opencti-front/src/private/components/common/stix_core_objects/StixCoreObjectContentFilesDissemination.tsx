@@ -107,11 +107,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <DisseminationListField
-            label={t_i18n('Dissemination list')}
-            name="disseminationListId"
-            required
-          />
+          <DisseminationListField/>
           <Field
             component={TextField}
             label={t_i18n('Email subject')}

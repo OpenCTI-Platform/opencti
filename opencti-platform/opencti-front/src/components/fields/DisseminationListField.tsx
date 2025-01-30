@@ -5,6 +5,7 @@ import { Field } from 'formik';
 import { DisseminationListFieldQuery$data } from './__generated__/DisseminationListFieldQuery.graphql';
 import { fetchQuery } from '../../relay/environment';
 import SelectField from './SelectField';
+import { useFormatter } from '../i18n';
 
 export const disseminationListFieldQuery = graphql`
     query DisseminationListFieldQuery(
@@ -29,17 +30,8 @@ export const disseminationListFieldQuery = graphql`
     }
 `;
 
-interface DisseminationListFieldProps {
-  label: string,
-  name: string,
-  required?: boolean,
-}
-
-const DisseminationListField: FunctionComponent<DisseminationListFieldProps> = (
-  label,
-  name,
-  required = false,
-) => {
+const DisseminationListField: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const [lists, setLists] = useState<DisseminationListFieldQuery$data['disseminationLists'] | null>(null);
 
   const fetchDisseminationLists = async () => {
@@ -57,9 +49,9 @@ const DisseminationListField: FunctionComponent<DisseminationListFieldProps> = (
   return (
     <Field
       component={SelectField}
-      label={label}
-      name={name}
-      required={required}
+      label={t_i18n('Dissemination list')}
+      name="disseminationListId"
+      required
     >
       {lists?.edges?.map((edge) => (
         <MenuItem key={edge.node.id} value={edge.node.id}>
