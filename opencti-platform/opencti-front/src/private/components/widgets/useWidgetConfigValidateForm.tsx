@@ -34,6 +34,9 @@ const useWidgetConfigValidateForm = () => {
   // Check there is a type
   const isTypeFilled = !!type && type !== '';
 
+  // Check the number of results is lower than 100 for lists
+  const isDataSelectionNumberValid = dataSelection.every((selection) => !selection.number || selection.number <= 100);
+
   // Check all data selections has an attribute filled if  widget type requires it
   const isDataSelectionAttributesFilled = !getCurrentAvailableParameters(type).includes('attribute')
     || (getCurrentAvailableParameters(type).includes('attribute') && isDataSelectionAttributesValid());
@@ -60,6 +63,7 @@ const useWidgetConfigValidateForm = () => {
   return {
     isFormValid: (
       isLastStep
+      && isDataSelectionNumberValid
       && isDataSelectionAttributesFilled
       && isVariableNameFilled
       && isVariableNameValid
