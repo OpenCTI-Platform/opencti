@@ -2242,6 +2242,7 @@
   "personal-gain": "个人收益",
   "personal-satisfaction": "个人满足感",
   "Perspective": "看法",
+  "Perspective of fintel template list widget should be either \"entities\" or \"relationships\"": "fintel 模板列表 widget 的视角应为\"实体\"或\"关系\"；",
   "Phase name": "阶段名称",
   "Pictures Management": "图片管理",
   "Pie chart": "饼图",
