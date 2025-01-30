@@ -121,6 +121,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                     'observables',
                   ]}
                   data={incident}
+                  attribution={['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign']}
                 />
               }
             />
