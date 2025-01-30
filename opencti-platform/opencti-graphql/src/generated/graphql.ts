@@ -974,6 +974,7 @@ export enum AttackPatternsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'

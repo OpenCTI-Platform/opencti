@@ -1,15 +1,9 @@
-import React, { FunctionComponent } from 'react';
-import Tooltip from '@mui/material/Tooltip';
+import React, { FunctionComponent, ReactElement } from 'react';
 import {
   stixDomainObjectAttackPatternsKillChainContainerFragment,
   stixDomainObjectAttackPatternsKillChainContainerLineFragment,
 } from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainContainer';
 import { stixDomainObjectAttackPatternsKillChainQuery } from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChain';
-import ToggleButton from '@mui/material/ToggleButton';
-import { ViewColumnOutlined } from '@mui/icons-material';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
-import FiligranIcon from '@components/common/FiligranIcon';
-import { ProgressWrench } from 'mdi-material-ui';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
   StixDomainObjectAttackPatternsKillChainQuery$variables,
@@ -17,19 +11,23 @@ import {
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
-import { truncate } from '../../../../utils/String';
+import StixCoreRelationshipCreationFromEntity from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { useFormatter } from '../../../../components/i18n';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   storageKey: string;
   entityId: string;
   currentView?: string;
-  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
+  viewButtons: ReactElement[];
+  defaultStartTime: string;
+  defaultStopTime: string;
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
@@ -37,18 +35,17 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     storageKey,
     entityId,
     currentView,
-    paginationOptions,
+    viewButtons,
+    defaultStartTime,
+    defaultStopTime,
   },
 ) => {
-  const { t_i18n } = useFormatter();
+  const LOCAL_STORAGE_KEY = `${storageKey}-stix-matrix-in-line`;
   const dataColumns = {
     entity_type: { percentWidth: 11 },
     killChainPhase: { percentWidth: 22 },
     x_mitre_id: { percentWidth: 10 },
-    name: {
-      percentWidth: 20,
-      render: ({ name }: { name: string }, { column: { size } }: { column: { size: number } }) => (<Tooltip title={name}>{truncate(name, size * 0.113)}</Tooltip>),
-    },
+    name: { percentWidth: 20 },
     objectLabel: { percentWidth: 15 },
     created: { percentWidth: 12 },
     objectMarking: { percentWidth: 10 },
@@ -60,12 +57,13 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     orderAsc: true,
     openExports: false,
     filters: emptyFilterGroup,
-    view: 'matrix-in-line',
+    view: currentView ?? 'matrix-in-line',
   };
 
-  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
-    storageKey,
+  const { paginationOptions, viewStorage, helpers: storageHelpers } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(
+    LOCAL_STORAGE_KEY,
     initialValues,
+    true,
   );
 
   const {
@@ -91,10 +89,14 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
     filters: contextFilters,
   } as unknown as StixDomainObjectAttackPatternsKillChainQuery$variables;
 
-  const queryRef = useQueryLoading<StixDomainObjectAttackPatternsKillChainQuery>(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
     queryPaginationOptions,
   );
+
+  const refetch = React.useCallback(() => {
+    loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
 
   const preloadedPaginationProps = {
     linesQuery: stixDomainObjectAttackPatternsKillChainQuery,
@@ -105,48 +107,40 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
   } as UsePreloadedPaginationFragment<StixDomainObjectAttackPatternsKillChainQuery>;
 
   return (
-    <div
-      style={{
-        transform: 'translateY(-12px)',
-      }}
-    >
-      {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
-          storageKey={storageKey}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          preloadedPaginationProps={preloadedPaginationProps}
-          lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
-          exportContext={{ entity_type: 'Attack-Pattern' }}
-          additionalHeaderButtons={[
-            (<ToggleButton key="matrix" value="matrix" aria-label="matrix">
-              <Tooltip title={t_i18n('Matrix view')}>
-                <ViewColumnOutlined fontSize="small" color="primary" />
-              </Tooltip>
-            </ToggleButton>),
-            (<Tooltip key="matrix-in-line" title={t_i18n('Matrix in line view')}>
-              <ToggleButton key="matrix-in-line" value="matrix-in-line" aria-label="matrix-in-line">
-                <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
-              </ToggleButton>
-            </Tooltip>
-            ),
-            (<Tooltip key="list" title={t_i18n('Kill chain view')}>
-              <ToggleButton key="list" value="list" aria-label="list">
-                <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
-              </ToggleButton>
-            </Tooltip>
-            ),
-            (<ToggleButton key="courses-of-action" value="courses-of-action" aria-label="courses-of-action">
-              <Tooltip title={t_i18n('Courses of action view')}>
-                <ProgressWrench color="primary" fontSize="small" />
-              </Tooltip>
-            </ToggleButton>),
-          ]}
+    <>
+      <div
+        style={{
+          transform: 'translateY(-12px)',
+        }}
+      >
+        {queryRef && (
+          <DataTable
+            variant={DataTableVariant.inline}
+            dataColumns={dataColumns}
+            resolvePath={(data: StixDomainObjectAttackPatternsKillChainContainer_data$data) => (data.attackPatterns?.edges ?? []).map((n) => n.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={stixDomainObjectAttackPatternsKillChainContainerLineFragment}
+            exportContext={{ entity_type: 'Attack-Pattern' }}
+            additionalHeaderButtons={[...viewButtons]}
+          />
+        )}
+      </div>
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <StixCoreRelationshipCreationFromEntity
+          entityId={entityId}
+          isRelationReversed={false}
+          paddingRight={220}
+          onCreate={refetch}
+          targetStixDomainObjectTypes={['Attack-Pattern']}
+          paginationOptions={queryPaginationOptions}
+          defaultStartTime={defaultStartTime}
+          defaultStopTime={defaultStopTime}
         />
-      )}
-    </div>
+      </Security>
+    </>
   );
 };
 
