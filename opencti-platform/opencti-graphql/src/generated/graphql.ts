@@ -24453,6 +24453,7 @@ export type StixCoreObjectEditMutations = {
   analysisPush?: Maybe<File>;
   askAnalysis?: Maybe<Work>;
   askEnrichment?: Maybe<Array<Work>>;
+  clearAccessRestriction?: Maybe<StixCoreObject>;
   delete?: Maybe<Scalars['ID']['output']>;
   exportAsk?: Maybe<Array<File>>;
   exportPush?: Maybe<Scalars['Boolean']['output']>;
@@ -31865,7 +31866,7 @@ export type ResolversTypes = ResolversObject<{
   StixCoreObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCoreObject']>;
   StixCoreObjectConnection: ResolverTypeWrapper<Omit<StixCoreObjectConnection, 'edges'> & { edges: Array<ResolversTypes['StixCoreObjectEdge']> }>;
   StixCoreObjectEdge: ResolverTypeWrapper<Omit<StixCoreObjectEdge, 'node'> & { node: ResolversTypes['StixCoreObject'] }>;
-  StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversTypes['File']>, askAnalysis?: Maybe<ResolversTypes['Work']>, askEnrichment?: Maybe<Array<ResolversTypes['Work']>>, exportAsk?: Maybe<Array<ResolversTypes['File']>>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
+  StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'clearAccessRestriction' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversTypes['File']>, askAnalysis?: Maybe<ResolversTypes['Work']>, askEnrichment?: Maybe<Array<ResolversTypes['Work']>>, clearAccessRestriction?: Maybe<ResolversTypes['StixCoreObject']>, exportAsk?: Maybe<Array<ResolversTypes['File']>>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
   StixCoreObjectOrStixCoreRelationship: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['StixCoreObjectOrStixCoreRelationship']>;
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
@@ -32648,7 +32649,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreObject: ResolversInterfaceTypes<ResolversParentTypes>['StixCoreObject'];
   StixCoreObjectConnection: Omit<StixCoreObjectConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCoreObjectEdge']> };
   StixCoreObjectEdge: Omit<StixCoreObjectEdge, 'node'> & { node: ResolversParentTypes['StixCoreObject'] };
-  StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversParentTypes['File']>, askAnalysis?: Maybe<ResolversParentTypes['Work']>, askEnrichment?: Maybe<Array<ResolversParentTypes['Work']>>, exportAsk?: Maybe<Array<ResolversParentTypes['File']>>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
+  StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'clearAccessRestriction' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversParentTypes['File']>, askAnalysis?: Maybe<ResolversParentTypes['Work']>, askEnrichment?: Maybe<Array<ResolversParentTypes['Work']>>, clearAccessRestriction?: Maybe<ResolversParentTypes['StixCoreObject']>, exportAsk?: Maybe<Array<ResolversParentTypes['File']>>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
   StixCoreObjectOrStixCoreRelationship: ResolversUnionTypes<ResolversParentTypes>['StixCoreObjectOrStixCoreRelationship'];
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
@@ -40135,6 +40136,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   analysisPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAnalysisPushArgs, 'analysisType' | 'contentSource' | 'contentType' | 'file'>>;
   askAnalysis?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskAnalysisArgs, 'contentSource' | 'contentType'>>;
   askEnrichment?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
+  clearAccessRestriction?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportPushArgs, 'file'>>;
