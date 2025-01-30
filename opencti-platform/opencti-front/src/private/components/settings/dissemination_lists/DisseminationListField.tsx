@@ -9,20 +9,16 @@ import SelectField from '../../../../components/fields/SelectField';
 
 export const disseminationListFieldQuery = graphql`
     query DisseminationListFieldQuery(
-        $search: String
-        $count: Int!
         $cursor: ID
         $orderBy: DisseminationListOrdering
         $orderMode: OrderingMode
         $filters: FilterGroup
     ) {
         disseminationLists(
-            first: $count
             after: $cursor
             orderBy: $orderBy
             orderMode: $orderMode
             filters: $filters
-            search: $search
         ) {
             edges {
                 node {
@@ -40,8 +36,6 @@ const DisseminationListField: FunctionComponent = () => {
 
   const fetchDisseminationLists = async () => {
     return await fetchQuery(disseminationListFieldQuery, {
-      search: '',
-      count: 50,
     })
       .toPromise() as Promise<DisseminationListFieldQuery$data>;
   };
