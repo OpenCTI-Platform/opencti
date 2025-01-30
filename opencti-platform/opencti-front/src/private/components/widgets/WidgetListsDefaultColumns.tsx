@@ -33,7 +33,8 @@ const fintelTemplateDefaultWidgetColumns = {
   ],
   relationships: [
     { attribute: 'relationship_type', label: 'Relationship type' },
-    { attribute: 'representative.main', label: 'Representative' },
+    { attribute: 'from.representative.main', label: 'Source entity' },
+    { attribute: 'to.representative.main', label: 'Target entity' },
     { attribute: 'created_at', label: 'Creation date' },
   ],
 };

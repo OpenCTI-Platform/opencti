@@ -86,6 +86,30 @@ export const stixRelationshipsListQuery = graphql`
           representative {
             main
           }
+          from {
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
+          to {
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
           ... on StixCoreRelationship {
             start_time
             stop_time
