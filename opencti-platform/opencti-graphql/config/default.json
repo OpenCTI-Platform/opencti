@@ -127,7 +127,8 @@
     },
     "validation_mode": "workbench",
     "dissemination_list": {
-      "to_email": "no-reply@filigran.io"
+      "to_email": "no-reply@filigran.io",
+      "max_list_size": 500
     }
   },
   "demo_mode": false,

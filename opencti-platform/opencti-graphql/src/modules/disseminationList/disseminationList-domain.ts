@@ -37,7 +37,7 @@ import type { BasicStoreObject } from '../../types/store';
 
 const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLIST');
 
-const EMAILS_LIMIT_BY_LIST = 500;
+const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
@@ -147,8 +147,8 @@ export const addDisseminationList = async (context: AuthContext, user: AuthUser,
     throw UnsupportedError('Feature not yet available');
   }
   const disseminationListInternalId = generateInternalId();
-  if (input.emails.length > EMAILS_LIMIT_BY_LIST) {
-    throw UnsupportedError(`You cannot add more than ${EMAILS_LIMIT_BY_LIST} e-mail addresses`);
+  if (input.emails.length > MAX_DISSEMINATION_LIST_SIZE) {
+    throw UnsupportedError(`You cannot add more than ${MAX_DISSEMINATION_LIST_SIZE} e-mail addresses`);
   }
   const disseminationListToCreate = {
     name: input.name,
@@ -167,8 +167,8 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   }
   // check the limit of emails
   const emailsInput = input.find((editInput) => editInput.key === 'emails');
-  if (emailsInput && emailsInput.value.length > EMAILS_LIMIT_BY_LIST) {
-    throw UnsupportedError(`You cannot add more than ${EMAILS_LIMIT_BY_LIST} e-mail addresses`);
+  if (emailsInput && emailsInput.value.length > MAX_DISSEMINATION_LIST_SIZE) {
+    throw UnsupportedError(`You cannot have more than ${MAX_DISSEMINATION_LIST_SIZE} e-mail addresses`);
   }
   // Update the list
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);

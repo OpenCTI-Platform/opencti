@@ -1,6 +1,6 @@
 import { Disposable, GraphQLTaggedNode, IEnvironment, MutationConfig, MutationParameters, PayloadError } from 'relay-runtime';
 import { useMutation, UseMutationConfig } from 'react-relay';
-import { useCallback } from 'react';
+import { ReactNode, useCallback } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
 import { RelayError } from '../../relay/relayTypes';
 
@@ -11,8 +11,8 @@ const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,
   fn?: (environment: IEnvironment, config: MutationConfig<T>) => Disposable,
   options?: {
-    errorMessage?: string,
-    successMessage?: string,
+    errorMessage?: string | ReactNode,
+    successMessage?: string | ReactNode,
   },
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
   const [commit, inFlight] = useMutation(query, fn);

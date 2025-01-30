@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
@@ -53,7 +54,14 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const [commitMutation] = useApiMutation(
     DisseminationListSendInputMutation,
     undefined,
-    { successMessage: `${t_i18n('Email sent')}` },
+    {
+      successMessage: (
+        <span>
+          {t_i18n('The background task has been executed. You can monitor it on')}{' '}
+          <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
+        </span>
+      ),
+    },
   );
 
   const handleSubmit: FormikConfig<DisseminationInput>['onSubmit'] = async (
