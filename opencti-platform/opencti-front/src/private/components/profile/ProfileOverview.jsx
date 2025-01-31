@@ -621,9 +621,11 @@ const ProfileOverviewComponent = (props) => {
             </IconButton>
           </pre>
           {me.id !== OPENCTI_ADMIN_UUID && (
-          <Button variant="contained" color="primary" onClick={renewToken}>
-            {t('Renew')}
-          </Button>
+            <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
+              <Button variant="contained" color="primary" onClick={renewToken}>
+                {t('Renew')}
+              </Button>
+            </div>
           )}
           <Typography
             variant="h4"
