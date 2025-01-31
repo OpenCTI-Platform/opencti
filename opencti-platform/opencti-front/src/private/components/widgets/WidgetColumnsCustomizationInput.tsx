@@ -10,7 +10,6 @@ import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetColumn } from '../../../utils/widget/widget';
 import { Accordion, AccordionSummary } from '../../../components/Accordion';
-import InputAdornment from '@mui/material/InputAdornment';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
@@ -52,10 +51,8 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
     if (columnExists) {
       onChange(value.filter((col) => col.attribute !== attribute));
     } else {
-      const columnToAdd = availableColumns.find((col) => col.attribute === attribute);
-      if (columnToAdd) {
-        onChange([...value, columnToAdd]);
-      }
+      const columnToAdd = availableColumns.find((col) => col.attribute === attribute) as WidgetColumn;
+      onChange([...value, columnToAdd]);
     }
   };
 
