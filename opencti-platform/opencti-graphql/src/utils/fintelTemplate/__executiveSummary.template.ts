@@ -22,7 +22,7 @@ const executiveSummaryContent = (containerType: string) => {
   const reliabilityForReport = containerType === 'Report'
     ? `<tr>
       <td><strong>Self reliability</strong></td>
-  <td>$reportReliability</td>
+  <td>$reliability</td>
   </tr>`
     : '';
   return `
@@ -34,11 +34,11 @@ const executiveSummaryContent = (containerType: string) => {
         <tbody>
           <tr>
             <td><strong>Creation date</strong></td>
-            <td>$containerCreationDate</td>
+            <td>$creationDate</td>
           </tr>
           <tr>
             <td><strong>Last update</strong></td>
-            <td>$containerModificationDate</td>
+            <td>$modificationDate</td>
           </tr>
           <tr>
             <td><strong>${typeLabel}</strong></td>
@@ -47,29 +47,29 @@ const executiveSummaryContent = (containerType: string) => {
           ${reliabilityForReport}
           <tr>
             <td><strong>Author reliability</strong></td>
-            <td>$containerReliabilityOfAuthor</td>
+            <td>$reliabilityOfAuthor</td>
           </tr>
           <tr>
             <td><strong>Confidence level</strong></td>
-            <td>$containerConfidenceLevel</td>
+            <td>$confidenceLevel</td>
           </tr>
           <tr>
             <td><strong>Labels</strong></td>
-            <td>$containerLabels</td>
+            <td>$labels</td>
           </tr>
           <tr>
             <td><strong>Markings</strong></td>
-            <td>$containerMarkings</td>
+            <td>$markings</td>
           </tr>
           <tr>
             <td><strong>Author</strong></td>
-            <td>$containerAuthor</td>
+            <td>$author</td>
           </tr>
         </tbody>
       </table>
       
       <h3>2. Executive Summary</h3>
-      <div>$containerDescription</div>
+      <div>$description</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
@@ -127,7 +127,7 @@ const executiveSummaryContent = (containerType: string) => {
       </div>
       
       <h3>7. Data sources</h3>
-      <div>$containerReferences</div>
+      <div>$references</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>

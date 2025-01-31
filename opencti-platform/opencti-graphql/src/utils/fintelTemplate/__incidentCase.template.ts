@@ -10,11 +10,11 @@ const template_content = `
     <tbody>
       <tr>
         <td><strong>Creation date</strong></td>
-        <td>$containerCreationDate</td>
+        <td>$creationDate</td>
       </tr>
       <tr>
         <td><strong>Last modified date</strong></td>
-        <td>$containerModificationDate</td>
+        <td>$modificationDate</td>
       </tr>
       <tr>
         <td><strong>Priority</strong></td>
@@ -30,11 +30,11 @@ const template_content = `
       </tr>
       <tr>
         <td><strong>Labels</strong></td>
-        <td>$containerLabels</td>
+        <td>$labels</td>
       </tr>
       <tr>
         <td><strong>Markings</strong></td>
-        <td>$containerMarkings</td>
+        <td>$markings</td>
       </tr>
     </tbody>
   </table>
@@ -44,7 +44,7 @@ const template_content = `
   </div>
   
   <h3>2. Executive Summary</h3>
-  <div>$containerDescription</div>
+  <div>$description</div>
   
   <h3>3. Incident Analysis</h3>
   <blockquote>
@@ -77,7 +77,7 @@ const template_content = `
   </div>
   
   <h3>7. Observables</h3>
-  <div>$containerObservables</div>
+  <div>$observables</div>
   
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
@@ -91,7 +91,7 @@ const template_content = `
   </div>
   
   <h3>9. References</h3>
-  <div>$containerReferences</div>
+  <div>$references</div>
 </div>
 `;
 

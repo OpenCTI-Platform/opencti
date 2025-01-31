@@ -6,16 +6,16 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 // hardcoded widgets
 
 export const containerColumns = [
-  { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
-  { label: 'Description', attribute: 'representative.secondary', variableName: 'containerDescription' },
-  { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
-  { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
-  { label: 'Modification date', attribute: 'updated_at', variableName: 'containerModificationDate' },
-  { label: 'Representative', attribute: 'representative.main', variableName: 'containerRepresentative' },
-  { label: 'Author', attribute: 'createdBy.name', variableName: 'containerAuthor' },
-  { label: 'Confidence level', attribute: 'confidence', variableName: 'containerConfidenceLevel' },
-  { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'containerReliabilityOfAuthor' },
-  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
+  { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'creationDate' },
+  { label: 'Description', attribute: 'representative.secondary', variableName: 'description' },
+  { label: 'Labels', attribute: 'objectLabel.value', variableName: 'labels' },
+  { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'markings' },
+  { label: 'Modification date', attribute: 'updated_at', variableName: 'modificationDate' },
+  { label: 'Representative', attribute: 'representative.main', variableName: 'representative' },
+  { label: 'Author', attribute: 'createdBy.name', variableName: 'author' },
+  { label: 'Confidence level', attribute: 'confidence', variableName: 'confidenceLevel' },
+  { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'reliabilityOfAuthor' },
+  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'references' },
 ];
 
 export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
@@ -26,14 +26,14 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
-        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reportReliability' },
+        { label: 'Publication date', attribute: 'published', variableName: 'publicationDate' },
+        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliability' },
         { label: 'Report types', attribute: 'report_types', variableName: 'types' },
       ],
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetReportMultiAttributes',
+      title: 'Attributes of the Report',
       description: 'This is a multi attributes widget.',
     }
   },
@@ -52,7 +52,7 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetGroupingMultiAttributes',
+      title: 'Attributes of the grouping',
       description: 'This is a multi attributes widget.',
     }
   }
@@ -71,7 +71,7 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetRFIMultiAttributes',
+      title: 'Attributes of the RFI',
       description: 'This is a multi attributes widget.',
     }
   },
@@ -90,7 +90,7 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetRFTMultiAttributes',
+      title: 'Attributes of the RFT',
       description: 'This is a multi attributes widget.',
     }
   },
@@ -111,13 +111,13 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetIncidentResponseMultiAttributes',
+      title: 'Attributes of the Incident Response',
     }
   },
 };
 
 export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
-  variable_name: 'containerObservables',
+  variable_name: 'observables',
   widget: {
     type: 'list',
     perspective: WidgetPerspective.Entities,
@@ -138,6 +138,9 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Observables contained in the container',
+    }
   },
 };
 
@@ -216,6 +219,9 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Tasks contained in the container',
+    }
   },
 };
 
@@ -241,6 +247,9 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Attack Patterns contained in the container',
+    }
   },
 };
 
@@ -296,6 +305,9 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Victims contained in the container',
+    }
   },
 };
 
@@ -321,5 +333,8 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Entities and Observables contained in the container',
+    }
   },
 };
