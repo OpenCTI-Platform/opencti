@@ -135,8 +135,9 @@ describe('Fintel template resolver standard behavior', () => {
   });
   it('should fintel template created with built-in attributes widget for self instance', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
-    expect(queryResult.data?.fintelTemplate.fintel_template_widgets.length).toEqual(1); // built-in self attribute widget
+    expect(queryResult.data?.fintelTemplate.fintel_template_widgets.length).toEqual(4); // the 4 built-in widgets
     expect(queryResult.data?.fintelTemplate.fintel_template_widgets[0].variable_name).toEqual('widgetSelfAttributes');
+    expect(queryResult.data?.fintelTemplate.fintel_template_widgets[1].variable_name).toEqual('observables');
   });
   it('should list fintel templates in entity settings', async () => {
     const queryResult = await queryAsAdmin({
