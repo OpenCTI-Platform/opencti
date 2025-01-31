@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { INDEX_DRAFT_OBJECTS, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import {
   BULK_TIMEOUT,
@@ -67,12 +67,12 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
   // If there are still some, it means that we need to keep the element as an UPDATE_LINKED
   const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
   const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
-  if (draftCreatedOrDeletedRelations.length <= 0) {
-    await elDeleteInstances([element]);
-    await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
-  } else {
+  if (draftCreatedOrDeletedRelations.length > 0) {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
     await elReplace(element._index, element._id, { doc: newDraftChange });
+  } else {
+    await elDeleteInstances([element]);
+    await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
   }
 };
 
@@ -120,7 +120,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
   }
 
   // if current element is a relation, and if from or to are in DRAFT_OPERATION_DELETE, it means the current element needs to be switched to a delete linked
-  if (isBasicRelationship(element.entity_type) && (element.from?._index._index.includes(INDEX_DRAFT_OBJECTS) || element.to?._index._index.includes(INDEX_DRAFT_OBJECTS))) {
+  if (isBasicRelationship(element.entity_type) && (isDraftIndex(element.from?._index) || isDraftIndex(element.to?._index))) {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
     await elReplace(element._index, element._id, { doc: newDraftChange });
     return;
@@ -184,23 +184,23 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
 };
 
 export const elRemoveElementFromDraft = async (context, user, element) => {
-  if (!element._index.includes(INDEX_DRAFT_OBJECTS)) {
+  if (!isDraftIndex(element._index) || !element.draft_change) {
     return element;
   }
 
-  if (element.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE_LINKED || element.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
-    throw UnsupportedError('Cannot remove linked elements from draft', { id: element.id });
+  switch (element.draft_change.draft_operation) {
+    case DRAFT_OPERATION_CREATE:
+      return elRemoveCreateElementFromDraft(context, user, element);
+    case DRAFT_OPERATION_UPDATE:
+      return elRemoveUpdateElementFromDraft(context, user, element);
+    case DRAFT_OPERATION_DELETE:
+      return elRemoveDeleteElementFromDraft(context, user, element);
+    case DRAFT_OPERATION_UPDATE_LINKED:
+    case DRAFT_OPERATION_DELETE_LINKED:
+      throw UnsupportedError('Cannot remove linked elements from draft', { id: element.id });
+    default:
+      throw UnsupportedError('Draft operation not recognized', { id: element.id, operation: element.draft_change.draft_operation });
   }
-
-  if (element.draft_change?.draft_operation === DRAFT_OPERATION_CREATE) {
-    await elRemoveCreateElementFromDraft(context, user, element);
-  } else if (element.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE) {
-    await elRemoveUpdateElementFromDraft(context, user, element);
-  } else if (element.draft_change?.draft_operation === DRAFT_OPERATION_DELETE) {
-    await elRemoveDeleteElementFromDraft(context, user, element);
-  }
-
-  return element;
 };
 
 export const elDeleteDraftElements = async (context, user, draftId) => {
