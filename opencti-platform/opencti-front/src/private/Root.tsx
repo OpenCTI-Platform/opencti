@@ -24,6 +24,7 @@ const rootSettingsFragment = graphql`
     platform_title
     platform_demo
     platform_banner_text
+    request_access_enabled
     platform_user_statuses {
       status
       message
