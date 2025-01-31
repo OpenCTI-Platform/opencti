@@ -57,4 +57,5 @@ interface AuthContext {
   tracing: TracingContext
   user: AuthUser | undefined
   draft_context?: string | undefined
+  eventId?: string | undefined
 }
