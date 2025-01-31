@@ -1298,7 +1298,6 @@ export enum BackgroundTaskActionType {
   Add = 'ADD',
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
-  Disseminate = 'DISSEMINATE',
   Enrichment = 'ENRICHMENT',
   Merge = 'MERGE',
   Promote = 'PROMOTE',
@@ -1358,7 +1357,6 @@ export type BackgroundTaskError = {
 
 export enum BackgroundTaskScope {
   Dashboard = 'DASHBOARD',
-  Dissemination = 'DISSEMINATION',
   Import = 'IMPORT',
   Investigation = 'INVESTIGATION',
   Knowledge = 'KNOWLEDGE',
@@ -6333,7 +6331,7 @@ export enum DisseminationListOrdering {
 
 export type DisseminationListSendInput = {
   dissemination_list_id: Scalars['ID']['input'];
-  email_attached_file_id: Scalars['ID']['input'];
+  email_attachment_ids: Array<Scalars['ID']['input']>;
   email_body: Scalars['String']['input'];
   email_object: Scalars['String']['input'];
 };
