@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
+import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
 import { AUTH_BEARER, authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
@@ -388,6 +389,8 @@ const createSseMiddleware = () => {
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
+        const eventTime = missingData.extensions[STIX_EXT_OCTI].updated_at ?? now();
+        content.event_id = `${utcDate(eventTime).toDate().getTime()}-${missingIndex}`;
         channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
         cache.set(missingData.id, 'hit');
         await wait(channel.delay);
@@ -414,6 +417,8 @@ const createSseMiddleware = () => {
             const message = generateCreateMessage(missingRelation);
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
+            const eventTime = stixRelation.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
+            content.event_id = `${utcDate(eventTime).toDate().getTime()}-${relIndex}`;
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
             cache.set(stixRelation.id, 'hit');
           }
@@ -577,6 +582,8 @@ const createSseMiddleware = () => {
           for (let index = 0; index < elements.length; index += 1) {
             const element = elements[index];
             const { id: eventId, event, data: eventData } = element;
+            const eventTime = eventData?.data?.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
+            eventData.event_id = `${utcDate(eventTime).toDate().getTime()}-${index}`;
             const { type, data: stix, version: eventVersion, context: evenContext } = eventData;
             const isRelation = stix.type === 'relationship' || stix.type === 'sighting';
             // New stream support only v4+ events.
