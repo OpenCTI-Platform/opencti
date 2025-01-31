@@ -13,7 +13,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import WidgetConfig from '../../../widgets/WidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, removeIdFromFilterGroupObject, SELF_ID } from '../../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { toCamelCase } from '../../../../../utils/String';
@@ -84,7 +84,6 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const [selectedWidget, setSelectedWidget] = useState<FintelTemplateWidget>();
 
   const isSelectedWidgetUsed = selectedWidget && !!editorValue?.includes(`$${selectedWidget.variable_name}`);
-  const isSelectedWidgetSelfInstance = selectedWidget && selectedWidget.widget.dataSelection[0].instance_id === SELF_ID;
 
   const selectedWidgetIndex = useMemo(() => {
     return fintel_template_widgets.findIndex((w) => w.variable_name === selectedWidget?.variable_name);
@@ -241,22 +240,23 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         setOpen={handleWidgetConfigOpen}
         onComplete={handleUpsertWidget}
         widget={selectedWidget?.widget}
-        disabledSteps={isSelectedWidgetSelfInstance ? [0] : []}
+        disabledSteps={[0]}
         context="fintelTemplate"
         fintelWidgets={fintel_template_widgets as FintelTemplateWidget[]}
         fintelEntityType={subTypeId}
+        fintelEditorValue={editorValue ?? ''}
         initialVariableName={selectedWidget?.variable_name}
       />
 
       <DeleteDialog
         title={(
           <>
+            <span>{t_i18n('Are you sure you want to delete this widget?')}</span>
             {isSelectedWidgetUsed && (
-              <Alert severity="warning" sx={{ marginBottom: 1 }}>
-                {t_i18n('You are about to delete a widget used in the content')}
+              <Alert severity="warning" variant="outlined" sx={{ marginTop: 2 }}>
+                {t_i18n('You are about to delete a widget used in the template')}
               </Alert>
             )}
-            <span>{t_i18n('Are you sure you want to delete this widget?')}</span>
           </>
         )}
         deletion={deletion}
