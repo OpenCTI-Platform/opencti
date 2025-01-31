@@ -316,11 +316,8 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           hasMore={relay.hasMore.bind(this)}
           isLoading={relay.isLoading.bind(this)}
           dataList={dataList}
-          globalCount={R.pathOr(
-            nbOfRowsToLoad,
-            ['stixCoreObjects', 'pageInfo', 'globalCount'],
-            this.props.data,
-          )}
+          globalCount={this.props.data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+          onLabelClick={this.props.onLabelClick}
           LineComponent={<ContainerAddStixCoreObjectsLine />}
           DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
           dataColumns={dataColumns}
@@ -376,6 +373,7 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   mapping: PropTypes.bool,
   containerRef: PropTypes.object,
   enableReferences: PropTypes.bool,
+  onLabelClick: PropTypes.func,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
