@@ -26,6 +26,7 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import EETooltip from '../entreprise_edition/EETooltip';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -164,18 +165,19 @@ const StixCoreObjectContentFilesList = ({
                 {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
                 <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
                   <>
-                    <Tooltip title={t_i18n('Disseminate')}>
-                      <IconButton
-                        onClick={(e) => handleDisseminate(e)}
-                        size="small"
-                        style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
-                        aria-label="disseminate"
-                        disabled={!isEnterpriseEdition}
-                      >
-                        <EmailOutlined />
-                      </IconButton>
-                    </Tooltip>
-                    <EEChip />
+                    <EETooltip title={t_i18n('Disseminate')}>
+                      <Tooltip title={t_i18n('Disseminate')}>
+                        <IconButton
+                          onClick={(e) => handleDisseminate(e)}
+                          size="small"
+                          style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
+                          aria-label="disseminate"
+                          disabled={!isEnterpriseEdition}
+                        >
+                          <EmailOutlined />
+                        </IconButton>
+                      </Tooltip>
+                    </EETooltip>
                   </>
                 </Security>
                 )}
