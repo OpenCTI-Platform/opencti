@@ -52,7 +52,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
       onChange(value.filter((col) => col.attribute !== attribute));
     } else {
       const columnToAdd = availableColumns.find((col) => col.attribute === attribute) as WidgetColumn;
-      onChange([...value, columnToAdd]);
+      if (columnToAdd) onChange([...value, columnToAdd]);
     }
   };
 
@@ -71,9 +71,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
         ...availableColumns.find((col) => col.attribute === attribute),
         label: newTitle,
       } as WidgetColumn;
-      if (columnToAdd) {
-        onChange([...value, columnToAdd]);
-      }
+      onChange([...value, columnToAdd]);
     }
   };
 
