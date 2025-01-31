@@ -78,10 +78,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         sx={{ marginLeft: 2, marginRight: 2, marginTop: 2 }}
         onClick={onCreateWidget}
       >
-        {t_i18n('', {
-          id: 'Add data related to the instance',
-          values: { type: subTypeId ?? '' },
-        })}
+        {t_i18n('Add related data')}
       </Button>
 
       <List>
