@@ -1609,9 +1609,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.4.1":
-  version: 5.4.1
-  resolution: "@datadog/pprof@npm:5.4.1"
+"@datadog/pprof@npm:5.5.1":
+  version: 5.5.1
+  resolution: "@datadog/pprof@npm:5.5.1"
   dependencies:
     delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
@@ -1619,13 +1619,13 @@ __metadata:
     p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.1.0"
     source-map: "npm:^0.7.4"
-  checksum: 10/3ba460a19de87f7d07c917b07019d64ee26850f8c835f041c9ce9e2247a2fa313957782a120b8d96a942515e94560993a4af686c7be9b6bcf968a22130602892
+  checksum: 10/9848b1f702b887decb29c39718401234dcebe6a3663601ed17ec0b9835a83a11024d736578aa584ecc084ce008e4d05838d5f10f65ba7c4ccc5b8fc1b4aa9a1c
   languageName: node
   linkType: hard
 
-"@datadog/pprof@patch:@datadog/pprof@5.4.1#./patch/@datadog-pprof-5.4.1.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 5.4.1
-  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.4.1#./patch/@datadog-pprof-5.4.1.patch::version=5.4.1&hash=a98a37&locator=opencti-graphql%40workspace%3A."
+"@datadog/pprof@patch:@datadog/pprof@5.5.1#./patch/@datadog-pprof-5.4.1.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 5.5.1
+  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.5.1#./patch/@datadog-pprof-5.4.1.patch::version=5.5.1&hash=a98a37&locator=opencti-graphql%40workspace%3A."
   dependencies:
     delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
@@ -1633,7 +1633,7 @@ __metadata:
     p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.1.0"
     source-map: "npm:^0.7.4"
-  checksum: 10/8c6b729c30e98a4858a8b120666b1a4c80d7ade7f43d150abb5e6d4b6d062e08f0d4c943178232402a5fcbcc0e1a4629e55f336446553aff40e2336db530bc74
+  checksum: 10/9faa46bd43a7bd6589248dfd707078f5ed449ae3d7c20dd1779c158efff888bdc73baf45b458d286e81caa68bc3a37c420b9b12d27ecb5265001348cfe03f75a
   languageName: node
   linkType: hard
 
@@ -11377,7 +11377,7 @@ __metadata:
     "@aws-sdk/credential-provider-node": "npm:3.679.0"
     "@aws-sdk/lib-storage": "npm:3.679.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
-    "@datadog/pprof": "npm:5.4.1"
+    "@datadog/pprof": "npm:5.5.1"
     "@elastic/elasticsearch": "npm:8.17.0"
     "@escape.tech/graphql-armor": "npm:3.1.2"
     "@graphql-codegen/cli": "npm:5.0.3"
