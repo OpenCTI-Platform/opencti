@@ -277,6 +277,7 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
   if (!stixCoreObject) {
     throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.');
   }
+  // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreObject);
   return stixCoreObject.id;
 };

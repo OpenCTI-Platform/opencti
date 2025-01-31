@@ -19,6 +19,7 @@ import {
   INDEX_DRAFT_OBJECTS,
   INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
+  isDraftIndex,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
@@ -3802,34 +3803,38 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
 
   // 01. Remove all elements that are draft creations, mark as delete for others
-  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
-  const copyLiveElements = liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
-  const draftCreatedElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
-  const draftNonCreatedElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
-  const draftCreationDeletion = elDeleteInstances(draftCreatedElements);
-  const updateOperationPromise = [];
-  draftNonCreatedElements.forEach((draftE) => {
+  const liveElements = elements.filter((f) => !isDraftIndex(f._index));
+  const draftCreatedElements = elements.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftNonCreatedElements = elements.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
+
+  const copyLiveElementsPromise = liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
+  const deleteDraftCreatedElementsPromise = elDeleteInstances(draftCreatedElements);
+  const updateDraftElementsPromise = draftNonCreatedElements.map((draftE) => {
+    // TODO we might want to apply the reverse patch to draft updated elements
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE } };
-    updateOperationPromise.push(elReplace(draftE._index, draftE._id, { doc: newDraftChange }));
+    return elReplace(draftE._index, draftE._id, { doc: newDraftChange });
   });
-  await Promise.all([...updateOperationPromise, ...copyLiveElements, draftCreationDeletion]);
+  const copiedLiveElements = await Promise.all(copyLiveElementsPromise);
+  const allDraftElements = [...copiedLiveElements, ...draftCreatedElements, ...draftNonCreatedElements];
 
   // 02. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements, { includeDeletedInDraft: true });
-  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
-  const draftCreatedRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
-  const draftNonCreatedRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
-  const draftRelationDeletion = await elDeleteInstances(draftCreatedRelations);
-  const copyLiveRelations = liveRelations.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE_LINKED));
-  const updateRelationOperationPromise = [];
-  draftNonCreatedRelations.forEach((draftR) => {
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, allDraftElements, { includeDeletedInDraft: true });
+  const liveRelations = relations.filter((f) => !isDraftIndex(f._index));
+  const draftCreatedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftNonCreatedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
+
+  const deleteDraftCreatedRelationsPromise = elDeleteInstances(draftCreatedRelations);
+  const copyLiveRelationsPromise = liveRelations.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE_LINKED));
+  const updateDraftRelationsPromise = draftNonCreatedRelations.map((draftR) => {
+    // TODO we might want to apply the reverse patch to draft updated elements
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
-    updateRelationOperationPromise.push(elReplace(draftR._index, draftR._id, { doc: newDraftChange }));
+    return elReplace(draftR._index, draftR._id, { doc: newDraftChange });
   });
-  await Promise.all([...updateRelationOperationPromise, ...copyLiveRelations, draftRelationDeletion]);
+  await Promise.all([deleteDraftCreatedElementsPromise, ...updateDraftElementsPromise]);
+  await Promise.all([...copyLiveRelationsPromise, deleteDraftCreatedRelationsPromise, ...updateDraftRelationsPromise]);
 
   // 03. Clear all connections rel, import all dependencies into draft if not already in draft
-  await elCopyRelationsTargetsToDraft(context, user, [...elements, ...liveRelations]);
+  await elCopyRelationsTargetsToDraft(context, user, [...allDraftElements, ...liveRelations]);
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   // Update all rel connections that will remain
@@ -4074,7 +4079,7 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
 // Creates a copy of a live element in the draft index with the current draft context
 export const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
   const draftContext = getDraftContext(context, user);
-  if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
+  if (!draftContext || isDraftIndex(element._index)) return element;
 
   const updatedElement = structuredClone(element);
   const newId = generateInternalId();
@@ -4111,7 +4116,7 @@ export const copyLiveElementToDraft = async (context, user, element, draftOperat
 // If it doesn't exist, creates a copy of live element to draft context then returns it
 const draftCopyLockPrefix = 'draft_copy';
 const loadDraftElement = async (context, user, element) => {
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
+  if (isDraftIndex(element._index)) return element;
 
   let lock;
   const currentDraft = getDraftContext(context, user);
@@ -4119,7 +4124,7 @@ const loadDraftElement = async (context, user, element) => {
   try {
     lock = await lockResources([lockKey]);
     const loadedElement = await elLoadById(context, user, element.internal_id);
-    if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
+    if (loadedElement && isDraftIndex(loadedElement._index)) return loadedElement;
 
     return await copyLiveElementToDraft(context, user, element);
   } catch (e) {
