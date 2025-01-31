@@ -160,6 +160,10 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
           ],
           filterGroups: [],
         }),
+        columns: [
+          { label: 'Representative', attribute: 'representative.main' },
+          { label: 'Creation date', attribute: 'created_at' },
+        ],
       },
     ],
     parameters: {
