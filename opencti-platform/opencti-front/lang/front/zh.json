@@ -635,6 +635,7 @@
   "CSV separator": "CSV分隔符",
   "CSV URL": "CSV URL",
   "Current cache version date": "当前缓存版本日期",
+  "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.": "当前实体是指使用 Fintel 模板的实体。移除该过滤器意味着您将失去使用该模板的容器的上下文。",
   "Current instance": "当前实例",
   "Current password": "当前密码",
   "Current platform": "当前平台",

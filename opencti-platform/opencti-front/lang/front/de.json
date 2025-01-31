@@ -635,6 +635,7 @@
   "CSV separator": "CSV-Trennzeichen",
   "CSV URL": "CSV-URL",
   "Current cache version date": "Datum der aktuellen Cache-Version",
+  "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.": "Aktuelle Entität bezieht sich auf die Entität, in der Sie die Fintel-Vorlage verwenden werden. Wenn Sie diesen Filter entfernen, verlieren Sie den Kontext des Containers, in dem die Vorlage verwendet wird.",
   "Current instance": "Aktuelle Instanz",
   "Current password": "Aktuelles Passwort",
   "Current platform": "Aktuelle Plattform",

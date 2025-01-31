@@ -635,6 +635,7 @@
   "CSV separator": "CSVセパレータ",
   "CSV URL": "CSV URL",
   "Current cache version date": "現在のキャッシュバージョン",
+  "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.": "現在のエンティティは、Fintelテンプレートを使用するエンティティを指します。このフィルタを削除すると、テンプレートが使用されるコンテナのコンテキストが失われます。",
   "Current instance": "現在のインスタンス",
   "Current password": "現在のパスワード",
   "Current platform": "現在のプラットフォーム",
