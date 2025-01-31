@@ -78,6 +78,21 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     scope: BackgroundTaskScope.Dissemination
   };
   await createListTask(context, user, taskInput);
+
+  const disseminationList = await findById(context, user, input.dissemination_list_id);
+  const file = await loadFile(context, user, input.email_attached_file_id);
+  if (file) {
+    const instance = await internalLoadById(context, user, file.metaData.entity_id);
+    const dataForActivity = buildContextDataForFile(instance as BasicStoreObject, file.id, file.name, file.metaData.file_markings, { ...input, ...disseminationList });
+    await publishUserAction({
+      event_access: 'administration',
+      user,
+      event_type: 'file',
+      event_scope: 'disseminate',
+      context_data: dataForActivity
+    });
+  }
+
   return true;
 };
 
@@ -99,7 +114,14 @@ interface SendMailArgs {
  * @param emails
  * @param attachFileIds
  */
-export const sendDisseminationEmail = async (context: AuthContext, user: AuthUser, object: string, body: string, emails: string[], attachFileIds: string[]) => {
+export const sendDisseminationEmail = async (
+  context: AuthContext,
+  user: AuthUser,
+  object: string,
+  body: string,
+  emails: string[],
+  attachFileIds: string[]
+) => {
   await checkEnterpriseEdition(context);
   if (!isDisseminationListEnabled) {
     throw UnsupportedError('Feature not yet available');
@@ -109,7 +131,6 @@ export const sendDisseminationEmail = async (context: AuthContext, user: AuthUse
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
   const attachementListForSendMail = [];
-  const attachementFilesForActivity = [];
   for (let i = 0; i < attachFileIds.length; i += 1) {
     const attachFileId = attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
@@ -118,12 +139,6 @@ export const sendDisseminationEmail = async (context: AuthContext, user: AuthUse
       attachementListForSendMail.push({
         filename: file.name,
         content: stream,
-      });
-      attachementFilesForActivity.push({
-        fileId: file.id,
-        fileName: file.name,
-        fileMarkings: file.metaData.file_markings,
-        fileEntityId: file.metaData.entity_id
       });
     }
   }
@@ -140,21 +155,6 @@ export const sendDisseminationEmail = async (context: AuthContext, user: AuthUse
     attachments: attachementListForSendMail,
   };
   await sendMail(sendMailArgs);
-  logApp.info('[DISSEMINATION] email send.');
-
-  for (let i = 0; i < attachementFilesForActivity.length; i += 1) {
-    const disseminatedFile = attachementFilesForActivity[i];
-
-    const instance = await internalLoadById(context, user, disseminatedFile.fileEntityId);
-    const data = buildContextDataForFile(instance as BasicStoreObject, disseminatedFile.fileId, disseminatedFile.fileName, disseminatedFile.fileMarkings);
-    await publishUserAction({
-      event_access: 'administration',
-      user,
-      event_type: 'file',
-      event_scope: 'disseminate',
-      context_data: data
-    });
-  }
 };
 
 const validationEmails = (emails: string[]) => {
