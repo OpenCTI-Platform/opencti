@@ -200,7 +200,7 @@ describe('Fintel template resolver standard behavior', () => {
       }
     });
     const fintelTemplateWidgets = queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets;
-    expect(fintelTemplateWidgets.length).toEqual(2); // the added one and the built-in
+    expect(fintelTemplateWidgets.length).toEqual(4); // the added one and the built-in
     expect(fintelTemplateWidgets[1].variable_name).toEqual('containerObservables');
     expect(fintelTemplateWidgets[1].widget.type).toEqual('list');
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
