@@ -5,11 +5,12 @@ import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
-import type { WidgetColumn, WidgetContext } from '../../../utils/widget/widget';
+import type { WidgetColumn } from '../../../utils/widget/widget';
 import { Accordion, AccordionSummary } from '../../../components/Accordion';
-import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
+import InputAdornment from '@mui/material/InputAdornment';
 
 type WidgetConfigColumnsCustomizationProps = {
   availableColumns: WidgetColumn[];
@@ -142,13 +143,22 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                             </ListItemIcon>
 
                             {context === 'fintelTemplate'
-                              ? <TextField
-                                  style={{ marginLeft: -10 }}
-                                  label={`${t_i18n('Column title for')} ${column.attribute}`}
-                                  fullWidth={true}
-                                  value={formatColumnName(column)}
-                                  onChange={(event) => handleChangeColumnName(column.attribute, event.target.value)}
+                              ? <>
+                                <ListItemText
+                                  style={{ marginLeft: -20 }}
+                                  primary={formatColumnName(defaultColumns
+                                    .find((c) => c.attribute === column.attribute)
+                                    ?? { attribute: column.attribute })}
                                 />
+                                <TextField
+                                  value={formatColumnName(column)}
+                                  label={t_i18n('Column title')}
+                                  onChange={(event) => handleChangeColumnName(column.attribute, event.target.value)}
+                                  InputProps={{
+                                    style: { marginTop: 12, width: '90%' },
+                                  }}
+                                />
+                              </>
                               : <ListItemText primary={formatColumnName(column)} />
                             }
 
