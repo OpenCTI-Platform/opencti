@@ -210,7 +210,9 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to delete this workspace?')}
+            {workspace.type === 'investigation'
+              ? t_i18n('Do you want to delete this investigation?')
+              : t_i18n('Do you want to delete this dashboard?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
