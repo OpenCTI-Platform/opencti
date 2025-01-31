@@ -579,7 +579,7 @@ const createSseMiddleware = () => {
             const element = elements[index];
             const { id: eventId, event, data: eventData } = element;
             const { type, data: stix, version: eventVersion, context: evenContext, event_id } = eventData;
-            const eventTime = eventData?.data?.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
+            const eventTime = stix.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
             eventData.event_id = event_id ?? `${utcDate(eventTime).toDate().getTime()}-${index}`;
             const isRelation = stix.type === 'relationship' || stix.type === 'sighting';
             // New stream support only v4+ events.
