@@ -124,6 +124,7 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -152,6 +153,7 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -180,6 +182,7 @@ export const widgetIndicators: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -208,6 +211,7 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -237,6 +241,7 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -265,6 +270,7 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -294,6 +300,7 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -323,6 +330,7 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
