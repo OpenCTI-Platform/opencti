@@ -141,6 +141,40 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
 };
 
+const fintelTemplateAvailableWidgetColumns: Record<string, WidgetColumn[]> = {
+  relationships: [
+    ...fintelTemplateDefaultWidgetColumns.relationships,
+  ],
+  entities: [
+    ...fintelTemplateDefaultWidgetColumns.entities,
+  ],
+  'Case-Incident': [
+    { attribute: 'priority', label: 'Priority' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'response_types', label: 'Incident type' },
+  ],
+  Indicator: [
+    { attribute: 'indicator_types', label: 'Indicator types' },
+    { attribute: 'pattern', label: 'Indicator pattern' },
+  ],
+  Task: [
+    { attribute: 'due_date', label: 'Due date (UTC)' },
+    { attribute: 'status.template.name', label: 'Status' },
+  ],
+  'Attack-Pattern': [
+    { attribute: 'x_mitre_id', label: 'Technique ID' },
+  ],
+  'Threat-Actor-Individual': [
+    { attribute: 'aliases', label: 'Alias' },
+  ],
+  'Threat-Actor-Group': [
+    { attribute: 'aliases', label: 'Alias' },
+  ],
+  'Intrusion-Set': [
+    { attribute: 'aliases', label: 'Alias' },
+  ],
+};
+
 type WidgetEntityType = 'relationships' | 'entities';
 
 export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: WidgetContext): WidgetColumn[] => {
@@ -161,8 +195,22 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: Widget
   return [];
 };
 
-export const getWidgetColumns = (type: WidgetEntityType, entityType?: string): WidgetColumn[] => {
+export const getWidgetColumns = (type: WidgetEntityType, context: WidgetContext, entityType?: string): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
+
+
+  if (context === 'fintelTemplate') {
+    if (type === 'relationships') {
+      return fintelTemplateAvailableWidgetColumns.relationships;
+    }
+    if (type === 'entities') {
+      const baseColumns = [...fintelTemplateAvailableWidgetColumns.entities];
+      if (entityType && fintelTemplateAvailableWidgetColumns[entityType]) {
+        return [...baseColumns, ...fintelTemplateAvailableWidgetColumns[entityType]];
+      }
+      return baseColumns;
+    }
+  }
 
   if (type === 'relationships') {
     return availableWidgetColumns.relationships;
