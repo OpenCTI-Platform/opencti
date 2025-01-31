@@ -15,7 +15,7 @@ export const containerColumns = [
   { label: 'Author', attribute: 'createdBy.name', variableName: 'author' },
   { label: 'Confidence level', attribute: 'confidence', variableName: 'confidenceLevel' },
   { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'reliabilityOfAuthor' },
-  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'references' },
+  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'externalReferencesURL' },
 ];
 
 export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
@@ -26,9 +26,9 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Publication date', attribute: 'published', variableName: 'publicationDate' },
-        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliability' },
-        { label: 'Report types', attribute: 'report_types', variableName: 'types' },
+        { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
+        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliabilitySelf' },
+        { label: 'Report types', attribute: 'report_types', variableName: 'reportTypes' },
       ],
       instance_id: SELF_ID,
     }],
@@ -66,7 +66,7 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Information types', attribute: 'information_types', variableName: 'types' },
+        { label: 'Information types', attribute: 'information_types', variableName: 'informationTypes' },
       ],
       instance_id: SELF_ID,
     }],
@@ -85,7 +85,7 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'types' },
+        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'takedownTypes' },
       ],
       instance_id: SELF_ID,
     }],
@@ -104,8 +104,8 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
-        { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
+        { label: 'Priority', attribute: 'priority', variableName: 'priority' },
+        { label: 'Severity', attribute: 'severity', variableName: 'severity' },
         { label: 'Incident type', attribute: 'response_types', variableName: 'types' },
       ],
       instance_id: SELF_ID,

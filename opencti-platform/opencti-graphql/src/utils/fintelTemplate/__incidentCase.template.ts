@@ -18,11 +18,11 @@ const template_content = `
       </tr>
       <tr>
         <td><strong>Priority</strong></td>
-        <td>$incidentPriority</td>
+        <td>$priority</td>
       </tr>
       <tr>
         <td><strong>Severity</strong></td>
-        <td>$incidentSeverity</td>
+        <td>$severity</td>
       </tr>
       <tr>
         <td><strong>Incident response type</strong></td>
@@ -91,7 +91,7 @@ const template_content = `
   </div>
   
   <h3>9. References</h3>
-  <div>$references</div>
+  <div>$externalReferencesURL</div>
 </div>
 `;
 

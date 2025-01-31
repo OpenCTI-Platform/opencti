@@ -18,11 +18,17 @@ const executiveSummaryContent = (containerType: string) => {
   if (containerType === 'Grouping') {
     typeLabel = 'Context';
     typeWidget = '$context';
+  } else if (containerType === 'Report') {
+    typeWidget = '$reportTypes';
+  } else if (containerType === 'Case-Rfi') {
+    typeWidget = '$informationTypes';
+  } else if (containerType === 'Case-Rft') {
+    typeWidget = '$takedownTypes';
   }
   const reliabilityForReport = containerType === 'Report'
     ? `<tr>
       <td><strong>Self reliability</strong></td>
-  <td>$reliability</td>
+  <td>$reliabilitySelf</td>
   </tr>`
     : '';
   return `
@@ -127,7 +133,7 @@ const executiveSummaryContent = (containerType: string) => {
       </div>
       
       <h3>7. Data sources</h3>
-      <div>$references</div>
+      <div>$externalReferencesURL</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
