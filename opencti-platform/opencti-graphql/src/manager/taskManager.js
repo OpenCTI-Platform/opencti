@@ -87,8 +87,6 @@ import { findById as findOrganizationById } from '../modules/organization/organi
 import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
-import { sendDisseminationEmail } from '../modules/disseminationList/disseminationList-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
