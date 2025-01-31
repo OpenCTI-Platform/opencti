@@ -40,6 +40,14 @@ Organizations segregation is a way to segregate your data considering the organi
 
 Full text indexing grants improved searches across structured and unstructured data. OpenCTI classic searches are based on metadata fields (e.g. title, description, type) while advanced indexing capability  enables  searches  to  be  extended  to  the document’s contents. Please read [File indexing](../administration/file-indexing.md) to get all information.
 
+### AI Insights
+
+Ability to read summary of reports and activities of threats with forecasting.
+
+### Natural Language Processing
+
+Automatic extraction of entities and relationships from raw text (PDF, etc.).
+
 ### Fintel templates
 
 Finished intelligence templates are models that can be used in containers to generate reports. Those reports can contain texts and visualizations and can be exported in pdf. Fintel templates can be created and managed in the Customization section (please read  [Fintel templates customization](./entities.md)).
