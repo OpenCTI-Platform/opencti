@@ -389,7 +389,7 @@ const createSseMiddleware = () => {
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
-        const eventTime = missingData.extensions[STIX_EXT_OCTI].updated_at ?? now();
+        const eventTime = missingData.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
         content.event_id = `${utcDate(eventTime).toDate().getTime()}-${missingIndex}`;
         channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
         cache.set(missingData.id, 'hit');
