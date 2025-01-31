@@ -389,8 +389,6 @@ const createSseMiddleware = () => {
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
-        const eventTime = missingData.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
-        content.event_id = `${utcDate(eventTime).toDate().getTime()}-${missingIndex}`;
         channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
         cache.set(missingData.id, 'hit');
         await wait(channel.delay);
@@ -417,8 +415,6 @@ const createSseMiddleware = () => {
             const message = generateCreateMessage(missingRelation);
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
-            const eventTime = stixRelation.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
-            content.event_id = `${utcDate(eventTime).toDate().getTime()}-${relIndex}`;
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
             cache.set(stixRelation.id, 'hit');
           }
@@ -582,9 +578,9 @@ const createSseMiddleware = () => {
           for (let index = 0; index < elements.length; index += 1) {
             const element = elements[index];
             const { id: eventId, event, data: eventData } = element;
+            const { type, data: stix, version: eventVersion, context: evenContext, event_id } = eventData;
             const eventTime = eventData?.data?.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
-            eventData.event_id = `${utcDate(eventTime).toDate().getTime()}-${index}`;
-            const { type, data: stix, version: eventVersion, context: evenContext } = eventData;
+            eventData.event_id = event_id ?? `${utcDate(eventTime).toDate().getTime()}-${index}`;
             const isRelation = stix.type === 'relationship' || stix.type === 'sighting';
             // New stream support only v4+ events.
             const isCompatibleVersion = parseInt(eventVersion ?? '0', 10) >= 4;
