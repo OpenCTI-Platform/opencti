@@ -198,7 +198,6 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: Widget
 export const getWidgetColumns = (type: WidgetEntityType, context: WidgetContext, entityType?: string): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
 
-
   if (context === 'fintelTemplate') {
     if (type === 'relationships') {
       return fintelTemplateAvailableWidgetColumns.relationships;
