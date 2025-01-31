@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -51,16 +51,11 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     emailBody: Yup.string().required(t_i18n('This field is required')),
   };
   const validator = Yup.object().shape(basicShape);
-  const [commitMutation] = useApiMutation(
+  const [commitMutation, inProgress] = useApiMutation(
     DisseminationListSendInputMutation,
     undefined,
     {
-      successMessage: (
-        <span>
-          {t_i18n('The background task has been executed. You can monitor it on')}{' '}
-          <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
-        </span>
-      ),
+      successMessage: t_i18n('Email sent successfully'),
     },
   );
 
@@ -78,7 +73,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           dissemination_list_id: values.disseminationListId,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
-          email_attached_file_id: fileId,
+          email_attachment_ids: [fileId],
         },
       },
       onCompleted: () => {
@@ -137,13 +132,19 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           />
           <div style={{
             marginTop: theme.spacing(2),
-            textAlign: 'right',
+            gap: theme.spacing(2),
+            display: 'flex',
+            justifyContent: 'right',
+            alignItems: 'center',
           }}
           >
+            { inProgress && (
+              <CircularProgress size={30} thickness={2} />
+            )}
             <Button
               variant="contained"
               onClick={handleReset}
-              disabled={isSubmitting}
+              disabled={isSubmitting || inProgress}
             >
               {t_i18n('Cancel')}
             </Button>
@@ -151,8 +152,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               variant="contained"
               color="secondary"
               onClick={submitForm}
-              disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
+              disabled={isSubmitting || inProgress}
             >
               {t_i18n('Send')}
             </Button>

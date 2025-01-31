@@ -1,7 +1,7 @@
 import Tooltip from '@mui/material/Tooltip';
 import { IconButton, List, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
-import { MoreVert, Email as EmailIcon } from '@mui/icons-material';
+import { MoreVert, EmailOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
@@ -172,7 +172,7 @@ const StixCoreObjectContentFilesList = ({
                         aria-label="disseminate"
                         disabled={!isEnterpriseEdition}
                       >
-                        <EmailIcon />
+                        <EmailOutlined />
                       </IconButton>
                     </Tooltip>
                     <EEChip />

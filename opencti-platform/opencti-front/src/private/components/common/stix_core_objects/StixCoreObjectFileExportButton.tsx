@@ -26,21 +26,23 @@ const StixCoreObjectFileExportButton = ({
 
   return (
     <Tooltip aria-label="generate-export" title={title}>
-      <ToggleButton
-        onClick={() => !disabledInDraft && onOpen()}
-        disabled={!isExportPossible}
-        value="quick-export"
-        aria-label="Quick export"
-        aria-haspopup="true"
-        color="primary"
-        size="small"
-        style={{ marginRight: 3 }}
-      >
-        <FileExportOutline
-          fontSize="small"
-          color={!disabledInDraft && isExportPossible ? 'primary' : 'disabled'}
-        />
-      </ToggleButton>
+      <span>
+        <ToggleButton
+          onClick={() => !disabledInDraft && onOpen()}
+          disabled={!isExportPossible}
+          value="quick-export"
+          aria-label="Quick export"
+          aria-haspopup="true"
+          color="primary"
+          size="small"
+          style={{ marginRight: 3 }}
+        >
+          <FileExportOutline
+            fontSize="small"
+            color={!disabledInDraft && isExportPossible ? 'primary' : 'disabled'}
+          />
+        </ToggleButton>
+      </span>
     </Tooltip>
   );
 };
