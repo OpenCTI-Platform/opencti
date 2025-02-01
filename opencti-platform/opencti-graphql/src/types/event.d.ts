@@ -62,13 +62,6 @@ interface DeleteEvent extends StreamDataEvent {
   type: 'delete';
 }
 
-interface WorkEvent extends StreamDataEvent {
-  type: 'work';
-  data: {
-
-  }
-}
-
 interface MergeEvent extends StreamDataEvent {
   type: 'merge';
   context: {
