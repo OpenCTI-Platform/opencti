@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ENABLED_FEATURE_FLAGS, isFeatureEnabled, logApp, PLATFORM_VERSION } from './config/conf';
+import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
@@ -111,9 +111,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
-      if (isFeatureEnabled('FILE_FROM_TEMPLATE')) {
-        await initFintelTemplates(context, SYSTEM_USER);
-      }
+      await initFintelTemplates(context, SYSTEM_USER);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_IS_INIT_MIGRATION) {
