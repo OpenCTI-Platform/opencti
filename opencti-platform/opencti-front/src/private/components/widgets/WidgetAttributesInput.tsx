@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useRef } from 'react';
 import InputLabel from '@mui/material/InputLabel';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
@@ -16,6 +16,7 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import FormHelperText from '@mui/material/FormHelperText';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
+import { Alert } from '@mui/material';
 import { widgetAttributesInputInstanceQuery } from './WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery } from './__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
@@ -23,6 +24,8 @@ import type { WidgetColumn } from '../../../utils/widget/widget';
 import TextField from '../../../components/TextField';
 import type { Theme } from '../../../components/Theme';
 import { toCamelCase } from '../../../utils/String';
+import DeleteDialog from '../../../components/DeleteDialog';
+import useDeletion from '../../../utils/hooks/useDeletion';
 
 const stixCoreObjectsAvailableAttributesColumns: { attribute: string, label: string }[] = [
   { attribute: 'representative.main', label: 'Representative' },
@@ -118,8 +121,11 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { config, fintelEntityType } = useWidgetConfigContext();
+  const { config, fintelEntityType, fintelEditorValue } = useWidgetConfigContext();
   const { isVarNameAlreadyUsed } = useWidgetConfigValidateForm();
+
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const { stixCoreObject } = usePreloadedQuery<WidgetAttributesInputContainerInstanceQuery>(
     widgetAttributesInputInstanceQuery,
@@ -134,6 +140,10 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 
   const findAttribute = (attributeName: string | null) => {
     return availableAttributes.find((a) => a.attribute === attributeName);
+  };
+
+  const isWidgetUsedInTemplate = (widgetVarName: string) => {
+    return widgetVarName !== '' && !!fintelEditorValue?.includes(`$${widgetVarName}`);
   };
 
   const attributesValidation = Yup.object({
@@ -182,6 +192,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
         }}
       >
         {({ values }) => {
+          const toRemove = useRef<() => void>();
+          const removeAttribute = () => {
+            toRemove.current?.();
+            toRemove.current = undefined;
+            handleCloseDelete();
+          };
+
           useEffect(() => {
             onChange(values.attributes);
           }, [values]);
@@ -193,104 +210,126 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
           return (
             <Form>
               <FieldArray name="attributes">
-                {({ insert, remove }) => (
-                  <>
-                    {values.attributes.map((row, index) => (
-                      <div
-                        key={row.attribute}
-                        style={{
-                          display: 'flex',
-                          gap: theme.spacing(2),
-                          marginBottom: theme.spacing(2),
-                        }}
-                      >
+                {({ insert, remove }) => {
+                  return (
+                    <>
+                      {values.attributes.map((row, index) => (
+                        <div
+                          key={row.attribute}
+                          style={{
+                            display: 'flex',
+                            gap: theme.spacing(2),
+                            marginBottom: theme.spacing(2),
+                          }}
+                        >
+                          <MuiTextField
+                            label={t_i18n('Attribute')}
+                            value={findAttribute(row.attribute)?.label ?? ''}
+                            disabled
+                            sx={{ flex: 1 }}
+                          />
+                          <Field
+                            component={TextField}
+                            name={`attributes[${index}].label`}
+                            label={t_i18n('Label')}
+                            sx={{ flex: 1 }}
+                          />
+                          <Field
+                            component={TextField}
+                            name={`attributes[${index}].variableName`}
+                            label={t_i18n('Variable name')}
+                            sx={{ flex: 1 }}
+                            error={isVarNameAlreadyUsed(values.attributes[index].variableName)}
+                            startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                            helperText={isVarNameAlreadyUsed(values.attributes[index].variableName)
+                              ? t_i18n('This name is already used for an other widget')
+                              : undefined
+                            }
+                          />
+
+                          <Tooltip title={t_i18n('Remove attribute')}>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              sx={{ alignSelf: 'center' }}
+                              onClick={() => {
+                                if (isWidgetUsedInTemplate(values.attributes[index].variableName ?? '')) {
+                                  toRemove.current = () => remove(index);
+                                  handleOpenDelete();
+                                } else {
+                                  remove(index);
+                                }
+                              }}
+                            >
+                              <DeleteOutlined fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </div>
+                      ))}
+
+                      <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+                        <FormControl sx={{ flex: 1 }}>
+                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                          <Select
+                            label={t_i18n('Attribute')}
+                            sx={{ flex: 1 }}
+                            value=''
+                            disabled={!config.widget.dataSelection[0].instance_id}
+                            onChange={({ target }) => {
+                              const attribute = findAttribute(target.value as string);
+                              if (attribute) {
+                                insert(values.attributes.length, {
+                                  ...attribute,
+                                  variableName: toCamelCase(attribute.label),
+                                });
+                              }
+                            }}
+                          >
+                            {filteredAttributes.map((v) => (
+                              <MenuItem key={v.attribute} value={v.attribute ?? ''}>
+                                {t_i18n(v.label)}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {!config.widget.dataSelection[0].instance_id && (
+                            <FormHelperText>
+                              {t_i18n('Select an instance above to be able to choose attributes')}
+                            </FormHelperText>
+                          )}
+                        </FormControl>
                         <MuiTextField
-                          label={t_i18n('Attribute')}
-                          value={findAttribute(row.attribute)?.label ?? ''}
+                          label={t_i18n('Label')}
                           disabled
                           sx={{ flex: 1 }}
                         />
-                        <Field
-                          component={TextField}
-                          name={`attributes[${index}].label`}
-                          label={t_i18n('Label')}
-                          sx={{ flex: 1 }}
-                        />
-                        <Field
-                          component={TextField}
-                          name={`attributes[${index}].variableName`}
+                        <MuiTextField
                           label={t_i18n('Variable name')}
+                          disabled
                           sx={{ flex: 1 }}
-                          error={isVarNameAlreadyUsed(values.attributes[index].variableName)}
-                          startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                          helperText={isVarNameAlreadyUsed(values.attributes[index].variableName)
-                            ? t_i18n('This name is already used for an other widget')
-                            : undefined
-                          }
-                        />
-
-                        <Tooltip title={t_i18n('Remove attribute')}>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => remove(index)}
-                            sx={{ alignSelf: 'center' }}
-                          >
-                            <DeleteOutlined fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </div>
-                    ))}
-
-                    <div style={{ display: 'flex', gap: theme.spacing(2) }}>
-                      <FormControl sx={{ flex: 1 }}>
-                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                        <Select
-                          label={t_i18n('Attribute')}
-                          sx={{ flex: 1 }}
-                          value=''
-                          disabled={!config.widget.dataSelection[0].instance_id}
-                          onChange={({ target }) => {
-                            const attribute = findAttribute(target.value as string);
-                            if (attribute) {
-                              insert(values.attributes.length, {
-                                ...attribute,
-                                variableName: toCamelCase(attribute.label),
-                              });
-                            }
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
                           }}
-                        >
-                          {filteredAttributes.map((v) => (
-                            <MenuItem key={v.attribute} value={v.attribute ?? ''}>
-                              {t_i18n(v.label)}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        {!config.widget.dataSelection[0].instance_id && (
-                          <FormHelperText>
-                            {t_i18n('Select an instance above to be able to choose attributes')}
-                          </FormHelperText>
+                        />
+                        <IconButton size="small" color="primary" disabled>
+                          <DeleteOutlined fontSize="small" />
+                        </IconButton>
+                      </div>
+
+                      <DeleteDialog
+                        deletion={deletion}
+                        submitDelete={removeAttribute}
+                        title={(
+                          <>
+                            <span>{t_i18n('Are you sure you want to delete this attribute?')}</span>
+                            <Alert severity="warning" variant="outlined" sx={{ marginTop: 2 }}>
+                              {t_i18n('You are about to delete an attribute used in the template')}
+                            </Alert>
+                          </>
                         )}
-                      </FormControl>
-                      <MuiTextField
-                        label={t_i18n('Label')}
-                        disabled
-                        sx={{ flex: 1 }}
                       />
-                      <MuiTextField
-                        label={t_i18n('Variable name')}
-                        disabled
-                        sx={{ flex: 1 }}
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                        }}
-                      />
-                      <IconButton size="small" color="primary" disabled>
-                        <DeleteOutlined fontSize="small" />
-                      </IconButton>
-                    </div>
-                  </>
-                )}
+                    </>
+                  );
+                }}
               </FieldArray>
             </Form>
           );

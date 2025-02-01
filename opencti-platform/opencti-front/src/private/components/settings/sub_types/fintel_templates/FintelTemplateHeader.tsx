@@ -88,7 +88,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           style={{ marginLeft: 'auto' }}
           disabled={editorValue === template.template_content || editOnGoing}
         >
-          {t_i18n('Save content')}
+          {t_i18n('Save template')}
         </Button>
 
         <FintelTemplatePopover

@@ -32,6 +32,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import TextField from '../../../../components/TextField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
+import { now } from '../../../../utils/Time';
 
 export type FileOption = Pick<Option, 'label' | 'value'> & {
   fileMarkings: {
@@ -148,6 +149,9 @@ const StixCoreObjectFileExportForm = ({
       ? scoName
       : defaultFileToExport.label.split('.')[0];
   }
+  if (defaultTemplate || defaultFileToExport) {
+    defaultExportFileName = `${defaultExportFileName}_${now()}`;
+  }
   let defaultFormat = '';
   if (defaultValues?.format) {
     defaultFormat = defaultValues.format;
@@ -210,12 +214,17 @@ const StixCoreObjectFileExportForm = ({
         }, [values.connector]);
         useEffect(() => {
           if (values.template) {
-            setFieldValue('exportFileName', values.template.label);
+            setFieldValue('exportFileName', `${values.template.label}_${now()}`);
           }
         }, [values.template]);
         useEffect(() => {
           if (values.fileToExport) {
-            setFieldValue('exportFileName', values.fileToExport.value === 'mappableContent' && scoName ? scoName : values.fileToExport.label.split('.')[0]);
+            setFieldValue(
+              'exportFileName',
+              values.fileToExport.value === 'mappableContent' && scoName
+                ? `${scoName}_${now()}`
+                : `${values.fileToExport.label.split('.')[0]}_${now()}`,
+            );
           }
         }, [values.fileToExport]);
         return (
