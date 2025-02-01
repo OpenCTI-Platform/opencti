@@ -1,7 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FilterGroup, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, Widget, WidgetDataSelection } from '../../generated/graphql';
+import {
+  type EditInput,
+  type FilterGroup,
+  type FintelTemplateAddInput,
+  type FintelTemplateWidget,
+  type FintelTemplateWidgetAddInput,
+  type Widget,
+  type WidgetDataSelection
+} from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -16,7 +24,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import pjson from '../../../package.json';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
-import { SELF_ID } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
+import { SELF_ID, widgetAttackPatterns, widgetContainerObservables, widgetIndicators } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -81,7 +89,8 @@ export const addFintelTemplate = async (
     ...templateWidget,
     widget: { ...templateWidget.widget, id: uuidv4() },
   }));
-  // add built-in attributes widget for self instance
+  // add built-in widgets
+  // - attributes widget for self instance with representative attribute
   widgetsWithIds.push({
     variable_name: 'widgetSelfAttributes',
     widget: {
@@ -100,6 +109,30 @@ export const addFintelTemplate = async (
         title: 'Attributes of the instance',
         description: 'Multi attributes widget for the instance which the template is applied to.',
       }
+    },
+  });
+  // - list widgets of observables
+  widgetsWithIds.push({
+    variable_name: widgetContainerObservables.variable_name,
+    widget: {
+      id: uuidv4(),
+      ...widgetContainerObservables.widget,
+    },
+  });
+  // - list widgets of attack patterns
+  widgetsWithIds.push({
+    variable_name: widgetAttackPatterns.variable_name,
+    widget: {
+      id: uuidv4(),
+      ...widgetAttackPatterns.widget,
+    },
+  });
+  // - list widgets indicators
+  widgetsWithIds.push({
+    variable_name: widgetIndicators.variable_name,
+    widget: {
+      id: uuidv4(),
+      ...widgetIndicators.widget,
     },
   });
 

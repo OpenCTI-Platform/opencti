@@ -49,13 +49,13 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
       >
         <Security needs={[KNOWLEDGE]} placeholder={(
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Content Editor')} />
+            <Tab label={t_i18n('Template Editor')} />
           </Tabs>
         )}
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Content Editor')} />
-            <Tab label={t_i18n('Content Preview')} />
+            <Tab label={t_i18n('Template Editor')} />
+            <Tab label={t_i18n('Template Preview')} />
           </Tabs>
         </Security>
 
@@ -66,7 +66,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
             </span>
           ) : (
             <span style={{ color: theme.palette.common.grey }}>
-              {t_i18n('Everything in content is saved')}
+              {t_i18n('Everything is saved')}
             </span>
           )}
         </div>

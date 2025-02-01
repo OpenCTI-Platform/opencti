@@ -1,9 +1,11 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import { AccordionDetails, Box, Checkbox, IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Typography } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetColumn } from '../../../utils/widget/widget';
@@ -24,6 +26,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const { context } = useWidgetConfigContext();
 
   // Ensure columns only include available columns
   useEffect(() => {
@@ -48,10 +51,27 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
     if (columnExists) {
       onChange(value.filter((col) => col.attribute !== attribute));
     } else {
-      const columnToAdd = availableColumns.find((col) => col.attribute === attribute);
-      if (columnToAdd) {
-        onChange([...value, columnToAdd]);
-      }
+      const columnToAdd = availableColumns.find((col) => col.attribute === attribute) as WidgetColumn;
+      if (columnToAdd) onChange([...value, columnToAdd]);
+    }
+  };
+
+  const handleChangeColumnName = (attribute: string | null | undefined, newTitle: string) => {
+    const columnExists = value.some((col) => col.attribute === attribute);
+    if (columnExists) {
+      const newColumns = value.map((col) => {
+        if (col.attribute === attribute) {
+          return { ...col, label: newTitle };
+        }
+        return col;
+      });
+      onChange(newColumns);
+    } else {
+      const columnToAdd = {
+        ...availableColumns.find((col) => col.attribute === attribute),
+        label: newTitle,
+      } as WidgetColumn;
+      onChange([...value, columnToAdd]);
     }
   };
 
@@ -117,7 +137,25 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               <DragIndicatorOutlined />
                             </ListItemIcon>
 
-                            <ListItemText primary={formatColumnName(column)} />
+                            {context === 'fintelTemplate'
+                              ? <>
+                                <ListItemText
+                                  style={{ marginLeft: -20 }}
+                                  primary={formatColumnName(defaultColumns
+                                    .find((c) => c.attribute === column.attribute)
+                                    ?? { attribute: column.attribute })}
+                                />
+                                <TextField
+                                  value={formatColumnName(column)}
+                                  label={t_i18n('Column title')}
+                                  onChange={(event) => handleChangeColumnName(column.attribute, event.target.value)}
+                                  InputProps={{
+                                    style: { marginTop: 12, width: '90%' },
+                                  }}
+                                />
+                              </>
+                              : <ListItemText primary={formatColumnName(column)} />
+                            }
 
                             <ListItemSecondaryAction>
                               <IconButton onClick={() => handleToggleColumn(column.attribute)}>

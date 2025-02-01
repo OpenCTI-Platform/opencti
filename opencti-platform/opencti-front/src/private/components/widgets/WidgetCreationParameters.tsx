@@ -772,7 +772,7 @@ const WidgetCreationParameters = () => {
             label={t_i18n('Display legend')}
           />
         )}
-        {getCurrentCategory(type) === 'list' && context !== 'fintelTemplate'
+        {getCurrentCategory(type) === 'list'
           && dataSelection.map(({ perspective, columns, filters }, index) => {
             if (perspective === 'relationships' || perspective === 'entities') {
               const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
@@ -799,7 +799,7 @@ const WidgetCreationParameters = () => {
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType || undefined)}
+                  availableColumns={getWidgetColumns(perspective, context, entityType || undefined)}
                   defaultColumns={defaultWidgetColumnsByType}
                   value={[...(columns ?? defaultWidgetColumnsByType)]}
                   onChange={(newColumns) => setColumns(index, newColumns)}
