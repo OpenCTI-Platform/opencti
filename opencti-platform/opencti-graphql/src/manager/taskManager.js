@@ -498,7 +498,7 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   return updateTask(context, task.id, { completed: true });
 };
 
-export const taskHandler = async () => {
+const taskHandler = async () => {
   let lock;
   try {
     // Lock the manager

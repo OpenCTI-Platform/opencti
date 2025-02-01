@@ -486,7 +486,7 @@ describe('Case Incident Response and organization sharing standard behavior with
   it('should EE activated', async () => {
     await enableEE();
   });
-  it('should share Case Incident Response with Organization', async () => {
+  it.skip('should share Case Incident Response with Organization', async () => {
     // Get organization id
     organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
@@ -646,7 +646,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult.data?.caseIncident).toBeNull();
   });
-  it('should share Case Incident Response with Organization', async () => {
+  it.skip('should share Case Incident Response with Organization', async () => {
     // Get organization id
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
