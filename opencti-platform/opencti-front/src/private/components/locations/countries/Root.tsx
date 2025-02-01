@@ -147,6 +147,8 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   <CountryEdition countryId={country.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
