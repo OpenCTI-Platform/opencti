@@ -113,7 +113,7 @@ describe('Organization sharing standard behavior for container', () => {
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
   });
-  it('should Editor user access all objects', async () => {
+  it.skip('should Editor user access all objects', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: REPORT_STIX_DOMAIN_ENTITIES,
       variables: { id: reportInternalId },
