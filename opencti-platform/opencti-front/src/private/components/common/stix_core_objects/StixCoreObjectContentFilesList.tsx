@@ -1,7 +1,7 @@
 import Tooltip from '@mui/material/Tooltip';
 import { IconButton, List, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
-import { MoreVert, Email as EmailIcon } from '@mui/icons-material';
+import { MoreVert, EmailOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
@@ -16,7 +16,6 @@ import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -26,6 +25,7 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import EETooltip from '../entreprise_edition/EETooltip';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -164,18 +164,19 @@ const StixCoreObjectContentFilesList = ({
                 {file.metaData?.mimetype === 'application/pdf' && isDisseminationFeatureEnabled && (
                 <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
                   <>
-                    <Tooltip title={t_i18n('Disseminate')}>
-                      <IconButton
-                        onClick={(e) => handleDisseminate(e)}
-                        size="small"
-                        style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
-                        aria-label="disseminate"
-                        disabled={!isEnterpriseEdition}
-                      >
-                        <EmailIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <EEChip />
+                    <EETooltip title={t_i18n('Disseminate')}>
+                      <Tooltip title={t_i18n('Disseminate')}>
+                        <IconButton
+                          onClick={(e) => handleDisseminate(e)}
+                          size="small"
+                          style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
+                          aria-label="disseminate"
+                          disabled={!isEnterpriseEdition}
+                        >
+                          <EmailOutlined />
+                        </IconButton>
+                      </Tooltip>
+                    </EETooltip>
                   </>
                 </Security>
                 )}
@@ -198,6 +199,7 @@ const StixCoreObjectContentFilesList = ({
               onClose={() => setDrawerOpen(false)}
             >
               <StixCoreObjectContentFilesDissemination
+                entityId={stixCoreObjectId}
                 fileId={file.id}
                 fileName={file.name}
                 onClose={() => setDrawerOpen(false)}

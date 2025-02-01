@@ -145,7 +145,7 @@ const DisseminationLists = () => {
     },
     lineNumber: {
       id: 'dissemination_list_values_count',
-      label: 'Number of elements',
+      label: 'Number of recipients',
       percentWidth: 15,
       isSortable: true,
       render: (node: DisseminationListsLine_node$data) => node.emails.length || '-',

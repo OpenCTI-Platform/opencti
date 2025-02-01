@@ -1059,7 +1059,6 @@ enum BackgroundTaskScope {
   PUBLIC_DASHBOARD
   INVESTIGATION
   PLAYBOOK
-  DISSEMINATION
 }
 
 enum BackgroundTaskActionType {
@@ -1078,7 +1077,6 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
-  DISSEMINATE
 }
 
 enum BackgroundTaskContextType {
@@ -9040,7 +9038,7 @@ type Mutation {
   disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
   disseminationListDelete(id: ID!): ID
   disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
-  disseminationListSend(input: DisseminationListSendInput!): Boolean
+  disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12631,5 +12629,5 @@ input DisseminationListSendInput {
   dissemination_list_id: ID!
   email_object: String!
   email_body: String!
-  email_attached_file_id: ID!
+  email_attachment_ids: [ID!]!
 }

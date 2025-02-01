@@ -8,6 +8,7 @@ interface BasicUserAction {
   user: AuthUser
   status?: 'success' | 'error' // nothing = success
   event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
+  event_scope: string
   event_access: 'extended' | 'administration'
   prevent_indexing?: boolean
 }
@@ -89,8 +90,17 @@ export interface UserFileActionContextData extends ElementContextData {
 }
 export interface UserFileAction extends BasicUserAction {
   event_type: 'file'
-  event_scope: 'read' | 'create' | 'delete' | 'download' | 'disseminate';
+  event_scope: 'read' | 'create' | 'delete' | 'download';
   context_data: UserFileActionContextData
+}
+
+export interface UserDisseminateActionContextData extends ElementContextData {
+  input: unknown
+}
+export interface DisseminateAction extends BasicUserAction {
+  event_type: 'file'
+  event_scope: 'disseminate';
+  context_data: UserDisseminateActionContextData
 }
 // endregion
 
@@ -140,7 +150,7 @@ export interface UserLogoutAction extends BasicUserAction {
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction |
-UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction;
+UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction;
 
 export interface ActionListener {
   id: string
