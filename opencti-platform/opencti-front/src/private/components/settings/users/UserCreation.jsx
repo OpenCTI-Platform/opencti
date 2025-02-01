@@ -21,6 +21,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,11 +67,22 @@ const userValidation = (t) => Yup.object().shape({
     }),
 });
 
+const CreateUserControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='User'
+    entityPrefix={false}
+    size='medium'
+    {...props}
+  />
+);
+
 const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -105,7 +118,11 @@ const UserCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a user')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced
+        ? CreateUserControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <>

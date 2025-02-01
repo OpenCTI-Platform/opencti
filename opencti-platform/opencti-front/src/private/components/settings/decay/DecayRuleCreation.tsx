@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
 import * as R from 'ramda';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -24,6 +24,8 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import decayRuleValidator from './DecayRuleValidator';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -278,6 +280,15 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
     </Formik>
   );
 };
+
+const CreateDecayRuleControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='Decay rule'
+    entityPrefix={false}
+    {...props}
+  />
+);
+
 interface DecayRuleCreationProps {
   paginationOptions: DecayRulesLinesPaginationQuery$variables;
 }
@@ -286,6 +297,8 @@ const DecayRuleCreation: FunctionComponent<DecayRuleCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => {
     insertNode(
       store,
@@ -298,7 +311,11 @@ const DecayRuleCreation: FunctionComponent<DecayRuleCreationProps> = ({
   return (
     <Drawer
       title={t_i18n('Create a decay rule')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced
+        ? CreateDecayRuleControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <DecayRuleCreationForm
