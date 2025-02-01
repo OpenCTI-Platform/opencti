@@ -32,8 +32,8 @@ const disseminationListResolvers: Resolvers = {
     disseminationListFieldPatch: (_, { id, input }, context) => {
       return fieldPatchDisseminationList(context, context.user, id, input);
     },
-    disseminationListSend: (_, { input }, context) => {
-      return sendToDisseminationList(context, context.user, input);
+    disseminationListSend: (_, { id, input }, context) => {
+      return sendToDisseminationList(context, context.user, id, input);
     }
   }
 };

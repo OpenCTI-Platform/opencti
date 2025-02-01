@@ -25,6 +25,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixCoreObject } from '../schema/stixCoreObject';
+import { REDACTED_INFORMATION } from '../database/utils';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
@@ -53,7 +54,20 @@ const initActivityManager = () => {
       const currentObj = stack.pop() as any;
       Object.keys(currentObj).forEach((key) => {
         if (LOGS_SENSITIVE_FIELDS.includes(key)) {
-          currentObj[key] = '*** Redacted ***';
+          currentObj[key] = REDACTED_INFORMATION;
+        }
+        // Need special case to clean inputs
+        if (key === 'input' && Array.isArray(currentObj[key])) {
+          const preparedElements = [];
+          for (let index = 0; index < currentObj[key].length; index += 1) {
+            const currentObjElementElement = currentObj[key][index];
+            if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
+              preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
+            } else {
+              preparedElements.push(currentObjElementElement);
+            }
+          }
+          currentObj[key] = preparedElements;
         }
         if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
           stack.push(currentObj[key]);
@@ -180,9 +194,9 @@ const initActivityManager = () => {
           await activityLogger(action, message);
         }
         if (action.event_scope === 'disseminate') {
-          const { file_name, entity_name, entity_type, input } = action.context_data;
+          const { entity_name, entity_type, input } = action.context_data;
           // @ts-expect-error input type unknown
-          const message = `disseminate \`${file_name}\` to \`${input.name}\` for \`${entity_name}\` (${entity_type})`;
+          const message = `disseminate \`${input.files.map((f) => f.name).join(',')}\` to \`${input.dissemination}\` from \`${entity_name}\` (${entity_type})`;
           await activityLogger(action, message);
         }
       }

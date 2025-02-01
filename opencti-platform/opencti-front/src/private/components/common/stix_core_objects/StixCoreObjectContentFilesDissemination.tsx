@@ -18,6 +18,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectContentFilesDisseminationProps {
+  entityId: string;
   fileId: string;
   fileName: string;
   onClose: () => void;
@@ -31,14 +32,16 @@ interface DisseminationInput {
 
 export const DisseminationListSendInputMutation = graphql`
     mutation StixCoreObjectContentFilesDisseminationMutation(
+        $id: ID!
         $input: DisseminationListSendInput!
     ) {
-        disseminationListSend(input: $input)
+        disseminationListSend(id: $id, input: $input)
     }
 `;
 
 const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectContentFilesDisseminationProps> = ({
   fileId,
+  entityId,
   fileName,
   onClose,
 }) => {
@@ -69,6 +72,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     const emailBodyFormatted = sanitizedEmailBody.replace(/(\r\n|\n|\r)/g, '<br/>');
     commitMutation({
       variables: {
+        id: entityId,
         input: {
           dissemination_list_id: values.disseminationListId,
           email_object: values.emailObject,

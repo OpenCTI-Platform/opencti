@@ -199,6 +199,7 @@ const StixCoreObjectContentFilesList = ({
               onClose={() => setDrawerOpen(false)}
             >
               <StixCoreObjectContentFilesDissemination
+                entityId={stixCoreObjectId}
                 fileId={file.id}
                 fileName={file.name}
                 onClose={() => setDrawerOpen(false)}
