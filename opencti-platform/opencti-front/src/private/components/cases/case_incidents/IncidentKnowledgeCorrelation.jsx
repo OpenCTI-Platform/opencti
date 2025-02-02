@@ -1262,7 +1262,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
           x_opencti_order
           x_opencti_color
         }
-        objects {
+        objects(first: 500000) {
           edges {
             node {
               ... on BasicObject {
@@ -1286,11 +1286,65 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                   x_opencti_order
                   x_opencti_color
                 }
-                cases(first: 20) {
+                cases(first: 500000) {
                   edges {
                     node {
                       id
                       name
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+                groupings(first: 500000) {
+                  edges {
+                    node {
+                      id
+                      name
+                      context
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+                reports(first: 500000) {
+                  edges {
+                    node {
+                      id
+                      name
+                      published
                       confidence
                       entity_type
                       parent_types
@@ -1390,7 +1444,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
-                cases(first: 20) {
+                cases(first: 500000) {
                   edges {
                     node {
                       id
@@ -1407,6 +1461,60 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                         }
                       }
                                             objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+                groupings(first: 500000) {
+                  edges {
+                    node {
+                      id
+                      name
+                      context
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+                reports(first: 500000) {
+                  edges {
+                    node {
+                      id
+                      name
+                      published
+                      confidence
+                      entity_type
+                      parent_types
+                      created_at
+                      createdBy {
+                        ... on Identity {
+                          id
+                          name
+                          entity_type
+                        }
+                      }
+                      objectMarking {
                         id
                         definition_type
                         definition
