@@ -1667,6 +1667,7 @@ input UserAddInput {
   monochrome_labels: Boolean
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
+  prevent_default_groups: Boolean
 }
 
 input ConfidenceLevelInput {

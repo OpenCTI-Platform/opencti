@@ -1,6 +1,5 @@
 import React from 'react';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import { QueryRenderer } from '../../../relay/environment';
@@ -13,20 +12,13 @@ import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '..
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import { groupsQuery } from '../common/form/GroupField';
 
 const LOCAL_STORAGE_KEY = 'users';
 
 const Users = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
@@ -39,6 +31,21 @@ const Users = () => {
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+
+  const defaultAssignationFilter = {
+    mode: 'and',
+    filters: [{ key: 'default_assignation', values: [true] }],
+    filterGroups: [],
+  };
+  const defaultGroupsQueryRef = useQueryLoading(
+    groupsQuery,
+    {
+      orderBy: 'name',
+      orderMode: 'asc',
+      filters: defaultAssignationFilter,
+    },
+  );
+
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -105,7 +112,13 @@ const Users = () => {
   };
 
   return (
-    <div className={classes.container} data-testid="users-settings-page">
+    <div
+      style={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+      data-testid="users-settings-page"
+    >
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Users'), current: true }]} />
       <AccessesMenu />
       {isSetAccess || isEnterpriseEdition ? (
@@ -117,7 +130,11 @@ const Users = () => {
           />
         </Grid>
       )}
-      {isSetAccess && <UserCreation paginationOptions={paginationOptions} />}
+      {isSetAccess && defaultGroupsQueryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <UserCreation paginationOptions={paginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
+        </React.Suspense>
+      )}
       {!isSetAccess && isAdminOrganization && isEnterpriseEdition && (
         <SettingsOrganizationUserCreation
           paginationOptions={paginationOptions}
