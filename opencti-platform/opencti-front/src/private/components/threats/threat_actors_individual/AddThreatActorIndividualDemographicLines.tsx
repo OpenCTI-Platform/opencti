@@ -5,13 +5,14 @@ import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui
 import { CheckCircle } from '@mui/icons-material';
 import ItemIcon from 'src/components/ItemIcon';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
-import { defaultCommitMutation } from 'src/relay/environment';
-import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
-import { AddIndividualsThreatActorIndividualLines_data$key } from './__generated__/AddIndividualsThreatActorIndividualLines_data.graphql';
+import {
+  AddThreatActorIndividualDemographicLines_data$key,
+} from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLines_data.graphql';
+import { ThreatActorIndividual_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import { updateDelete } from '../../../../utils/store';
 
 export const scoRelationshipAdd = graphql`
-  mutation AddIndividualsThreatActorIndividualLinesRelationAddMutation(
+  mutation AddThreatActorIndividualDemographicLinesRelationAddMutation(
     $input: StixCoreRelationshipAddInput
   ) {
     stixCoreRelationshipAdd(input: $input) {
@@ -32,7 +33,7 @@ export const scoRelationshipAdd = graphql`
         }
       }
       to {
-        ... on Individual {
+        ... on Country {
           id
         }
       }
@@ -41,7 +42,7 @@ export const scoRelationshipAdd = graphql`
 `;
 
 export const scoRelationshipDelete = graphql`
-  mutation AddIndividualsThreatActorIndividualLinesRelationDeleteMutation(
+  mutation AddThreatActorIndividualDemographicLinesRelationDeleteMutation(
     $fromId: StixRef!
     $toId: StixRef!
     $relationship_type: String!
@@ -55,29 +56,29 @@ export const scoRelationshipDelete = graphql`
 `;
 
 export const addIndividualsThreatActorIndividualLinesQuery = graphql`
-  query AddIndividualsThreatActorIndividualLinesQuery(
+  query AddThreatActorIndividualDemographicLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
   ) {
-    ...AddIndividualsThreatActorIndividualLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddThreatActorIndividualDemographicLines_data
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
-const AddIndividualsThreatActorIndividualLinesFragment = graphql`
-  fragment AddIndividualsThreatActorIndividualLines_data on Query
-  @refetchable(queryName: "AddIndividualsThreatActorIndividualLinesRefetchQuery")
+const AddThreatActorIndividualDemographicLinesFragment = graphql`
+  fragment AddThreatActorIndividualDemographicLines_data on Query
+  @refetchable(queryName: "AddThreatActorIndividualDemographicLinesRefetchQuery")
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 },
     cursor: { type: "ID" },
   ) {
-    individuals (
+    countries (
       search: $search,
       first: $count,
       after: $cursor,
-    ) @connection(key: "Pagination_individuals") {
+    ) @connection(key: "Pagination_countries") {
       edges {
         node {
           id
@@ -88,7 +89,7 @@ const AddIndividualsThreatActorIndividualLinesFragment = graphql`
   }
 `;
 
-const AddIndividualsThreatActorIndividualLine = ({
+const AddThreatActorIndividualDemographicLine = ({
   id,
   name,
   currentTargets,
@@ -108,7 +109,7 @@ const AddIndividualsThreatActorIndividualLine = ({
       <ListItemIcon>
         {currentTargets.includes(id)
           ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type='Individual' />
+          : <ItemIcon type='Country' />
         }
       </ListItemIcon>
       <ListItemText
@@ -118,15 +119,17 @@ const AddIndividualsThreatActorIndividualLine = ({
   );
 };
 
-const AddIndividualsThreatActorIndividualLines = ({
+const AddThreatActorIndividualDemographicLines = ({
   threatActorIndividual,
   fragmentKey,
+  relType,
 }: {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
-  fragmentKey: AddIndividualsThreatActorIndividualLines_data$key,
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
+  fragmentKey: AddThreatActorIndividualDemographicLines_data$key,
+  relType: string,
 }) => {
   const data = useFragment(
-    AddIndividualsThreatActorIndividualLinesFragment,
+    AddThreatActorIndividualDemographicLinesFragment,
     fragmentKey,
   );
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
@@ -134,7 +137,7 @@ const AddIndividualsThreatActorIndividualLines = ({
 
   const initialTargets = (threatActorIndividual
     .stixCoreRelationships?.edges
-    .filter(({ node }) => node.relationship_type === 'impersonates')
+    .filter(({ node }) => node.relationship_type === relType)
     ?? []).map(({ node }) => node.to?.id ?? '');
 
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
@@ -144,11 +147,10 @@ const AddIndividualsThreatActorIndividualLines = ({
     const input = {
       fromId: threatActorIndividual.id,
       toId,
-      relationship_type: 'impersonates',
+      relationship_type: relType,
     };
     if (isSelected) {
       commitRelationDelete({
-        ...defaultCommitMutation,
         variables: { ...input },
         updater: (store) => updateDelete(
           store,
@@ -162,7 +164,6 @@ const AddIndividualsThreatActorIndividualLines = ({
       });
     } else {
       commitRelationAdd({
-        ...defaultCommitMutation,
         variables: { input },
         onCompleted: () => {
           setCurrentTargets([...currentTargets, toId]);
@@ -171,14 +172,14 @@ const AddIndividualsThreatActorIndividualLines = ({
     }
   };
 
-  if (data.individuals?.edges) {
-    const availableTargets = data.individuals.edges;
+  if (data.countries?.edges) {
+    const availableTargets = data.countries.edges;
     return (
       <List>
         {availableTargets.map((node, i) => {
           if (node) {
             return (
-              <AddIndividualsThreatActorIndividualLine
+              <AddThreatActorIndividualDemographicLine
                 key={node.node.id}
                 id={node.node.id}
                 name={node.node.name}
@@ -195,4 +196,4 @@ const AddIndividualsThreatActorIndividualLines = ({
   return (<Loader />);
 };
 
-export default AddIndividualsThreatActorIndividualLines;
+export default AddThreatActorIndividualDemographicLines;
