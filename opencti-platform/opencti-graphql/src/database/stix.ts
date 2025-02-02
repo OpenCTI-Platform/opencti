@@ -1183,6 +1183,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_MEDIA_CONTENT}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_MEDIA_CONTENT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_MEDIA_CONTENT}_${ENTITY_TYPE_NARRATIVE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
   // From USER_ACCOUNT
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_MEDIA_CONTENT}`]: [
     { name: RELATION_PUBLISHES, type: REL_NEW }
