@@ -57,10 +57,7 @@ const intrusionSetQuery = graphql`
         id
       }
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
       ...FileImportViewer_entity
@@ -133,7 +130,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                     'infrastructures',
                     'sightings',
                   ]}
-                  stixCoreObjectsDistribution={intrusionSet.stixCoreObjectsDistribution}
+                  data={intrusionSet}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
               }

@@ -14,7 +14,7 @@ import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_co
 
 class ThreatActorGroupKnowledgeComponent extends Component {
   render() {
-    const { threatActorGroup } = this.props;
+    const { threatActorGroup, relatedRelationshipTypes } = this.props;
     const link = `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`;
     return (
       <>
@@ -52,7 +52,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={threatActorGroup.id}
-                relationshipTypes={['related-to', 'part-of']}
+                relationshipTypes={relatedRelationshipTypes}
                 entityLink={link}
                 defaultStartTime={threatActorGroup.first_seen}
                 defaultStopTime={threatActorGroup.last_seen}
@@ -271,6 +271,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
 
 ThreatActorGroupKnowledgeComponent.propTypes = {
   threatActorGroup: PropTypes.object,
+  relatedRelationshipTypes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

@@ -54,10 +54,7 @@ const cityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...City_city
       ...CityKnowledge_city
       ...FileImportViewer_entity
@@ -118,7 +115,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={city.stixCoreObjectsDistribution}
+                  data={city}
                 />
               }
             />

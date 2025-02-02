@@ -51,10 +51,7 @@ const eventQuery = graphql`
       entity_type
       name
       aliases
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Event_event
       ...EventKnowledge_event
       ...FileImportViewer_entity
@@ -121,7 +118,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={event.stixCoreObjectsDistribution}
+                  data={event}
                 />
               }
             />

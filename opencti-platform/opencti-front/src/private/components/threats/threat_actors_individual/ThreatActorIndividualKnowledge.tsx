@@ -28,8 +28,10 @@ const threatActorIndividualKnowledgeFragment = graphql`
 
 const ThreatActorIndividualKnowledgeComponent = ({
   threatActorIndividualData,
+  relatedRelationshipTypes,
 }: {
   threatActorIndividualData: ThreatActorIndividualKnowledge_ThreatActorIndividual$key;
+  relatedRelationshipTypes: string[]
 }) => {
   const threatActorIndividual = useFragment<ThreatActorIndividualKnowledge_ThreatActorIndividual$key>(
     threatActorIndividualKnowledgeFragment,
@@ -71,7 +73,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         element={
           <EntityStixCoreRelationships
             entityId={threatActorIndividual.id}
-            relationshipTypes={['related-to', 'part-of', 'known-as', 'impersonates']}
+            relationshipTypes={relatedRelationshipTypes}
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}

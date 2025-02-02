@@ -53,10 +53,7 @@ const sectorQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Sector_sector
       ...SectorKnowledge_sector
       ...FileImportViewer_entity
@@ -123,7 +120,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={sector.stixCoreObjectsDistribution}
+                  data={sector}
                 />
               }
             />

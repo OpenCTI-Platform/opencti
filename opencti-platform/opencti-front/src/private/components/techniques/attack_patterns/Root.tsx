@@ -52,10 +52,7 @@ const attackPatternQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...AttackPattern_attackPattern
       ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity
@@ -122,7 +119,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                     'indicators',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={attackPattern.stixCoreObjectsDistribution}
+                  data={attackPattern}
                 />
               }
             />

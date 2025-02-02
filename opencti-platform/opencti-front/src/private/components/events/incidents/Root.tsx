@@ -56,10 +56,7 @@ const incidentQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Incident_incident
       ...IncidentKnowledge_incident
       ...StixCoreObjectContent_stixCoreObject
@@ -123,7 +120,8 @@ const RootIncidentComponent = ({ queryRef }) => {
                     'vulnerabilities',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={incident.stixCoreObjectsDistribution}
+                  data={incident}
+                  attribution={['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign']}
                 />
               }
             />

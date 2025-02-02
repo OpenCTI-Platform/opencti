@@ -52,10 +52,7 @@ const vulnerabilityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
@@ -124,9 +121,9 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                     'sightings',
                     'infrastructures',
                   ]}
-                  stixCoreObjectsDistribution={vulnerability.stixCoreObjectsDistribution}
+                  data={vulnerability}
                 />
-                                  }
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
