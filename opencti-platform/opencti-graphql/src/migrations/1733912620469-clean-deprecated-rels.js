@@ -68,7 +68,7 @@ export const up = async (next) => {
     ENTITY_TYPE_MALWARE,
     ENTITY_TYPE_INCIDENT,
   ];
-  const optsRelatedTo = { types: threatTypes, callback: clearRelatedToObservableRels };
+  const optsRelatedTo = { types: threatTypes, logForMigration: true, callback: clearRelatedToObservableRels };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, optsRelatedTo);
   // Apply operations.
   let currentProcessingRelatedTo = 0;
@@ -118,7 +118,7 @@ export const up = async (next) => {
       currentProcessingLocations += 1;
     }
   };
-  const opts = { types: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY], callback: clearLocatedAtRegionAndCountryRels };
+  const opts = { types: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY], logForMigration: true, callback: clearLocatedAtRegionAndCountryRels };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;

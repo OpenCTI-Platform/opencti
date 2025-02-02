@@ -3383,8 +3383,9 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     );
 };
 export const elList = async (context, user, indexName, opts = {}) => {
-  const { maxSize = undefined } = opts;
+  const { maxSize = undefined, logForMigration = false } = opts;
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
+  let batch = 0;
   let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
@@ -3407,6 +3408,10 @@ export const elList = async (context, user, indexName, opts = {}) => {
     const noMoreElements = elements.length === 0 || elements.length < first;
     const moreThanMax = maxSize ? emitSize >= maxSize : false;
     if (noMoreElements || moreThanMax) {
+      batch += 1;
+      if (logForMigration) {
+        logMigration.info(`Migrating batch ${batch}...`);
+      }
       if (elements.length > 0) {
         await publish(elements);
       }
