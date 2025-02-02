@@ -225,7 +225,7 @@
     "graphql": "patch:graphql@16.10.0#./patch/graphql-16.8.1.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
     "@datadog/pprof": "patch:@datadog/pprof@5.5.1#./patch/@datadog-pprof-5.4.1.patch",
-    "path-to-regexp": "0.1.12"
+    "path-to-regexp": "0.2.5"
   },
   "packageManager": "yarn@4.6.0"
 }
