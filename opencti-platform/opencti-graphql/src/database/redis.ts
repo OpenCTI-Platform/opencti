@@ -454,12 +454,13 @@ const mapJSToStream = (event: any) => {
 };
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
   const draftContext = getDraftContext(context, user);
+  const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
       if (streamTrimming) {
-        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
+        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(eventToPush));
       } else {
-        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
+        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(eventToPush));
       }
     };
     telemetry(context, user, 'INSERT STREAM', {

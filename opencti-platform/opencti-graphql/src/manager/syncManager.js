@@ -33,9 +33,9 @@ const syncManagerInstance = (syncId) => {
   let lastStateSaveTime;
   const handleEvent = (event) => {
     const { type, data, lastEventId } = event;
-    const { data: stixData, context, version } = JSON.parse(data);
+    const { data: stixData, context, version, event_id } = JSON.parse(data);
     if (version === EVENT_CURRENT_VERSION) {
-      eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context });
+      eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context, event_id });
     }
   };
   const startStreamListening = (sseUri, syncElement) => {
@@ -137,7 +137,7 @@ const syncManagerInstance = (syncId) => {
         if (event) {
           try {
             currentDelay = await manageBackPressure(httpClient, sync, currentDelay);
-            const { id: eventId, type: eventType, data, context: eventContext } = event;
+            const { id: eventId, type: eventType, data, context: eventContext, event_id } = event;
             if (eventType === 'heartbeat') {
               await saveCurrentState(context, eventType, sync, eventId);
             } else {
@@ -147,6 +147,7 @@ const syncManagerInstance = (syncId) => {
               // Applicant_id should be a userId coming from synchronizer
               await pushToWorkerForConnector(sync.internal_id, {
                 type: 'event',
+                event_id,
                 synchronized,
                 previous_standard,
                 update: true,

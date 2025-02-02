@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
+import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
 import { AUTH_BEARER, authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
@@ -577,7 +578,9 @@ const createSseMiddleware = () => {
           for (let index = 0; index < elements.length; index += 1) {
             const element = elements[index];
             const { id: eventId, event, data: eventData } = element;
-            const { type, data: stix, version: eventVersion, context: evenContext } = eventData;
+            const { type, data: stix, version: eventVersion, context: evenContext, event_id } = eventData;
+            const eventTime = stix.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
+            eventData.event_id = event_id ?? `${utcDate(eventTime).toDate().getTime()}-${index}`;
             const isRelation = stix.type === 'relationship' || stix.type === 'sighting';
             // New stream support only v4+ events.
             const isCompatibleVersion = parseInt(eventVersion ?? '0', 10) >= 4;
