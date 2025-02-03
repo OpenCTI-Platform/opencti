@@ -180,6 +180,8 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    killChainPhases: Yup.array().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const infrastructureValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
