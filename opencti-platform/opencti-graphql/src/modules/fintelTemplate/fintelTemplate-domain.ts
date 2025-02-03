@@ -1,7 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, FilterGroup, FintelTemplateAddInput, FintelTemplateWidget, FintelTemplateWidgetAddInput, Widget, WidgetDataSelection } from '../../generated/graphql';
+import {
+  type EditInput,
+  type FilterGroup,
+  type FintelTemplateAddInput,
+  type FintelTemplateWidget,
+  type FintelTemplateWidgetAddInput,
+  type Widget,
+  type WidgetDataSelection
+} from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -16,7 +24,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import pjson from '../../../package.json';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
-import { SELF_ID } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
+import { SELF_ID, widgetAttackPatterns, widgetContainerObservables, widgetIndicators } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -71,6 +79,7 @@ export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
   input: FintelTemplateAddInput,
+  preventDefaultWidgets = false,
 ) => {
   // check rights
   await canCustomizeTemplate(context);
@@ -81,27 +90,54 @@ export const addFintelTemplate = async (
     ...templateWidget,
     widget: { ...templateWidget.widget, id: uuidv4() },
   }));
-  // add built-in attributes widget for self instance
-  widgetsWithIds.push({
-    variable_name: 'widgetSelfAttributes',
-    widget: {
-      id: uuidv4(),
-      type: 'attribute',
-      perspective: null,
-      dataSelection: [{
-        columns: [{
-          label: 'Representative',
-          attribute: 'representative.main',
-          variableName: 'containerRepresentative'
+  // add built-in widgets (except if preventDefaultWidgets = true)
+  if (!preventDefaultWidgets) {
+    // - attributes widget for self instance with representative attribute
+    widgetsWithIds.push({
+      variable_name: 'widgetSelfAttributes',
+      widget: {
+        id: uuidv4(),
+        type: 'attribute',
+        perspective: null,
+        dataSelection: [{
+          columns: [{
+            label: 'Representative',
+            attribute: 'representative.main',
+            variableName: 'containerRepresentative'
+          }],
+          instance_id: SELF_ID,
         }],
-        instance_id: SELF_ID,
-      }],
-      parameters: {
-        title: 'Attributes of the instance',
-        description: 'Multi attributes widget for the instance which the template is applied to.',
-      }
-    },
-  });
+        parameters: {
+          title: 'Attributes of the instance',
+          description: 'Multi attributes widget for the instance which the template is applied to.',
+        }
+      },
+    });
+    // - list widgets of observables
+    widgetsWithIds.push({
+      variable_name: widgetContainerObservables.variable_name,
+      widget: {
+        id: uuidv4(),
+        ...widgetContainerObservables.widget,
+      },
+    });
+    // - list widgets of attack patterns
+    widgetsWithIds.push({
+      variable_name: widgetAttackPatterns.variable_name,
+      widget: {
+        id: uuidv4(),
+        ...widgetAttackPatterns.widget,
+      },
+    });
+    // - list widgets indicators
+    widgetsWithIds.push({
+      variable_name: widgetIndicators.variable_name,
+      widget: {
+        id: uuidv4(),
+        ...widgetIndicators.widget,
+      },
+    });
+  }
 
   const finalInput: FintelTemplateAddInput = {
     ...input,
@@ -115,6 +151,18 @@ export const addFintelTemplate = async (
     finalInput,
     ENTITY_TYPE_FINTEL_TEMPLATE,
   );
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates fintel template \`${finalInput.name}\``,
+    context_data: {
+      id: created.id,
+      entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
+      input: finalInput,
+    },
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
 };
 
@@ -156,7 +204,7 @@ export const fintelTemplateEditField = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: 'Update template',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
     context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
   });
 
@@ -176,8 +224,8 @@ export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser,
     user,
     event_type: 'mutation',
     event_scope: 'delete',
-    event_access: 'extended',
-    message: `deletes template \`${deleted.name}\``,
+    event_access: 'administration',
+    message: `deletes fintel template \`${deleted.name}\``,
     context_data: {
       id: deleted.id,
       entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
@@ -295,5 +343,5 @@ export const fintelTemplateConfigurationImport = async (context: AuthContext, us
     fintel_template_widgets: exportWidgets
   };
 
-  return addFintelTemplate(context, user, fintelInput);
+  return addFintelTemplate(context, user, fintelInput, true);
 };

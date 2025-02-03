@@ -18,6 +18,7 @@ interface WidgetConfigContextProps {
   disabledSteps: number[];
   fintelWidgets?: FintelTemplateWidget[]
   fintelEntityType?: string
+  fintelEditorValue?: string
   step: number;
   setStep: Dispatch<React.SetStateAction<number>>;
   config: WidgetConfigType;
@@ -35,16 +36,26 @@ interface WidgetConfigProviderProps {
   disabledSteps: number[]
   fintelWidgets: FintelTemplateWidget[] | undefined
   fintelEntityType: string | undefined
+  fintelEditorValue: string | undefined
   initialWidget: Widget | undefined;
   initialVariableName: string | undefined;
   open: boolean;
 }
 
-const buildConfig = (w?: Widget, varName?: string): WidgetConfigType => {
+const buildConfig = (
+  context: WidgetContext,
+  w?: Widget,
+  varName?: string,
+): WidgetConfigType => {
+  let type = w?.type ?? '';
+  if (type === '' && context === 'fintelTemplate') {
+    type = 'list';
+  }
+
   return {
     fintelVariableName: varName ?? null,
     widget: {
-      type: w?.type ?? '',
+      type,
       perspective: w?.perspective ?? null,
       parameters: w?.parameters ?? {},
       dataSelection: w?.dataSelection ?? [{
@@ -72,28 +83,31 @@ export const WidgetConfigProvider = ({
   initialVariableName,
   fintelWidgets,
   fintelEntityType,
+  fintelEditorValue,
   open,
   disabledSteps,
 }: WidgetConfigProviderProps) => {
-  const [conf, setConfig] = useState(buildConfig(undefined, undefined));
+  const [conf, setConfig] = useState(buildConfig(context, undefined, undefined));
   const [step, setStep] = useState(0);
 
   const reset = () => {
-    setConfig(buildConfig(undefined, undefined));
+    setConfig(buildConfig(context, undefined, undefined));
     setStep(0);
   };
 
   const init = () => {
-    setConfig(buildConfig(initialWidget, initialVariableName));
+    setConfig(buildConfig(context, initialWidget, initialVariableName));
+    let initialStep = 0;
     if (initialWidget) {
-      let initialStep = 0;
       if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute') {
         initialStep = 3;
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;
       }
-      setStep(initialStep);
+    } else if (context === 'fintelTemplate') {
+      initialStep = 1;
     }
+    setStep(initialStep);
   };
 
   useEffect(() => {
@@ -132,6 +146,7 @@ export const WidgetConfigProvider = ({
       disabledSteps,
       fintelWidgets,
       fintelEntityType,
+      fintelEditorValue,
       config: conf,
       setConfigWidget,
       setConfigVariableName,

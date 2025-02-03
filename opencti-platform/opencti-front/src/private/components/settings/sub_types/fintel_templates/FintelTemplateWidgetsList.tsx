@@ -35,7 +35,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
     <>
       <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 0 }}>
         <Typography variant="body2" gutterBottom>
-          {t_i18n('First, create widgets detailing which data to get. Then, copy paste the widget name in your content.')}
+          {t_i18n('First, create widgets detailing which data to get. Then, copy paste the widget name in your template.')}
         </Typography>
         <Typography variant="body2">
           {t_i18n('', {
@@ -57,7 +57,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
             onClick={() => onUpdateWidget(widgetSelfInstance)}
           >
             {t_i18n('', {
-              id: 'Add data of the instance',
+              id: 'Add attributes of the instance',
               values: { type: subTypeId ?? '' },
             })}
           </Button>
@@ -66,7 +66,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
             variableName={widgetSelfInstance.variable_name}
             widget={widgetSelfInstance.widget}
             title={t_i18n('', {
-              id: 'Data of the instance',
+              id: 'Attributes of the instance',
               values: { type: subTypeId ?? '' },
             })}
           />
@@ -78,10 +78,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         sx={{ marginLeft: 2, marginRight: 2, marginTop: 2 }}
         onClick={onCreateWidget}
       >
-        {t_i18n('', {
-          id: 'Add data related to the instance',
-          values: { type: subTypeId ?? '' },
-        })}
+        {t_i18n('Add related data')}
       </Button>
 
       <List>

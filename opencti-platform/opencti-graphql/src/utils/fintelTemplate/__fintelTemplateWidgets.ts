@@ -6,16 +6,16 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 // hardcoded widgets
 
 export const containerColumns = [
-  { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'containerCreationDate' },
-  { label: 'Description', attribute: 'representative.secondary', variableName: 'containerDescription' },
-  { label: 'Labels', attribute: 'objectLabel.value', variableName: 'containerLabels' },
-  { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'containerMarkings' },
-  { label: 'Modification date', attribute: 'updated_at', variableName: 'containerModificationDate' },
-  { label: 'Representative', attribute: 'representative.main', variableName: 'containerRepresentative' },
-  { label: 'Author', attribute: 'createdBy.name', variableName: 'containerAuthor' },
-  { label: 'Confidence level', attribute: 'confidence', variableName: 'containerConfidenceLevel' },
-  { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'containerReliabilityOfAuthor' },
-  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'containerReferences' },
+  { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'creationDate' },
+  { label: 'Description', attribute: 'representative.secondary', variableName: 'description' },
+  { label: 'Labels', attribute: 'objectLabel.value', variableName: 'labels' },
+  { label: 'Markings', attribute: 'objectMarking.definition', variableName: 'markings' },
+  { label: 'Modification date', attribute: 'updated_at', variableName: 'modificationDate' },
+  { label: 'Representative', attribute: 'representative.main', variableName: 'representative' },
+  { label: 'Author', attribute: 'createdBy.name', variableName: 'author' },
+  { label: 'Confidence level', attribute: 'confidence', variableName: 'confidenceLevel' },
+  { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'reliabilityOfAuthor' },
+  { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'externalReferencesURL' },
 ];
 
 export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
@@ -27,13 +27,13 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
       columns: [
         ...containerColumns,
         { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
-        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reportReliability' },
-        { label: 'Report types', attribute: 'report_types', variableName: 'types' },
+        { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliabilitySelf' },
+        { label: 'Report types', attribute: 'report_types', variableName: 'reportTypes' },
       ],
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetReportMultiAttributes',
+      title: 'Attributes of the Report',
       description: 'This is a multi attributes widget.',
     }
   },
@@ -52,7 +52,7 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetGroupingMultiAttributes',
+      title: 'Attributes of the grouping',
       description: 'This is a multi attributes widget.',
     }
   }
@@ -66,12 +66,12 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Information types', attribute: 'information_types', variableName: 'types' },
+        { label: 'Information types', attribute: 'information_types', variableName: 'informationTypes' },
       ],
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetRFIMultiAttributes',
+      title: 'Attributes of the RFI',
       description: 'This is a multi attributes widget.',
     }
   },
@@ -85,12 +85,12 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'types' },
+        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'takedownTypes' },
       ],
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetRFTMultiAttributes',
+      title: 'Attributes of the RFT',
       description: 'This is a multi attributes widget.',
     }
   },
@@ -104,26 +104,27 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Priority', attribute: 'priority', variableName: 'incidentPriority' },
-        { label: 'Severity', attribute: 'severity', variableName: 'incidentSeverity' },
+        { label: 'Priority', attribute: 'priority', variableName: 'priority' },
+        { label: 'Severity', attribute: 'severity', variableName: 'severity' },
         { label: 'Incident type', attribute: 'response_types', variableName: 'types' },
       ],
       instance_id: SELF_ID,
     }],
     parameters: {
-      title: 'widgetIncidentResponseMultiAttributes',
+      title: 'Attributes of the Incident Response',
     }
   },
 };
 
 export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
-  variable_name: 'containerObservables',
+  variable_name: 'observables',
   widget: {
     type: 'list',
     perspective: WidgetPerspective.Entities,
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -138,6 +139,9 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Observables contained in the container',
+    }
   },
 };
 
@@ -149,6 +153,7 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -157,6 +162,10 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
           ],
           filterGroups: [],
         }),
+        columns: [
+          { label: 'Representative', attribute: 'representative.main' },
+          { label: 'Creation date', attribute: 'created_at' },
+        ],
       },
     ],
     parameters: {
@@ -173,6 +182,7 @@ export const widgetIndicators: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -201,6 +211,7 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -216,6 +227,9 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Tasks contained in the container',
+    }
   },
 };
 
@@ -227,6 +241,7 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -241,6 +256,9 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Attack Patterns contained in the container',
+    }
   },
 };
 
@@ -252,6 +270,7 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -281,6 +300,7 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -296,6 +316,9 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Victims contained in the container',
+    }
   },
 };
 
@@ -307,6 +330,7 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
     dataSelection: [
       {
         perspective: WidgetPerspective.Entities,
+        number: 50,
         filters: JSON.stringify({
           mode: 'and',
           filters: [
@@ -321,5 +345,8 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
         ],
       },
     ],
+    parameters: {
+      title: 'Entities and Observables contained in the container',
+    }
   },
 };

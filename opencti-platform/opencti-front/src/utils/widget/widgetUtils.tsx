@@ -201,7 +201,7 @@ const widgetVisualizationTypes = [
 
 export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
 
-export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['attribute', 'list'].includes(w.key));
+export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
 

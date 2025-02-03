@@ -104,7 +104,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
         { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
-        { label: subType.label },
+        { label: t_i18n(`entity_${subType.label}`) },
       ]}
       />
 
