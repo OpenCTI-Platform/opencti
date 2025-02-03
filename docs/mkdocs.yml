@@ -209,6 +209,7 @@ nav:
           - Notifier samples: administration/notifier-samples.md
         - Retention policies: administration/retentions.md
         - Decay rules: administration/decay-rules.md
+        - Exclusion lists: administration/exclusion-lists.md
       - Taxonomies: administration/ontologies.md
       - Activity:
         - Overview: administration/audit/overview.md
