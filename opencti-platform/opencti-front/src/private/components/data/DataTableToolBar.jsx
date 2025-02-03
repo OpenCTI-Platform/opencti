@@ -29,6 +29,7 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
+  ArchitectureOutlined,
   AutoFixHighOutlined,
   BrushOutlined,
   CancelOutlined,
@@ -561,6 +562,12 @@ class DataTableToolBar extends Component {
   }
   handleLaunchRemoveAuthMembers() {
     const actions = [{ type: 'REMOVE_AUTH_MEMBERS', context: null }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
+  handleLaunchRemoveFromDraft() {
+    const actions = [{ type: 'REMOVE_FROM_DRAFT', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -1605,6 +1612,7 @@ class DataTableToolBar extends Component {
       mergeDisable,
       deleteOperationEnabled,
       removeAuthMembersEnabled,
+      removeFromDraftEnabled,
       warning,
       warningMessage,
       taskScope,
@@ -1772,7 +1780,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {!removeAuthMembersEnabled && (
+                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && (
                     <UserContext.Consumer>
                       {({ platformModuleHelpers }) => {
                         const label = platformModuleHelpers.isRuleEngineEnable()
@@ -1911,7 +1919,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && (
+                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
@@ -1964,6 +1972,24 @@ class DataTableToolBar extends Component {
                             <DeleteOutlined fontSize="small" />
                           </IconButton>
                         </span>
+                      </Tooltip>
+                    </Security>
+                  )}
+                  {removeFromDraftEnabled && (
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <Tooltip title={t('Remove from draft')}>
+                        <IconButton
+                          color="primary"
+                          aria-label="input"
+                          onClick={this.handleLaunchRemoveFromDraft.bind(this)}
+                          size="small"
+                          disabled={
+                              numberOfSelectedElements === 0
+                              || this.state.processing
+                          }
+                        >
+                          <ArchitectureOutlined fontSize="small" color={'primary'} />
+                        </IconButton>
                       </Tooltip>
                     </Security>
                   )}
@@ -2855,6 +2881,7 @@ DataTableToolBar.propTypes = {
   mergeDisable: PropTypes.bool,
   deleteOperationEnabled: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
+  removeFromDraft: PropTypes.bool,
   taskScope: PropTypes.string,
 };
 

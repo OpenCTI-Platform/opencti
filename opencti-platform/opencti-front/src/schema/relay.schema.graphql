@@ -1077,6 +1077,7 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
+  REMOVE_FROM_DRAFT
 }
 
 enum BackgroundTaskContextType {
@@ -8658,6 +8659,7 @@ type StixCoreRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship
   restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship
+  removeFromDraft: ID
 }
 
 type StixSightingRelationshipEditMutations {
@@ -8670,6 +8672,7 @@ type StixSightingRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship
   restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship
+  removeFromDraft: ID
 }
 
 type StixRefRelationshipEditMutations {

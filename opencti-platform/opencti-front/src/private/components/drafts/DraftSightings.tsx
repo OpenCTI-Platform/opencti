@@ -368,6 +368,7 @@ const DraftSightings = () => {
         lineFragment={draftSightingsLineFragment}
         exportContext={{ entity_type: 'stix-sighting-relationship' }}
         redirectionModeEnabled
+        removeFromDraftEnabled
         disableSelectAll
       />
       )}
