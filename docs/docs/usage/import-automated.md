@@ -37,9 +37,9 @@ In summary, automated imports through connectors empower OpenCTI users with a sc
 
 ## Native automated import
 
-In OpenCTI, the "Data > Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the four built-in functions: Live Streams, TAXII Feeds, RSS Feeds, and CSV Feeds.
+In OpenCTI, the "Data > Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and CSV Feeds.
 
-### Live streams
+### Live Streams
 
 Live Streams enable users to consume data from another OpenCTI platform, fostering collaborative intelligence sharing. Here's a step-by-step guide to configure Live streams synchroniser:
 
@@ -61,7 +61,7 @@ Additional configuration options:
 
 ![Live stream additional configuration](assets/live-stream-additional-configuration.png)
 
-### TAXII feeds
+### TAXII Feeds
 
 TAXII Feeds in OpenCTI provide a robust mechanism for ingesting TAXII collections from TAXII servers or other OpenCTI instances. Configuring TAXII ingester involves specifying essential details to seamlessly integrate threat intelligence data. Here's a step-by-step guide to configure TAXII ingesters:
 
@@ -99,7 +99,7 @@ To start your new ingester, click on "Start", in the burger menu.
 ![TAXII Push creation: start](assets/taxii-push-creation-start.png)
 
 
-### RSS feeds
+### RSS Feeds
 
 RSS Feeds functionality enables users to seamlessly ingest items in report form from specified RSS feeds. Configuring RSS Feeds involves providing essential details and selecting preferences to tailor the import process. Here's a step-by-step guide to configure RSS ingesters:
 
@@ -116,7 +116,7 @@ Additional configuration options:
 ![RSS feed configuration](assets/rss-feed-configuration.png)
 
 
-### CSV feeds
+### CSV Feeds
 
 CSV feed ingester enables users to import CSV files exposed on URLs. Here's a step-by-step guide to configure CSV ingesters:
 
