@@ -1,6 +1,6 @@
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import React, { Fragment, FunctionComponent, useEffect, useRef } from 'react';
+import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
@@ -18,6 +18,7 @@ import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import { PageContainerContext } from './PageContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -153,6 +154,9 @@ FilterIconButtonContainerProps
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+
+  const { inPageContainer } = useContext(PageContainerContext);
+
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
     filtersRepresentativesQueryRef,
@@ -215,7 +219,7 @@ FilterIconButtonContainerProps
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
-  let margin = '8px';
+  let margin = inPageContainer ? '0px' : '8px';
   if (!isReadWriteFilter) {
     classOperator = classes.operator1ReadOnly;
     if (styleNumber === 2) {
