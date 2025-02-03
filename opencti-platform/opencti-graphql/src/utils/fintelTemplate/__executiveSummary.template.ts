@@ -87,11 +87,11 @@ const executiveSummaryContent = (containerType: string) => {
         <ul>
           <li>The timeline of the incident/risk </li>
           <li>The attribution of the incident/risk: pick the main threats from this list.</li>
-          <div>$threats</div>
           <li>The main victims of the incident/risk: pick the main form the list.</li>
-          <div>$victims</div>
         </ul>
       </blockquote>
+      <div>$threats</div>
+      <div>$victims</div>
       
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
