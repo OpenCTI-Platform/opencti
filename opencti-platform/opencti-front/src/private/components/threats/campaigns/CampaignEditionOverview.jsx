@@ -105,7 +105,7 @@ const CampaignEditionOverviewComponent = (props) => {
     x_opencti_workflow_id: Yup.object(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
-  
+
   const campaignValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
