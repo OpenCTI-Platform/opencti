@@ -151,6 +151,18 @@ export const addFintelTemplate = async (
     finalInput,
     ENTITY_TYPE_FINTEL_TEMPLATE,
   );
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates fintel template \`${finalInput.name}\``,
+    context_data: {
+      id: created.id,
+      entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
+      input: finalInput,
+    },
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
 };
 
@@ -192,7 +204,7 @@ export const fintelTemplateEditField = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: 'Update template',
+    message: `updates fintel template ${element.name}`,
     context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
   });
 
@@ -212,8 +224,8 @@ export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser,
     user,
     event_type: 'mutation',
     event_scope: 'delete',
-    event_access: 'extended',
-    message: `deletes template \`${deleted.name}\``,
+    event_access: 'administration',
+    message: `deletes fintel template \`${deleted.name}\``,
     context_data: {
       id: deleted.id,
       entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
