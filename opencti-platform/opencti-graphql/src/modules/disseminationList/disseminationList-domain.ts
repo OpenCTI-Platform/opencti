@@ -19,7 +19,7 @@ import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../da
 import { type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
 import { completeContextDataForEntity, publishUserAction, type UserDisseminateActionContextData } from '../../listener/UserActionListener';
-import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
+import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
@@ -35,23 +35,15 @@ import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
-const isDisseminationListEnabled = isFeatureEnabled('DISSEMINATIONLISTS');
-
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
 
 export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   await checkEnterpriseEdition(context);
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
 };
 
@@ -119,10 +111,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
   const data: BasicStoreCommon = await internalLoadById(context, user, entity_id);
 
   // precheck
-  await checkEnterpriseEdition(context); // this feature is EE only
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
+  await checkEnterpriseEdition(context);
   if (!disseminationList || disseminationList.entity_type !== ENTITY_TYPE_DISSEMINATION_LIST) {
     throw FunctionalError(`id is not of type ${ENTITY_TYPE_DISSEMINATION_LIST}`, { id });
   }
@@ -166,9 +155,6 @@ const validationEmails = (emails: string[]) => {
 
 export const addDisseminationList = async (context: AuthContext, user: AuthUser, input: DisseminationListAddInput) => {
   await checkEnterpriseEdition(context);
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   validationEmails(input.emails);
   const disseminationListToCreate = {
     name: input.name,
@@ -180,9 +166,6 @@ export const addDisseminationList = async (context: AuthContext, user: AuthUser,
 
 export const fieldPatchDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   await checkEnterpriseEdition(context);
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   // Get the list
   const disseminationList = await findById(context, user, id);
   if (!disseminationList) {
@@ -207,8 +190,5 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
-  if (!isDisseminationListEnabled) {
-    throw UnsupportedError('Feature not yet available');
-  }
   return deleteInternalObject(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
