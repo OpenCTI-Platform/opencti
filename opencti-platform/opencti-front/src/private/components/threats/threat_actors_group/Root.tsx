@@ -225,7 +225,10 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ThreatActorGroupKnowledge threatActorGroup={threatActorGroup} related={THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES} />
+                    <ThreatActorGroupKnowledge
+                      threatActorGroup={threatActorGroup}
+                      relatedRelationshipTypes={THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES}
+                    />
                   </div>
                 }
               />
