@@ -57,22 +57,13 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
   };
 
   const handleChangeColumnName = (attribute: string | null | undefined, newTitle: string) => {
-    const columnExists = value.some((col) => col.attribute === attribute);
-    if (columnExists) {
-      const newColumns = value.map((col) => {
-        if (col.attribute === attribute) {
-          return { ...col, label: newTitle };
-        }
-        return col;
-      });
-      onChange(newColumns);
-    } else {
-      const columnToAdd = {
-        ...availableColumns.find((col) => col.attribute === attribute),
-        label: newTitle,
-      } as WidgetColumn;
-      onChange([...value, columnToAdd]);
-    }
+    const newColumns = value.map((col) => {
+      if (col.attribute === attribute) {
+        return { ...col, label: newTitle };
+      }
+      return col;
+    });
+    onChange(newColumns);
   };
 
   const formatColumnName = ({ attribute, label }: WidgetColumn) => (label ? t_i18n(label) : t_i18n(attribute ?? ''));
