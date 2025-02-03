@@ -104,28 +104,44 @@ const DataTableBody = ({
 
   const [tableHeight, setTableHeight] = useState(0);
   useLayoutEffect(() => {
+    if (variant === DataTableVariant.widget && !rootRef) {
+      throw Error('Invalid configuration for widget list');
+    }
+
     const hasFilters = (filters?.filters ?? []).length > 0;
     let filtersHeight = hasFilterComponent ? 54 : 0;
     if (hasFilterComponent && hasFilters) filtersHeight += 48;
 
-    if (variant === DataTableVariant.widget) {
-      if (!rootRef) throw Error('Invalid configuration for widget list');
-      setTableHeight(rootRef.offsetHeight);
-    } else if (rootRef) {
-      setTableHeight(rootRef.offsetHeight - filtersHeight);
-    } else {
-      // TODO: this computation should be avoided because too many risk of changes.
-      // Instead use the rootRef props. Example in:
-      // - StixCoreRelationshipCreationFromEntity.tsx
-      // - IndicatorObservables.jsx
+    // TODO: this computation should be avoided because too many risk of changes.
+    // Instead use the rootRef props. Example in:
+    // - StixCoreRelationshipCreationFromEntity.tsx
+    // - IndicatorObservables.jsx
+    const defaultComputation = () => {
       const rootHeight = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
       const headerHeight = 64;
       const breadcrumbHeight = document.getElementById('page-breadcrumb') ? 38 : 0;
       const mainPadding = 40;
       const tabsHeight = document.getElementById('tabs-container')?.children.length ? 72 : 0;
       setTableHeight(rootHeight - headerHeight - breadcrumbHeight - mainPadding - filtersHeight - tabsHeight);
+    };
+
+    // Take the height of the given parent.
+    let observer: ResizeObserver;
+    const rootComputation = () => {
+      if (rootRef) {
+        setTableHeight(rootRef.offsetHeight - filtersHeight);
+      }
+    };
+
+    if (rootRef) {
+      rootComputation();
+      observer = callbackResizeObserver(rootRef, rootComputation);
+    } else {
+      defaultComputation();
     }
-  }, [setTableHeight, settingsMessagesBannerHeight, rootRef, filters]);
+
+    return () => { observer?.disconnect(); };
+  }, [settingsMessagesBannerHeight, rootRef, filters]);
 
   const rowWidth = useMemo(() => (
     Math.floor(columns.reduce((acc, col) => {
