@@ -244,7 +244,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
         style={{
-          display: 'flex',
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
@@ -261,7 +260,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         {hasKnowledgeAccess && (
-          <div className={classes.menuContainer} style={{ flex: 1, marginLeft: theme.spacing(3) }}>
+          <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
