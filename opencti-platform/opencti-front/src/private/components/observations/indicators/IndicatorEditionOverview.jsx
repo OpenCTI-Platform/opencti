@@ -110,6 +110,8 @@ const IndicatorEditionOverviewComponent = ({
     x_opencti_detection: Yup.boolean(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    killChainPhases: Yup.array().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const indicatorValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
@@ -367,10 +369,7 @@ const IndicatorEditionOverviewComponent = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
-              <SubscriptionFocus
-                context={context}
-                fieldName="killChainPhases"
-              />
+              <SubscriptionFocus context={context} fieldName="killChainPhases" />
             }
             onChange={editor.changeKillChainPhases}
           />
