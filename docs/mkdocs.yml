@@ -200,6 +200,7 @@ nav:
         - Data segregation:
           - Marking restriction: administration/segregation.md
           - Organization segregation: administration/organization-segregation.md
+          - Authorized members: administration/authorized-members.md
       - Customization:
         - Entity types: administration/entities.md
         - Rules engine: administration/reasoning.md

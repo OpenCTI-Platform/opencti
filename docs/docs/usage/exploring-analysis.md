@@ -47,6 +47,7 @@ In Graph view, STIX SDO are displayed as graph nodes and relationships as graph 
 At the top right, you will find a serie of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Report. Let's highlight 2 of them:
 - Suggestions: This tool suggests you some logical relationships to add between your contained Object to give more consistency to your Knowledge.
 - Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Report and its content with users of an other Organization.
+
 At the bottom, you have many option to manipulate the graph:
 - Multiple option for shaping the graph and applying forces to the nodes and links
 - Multiple selection options
@@ -72,6 +73,27 @@ The correlation view is a great way to visualize and find other Reports related 
 ![Matrix view of a Report](assets/report-matrix-view.png)
 
 If your Report describes let's say an attack, a campaign, or an understanding of an Intrusion set, it should contains multiple attack patterns Objects to structure the Knowledge about the TTPs of the Threat Actor. Those attack patterns can be displayed as highlighted matrices, by default the MITRE ATT&CK Enterprise matrix. As some matrices can be huge, it can be also filtered to only display attack patterns describes in the Report.
+
+### Restricting access to the report
+
+#### Organization segregation
+
+If you have designated a main Organization in the platform settings, you can share your Report and its content with users of an other Organization.
+
+![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
+
+[read more about organization segregation](..%2Fadministration%2Forganization-segregation.md)
+
+#### Authorized members
+
+**Authorized members** allow to restrict access to an entity to certain users, groups, or organizations within the platform.
+
+To define authorized members, you need to click on the '**Manage Access Restriction**' button. This button is visible if you have the '**Manage Authorized Members**' capability.
+
+![containers-manage-access-restriction-button.png](assets%2Fcontainers-manage-access-restriction-button.png)
+
+
+[read more about authorized members](..%2Fadministration%2Fauthorized-members.md)
 
 
 ## Groupings
