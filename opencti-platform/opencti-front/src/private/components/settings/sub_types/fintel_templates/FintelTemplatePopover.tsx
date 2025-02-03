@@ -57,7 +57,7 @@ const FintelTemplatePopover = ({
   const onHandleCloseDelete = (e: UIEvent) => {
     stopEvent(e);
     handleCloseDelete();
-    setAnchorEl(null);
+    setAnchorEl(undefined);
   };
 
   const update = (e: UIEvent) => {
@@ -84,6 +84,7 @@ const FintelTemplatePopover = ({
 
   const onExport = async (e: UIEvent) => {
     stopEvent(e);
+    setAnchorEl(undefined);
     await exportFintel(templateId);
   };
 
