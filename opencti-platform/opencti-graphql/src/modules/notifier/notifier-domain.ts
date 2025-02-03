@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import conf, { BUS_TOPICS, logApp } from '../../config/conf';
+import conf, { BUS_TOPICS } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
