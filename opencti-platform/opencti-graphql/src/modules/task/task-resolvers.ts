@@ -1,5 +1,7 @@
 import type { Resolvers } from '../../generated/graphql';
 import { findAll, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
+import { loadThroughDenormalized } from '../../resolvers/stix';
+import { INPUT_PARTICIPANT } from '../../schema/general';
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -8,6 +10,9 @@ const taskResolvers: Resolvers = {
     taskContainsStixObjectOrStixRelationship: (_, args, context) => {
       return taskContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  Task: {
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),
