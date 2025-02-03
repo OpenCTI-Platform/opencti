@@ -25,7 +25,7 @@ import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/er
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-common';
-import { utcDate } from '../utils/format';
+import { streamEventId, utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
@@ -326,7 +326,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
       const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId);
       if (data) {
         try {
-          const eventId = `${utcDate().toDate().getTime()}-0`;
+          const eventId = streamEventId();
           const nextStep = { component: connector, instance };
           const bundle: StixBundle = {
             id: uuidv4(),
@@ -465,7 +465,7 @@ const initPlaybookManager = () => {
               const data = await stixLoadById(context, RETENTION_MANAGER_USER, node.internal_id);
               if (data) {
                 try {
-                  const eventId = `${utcDate().toDate().getTime()}-${index}`;
+                  const eventId = streamEventId(null, index);
                   const nextStep = { component: connector, instance };
                   const bundle: StixBundle = {
                     id: uuidv4(),
