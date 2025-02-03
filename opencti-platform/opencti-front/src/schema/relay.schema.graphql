@@ -12626,7 +12626,7 @@ input DisseminationListAddInput {
 }
 
 input DisseminationListSendInput {
-  dissemination_list_id: ID!
+  entity_id: ID!
   email_object: String!
   email_body: String!
   email_attachment_ids: [ID!]!

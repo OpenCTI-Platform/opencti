@@ -6330,10 +6330,10 @@ export enum DisseminationListOrdering {
 }
 
 export type DisseminationListSendInput = {
-  dissemination_list_id: Scalars['ID']['input'];
   email_attachment_ids: Array<Scalars['ID']['input']>;
   email_body: Scalars['String']['input'];
   email_object: Scalars['String']['input'];
+  entity_id: Scalars['ID']['input'];
 };
 
 export type Distribution = {
