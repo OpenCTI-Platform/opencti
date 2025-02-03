@@ -79,6 +79,7 @@ export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
   input: FintelTemplateAddInput,
+  preventDefaultWidgets = false,
 ) => {
   // check rights
   await canCustomizeTemplate(context);
@@ -89,52 +90,54 @@ export const addFintelTemplate = async (
     ...templateWidget,
     widget: { ...templateWidget.widget, id: uuidv4() },
   }));
-  // add built-in widgets
-  // - attributes widget for self instance with representative attribute
-  widgetsWithIds.push({
-    variable_name: 'widgetSelfAttributes',
-    widget: {
-      id: uuidv4(),
-      type: 'attribute',
-      perspective: null,
-      dataSelection: [{
-        columns: [{
-          label: 'Representative',
-          attribute: 'representative.main',
-          variableName: 'containerRepresentative'
+  // add built-in widgets (except if preventDefaultWidgets = true)
+  if (!preventDefaultWidgets) {
+    // - attributes widget for self instance with representative attribute
+    widgetsWithIds.push({
+      variable_name: 'widgetSelfAttributes',
+      widget: {
+        id: uuidv4(),
+        type: 'attribute',
+        perspective: null,
+        dataSelection: [{
+          columns: [{
+            label: 'Representative',
+            attribute: 'representative.main',
+            variableName: 'containerRepresentative'
+          }],
+          instance_id: SELF_ID,
         }],
-        instance_id: SELF_ID,
-      }],
-      parameters: {
-        title: 'Attributes of the instance',
-        description: 'Multi attributes widget for the instance which the template is applied to.',
-      }
-    },
-  });
-  // - list widgets of observables
-  widgetsWithIds.push({
-    variable_name: widgetContainerObservables.variable_name,
-    widget: {
-      id: uuidv4(),
-      ...widgetContainerObservables.widget,
-    },
-  });
-  // - list widgets of attack patterns
-  widgetsWithIds.push({
-    variable_name: widgetAttackPatterns.variable_name,
-    widget: {
-      id: uuidv4(),
-      ...widgetAttackPatterns.widget,
-    },
-  });
-  // - list widgets indicators
-  widgetsWithIds.push({
-    variable_name: widgetIndicators.variable_name,
-    widget: {
-      id: uuidv4(),
-      ...widgetIndicators.widget,
-    },
-  });
+        parameters: {
+          title: 'Attributes of the instance',
+          description: 'Multi attributes widget for the instance which the template is applied to.',
+        }
+      },
+    });
+    // - list widgets of observables
+    widgetsWithIds.push({
+      variable_name: widgetContainerObservables.variable_name,
+      widget: {
+        id: uuidv4(),
+        ...widgetContainerObservables.widget,
+      },
+    });
+    // - list widgets of attack patterns
+    widgetsWithIds.push({
+      variable_name: widgetAttackPatterns.variable_name,
+      widget: {
+        id: uuidv4(),
+        ...widgetAttackPatterns.widget,
+      },
+    });
+    // - list widgets indicators
+    widgetsWithIds.push({
+      variable_name: widgetIndicators.variable_name,
+      widget: {
+        id: uuidv4(),
+        ...widgetIndicators.widget,
+      },
+    });
+  }
 
   const finalInput: FintelTemplateAddInput = {
     ...input,
@@ -328,5 +331,5 @@ export const fintelTemplateConfigurationImport = async (context: AuthContext, us
     fintel_template_widgets: exportWidgets
   };
 
-  return addFintelTemplate(context, user, fintelInput);
+  return addFintelTemplate(context, user, fintelInput, true);
 };
