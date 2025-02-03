@@ -16,6 +16,7 @@ import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './stixRelationship';
+import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -150,3 +151,13 @@ export const stixCoreRelationshipEditContext = (context, user, stixCoreRelations
   });
 };
 // endregion
+
+export const stixCoreRelationshipRemoveFromDraft = async (context, user, stixCoreObjectId) => {
+  const stixCoreRelationship = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_RELATIONSHIP, { includeDeletedInDraft: true });
+  if (!stixCoreRelationship) {
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Relationship cannot be found.');
+  }
+  // TODO currently not locked, but might need to be
+  await elRemoveElementFromDraft(context, user, stixCoreRelationship);
+  return stixCoreRelationship.id;
+};

@@ -1301,6 +1301,7 @@ export enum BackgroundTaskActionType {
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
   RemoveAuthMembers = 'REMOVE_AUTH_MEMBERS',
+  RemoveFromDraft = 'REMOVE_FROM_DRAFT',
   Replace = 'REPLACE',
   Restore = 'RESTORE',
   RuleElementRescan = 'RULE_ELEMENT_RESCAN',
@@ -24641,6 +24642,7 @@ export type StixCoreRelationshipEditMutations = {
   relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<StixCoreRelationship>;
   relationsAdd?: Maybe<StixCoreRelationship>;
+  removeFromDraft?: Maybe<Scalars['ID']['output']>;
   restrictionOrganizationAdd?: Maybe<StixCoreRelationship>;
   restrictionOrganizationDelete?: Maybe<StixCoreRelationship>;
 };
@@ -26127,6 +26129,7 @@ export type StixSightingRelationshipEditMutations = {
   relationAdd?: Maybe<StixSightingRelationship>;
   relationDelete?: Maybe<StixSightingRelationship>;
   relationsAdd?: Maybe<StixSightingRelationship>;
+  removeFromDraft?: Maybe<Scalars['ID']['output']>;
   restrictionOrganizationAdd?: Maybe<StixSightingRelationship>;
   restrictionOrganizationDelete?: Maybe<StixSightingRelationship>;
 };
@@ -40020,6 +40023,7 @@ export type StixCoreRelationshipEditMutationsResolvers<ContextType = any, Parent
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   relationsAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRelationsAddArgs, 'input'>>;
+  removeFromDraft?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -40532,6 +40536,7 @@ export type StixSightingRelationshipEditMutationsResolvers<ContextType = any, Pa
   relationAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   relationsAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRelationsAddArgs, 'input'>>;
+  removeFromDraft?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

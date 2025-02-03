@@ -217,6 +217,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           lineFragment={draftEntitiesLineFragment}
           exportContext={{ entity_type: 'Stix-Domain-Object' }}
           redirectionModeEnabled
+          removeFromDraftEnabled
           disableSelectAll // TODO: To handle selectAll
           createButton={
             entitiesType === 'Stix-Cyber-Observable' ? (

@@ -7,6 +7,8 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
+import { FunctionalError } from '../config/errors';
+import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);
@@ -71,3 +73,13 @@ export const stixSightingRelationshipEditContext = (context, user, stixSightingR
   });
 };
 // endregion
+
+export const stixSightingRelationshipRemoveFromDraft = async (context, user, stixCoreObjectId) => {
+  const stixSighting = await storeLoadById(context, user, stixCoreObjectId, STIX_SIGHTING_RELATIONSHIP, { includeDeletedInDraft: true });
+  if (!stixSighting) {
+    throw FunctionalError('Cannot remove the object from draft, Stix-Sighting-Relationship cannot be found.');
+  }
+  // TODO currently not locked, but might need to be
+  await elRemoveElementFromDraft(context, user, stixSighting);
+  return stixSighting.id;
+};

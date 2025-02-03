@@ -1009,6 +1009,7 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
+  REMOVE_FROM_DRAFT
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -14326,6 +14327,7 @@ type StixCoreRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX SIGHTING RELATIONSHIPS
@@ -14340,6 +14342,7 @@ type StixSightingRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX REF RELATIONSHIPS

@@ -280,6 +280,7 @@ const DraftRelationships = () => {
         lineFragment={draftRelationshipsLineFragment}
         exportContext={{ entity_type: 'stix-core-relationship' }}
         redirectionModeEnabled
+        removeFromDraftEnabled
         disableSelectAll
       />
       )}
