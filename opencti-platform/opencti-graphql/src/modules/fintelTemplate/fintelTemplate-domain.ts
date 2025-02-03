@@ -204,7 +204,7 @@ export const fintelTemplateEditField = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates fintel template ${element.name}`,
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
     context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
   });
 
