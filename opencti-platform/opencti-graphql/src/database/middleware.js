@@ -5,6 +5,7 @@ import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
+import nconf from 'nconf';
 import {
   AccessRequiredError,
   ALREADY_DELETED_ERROR,
@@ -213,7 +214,8 @@ import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 
 // region global variables
-const MAX_BATCH_SIZE = 300;
+const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
+const MAX_EXPLANATIONS_PER_RULE = nconf.get('rule_engine:max_explanations_per_rule') ?? 100;
 // endregion
 
 // region Loader common
@@ -2361,31 +2363,52 @@ const createRuleDataPatch = (instance) => {
   }
   return patch;
 };
-const upsertEntityRule = async (context, user, instance, input, opts = {}) => {
-  logApp.info('Upsert inferred entity', { input });
-  const { fromRule } = opts;
-  const updatedRule = input[fromRule];
+
+const getRuleExplanationsSize = (fromRule, instance) => {
+  return (instance[fromRule] ?? []).flat().length;
+};
+
+const createUpsertRulePatch = async (instance, input, opts = {}) => {
+  const { fromRule, fromRuleDeletion = false } = opts;
+  // 01 - Limit the number of element for the rule
+  const updatedRule = fromRuleDeletion ? input[fromRule] : (input[fromRule] ?? []).slice(-MAX_EXPLANATIONS_PER_RULE);
   const rulePatch = { [fromRule]: updatedRule };
   const ruleInstance = R.mergeRight(instance, rulePatch);
+  // 02 - Create the patch
   const innerPatch = createRuleDataPatch(ruleInstance);
-  const patch = { ...rulePatch, ...innerPatch };
+  return { ...rulePatch, ...innerPatch };
+};
+const upsertEntityRule = async (context, user, instance, input, opts = {}) => {
+  const { fromRule } = opts;
+  // 01. If relation already have max explanation, don't do anything
+  // Strict equals to clean existing element with too many explanations
+  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, instance);
+  if (ruleExplanationsSize === MAX_EXPLANATIONS_PER_RULE) {
+    return instance;
+  }
+  logApp.debug('Upsert inferred entity', { input });
+  const patch = await createUpsertRulePatch(instance, input, opts);
   const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
   return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
 const upsertRelationRule = async (context, user, instance, input, opts = {}) => {
-  const { fromRule, ruleOverride = false } = opts;
-  // 01 - Update the rule
+  const { fromRule, fromRuleDeletion = false } = opts;
+  // 01. If relation already have max explanation, don't do anything
+  // Strict equals to clean existing element with too many explanations
+  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, instance);
+  if (!fromRuleDeletion && ruleExplanationsSize === MAX_EXPLANATIONS_PER_RULE) {
+    return instance;
+  }
+  logApp.debug('Upsert inferred relation', { input });
+  // 02 - Update the rule
   const updatedRule = input[fromRule];
-  if (!ruleOverride) {
+  if (!fromRuleDeletion) {
     const keepRuleHashes = input[fromRule].map((i) => i.hash);
     const instanceRuleToKeep = (instance[fromRule] ?? []).filter((i) => !keepRuleHashes.includes(i.hash));
     updatedRule.push(...instanceRuleToKeep);
   }
-  const rulePatch = { [fromRule]: updatedRule };
-  const ruleInstance = R.mergeRight(instance, rulePatch);
-  const innerPatch = createRuleDataPatch(ruleInstance);
-  const patch = { ...rulePatch, ...innerPatch };
-  logApp.info('Upsert inferred relation', { id: instance.id, relation: patch });
+  // 03 - Create the patch
+  const patch = await createUpsertRulePatch(instance, input, opts);
   const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
   return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
@@ -3363,13 +3386,13 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       // If not we need to clean the rule and keep the element for other rules.
       logApp.info('Cleanup inferred element', { rule, id: instance.id });
       const input = { [completeRuleName]: null };
-      const upsertOpts = { fromRule, ruleOverride: true };
+      const upsertOpts = { fromRule, fromRuleDeletion: true };
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, upsertOpts);
     } else {
       logApp.info('Upsert inferred element', { rule, id: instance.id });
       // Rule still have other explanation, update the rule
       const input = { [completeRuleName]: rebuildRuleContent };
-      const ruleOpts = { fromRule, ruleOverride: true };
+      const ruleOpts = { fromRule, fromRuleDeletion: true };
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
   } catch (err) {
