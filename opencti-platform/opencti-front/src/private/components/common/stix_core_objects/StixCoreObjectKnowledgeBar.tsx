@@ -1,36 +1,22 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Link, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import { graphql, useFragment } from 'react-relay';
+import {
+  StixCoreObjectKnowledgeBar_stixCoreObject$data,
+  StixCoreObjectKnowledgeBar_stixCoreObject$key,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectKnowledgeBar_stixCoreObject.graphql';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  drawer: {
-    minHeight: '100vh',
-    width: 200,
-    position: 'fixed',
-    overflow: 'auto',
-    padding: 0,
-    backgroundColor: theme.palette.background.navLight,
-  },
-  item: {
-    height: 38,
-    fontSize: 9,
-  },
-  toolbar: theme.mixins.toolbar,
-}));
+import type { Theme } from '../../../../components/Theme';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
@@ -79,38 +65,65 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
   }
 `;
 
+type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
+| StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
+| StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
+
+type StixCoreObjectKnowledgeBarProps = {
+  stixCoreObjectLink: string;
+  availableSections: string[];
+  data: StixCoreObjectKnowledgeBar_stixCoreObject$key;
+  attribution: string[];
+};
+
 const StixCoreObjectKnowledgeBar = ({
   stixCoreObjectLink,
   availableSections,
   data,
   attribution,
-}) => {
+}: StixCoreObjectKnowledgeBarProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n, n } = useFormatter();
-  const classes = useStyles();
   const location = useLocation();
   const { bannerSettings, schema } = useAuth();
-  const isInAvailableSection = (sections) => availableSections.some((filter) => sections.includes(filter));
-  const { relationshipsWithoutRelatedToDistribution, relationshipsRelatedDistribution, stixCoreObjectsDistribution } = useFragment(
+  const isInAvailableSection = (sections: string[]) => availableSections.some((filter) => sections.includes(filter));
+  const {
+    relationshipsWithoutRelatedToDistribution,
+    relationshipsRelatedDistribution,
+    stixCoreObjectsDistribution,
+  } = useFragment<StixCoreObjectKnowledgeBar_stixCoreObject$key >(
     stixCoreObjectKnowledgeBarFragment,
     data,
   );
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
-  const indexEntities = (objectsDistribution) => (objectsDistribution
-    ? objectsDistribution.reduce((acc, item) => ({ ...acc, [item.label]: item }), {})
-    : {});
+  const indexEntities = (
+    objectsDistribution: ObjectsDistribution,
+  ): Record<string, { label: string; value: number }> => {
+    if (!objectsDistribution) {
+      return {};
+    }
+
+    return objectsDistribution.reduce<Record<string, { label: string; value: number }>>(
+      (acc, item) => {
+        if (item && item.label) {
+          return { ...acc, [item.label]: { label: item.label, value: item.value ?? 0 } };
+        }
+        return acc;
+      },
+      {},
+    );
+  };
 
   const statisticsWithoutRelatedToRelationship = indexEntities(relationshipsWithoutRelatedToDistribution);
   const statisticsRelatedRelationship = indexEntities(relationshipsRelatedDistribution);
   const statisticsCoreObjects = indexEntities(stixCoreObjectsDistribution);
 
-  const sumEntitiesByKeys = (stats, keys) => {
+  const sumEntitiesByKeys = (stats: Record<string, { value: number }>, keys?: string[]): number => {
     if (keys) {
-      return keys
-        .map((key) => stats[key]?.value || 0)
-        .reduce((acc, val) => acc + val, 0);
+      return keys.map((key) => stats[key]?.value || 0).reduce((acc, val) => acc + val, 0);
     }
-    return Object.values(stats).reduce((sum, { value }) => sum + value, 0);
+    return Object.values(stats).reduce((sum: number, { value }): number => sum + value, 0);
   };
 
   const statisticsThreats = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident']);
@@ -120,14 +133,20 @@ const StixCoreObjectKnowledgeBar = ({
   const statisticsLocations = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Region', 'Country', 'City', 'Position', 'Administrative-Area']);
   const statisticsObservables = sumEntitiesByKeys(statisticsRelatedRelationship, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']);
   const statisticsRelatedEntities = sumEntitiesByKeys(statisticsRelatedRelationship);
-
   return (
     <Drawer
       variant="permanent"
       anchor="right"
-      classes={{ paper: classes.drawer }}
+      sx={{
+        minHeight: '100vh',
+        width: 200,
+        position: 'fixed',
+        overflow: 'auto',
+        padding: 0,
+        backgroundColor: theme.palette.background.nav,
+      }}
     >
-      <div className={classes.toolbar} />
+      <div style={{ ...theme.mixins.toolbar }} />
       <MenuList
         style={{
           paddingBottom: 0,
@@ -141,7 +160,10 @@ const StixCoreObjectKnowledgeBar = ({
           to={`${stixCoreObjectLink}/overview`}
           selected={location.pathname === `${stixCoreObjectLink}/overview`}
           dense={true}
-          classes={{ root: classes.item }}
+          sx={{
+            height: 38,
+            fontSize: 9,
+          }}
         >
           <ListItemIcon style={{ minWidth: 28 }}>
             <ItemIcon size="small" type="overview" />
@@ -164,7 +186,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/sectors`}
                 selected={location.pathname === `${stixCoreObjectLink}/sectors`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Sector" />
@@ -178,7 +203,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/regions`}
                 selected={location.pathname === `${stixCoreObjectLink}/regions`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Region" />
@@ -194,7 +222,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/countries`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Country" />
@@ -208,7 +239,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/areas`}
                 selected={location.pathname === `${stixCoreObjectLink}/areas`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Administrative-Area" />
@@ -222,7 +256,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/cities`}
                 selected={location.pathname === `${stixCoreObjectLink}/cities`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="City" />
@@ -238,7 +275,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/organizations`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Organization" />
@@ -254,7 +294,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/individuals`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Individual" />
@@ -270,7 +313,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/locations`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="location" />
@@ -286,7 +332,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/used_tools`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Tool" />
@@ -303,7 +352,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/sectors`}
                 selected={location.pathname === `${stixCoreObjectLink}/sectors`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Sector" />
@@ -317,7 +369,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/regions`}
                 selected={location.pathname === `${stixCoreObjectLink}/regions`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Region" />
@@ -333,7 +388,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/countries`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Country" />
@@ -347,7 +405,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/areas`}
                 selected={location.pathname === `${stixCoreObjectLink}/areas`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Administrative-Area" />
@@ -361,7 +422,10 @@ const StixCoreObjectKnowledgeBar = ({
                 to={`${stixCoreObjectLink}/cities`}
                 selected={location.pathname === `${stixCoreObjectLink}/cities`}
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="City" />
@@ -377,7 +441,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/locations`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Location" />
@@ -393,7 +460,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/organizations`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Organization" />
@@ -409,7 +479,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/individuals`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Individual" />
@@ -425,7 +498,10 @@ const StixCoreObjectKnowledgeBar = ({
                   location.pathname === `${stixCoreObjectLink}/used_tools`
                 }
                 dense={true}
-                classes={{ root: classes.item }}
+                sx={{
+                  height: 38,
+                  fontSize: 9,
+                }}
               >
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Tool" />
@@ -456,7 +532,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/threats`}
               selected={location.pathname === `${stixCoreObjectLink}/threats`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="threats" />
@@ -472,7 +551,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/attribution`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="attribution" />
@@ -488,7 +570,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/victimology`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="victimology" />
@@ -504,7 +589,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/threat_actors`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Threat-Actor-Individual" />
@@ -520,7 +608,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/intrusion_sets`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Intrusion-Set" />
@@ -534,7 +625,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/campaigns`}
               selected={location.pathname === `${stixCoreObjectLink}/campaigns`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Campaign" />
@@ -566,7 +660,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/variants`}
               selected={location.pathname === `${stixCoreObjectLink}/variants`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="variant" />
@@ -580,7 +677,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/malwares`}
               selected={location.pathname === `${stixCoreObjectLink}/malwares`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Malware" />
@@ -594,7 +694,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/channels`}
               selected={location.pathname === `${stixCoreObjectLink}/channels`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Channel" />
@@ -608,7 +711,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/tools`}
               selected={location.pathname === `${stixCoreObjectLink}/tools`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="tool" />
@@ -624,7 +730,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/vulnerabilities`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Vulnerability" />
@@ -652,7 +761,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/attack_patterns`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Attack-Pattern" />
@@ -668,7 +780,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/narratives`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Narrative" />
@@ -701,7 +816,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/indicators`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Indicator" />
@@ -717,7 +835,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/observables`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Stix-Cyber-Observable" />
@@ -733,7 +854,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/infrastructures`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Infrastructure" />
@@ -757,7 +881,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/incidents`}
               selected={location.pathname === `${stixCoreObjectLink}/incidents`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Incident" />
@@ -773,7 +900,10 @@ const StixCoreObjectKnowledgeBar = ({
                 location.pathname === `${stixCoreObjectLink}/observed_data`
               }
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Observed-Data" />
@@ -787,7 +917,10 @@ const StixCoreObjectKnowledgeBar = ({
               to={`${stixCoreObjectLink}/sightings`}
               selected={location.pathname === `${stixCoreObjectLink}/sightings`}
               dense={true}
-              classes={{ root: classes.item }}
+              sx={{
+                height: 38,
+                fontSize: 9,
+              }}
             >
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="sighting" />
@@ -810,7 +943,10 @@ const StixCoreObjectKnowledgeBar = ({
           to={`${stixCoreObjectLink}/related`}
           selected={location.pathname === `${stixCoreObjectLink}/related`}
           dense={true}
-          classes={{ root: classes.item }}
+          sx={{
+            height: 38,
+            fontSize: 9,
+          }}
         >
           <ListItemIcon style={{ minWidth: 28 }}>
             <ItemIcon size="small" type="related" />
@@ -820,14 +956,6 @@ const StixCoreObjectKnowledgeBar = ({
       </MenuList>
     </Drawer>
   );
-};
-
-StixCoreObjectKnowledgeBar.propTypes = {
-  id: PropTypes.string,
-  stixCoreObjectLink: PropTypes.string,
-  availableSections: PropTypes.array,
-  data: PropTypes.object,
-  attribution: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default StixCoreObjectKnowledgeBar;
