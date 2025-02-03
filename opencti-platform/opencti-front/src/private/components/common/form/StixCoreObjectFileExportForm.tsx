@@ -142,16 +142,6 @@ const StixCoreObjectFileExportForm = ({
     [defaultTemplate] = templates ?? [];
   }
   const defaultFileToExport = fileOptions?.find((f) => f.value === defaultValues?.fileToExport);
-  let defaultExportFileName = null;
-  if (defaultTemplate) defaultExportFileName = defaultTemplate.label;
-  if (defaultFileToExport) {
-    defaultExportFileName = defaultFileToExport.value === 'mappableContent' && scoName
-      ? scoName
-      : defaultFileToExport.label.split('.')[0];
-  }
-  if (defaultTemplate || defaultFileToExport) {
-    defaultExportFileName = `${defaultExportFileName}_${now()}`;
-  }
   let defaultFormat = '';
   if (defaultValues?.format) {
     defaultFormat = defaultValues.format;
@@ -164,7 +154,7 @@ const StixCoreObjectFileExportForm = ({
     type: null,
     template: defaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
-    exportFileName: defaultExportFileName,
+    exportFileName: null,
     contentMaxMarkings: [],
     fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id })) ?? [],
   };
