@@ -112,28 +112,32 @@ export const sendDisseminationEmail = async (
 };
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: DisseminationListSendInput) => {
-  const data: BasicStoreCommon = await internalLoadById(context, user, id);
-  if (!data) {
-    throw UnsupportedError('Cant find base element of dissemination');
-  }
-  const { dissemination_list_id, email_body, email_object, email_attachment_ids } = input;
-  const disseminationList = await findById(context, user, dissemination_list_id);
-  logApp.info('Sending email to dissemination list', { dissemination_list_id, email_object, email_attachment_ids });
+  const { entity_id, email_body, email_object, email_attachment_ids } = input;
+  logApp.info('Sending email to dissemination list', { id, entity_id, email_object, email_attachment_ids });
+
+  const disseminationList = await findById(context, user, id);
+  const data: BasicStoreCommon = await internalLoadById(context, user, entity_id);
+
   // precheck
-  await checkEnterpriseEdition(context);
+  await checkEnterpriseEdition(context); // this feature is EE only
   if (!isDisseminationListEnabled) {
     throw UnsupportedError('Feature not yet available');
   }
-  if (disseminationList.entity_type !== ENTITY_TYPE_DISSEMINATION_LIST) {
-    throw FunctionalError(`dissemination_list_id is not of type ${ENTITY_TYPE_DISSEMINATION_LIST}`, { dissemination_list_id });
+  if (!disseminationList || disseminationList.entity_type !== ENTITY_TYPE_DISSEMINATION_LIST) {
+    throw FunctionalError(`id is not of type ${ENTITY_TYPE_DISSEMINATION_LIST}`, { id });
   }
+  // context entity is mandatory
+  if (!data) {
+    throw UnsupportedError('Cant find base element of dissemination', { entity_id });
+  }
+
   const { emails } = disseminationList;
   // sending mail
   const sentFiles = await sendDisseminationEmail(context, user, email_object, email_body, emails, email_attachment_ids);
   // activity logs
   const enrichInput = { ...input, files: sentFiles, dissemination: disseminationList.name };
   const baseData = {
-    id,
+    id: entity_id,
     entity_name: extractEntityRepresentativeName(data),
     entity_type: data.entity_type,
     input: enrichInput,

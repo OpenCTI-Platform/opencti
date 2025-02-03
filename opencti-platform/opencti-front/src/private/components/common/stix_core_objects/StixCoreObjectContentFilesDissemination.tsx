@@ -72,9 +72,9 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     const emailBodyFormatted = sanitizedEmailBody.replace(/(\r\n|\n|\r)/g, '<br/>');
     commitMutation({
       variables: {
-        id: entityId,
+        id: values.disseminationListId,
         input: {
-          dissemination_list_id: values.disseminationListId,
+          entity_id: entityId,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
           email_attachment_ids: [fileId],
