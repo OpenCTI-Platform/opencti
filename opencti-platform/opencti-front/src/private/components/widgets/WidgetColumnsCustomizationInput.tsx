@@ -141,18 +141,12 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                                   label={t_i18n('Column title')}
                                   onChange={(event) => handleChangeColumnName(column.attribute, event.target.value)}
                                   InputProps={{
-                                    style: { marginTop: 12, width: '90%' },
+                                    style: { marginTop: 12 },
                                   }}
                                 />
                               </>
                               : <ListItemText primary={formatColumnName(column)} />
                             }
-
-                            <ListItemSecondaryAction>
-                              <IconButton onClick={() => handleToggleColumn(column.attribute)}>
-                                <Close />
-                              </IconButton>
-                            </ListItemSecondaryAction>
                           </ListItem>
                         )}
                       </Draggable>
