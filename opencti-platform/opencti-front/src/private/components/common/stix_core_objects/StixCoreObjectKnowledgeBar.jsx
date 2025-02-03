@@ -169,7 +169,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Sector" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Sectors')}${statisticsWithoutRelatedToRelationship.Sector && statisticsWithoutRelatedToRelationship.Sector.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Sector.value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Sectors')}${statisticsCoreObjects.Sector && statisticsCoreObjects.Sector.value > 0 ? ` (${n(statisticsCoreObjects.Sector.value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('regions') && (
@@ -183,7 +183,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Region" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Regions')}${statisticsWithoutRelatedToRelationship.Region && statisticsWithoutRelatedToRelationship.Region.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Region.value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Regions')}${statisticsCoreObjects.Region && statisticsCoreObjects.Region.value > 0 ? ` (${n(statisticsCoreObjects.Region.value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('countries') && (
@@ -199,7 +199,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Country" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Countries')}${statisticsWithoutRelatedToRelationship.Country && statisticsWithoutRelatedToRelationship.Country.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Country.value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Countries')}${statisticsCoreObjects.Country && statisticsCoreObjects.Country.value > 0 ? ` (${n(statisticsCoreObjects.Country.value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('areas') && (
@@ -213,7 +213,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Administrative-Area" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Areas')}${statisticsWithoutRelatedToRelationship['Administrative-Area'] && statisticsWithoutRelatedToRelationship['Administrative-Area'].value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship['Administrative-Area'].value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Areas')}${statisticsCoreObjects['Administrative-Area'] && statisticsCoreObjects['Administrative-Area'].value > 0 ? ` (${n(statisticsCoreObjects['Administrative-Area'].value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('cities') && (
@@ -227,7 +227,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="City" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Cities')}${statisticsWithoutRelatedToRelationship.City && statisticsWithoutRelatedToRelationship.City.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.City.value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Cities')}${statisticsCoreObjects.City && statisticsCoreObjects.City.value > 0 ? ` (${n(statisticsCoreObjects.City.value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('organizations') && (
@@ -243,7 +243,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Organization" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Organizations')}${statisticsWithoutRelatedToRelationship.Organization && statisticsWithoutRelatedToRelationship.Organization.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Organization.value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Organizations')}${statisticsCoreObjects.Organization && statisticsCoreObjects.Organization.value > 0 ? ` (${n(statisticsCoreObjects.Organization.value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('individuals') && (
@@ -259,7 +259,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Individual" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Individuals')}${statisticsWithoutRelatedToRelationship.Individual && statisticsWithoutRelatedToRelationship.Individual.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Individual.value)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Individuals')}${statisticsCoreObjects.Individual && statisticsCoreObjects.Individual.value > 0 ? ` (${n(statisticsCoreObjects.Individual.value)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('locations') && (
@@ -291,7 +291,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Tool" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Used tools')} />
+                <ListItemText primary={`${t_i18n('Used tools')}${statisticsCoreObjects.Tool && statisticsCoreObjects.Tool.value > 0 ? ` (${n(statisticsCoreObjects.Tool.value)})` : ''}`} />
               </MenuItem>
             )}
           </MenuList>
