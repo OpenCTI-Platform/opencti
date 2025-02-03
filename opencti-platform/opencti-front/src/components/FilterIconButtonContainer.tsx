@@ -246,7 +246,7 @@ FilterIconButtonContainerProps
       boxStyle = {
         margin: '0 0',
         display: 'flex',
-        flexWrap: 'wrap',
+        flexWrap: 'no-wrap',
         gap: 0,
         overflow: 'hidden',
       };
