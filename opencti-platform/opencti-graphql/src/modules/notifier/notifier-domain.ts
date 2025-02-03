@@ -33,13 +33,11 @@ const EJS_FUNCTION_ALLOWED_LIST = conf.get('app:notifier_authorized_functions') 
 const EJS_FORBIDDEN_WORD_LIST = ['process', 'global', '__dirname', '__filename', 'exports', 'module'];
 
 export const checkAllowedEjsFunctions = (template: string, throwError: boolean = true) => {
-  logApp.info('EJS_FUNCTION_ALLOWED_LIST', { EJS_FUNCTION_ALLOWED_LIST });
-
   // look for <% xxxx %> including new lines.
-  const ejsTagRegExpr = /(?<=<%)(.*?)(?=%>)/gms;
+  const ejsTagRegExpr = /<%\s*([\s\S]*?)\s*%>/g;
 
   // look for function, word + parentheses
-  const functionRegExpr = /(\w+)\s*\(/gms;
+  const functionRegExpr = /(\w+)\s*\(/g;
 
   let ejsTag = ejsTagRegExpr.exec(template);
   while (ejsTag !== null) {
