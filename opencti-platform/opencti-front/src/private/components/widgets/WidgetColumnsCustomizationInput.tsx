@@ -51,7 +51,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
     if (columnExists) {
       onChange(value.filter((col) => col.attribute !== attribute));
     } else {
-      const columnToAdd = availableColumns.find((col) => col.attribute === attribute) as WidgetColumn;
+      const columnToAdd = availableColumns.find((col) => col.attribute === attribute);
       if (columnToAdd) onChange([...value, columnToAdd]);
     }
   };
