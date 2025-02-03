@@ -102,6 +102,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const intrusionSetValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
