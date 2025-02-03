@@ -46,7 +46,7 @@ const subscription = graphql`
 `;
 
 const ThreatActorIndividualQuery = graphql`
-  query RootThreatActorIndividualQuery($id: String!) {
+  query RootThreatActorIndividualQuery($id: String!, $relatedRelationshipTypes: [String!]) {
     threatActorIndividual(id: $id) {
       id
       standard_id
@@ -54,10 +54,7 @@ const ThreatActorIndividualQuery = graphql`
       name
       aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
       ...FileImportViewer_entity
@@ -75,6 +72,8 @@ const ThreatActorIndividualQuery = graphql`
     }
   }
 `;
+
+const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of', 'impersonates', 'known-as'];
 
 type RootThreatActorIndividualProps = {
   threatActorIndividualId: string;
@@ -144,7 +143,7 @@ const RootThreatActorIndividualComponent = ({
                     'sightings',
                     'countries',
                   ]}
-                  stixCoreObjectsDistribution={threatActorIndividual.stixCoreObjectsDistribution}
+                  data={threatActorIndividual}
                 />
              }
             />
@@ -240,7 +239,10 @@ const RootThreatActorIndividualComponent = ({
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} />
+                    <ThreatActorIndividualKnowledge
+                      threatActorIndividualData={threatActorIndividual}
+                      relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
+                    />
                   </div>
                 }
               />
@@ -293,6 +295,7 @@ const Root = () => {
     ThreatActorIndividualQuery,
     {
       id: threatActorIndividualId,
+      relatedRelationshipTypes: THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES,
     },
   );
   return (

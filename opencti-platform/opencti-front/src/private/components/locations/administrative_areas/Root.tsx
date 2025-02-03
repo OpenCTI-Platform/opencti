@@ -54,10 +54,7 @@ const administrativeAreaQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...AdministrativeArea_administrativeArea
       ...AdministrativeAreaKnowledge_administrativeArea
       ...FileImportViewer_entity
@@ -120,7 +117,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={administrativeArea.stixCoreObjectsDistribution}
+                  data={administrativeArea}
                 />
               }
             />

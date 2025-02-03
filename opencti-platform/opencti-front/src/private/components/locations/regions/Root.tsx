@@ -55,10 +55,7 @@ const regionQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
-      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
-        label
-        value
-      }
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Region_region
       ...RegionKnowledge_region
       ...FileImportViewer_entity
@@ -122,7 +119,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     'tools',
                     'observables',
                   ]}
-                  stixCoreObjectsDistribution={region.stixCoreObjectsDistribution}
+                  data={region}
                 />
               }
             />
