@@ -239,7 +239,10 @@ const RootThreatActorIndividualComponent = ({
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ThreatActorIndividualKnowledge threatActorIndividualData={threatActorIndividual} relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES} />
+                    <ThreatActorIndividualKnowledge
+                      threatActorIndividualData={threatActorIndividual}
+                      relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
+                    />
                   </div>
                 }
               />
