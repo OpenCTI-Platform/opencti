@@ -60,7 +60,7 @@ const AddLocationsThreatActorIndividualComponent = ({
           <div
             style={{
               marginLeft: 'auto',
-              marginRight: ' 20px',
+              marginRight: '20px',
             }}
           >
             <SearchInput
