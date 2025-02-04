@@ -85,7 +85,7 @@ const ThreatActorIndividualDemographics = ({
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
                   relType='resides-in'
-                  title={'Add country of residence'}
+                  title={t_i18n('Add country of residence')}
                 />
               </Security>
             </div>
@@ -171,7 +171,7 @@ const ThreatActorIndividualDemographics = ({
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
                   relType='national-of'
-                  title={'Add nationality'}
+                  title={t_i18n('Add nationality')}
                 />
               </Security>
             </div>
