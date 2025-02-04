@@ -61,7 +61,7 @@ const styles = (theme) => ({
 
 class FeedLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
@@ -88,7 +88,7 @@ class FeedLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.feed_types.width }}
               >
-                {node.feed_types.join(', ')}
+                {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -134,6 +134,7 @@ FeedLineLineComponent.propTypes = {
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  t: PropTypes.func,
 };
 
 const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
