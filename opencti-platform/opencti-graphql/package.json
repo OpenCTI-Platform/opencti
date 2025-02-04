@@ -147,7 +147,7 @@
     "rate-limiter-flexible": "5.0.5",
     "redlock": "5.0.0-beta.2",
     "sanitize-filename": "1.6.3",
-    "semver": "7.6.3",
+    "semver": "7.7.1",
     "set-interval-async": "3.0.3",
     "showdown": "2.1.0",
     "source-map-support": "0.5.21",
