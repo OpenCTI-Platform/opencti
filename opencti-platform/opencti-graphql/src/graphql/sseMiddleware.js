@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
+import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
 import { AUTH_BEARER, authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
@@ -33,7 +34,7 @@ import {
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   SYSTEM_USER
 } from '../utils/access';
-import { FROM_START_STR, utcDate } from '../utils/format';
+import { streamEventId, FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
@@ -577,7 +578,9 @@ const createSseMiddleware = () => {
           for (let index = 0; index < elements.length; index += 1) {
             const element = elements[index];
             const { id: eventId, event, data: eventData } = element;
-            const { type, data: stix, version: eventVersion, context: evenContext } = eventData;
+            const { type, data: stix, version: eventVersion, context: evenContext, event_id } = eventData;
+            const updateTime = stix.extensions[STIX_EXT_OCTI]?.updated_at ?? now();
+            eventData.event_id = event_id ?? streamEventId(updateTime, index);
             const isRelation = stix.type === 'relationship' || stix.type === 'sighting';
             // New stream support only v4+ events.
             const isCompatibleVersion = parseInt(eventVersion ?? '0', 10) >= 4;
@@ -672,7 +675,7 @@ const createSseMiddleware = () => {
             const instance = instances[index];
             const stixData = convertStoreToStix(instance);
             const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
-            const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
+            const eventId = streamEventId(stixUpdatedAt);
             if (channel.connected()) {
               // publish missing dependencies if needed
               const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stixData);

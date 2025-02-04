@@ -36,6 +36,8 @@ export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 
 export const utcDate = (date) => (date ? moment(date).utc() : moment().utc());
+export const utcEpochTime = (date = null) => utcDate(date).toDate().getTime();
+export const streamEventId = (date = null, index = 0) => `${utcEpochTime(date)}-${index}`;
 export const now = () => utcDate().toISOString();
 export const nowTime = () => timeFormat(now());
 export const sinceNowInMinutes = (lastModified) => {
