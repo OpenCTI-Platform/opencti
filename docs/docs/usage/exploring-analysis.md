@@ -114,6 +114,26 @@ Clicking on a Grouping, you land on its Overview tab. For a Groupings, the follo
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
 
+### Restricting access to a Grouping
+
+#### Organization segregation
+
+If you have designated a main Organization in the platform settings, you can share your Grouping and its content with users of an other Organization.
+
+![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
+
+[read more about organization segregation](..%2Fadministration%2Forganization-segregation.md)
+
+#### Authorized members
+
+**Authorized members** allow to restrict access to an entity to certain users, groups, or organizations within the platform.
+
+To define authorized members, you need to click on the '**Manage Access Restriction**' button. This button is visible if you have the '**Manage Authorized Members**' capability.
+
+![containers-manage-access-restriction-button.png](assets%2Fcontainers-manage-access-restriction-button.png)
+
+
+[read more about authorized members](..%2Fadministration%2Fauthorized-members.md)
 
 ## Malware Analyses
 

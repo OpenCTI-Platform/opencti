@@ -68,6 +68,24 @@ The view can be filtered and displayed relationships too.
 
 If your Case contains attack patterns, you will be able to visualize them in a Matrix view.
 
+### Restricting access to an Incident Response, Request for Information & Request for Takedown
+
+#### Organization segregation
+
+If you have designated a main Organization in the platform settings, you can share your Case and its content with users of an other Organization.
+
+![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
+
+[read more about organization segregation](..%2Fadministration%2Forganization-segregation.md)
+
+#### Authorized members
+
+**Authorized members** allow to restrict access to an entity to certain users, groups, or organizations within the platform.
+
+To define authorized members, you need to click on the '**Manage Access Restriction**' button. This button is visible if you have the '**Manage Authorized Members**' capability.
+
+![containers-manage-access-restriction-button.png](assets%2Fcontainers-manage-access-restriction-button.png)
+
 
 ## Tasks
 
