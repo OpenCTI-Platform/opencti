@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useTheme } from '@mui/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -21,6 +20,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles<Theme>(() => ({
   dialog: {
