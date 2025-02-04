@@ -18,7 +18,6 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import type { Theme } from '../../../../components/Theme';
 import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import useHelper from '../../../../utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
@@ -64,8 +63,6 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -89,7 +86,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   );
   const { searchTerm } = viewStorage;
 
-  const hasTemplates = subType.settings?.availableSettings.includes('templates') && isFileFromTemplateEnabled;
+  const hasTemplates = subType.settings?.availableSettings.includes('templates');
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),

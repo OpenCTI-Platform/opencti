@@ -14,7 +14,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
@@ -31,16 +31,14 @@ import { SELF_ID, widgetAttackPatterns, widgetContainerObservables, widgetIndica
 // (don't forget to check the capa if it's not done via a @auth in graphql of your function)
 export const canCustomizeTemplate = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  if (!isEE || !isFileFromTemplateEnabled) {
+  if (!isEE) {
     throw ForbiddenAccess();
   }
 };
 
 export const canViewTemplates = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
-  const isFileFromTemplateEnabled = isFeatureEnabled('FILE_FROM_TEMPLATE');
-  return !(!isEE || !isFileFromTemplateEnabled);
+  return isEE;
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelTemplate> => {

@@ -27,7 +27,6 @@ import { useFormatter } from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { isNilField } from '../../../../utils/utils';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -117,8 +116,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isFeatureEnable } = useHelper();
-  const isFileFromTemplateEnabled = isFeatureEnable('FILE_FROM_TEMPLATE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -271,7 +268,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         />
       </ContentBloc>
 
-      {isFileFromTemplateEnabled && hasOutcomesTemplate && (
+      {hasOutcomesTemplate && (
         <ContentBloc
           title={
             <>
