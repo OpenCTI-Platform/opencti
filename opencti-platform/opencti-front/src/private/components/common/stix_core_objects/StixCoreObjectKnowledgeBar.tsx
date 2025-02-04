@@ -73,7 +73,7 @@ type StixCoreObjectKnowledgeBarProps = {
   stixCoreObjectLink: string;
   availableSections: string[];
   data: StixCoreObjectKnowledgeBar_stixCoreObject$key;
-  attribution: string[];
+  attribution?: string[];
 };
 
 const StixCoreObjectKnowledgeBar = ({
