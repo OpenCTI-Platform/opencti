@@ -149,7 +149,8 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   <ToolEdition toolId={tool.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
             />
             <Box

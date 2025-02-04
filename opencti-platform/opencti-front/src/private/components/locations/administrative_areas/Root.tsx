@@ -150,6 +150,8 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

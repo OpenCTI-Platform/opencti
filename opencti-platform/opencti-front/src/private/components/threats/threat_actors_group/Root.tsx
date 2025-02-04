@@ -153,7 +153,8 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
             />
             <Box

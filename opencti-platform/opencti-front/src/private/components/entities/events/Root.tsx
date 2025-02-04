@@ -147,6 +147,8 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                   <EventEdition eventId={event.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

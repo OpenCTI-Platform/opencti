@@ -167,7 +167,8 @@ const RootThreatActorIndividualComponent = ({
                   />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
             />
             <Box

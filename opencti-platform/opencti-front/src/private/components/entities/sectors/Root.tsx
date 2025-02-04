@@ -152,6 +152,8 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   <SectorEdition sectorId={sector.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{

@@ -151,6 +151,8 @@ const RootIncidentComponent = ({ queryRef }) => {
                 </Security>
               )}
               enableQuickSubscription={true}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
             />
             <Box
               sx={{
