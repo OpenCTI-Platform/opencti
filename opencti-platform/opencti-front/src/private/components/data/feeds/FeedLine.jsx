@@ -134,6 +134,7 @@ FeedLineLineComponent.propTypes = {
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  t: PropTypes.func,
 };
 
 const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
