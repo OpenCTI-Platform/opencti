@@ -374,8 +374,8 @@ describe('Drafts workspace resolver testing', () => {
     const report = await adminQuery({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
     const reportStandardId = report.data.reportAdd.standard_id;
     await adminQuery({ query: REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, variables: { id: reportStandardId } });
-    const getReportOutOfDraftQuery = await adminQuery({ query: READ_REPORT_QUERY, variables: { id: reportStandardId } });
-    expect(getReportOutOfDraftQuery.data.report).toBeNull();
+    const getRemovedCreatedReportQuery = await adminQuery({ query: READ_REPORT_QUERY, variables: { id: reportStandardId } });
+    expect(getRemovedCreatedReportQuery.data.report).toBeNull();
 
     // Verify that report updated in draft is removed and reverted to live version
     const originalDescription = 'Report for update removal draft';
@@ -397,8 +397,8 @@ describe('Drafts workspace resolver testing', () => {
       query: UPDATE_REPORT_QUERY,
       variables: { id: reportToUpdateStandardId, input: { key: 'description', value: updateDescription } },
     });
-    await adminQuery({ query: REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, variables: { id: reportStandardId } });
-    const reportAfterRemoval = await adminQuery({ query: READ_REPORT_QUERY, variables: { id: reportStandardId } });
+    await adminQuery({ query: REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, variables: { id: reportToUpdateStandardId } });
+    const reportAfterRemoval = await adminQuery({ query: READ_REPORT_QUERY, variables: { id: reportToUpdateStandardId } });
     expect(reportAfterRemoval.data.report.description).toBe(originalDescription);
     await modifyAdminDraftContext('');
     await adminQuery({
@@ -425,7 +425,7 @@ describe('Drafts workspace resolver testing', () => {
     });
     const getReportDeletedQuery = await adminQuery({ query: READ_REPORT_QUERY, variables: { id: reportToDeleteStandardId } });
     expect(getReportDeletedQuery.data.report).toBeNull();
-    await adminQuery({ query: REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, variables: { id: reportStandardId } });
+    await adminQuery({ query: REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, variables: { id: reportToDeleteStandardId } });
     const reportAfterDeleteRemoval = await adminQuery({ query: READ_REPORT_QUERY, variables: { id: reportToDeleteStandardId } });
     expect(reportAfterDeleteRemoval.data.report).toBeDefined();
     await modifyAdminDraftContext('');
