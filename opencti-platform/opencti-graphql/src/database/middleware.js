@@ -1870,6 +1870,10 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   };
 };
 
+const computeDateFromEventId = (context) => {
+  return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -2143,7 +2147,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const uniqImpactKey = uniqImpactKeys[i];
         attributesMap.set(uniqImpactKey, {
           name: uniqImpactKey,
-          updated_at: now(),
+          updated_at: context.eventId ? computeDateFromEventId(context) : now(),
           confidence: confidenceLevelToApply,
           user_id: user.internal_id,
         });
@@ -2509,7 +2513,7 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
     const { updated_at: lastAttributeUpdateDate } = attributesMap.get(attributeKey) ?? {};
     if (lastAttributeUpdateDate) {
       try {
-        const eventDate = utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
+        const eventDate = computeDateFromEventId(context);
         return utcDate(lastAttributeUpdateDate).isAfter(eventDate);
       } catch (e) {
         logApp.error('Error evaluating event id', { key: attributeKey, event_id: context.eventId });
