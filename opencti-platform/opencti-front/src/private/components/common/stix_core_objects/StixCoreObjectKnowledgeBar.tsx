@@ -12,6 +12,7 @@ import {
   StixCoreObjectKnowledgeBar_stixCoreObject$key,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectKnowledgeBar_stixCoreObject.graphql';
 import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
@@ -69,11 +70,41 @@ type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relat
 | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
 | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
 
-type StixCoreObjectKnowledgeBarProps = {
+interface StixCoreObjectKnowledgeBarProps {
   stixCoreObjectLink: string;
   availableSections: string[];
   data: StixCoreObjectKnowledgeBar_stixCoreObject$key;
   attribution?: string[];
+}
+
+interface SectionConfig {
+  title: string;
+  items: {
+    label: string;
+    iconType: string;
+    path: string;
+    count: number;
+  }[];
+}
+
+const KnowledgeBarItem = ({ to, iconType, label, count }: { to: string; iconType: string; label: string; count: number }) => {
+  const location = useLocation();
+  const { t_i18n, n } = useFormatter();
+
+  return (
+    <MenuItem
+      component={Link}
+      to={to}
+      selected={location.pathname === to}
+      dense={true}
+      sx={{ height: 38, fontSize: 9 }}
+    >
+      <ListItemIcon style={{ minWidth: 28 }}>
+        <ItemIcon size="small" type={iconType} />
+      </ListItemIcon>
+      <ListItemText primary={`${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`} />
+    </MenuItem>
+  );
 };
 
 const StixCoreObjectKnowledgeBar = ({
@@ -83,879 +114,305 @@ const StixCoreObjectKnowledgeBar = ({
   attribution,
 }: StixCoreObjectKnowledgeBarProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, n } = useFormatter();
-  const location = useLocation();
   const { bannerSettings, schema } = useAuth();
-  const isInAvailableSection = (sections: string[]) => availableSections.some((filter) => sections.includes(filter));
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const {
     relationshipsWithoutRelatedToDistribution,
     relationshipsRelatedDistribution,
     stixCoreObjectsDistribution,
-  } = useFragment<StixCoreObjectKnowledgeBar_stixCoreObject$key >(
-    stixCoreObjectKnowledgeBarFragment,
-    data,
+  } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
+
+  const indexEntities = (distribution: ObjectsDistribution) : Record<string, number> => (
+    distribution?.reduce((acc, item) => ({
+      ...acc,
+      ...(item?.label ? { [item.label]: item.value || 0 } : {}),
+    }), {}) || {}
   );
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
-  const indexEntities = (
-    objectsDistribution: ObjectsDistribution,
-  ): Record<string, { label: string; value: number }> => {
-    if (!objectsDistribution) {
-      return {};
-    }
-
-    return objectsDistribution.reduce<Record<string, { label: string; value: number }>>(
-      (acc, item) => {
-        if (item && item.label) {
-          return { ...acc, [item.label]: { label: item.label, value: item.value ?? 0 } };
-        }
-        return acc;
-      },
-      {},
-    );
+  const distributions = {
+    withoutRelated: indexEntities(relationshipsWithoutRelatedToDistribution),
+    related: indexEntities(relationshipsRelatedDistribution),
+    coreObjects: indexEntities(stixCoreObjectsDistribution),
   };
 
-  const statisticsWithoutRelatedToRelationship = indexEntities(relationshipsWithoutRelatedToDistribution);
-  const statisticsRelatedRelationship = indexEntities(relationshipsRelatedDistribution);
-  const statisticsCoreObjects = indexEntities(stixCoreObjectsDistribution);
-
-  const sumEntitiesByKeys = (stats: Record<string, { value: number }>, keys?: string[]): number => {
+  const sumEntitiesByKeys = (source: Record<string, number>, keys?: string[]) => {
     if (keys) {
-      return keys.map((key) => stats[key]?.value || 0).reduce((acc, val) => acc + val, 0);
+      return keys.reduce((sum, key) => sum + (source[key] || 0), 0);
     }
-    return Object.values(stats).reduce((sum: number, { value }): number => sum + value, 0);
+    return Object.values(source).reduce((sum: number, val) => sum + val, 0);
   };
 
-  const statistics = {
-    threats: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident']),
-    threatActors: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group']),
-    victims: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area']),
-    attributions: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, attribution ?? []),
-    locations: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Region', 'Country', 'City', 'Position', 'Administrative-Area']),
-    observables: sumEntitiesByKeys(statisticsRelatedRelationship, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
-    relatedEntities: sumEntitiesByKeys(statisticsRelatedRelationship),
-  };
+  const sectionsConfig: SectionConfig[] = [
+    {
+      title: 'Entities',
+      items: [
+        {
+          label: 'Sectors',
+          iconType: 'Sector',
+          path: 'sectors',
+          count: distributions.coreObjects.Sector || 0,
+        },
+        {
+          label: 'Regions',
+          iconType: 'Region',
+          path: 'regions',
+          count: distributions.coreObjects.Region || 0,
+        },
+        {
+          label: 'Countries',
+          iconType: 'Country',
+          path: 'countries',
+          count: distributions.coreObjects.Country || 0,
+        },
+        {
+          label: 'Areas',
+          iconType: 'Administrative-Area',
+          path: 'areas',
+          count: distributions.coreObjects['Administrative-Area'] || 0,
+        },
+        {
+          label: 'Cities',
+          iconType: 'City',
+          path: 'cities',
+          count: distributions.coreObjects.City || 0,
+        },
+        {
+          label: 'Organizations',
+          iconType: 'Organization',
+          path: 'organizations',
+          count: distributions.coreObjects.Organization || 0,
+        },
+        {
+          label: 'Individuals',
+          iconType: 'Individual',
+          path: 'individuals',
+          count: distributions.coreObjects.Individual || 0,
+        },
+        {
+          label: 'Locations',
+          iconType: 'Location',
+          path: 'locations',
+          count: sumEntitiesByKeys(
+            distributions.withoutRelated,
+            ['Region', 'Country', 'City', 'Position', 'Administrative-Area'],
+          ),
+        },
+        {
+          label: 'Used tools',
+          iconType: 'Tool',
+          path: 'used_tools',
+          count: distributions.coreObjects.Tool || 0,
+        },
+      ].filter((item) => availableSections.includes(item.path)),
+    },
+    {
+      title: 'Threats',
+      items: [
+        {
+          label: 'All threats',
+          iconType: 'threats',
+          path: 'threats',
+          count: sumEntitiesByKeys(
+            distributions.withoutRelated,
+            ['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident'],
+          ),
+        },
+        {
+          label: 'Attribution',
+          iconType: 'attribution',
+          path: 'attribution',
+          count: sumEntitiesByKeys(distributions.withoutRelated, attribution ?? []),
+        },
+        {
+          label: 'Victimology',
+          iconType: 'victimology',
+          path: 'victimology',
+          count: sumEntitiesByKeys(
+            distributions.withoutRelated,
+            ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position'],
+          ),
+        },
+        {
+          label: 'Threat actors',
+          iconType: 'Threat-Actor-Individual',
+          path: 'threat_actors',
+          count: sumEntitiesByKeys(
+            distributions.withoutRelated,
+            ['Threat-Actor-Individual', 'Threat-Actor-Group'],
+          ),
+        },
+        {
+          label: 'Intrusion sets',
+          iconType: 'Intrusion-Set',
+          path: 'intrusion_sets',
+          count: distributions.withoutRelated['Intrusion-Set'] || 0,
+        },
+        {
+          label: 'Campaigns',
+          iconType: 'Campaign',
+          path: 'campaigns',
+          count: distributions.withoutRelated.Campaign || 0,
+        },
+      ].filter((item) => availableSections.includes(item.path)),
+    },
+    {
+      title: 'Arsenal',
+      items: [
+        {
+          label: 'Variants',
+          iconType: 'variant',
+          path: 'variants',
+          count: distributions.withoutRelated.Malware || 0,
+        },
+        {
+          label: 'Malwares',
+          iconType: 'Malware',
+          path: 'malwares',
+          count: distributions.withoutRelated.Malware || 0,
+        },
+        {
+          label: 'Channels',
+          iconType: 'Channel',
+          path: 'channels',
+          count: distributions.withoutRelated.Channel || 0,
+        },
+        {
+          label: 'Tools',
+          iconType: 'tool',
+          path: 'tools',
+          count: distributions.withoutRelated.Tool || 0,
+        },
+        {
+          label: 'Vulnerabilities',
+          iconType: 'Vulnerability',
+          path: 'vulnerabilities',
+          count: distributions.withoutRelated.Vulnerability || 0,
+        },
+      ].filter((item) => availableSections.includes(item.path)),
+    },
+    {
+      title: 'Techniques',
+      items: [
+        {
+          label: 'Attack patterns',
+          iconType: 'Attack-Pattern',
+          path: 'attack_patterns',
+          count: distributions.coreObjects['Attack-Pattern'] || 0,
+        },
+        {
+          label: 'Narratives',
+          iconType: 'Narrative',
+          path: 'narratives',
+          count: distributions.withoutRelated.Narrative || 0,
+        },
+      ].filter((item) => availableSections.includes(item.path)),
+    },
+    {
+      title: 'Observations',
+      items: [
+        {
+          label: 'Indicators',
+          iconType: 'Indicator',
+          path: 'indicators',
+          count: distributions.coreObjects.Indicator || 0,
+        },
+        {
+          label: 'Observables',
+          iconType: 'Stix-Cyber-Observable',
+          path: 'observables',
+          count: sumEntitiesByKeys(distributions.related, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
+        },
+        {
+          label: 'Infrastructures',
+          iconType: 'Infrastructure',
+          path: 'infrastructures',
+          count: distributions.withoutRelated.Infrastructure || 0,
+        },
+      ].filter((item) => availableSections.includes(item.path)),
+    },
+    {
+      title: 'Events',
+      items: [
+        {
+          label: 'Incidents',
+          iconType: 'Incident',
+          path: 'incidents',
+          count: distributions.withoutRelated.Incident || 0,
+        },
+        {
+          label: 'Observed data',
+          iconType: 'Observed-Data',
+          path: 'observed_data',
+          count: distributions.withoutRelated['Observed-Data'] || 0,
+        },
+        {
+          label: 'Sightings',
+          iconType: 'sighting',
+          path: 'sightings',
+          count: 0,
+        },
+      ].filter((item) => availableSections.includes(item.path)),
+    },
+    {
+      title: 'Other',
+      items: [
+        {
+          label: 'Related entities',
+          iconType: 'related',
+          path: 'related',
+          count: sumEntitiesByKeys(distributions.related),
+        },
+      ],
+    },
+  ];
 
   return (
     <Drawer
       variant="permanent"
       anchor="right"
       sx={{
-        minHeight: '100vh',
         width: 200,
         position: 'fixed',
         overflow: 'auto',
         padding: 0,
-        backgroundColor: theme.palette.background.nav,
+        zIndex: 2,
+        background: theme.palette.background.nav,
       }}
     >
-      <div style={{ ...theme.mixins.toolbar }} />
+      <Box sx={{ ...theme.mixins.toolbar }} />
       <MenuList
+        component="nav"
         style={{
+          marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
           paddingBottom: 0,
-          marginTop:
-            bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
         }}
-        component="nav"
       >
-        <MenuItem
-          component={Link}
+        <KnowledgeBarItem
           to={`${stixCoreObjectLink}/overview`}
-          selected={location.pathname === `${stixCoreObjectLink}/overview`}
-          dense={true}
-          sx={{
-            height: 38,
-            fontSize: 9,
-          }}
-        >
-          <ListItemIcon style={{ minWidth: 28 }}>
-            <ItemIcon size="small" type="overview" />
-          </ListItemIcon>
-          <ListItemText primary={t_i18n('Overview')} />
-        </MenuItem>
-        {isInAvailableSection(['sectors', 'organizations', 'individuals']) ? (
-          <MenuList
-            style={{ paddingBottom: 0 }}
-            component="nav"
-            subheader={
-              <ListSubheader style={{ height: 35 }}>
-                {t_i18n('Entities')}
-              </ListSubheader>
-            }
-          >
-            {availableSections.includes('sectors') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/sectors`}
-                selected={location.pathname === `${stixCoreObjectLink}/sectors`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Sector" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Sectors')}${statisticsCoreObjects.Sector && statisticsCoreObjects.Sector.value > 0 ? ` (${n(statisticsCoreObjects.Sector.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('regions') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/regions`}
-                selected={location.pathname === `${stixCoreObjectLink}/regions`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Region" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Regions')}${statisticsCoreObjects.Region && statisticsCoreObjects.Region.value > 0 ? ` (${n(statisticsCoreObjects.Region.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('countries') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/countries`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/countries`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Country" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Countries')}${statisticsCoreObjects.Country && statisticsCoreObjects.Country.value > 0 ? ` (${n(statisticsCoreObjects.Country.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('areas') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/areas`}
-                selected={location.pathname === `${stixCoreObjectLink}/areas`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Administrative-Area" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Areas')}${statisticsCoreObjects['Administrative-Area'] && statisticsCoreObjects['Administrative-Area'].value > 0 ? ` (${n(statisticsCoreObjects['Administrative-Area'].value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('cities') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/cities`}
-                selected={location.pathname === `${stixCoreObjectLink}/cities`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="City" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Cities')}${statisticsCoreObjects.City && statisticsCoreObjects.City.value > 0 ? ` (${n(statisticsCoreObjects.City.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('organizations') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/organizations`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/organizations`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Organization" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Organizations')}${statisticsCoreObjects.Organization && statisticsCoreObjects.Organization.value > 0 ? ` (${n(statisticsCoreObjects.Organization.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('individuals') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/individuals`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/individuals`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Individual" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Individuals')}${statisticsCoreObjects.Individual && statisticsCoreObjects.Individual.value > 0 ? ` (${n(statisticsCoreObjects.Individual.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('locations') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/locations`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/locations`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="location" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Locations')}${statistics.locations > 0 ? ` (${n(statistics.locations)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('used_tools') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/used_tools`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/used_tools`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Tool" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Used tools')}${statisticsCoreObjects.Tool && statisticsCoreObjects.Tool.value > 0 ? ` (${n(statisticsCoreObjects.Tool.value)})` : ''}`} />
-              </MenuItem>
-            )}
-          </MenuList>
-        ) : (
-          <>
-            {availableSections.includes('sectors') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/sectors`}
-                selected={location.pathname === `${stixCoreObjectLink}/sectors`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Sector" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Sectors')}${statisticsWithoutRelatedToRelationship.Sector && statisticsWithoutRelatedToRelationship.Sector.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Sector.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('regions') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/regions`}
-                selected={location.pathname === `${stixCoreObjectLink}/regions`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Region" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Regions')}${statisticsWithoutRelatedToRelationship.Region && statisticsWithoutRelatedToRelationship.Region.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Region.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('countries') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/countries`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/countries`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Country" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Countries')}${statisticsWithoutRelatedToRelationship.Country && statisticsWithoutRelatedToRelationship.Country.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Country.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('areas') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/areas`}
-                selected={location.pathname === `${stixCoreObjectLink}/areas`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Administrative-Area" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Areas')}${statisticsWithoutRelatedToRelationship['Administrative-Area'] && statisticsWithoutRelatedToRelationship['Administrative-Area'].value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship['Administrative-Area'].value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('cities') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/cities`}
-                selected={location.pathname === `${stixCoreObjectLink}/cities`}
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="City" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Cities')}${statisticsWithoutRelatedToRelationship.City && statisticsWithoutRelatedToRelationship.City.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.City.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('locations') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/locations`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/locations`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Location" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Locations')}${statistics.locations > 0 ? ` (${n(statistics.locations)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('organizations') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/organizations`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/organizations`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Organization" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Organizations')}${statisticsWithoutRelatedToRelationship.Organization && statisticsWithoutRelatedToRelationship.Organization.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Organization.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('individuals') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/individuals`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/individuals`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Individual" />
-                </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Individuals')}${statisticsWithoutRelatedToRelationship.Individual && statisticsWithoutRelatedToRelationship.Individual.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Individual.value)})` : ''}`} />
-              </MenuItem>
-            )}
-            {availableSections.includes('used_tools') && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/used_tools`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/used_tools`
-                }
-                dense={true}
-                sx={{
-                  height: 38,
-                  fontSize: 9,
-                }}
-              >
-                <ListItemIcon style={{ minWidth: 28 }}>
-                  <ItemIcon size="small" type="Tool" />
-                </ListItemIcon>
-                <ListItemText primary={t_i18n('Used tools')} />
-              </MenuItem>
-            )}
-          </>
-        )}
-      </MenuList>
-      {isInAvailableSection([
-        'targets',
-        'attribution',
-        'victimology',
-        'intrusion_sets',
-        'campaigns',
-      ]) ? (
-        <MenuList
-          style={{ paddingBottom: 0 }}
-          component="nav"
-          subheader={
-            <ListSubheader style={{ height: 35 }}>{t_i18n('Threats')}</ListSubheader>
-          }
-        >
-          {availableSections.includes('threats') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/threats`}
-              selected={location.pathname === `${stixCoreObjectLink}/threats`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="threats" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('All threats')}${statistics.threats > 0 ? ` (${n(statistics.threats)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('attribution') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/attribution`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/attribution`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="attribution" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Attribution')}${statistics.attributions > 0 ? ` (${n(statistics.attributions)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('victimology') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/victimology`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/victimology`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="victimology" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Victimology')}${statistics.victims > 0 ? ` (${n(statistics.victims)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('threat_actors') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/threat_actors`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/threat_actors`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Threat-Actor-Individual" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Threat actors')}${statistics.threatActors > 0 ? ` (${n(statistics.threatActors)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('intrusion_sets') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/intrusion_sets`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/intrusion_sets`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Intrusion-Set" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Intrusion sets')}${statisticsWithoutRelatedToRelationship['Intrusion-Set'] && statisticsWithoutRelatedToRelationship['Intrusion-Set'].value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship['Intrusion-Set'].value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('campaigns') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/campaigns`}
-              selected={location.pathname === `${stixCoreObjectLink}/campaigns`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Campaign" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Campaigns')}${statisticsWithoutRelatedToRelationship.Campaign && statisticsWithoutRelatedToRelationship.Campaign.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Campaign.value)})` : ''}`} />
-            </MenuItem>
-          )}
-        </MenuList>
-        ) : (
-          ''
-        )}
-      {isInAvailableSection([
-        'variants',
-        'malwares',
-        'tools',
-        'vulnerabilities',
-        'channels',
-      ]) && (
-        <MenuList
-          style={{ paddingBottom: 0 }}
-          component="nav"
-          subheader={
-            <ListSubheader style={{ height: 35 }}>{t_i18n('Arsenal')}</ListSubheader>
-          }
-        >
-          {availableSections.includes('variants') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/variants`}
-              selected={location.pathname === `${stixCoreObjectLink}/variants`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="variant" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Variants')}${statisticsWithoutRelatedToRelationship.Malware && statisticsWithoutRelatedToRelationship.Malware.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Malware.value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('malwares') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/malwares`}
-              selected={location.pathname === `${stixCoreObjectLink}/malwares`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Malware" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Malwares')}${statisticsWithoutRelatedToRelationship.Malware && statisticsWithoutRelatedToRelationship.Malware.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Malware.value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('channels') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/channels`}
-              selected={location.pathname === `${stixCoreObjectLink}/channels`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Channel" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Channels')}${statisticsWithoutRelatedToRelationship.Channel && statisticsWithoutRelatedToRelationship.Channel.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Channel.value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('tools') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/tools`}
-              selected={location.pathname === `${stixCoreObjectLink}/tools`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="tool" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Tools')}${statisticsWithoutRelatedToRelationship.Tool && statisticsWithoutRelatedToRelationship.Tool.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Tool.value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('vulnerabilities') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/vulnerabilities`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/vulnerabilities`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Vulnerability" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Vulnerabilities')}${statisticsWithoutRelatedToRelationship.Vulnerability && statisticsWithoutRelatedToRelationship.Vulnerability.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Vulnerability.value)})` : ''}`} />
-            </MenuItem>
-          )}
-        </MenuList>
-      )}
-      {isInAvailableSection(['attack_patterns', 'narratives']) && (
-        <MenuList
-          style={{ paddingBottom: 0 }}
-          component="nav"
-          subheader={
-            <ListSubheader style={{ height: 35 }}>
-              {t_i18n('Techniques')}
-            </ListSubheader>
-          }
-        >
-          {availableSections.includes('attack_patterns') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/attack_patterns`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/attack_patterns`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Attack-Pattern" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Attack patterns')}${statisticsCoreObjects['Attack-Pattern'] && statisticsCoreObjects['Attack-Pattern'].value > 0 ? ` (${n(statisticsCoreObjects['Attack-Pattern'].value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('narratives') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/narratives`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/narratives`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Narrative" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Narratives')}${statisticsWithoutRelatedToRelationship.Narrative && statisticsWithoutRelatedToRelationship.Narrative.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Narrative.value)})` : ''}`} />
-            </MenuItem>
-          )}
-        </MenuList>
-      )}
-      {isInAvailableSection([
-        'observables',
-        'indicators',
-        'observables',
-        'infrastructures',
-      ]) && (
-        <MenuList
-          style={{ paddingBottom: 0 }}
-          component="nav"
-          subheader={
-            <ListSubheader style={{ height: 35 }}>
-              {t_i18n('Observations')}
-            </ListSubheader>
-          }
-        >
-          {availableSections.includes('indicators') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/indicators`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/indicators`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Indicator" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Indicators')}${statisticsCoreObjects.Indicator && statisticsCoreObjects.Indicator.value > 0 ? ` (${n(statisticsCoreObjects.Indicator.value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('observables') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/observables`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/observables`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Stix-Cyber-Observable" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Observables')}${statistics.observables > 0 ? ` (${n(statistics.observables)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('infrastructures') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/infrastructures`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/infrastructures`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Infrastructure" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Infrastructures')}${statisticsWithoutRelatedToRelationship.Infrastructure && statisticsWithoutRelatedToRelationship.Infrastructure.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Infrastructure.value)})` : ''}`} />
-            </MenuItem>
-          )}
-        </MenuList>
-      )}
-      {isInAvailableSection(['incidents', 'observed_data', 'sightings']) && (
-        <MenuList
-          style={{ paddingBottom: 0 }}
-          component="nav"
-          subheader={
-            <ListSubheader style={{ height: 35 }}>{t_i18n('Events')}</ListSubheader>
-          }
-        >
-          {availableSections.includes('incidents') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/incidents`}
-              selected={location.pathname === `${stixCoreObjectLink}/incidents`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Incident" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Incidents')}${statisticsWithoutRelatedToRelationship.Incident && statisticsWithoutRelatedToRelationship.Incident.value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship.Incident.value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('observed_data') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/observed_data`}
-              selected={
-                location.pathname === `${stixCoreObjectLink}/observed_data`
-              }
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="Observed-Data" />
-              </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Observed data')}${statisticsWithoutRelatedToRelationship['Observed-Data'] && statisticsWithoutRelatedToRelationship['Observed-Data'].value > 0 ? ` (${n(statisticsWithoutRelatedToRelationship['Observed-Data'].value)})` : ''}`} />
-            </MenuItem>
-          )}
-          {availableSections.includes('sightings') && (
-            <MenuItem
-              component={Link}
-              to={`${stixCoreObjectLink}/sightings`}
-              selected={location.pathname === `${stixCoreObjectLink}/sightings`}
-              dense={true}
-              sx={{
-                height: 38,
-                fontSize: 9,
-              }}
-            >
-              <ListItemIcon style={{ minWidth: 28 }}>
-                <ItemIcon size="small" type="sighting" />
-              </ListItemIcon>
-              <ListItemText primary={t_i18n('Sightings')} />
-            </MenuItem>
-          )}
-        </MenuList>
-      )}
-      <MenuList
-        style={{ paddingBottom: 0 }}
-        sx={{ marginBottom: bannerSettings.bannerHeight }}
-        component="nav"
-        subheader={
-          <ListSubheader style={{ height: 35 }}>{t_i18n('Other')}</ListSubheader>
-        }
-      >
-        <MenuItem
-          component={Link}
-          to={`${stixCoreObjectLink}/related`}
-          selected={location.pathname === `${stixCoreObjectLink}/related`}
-          dense={true}
-          sx={{
-            height: 38,
-            fontSize: 9,
-          }}
-        >
-          <ListItemIcon style={{ minWidth: 28 }}>
-            <ItemIcon size="small" type="related" />
-          </ListItemIcon>
-          <ListItemText primary={`${t_i18n('Related entities')}${statistics.relatedEntities > 0 ? ` (${n(statistics.relatedEntities)})` : ''}`} />
-        </MenuItem>
+          iconType="overview"
+          label="Overview"
+          count={0}
+        />
+        {sectionsConfig.map((section, index) => (
+          section.items.length > 0 && (
+            <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
+              {section.title && (
+                <ListSubheader style={{ height: 35 }}>
+                  {section.title}
+                </ListSubheader>
+              )}
+              {section.items.map(({ path, label, iconType, count }) => (
+                <KnowledgeBarItem
+                  key={label}
+                  to={`${stixCoreObjectLink}/${path}`}
+                  iconType={iconType}
+                  label={label}
+                  count={count}
+                />
+              ))}
+            </MenuList>
+          )
+        ))}
       </MenuList>
     </Drawer>
   );
