@@ -4,7 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "public_dashboard_authorized_domains": "",
-    "notifier_authorized_functions": ["if", "for", "while", "stringify", "Date", "toLocaleString"],
+    "notifier_authorized_functions": ["if", "for", "forEach", "while", "stringify", "Date", "toLocaleString", "isArray", "keys", "function"],
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
