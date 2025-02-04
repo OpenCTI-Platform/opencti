@@ -39,7 +39,6 @@ AddPersonaThreatActorIndividualComponentProps
   return (<div>
     <IconButton
       color='primary'
-      style={{ marginTop: '-11px' }}
       onClick={handleOpen}
     >
       <Add fontSize="small" />

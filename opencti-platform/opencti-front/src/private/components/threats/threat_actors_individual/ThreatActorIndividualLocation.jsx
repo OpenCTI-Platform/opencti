@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -22,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import CardLabel from '../../../../components/CardLabel';
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -48,20 +48,22 @@ class ThreatActorIndividualLocationsComponent extends Component {
     const { t, threatActorIndividual } = this.props;
     return (
       <>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Located at')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
+        <CardLabel action={(
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE]}
+            placeholder={<div style={{ height: 29 }} />}
+          >
+            <AddLocationsThreatActorIndividual
+              threatActorIndividual={threatActorIndividual}
+              threatActorIndividualLocations={
+                threatActorIndividual.locations.edges
+              }
+            />
+          </Security>
+        )}
         >
-          <AddLocationsThreatActorIndividual
-            threatActorIndividual={threatActorIndividual}
-            threatActorIndividualLocations={
-              threatActorIndividual.locations.edges
-            }
-          />
-        </Security>
+          {t('Located at')}
+        </CardLabel>
         <div className="clearfix" />
         <FieldOrEmpty source={threatActorIndividual.locations.edges}>
           <List style={{ marginTop: -10 }}>
