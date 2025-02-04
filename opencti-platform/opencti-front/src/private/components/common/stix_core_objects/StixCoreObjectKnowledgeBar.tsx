@@ -126,13 +126,16 @@ const StixCoreObjectKnowledgeBar = ({
     return Object.values(stats).reduce((sum: number, { value }): number => sum + value, 0);
   };
 
-  const statisticsThreats = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident']);
-  const statisticsThreatActors = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group']);
-  const statisticsVictims = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area']);
-  const statisticsAttributions = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, attribution ?? []);
-  const statisticsLocations = sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Region', 'Country', 'City', 'Position', 'Administrative-Area']);
-  const statisticsObservables = sumEntitiesByKeys(statisticsRelatedRelationship, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']);
-  const statisticsRelatedEntities = sumEntitiesByKeys(statisticsRelatedRelationship);
+  const statistics = {
+    threats: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident']),
+    threatActors: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Threat-Actor-Individual', 'Threat-Actor-Group']),
+    victims: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position', 'Administrative-Area']),
+    attributions: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, attribution ?? []),
+    locations: sumEntitiesByKeys(statisticsWithoutRelatedToRelationship, ['Region', 'Country', 'City', 'Position', 'Administrative-Area']),
+    observables: sumEntitiesByKeys(statisticsRelatedRelationship, [...schema.scos.map((s) => s.id), 'Stixfile', 'Ipv4-Addr', 'Ipv6-Addr']),
+    relatedEntities: sumEntitiesByKeys(statisticsRelatedRelationship),
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -321,7 +324,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="location" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Locations')}${statisticsLocations > 0 ? ` (${n(statisticsLocations)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Locations')}${statistics.locations > 0 ? ` (${n(statistics.locations)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('used_tools') && (
@@ -449,7 +452,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Location" />
                 </ListItemIcon>
-                <ListItemText primary={`${t_i18n('Locations')}${statisticsLocations > 0 ? ` (${n(statisticsLocations)})` : ''}`} />
+                <ListItemText primary={`${t_i18n('Locations')}${statistics.locations > 0 ? ` (${n(statistics.locations)})` : ''}`} />
               </MenuItem>
             )}
             {availableSections.includes('organizations') && (
@@ -540,7 +543,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="threats" />
               </ListItemIcon>
-              <ListItemText primary={`${t_i18n('All threats')}${statisticsThreats > 0 ? ` (${n(statisticsThreats)})` : ''}`} />
+              <ListItemText primary={`${t_i18n('All threats')}${statistics.threats > 0 ? ` (${n(statistics.threats)})` : ''}`} />
             </MenuItem>
           )}
           {availableSections.includes('attribution') && (
@@ -559,7 +562,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="attribution" />
               </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Attribution')}${statisticsAttributions > 0 ? ` (${n(statisticsAttributions)})` : ''}`} />
+              <ListItemText primary={`${t_i18n('Attribution')}${statistics.attributions > 0 ? ` (${n(statistics.attributions)})` : ''}`} />
             </MenuItem>
           )}
           {availableSections.includes('victimology') && (
@@ -578,7 +581,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="victimology" />
               </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Victimology')}${statisticsVictims > 0 ? ` (${n(statisticsVictims)})` : ''}`} />
+              <ListItemText primary={`${t_i18n('Victimology')}${statistics.victims > 0 ? ` (${n(statistics.victims)})` : ''}`} />
             </MenuItem>
           )}
           {availableSections.includes('threat_actors') && (
@@ -597,7 +600,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Threat-Actor-Individual" />
               </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Threat actors')}${statisticsThreatActors > 0 ? ` (${n(statisticsThreatActors)})` : ''}`} />
+              <ListItemText primary={`${t_i18n('Threat actors')}${statistics.threatActors > 0 ? ` (${n(statistics.threatActors)})` : ''}`} />
             </MenuItem>
           )}
           {availableSections.includes('intrusion_sets') && (
@@ -843,7 +846,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Stix-Cyber-Observable" />
               </ListItemIcon>
-              <ListItemText primary={`${t_i18n('Observables')}${statisticsObservables > 0 ? ` (${n(statisticsObservables)})` : ''}`} />
+              <ListItemText primary={`${t_i18n('Observables')}${statistics.observables > 0 ? ` (${n(statistics.observables)})` : ''}`} />
             </MenuItem>
           )}
           {availableSections.includes('infrastructures') && (
@@ -951,7 +954,7 @@ const StixCoreObjectKnowledgeBar = ({
           <ListItemIcon style={{ minWidth: 28 }}>
             <ItemIcon size="small" type="related" />
           </ListItemIcon>
-          <ListItemText primary={`${t_i18n('Related entities')}${statisticsRelatedEntities > 0 ? ` (${n(statisticsRelatedEntities)})` : ''}`} />
+          <ListItemText primary={`${t_i18n('Related entities')}${statistics.relatedEntities > 0 ? ` (${n(statistics.relatedEntities)})` : ''}`} />
         </MenuItem>
       </MenuList>
     </Drawer>
