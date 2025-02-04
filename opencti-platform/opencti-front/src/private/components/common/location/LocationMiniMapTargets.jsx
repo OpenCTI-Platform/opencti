@@ -1,25 +1,12 @@
 import React, { useContext } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, head, includes, pipe, pluck, propOr, uniq } from 'ramda';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import { GeoJSON, MapContainer, Marker, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
-import countries from '../../../../static/geo/countries.json';
-import inject18n from '../../../../components/i18n';
+import { useTheme } from '@mui/material/styles';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { fileUri } from '../../../../relay/environment';
 import CityOrange from '../../../../static/images/leaflet/city_orange.png';
 import { usePublicSettings } from '../../../../public/PublicSettingsProvider';
-
-const styles = (theme) => ({
-  paper: {
-    height: '100%',
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 8,
-  },
-});
+import allCountries from '../../../../static/geo/countries.json';
 
 const colors = [
   '#fff59d',
@@ -42,40 +29,37 @@ const pointerIcon = new L.Icon({
   iconSize: [25, 25],
 });
 
-const LocationMiniMapTargets = (props) => {
+const LocationMiniMapTargets = ({ center, zoom, cities, countries }) => {
+  const theme = useTheme();
+
   const { settings: privateSettings } = useContext(UserContext);
   const { settings: publicSettings } = usePublicSettings();
   const settings = privateSettings ?? publicSettings;
 
-  const countriesAliases = pipe(
-    pluck('x_opencti_aliases'),
-    flatten,
-    uniq,
-    filter((n) => n !== null),
-  )(propOr([], 'countries', props));
+  const countriesAliases = (countries ?? []).flatMap((c) => {
+    if (!c) return [];
+    return c.x_opencti_aliases ?? [];
+  });
+
+  const locatedCities = (cities ?? []).filter((c) => c.latitude && c.longitude);
+
   const getStyle = (feature) => {
-    if (includes(feature.properties.ISO3, countriesAliases)) {
-      const country = head(
-        filter(
-          (n) => includes(
-            feature.properties.ISO3,
-            propOr([], 'x_opencti_aliases', n),
-          ),
-          props.countries,
-        ),
-      );
+    if (countriesAliases.includes(feature.properties.ISO3)) {
+      const country = countries.find(({ x_opencti_aliases }) => {
+        return (x_opencti_aliases ?? []).includes(feature.properties.ISO3);
+      });
       return {
         color: country.level ? colors[country.level] : colors[5],
         weight: 1,
-        fillOpacity: props.theme.palette.mode === 'light' ? 0.5 : 0.1,
+        fillOpacity: theme.palette.mode === 'light' ? 0.5 : 0.1,
       };
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const { center, zoom, cities, theme } = props;
-  const locatedCities = cities
-    ? filter((n) => n.latitude && n.longitude, cities)
-    : [];
+
+  const tileServer = theme.palette.mode === 'light'
+    ? settings.platform_map_tile_server_light
+    : settings.platform_map_tile_server_dark;
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -91,14 +75,8 @@ const LocationMiniMapTargets = (props) => {
         attributionControl={false}
         zoomControl={false}
       >
-        <TileLayer
-          url={
-            theme.palette.mode === 'light'
-              ? settings.platform_map_tile_server_light
-              : settings.platform_map_tile_server_dark
-          }
-        />
-        <GeoJSON data={countries} style={getStyle} />
+        <TileLayer url={tileServer} />
+        <GeoJSON data={allCountries} style={getStyle} />
         {locatedCities.map((city) => {
           const position = [city.latitude, city.longitude];
           return (
@@ -110,19 +88,4 @@ const LocationMiniMapTargets = (props) => {
   );
 };
 
-LocationMiniMapTargets.propTypes = {
-  countries: PropTypes.array,
-  cities: PropTypes.array,
-  zoom: PropTypes.number,
-  theme: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fd: PropTypes.func,
-  navigate: PropTypes.func,
-};
-
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(LocationMiniMapTargets);
+export default LocationMiniMapTargets;
