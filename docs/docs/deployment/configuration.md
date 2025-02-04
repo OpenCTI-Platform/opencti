@@ -373,7 +373,10 @@ Environment variables:
 | -                                                    | -                                                     | -                                | -                                                   |
 | ingestion_manager:enabled                            | INGESTION_MANAGER__ENABLED                            | `true`                           | Enable/disable the ingestion manager                |
 | ingestion_manager:lock_key                           | INGESTION_MANAGER__LOCK_KEY                           | ingestion_manager_lock           | Lock key for the manager in Redis                   |
-| ingestion_manager:interval                           | INGESTION_MANAGER__INTERVAL                           | 300000                           | Interval to check for new data in remote feeds      |
+| ingestion_manager:interval                           | INGESTION_MANAGER__INTERVAL                           | 30000                            | Interval to check for new data in remote feeds      |
+| ingestion_manager:rss_feed:min_interval_minutes      | INGESTION_MANAGER__RSS_FEED__MIN_INTERVAL_MINUTES     | 5                                | Minimum interval before requesting again same RSS Feed|
+| ingestion_manager:rss_feed:user_agent                | INGESTION_MANAGER__RSS_FEED__USER_AGENT               |                                  | User agent to use for RSS Feed requests             |
+| ingestion_manager:csv_feed:min_interval_minutes      | INGESTION_MANAGER__CSV_FEED__MIN_INTERVAL_MINUTES     | 5                                | Minimum interval before requesting again same CSV Feed|
 | -                                                    | -                                                     | -                                | -                                                   |
 | playbook_manager:enabled                             | PLAYBOOK_MANAGER__ENABLED                             | `true`                           | Enable/disable the playbook manager                 |
 | playbook_manager:lock_key                            | PLAYBOOK_MANAGER__LOCK_KEY                            | publisher_manager_lock           | Lock key for the manager in Redis                   |
