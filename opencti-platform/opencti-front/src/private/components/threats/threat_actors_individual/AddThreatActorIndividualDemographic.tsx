@@ -9,7 +9,6 @@ import AddThreatActorIndividualDemographicLines, {
 } from '@components/threats/threat_actors_individual/AddThreatActorIndividualDemographicLines';
 import { AddThreatActorIndividualDemographicLinesQuery } from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLinesQuery.graphql';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -29,7 +28,6 @@ AddThreatActorIndividualDemographicComponentProps
   title,
   queryRef,
 }) => {
-  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
 
@@ -53,7 +51,7 @@ AddThreatActorIndividualDemographicComponentProps
     <Drawer
       open={open}
       onClose={handleClose}
-      title={t_i18n(title)}
+      title={title}
       header={
         <div
           style={{

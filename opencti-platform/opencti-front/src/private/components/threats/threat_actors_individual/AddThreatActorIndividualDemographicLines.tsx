@@ -172,28 +172,25 @@ const AddThreatActorIndividualDemographicLines = ({
     }
   };
 
-  if (data.countries?.edges) {
-    const availableTargets = data.countries.edges;
-    return (
-      <List>
-        {availableTargets.map((node, i) => {
-          if (node) {
-            return (
-              <AddThreatActorIndividualDemographicLine
-                key={node.node.id}
-                id={node.node.id}
-                name={node.node.name}
-                currentTargets={currentTargets}
-                handleClick={() => handleToggle(node.node.id)}
-              />
-            );
-          }
-          return <div key={i} />;
-        })}
-      </List>
-    );
-  }
-  return (<Loader />);
+  const availableTargets = data.countries?.edges;
+  return (
+    <List>
+      {availableTargets?.map((node, i) => {
+        if (node) {
+          return (
+            <AddThreatActorIndividualDemographicLine
+              key={node.node.id}
+              id={node.node.id}
+              name={node.node.name}
+              currentTargets={currentTargets}
+              handleClick={() => handleToggle(node.node.id)}
+            />
+          );
+        }
+        return <div key={i} />;
+      })}
+    </List>
+  );
 };
 
 export default AddThreatActorIndividualDemographicLines;
