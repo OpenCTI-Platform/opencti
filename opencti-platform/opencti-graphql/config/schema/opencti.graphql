@@ -683,8 +683,6 @@ type SubType {
   statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting # Simpler before moving workflow
-  requestAccessWorkflow: RequestAccessWorkflow
-  requestAccessStatus: RequestAccessStatus
 }
 
 ############## Statuses
@@ -712,6 +710,12 @@ enum StatusOrdering {
   order
   _score
 }
+
+enum StatusScope {
+  GLOBAL
+  REQUEST_ACCESS
+}
+
 type Status {
   id: ID!
   template_id: String!
@@ -719,6 +723,7 @@ type Status {
   type: String!
   order: Int!
   disabled: Boolean
+  scope: StatusScope
 }
 type StatusConnection {
   pageInfo: PageInfo!
@@ -731,6 +736,7 @@ type StatusEdge {
 input StatusAddInput {
   template_id: String!
   order: Int!
+  scope: StatusScope
 }
 input StatusTemplateAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")

@@ -35,6 +35,7 @@ export interface ModuleHelper {
   isTrashEnable: () => boolean;
   isPlaygroundEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
+  isRequestAccessEnabled: () => boolean;
 }
 
 const isFeatureEnable = (
@@ -84,6 +85,7 @@ const platformModuleHelper = (
   isTrashEnable: () => settings.platform_trash_enabled,
   isPlaygroundEnable: () => settings.playground_enabled,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
+  isRequestAccessEnabled: () => settings.request_access_enabled,
 });
 
 export default platformModuleHelper;
