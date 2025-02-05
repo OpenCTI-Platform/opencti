@@ -62,7 +62,7 @@ export const partialRefreshCacheForEntity = async (instance: StoreEntity | Store
     logApp.debug('Partial refresh cache for entity', { type: instance.entity_type, id: instance.id });
     const instanceToStore = await instanceCache.refresh(instance.id);
     const cacheWithoutInstance = instanceCache.values.filter((v: any) => v.id !== instanceToStore.id);
-    if (cacheWithoutInstance) {
+    if (instanceToStore) {
       instanceCache.values = [...cacheWithoutInstance, instanceToStore];
     } else { // instance not found (deleted)
       instanceCache.values = [...cacheWithoutInstance];
