@@ -152,7 +152,8 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
             />
             <Box

@@ -148,6 +148,8 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                   <PositionEdition positionId={position.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

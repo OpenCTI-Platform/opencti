@@ -166,13 +166,14 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               stixDomainObject={system}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              enableEnricher={true}
               PopoverComponent={<SystemPopover id={system.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />

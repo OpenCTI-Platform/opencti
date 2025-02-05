@@ -146,6 +146,8 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   <RegionEdition regionId={region.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
