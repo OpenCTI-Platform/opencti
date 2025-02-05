@@ -92,6 +92,7 @@ export const threatActorIndividualFragment = graphql`
     stixCoreRelationships {
       edges {
         node {
+          id
           relationship_type
           to {
             ... on Country {
