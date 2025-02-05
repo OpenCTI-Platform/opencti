@@ -7,8 +7,10 @@ type ExclusionList implements InternalObject & BasicObject {
   parent_types: [String]!
   created_at: DateTime!
   enabled: Boolean!
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
+  exclusion_list_values_count: Int
   file_id: String!
+  exclusion_list_file_size: Int
 }
 
 type ExclusionListConnection {
@@ -21,29 +23,24 @@ type ExclusionListEdge {
   node: ExclusionList!
 }
 
+type ExclusionListCacheStatus {
+  refreshVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
+}
+
 enum ExclusionListOrdering {
   name
   created_at
-}
-
-enum ExclusionListEntityTypes {
-  IPV4_ADDR
-  IPV6_ADDR
-  DOMAIN_NAME
-  URL
-}
-
-input ExclusionListContentAddInput {
-  name: String!
-  description: String
-  list_entity_types: [ExclusionListEntityTypes!]!
-  content: String!
+  enabled
+  exclusion_list_values_count
+  _score
 }
 
 input ExclusionListFileAddInput {
   name: String!
   description: String
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
   file: Upload!
 }
 
@@ -57,10 +54,11 @@ type Query {
     filters: FilterGroup
     search: String
   ): ExclusionListConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListCacheStatus: ExclusionListCacheStatus @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 type Mutation {
-  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList @auth(for: [SETTINGS_SETCUSTOMIZATION])
   exclusionListDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

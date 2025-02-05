@@ -51,6 +51,10 @@ const individualQuery = graphql`
   query RootIndividualQuery($id: String!) {
     individual(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       isUser
       entity_type
       name
@@ -169,7 +173,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               stixDomainObject={individual}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<IndividualPopover />}
+              PopoverComponent={<IndividualPopover id={individual.id}/>}
               EditComponent={!individual.isUser && isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IndividualEdition individualId={individual.id} />

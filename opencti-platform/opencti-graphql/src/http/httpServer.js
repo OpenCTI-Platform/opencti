@@ -93,12 +93,25 @@ const createHttpServer = async () => {
       throw ForbiddenAccess('User must be authenticated');
     },
   }, wsServer);
+
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
     async serverWillStart() {
       return {
         async drainServer() {
           serverCleanup.dispose();
+        },
+        async renderLandingPage() {
+          const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <script>
+                location.replace('${basePath}/public/graphql');
+              </script>
+            </head>
+            </html>`;
+          return { html };
         },
       };
     },
@@ -128,7 +141,7 @@ const createHttpServer = async () => {
         try {
           const user = await authenticateUserFromRequest(executeContext, req, res);
           if (user) {
-            if (isFeatureEnabled('DRAFT_WORKSPACE') && !executeContext.draft_context) {
+            if (isFeatureEnabled('DRAFT_WORKSPACE') && !Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
               executeContext.draft_context = user.draft_context;
             }
             executeContext.user = userWithOrigin(req, user);

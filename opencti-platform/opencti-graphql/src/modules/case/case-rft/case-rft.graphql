@@ -98,6 +98,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -139,7 +140,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -148,10 +149,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -244,6 +242,7 @@ input CaseRftAddInput {
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {

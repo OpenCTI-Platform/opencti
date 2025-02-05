@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import { ClearOutlined, PauseOutlined, PlayArrowOutlined, SyncDisabledOutlined, SyncOutlined, FolderOutlined, StorageOutlined } from '@mui/icons-material';
+import { ClearOutlined, FolderOutlined, PauseOutlined, PlayArrowOutlined, StorageOutlined, SyncDisabledOutlined, SyncOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
 import { FileIndexingMonitoringQuery } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
@@ -27,62 +27,30 @@ import { interval } from 'rxjs';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { FileIndexingConfigurationAndMonitoringQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 import { styled } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
 import FileIndexingConfiguration from '@components/settings/file_indexing/FileIndexingConfiguration';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const interval$ = interval(TEN_SECONDS);
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 20,
-    fontWeight: 800,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  metric: {
-    position: 'relative',
-    padding: 20,
-    height: 100,
-    overflow: 'hidden',
-  },
   paper: {
     marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
-  },
-  title: {
-    textTransform: 'uppercase',
-    fontSize: 12,
-    fontWeight: 500,
-    color: theme.palette.text?.secondary,
-  },
-  progress: {
-    float: 'right',
-    margin: '25px 90px 0 50px',
-    flexGrow: 1,
-  },
-  icon: {
-    position: 'absolute',
-    top: 25,
-    right: 15,
-  },
-  number: {
-    fontSize: 30,
-    fontWeight: 800,
-    float: 'left',
   },
   header: {
     textTransform: 'uppercase',
@@ -113,8 +81,10 @@ interface FileIndexingMonitoringComponentProps {
 }
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
-  height: 10,
+  height: 8,
   borderRadius: 4,
+  flex: 1,
+  margin: `0 ${theme.spacing(2)}`,
   [`& .${linearProgressClasses.bar}`]: {
     borderRadius: 4,
     backgroundColor: theme.palette.primary.main,
@@ -131,6 +101,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   queryRef,
   refetch,
 }) => {
+  const theme = useTheme<Theme>();
   const { n, t_i18n, fldt, b } = useFormatter();
   const classes = useStyles();
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(
@@ -192,229 +163,225 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
     resetManager();
   };
   return (
-    <>
-      <Grid container={true} spacing={3}>
-        <Grid item xs={6}>
-          <Paper
-            variant="outlined"
-            classes={{ root: classes.metric }}
-            style={{ display: 'flex' }}
-            className={'paper-for-grid'}
-          >
-            <div className={classes.icon}>
-              {isStarted ? (
-                <SyncOutlined color="primary" sx={{ fontSize: 40 }} />
-              ) : (
-                <SyncDisabledOutlined color="primary" sx={{ fontSize: 40 }} />
-              )}
-            </div>
-            <div>
-              <div className={classes.title}>{t_i18n('Status')}</div>
-              {isStarted ? (
-                <Chip
-                  classes={{ root: classes.chip }}
-                  style={{
-                    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-                    color: '#4caf50',
-                  }}
-                  label={t_i18n('Running')}
-                />
-              ) : (
-                <Chip
-                  classes={{ root: classes.chip }}
-                  style={{
-                    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-                    color: '#5c7bf5',
-                  }}
-                  label={t_i18n('Stopped')}
-                />
-              )}
-            </div>
-            <div className={classes.progress}>
-              <BorderLinearProgress
-                value={
-                  indexedFiles > 0
-                    ? Math.round((indexedFiles / totalFiles) * 100)
-                    : 0
-                }
-                variant="determinate"
-              />
-            </div>
-          </Paper>
-        </Grid>
-        <Grid item xs={3}>
-          <Paper variant="outlined" classes={{ root: classes.metric }} className={'paper-for-grid'}>
-            <div className={classes.icon}>
-              <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
-            </div>
-            <div className={classes.title}>{t_i18n('Indexed files')}</div>
-            <div className={classes.number}>
-              {indexedFiles} / {totalFiles}
-            </div>
-          </Paper>
-        </Grid>
-        <Grid item xs={3}>
-          <Paper variant="outlined" classes={{ root: classes.metric }} className={'paper-for-grid'}>
-            <div className={classes.icon}>
-              <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
-            </div>
-            <div className={classes.title}>{t_i18n('Volume indexed')}</div>
-            <div className={classes.number}>
-              {indexedFiles ? n(volumeIndexed) : 0}
-            </div>
-          </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <DangerZoneBlock
-            type={'file_indexing'}
-            title={t_i18n('Control')}
-            component={({ disabled, style }) => (
-              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Engine')}
-                    </Typography>
-                    {isStarted ? (
-                      <Button
-                        startIcon={<PauseOutlined />}
-                        aria-label="Pause"
-                        onClick={handlePause}
-                        color="warning"
-                        variant="contained"
-                        disabled={disabled}
-                      >
-                        {t_i18n('Pause')}
-                      </Button>
-                    ) : (
-                      <Button
-                        startIcon={<PlayArrowOutlined />}
-                        aria-label="Start"
-                        onClick={handleStart}
-                        color="success"
-                        variant="contained"
-                        disabled={disabled}
-                      >
-                        {t_i18n('Start')}
-                      </Button>
-                    )}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Indexing')}
-                    </Typography>
-                    <Button
-                      startIcon={<ClearOutlined />}
-                      aria-label="Reset"
-                      onClick={handleReset}
-                      color="error"
-                      variant="contained"
-                      disabled={disabled || indexedFiles === 0}
-                    >
-                      {t_i18n('Reset')}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Indexing manager start')}
-                    </Typography>
-                    {fldt(managerConfiguration?.last_run_start_date)}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Last indexation')}
-                    </Typography>
-                    {fldt(lastIndexationDate)}
-                  </Grid>
-                </Grid>
-              </Paper>
-            )}
+    <Grid container={true} spacing={3}>
+      <Grid item xs={6}>
+        <Typography variant={'h4'}>{t_i18n('Status')}</Typography>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: theme.spacing(2),
+            height: 'fit-content',
+          }}
+          className={'paper-for-grid'}
+        >
+          <ItemBoolean
+            label={isStarted ? t_i18n('Running') : t_i18n('Stopped')}
+            status={isStarted}
           />
-        </Grid>
-        <Grid item xs={4}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Information')}
+          <BorderLinearProgress
+            value={
+              indexedFiles > 0
+                ? Math.round((indexedFiles / totalFiles) * 100)
+                : 0
+            }
+            variant="determinate"
+          />
+          {isStarted ? (
+            <SyncOutlined color="primary" sx={{ fontSize: 40 }} />
+          ) : (
+            <SyncDisabledOutlined color="primary" sx={{ fontSize: 40 }} />
+          )}
+        </Paper>
+      </Grid>
+      <Grid item xs={3}>
+        <Typography variant={'h4'}>{t_i18n('Indexed files')}</Typography>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: theme.spacing(2),
+          }}
+          className={'paper-for-grid'}
+        >
+          <Typography variant={'h2'} style={{ margin: 0 }}>
+            {indexedFiles} / {totalFiles}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Total files in S3')}
-                </Typography>
-                <span style={{ fontWeight: 600, fontSize: 20 }}>
-                  {n(totalFiles)}
-                </span>
+          <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
+        </Paper>
+      </Grid>
+      <Grid item xs={3}>
+        <Typography variant={'h4'}>{t_i18n('Volume indexed')}</Typography>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: theme.spacing(2),
+          }}
+          className={'paper-for-grid'}
+        >
+          <Typography variant={'h2'} style={{ margin: 0 }}>
+            {indexedFiles ? n(volumeIndexed) : 0}
+          </Typography>
+          <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
+        </Paper>
+      </Grid>
+      <Grid item xs={4}>
+        <DangerZoneBlock
+          type={'file_indexing'}
+          title={t_i18n('Control')}
+          component={({ disabled, style }) => (
+            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
+              <Grid container={true} spacing={3}>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Engine')}
+                  </Typography>
+                  {isStarted ? (
+                    <Button
+                      startIcon={<PauseOutlined />}
+                      aria-label="Pause"
+                      onClick={handlePause}
+                      color="warning"
+                      variant="contained"
+                      disabled={disabled}
+                    >
+                      {t_i18n('Pause')}
+                    </Button>
+                  ) : (
+                    <Button
+                      startIcon={<PlayArrowOutlined />}
+                      aria-label="Start"
+                      onClick={handleStart}
+                      color="success"
+                      variant="contained"
+                      disabled={disabled}
+                    >
+                      {t_i18n('Start')}
+                    </Button>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Indexing')}
+                  </Typography>
+                  <Button
+                    startIcon={<ClearOutlined />}
+                    aria-label="Reset"
+                    onClick={handleReset}
+                    color="error"
+                    variant="contained"
+                    disabled={disabled || indexedFiles === 0}
+                  >
+                    {t_i18n('Reset')}
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Indexing manager start')}
+                  </Typography>
+                  {fldt(managerConfiguration?.last_run_start_date)}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Last indexation')}
+                  </Typography>
+                  {fldt(lastIndexationDate)}
+                </Grid>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Files volumes in S3')}
-                </Typography>
-                <span style={{ fontWeight: 600, fontSize: 20 }}>
-                  {b(dataToIndex)}
-                </span>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('S3 volume by file type')}
-                </Typography>
-                <List>
+            </Paper>
+          )}
+        />
+      </Grid>
+      <Grid item xs={4}>
+        <Typography variant="h4" gutterBottom={true}>
+          {t_i18n('Information')}
+        </Typography>
+        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Grid container={true} spacing={3}>
+            <Grid item xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Total files in S3')}
+              </Typography>
+              <span style={{ fontWeight: 600, fontSize: 20 }}>
+                {n(totalFiles)}
+              </span>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('Files volumes in S3')}
+              </Typography>
+              <span style={{ fontWeight: 600, fontSize: 20 }}>
+                {b(dataToIndex)}
+              </span>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t_i18n('S3 volume by file type')}
+              </Typography>
+              <List>
+                <ListItem
+                  divider={true}
+                  dense={true}
+                  style={{ height: 32, padding: 0 }}
+                >
+                  <ListItemText
+                    primary={t_i18n('Type')}
+                    className={classes.header}
+                    style={{ width: '30%' }}
+                  />
+                  <ListItemText
+                    primary={t_i18n('Files count')}
+                    className={classes.header}
+                    style={{ width: '30%' }}
+                  />
+                  <ListItemText
+                    primary={t_i18n('Files size')}
+                    className={classes.header}
+                    style={{ width: '30%' }}
+                  />
+                </ListItem>
+                {metricsByMimeType.map((metrics) => (
                   <ListItem
+                    key={metrics.mimeType}
                     divider={true}
                     dense={true}
                     style={{ height: 32, padding: 0 }}
                   >
                     <ListItemText
-                      primary={t_i18n('Type')}
-                      className={classes.header}
+                      primary={t_i18n(metrics.mimeType)}
+                      className={classes.mimeType}
                       style={{ width: '30%' }}
                     />
                     <ListItemText
-                      primary={t_i18n('Files count')}
-                      className={classes.header}
+                      primary={`${metrics.count}`}
+                      className={classes.mimeTypeCount}
                       style={{ width: '30%' }}
                     />
                     <ListItemText
-                      primary={t_i18n('Files size')}
-                      className={classes.header}
+                      primary={`${b(metrics.size)}`}
+                      className={classes.mimeTypeCount}
                       style={{ width: '30%' }}
                     />
                   </ListItem>
-                  {metricsByMimeType.map((metrics) => (
-                    <ListItem
-                      key={metrics.mimeType}
-                      divider={true}
-                      dense={true}
-                      style={{ height: 32, padding: 0 }}
-                    >
-                      <ListItemText
-                        primary={t_i18n(metrics.mimeType)}
-                        className={classes.mimeType}
-                        style={{ width: '30%' }}
-                      />
-                      <ListItemText
-                        primary={`${metrics.count}`}
-                        className={classes.mimeTypeCount}
-                        style={{ width: '30%' }}
-                      />
-                      <ListItemText
-                        primary={`${b(metrics.size)}`}
-                        className={classes.mimeTypeCount}
-                        style={{ width: '30%' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Grid>
+                ))}
+              </List>
             </Grid>
-          </Paper>
-        </Grid>
-        <Grid item xs={4}>
-          <FileIndexingConfiguration
-            managerConfiguration={managerConfiguration}
-          />
-        </Grid>
+          </Grid>
+        </Paper>
       </Grid>
-    </>
+      <Grid item xs={4}>
+        <FileIndexingConfiguration
+          managerConfiguration={managerConfiguration}
+        />
+      </Grid>
+    </Grid>
   );
 };
 

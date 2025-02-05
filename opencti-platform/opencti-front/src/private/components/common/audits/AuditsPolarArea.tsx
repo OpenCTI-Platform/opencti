@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -24,8 +24,8 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
-import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -81,7 +81,7 @@ const auditsPolarAreaDistributionQuery = graphql`
 `;
 
 interface AuditsPolarAreaComponentProps {
-  dataSelection: DashboardWidgetDataSelection[]
+  dataSelection: WidgetDataSelection[]
   queryRef: PreloadedQuery<AuditsPolarAreaDistributionQuery>
   withExportPopover: boolean
   isReadOnly: boolean
@@ -118,8 +118,8 @@ const AuditsPolarAreaComponent = ({
 interface AuditsPolarAreaProps {
   startDate: string
   endDate: string
-  dataSelection: DashboardWidgetDataSelection[]
-  parameters: DashboardWidgetParameters
+  dataSelection: WidgetDataSelection[]
+  parameters: WidgetParameters
   variant: string
   height?: CSSProperties['height']
   withExportPopover?: boolean

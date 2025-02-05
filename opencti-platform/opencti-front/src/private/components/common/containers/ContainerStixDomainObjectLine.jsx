@@ -24,6 +24,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { DraftChip } from '../draft/DraftChip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -137,6 +138,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
               {node.x_mitre_id
                 ? `[${node.x_mitre_id}] ${node.name}`
                 : getMainRepresentative(node)}
+              {node.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
@@ -225,6 +227,10 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
     node: graphql`
       fragment ContainerStixDomainObjectLine_node on StixDomainObject {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         standard_id
         entity_type
         parent_types

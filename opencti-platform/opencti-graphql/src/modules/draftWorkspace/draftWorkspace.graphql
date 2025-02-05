@@ -9,6 +9,16 @@ type DraftWorkspace implements InternalObject & BasicObject {
     created_at: DateTime!
     creators: [Creator!]
     entity_id: String
+    objectsCount: DraftObjectsCount!
+}
+
+type DraftObjectsCount {
+    totalCount: Int!
+    entitiesCount: Int!
+    observablesCount: Int!
+    relationshipsCount: Int!
+    sightingsCount: Int!
+    containersCount: Int!
 }
 
 # Ordering
@@ -60,6 +70,16 @@ type Query {
         filters: FilterGroup
         search: String
     ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
+    draftWorkspaceSightingRelationships(
+        draftId: String!,
+        types: [String]
+        first: Int
+        after: ID
+        orderBy: StixSightingRelationshipsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
 }
 
 input DraftWorkspaceAddInput {

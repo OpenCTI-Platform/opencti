@@ -28,6 +28,7 @@ import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
@@ -41,6 +42,7 @@ import omtdDark from '../../../static/images/xtm/omtd_dark.png';
 import omtdLight from '../../../static/images/xtm/omtd_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -80,7 +82,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'end',
-    flex: 1,
+    marginLeft: 'auto',
   },
   barRightContainer: {
     float: 'left',
@@ -146,9 +148,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openbas_url: openBASUrl },
-    me,
+    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee },
   } = useAuth();
+  const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
@@ -230,7 +232,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
   // draft
-  const draftModeEnabled = isDraftFeatureEnabled && me.draftContext;
+  const draftModeEnabled = isDraftFeatureEnabled && draftContext;
   const draftModeColor = getDraftModeColor(theme);
   return (
     <AppBar
@@ -242,7 +244,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
         style={{
-          display: 'flex',
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
@@ -259,7 +260,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         {hasKnowledgeAccess && (
-          <div className={classes.menuContainer} style={{ flex: 1, marginLeft: theme.spacing(3) }}>
+          <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
@@ -277,6 +278,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             {!draftModeEnabled && (
             <Security needs={[KNOWLEDGE]}>
               <>
+                { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"

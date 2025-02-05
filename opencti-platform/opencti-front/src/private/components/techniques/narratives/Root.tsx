@@ -47,6 +47,10 @@ const narrativeQuery = graphql`
   query RootNarrativeQuery($id: String!) {
     narrative(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -130,7 +134,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
             <StixDomainObjectHeader
               entityType="Narrative"
               stixDomainObject={narrative}
-              PopoverComponent={<NarrativePopover />}
+              PopoverComponent={<NarrativePopover id={narrative.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />

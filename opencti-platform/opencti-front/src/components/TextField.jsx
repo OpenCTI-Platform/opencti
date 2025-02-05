@@ -7,7 +7,7 @@ import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {
-  const { detectDuplicate, ...htmlProps } = props;
+  const { detectDuplicate, onBeforePaste, startAdornment, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
@@ -41,6 +41,33 @@ const TextField = (props) => {
     },
     [onSubmit, setFieldTouched, name],
   );
+  const internalOnPaste = React.useCallback(
+    (event) => {
+      // onBeforePaste can be used to alter the pasted content
+      // this works for textarea or input
+      if (typeof onBeforePaste === 'function') {
+        event.preventDefault(); // prevent default paste
+        // alter the pasted content according to onBeforePaste result
+        const pastedText = event.clipboardData.getData('text/plain');
+        // remove \r character to only work with strings using \n (for cursor computation)
+        const sanitizedPastedText = pastedText.replace(/\r/g, '');
+        const newPastedText = onBeforePaste(sanitizedPastedText);
+        // Insert the modified text at the current cursor position
+        const input = event.target;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const before = input.value.slice(0, start);
+        const after = input.value.slice(end);
+        input.value = before + newPastedText + after;
+        // Set the cursor position after the inserted text
+        const cursorPosition = start + newPastedText.length;
+        input.setSelectionRange(cursorPosition, cursorPosition);
+
+        setFieldValue(name, input.value);
+      }
+    },
+    [onBeforePaste, setFieldValue, name],
+  );
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToTextField(htmlProps);
   return (
@@ -64,7 +91,9 @@ const TextField = (props) => {
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
+      onPaste={internalOnPaste}
       InputProps={{
+        startAdornment,
         endAdornment: askAi && (
           <TextFieldAskAI
             currentValue={value}

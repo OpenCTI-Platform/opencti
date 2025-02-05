@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { makeStyles, useTheme } from '@mui/styles';
+import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
+import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
@@ -27,6 +28,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import { resolveLink } from '../../../../utils/Entity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -441,22 +443,23 @@ const ContainerHeader = (props) => {
     onApplied,
     enableQuickSubscription,
     investigationAddFromContainer,
-    enableAskAi,
+    enableEnrollPlaybook,
     redirectToContent,
+    enableEnricher,
   } = props;
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const { isFeatureEnable } = useHelper();
-
-  const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const navigate = useNavigate();
 
-  const handleCloseEnrichment = () => {
-    setDisplayEnrichment(false);
-  };
-  const handleOpenEnrichment = () => {
-    setDisplayEnrichment(true);
+  const handleExportCompleted = (fileName) => {
+    // navigate with fileName in query params to select the created file
+    const fileParams = { currentFileId: fileName, contentSelected: false };
+    const urlParams = new URLSearchParams(fileParams).toString();
+    const entityLink = `${resolveLink(container.entity_type)}/${container.id}`;
+    navigate(`${entityLink}/content?${urlParams}`);
   };
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -499,11 +502,13 @@ const ContainerHeader = (props) => {
       ],
     },
   };
-  const isAuthorizedMembersEnabled = !disableAuthorizedMembers && (isFeatureEnable('CONTAINERS_AUTHORIZED_MEMBERS') || container.entity_type === 'Feedback');
+  const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
+  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+
   return (
     <div
       style={containerStyle}
@@ -626,27 +631,32 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             {!knowledge && disableSharing !== true && (
-              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={container.authorized_members?.length > 0} />
+              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={disableOrgaSharingButton} />
             )}
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-              hasAccess={!!enableManageAuthorizedMembers}
-            >
-              <FormAuthorizedMembersDialog
-                id={container.id}
-                owner={container.creators?.[0]}
-                authorizedMembers={authorizedMembersToOptions(
-                  container.authorized_members,
-                )}
-                mutation={containerHeaderEditAuthorizedMembersMutation}
-              />
-            </Security>
+            {!knowledge && (
+              <Security
+                needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                hasAccess={!!enableManageAuthorizedMembers}
+              >
+                <FormAuthorizedMembersDialog
+                  id={container.id}
+                  owner={container.creators?.[0]}
+                  authorizedMembers={authorizedMembersToOptions(
+                    container.authorized_members,
+                  )}
+                  mutation={containerHeaderEditAuthorizedMembersMutation}
+                />
+              </Security>
+            )}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
-                  id={container.id}
-                  type={container.entity_type}
-                  redirectToContent={!!redirectToContent}
+                  scoId={container.id}
+                  scoName={container.name}
+                  scoEntityType={container.entity_type}
+                  redirectToContentTab={!!redirectToContent}
+                  OpenFormComponent={StixCoreObjectFileExportButton}
+                  onExportCompleted={handleExportCompleted}
                 />
               </Security>
             )}
@@ -667,28 +677,19 @@ const ContainerHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
-            {enableAskAi && (
-              <StixCoreObjectAskAI
-                instanceId={container.id}
-                instanceType={container.entity_type}
-                instanceName={getMainRepresentative(container)}
-                instanceMarkings={container.objectMarking.map(({ id }) => id)}
-                type="container"
-              />
+            {isFABReplaced && enableEnricher && (
+              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                <StixCoreObjectEnrichment
+                  stixCoreObjectId={container.id}
+                />
+              </Security>
+            )}
+            {isFABReplaced && enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
             )}
             {!knowledge && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
-              </Security>
-            )}
-            {isFABReplaced && (
-              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                <StixCoreObjectEnrichment
-                  stixCoreObjectId={container.id}
-                  displayEnrichment={displayEnrichment}
-                  handleOpenEnrichment={handleOpenEnrichment}
-                  handleClose={handleCloseEnrichment}
-                />
               </Security>
             )}
             {EditComponent}
@@ -715,6 +716,24 @@ export default createFragmentContainer(ContainerHeader, {
         id
         name
         entity_type
+      }
+      filesFromTemplate(first: 500) {
+        edges {
+          node {
+            id
+            name
+            objectMarking {
+              id
+              representative {
+                main
+              }
+            }
+          }
+        }
+      }
+      fintelTemplates {
+        id
+        name
       }
       currentUserAccessRight
       authorized_members {

@@ -94,6 +94,13 @@ export const UnknownError = (reason, data) => error(UNKNOWN_ERROR, reason || 'An
   ...data,
 });
 
+export const ACCESS_REQUIRED = 'ACCESS_REQUIRED';
+export const AccessRequiredError = (reason, data) => error(ACCESS_REQUIRED, reason || 'Access required', {
+  http_status: 500,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const UNSUPPORTED_ERROR = 'UNSUPPORTED_ERROR';
 export const UnsupportedError = (reason, data) => error(UNSUPPORTED_ERROR, reason || 'Unsupported operation', {
   http_status: 500,

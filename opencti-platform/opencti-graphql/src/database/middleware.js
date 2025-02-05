@@ -7,6 +7,7 @@ import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic
 import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
 import {
+  AccessRequiredError,
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
   DatabaseError,
@@ -88,7 +89,7 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID
 } from '../schema/identifier';
-import { lockResource, notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
+import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -120,7 +121,7 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
@@ -147,23 +148,24 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp, ORGA_SHARING_REQUEST_FF } from '../config/conf';
 import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
-  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  canRequestAccess,
+  controlUserRestrictDeleteAgainstElement,
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
   isUserCanAccessStoreElement,
   isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
-  validateUserAccessOperation,
-  controlUserRestrictDeleteAgainstElement
+  validateUserAccessOperation
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
@@ -191,10 +193,9 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
-import { confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
+import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -210,6 +211,7 @@ import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage 
 import { storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
+import { lockResources } from '../lock/master-lock';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -1469,7 +1471,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     const target = { ...initialInstance };
@@ -1874,16 +1876,34 @@ const computeDateFromEventId = (context) => {
   return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
 };
 
+export const generateUpdateMessage = async (context, entityType, inputs) => {
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
+  const patchElements = Object.entries(inputsByOperations);
+  if (patchElements.length === 0) {
+    throw UnsupportedError('Generating update message with empty inputs fail');
+  }
+
+  const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
+    return operations.slice(0, 3).flatMap(({ key, value }) => {
+      return key === 'authorized_members' ? (value ?? []).map(({ id }) => id) : [];
+    });
+  });
+  let members = [];
+  if (authorizedMembersIds.length > 0) {
+    members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
+      baseData: true,
+      baseFields: ['internal_id', 'name']
+    });
+  }
+
+  return generateUpdatePatchMessage(patchElements, entityType, { members });
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Region - Pre-Check
-  const elementsByKey = R.groupBy((e) => e.key, updates);
-  const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
-  if (multiOperationKeys.length > 1) {
-    throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
-  }
   const references = opts.references ? await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : [];
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id: initial.internal_id, references: opts.references });
@@ -1903,12 +1923,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   // Check user access update
   let accessOperation = 'edit';
   if (updates.some((e) => e.key === 'authorized_members')) {
-    if (isStixObject(initial.entity_type)
-      && initial.entity_type !== ENTITY_TYPE_CONTAINER_FEEDBACK
-      && !isFeatureEnabled('CONTAINERS_AUTHORIZED_MEMBERS')) {
-      throw UnsupportedError('This feature is disabled');
-    }
     accessOperation = 'manage-access';
+    if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
+      && (!initial.authorized_members || initial.authorized_members.length === 0)
+      && updates.some((e) => e.key === 'authorized_members' && e.value?.length > 0)) {
+      updates.push({
+        key: authorizedMembersActivationDate.name,
+        value: [now()]
+      });
+    }
   }
   if (updates.some((e) => e.key === 'authorized_authorities')) {
     accessOperation = 'manage-authorities-access';
@@ -1975,7 +1998,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities = [];
@@ -2068,7 +2091,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } else {
         // Special access check for RELATION_GRANTED_TO meta
         // If not supported, update must be rejected
-        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
         if (relType === RELATION_GRANTED_TO && !isUserCanManipulateGrantedRefs) {
           throw ForbiddenAccess();
         }
@@ -2157,11 +2180,17 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // endregion
     // Impacting information
-    if (impactedInputs.length > 0) {
-      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      if (getDraftContext(context, user) && isDraftSupportedEntity(initial)) {
-        updateAsInstance.draft_change = getDraftChanges(initial, impactedInputs);
+    if ((getDraftContext(context, user) && isDraftSupportedEntity(initial))) {
+      const lastElementVersion = await internalLoadById(context, user, initial.internal_id);
+      if (updatedInputs.length > 0) {
+        const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+        updateAsInstance._index = lastElementVersion._index;
+        updateAsInstance._id = lastElementVersion._id;
+        updateAsInstance.draft_change = getDraftChanges(lastElementVersion, updatedInputs);
+        await elUpdateElement(context, user, updateAsInstance);
       }
+    } else if (impactedInputs.length > 0) {
+      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
       await elUpdateElement(context, user, updateAsInstance);
     }
     if (relationsToDelete.length > 0) {
@@ -2177,7 +2206,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
       const args = {
         filters: {
           mode: 'and',
@@ -2652,7 +2681,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           const targetData = (patchInputData ?? []).map((n) => n.internal_id);
           // Specific case for organization restriction, has EE must be activated.
           // If not supported, upsert of organization is not applied
-          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
           const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
           // If expected data is different from current data
           if (allowedOperation && R.symmetricDifference(currentData, targetData).length > 0) {
@@ -2818,7 +2847,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -2978,6 +3007,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion
+  // validate authorized members access (when creating a new entity with authorized members)
+  if (input.authorized_members?.length > 0) {
+    if (!validateUserAccessOperation(user, input, 'manage-access')) {
+      throw ForbiddenAccess();
+    }
+    if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
+      input.authorized_members_activation_date = now();
+    }
+  }
+  // region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
   const { fromRule } = opts;
   // We need to check existing dependencies
@@ -2989,7 +3028,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
@@ -3022,7 +3061,15 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
+        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF)) {
+          const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
+          if (entitiesThatRequiresAccess.length > 0) {
+            throw AccessRequiredError('Restricted entity already exists, user can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
+          }
+          throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
+        } else {
+          throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
+        }
       }
       // If inferred entity
       if (fromRule) {
@@ -3178,7 +3225,7 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
   const participantIds = [draftElement.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
 
     await elDeleteElements(context, user, [draftElement]);
   } catch (err) {
@@ -3229,7 +3276,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResource(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);

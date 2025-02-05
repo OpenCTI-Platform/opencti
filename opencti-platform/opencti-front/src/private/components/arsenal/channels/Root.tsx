@@ -47,6 +47,10 @@ const channelQuery = graphql`
   query RootChannelQuery($id: String!) {
     channel(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -136,12 +140,13 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
             <StixDomainObjectHeader
               entityType="Channel"
               stixDomainObject={channel}
-              PopoverComponent={<ChannelPopover />}
+              PopoverComponent={<ChannelPopover id={channel.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ChannelEdition channelId={channel.id} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
             />
             <Box

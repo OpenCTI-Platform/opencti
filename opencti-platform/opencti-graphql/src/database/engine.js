@@ -49,7 +49,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -77,7 +77,7 @@ import {
   RULE_PREFIX
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
-import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_ALIASES,
@@ -181,12 +181,14 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE, isDraftSupportedEntity } from './draft-utils';
+import { buildDraftFilter, isDraftSupportedEntity } from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
+import { lockResources } from '../lock/master-lock';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3098,7 +3100,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   });
 };
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true } = options;
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
@@ -3130,6 +3132,9 @@ export const elAggregationCount = async (context, user, indexName, options = {})
         let label = b.key;
         if (typeof label === 'number') {
           label = String(b.key);
+        } else if (field === 'entity_type' && convertEntityTypeLabel) {
+          // entity_type is returned in lowercase, we want to return the label with the right entity type.
+          label = isStixCoreRelationship(b.key) ? b.key : generateInternalType({ type: b.key });
         } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
@@ -3712,8 +3717,9 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
     + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
     + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
     + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
-    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); ";
-  const idReplaceScript = dbId ? `ctx._id="${dbId}";` : '';
+    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
+    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');";
+  const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
   const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
   const reindexParams = {
@@ -3730,7 +3736,7 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
         index: destIndex
       },
       script: { // remove old fields that are not mapped anymore but can be present in DB
-        params: { changes: sourceUpdate },
+        params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
         source,
       },
     },
@@ -3748,11 +3754,13 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
   for (let i = 0; i < elements.length; i += 1) {
     const e = elements[i];
     if (e.base_type === BASE_TYPE_RELATION) {
-      const { from, to } = e;
-      const draftFrom = await loadDraftElement(context, user, from);
+      const { from, fromId, to, toId } = e;
+      const resolvedFrom = from ?? await elLoadById(context, user, fromId);
+      const draftFrom = await loadDraftElement(context, user, resolvedFrom);
       e.from = draftFrom;
       e.fromId = draftFrom.id;
-      const draftTo = await loadDraftElement(context, user, to);
+      const resolvedTo = to ?? await elLoadById(context, user, toId);
+      const draftTo = await loadDraftElement(context, user, resolvedTo);
       e.to = draftTo;
       e.toId = draftTo.id;
     }
@@ -4033,7 +4041,7 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
 // Creates a copy of a live element in the draft index with the current draft context
-const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE) => {
+export const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
@@ -4070,13 +4078,29 @@ const copyLiveElementToDraft = async (context, user, element, draftOperation = D
 };
 // Gets the version of the element in current draft context if it exists
 // If it doesn't exist, creates a copy of live element to draft context then returns it
+const draftCopyLockPrefix = 'draft_copy';
 const loadDraftElement = async (context, user, element) => {
   if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
 
-  const loadedElement = await elLoadById(context, user, element.internal_id);
-  if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
+  let lock;
+  const currentDraft = getDraftContext(context, user);
+  const lockKey = `${draftCopyLockPrefix}_${currentDraft}_${element.internal_id}`;
+  try {
+    lock = await lockResources([lockKey]);
+    const loadedElement = await elLoadById(context, user, element.internal_id);
+    if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
 
-  return await copyLiveElementToDraft(context, user, element);
+    return await copyLiveElementToDraft(context, user, element);
+  } catch (e) {
+    if (e.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [lockKey] });
+    }
+    throw e;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 const validateElementsToIndex = (context, user, elements) => {
   const draftContext = getDraftContext(context, user);

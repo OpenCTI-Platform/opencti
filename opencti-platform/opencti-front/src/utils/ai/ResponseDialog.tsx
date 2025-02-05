@@ -88,8 +88,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     return setContent(newContent ?? '');
   };
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>
-  >(
+  GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>>(
     () => ({
       subscription,
       variables: { id },

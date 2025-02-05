@@ -21,6 +21,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
@@ -111,6 +112,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -172,21 +175,21 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 variant="outlined"
                 label={truncate(edge.name, 15)}
                 onDelete={() => removeOrganization(edge.id)}
-                disabled={disabled}
+                disabled={disabled || disabledInDraft}
               />
             </Tooltip>
           ))}
-          <EETooltip title={t_i18n('Share with an organization')}>
+          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
             <ToggleButton
               value="shared"
-              onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
+              onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
               size="small"
               style={{ marginRight: 3 }}
               disabled={disabled}
             >
               <BankPlus
                 fontSize="small"
-                color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'}
+                color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'}
               />
             </ToggleButton>
           </EETooltip>
@@ -236,7 +239,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Organizations sharing')}
         </Typography>
-        <EETooltip title={t_i18n('Share with an organization')}>
+        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
           <IconButton
             color="primary"
             aria-label="Label"
@@ -245,7 +248,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             size="large"
             disabled={disabled}
           >
-            <BankPlus fontSize="small" color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'} />
+            <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
           </IconButton>
         </EETooltip>
         <div className="clearfix" />
@@ -258,7 +261,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               variant="outlined"
               label={truncate(edge.name, 15)}
               onDelete={() => removeOrganization(edge.id)}
-              disabled={disabled}
+              disabled={disabled || disabledInDraft}
             />
           </Tooltip>
         ))}

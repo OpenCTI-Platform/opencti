@@ -3,7 +3,7 @@ import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
 import { createEntity, deleteElementById, listThings, paginateAllThings, updateAttribute } from '../../database/middleware';
-import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
@@ -12,8 +12,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
-  Filter,
-  FilterGroup,
   ImportWidgetInput,
   InputMaybe,
   MemberAccessInput,
@@ -26,15 +24,14 @@ import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../.
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
-import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { isInternalId, isStixId } from '../../schema/schemaUtils';
-import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
+import { convertWidgetsIds } from './workspace-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -327,101 +324,6 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
 // region workspace ids converter
 // Export => Dashboard filter ids must be converted to standard id
 // Import => Dashboards filter ids must be converted back to internal id
-const toKeys = (k: string | string[]) => (Array.isArray(k) ? k : [k]);
-const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
-  const internalIds: string[] = [];
-  filter.filters.forEach((f) => {
-    let innerValues = f.values;
-    if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
-      innerValues = innerValues.find((v) => toKeys(v.key).includes('id'))?.values ?? [];
-    }
-    const ids = innerValues.filter((value) => {
-      if (from === 'internal') return isInternalId(value);
-      return isStixId(value);
-    });
-    internalIds.push(...ids);
-  });
-  filter.filterGroups.forEach((group) => {
-    const groupIds = extractFiltersIds(group, from);
-    internalIds.push(...groupIds);
-  });
-  return R.uniq(internalIds);
-};
-
-const filterValuesRemap = (filter: Filter, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
-  return filter.values.map((value) => {
-    if (from === 'internal' && isInternalId(value)) {
-      return resolvedMap[value]?.standard_id ?? value;
-    }
-    if (from === 'stix' && isStixId(value)) {
-      return resolvedMap[value]?.internal_id ?? value;
-    }
-    return value;
-  });
-};
-const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
-  filter.filters.forEach((f) => {
-    // Explicit reassign working by references
-    if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
-      const regardingOfValues = [];
-      const idInnerFilter = f.values.find((v) => toKeys(v.key).includes('id'));
-      if (idInnerFilter) { // Id is not mandatory
-        idInnerFilter.values = filterValuesRemap(idInnerFilter, resolvedMap, from);
-        regardingOfValues.push(idInnerFilter);
-      }
-      const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('type'));
-      if (typeInnerFilter) { // Type is not mandatory
-        regardingOfValues.push(typeInnerFilter);
-      }
-      // eslint-disable-next-line no-param-reassign
-      f.values = regardingOfValues;
-    } else {
-      // eslint-disable-next-line no-param-reassign
-      f.values = filterValuesRemap(f, resolvedMap, from);
-    }
-  });
-  filter.filterGroups.forEach((group) => {
-    replaceFiltersIds(group, resolvedMap, from);
-  });
-};
-// For now, this function is only useful for workspace dashboards
-const convertWidgetsIds = async (context: AuthContext, user: AuthUser, widgetDefinitions: any[], from: 'internal' | 'stix') => {
-  // First iteration to resolve all ids to translate
-  const resolvingIds: string[] = [];
-  widgetDefinitions.forEach((widgetDefinition: any) => {
-    widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (isNotEmptyField(selection.filters)) {
-        const filterIds = extractFiltersIds(selection.filters as FilterGroup, from);
-        resolvingIds.push(...filterIds);
-      }
-      if (isNotEmptyField(selection.dynamicFrom)) {
-        const dynamicFromIds = extractFiltersIds(selection.dynamicFrom as FilterGroup, from);
-        resolvingIds.push(...dynamicFromIds);
-      }
-      if (isNotEmptyField(selection.dynamicTo)) {
-        const dynamicToIds = extractFiltersIds(selection.dynamicTo as FilterGroup, from);
-        resolvingIds.push(...dynamicToIds);
-      }
-    });
-  });
-  // Resolve then second iteration to replace the ids
-  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
-  const resolvedMap = await internalFindByIds(context, user, resolvingIds, resolveOpts);
-  const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
-  widgetDefinitions.forEach((widgetDefinition: any) => {
-    widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (isNotEmptyField(selection.filters)) {
-        replaceFiltersIds(selection.filters as FilterGroup, idsMap, from);
-      }
-      if (isNotEmptyField(selection.dynamicFrom)) {
-        replaceFiltersIds(selection.dynamicFrom as FilterGroup, idsMap, from);
-      }
-      if (isNotEmptyField(selection.dynamicTo)) {
-        replaceFiltersIds(selection.dynamicTo as FilterGroup, idsMap, from);
-      }
-    });
-  });
-};
 const convertWorkspaceManifestIds = async (context: AuthContext, user: AuthUser, manifest: string, from: 'internal' | 'stix'): Promise<string> => {
   const parsedManifest = JSON.parse(fromBase64(manifest) ?? '{}');
   // Regeneration for dashboards

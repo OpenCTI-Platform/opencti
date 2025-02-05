@@ -1,8 +1,16 @@
 import React, { FunctionComponent } from 'react';
-import { CenterFocusStrongOutlined, PermIdentityOutlined, ReceiptOutlined, LocalPoliceOutlined, SecurityOutlined, AccountBalanceOutlined } from '@mui/icons-material';
+import {
+  AccountBalanceOutlined,
+  AttachEmailOutlined,
+  CenterFocusStrongOutlined,
+  LocalPoliceOutlined,
+  PermIdentityOutlined,
+  ReceiptOutlined,
+  SecurityOutlined,
+} from '@mui/icons-material';
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
-import useGranted, { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 
 const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
@@ -44,15 +52,27 @@ const AccessesMenu: FunctionComponent = () => {
       icon: <CenterFocusStrongOutlined fontSize="medium" />,
     },
   ];
+  const disseminationEntries: MenuEntry[] = [
+    {
+      path: '/dashboard/settings/accesses/dissemination_list',
+      label: 'Dissemination',
+      icon: <AttachEmailOutlined fontSize="medium" />,
+      isEE: true,
+    },
+  ];
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const setMarkings = useGranted([SETTINGS_SETMARKINGS]);
   const isOrgaAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+  const setDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
   const menuEntries = [];
   if (setAccess) {
     menuEntries.push(...entries);
   }
   if (setMarkings) {
     menuEntries.push(...markingEntries);
+  }
+  if (setDissemination) {
+    menuEntries.push(...disseminationEntries);
   }
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(

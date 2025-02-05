@@ -20,6 +20,8 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import AttackPatternDeletion from './AttackPatternDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
@@ -86,8 +88,9 @@ export const attackPatternMutationRelationDelete = graphql`
 const AttackPatternEditionOverviewComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme();
-
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     x_mitre_id: Yup.string().nullable(),
@@ -288,7 +291,13 @@ const AttackPatternEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <AttackPatternDeletion
+                  id={attackPattern.id}
+                />
+              : <div/>}
+            {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting || !isValid || !dirty}
@@ -297,7 +306,8 @@ const AttackPatternEditionOverviewComponent = (props) => {
               values={values.references}
               id={attackPattern.id}
             />
-          )}
+            )}
+          </div>
         </Form>
       )}
     </Formik>

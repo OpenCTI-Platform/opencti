@@ -1,14 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
 import { defaultColumnsMap } from '../dataTableUtils';
-import { DataTableColumn, DataTableColumns, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
-import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { DataTableProvider } from './DataTableContext';
 import {
-  useDataTableComputeLink,
+  useDataTableComputeLink as defaultComputeLink,
   useDataCellHelpers,
   useDataTableFormatter,
   useDataTableLocalStorage,
@@ -38,6 +37,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'createButton'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'canToggleLine'
@@ -53,6 +53,7 @@ const DataTableComponent = ({
   redirectionModeEnabled = false,
   useLineData,
   useDataTable,
+  useComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
   hideHeaders,
@@ -70,7 +71,7 @@ const DataTableComponent = ({
   canToggleLine = true,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
-  const [localStorageColumns] = columnsLocalStorage;
+  const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
   const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
   const {
@@ -78,43 +79,63 @@ const DataTableComponent = ({
     helpers,
   } = paginationLocalStorage;
 
-  const columnsInitialState = [
-    ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
-    ...Object.entries(dataColumns).map(([key, column], index) => {
-      const currentColumn = localStorageColumns?.[key];
-      return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
-        ...column,
-        order: currentColumn?.index ?? index,
-        visible: currentColumn?.visible ?? true,
-        ...(currentColumn?.size ? { size: currentColumn?.size } : {}),
-      });
-    }),
-    // inject "navigate" action (chevron) if navigable and no specific actions defined
-    ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
-  ];
+  const buildColumns = (withLocalStorage = true) => {
+    const dataColumnsKeys = Object.keys(dataColumns);
+    const localStorageColumnsKeys = Object.keys(localStorageColumns)
+      .filter((key) => key !== 'select' && key !== 'navigate');
 
-  const [columns, setColumns] = useState<DataTableColumns>(columnsInitialState);
+    // Check if keys order/length is the same
+    const isOrderSame = dataColumnsKeys.length === localStorageColumnsKeys.length
+      && dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
 
-  // main tag only exists in the app, we fallback to root element for public dashboards
-  const mainElement = document.getElementsByTagName('main')[0];
-  const rootElement = document.getElementById('root');
-  const clientWidth = (mainElement ?? rootElement).clientWidth - 46;
+    // Only use localStorage if order matches and we are allowed to
+    const useLocalStorage = isOrderSame && withLocalStorage;
 
-  const temporaryColumnsSize: { [key: string]: number } = {
-    '--header-select-size': SELECT_COLUMN_SIZE,
-    '--col-select-size': SELECT_COLUMN_SIZE,
-    '--header-navigate-size': SELECT_COLUMN_SIZE,
-    '--col-navigate-size': SELECT_COLUMN_SIZE,
-    '--header-table-size': clientWidth,
-    '--col-table-size': clientWidth,
+    return [
+      // Checkbox if necessary
+      ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+      // Our real columns
+      ...Object.entries(dataColumns).map(([key, column], index) => {
+        const currentColumn = localStorageColumns?.[key];
+        const percentWidth = column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth;
+
+        return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
+          ...column,
+          // Override column config with what we have in local storage
+          order: useLocalStorage && currentColumn?.index ? currentColumn?.index : index,
+          visible: useLocalStorage && currentColumn?.visible ? currentColumn?.visible : true,
+          percentWidth: useLocalStorage && currentColumn?.percentWidth ? currentColumn?.percentWidth : percentWidth,
+        });
+      }),
+      // inject "navigate" action (chevron) if navigable and no specific actions defined
+      ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
+    ].sort((a, b) => a.order - b.order);
   };
-  columns.forEach((col) => {
-    if (col.visible && col.percentWidth) {
-      const size = col.percentWidth * ((clientWidth - 2 * SELECT_COLUMN_SIZE) / 100) - 2; // 2 is spacing
-      temporaryColumnsSize[`--header-${col.id}-size`] = size;
-      temporaryColumnsSize[`--col-${col.id}-size`] = size;
-    }
-  });
+
+  const [columns, setColumns] = useState(() => buildColumns());
+
+  useEffect(() => {
+    const updatedColumns = buildColumns();
+    setColumns(updatedColumns);
+  }, [dataColumns]);
+
+  useEffect(() => {
+    setLocalStorageColumns((curr) => {
+      return columns.reduce((acc, c) => {
+        acc[c.id] = {
+          ...curr[c.id],
+          percentWidth: c.percentWidth,
+          visible: c.visible,
+          index: c.order,
+        };
+        return acc;
+      }, {} as LocalStorageColumns);
+    });
+  }, [columns]);
+
+  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select', [columns]);
+  const endsWithNavigate = useMemo(() => columns.at(-1)?.id === 'navigate', [columns]);
+  const endsWithAction = useMemo(() => endsWithNavigate || !!actions, [endsWithNavigate, actions]);
 
   // QUERY PART
   const [page, setPage] = useState<number>(1);
@@ -124,7 +145,8 @@ const DataTableComponent = ({
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
 
-  const [reset, setReset] = useState(false);
+  const tableWidthState = useState(0);
+  const tableRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <DataTableProvider
@@ -132,17 +154,16 @@ const DataTableComponent = ({
         storageKey,
         columns,
         availableFilterKeys,
-        effectiveColumns: columns.filter(({ visible }) => visible).sort((a, b) => a.order - b.order),
         initialValues,
         setColumns,
-        resetColumns: () => setReset(true),
+        resetColumns: () => setColumns(buildColumns(false)),
         resolvePath,
         redirectionModeEnabled,
         useLineData,
         useDataTable: useDataTable(dataQueryArgs),
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink: useDataTableComputeLink,
+        useComputeLink: useComputeLink ?? defaultComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),
@@ -159,34 +180,37 @@ const DataTableComponent = ({
         onLineClick,
         page,
         setPage,
+        tableWidthState,
+        startsWithAction,
+        endsWithAction,
+        endsWithNavigate,
       }}
     >
-      <div>{filtersComponent}</div>
-      <>
+      {filtersComponent && <div>{filtersComponent}</div>}
+      <div
+        className="datatable-container"
+        style={{ width: '100%', overflow: 'auto hidden' }}
+        ref={tableRef}
+      >
         <React.Suspense
           fallback={(
-            <div style={{ ...temporaryColumnsSize, width: '100%' }}>
-              <DataTableHeaders
-                effectiveColumns={columns}
-                dataTableToolBarComponent={dataTableToolBarComponent}
-              />
-              {<DataTableLinesDummy number={Math.max(currentPageSize, 25)} />}
-            </div>
+            <>
+              <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
+              <DataTableLinesDummy number={Math.max(currentPageSize, 10)} />
+            </>
           )}
         >
           <DataTableBody
-            columns={columns.filter(({ visible }) => visible)}
             settingsMessagesBannerHeight={settingsMessagesBannerHeight}
             hasFilterComponent={!!filtersComponent}
             dataTableToolBarComponent={dataTableToolBarComponent}
             pageStart={pageStart}
             pageSize={currentPageSize}
-            reset={reset}
-            setReset={setReset}
             hideHeaders={hideHeaders}
+            tableRef={tableRef}
           />
         </React.Suspense>
-      </>
+      </div>
     </DataTableProvider>
   );
 };

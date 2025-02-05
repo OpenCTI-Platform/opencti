@@ -1,7 +1,7 @@
 import conf, { getBaseUrl, logApp } from '../config/conf';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, ResourceNotFoundError } from '../config/errors';
 import { isEmptyField } from './utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
@@ -46,11 +46,42 @@ export const getAttackPatterns = async () => {
   }
 };
 
-export const getInjectorContracts = async (attackPatternId: string) => {
+export const searchInjectorContracts = async (attackPatternId: string, platforms: string[], architecture: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
-    const { data: injectorContracts } = await httpClient.get(`/attack_patterns/${attackPatternId}/injector_contracts`);
-    return injectorContracts;
+    const attackPatternFilter = {
+      key: 'injector_contract_attack_patterns',
+      mode: 'and',
+      operator: 'contains',
+      values: [attackPatternId],
+    };
+    const platformFilter = {
+      key: 'injector_contract_platforms',
+      mode: 'and',
+      operator: 'contains',
+      values: platforms,
+    };
+    const architectureFilter = {
+      key: 'injector_contract_arch',
+      mode: 'and',
+      operator: 'eq',
+      values: [architecture],
+    };
+    const searchPaginationInput = {
+      filterGroup: {
+        filters: [
+          attackPatternFilter,
+          architectureFilter,
+          platformFilter,
+        ],
+        mode: 'and',
+      },
+      page: 0,
+      size: 100,
+    };
+
+    const { data: injectorContracts } = await httpClient.post('/injector_contracts/search', searchPaginationInput);
+    return injectorContracts.content;
   } catch (err) {
     throw DatabaseError('Error querying OpenBAS', { cause: err });
   }
@@ -124,7 +155,9 @@ export const createInjectInScenario = async (
   title: string,
   dependsDuration: number,
   content: string | null,
-  tags: Label[]
+  tags: Label[],
+  enabled: boolean,
+  description: string,
 ) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
@@ -143,6 +176,8 @@ export const createInjectInScenario = async (
         inject_depends_duration: dependsDuration,
         inject_content: content,
         inject_tags: obasTagsIds,
+        inject_enabled: enabled,
+        inject_description: description,
       }
     );
     return inject;
@@ -194,7 +229,7 @@ export const getScenarioResult = async (id: string) => {
       human,
     };
   } catch (err) {
-    logApp.debug('Scenario not found in OpenBAS', { err });
+    logApp.debug(`[OPENCTI-MODULE][XTM] Scenario results not found in OpenBAS : ${id}`, ResourceNotFoundError({ reason: 'Scenario results not found in OpenBAS', doc_code: 'ELEMENT_NOT_FOUND' }));
     return noResult;
   }
 };

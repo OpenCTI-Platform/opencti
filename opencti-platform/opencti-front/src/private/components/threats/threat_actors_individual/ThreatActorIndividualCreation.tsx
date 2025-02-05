@@ -71,6 +71,9 @@ const ThreatActorIndividualMutation = graphql`
     threatActorIndividualAdd(input: $input) {
       id
       name
+      representative {
+        main
+      }
       description
       entity_type
       parent_types

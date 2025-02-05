@@ -20,6 +20,7 @@ import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { DraftChip } from '../draft/DraftChip';
 
 const styles = (theme) => ({
   item: {
@@ -126,6 +127,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 }}
               >
                 {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
+                {node.from.draftVersion && (<DraftChip/>)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -254,6 +256,10 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
         from {
           ... on StixCoreObject {
             id
+            draftVersion {
+              draft_id
+              draft_operation
+            }
             entity_type
             parent_types
             created_at
@@ -417,6 +423,10 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
         to {
           ... on StixCoreObject {
             id
+            draftVersion {
+              draft_id
+              draft_operation
+            }
             entity_type
             parent_types
             created_at

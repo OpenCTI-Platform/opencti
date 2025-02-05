@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import { TableTuneIcon } from 'filigran-icon';
 import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
-import NestedMenuButton from '../nestedMenu/NestedMenuButton';
+import NestedMenuButton from '../nested_menu/NestedMenuButton';
 import { useDataTableContext } from './components/DataTableContext';
 
 const DataTablePagination = ({
@@ -24,7 +24,6 @@ const DataTablePagination = ({
 
   const {
     resetColumns,
-    useDataTableColumnsLocalStorage,
     useDataTablePaginationLocalStorage: {
       viewStorage: {
         pageSize,
@@ -57,10 +56,7 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
-  const [_, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
-
   const resetTable = () => {
-    setLocalStorageColumns({});
     resetColumns();
     helpers.handleAddProperty('pageSize', '25');
   };

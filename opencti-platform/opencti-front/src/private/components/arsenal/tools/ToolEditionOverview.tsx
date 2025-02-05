@@ -24,6 +24,8 @@ import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForE
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useHelper from '../../../../utils/hooks/useHelper';
+import ToolDeletion from './ToolDeletion';
 
 export const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
@@ -143,6 +145,8 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const tool = useFragment(toolEditionOverviewFragment, toolRef);
 
@@ -325,6 +329,9 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="tool_version" />}
           />
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced ? <ToolDeletion id={tool.id} /> : <div />}
+          </div>
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

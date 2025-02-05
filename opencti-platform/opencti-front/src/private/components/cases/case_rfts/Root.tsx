@@ -11,6 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
+import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -101,6 +103,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     return <ErrorNotFound />;
   }
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfts', false);
+  const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
@@ -119,14 +122,18 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         </Security>
         )}
         enableQuickSubscription={true}
-        enableAskAi={true}
+        enableEnrollPlaybook={true}
         redirectToContent={true}
+        enableEnricher={true}
       />
       <Box
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
           marginBottom: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItem: 'center',
         }}
       >
         <Tabs
@@ -169,11 +176,17 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             label={t_i18n('Data')}
           />
         </Tabs>
+        {!isKnowledgeOrContent && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+          <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
+          <StixCoreObjectSimulationResultContainer id={caseData.id} type="container"/>
+        </div>
+        )}
       </Box>
       <Routes>
         <Route
           path="/"
-          element={<CaseRft caseRftData={caseData} enableReferences={enableReferences} />}
+          element={<CaseRft caseRftData={caseData} enableReferences={enableReferences}/>}
         />
         <Route
           path="/entities"

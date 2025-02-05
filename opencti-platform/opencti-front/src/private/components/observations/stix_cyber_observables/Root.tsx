@@ -43,6 +43,10 @@ const stixCyberObservableQuery = graphql`
   query RootStixCyberObservableQuery($id: String!) {
     stixCyberObservable(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       observable_value
@@ -104,8 +108,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
           />
           <StixCyberObservableHeader
             stixCyberObservable={stixCyberObservable}
-            disableSharing={undefined}
-            isArtifact={undefined}
+            isArtifact={false}
           />
           <Box
             sx={{

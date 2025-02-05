@@ -24,6 +24,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { deleteNode } from '../../../../utils/store';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportWorkbenchesContentFileLineDeleteMutation($fileName: String) {
@@ -56,6 +57,7 @@ export const workbenchLineFragment = graphql`
         name
       }
     }
+    ...FileWork_file
   }
 `;
 
@@ -117,6 +119,8 @@ const LOCAL_STORAGE_KEY = 'importWorkbenches';
 
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Import: Analyst Workbench | Data'));
   const [displayDelete, setDisplayDelete] = useState<string>('');
 
   const initialValues = {

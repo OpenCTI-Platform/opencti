@@ -5,12 +5,23 @@ import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, adminQuery, createUnauthenticatedClient, executeInternalQuery, getOrganizationIdByName, type Organization, queryAsAdmin, testContext } from './testQuery';
+import {
+  ADMIN_USER,
+  adminQuery,
+  createUnauthenticatedClient,
+  executeInternalQuery,
+  getOrganizationIdByName,
+  type OrganizationTestData,
+  queryAsAdmin,
+  testContext
+} from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
-import { logApp } from '../../src/config/conf';
+import conf, { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage-helper';
+import { resetCacheForEntity } from '../../src/database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -161,19 +172,19 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
  * Enable Enterprise edition and set the platform organisation.
  * @param organization organization to use as platform organization.
  */
-export const enableEEAndSetOrganization = async (organization: Organization) => {
+export const enableEEAndSetOrganization = async (organization: OrganizationTestData) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
   const platformSettings: any = await getSettings(testContext);
 
   const input = [
-    { key: 'enterprise_edition', value: [new Date().getTime()] },
+    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
     { key: 'platform_organization', value: [platformOrganizationId] }
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
   expect(settingsResult.platform_organization).not.toBeUndefined();
-  expect(settingsResult.enterprise_edition).not.toBeUndefined();
-  expect(settingsResult.platform_organization).toEqual(platformOrganizationId);
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 };
 
 /**
@@ -183,13 +194,40 @@ export const enableCEAndUnSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
 
   const input = [
-    { key: 'enterprise_edition', value: [] },
+    { key: 'enterprise_license', value: [] },
     { key: 'platform_organization', value: [] }
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
   expect(settingsResult.platform_organization).toBeUndefined();
-  expect(settingsResult.enterprise_edition).toBeUndefined();
+  // EE cant be disabled as setup by configuration
+  expect(settingsResult.platform_enterprise_edition.license_enterprise).toBeTruthy();
+};
+
+/**
+ * Enable Enterprise edition
+ */
+export const enableEE = async () => {
+  const platformSettings: any = await getSettings(testContext);
+  const input = [
+    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+};
+
+/**
+ * Go back to community edition.
+ */
+export const disableEE = async () => {
+  const platformSettings: any = await getSettings(testContext);
+  const input = [
+    { key: 'enterprise_license', value: [] },
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+  // EE cant be disabled as setup by configuration
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {

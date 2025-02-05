@@ -1,5 +1,11 @@
 import type { Resolvers } from '../../generated/graphql';
-import { generateContainerScenario, generateThreatScenario, generateVictimScenario, scenarioElementsDistribution, stixCoreObjectSimulationsResult } from './xtm-domain';
+import {
+  generateContainerScenarioWithInjectPlaceholders,
+  generateThreatScenarioWithInjectPlaceholders,
+  generateVictimScenarioWithInjectPlaceholders,
+  scenarioElementsDistribution,
+  stixCoreObjectSimulationsResult
+} from './xtm-domain';
 
 const aiResolvers: Resolvers = {
   Query: {
@@ -7,9 +13,9 @@ const aiResolvers: Resolvers = {
     obasScenarioElementsDistribution: (_, args, context) => scenarioElementsDistribution(context, context.user, args),
   },
   Mutation: {
-    obasContainerGenerateScenario: (_, args, context) => generateContainerScenario(context, context.user, args),
-    obasThreatGenerateScenario: (_, args, context) => generateThreatScenario(context, context.user, args),
-    obasVictimGenerateScenario: (_, args, context) => generateVictimScenario(context, context.user, args),
+    obasContainerGenerateScenarioWithInjectPlaceholders: (_, args, context) => generateContainerScenarioWithInjectPlaceholders(context, context.user, args),
+    obasThreatGenerateScenarioWithInjectPlaceholders: (_, args, context) => generateThreatScenarioWithInjectPlaceholders(context, context.user, args),
+    obasVictimGenerateScenarioWithInjectPlaceholders: (_, args, context) => generateVictimScenarioWithInjectPlaceholders(context, context.user, args),
   },
 };
 

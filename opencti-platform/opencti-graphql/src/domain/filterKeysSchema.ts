@@ -37,7 +37,6 @@ import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isEmptyField } from '../database/utils';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
@@ -386,7 +385,7 @@ export const generateFilterKeysSchema = async () => {
   const filterKeysSchema: Map<string, Map<string, FilterDefinition>> = new Map();
   const context = executionContext('filterKeysSchema');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const isNotEnterpriseEdition = isEmptyField(settings.enterprise_edition);
+  const isNotEnterpriseEdition = settings.valid_enterprise_edition !== true;
   // A. build filterKeysSchema map for each entity type
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   registeredTypes.forEach((type) => {

@@ -12,6 +12,7 @@ import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines'
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'positions';
 
@@ -19,6 +20,8 @@ const Positions: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Positions | Locations'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_POSITIONS,
     {

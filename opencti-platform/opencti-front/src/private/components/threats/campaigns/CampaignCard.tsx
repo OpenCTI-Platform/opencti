@@ -6,6 +6,10 @@ import { CampaignCard_node$key } from './__generated__/CampaignCard_node.graphql
 export const CampaignCardFragment = graphql`
   fragment CampaignCard_node on Campaign {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     name
     aliases
     entity_type

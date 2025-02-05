@@ -11,6 +11,7 @@ import CaseTemplateLineDummy from './CaseTemplateLineDummy';
 import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,6 +26,8 @@ const LOCAL_STORAGE_KEY_CASE_TEMPLATES = 'case-templates';
 
 const CaseTemplates = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Case Templates | Settings'));
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTemplateLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TEMPLATES,

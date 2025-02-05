@@ -1,5 +1,6 @@
 import { ENTITY_TYPE_USER } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
+import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
 
 export const shortMapping = {
   type: 'text',
@@ -110,6 +111,19 @@ export const draftIds: AttributeDefinition = {
   featureFlag: 'DRAFT_WORKSPACE'
 };
 
+export const draftContext: AttributeDefinition = {
+  name: 'draft_context',
+  label: 'Current draft context',
+  type: 'string',
+  format: 'short',
+  mandatoryType: 'no',
+  multiple: false,
+  editDefault: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: 'DRAFT_WORKSPACE'
+};
+
 export const draftChange: AttributeDefinition = {
   name: 'draft_change',
   label: 'Draft change',
@@ -120,11 +134,11 @@ export const draftChange: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: false,
+  isFilterable: true,
   featureFlag: 'DRAFT_WORKSPACE',
   mappings: [
-    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    // draftUpdatePatch
+    { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'enum', values: getDraftOperations(), mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ]
 };
 
@@ -240,6 +254,17 @@ export const authorizedMembers: AttributeDefinition = {
     { name: 'entity_type', label: 'Entity type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
   ]
+};
+
+export const authorizedMembersActivationDate : AttributeDefinition = {
+  name: 'authorized_members_activation_date',
+  label: 'Authorized members activation date',
+  type: 'date',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
 };
 
 export const authorizedAuthorities: AttributeDefinition = {

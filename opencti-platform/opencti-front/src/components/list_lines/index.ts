@@ -22,9 +22,9 @@ export interface PaginationOptions {
   fromId?: string[]
   toTypes?: string[]
   fromTypes?: string[]
-  search?: string
+  search?: string | null
   orderBy?: string | null
-  orderMode?: OrderMode
+  orderMode?: OrderMode | null
   filters?: FilterGroup
   pageSize?: string
 }

@@ -4,7 +4,8 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { createStreamProcessor, lockResource, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
 import { addNotification } from '../modules/notification/notification-domain';
@@ -46,7 +47,7 @@ export const internalProcessNotification = async (
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
-    const { name: notification_name, trigger_type } = notification;
+    const { name: notification_name, id: trigger_id, trigger_type } = notification;
     const { notifier_connector_id, notifier_configuration: configuration } = notifier;
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
@@ -72,6 +73,7 @@ export const internalProcessNotification = async (
     if (notifier_connector_id === NOTIFIER_CONNECTOR_UI) {
       const createNotification = {
         name: notification_name,
+        trigger_id,
         notification_type: trigger_type,
         user_id: user.user_id,
         notification_content: content,
@@ -157,6 +159,8 @@ const processNotificationEvent = async (
   const notifierMap = new Map(notifiers.map((n) => [n.internal_id, n]));
   for (let notifierIndex = 0; notifierIndex < userNotifiers.length; notifierIndex += 1) {
     const notifier = userNotifiers[notifierIndex];
+
+    // There is no await in purpose, the goal is to send notification and continue without waiting result.
     internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, notification);
   }
 };
@@ -230,7 +234,7 @@ const initPublisherManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
+      lock = await lockResources([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-PUBLISHER] Running publisher manager');
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -19,7 +19,8 @@ import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor, lockResource, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
@@ -31,7 +32,7 @@ import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfigu
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { isNotEmptyField, READ_STIX_INDICES } from '../database/utils';
+import { READ_STIX_INDICES } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
@@ -377,7 +378,7 @@ const initPlaybookManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
+      lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler);
@@ -502,7 +503,7 @@ const initPlaybookManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PLAYBOOK_CRON_KEY], { retryCount: 0 });
+      lock = await lockResources([PLAYBOOK_CRON_KEY], { retryCount: 0 });
       logApp.info('[OPENCTI-MODULE] Running playbook manager (cron)');
       while (!shutdown) {
         lock.signal.throwIfAborted();
@@ -532,7 +533,7 @@ const initPlaybookManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'PLAYBOOK_MANAGER',
-        enable: isNotEmptyField(settings?.enterprise_edition) && booleanConf('playbook_manager:enabled', false),
+        enable: settings?.valid_enterprise_edition === true && booleanConf('playbook_manager:enabled', false),
         running,
       };
     },

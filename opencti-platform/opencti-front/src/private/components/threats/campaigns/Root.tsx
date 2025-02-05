@@ -8,8 +8,9 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -48,6 +49,10 @@ const campaignQuery = graphql`
   query RootCampaignQuery($id: String!) {
     campaign(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -81,23 +86,18 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
     subscription,
     variables: { id: campaignId },
   }), [campaignId]);
-
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   useSubscription<RootCampaignSubscription>(subConfig);
-
   const {
     campaign,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
-
   const { forceUpdate } = useForceUpdate();
-
   const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
     <>
@@ -140,12 +140,13 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
             <StixDomainObjectHeader
               entityType="Campaign"
               stixDomainObject={campaign}
-              PopoverComponent={<CampaignPopover />}
+              PopoverComponent={<CampaignPopover id={campaign.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
             />
             <Box
@@ -198,16 +199,17 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={campaign.id}/>
+                <StixCoreObjectSimulationResultContainer id={campaign.id} type="threat"/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <Campaign campaignData={campaign} />
-                }
+                  <Campaign campaignData={campaign}/>
+                  }
               />
               <Route
                 path="/knowledge"

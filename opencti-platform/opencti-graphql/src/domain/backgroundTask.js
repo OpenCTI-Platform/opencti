@@ -20,6 +20,7 @@ import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
 import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
@@ -33,6 +34,7 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ENTITY_TYPE_DELETE_OPERATION,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_INTERNAL_FILE,
+  ENTITY_TYPE_DRAFT_WORKSPACE,
 ];
 
 export const MAX_TASK_ELEMENTS = 500;
@@ -142,6 +144,7 @@ export const createQueryTask = async (context, user, input) => {
   const queryTask = {
     ...task,
     actions,
+    draft_context: getDraftContext(context, user),
     task_filters: filters,
     task_search: search,
     task_excluded_ids: excluded_ids,

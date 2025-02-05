@@ -34,6 +34,10 @@ const operationStylesLight = {
     backgroundColor: '#ff9800',
     color: '#ffffff',
   },
+  lightYellow: {
+    backgroundColor: '#ec7629',
+    color: '#ffffff',
+  },
 };
 
 const operationStylesDark = {
@@ -46,11 +50,14 @@ const operationStylesDark = {
   yellow: {
     backgroundColor: '#ff9800',
   },
+  lightYellow: {
+    backgroundColor: '#ec7629',
+  },
 };
 
 const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation }) => {
   const classes = useStyles();
-  const theme: Theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const getChipStyle = () => {
     switch (draftOperation) {
@@ -62,6 +69,10 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
         return theme.palette.mode === 'light'
           ? { ...operationStylesLight.yellow }
           : { ...operationStylesDark.yellow };
+      case 'update_linked':
+        return theme.palette.mode === 'light'
+          ? { ...operationStylesLight.lightYellow }
+          : { ...operationStylesDark.lightYellow };
       case 'delete':
         return theme.palette.mode === 'light'
           ? { ...operationStylesLight.red }
@@ -72,6 +83,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
   };
   return (
     <Chip
+      title={draftOperation}
       label={draftOperation}
       classes={{ root: classes.chipInList }}
       variant="outlined"

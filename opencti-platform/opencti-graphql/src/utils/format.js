@@ -88,6 +88,21 @@ export const daysAgo = (days) => {
   return currentDate.toISOString().split('T')[0];
 };
 
+export const dayStartDate = (date = null, fromStart = true) => {
+  let start = new Date();
+  if (date) {
+    start = utcDate(date).toDate();
+  }
+  if (fromStart) {
+    start.setHours(0, 0, 0, 0);
+  }
+  return start;
+};
+
+export const monthsAgo = (number) => moment(dayStartDate()).subtract(number, 'months').format();
+
+export const yearsAgo = (number) => moment(dayStartDate()).subtract(number, 'years').format();
+
 const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable) => {
   if (stixCyberObservable.hashes) {

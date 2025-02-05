@@ -57,13 +57,26 @@ const rootSettingsFragment = graphql`
       id
       enable
     }
+    playground_enabled
     platform_modules {
       id
       enable
       running
       warning
     }
-    enterprise_edition
+    platform_enterprise_edition {
+      license_validated
+      license_expired
+      license_expiration_date
+      license_start_date
+      license_expiration_prevention
+      license_valid_cert
+      license_customer
+      license_enterprise
+      license_platform
+      license_platform_match
+      license_type
+    }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
     ...PasswordPolicies
@@ -111,6 +124,7 @@ const meUserFragment = graphql`
   fragment RootMe_data on MeUser {
     id
     name
+    entity_type
     lastname
     language
     theme
@@ -298,7 +312,6 @@ const computeBannerSettings = (settings: RootSettings$data) => {
     sessionLimit,
   };
 };
-
 interface RootComponentProps {
   queryRef: PreloadedQuery<RootPrivateQuery>;
 }

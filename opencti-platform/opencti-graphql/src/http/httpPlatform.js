@@ -163,9 +163,6 @@ const createApp = async (app) => {
   app.use(compression({}));
 
   if (ENABLED_UI) {
-    // -- Serv playground resources
-    app.use(`${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static`, express.static('static/playground'));
-
     // -- Serv flags resources
     app.use(`${basePath}/static/flags`, express.static('static/flags'));
 

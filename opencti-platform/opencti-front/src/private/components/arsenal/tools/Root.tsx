@@ -47,6 +47,10 @@ const toolQuery = graphql`
   query RootToolQuery($id: String!) {
     tool(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -142,6 +146,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   <ToolEdition toolId={tool.id} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
             />
             <Box

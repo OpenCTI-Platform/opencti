@@ -26,6 +26,7 @@ export interface FilterIconButtonProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  fintelTemplatesContext?: boolean;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -51,6 +52,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
+  fintelTemplatesContext,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -81,6 +83,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
+            fintelTemplatesContext={fintelTemplatesContext}
           />
         </React.Suspense>
       )}
@@ -115,6 +118,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
+  fintelTemplatesContext,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = () => {
@@ -146,6 +150,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         availableRelationshipTypes={availableRelationshipTypes}
+        fintelTemplatesContext={fintelTemplatesContext}
       />
     );
   }

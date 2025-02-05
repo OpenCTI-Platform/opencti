@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -29,6 +29,7 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
+import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -195,7 +196,7 @@ const AuditsHorizontalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t_i18n('No entities of this type has been found.')}
+                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
                 </span>
               </div>
             );

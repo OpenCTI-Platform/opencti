@@ -5,6 +5,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -43,6 +44,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_PUBLIC_DASHBOARD,
   ENTITY_TYPE_DELETE_OPERATION,
   ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_EXCLUSION_LIST,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -71,6 +73,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_WORK,
   ENTITY_TYPE_DRAFT_WORKSPACE,
   ENTITY_TYPE_EXCLUSION_LIST,
+  ENTITY_TYPE_FINTEL_TEMPLATE,
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 

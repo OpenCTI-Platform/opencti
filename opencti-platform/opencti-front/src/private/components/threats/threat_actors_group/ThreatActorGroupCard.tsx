@@ -6,6 +6,10 @@ import { ThreatActorGroupCard_node$key } from './__generated__/ThreatActorGroupC
 export const ThreatActorGroupCardFragment = graphql`
   fragment ThreatActorGroupCard_node on ThreatActorGroup {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     name
     aliases
     description

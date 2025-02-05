@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary } from '@components/Error';
 import Paper from '@mui/material/Paper';
@@ -12,6 +12,7 @@ import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
+import { useFormatter } from '../../components/i18n';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -34,6 +35,7 @@ const PublicDashboardComponent = ({
 }: PublicDashboardComponentProps) => {
   const navigate = useNavigate();
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
+  const { t_i18n } = useFormatter();
 
   const { publicDashboardByUriKey } = usePreloadedQuery(publicDashboardQuery, queryRef);
   const manifest = publicDashboardByUriKey?.public_manifest;
@@ -63,7 +65,7 @@ const PublicDashboardComponent = ({
 
   return (
     <>
-      <PublicTopBar />
+      <PublicTopBar title={t_i18n('Public dashboard')} />
       <PublicDashboardHeader
         title={publicDashboardByUriKey?.name ?? ''}
         manifestConfig={config}

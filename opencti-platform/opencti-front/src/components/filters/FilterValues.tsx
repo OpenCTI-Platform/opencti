@@ -109,6 +109,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
+    const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     return (
       <Fragment key={id}>
         <FilterValuesContent
@@ -116,7 +117,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           isFilterTooltip={!!tooltip}
           filterKey={filterKey}
           id={id}
-          value={filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id}
+          value={value}
           filterDefinition={filterDefinition}
           filterOperator={filterOperator}
         />

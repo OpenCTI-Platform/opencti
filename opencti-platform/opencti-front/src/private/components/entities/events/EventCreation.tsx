@@ -41,6 +41,9 @@ const eventMutation = graphql`
       id
       standard_id
       name
+      representative {
+        main
+      }
       description
       confidence
       entity_type

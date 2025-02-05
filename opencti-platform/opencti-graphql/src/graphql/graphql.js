@@ -1,14 +1,12 @@
 import { ApolloServer } from '@apollo/server';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
-import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
-import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
-import conf, { basePath, DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
+import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
@@ -69,15 +67,6 @@ const createApolloServer = () => {
     apolloPlugins.push(...protection.plugins);
     apolloValidationRules.push(...protection.validationRules);
   }
-  // In production mode, we use static from the server
-  const playgroundOptions = DEV_MODE ? { settings: { 'request.credentials': 'include' } } : {
-    cdnUrl: `${basePath}/static`,
-    title: 'OpenCTI Playground',
-    faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`,
-    settings: { 'request.credentials': 'include' }
-  };
-  const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
-  apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
   const secureIntrospectionPlugin = {
     requestDidStart: (requestContext) => {

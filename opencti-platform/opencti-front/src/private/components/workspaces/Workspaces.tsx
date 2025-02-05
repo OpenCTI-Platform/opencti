@@ -14,7 +14,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import { textInTooltip } from '../../../components/dataGrid/dataTableUtils';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const workspaceLineFragment = graphql`
   fragment WorkspacesLine_node on Workspace {
@@ -101,6 +102,9 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(type === 'dashboard' ? t_i18n('Custom dashboards | Dashboards') : t_i18n('Investigations'));
+
   const LOCAL_STORAGE_KEY = `view-${type}-list`;
   const initialStorageValues = {
     searchTerm: '',
@@ -147,7 +151,6 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     name: {
       id: 'name',
       percentWidth: 33,
-      render: ({ name }, h) => textInTooltip(name, h),
     },
     tags: {
       id: 'tags',
@@ -155,7 +158,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     creator: {
       id: 'creator',
       isSortable: true,
-      render: ({ owner }, h) => textInTooltip(owner.name, h),
+      render: ({ owner }) => defaultRender(owner.name),
     },
     created_at: {
       id: 'created_at',

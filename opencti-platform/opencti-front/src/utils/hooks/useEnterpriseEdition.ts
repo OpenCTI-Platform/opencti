@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -14,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import useAuth from './useAuth';
-import { isNotEmptyField } from '../utils';
 
 const useEnterpriseEdition = (): boolean => {
   const { settings } = useAuth();
-  return isNotEmptyField(settings.enterprise_edition);
+  return settings.platform_enterprise_edition.license_validated;
 };
 
 export default useEnterpriseEdition;

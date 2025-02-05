@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { graphql } from 'react-relay';
+import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -18,6 +19,8 @@ export const stixRelationshipsListSearchQuery = graphql`
     $filters: FilterGroup
     $dynamicFrom: FilterGroup
     $dynamicTo: FilterGroup
+    $orderBy: StixRelationshipsOrdering
+    $orderMode: OrderingMode
   ) {
     stixRelationships(
       search: $search
@@ -28,6 +31,8 @@ export const stixRelationshipsListSearchQuery = graphql`
       filters: $filters
       dynamicFrom: $dynamicFrom
       dynamicTo: $dynamicTo
+      orderBy: $orderBy
+      orderMode: $orderMode
     ) {
       edges {
         node {
@@ -42,7 +47,7 @@ export const stixRelationshipsListSearchQuery = graphql`
   }
 `;
 
-const stixRelationshipsListQuery = graphql`
+export const stixRelationshipsListQuery = graphql`
   query StixRelationshipsListQuery(
     $relationship_type: [String]
     $fromId: [String]
@@ -78,6 +83,33 @@ const stixRelationshipsListQuery = graphql`
           parent_types
           relationship_type
           confidence
+          representative {
+            main
+          }
+          from {
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
+          to {
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
           ... on StixCoreRelationship {
             start_time
             stop_time
@@ -3378,6 +3410,10 @@ const stixRelationshipsListQuery = graphql`
               parent_types
             }
             ... on StixCoreObject {
+              representative {
+                main
+              }
+              entity_type
               created_at
             }
             ... on StixRelationship {
@@ -3812,6 +3848,10 @@ const stixRelationshipsListQuery = graphql`
                   entity_type
                 }
                 ... on StixCoreObject {
+                  representative {
+                    main
+                  }
+                  entity_type
                   created_at
                 }
                 ... on StixRelationship {
@@ -4473,6 +4513,7 @@ const StixRelationshipsList = ({
   startDate,
   endDate,
   dataSelection,
+  widgetId,
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
@@ -4481,36 +4522,50 @@ const StixRelationshipsList = ({
       return 'No data selection';
     }
     const selection = dataSelection[0];
+    const columns = selection.columns ?? getDefaultWidgetColumns('relationships');
+
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+
+    const rootRef = useRef(null);
+
     return (
-      <QueryRenderer
-        query={stixRelationshipsListQuery}
-        variables={{
-          first: 50,
-          orderBy: dateAttribute,
-          orderMode: 'desc',
-          filters,
-          dynamicFrom: selection.dynamicFrom,
-          dynamicTo: selection.dynamicTo,
-        }}
-        render={({ props }) => {
-          if (
-            props
+      <div ref={rootRef} style={{ height: '100%', width: '100%' }}>
+        <QueryRenderer
+          query={stixRelationshipsListQuery}
+          variables={{
+            first: 50,
+            orderBy: dateAttribute,
+            orderMode: 'desc',
+            filters,
+            dynamicFrom: selection.dynamicFrom,
+            dynamicTo: selection.dynamicTo,
+          }}
+          render={({ props }) => {
+            if (
+              props
             && props.stixRelationships
             && props.stixRelationships.edges.length > 0
-          ) {
-            const data = props.stixRelationships.edges;
-            return <WidgetListRelationships data={data} dateAttribute={dateAttribute} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+            ) {
+              const data = props.stixRelationships.edges;
+              return (
+                <WidgetListRelationships
+                  data={data}
+                  widgetId={widgetId}
+                  columns={columns}
+                  rootRef={rootRef.current ?? undefined}
+                />
+              );
+            }
+            if (props) {
+              return <WidgetNoData />;
+            }
+            return <Loader variant={LoaderVariant.inElement} />;
+          }}
+        />
+      </div>
     );
   };
   return (

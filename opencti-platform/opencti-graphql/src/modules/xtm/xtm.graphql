@@ -15,6 +15,31 @@ enum SimulationType {
     mixed
 }
 
+enum Platform {
+    Windows
+    Linux
+    MacOS
+}
+
+enum Architecture {
+    x86_64
+    arm64
+}
+
+input SimulationConfig {
+    interval: Int!
+    selection: Selection!
+    simulationType: SimulationType!
+    platforms: [Platform]
+    architecture: Architecture
+}
+
+type GenerationResponse {
+    urlResponse: String
+    attackPatternsNotAvailableInOpenBAS: String
+    hasInjectPlaceholders: Boolean
+}
+
 type SimulationsResult {
     unknown: Int
     success: Int
@@ -33,7 +58,7 @@ type Query {
 }
 
 type Mutation {
-    obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasContainerGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasThreatGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasVictimGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse @auth(for: [KNOWLEDGE_KNUPDATE])
 }

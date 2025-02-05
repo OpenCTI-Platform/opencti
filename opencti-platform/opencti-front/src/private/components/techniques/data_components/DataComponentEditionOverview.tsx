@@ -20,6 +20,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useHelper from '../../../../utils/hooks/useHelper';
+import DataComponentDeletion from './DataComponentDeletion';
 
 const dataComponentMutationFieldPatch = graphql`
   mutation DataComponentEditionOverviewFieldPatchMutation(
@@ -140,7 +142,8 @@ const DataComponentEditionOverview: FunctionComponent<
 DataComponentEditionOverviewComponentProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
 
   const basicShape = {
@@ -314,16 +317,23 @@ DataComponentEditionOverviewComponentProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={dataComponent.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <DataComponentDeletion
+                  id={dataComponent.id}
+                />
+              : <div />}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={dataComponent.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

@@ -23,6 +23,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { DraftChip } from '../draft/DraftChip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -137,6 +138,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
               style={{ width: dataColumns.observable_value.width }}
             >
               {renderObservableValue(node)}
+              {node.draftVersion && (<DraftChip/>)}
             </div>
             <div
               className={classes.bodyItem}
@@ -228,6 +230,10 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
     node: graphql`
       fragment ContainerStixCyberObservableLine_node on StixCyberObservable {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         standard_id
         observable_value
         entity_type

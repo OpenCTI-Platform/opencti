@@ -3,7 +3,6 @@ import convertExclusionListToStix from './exclusionList-converter';
 import { ENTITY_TYPE_EXCLUSION_LIST, type StixExclusionList, type StoreEntityExclusionList } from './exclusionList-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { isFeatureEnabled } from '../../config/conf';
 
 const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, StixExclusionList> = {
   type: {
@@ -59,6 +58,17 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       editDefault: false,
       multiple: true,
       upsert: false,
+      isFilterable: true
+    },
+    {
+      name: 'exclusion_list_values_count',
+      label: 'Exclusion list values count',
+      type: 'numeric',
+      precision: 'long',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
       isFilterable: false
     },
     {
@@ -66,6 +76,17 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       label: 'File id',
       type: 'string',
       format: 'short',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false
+    },
+    {
+      name: 'exclusion_list_file_size',
+      label: 'Exclusion list file size',
+      type: 'numeric',
+      precision: 'long',
       mandatoryType: 'internal',
       editDefault: false,
       multiple: false,
@@ -80,8 +101,4 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
   converter: convertExclusionListToStix
 };
 
-const isExclusionListEnabled = isFeatureEnabled('EXCLUSION_LIST');
-
-if (isExclusionListEnabled) {
-  registerDefinition(EXCLUSION_LIST_DEFINITION);
-}
+registerDefinition(EXCLUSION_LIST_DEFINITION);

@@ -18,6 +18,7 @@ import ToolBar from '../data/ToolBar';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,6 +38,8 @@ const useStyles = makeStyles(() => ({
 const Vocabularies = () => {
   const classes = useStyles();
   const { t_i18n, n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Vocabularies | Settings'));
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);

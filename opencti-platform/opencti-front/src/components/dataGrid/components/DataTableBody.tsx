@@ -1,54 +1,44 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { createStyles } from '@mui/styles';
-import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
+import React, { CSSProperties, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
-import { ColumnSizeVars, DataTableBodyProps, DataTableLineProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
-import { SELECT_COLUMN_SIZE } from './DataTableHeader';
-import { throttle } from '../../../utils/utils';
 import { useDataTableContext } from './DataTableContext';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<MuiTheme, { columnSizeVars: ColumnSizeVars }>(() => createStyles({
-  tableContainer: ({ columnSizeVars }) => ({
-    ...columnSizeVars,
-    height: 'calc(var(--table-height) * 1px)',
-    overflowY: 'visible',
-  }),
-  linesContainer: {
-    height: 'calc(var(--table-height, 100%) * 1px - 50px)',
-    width: 'calc(var(--col-table-size, 100%) * 1px)', // 10px is approx. the scrollbar size to prevent alignment issues
-    overflowY: 'auto',
-    overflowX: 'hidden',
-  },
-}));
+import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import callbackResizeObserver from '../../../utils/resizeObservers';
 
 const DataTableBody = ({
-  columns,
   settingsMessagesBannerHeight = 0,
   hasFilterComponent,
   dataTableToolBarComponent,
   pageStart,
   pageSize,
-  setReset,
-  reset = false,
   hideHeaders = false,
+  tableRef,
 }: DataTableBodyProps) => {
   const {
     rootRef,
-    setColumns,
-    useDataTableColumnsLocalStorage,
     variant,
-    useDataTable,
     resolvePath,
-    useDataTableToggle,
+    tableWidthState: [tableWidth, setTableWidth],
+    startsWithAction,
+    endsWithAction,
     actions,
+    columns,
+    useDataTable: {
+      data: queryData,
+      isLoading,
+      loadMore,
+      hasMore,
+    },
+    useDataTableToggle: {
+      selectedElements,
+      onToggleEntity,
+    },
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { filters },
+    },
   } = useDataTableContext();
-
-  const { data: queryData, isLoading, loadMore, hasMore } = useDataTable;
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
@@ -63,116 +53,24 @@ const DataTableBody = ({
     }
   }, [resolvedData]);
 
-  // TABLE HANDLING
-  const [resize, setResize] = useState(false);
-  const resizeObserver = useRef(new ResizeObserver(throttle(() => {
-    setResize(true);
-  }, 200)));
-  const [computeState, setComputeState] = useState<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  const [localStorageColumns, setLocalStorageColumns] = useDataTableColumnsLocalStorage;
-
-  const startsWithSelect = columns.at(0)?.id === 'select';
-  const endsWithNavigate = columns.at(-1)?.id === 'navigate';
-
-  let storedSize = (endsWithNavigate || actions) ? SELECT_COLUMN_SIZE : 0;
-  if (startsWithSelect) {
-    storedSize += SELECT_COLUMN_SIZE;
-  }
-
-  // This is intended to improve performance by memoizing the column sizes
-  const columnSizeVars: ColumnSizeVars = React.useMemo(() => {
-    const localColumns: LocalStorageColumns = {};
-    const colSizes: { [key: string]: number } = {
-      '--header-select-size': SELECT_COLUMN_SIZE,
-      '--col-select-size': SELECT_COLUMN_SIZE,
-      '--header-navigate-size': SELECT_COLUMN_SIZE,
-      '--col-navigate-size': SELECT_COLUMN_SIZE,
-    };
-    const currentRefContainer = containerRef.current;
-    if (!computeState && !currentRefContainer) {
-      return colSizes;
+  // Keep table width up to date.
+  useLayoutEffect(() => {
+    let observer: ResizeObserver;
+    if (tableRef.current) {
+      const resize = (el: Element) => {
+        let offset = 10;
+        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
+        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
+        if ((el.clientWidth - offset) !== tableWidth) {
+          setTableWidth(el.clientWidth - offset);
+        }
+      };
+      resize(tableRef.current);
+      observer = callbackResizeObserver(tableRef.current, resize);
     }
-    // From there, currentRefContainer is not null
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    const clientWidth = currentRefContainer!.clientWidth - storedSize - 10; // Scrollbar size to prevent alignment issues
-    for (let i = startsWithSelect ? 1 : 0; i < columns.length - (endsWithNavigate ? 1 : 0); i += 1) {
-      const column = reset ? columns[i] : { ...columns[i], ...localStorageColumns[columns[i].id] };
-      const shouldCompute = (!column.size || resize || !localStorageColumns[columns[i].id]?.size) && (column.percentWidth && Boolean(computeState));
-      let size = column.size ?? 200;
+    return () => { observer?.disconnect(); };
+  }, [tableRef.current, tableWidth, startsWithAction, endsWithAction]);
 
-      // We must compute px size for columns
-      if (shouldCompute || reset) {
-        size = column.percentWidth * (clientWidth / 100);
-        column.size = size;
-      }
-      localColumns[column.id] = { size };
-      colSizes[`--header-${column.id}-size`] = size;
-      colSizes[`--col-${column.id}-size`] = size;
-    }
-    if (Object.keys(localColumns).length > 0) {
-      setResize(false);
-    }
-    if (Object.entries(localColumns).some(([id, { size }]) => localStorageColumns[id]?.size !== size)) {
-      setLocalStorageColumns(localColumns);
-      setColumns((curr) => {
-        return curr.map((col) => {
-          if (localColumns[col.id]) {
-            return { ...col, size: localColumns[col.id].size };
-          }
-          return col;
-        });
-      });
-    }
-    const columnsSize = Object.values(localColumns).reduce((acc, { size }) => acc + size, 0);
-    const tableSize = columnsSize + storedSize;
-
-    // Dirty fix for tables with mismatch size
-    // Will be remove when rework by Landry
-    if (tableSize < clientWidth) {
-      setResize(true);
-    }
-
-    if (columnsSize > clientWidth) {
-      currentRefContainer!.style.overflowX = 'auto';
-      currentRefContainer!.style.overflowY = 'hidden';
-    } else {
-      currentRefContainer!.style.overflow = 'hidden';
-    }
-    colSizes['--header-table-size'] = tableSize + 10;
-    colSizes['--col-table-size'] = tableSize + 10;
-    if (variant === DataTableVariant.widget) {
-      if (!rootRef) {
-        throw Error('Invalid configuration for widget list');
-      }
-      colSizes['--table-height'] = rootRef.offsetHeight;
-    } else if (rootRef) {
-      colSizes['--table-height'] = rootRef.offsetHeight - 42; // SIZE OF CONTAINER - Nb Elements - Line Size
-    } else {
-      const rootSize = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
-      const filterRemoval = (hasFilterComponent && document.getElementById('filter-container')?.children.length) ? 230 : 200;
-      const tabsRemoval = document.getElementById('tabs-container')?.children.length ? 50 : 0;
-      colSizes['--table-height'] = rootSize - filterRemoval - tabsRemoval;
-    }
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
-
-    setReset(false);
-    return colSizes;
-  }, [
-    resize,
-    computeState,
-    columns,
-    localStorageColumns,
-    document.getElementById('filter-container'),
-    rootRef,
-  ]);
-  const classes = useStyles({ columnSizeVars });
-
-  const {
-    selectedElements,
-    onToggleEntity,
-  } = useDataTableToggle;
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
       // Find the indexes of the first and last selected entities
@@ -204,72 +102,89 @@ const DataTableBody = ({
     return onToggleEntity(currentEntity, event);
   };
 
+  const [tableHeight, setTableHeight] = useState(0);
   useLayoutEffect(() => {
-    const handleResize = () => setResize(true);
-    const handleStorage = ({ key }: StorageEvent) => setTimeout(() => {
-      if (key === 'navOpen') {
-        setResize(true);
-      }
-    }, 200);
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('storage', handleStorage);
-    if (rootRef) resizeObserver.current.observe(rootRef);
-    let observer: MutationObserver | undefined;
-    const elementToObserve = document.getElementById('filter-container');
-    if (elementToObserve) {
-      observer = new MutationObserver(() => setResize(true));
-      observer.observe(elementToObserve, { childList: true });
+    if (variant === DataTableVariant.widget && !rootRef) {
+      throw Error('Invalid configuration for widget list');
     }
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('storage', handleStorage);
-      resizeObserver.current.disconnect();
-      if (hasFilterComponent && observer) {
-        observer.disconnect();
+    const hasFilters = (filters?.filters ?? []).length > 0;
+    let filtersHeight = hasFilterComponent ? 54 : 0;
+    if (hasFilterComponent && hasFilters) filtersHeight += 48;
+
+    // TODO: this computation should be avoided because too many risk of changes.
+    // Instead use the rootRef props. Example in:
+    // - StixCoreRelationshipCreationFromEntity.tsx
+    // - IndicatorObservables.jsx
+    const defaultComputation = () => {
+      const rootHeight = (document.getElementById('root')?.offsetHeight ?? 0) - settingsMessagesBannerHeight;
+      const headerHeight = 64;
+      const breadcrumbHeight = document.getElementById('page-breadcrumb') ? 38 : 0;
+      const mainPadding = 40;
+      const tabsHeight = document.getElementById('tabs-container')?.children.length ? 72 : 0;
+      setTableHeight(rootHeight - headerHeight - breadcrumbHeight - mainPadding - filtersHeight - tabsHeight);
+    };
+
+    // Take the height of the given parent.
+    let observer: ResizeObserver;
+    const rootComputation = () => {
+      if (rootRef) {
+        setTableHeight(rootRef.offsetHeight - filtersHeight);
       }
     };
-  }, []);
-  const effectiveColumns = useMemo(() => columns
-    .map((col) => ({ ...col, size: localStorageColumns[col.id]?.size })), [columns, localStorageColumns, reset]);
+
+    if (rootRef) {
+      rootComputation();
+      observer = callbackResizeObserver(rootRef, rootComputation);
+    } else {
+      defaultComputation();
+    }
+
+    return () => { observer?.disconnect(); };
+  }, [settingsMessagesBannerHeight, rootRef, filters]);
+
+  const rowWidth = useMemo(() => (
+    Math.floor(columns.reduce((acc, col) => {
+      const width = col.percentWidth
+        ? tableWidth * (col.percentWidth / 100)
+        : SELECT_COLUMN_SIZE;
+      return acc + width;
+    }, actions ? SELECT_COLUMN_SIZE + 9 : 9)) // 9 is for scrollbar.
+  ), [columns, tableWidth]);
+
+  const containerLinesStyle: CSSProperties = {
+    overflow: 'hidden auto',
+    maxHeight: `calc(${tableHeight}px - ${hideHeaders ? 0 : SELECT_COLUMN_SIZE}px)`,
+    width: rowWidth,
+  };
+
+  if (!tableWidth) {
+    return null;
+  }
 
   return (
-    <div
-      ref={containerRef}
-      className={classes.tableContainer}
-      style={{ ...columnSizeVars }}
-    >
-      {!hideHeaders && (
-        <DataTableHeaders
-          containerRef={containerRef}
-          effectiveColumns={effectiveColumns}
-          dataTableToolBarComponent={dataTableToolBarComponent}
-        />
-      )}
-      <div
-        ref={(node) => setComputeState(node)}
-        className={classes.linesContainer}
-      >
-        {computeState && (
-          <>
-            {/* If we have perf issues we should find a way to memoize this */}
-            {resolvedData.map((row: { id: string }, index: number) => {
-              return (
-                <DataTableLine
-                  key={row.id}
-                  row={row}
-                  effectiveColumns={effectiveColumns}
-                  index={index}
-                  onToggleShiftEntity={onToggleShiftEntity}
-                />
-              );
-            })}
-            {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 25)} />}
-          </>
+    <>
+      <div style={{ width: rowWidth }}>
+        {!hideHeaders && (
+          <DataTableHeaders dataTableToolBarComponent={dataTableToolBarComponent} />
         )}
       </div>
-    </div>
+
+      <div style={containerLinesStyle}>
+        {/* If we have perf issues we should find a way to memoize this */}
+        {resolvedData.map((row: { id: string }, index: number) => {
+          return (
+            <DataTableLine
+              key={row.id}
+              row={row}
+              index={index}
+              onToggleShiftEntity={onToggleShiftEntity}
+            />
+          );
+        })}
+        {isLoading && <DataTableLinesDummy number={Math.max(pageSize, 10)} />}
+      </div>
+    </>
   );
 };
 

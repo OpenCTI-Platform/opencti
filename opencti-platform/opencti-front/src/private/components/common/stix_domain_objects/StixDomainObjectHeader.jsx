@@ -25,8 +25,10 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import { DraftChip } from '../draft/DraftChip';
+import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
+import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
@@ -43,6 +45,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -260,8 +263,8 @@ const StixDomainObjectHeader = (props) => {
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
     enableQuickSubscription,
-    enableAskAi,
     enableEnricher,
+    enableEnrollPlaybook,
   } = props;
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
@@ -272,14 +275,9 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-  let type = 'unsupported';
-  const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
-  const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
-  if (isThreat) {
-    type = 'threat';
-  } else if (isVictim) {
-    type = 'victim';
-  }
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
   };
@@ -423,6 +421,9 @@ const StixDomainObjectHeader = (props) => {
               {truncate(getMainRepresentative(stixDomainObject), 80)}
             </Typography>
           </Tooltip>
+          {stixDomainObject.draftVersion && (
+            <DraftChip style={{ marginTop: 7 }}/>
+          )}
           {typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
               <InputLabel>
@@ -574,8 +575,9 @@ const StixDomainObjectHeader = (props) => {
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
-                id={stixDomainObject.id}
-                type={entityType}
+                scoId={stixDomainObject.id}
+                scoEntityType={entityType}
+                OpenFormComponent={StixCoreObjectFileExportButton}
               />
             </Security>
             {isKnowledgeUpdater && (
@@ -589,17 +591,11 @@ const StixDomainObjectHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
-            {enableAskAi && (
-              <StixCoreObjectAskAI
-                instanceId={stixDomainObject.id}
-                instanceType={stixDomainObject.entity_type}
-                instanceName={getMainRepresentative(stixDomainObject)}
-                instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
-                type={type}
-              />
-            )}
             {(enableEnricher && isKnowledgeEnricher) && (
               <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
+            )}
+            {isFABReplaced && enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
             )}
             {isKnowledgeUpdater && (
               <div className={classes.popover}>

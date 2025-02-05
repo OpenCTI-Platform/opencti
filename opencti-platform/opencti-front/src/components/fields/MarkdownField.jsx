@@ -93,6 +93,7 @@ const MarkdownField = (props) => {
         }}
         minEditorHeight={height || 100}
         maxEditorHeight={height || 100}
+        minPreviewHeight={140}
       />
       {meta.error && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>

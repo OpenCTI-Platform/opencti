@@ -3,6 +3,7 @@
     "port": 4000,
     "base_path": "",
     "base_url": "http://localhost:4000/",
+    "enterprise_edition_license": "",
     "public_dashboard_authorized_domains": "",
     "notifier_authorized_functions": ["if", "for", "forEach", "while", "stringify", "Date", "toLocaleString", "isArray", "keys", "function"],
     "enabled": true,
@@ -21,7 +22,7 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
-      "logs_redacted_inputs": ["password", "secret", "token"],
+      "logs_redacted_inputs": ["password", "secret", "token", "enterprise_license"],
       "extended_error_message": false
     },
     "filename_to_mimes": {
@@ -100,6 +101,9 @@
       "cache_max_size": 5000,
       "cache_max_time": 2
     },
+    "exclusion_list": {
+      "file_max_size": 10000000
+    },
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png",
@@ -121,6 +125,11 @@
     },
     "csv_ingestion": {
       "max_bundle_size": 1000
+    },
+    "validation_mode": "workbench",
+    "dissemination_list": {
+      "to_email": "no-reply@filigran.io",
+      "max_list_size": 500
     }
   },
   "demo_mode": false,
@@ -167,7 +176,9 @@
     "endpoint": "",
     "token": "",
     "model": "",
-    "model_images": ""
+    "model_images": "",
+    "max_tokens": 30000,
+    "insights_refresh_timeout": 60
   },
   "xtm": {
     "openbas_url": "",
@@ -282,6 +293,15 @@
     "lock_key": "file_index_manager_lock",
     "stream_lock_key": "file_index_manager_stream_lock",
     "interval": 60000
+  },
+  "exclusion_list_cache_build_manager": {
+    "enabled": true,
+    "lock_key": "exclusion_list_cache_build_manager_lock",
+    "interval": 10000
+  },
+  "exclusion_list_cache_sync_manager": {
+    "lock_key": "exclusion_list_cache_sync_manager_lock",
+    "interval": 10000
   },
   "redis": {
     "mode": "single",

@@ -44,6 +44,7 @@ enum State {
 }
 
 enum Capabilities {
+  BYPASS
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
@@ -56,6 +57,7 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
+  KNOWLEDGE_KNDISSEMINATION
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
@@ -69,6 +71,7 @@ enum Capabilities {
   SETTINGS_SETPARAMETERS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
+  SETTINGS_SETDISSEMINATION
   SETTINGS_SETLABELS
   SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
@@ -445,6 +448,29 @@ type OpinionsMetrics {
   min: Int
   max: Int
   total: Int
+}
+
+type AiActivity {
+  result: String
+  trend: String
+  updated_at: DateTime
+}
+
+type AiSummary {
+  result: String
+  topics: [String]
+  updated_at: DateTime
+}
+
+type AiForecast {
+  result: String
+  confidence: Int
+  updated_at: DateTime
+}
+
+type AiHistory {
+  result: String
+  updated_at: DateTime
 }
 
 type LogsWorkerConfig {
@@ -846,6 +872,7 @@ type Work {
   messages: [WorkMessage]
   errors: [WorkMessage]
   tracking: WorkTracking
+  draft_context: String
 }
 
 type WorkEdge {
@@ -939,6 +966,8 @@ type WidgetDataSelection {
   dynamicTo: String
   columns: [WidgetColumn!]
   instance_id: String
+  sort_by: String
+  sort_mode: String
 }
 
 type WidgetParameters {
@@ -967,20 +996,6 @@ type Widget {
   dataSelection: [WidgetDataSelection!]!
   parameters: WidgetParameters
   layout: WidgetLayout
-}
-
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-
-type TemplateAndUtils {
-  template: Template!
-  template_widgets: [Widget!]!
 }
 
 type IndexedFile {
@@ -1061,6 +1076,7 @@ enum BackgroundTaskActionType {
   UNSHARE
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
+  REMOVE_AUTH_MEMBERS
 }
 
 enum BackgroundTaskContextType {
@@ -1304,6 +1320,23 @@ type SettingsMessage {
   recipients: [Member!]
 }
 
+type PlatformEE {
+  license_enterprise: Boolean!
+  license_by_configuration: Boolean!
+  license_customer: String!
+  license_validated: Boolean!
+  license_valid_cert: Boolean!
+  license_expired: Boolean!
+  license_expiration_prevention: Boolean!
+  license_start_date: DateTime!
+  license_expiration_date: DateTime!
+  license_platform: String!
+  license_type: String!
+  license_platform_match: Boolean!
+  license_creator: String!
+  license_global: Boolean!
+}
+
 enum PlatformCriticalAlertType {
   GROUP_WITH_NULL_CONFIDENCE_LEVEL
 }
@@ -1339,6 +1372,7 @@ type Settings implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
   platform_title: String
   platform_favicon: String
@@ -1394,7 +1428,6 @@ type Settings implements InternalObject & BasicObject {
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   created_at: DateTime!
   updated_at: DateTime!
-  enterprise_edition: DateTime
   activity_listeners: [Member!]
   otp_mandatory: Boolean
   password_policy_min_length: Int
@@ -1407,6 +1440,7 @@ type Settings implements InternalObject & BasicObject {
   platform_messages: [SettingsMessage!]
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
+  playground_enabled: Boolean!
   editContext: [EditUserContext!]
 }
 
@@ -2036,7 +2070,9 @@ type Inference {
 enum DraftOperation {
   create
   update
+  update_linked
   delete
+  delete_linked
 }
 
 type DraftVersion {
@@ -2374,6 +2410,7 @@ enum StixCoreObjectsOrdering {
   opinions_metrics_max
   opinions_metrics_total
   _score
+  authorized_members_activation_date
 }
 
 type StixCoreObjectConnection {
@@ -2565,6 +2602,7 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
+  objectMarking
   x_opencti_workflow_id
   _score
 }
@@ -2866,12 +2904,12 @@ interface Container {
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
@@ -2942,6 +2980,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2954,9 +2993,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3077,6 +3115,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -3088,9 +3127,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3187,6 +3225,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -3197,9 +3236,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3316,6 +3354,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -3331,9 +3370,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3370,6 +3408,7 @@ input ReportAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  authorized_members: [MemberAccessInput!]
 }
 
 enum CoursesOfActionOrdering {
@@ -7840,6 +7879,7 @@ type Query {
   importFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesMetrics: FilesMetrics
+  askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
@@ -7903,7 +7943,11 @@ type Query {
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
+  stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity
+  stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast
+  stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]
@@ -7930,6 +7974,8 @@ type Query {
   containers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ContainerConnection
   containersObjectsOfObject(id: String!, types: [String], filters: FilterGroup, search: String): StixObjectOrStixRelationshipConnection
   containersNumber(objectId: String, endDate: DateTime): Number
+  containersDistribution(objectId: String, authorId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String, filters: FilterGroup, search: String): [Distribution]
+  containersAskAiSummary(busId: String, first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, language: String, forceRefresh: Boolean): AiSummary
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): NoteConnection
   notesNumber(objectId: String, endDate: DateTime): Number
@@ -8045,6 +8091,7 @@ type Query {
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NarrativeConnection
   triggerKnowledge(id: String!): Trigger
   triggersKnowledge(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): TriggerConnection
+  triggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): TriggerConnection
   triggersKnowledgeCount(filters: FilterGroup, includeAuthorities: Boolean, search: String): Int
   triggerActivity(id: String!): Trigger
   triggersActivity(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): TriggerConnection
@@ -8142,10 +8189,15 @@ type Query {
   supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
   exclusionList(id: String!): ExclusionList
   exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
+  exclusionListCacheStatus: ExclusionListCacheStatus
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspaceEntities(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   draftWorkspaceRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixRelationshipConnection
+  draftWorkspaceSightingRelationships(draftId: String!, types: [String], first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixSightingRelationshipConnection
+  fintelTemplate(id: ID!): FintelTemplate
+  disseminationList(id: String!): DisseminationList
+  disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
 }
 
 type Subscription {
@@ -8179,6 +8231,7 @@ type WorkEditMutations {
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
   addExpectations(expectations: Int): ID!
+  addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
   toProcessed(message: String, inError: Boolean): ID!
 }
@@ -8587,7 +8640,7 @@ type StixCyberObservableEditMutations {
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
-  promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.5]. Use `promoteToIndicator`.")
+  promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")
 }
 
 type StixRelationshipEditMutations {
@@ -8624,11 +8677,16 @@ type StixRefRelationshipEditMutations {
   contextPatch(input: EditContext): StixRefRelationship
 }
 
+enum ValidationMode {
+  draft
+  workbench
+}
+
 type Mutation {
   deleteImport(fileName: String): ID
   uploadImport(file: Upload!, fileMarkings: [String]): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, refreshEntity: Boolean): File
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
@@ -8956,20 +9014,31 @@ type Mutation {
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
-  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
-  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
-  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
+  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`.")
+  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`.")
+  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`.")
+  obasContainerGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
+  obasThreatGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
+  obasVictimGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
   supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
   supportPackageDelete(id: ID!): ID
-  exclusionListContentAdd(input: ExclusionListContentAddInput!): ExclusionList
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
+  exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
+  fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
+  fintelTemplateDelete(id: ID!): ID
+  fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
+  fintelTemplateConfigurationImport(file: Upload!): FintelTemplate
+  disseminationListAdd(input: DisseminationListAddInput!): DisseminationList
+  disseminationListDelete(id: ID!): ID
+  disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
+  disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9319,6 +9388,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9333,9 +9403,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -9391,6 +9460,7 @@ input GroupingAddInput {
   x_opencti_workflow_id: String
   update: Boolean
   file: Upload
+  authorized_members: [MemberAccessInput!]
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -10127,6 +10197,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10134,9 +10205,8 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10269,6 +10339,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10277,9 +10348,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
@@ -10394,6 +10464,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10401,9 +10472,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10477,6 +10547,7 @@ input CaseIncidentAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
+  authorized_members: [MemberAccessInput!]
 }
 
 type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10520,6 +10591,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10527,9 +10599,8 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10601,6 +10672,7 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10644,6 +10716,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10651,9 +10724,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10726,6 +10798,7 @@ input CaseRftAddInput {
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10769,6 +10842,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10776,9 +10850,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  contentsFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  templates: [Template!]
-  templateAndUtils(templateId: String!): TemplateAndUtils
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -10897,6 +10970,7 @@ type EntitySetting implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
 }
 
 enum EntitySettingsOrdering {
@@ -12260,6 +12334,31 @@ enum SimulationType {
   mixed
 }
 
+enum Platform {
+  Windows
+  Linux
+  MacOS
+}
+
+enum Architecture {
+  x86_64
+  arm64
+}
+
+input SimulationConfig {
+  interval: Int!
+  selection: Selection!
+  simulationType: SimulationType!
+  platforms: [Platform]
+  architecture: Architecture
+}
+
+type GenerationResponse {
+  urlResponse: String
+  attackPatternsNotAvailableInOpenBAS: String
+  hasInjectPlaceholders: Boolean
+}
+
 type SimulationsResult {
   unknown: Int
   success: Int
@@ -12364,8 +12463,10 @@ type ExclusionList implements InternalObject & BasicObject {
   parent_types: [String]!
   created_at: DateTime!
   enabled: Boolean!
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
+  exclusion_list_values_count: Int
   file_id: String!
+  exclusion_list_file_size: Int
 }
 
 type ExclusionListConnection {
@@ -12378,29 +12479,24 @@ type ExclusionListEdge {
   node: ExclusionList!
 }
 
+type ExclusionListCacheStatus {
+  refreshVersion: String!
+  cacheVersion: String!
+  isCacheRebuildInProgress: Boolean!
+}
+
 enum ExclusionListOrdering {
   name
   created_at
-}
-
-enum ExclusionListEntityTypes {
-  IPV4_ADDR
-  IPV6_ADDR
-  DOMAIN_NAME
-  URL
-}
-
-input ExclusionListContentAddInput {
-  name: String!
-  description: String
-  list_entity_types: [ExclusionListEntityTypes!]!
-  content: String!
+  enabled
+  exclusion_list_values_count
+  _score
 }
 
 input ExclusionListFileAddInput {
   name: String!
   description: String
-  list_entity_types: [ExclusionListEntityTypes!]!
+  exclusion_list_entity_types: [String!]!
   file: Upload!
 }
 
@@ -12413,6 +12509,16 @@ type DraftWorkspace implements InternalObject & BasicObject {
   created_at: DateTime!
   creators: [Creator!]
   entity_id: String
+  objectsCount: DraftObjectsCount!
+}
+
+type DraftObjectsCount {
+  totalCount: Int!
+  entitiesCount: Int!
+  observablesCount: Int!
+  relationshipsCount: Int!
+  sightingsCount: Int!
+  containersCount: Int!
 }
 
 enum DraftWorkspacesOrdering {
@@ -12434,4 +12540,94 @@ type DraftWorkspaceEdge {
 input DraftWorkspaceAddInput {
   name: String!
   entity_id: String
+}
+
+type FintelTemplateWidget {
+  variable_name: String!
+  widget: Widget!
+}
+
+type FintelTemplate implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  settings_types: [String!]!
+  description: String
+  instance_filters: String
+  template_content: String!
+  start_date: DateTime
+  fintel_template_widgets: [FintelTemplateWidget!]!
+  toConfigurationExport: String!
+}
+
+input FintelTemplateWidgetAddInput {
+  variable_name: String!
+  widget: Any!
+}
+
+input FintelTemplateAddInput {
+  name: String!
+  description: String
+  settings_types: [String!]!
+  instance_filters: String
+  template_content: String
+  start_date: DateTime
+  fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+}
+
+type FintelTemplateEdge {
+  cursor: String!
+  node: FintelTemplate!
+}
+
+type FintelTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [FintelTemplateEdge!]!
+}
+
+enum FintelTemplateOrdering {
+  name
+  start_date
+}
+
+type DisseminationList implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  emails: [String!]!
+  description: String
+}
+
+enum DisseminationListOrdering {
+  name
+  _score
+}
+
+type DisseminationListConnection {
+  pageInfo: PageInfo!
+  edges: [DisseminationListEdge!]!
+}
+
+type DisseminationListEdge {
+  cursor: String!
+  node: DisseminationList!
+}
+
+input DisseminationListAddInput {
+  name: String!
+  emails: [String!]!
+  description: String
+}
+
+input DisseminationListSendInput {
+  entity_id: ID!
+  email_object: String!
+  email_body: String!
+  email_attachment_ids: [ID!]!
 }

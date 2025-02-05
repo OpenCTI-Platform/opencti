@@ -51,6 +51,9 @@ const IncidentMutation = graphql`
       id
       standard_id
       name
+      representative {
+        main
+      }
       description
       entity_type
       parent_types

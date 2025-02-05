@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -16,7 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
 import conf, { logAudit } from '../config/conf';
-import { isEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
@@ -26,10 +25,11 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixCoreObject } from '../schema/stixCoreObject';
+import { REDACTED_INFORMATION } from '../database/utils';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
-export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout', 'unauthorized'];
+export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout', 'unauthorized', 'disseminate'];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
@@ -54,7 +54,20 @@ const initActivityManager = () => {
       const currentObj = stack.pop() as any;
       Object.keys(currentObj).forEach((key) => {
         if (LOGS_SENSITIVE_FIELDS.includes(key)) {
-          currentObj[key] = '*** Redacted ***';
+          currentObj[key] = REDACTED_INFORMATION;
+        }
+        // Need special case to clean inputs
+        if (key === 'input' && Array.isArray(currentObj[key])) {
+          const preparedElements = [];
+          for (let index = 0; index < currentObj[key].length; index += 1) {
+            const currentObjElementElement = currentObj[key][index];
+            if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
+              preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
+            } else {
+              preparedElements.push(currentObjElementElement);
+            }
+          }
+          currentObj[key] = preparedElements;
         }
         if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
           stack.push(currentObj[key]);
@@ -117,7 +130,7 @@ const initActivityManager = () => {
       if (!['query', 'internal'].includes(action.user.origin.socket ?? '')) { // Subscription is not part of the listening
         return;
       }
-      if (isEmptyField(settings.enterprise_edition)) { // If enterprise edition is not activated
+      if (settings.valid_enterprise_edition !== true) { // If enterprise edition is not activated
         return;
       }
       const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
@@ -178,6 +191,12 @@ const initActivityManager = () => {
           if (path.includes('import/pending')) {
             message = `removes Analyst Workbench \`${file_name}\` for \`${entity_name}\` (${entity_type})`;
           }
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'disseminate') {
+          const { entity_name, entity_type, input } = action.context_data;
+          // @ts-expect-error input type unknown
+          const message = `disseminate \`${input.files.map((f) => f.name).join(',')}\` to \`${input.dissemination}\` from \`${entity_name}\` (${entity_type})`;
           await activityLogger(action, message);
         }
       }

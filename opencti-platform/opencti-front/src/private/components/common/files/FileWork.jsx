@@ -9,7 +9,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { CheckCircleOutlined, DeleteOutlined, WarningOutlined } from '@mui/icons-material';
+import { ArchitectureOutlined, CheckCircleOutlined, DeleteOutlined, WarningOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
@@ -19,8 +19,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import { useNavigate } from 'react-router-dom';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -63,6 +65,14 @@ const FileWorkComponent = (props) => {
   } = props;
   const [deleting, setDeleting] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(null);
+  const navigate = useNavigate();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+
+  const navigateToDraft = (draftId) => {
+    navigate(`/dashboard/drafts/${draftId}`);
+  };
+
   const deleteWork = (workId) => {
     commitMutation({
       mutation: fileWorkDeleteMutation,
@@ -161,12 +171,25 @@ const FileWorkComponent = (props) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <div className={classes.itemText}>{computeLabel()}</div>
+                    <span className={classes.itemText}>{computeLabel()}</span>
                   }
                   secondary={
-                    <div className={classes.itemText}>{secondaryLabel}</div>
+                    <span className={classes.itemText}>{secondaryLabel}</span>
                   }
                 />
+                {!!work.draft_context && isDraftFeatureEnabled && (
+                <Tooltip title={t('Navigate to draft')}>
+                  <span>
+                    <IconButton
+                      color="primary"
+                      onClick={() => navigateToDraft(work.draft_context)}
+                      size="small"
+                    >
+                      <ArchitectureOutlined fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                )}
                 <Tooltip title={t('Delete')}>
                   <span>
                     <IconButton
@@ -246,6 +269,7 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
         }
         status
         timestamp
+        draft_context
       }
     }
   `,

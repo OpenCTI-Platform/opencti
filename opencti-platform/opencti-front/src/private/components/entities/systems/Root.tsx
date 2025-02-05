@@ -50,6 +50,10 @@ const systemQuery = graphql`
   query RootSystemQuery($id: String!) {
     system(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       name
       x_opencti_aliases
@@ -163,7 +167,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               enableEnricher={true}
-              PopoverComponent={<SystemPopover />}
+              PopoverComponent={<SystemPopover id={system.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />

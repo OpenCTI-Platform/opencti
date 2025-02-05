@@ -193,6 +193,7 @@ export const addPublicDashboard = async (
             ...(selection.centerLat && { centerLat: selection.centerLat }),
             ...(selection.centerLng && { centerLng: selection.centerLng }),
             ...(selection.zoom && { zoom: selection.zoom }),
+            ...(selection.columns && { columns: selection.columns }),
           };
         });
     });

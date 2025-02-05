@@ -8,7 +8,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../../../components/i18n';
-import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
@@ -57,16 +56,13 @@ export const entitySettingPatch = graphql`
   }
 `;
 
-const EntitySettingSettings = ({
-  entitySettingsData,
-}: {
-  entitySettingsData: SubType_subType$data['settings'];
-}) => {
+interface EntitySettingSettingsProps {
+  entitySettingsData: EntitySettingSettings_entitySetting$key
+}
+
+const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {
   const { t_i18n } = useFormatter();
-  const entitySetting = useFragment<EntitySettingSettings_entitySetting$key>(
-    entitySettingFragment,
-    entitySettingsData,
-  );
+  const entitySetting = useFragment(entitySettingFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
   }

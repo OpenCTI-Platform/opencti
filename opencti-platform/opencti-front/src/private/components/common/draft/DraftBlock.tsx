@@ -25,6 +25,7 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
         display: 'flex',
         flexDirection: 'column',
         minHeight: theme.spacing(4),
+        maxHeight: theme.spacing(4.5),
         padding: theme.spacing(1),
         paddingTop: theme.spacing(0.5),
         borderRadius: theme.spacing(0.5),
@@ -51,7 +52,7 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
       >
         {title ?? t_i18n('Draft Mode')}
       </Typography>
-      {body}
+      <span style={{ overflow: 'hidden' }}>{body}</span>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, createdAt, creators, errors, id, updatedAt } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
@@ -200,7 +200,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'password_policy_min_lowercase', label: 'Min policy lowercase', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_min_uppercase', label: 'Min policy uppercase', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_whitemark', label: 'Whitemark', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'enterprise_edition', label: 'Enterprise edition date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'enterprise_license', label: 'Enterprise edition license', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'activity_listeners_ids', label: 'Activity listeners IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'platform_messages', label: 'Platform messages', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, schemaDef: settingsMessages, isFilterable: false },
     { name: 'analytics_google_analytics_v4', label: 'Google analytics V4', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -312,7 +312,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'otp_qr', label: 'OTP QR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_activated', label: '2FA state', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'draft_context', label: 'Current draft context', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'DRAFT_WORKSPACE' },
+    draftContext,
     { name: 'default_time_field', label: 'Default time field', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_status', label: 'Account status', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_lock_after_date', label: 'User account expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -456,6 +456,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
     { name: 'user_id', label: 'User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
+    draftContext,
     { name: 'status', label: 'Work status', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
     { name: 'import_expected_number', label: 'Expected import number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'processed_time', label: 'Processed date', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
@@ -497,6 +498,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'enable', label: 'Is enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'completed', label: 'Completed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'initiator_id', label: 'Initiator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    draftContext,
     { name: 'task_filters', label: 'Task filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'task_search', label: 'Search', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_position', label: 'Position', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

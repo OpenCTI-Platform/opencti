@@ -22,6 +22,7 @@ import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../..
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { ToolEditionContainerQuery } from './__generated__/ToolEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const toolPopoverDeletionMutation = graphql`
   mutation ToolPopoverDeletionMutation($id: ID!) {
@@ -38,6 +39,9 @@ type ToolPopoverProps = {
 const ToolPopover: React.FC<ToolPopoverProps> = ({ id }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -90,55 +94,57 @@ const ToolPopover: React.FC<ToolPopoverProps> = ({ id }) => {
     });
   };
 
-  return (
-    <div>
-      <ToggleButton value="popover" size="small" onClick={handleOpen}>
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-          <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
-        </Security>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
-      </Menu>
-      <StixCoreObjectEnrichment
-        stixCoreObjectId={id}
-        open={displayEnrichment}
-        handleClose={handleCloseEnrichment}
-      />
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>{t_i18n('Do you want to delete this tool?')}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <ToolEditionContainer
-            queryRef={queryRef}
-            open={displayEdit}
-            handleClose={handleCloseEdit}
-          />
-        </React.Suspense>
-      )}
-    </div>
-  );
+  return isFABReplaced
+    ? (<></>)
+    : (
+      <div>
+        <ToggleButton value="popover" size="small" onClick={handleOpen}>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
+          </Security>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </Security>
+        </Menu>
+        <StixCoreObjectEnrichment
+          stixCoreObjectId={id}
+          open={displayEnrichment}
+          handleClose={handleCloseEnrichment}
+        />
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={displayDelete}
+          keepMounted
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
+        >
+          <DialogContent>
+            <DialogContentText>{t_i18n('Do you want to delete this tool?')}</DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <ToolEditionContainer
+              queryRef={queryRef}
+              open={displayEdit}
+              handleClose={handleCloseEdit}
+            />
+          </React.Suspense>
+        )}
+      </div>
+    );
 };
 
 export default ToolPopover;

@@ -10,12 +10,13 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
-import { textInTooltip } from '../../../../../components/dataGrid/dataTableUtils';
+import { defaultRender } from '../../../../../components/dataGrid/dataTableUtils';
 import Security from '../../../../../utils/Security';
 import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from './__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from './__generated__/PublicDashboardsFragment.graphql';
+import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 const publicDashboardFragment = graphql`
   fragment PublicDashboards_PublicDashboard on PublicDashboard {
@@ -103,6 +104,9 @@ const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Public dashboards'));
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -141,14 +145,14 @@ const PublicDashboards = () => {
       percentWidth: 18,
       label: 'URI key',
       isSortable: true,
-      render: ({ uri_key }, h) => textInTooltip(uri_key, h),
+      render: ({ uri_key }) => defaultRender(uri_key),
     },
     dashboard: {
       id: 'dashboard',
       percentWidth: 18,
       label: 'Dashboard',
       isSortable: false,
-      render: ({ dashboard }, h) => textInTooltip(dashboard.name, h),
+      render: ({ dashboard }) => defaultRender(dashboard.name),
     },
     enabled: {
       id: 'enabled',
@@ -167,7 +171,7 @@ const PublicDashboards = () => {
       percentWidth: 15,
       label: 'Shared by',
       isSortable: true,
-      render: ({ owner }, h) => textInTooltip(owner.name, h),
+      render: ({ owner }) => defaultRender(owner.name),
     },
     allowed_markings: {
       id: 'allowed_markings',

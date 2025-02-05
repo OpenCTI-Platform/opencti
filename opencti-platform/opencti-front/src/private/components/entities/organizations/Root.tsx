@@ -51,6 +51,10 @@ const organizationQuery = graphql`
   query RootOrganizationQuery($id: String!) {
     organization(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       name
       x_opencti_aliases
@@ -168,7 +172,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               stixDomainObject={organization}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<OrganizationPopover />}
+              PopoverComponent={<OrganizationPopover id={organization.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />

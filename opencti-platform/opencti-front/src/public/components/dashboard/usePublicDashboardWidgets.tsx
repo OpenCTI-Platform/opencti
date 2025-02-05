@@ -1,5 +1,5 @@
 import React from 'react';
-import WidgetText from '@components/workspaces/dashboards/WidgetText';
+import WidgetText from '../../../components/dashboard/WidgetText';
 import type { PublicManifestConfig } from './PublicManifest';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjectsNumber';

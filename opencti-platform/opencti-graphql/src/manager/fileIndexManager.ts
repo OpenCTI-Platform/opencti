@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -17,9 +17,10 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
-import { EVENT_TYPE_UPDATE, isNotEmptyField, waitInSec } from '../database/utils';
+import { EVENT_TYPE_UPDATE, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import { createStreamProcessor, lockResource, type StreamProcessor, } from '../database/redis';
+import { createStreamProcessor, type StreamProcessor, } from '../database/redis';
+import { lockResources } from '../lock/master-lock';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -143,12 +144,11 @@ const initFileIndexManager = () => {
   const fileIndexHandler = async () => {
     const context = executionContext('file_index_manager');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
-    if (enterpriseEditionEnabled) {
+    if (settings.valid_enterprise_edition === true) {
       let lock;
       try {
         // Lock the manager
-        lock = await lockResource([FILE_INDEX_MANAGER_KEY], { retryCount: 0 });
+        lock = await lockResources([FILE_INDEX_MANAGER_KEY], { retryCount: 0 });
         running = true;
         logApp.debug('[OPENCTI-MODULE] Running file index manager');
         const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
@@ -175,12 +175,11 @@ const initFileIndexManager = () => {
   const fileIndexStreamHandler = async () => {
     const context = executionContext('file_index_manager');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
-    if (enterpriseEditionEnabled) {
+    if (settings.valid_enterprise_edition === true) {
       let lock;
       try {
         // Lock the manager
-        lock = await lockResource([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
+        lock = await lockResources([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
         streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents);
@@ -217,7 +216,7 @@ const initFileIndexManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'FILE_INDEX_MANAGER',
-        enable: ENABLED_FILE_INDEX_MANAGER && isNotEmptyField(settings?.enterprise_edition),
+        enable: ENABLED_FILE_INDEX_MANAGER && settings?.valid_enterprise_edition === true,
         running,
         warning: !isAttachmentProcessorEnabled(),
       };

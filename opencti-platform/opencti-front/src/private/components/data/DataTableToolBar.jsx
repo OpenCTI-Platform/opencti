@@ -39,6 +39,7 @@ import {
   DeleteOutlined,
   LanguageOutlined,
   LinkOffOutlined,
+  LockOpenOutlined,
   MergeOutlined,
   MoveToInboxOutlined,
   RestoreOutlined,
@@ -92,7 +93,6 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 import ItemMarkings from '../../../components/ItemMarkings';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { isNotEmptyField } from '../../../utils/utils';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 
 const styles = (theme) => ({
@@ -559,7 +559,12 @@ class DataTableToolBar extends Component {
       this.handleOpenTask();
     });
   }
-
+  handleLaunchRemoveAuthMembers() {
+    const actions = [{ type: 'REMOVE_AUTH_MEMBERS', context: null }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
   handleLaunchRemove() {
     const actions = [
       {
@@ -1599,6 +1604,7 @@ class DataTableToolBar extends Component {
       deleteDisable,
       mergeDisable,
       deleteOperationEnabled,
+      removeAuthMembersEnabled,
       warning,
       warningMessage,
       taskScope,
@@ -1678,7 +1684,7 @@ class DataTableToolBar extends Component {
           }
           // endregion
           // region EE
-          const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+          const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
           // endregion
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
@@ -1729,8 +1735,26 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 <div>
+                  {removeAuthMembersEnabled && (
+                    <Security needs={[BYPASS]}>
+                      <Tooltip title={t('Remove access restriction')}>
+                        <IconButton
+                          color="primary"
+                          aria-label="input"
+                          onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
+                          size="small"
+                          disabled={
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
+                        >
+                          <LockOpenOutlined fontSize="small" color={'primary'} />
+                        </IconButton>
+                      </Tooltip>
+                    </Security>
+                  )}
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    {!typesAreNotUpdatable && (
+                    {!typesAreNotUpdatable && !removeAuthMembersEnabled && (
                       <Tooltip title={t('Update')}>
                         <span>
                           <IconButton
@@ -1748,6 +1772,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
+                    {!removeAuthMembersEnabled && (
                     <UserContext.Consumer>
                       {({ platformModuleHelpers }) => {
                         const label = platformModuleHelpers.isRuleEngineEnable()
@@ -1774,6 +1799,7 @@ class DataTableToolBar extends Component {
                         );
                       }}
                     </UserContext.Consumer>
+                    )}
                     {this.props.handleCopy && (
                       <Tooltip title={titleCopy}>
                         <span>
@@ -1792,7 +1818,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {!enrichDisable && (
+                    {!enrichDisable && !removeAuthMembersEnabled && (
                       <Tooltip title={t('Enrichment')}>
                         <span>
                           <IconButton
@@ -1822,7 +1848,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {enableMerge && (
+                    {enableMerge && !removeAuthMembersEnabled && (
                       <Tooltip title={t('Merge')}>
                         <span>
                           <IconButton
@@ -1845,7 +1871,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     )}
                   </Security>
-                  {!typesAreNotAddableInContainer && (
+                  {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && (
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <Tooltip title={t('Add in container')}>
                         <span>
@@ -1885,7 +1911,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {!deleteOperationEnabled && isShareableType && (
+                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
@@ -1921,7 +1947,7 @@ class DataTableToolBar extends Component {
                       </Security>
                     </>
                   )}
-                  {deleteDisable !== true && (
+                  {deleteDisable !== true && !removeAuthMembersEnabled && (
                     <Security needs={[deleteCapability]}>
                       <Tooltip title={warningMessage || t('Delete')}>
                         <span>
@@ -2828,6 +2854,7 @@ DataTableToolBar.propTypes = {
   rightOffset: PropTypes.number,
   mergeDisable: PropTypes.bool,
   deleteOperationEnabled: PropTypes.bool,
+  removeAuthMembersEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
 };
 

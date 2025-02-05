@@ -11,7 +11,6 @@ import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
 import { useDataTable, useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
-import { SELECT_COLUMN_SIZE } from './components/DataTableHeader';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
@@ -46,7 +45,6 @@ const DataTableInternalFilters = ({
   exportContext,
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
-
   const {
     availableFilterKeys,
     useDataTablePaginationLocalStorage: {
@@ -74,6 +72,7 @@ const DataTableInternalFilters = ({
             keyword={searchTerm}
           />
         )}
+
         {!hideFilters && (
           <DataTableFilters
             availableFilterKeys={availableFilterKeys}
@@ -95,7 +94,6 @@ const DataTableInternalFilters = ({
           availableEntityTypes={availableEntityTypes}
           additionalFilterKeys={additionalFilterKeys}
           entityTypes={computedEntityTypes}
-          paginationOptions={paginationOptions}
         />
       )}
     </>
@@ -105,6 +103,7 @@ const DataTableInternalFilters = ({
 type DataTableInternalToolbarProps = Pick<DataTableProps,
 | 'toolbarFilters'
 | 'handleCopy'
+| 'removeAuthMembersEnabled'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -115,6 +114,7 @@ const DataTableInternalToolbar = ({
   handleCopy,
   toolbarFilters,
   globalSearch,
+  removeAuthMembersEnabled,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -135,9 +135,10 @@ const DataTableInternalToolbar = ({
     <div
       style={{
         background: theme.palette.background.accent,
-        width: `calc(( var(--header-table-size) - ${SELECT_COLUMN_SIZE} ) * 1px)`,
+        flex: 1,
       }}
     >
+
       <DataTableToolBar
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
@@ -148,6 +149,7 @@ const DataTableInternalToolbar = ({
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
         handleCopy={handleCopy}
+        removeAuthMembersEnabled={removeAuthMembersEnabled}
       />
     </div>
   );
@@ -169,9 +171,9 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
+| 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
-| 'canToggleLine'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
@@ -202,6 +204,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideSearch,
     hideFilters,
     taskScope,
+    removeAuthMembersEnabled,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -224,37 +227,40 @@ const DataTable = (props: OCTIDataTableProps) => {
   }
 
   return (
-    <DataTableComponent
-      {...props}
-      availableFilterKeys={availableFilterKeys}
-      dataQueryArgs={{ ...dataQueryArgs }}
-      useLineData={useLineData(lineFragment)}
-      useDataTable={useDataTable}
-      settingsMessagesBannerHeight={settingsMessagesBannerHeight}
-      filtersComponent={(
-        <DataTableInternalFilters
-          entityTypes={entityTypes}
-          additionalFilterKeys={additionalFilterKeys}
-          additionalHeaderButtons={additionalHeaderButtons}
-          availableEntityTypes={availableEntityTypes}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          hideFilters={hideFilters}
-          hideSearch={hideSearch}
-          availableRelationshipTypes={availableRelationshipTypes}
-          currentView={currentView}
-          exportContext={exportContext}
-          searchContextFinal={computedSearchContextFinal}
-        />
+    <>
+      <DataTableComponent
+        {...props}
+        availableFilterKeys={availableFilterKeys}
+        dataQueryArgs={{ ...dataQueryArgs }}
+        useLineData={useLineData(lineFragment)}
+        useDataTable={useDataTable}
+        settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+        filtersComponent={(
+          <DataTableInternalFilters
+            entityTypes={entityTypes}
+            additionalFilterKeys={additionalFilterKeys}
+            additionalHeaderButtons={additionalHeaderButtons}
+            availableEntityTypes={availableEntityTypes}
+            availableRelationFilterTypes={availableRelationFilterTypes}
+            hideFilters={hideFilters}
+            hideSearch={hideSearch}
+            availableRelationshipTypes={availableRelationshipTypes}
+            currentView={currentView}
+            exportContext={exportContext}
+            searchContextFinal={computedSearchContextFinal}
+          />
       )}
-      dataTableToolBarComponent={(
-        <DataTableInternalToolbar
-          handleCopy={handleCopy}
-          taskScope={taskScope}
-          toolbarFilters={toolbarFilters}
-          globalSearch={globalSearch}
-        />
+        dataTableToolBarComponent={(
+          <DataTableInternalToolbar
+            handleCopy={handleCopy}
+            taskScope={taskScope}
+            toolbarFilters={toolbarFilters}
+            globalSearch={globalSearch}
+            removeAuthMembersEnabled={removeAuthMembersEnabled}
+          />
       )}
-    />
+      />
+    </>
   );
 };
 

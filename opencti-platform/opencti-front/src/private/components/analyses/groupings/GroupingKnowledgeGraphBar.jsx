@@ -14,7 +14,9 @@ import {
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
+  HubOutlined,
   LinkOutlined,
+  PolylineOutlined,
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
@@ -41,6 +43,8 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { ToggleButtonGroup } from '@mui/material';
+import ToggleButton from '@mui/material/ToggleButton';
 import CommitMessage from '../../common/form/CommitMessage';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
@@ -333,6 +337,7 @@ class GroupingKnowledgeGraphBar extends Component {
     const {
       t,
       classes,
+      currentQueryMode,
       currentMode3D,
       currentModeTree,
       currentModeFixed,
@@ -341,6 +346,7 @@ class GroupingKnowledgeGraphBar extends Component {
       currentStixCoreObjectsTypes,
       currentSelectRectangleModeFree,
       currentSelectModeFree,
+      handleToggleQueryMode,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -908,6 +914,41 @@ class GroupingKnowledgeGraphBar extends Component {
                         enableReferences={enableReferences}
                       />
                     )}
+                    {handleToggleQueryMode && (
+                      <ToggleButtonGroup
+                        size="small"
+                        value={currentQueryMode}
+                        exclusive
+                        onChange={handleToggleQueryMode}
+                        sx={{
+                          padding: '6px 8px',
+                          marginBottom: '3px',
+                        }}
+                      >
+                        <Tooltip title={t('Show all correlated entities')}>
+                          <ToggleButton
+                            value="all-entities"
+                            selected={currentQueryMode === 'all-entities'}
+                          >
+                            <HubOutlined
+                              fontSize="small"
+                              color={currentQueryMode === 'all-entities' ? 'secondary' : 'primary'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                        <Tooltip title={t('Show only correlated observables and indicators')}>
+                          <ToggleButton
+                            value="indicators-and-observables"
+                            selected={currentQueryMode === 'indicators-and-observables'}
+                          >
+                            <PolylineOutlined
+                              fontSize="small"
+                              color={currentQueryMode === 'indicators-and-observables' ? 'secondary' : 'primary'}
+                            />
+                          </ToggleButton>
+                        </Tooltip>
+                      </ToggleButtonGroup>
+                    )}
                     <Tooltip title={t('Edit the selected item')}>
                       <span>
                         <IconButton
@@ -1240,6 +1281,8 @@ GroupingKnowledgeGraphBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   grouping: PropTypes.object,
+  handleToggleQueryMode: PropTypes.func,
+  currentQueryMode: PropTypes.string,
   handleToggle3DMode: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,

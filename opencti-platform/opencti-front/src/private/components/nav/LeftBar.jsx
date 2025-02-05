@@ -77,6 +77,7 @@ import Collapse from '@mui/material/Collapse';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
+  BYPASS,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
@@ -152,7 +153,7 @@ const useStyles = makeStyles((theme) => createStyles({
     fontSize: 12,
   },
   menuItemText: {
-    padding: '1px 0 0 15px',
+    padding: '1px 0 0 8px',
     fontWeight: 500,
     fontSize: 14,
   },
@@ -160,7 +161,7 @@ const useStyles = makeStyles((theme) => createStyles({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    padding: '1px 0 0 10px',
+    padding: '1px 0 0 8px',
     fontWeight: 500,
     fontSize: 12,
   },
@@ -229,6 +230,7 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
+  const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
@@ -387,7 +389,7 @@ const LeftBar = () => {
                     </ListItemIcon>
                   )}
                   <ListItemText
-                    classes={{ primary: classes.menuSubItemText }}
+                    classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
                     primary={t_i18n(entry.label)}
                   />
                 </MenuItem>
@@ -442,7 +444,7 @@ const LeftBar = () => {
                   </ListItemIcon>
                 )}
                 <ListItemText
-                  classes={{ primary: submenu_show_icons && entry.icon ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
+                  classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
                   primary={t_i18n(entry.label)}
                 />
               </MenuItem>
@@ -908,10 +910,11 @@ const LeftBar = () => {
                 [
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
-                  { granted: isGrantedToIngestion, link: '/dashboard/data/ingestion', label: 'Ingestion' },
-                  { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
-                  { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
-                  { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },
+                  { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: 'Ingestion' },
+                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: 'Import' },
+                  { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
+                  { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
+                  ...(isEnterpriseEdition ? [{ granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: 'Restriction' }] : []),
                 ],
               )}
             </Security>

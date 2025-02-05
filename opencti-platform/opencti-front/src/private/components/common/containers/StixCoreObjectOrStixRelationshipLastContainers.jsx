@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -12,14 +9,15 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import inject18n from '../../../../components/i18n';
+import { makeStyles } from '@mui/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { useFormatter } from '../../../../components/i18n';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
     padding: 0,
@@ -44,11 +42,7 @@ const styles = (theme) => ({
     marginRight: 0,
     color: theme.palette.primary.main,
   },
-  itemIconDisabled: {
-    marginRight: 0,
-    color: theme.palette.grey[700],
-  },
-});
+}));
 
 const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
   query StixCoreObjectOrStixRelationshipLastContainersQuery(
@@ -303,51 +297,51 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
   }
 `;
 
-class StixCoreObjectOrStixRelationshipLastContainers extends Component {
-  render() {
-    const { t, fsd, classes, stixCoreObjectOrStixRelationshipId, authorId } = this.props;
-    const filtersContent = [
-      {
-        key: 'entity_type',
-        values: ['Report', 'Case', 'Observed-Data', 'Grouping', 'Task'],
-      },
-    ];
-    if (authorId) {
-      filtersContent.push({ key: 'createdBy', values: [authorId] });
-    }
-    if (stixCoreObjectOrStixRelationshipId) {
-      filtersContent.push({
-        key: 'objects',
-        values: [stixCoreObjectOrStixRelationshipId],
-      });
-    }
-    const filters = {
-      mode: 'and',
-      filters: filtersContent,
-      filterGroups: [],
-    };
-    return (
-      <>
-        <Typography variant="h4" gutterBottom={true}>
-          {authorId
-            ? t('Latest containers authored by this entity')
-            : t('Latest containers about the object')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
-          <QueryRenderer
-            query={stixCoreObjectOrStixRelationshipLastContainersQuery}
-            variables={{
-              first: 8,
-              orderBy: 'created',
-              orderMode: 'desc',
-              filters,
-            }}
-            render={({ props }) => {
-              if (props && props.containers) {
-                if (props.containers.edges.length > 0) {
-                  return (
+const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
+  const { stixCoreObjectOrStixRelationshipId = null, authorId = null } = props;
+  const { t_i18n, fsd } = useFormatter();
+  const classes = useStyles();
+  const filtersContent = [
+    {
+      key: 'entity_type',
+      values: ['Report', 'Case', 'Observed-Data', 'Grouping', 'Task'],
+    },
+  ];
+  if (authorId) {
+    filtersContent.push({ key: 'createdBy', values: [authorId] });
+  }
+  if (stixCoreObjectOrStixRelationshipId) {
+    filtersContent.push({
+      key: 'objects',
+      values: [stixCoreObjectOrStixRelationshipId],
+    });
+  }
+  const filters = {
+    mode: 'and',
+    filters: filtersContent,
+    filterGroups: [],
+  };
+  return (
+    <>
+      <Typography variant="h4">
+        {authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}
+      </Typography>
+      <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+        <QueryRenderer
+          query={stixCoreObjectOrStixRelationshipLastContainersQuery}
+          variables={{
+            first: 8,
+            orderBy: 'created',
+            orderMode: 'desc',
+            filters,
+          }}
+          render={({ props: renderProps }) => {
+            if (renderProps && renderProps.containers) {
+              if (renderProps.containers.edges.length > 0) {
+                return (
+                  <>
                     <List>
-                      {props.containers.edges.map((containerEdge) => {
+                      {renderProps.containers.edges.map((containerEdge) => {
                         const container = containerEdge.node;
                         return (
                           <ListItem
@@ -362,7 +356,7 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
                             }`}
                           >
                             <ListItemIcon>
-                              <ItemIcon type={container.entity_type} />
+                              <ItemIcon type={container.entity_type}/>
                             </ListItemIcon>
                             <ListItemText
                               primary={
@@ -371,32 +365,20 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
                                     className={classes.bodyItem}
                                     style={{ width: '12%' }}
                                   >
-                                    <ItemEntityType entityType={container.entity_type} />
+                                    <ItemEntityType entityType={container.entity_type}/>
                                   </div>
                                   <Tooltip title={container.name}>
-                                    <div
-                                      className={classes.bodyItem}
-                                      style={{ width: '37%' }}
-                                    >
+                                    <div className={classes.bodyItem} style={{ width: '37%' }}>
                                       {container.name}
                                     </div>
                                   </Tooltip>
-                                  <div
-                                    className={classes.bodyItem}
-                                    style={{ width: '20%' }}
-                                  >
+                                  <div className={classes.bodyItem} style={{ width: '20%' }}>
                                     {container.createdBy?.name ?? ''}
                                   </div>
-                                  <div
-                                    className={classes.bodyItem}
-                                    style={{ width: '12%' }}
-                                  >
+                                  <div className={classes.bodyItem} style={{ width: '12%' }}>
                                     {fsd(container.created)}
                                   </div>
-                                  <div
-                                    className={classes.bodyItem}
-                                    style={{ width: '15%' }}
-                                  >
+                                  <div className={classes.bodyItem} style={{ width: '15%' }}>
                                     <ItemMarkings
                                       variant="inList"
                                       markingDefinitions={container.objectMarking ?? []}
@@ -404,93 +386,82 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
                                     />
                                   </div>
                                 </>
-                              }
+                                }
                             />
                           </ListItem>
                         );
                       })}
                     </List>
-                  );
-                }
-                return (
-                  <div
-                    style={{
-                      display: 'table',
-                      height: '100%',
-                      width: '100%',
-                      paddingTop: 15,
-                      paddingBottom: 15,
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No containers about this entity.')}
-                    </span>
-                  </div>
+                  </>
                 );
               }
               return (
-                <List>
-                  {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <div
+                  style={{
+                    display: 'table',
+                    height: '100%',
+                    width: '100%',
+                    paddingTop: 15,
+                    paddingBottom: 15,
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t_i18n('No containers about this entity.')}
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <List>
+                {Array.from(Array(5), (e, i) => (
+                  <ListItem
+                    key={i}
+                    dense={true}
+                    divider={true}
+                    button={false}
+                  >
+                    <ListItemIcon classes={{ root: classes.itemIcon }}>
+                      <Skeleton
+                        animation="wave"
+                        variant="circular"
+                        width={30}
+                        height={30}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
                         <Skeleton
                           animation="wave"
-                          variant="circular"
-                          width={30}
-                          height={30}
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                          style={{ marginBottom: 10 }}
                         />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                            style={{ marginBottom: 10 }}
-                          />
-                        }
-                        secondary={
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                          />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }}
-          />
-        </Paper>
-      </>
-    );
-  }
-}
-
-StixCoreObjectOrStixRelationshipLastContainers.propTypes = {
-  stixCoreObjectOrStixRelationshipId: PropTypes.string,
-  authorId: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
+                      }
+                      secondary={
+                        <Skeleton
+                          animation="wave"
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                        />
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            );
+          }}
+        />
+      </Paper>
+    </>
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectOrStixRelationshipLastContainers);
+export default StixCoreObjectOrStixRelationshipLastContainers;

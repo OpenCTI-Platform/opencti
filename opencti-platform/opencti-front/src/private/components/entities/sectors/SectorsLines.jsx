@@ -93,6 +93,10 @@ const SectorsLinesFragment = createPaginationContainer(
           edges {
             node {
               id
+              draftVersion {
+                draft_id
+                draft_operation
+              }
               name
               description
               isSubSector

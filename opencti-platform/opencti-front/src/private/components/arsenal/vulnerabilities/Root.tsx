@@ -47,6 +47,10 @@ const vulnerabilityQuery = graphql`
   query RootVulnerabilityQuery($id: String!) {
     vulnerability(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -142,6 +146,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

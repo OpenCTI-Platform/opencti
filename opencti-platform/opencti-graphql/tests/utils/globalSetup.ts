@@ -18,6 +18,8 @@ import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
+import { initExclusionListCache } from '../../src/database/exclusionListCache';
+import { initLockFork } from '../../src/lock/master-lock';
 /**
  * Vitest setup is configurable with environment variables, as you can see in our package.json scripts
  *   INIT_TEST_PLATFORM=1 > cleanup the test platform, removing elastic indices, and setup it again
@@ -49,6 +51,8 @@ const testPlatformStart = async () => {
   try {
     // Init the cache manager
     await cacheManager.start();
+    // Init the exclusion list cache
+    await initExclusionListCache();
     // Init the platform default if it was cleaned up
     if (!SKIP_CLEANUP_PLATFORM) {
       await initializePlatform();
@@ -106,6 +110,7 @@ export async function setup() {
   await initializeRedisClients();
   await searchEngineInit();
   await storageInit();
+  initLockFork();
   // cleanup and setup a seeded platform, with all the tests users, ready to run some tests.
   if (INIT_TEST_PLATFORM) {
     logApp.info('[vitest-global-setup] only running test platform initialization');

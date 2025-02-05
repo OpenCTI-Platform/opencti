@@ -14,10 +14,11 @@ interface element {
 
 interface BreadcrumbsProps {
   elements: element[]
+  noMargin?: boolean
   isSensitive?: boolean
 }
 
-const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitive = false }) => {
+const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin = false, isSensitive = false }) => {
   const theme = useTheme<Theme>();
 
   const SplitDiv = ({ show = true }) => (
@@ -25,7 +26,11 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, isSensitiv
   );
 
   return (
-    <div data-testid="navigation" style={{ marginBottom: theme.spacing(2), display: 'flex' }}>
+    <div
+      id="page-breadcrumb"
+      data-testid="navigation"
+      style={{ marginBottom: noMargin ? undefined : theme.spacing(2), display: 'flex' }}
+    >
       {elements.map((element, index) => {
         if (element.current) {
           return (

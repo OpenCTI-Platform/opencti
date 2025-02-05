@@ -97,8 +97,14 @@ interface labelEdges {
   }>;
 }
 
+export interface DraftVersion {
+  draft_id: string
+  draft_operation: string
+}
+
 export interface GenericAttack {
   id: string;
+  draftVersion: DraftVersion | null;
   name: string;
   description: string | null;
   modified: string;

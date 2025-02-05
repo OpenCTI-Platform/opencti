@@ -18,6 +18,8 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CourseOfActionDeletion from './CouseOfActionDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -84,7 +86,8 @@ const courseOfActionMutationRelationDelete = graphql`
 const CourseOfActionEditionOverviewComponent = (props) => {
   const { courseOfAction, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -319,16 +322,23 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={courseOfAction.id}
-            />
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+            {isFABReplaced
+              ? <CourseOfActionDeletion
+                  id={courseOfAction.id}
+                />
+              : <div />}
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={courseOfAction.id}
+              />
+            )}
+          </div>
         </Form>
       )}
     </Formik>

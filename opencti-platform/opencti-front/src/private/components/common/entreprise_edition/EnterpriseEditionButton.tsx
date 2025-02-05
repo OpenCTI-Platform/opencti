@@ -23,15 +23,16 @@ const EnterpriseEditionButton = ({
   feature,
   inLine = false,
   disabled = false,
+  title = 'Manage your Enterprise Edition license',
 }: {
-  feature?: string;
+  feature?: string
   inLine?: boolean
   disabled?: boolean
+  title?: string
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme<Theme>();
-
   const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
   const [feedbackCreation, setFeedbackCreation] = useState(false);
   const {
@@ -53,16 +54,13 @@ const EnterpriseEditionButton = ({
           onClick={() => setOpenEnterpriseEditionConsent(true)}
           startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
           disabled={disabled}
-          style={{
-            borderColor: disabled ? theme.palette.dangerZone.main : undefined,
-          }}
           classes={{
             root: classNames({
               [classes.button]: !inLine,
             }),
           }}
         >
-          {t_i18n('Enable Enterprise Edition')}
+          {t_i18n(title)}
         </Button>
       ) : (
         <Button

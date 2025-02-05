@@ -1,6 +1,6 @@
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import React, { Fragment, FunctionComponent, useEffect, useRef } from 'react';
+import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
@@ -18,6 +18,7 @@ import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import { PageContainerContext } from './PageContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,7 +26,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
     fontSize: 12,
     height: 20,
-    borderRadius: 10,
+    borderRadius: 4,
     lineHeight: '32px',
   },
   operator1: {
@@ -125,6 +126,7 @@ interface FilterIconButtonContainerProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  fintelTemplatesContext?: boolean;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -148,9 +150,13 @@ FilterIconButtonContainerProps
   searchContext,
   availableEntityTypes,
   availableRelationshipTypes,
+  fintelTemplatesContext,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+
+  const { inPageContainer } = useContext(PageContainerContext);
+
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
     filtersRepresentativesQueryRef,
@@ -213,7 +219,7 @@ FilterIconButtonContainerProps
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
-  let margin = '8px';
+  let margin = inPageContainer ? '0px' : '8px';
   if (!isReadWriteFilter) {
     classOperator = classes.operator1ReadOnly;
     if (styleNumber === 2) {
@@ -232,22 +238,26 @@ FilterIconButtonContainerProps
     classOperator = classes.operator3;
     margin = '0px';
   }
+  let boxStyle = {
+    margin: `${margin} 0`,
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 1,
+    overflow: 'auto',
+  };
+  if (!isReadWriteFilter) {
+    if (styleNumber !== 2) {
+      boxStyle = {
+        margin: '0 0',
+        display: 'flex',
+        flexWrap: 'no-wrap',
+        gap: 0,
+        overflow: 'hidden',
+      };
+    }
+  }
   return (
-    <Box
-      sx={
-        !isReadWriteFilter
-          ? {
-            display: 'flex',
-            overflow: 'hidden',
-          }
-          : {
-            margin: `${margin} 0`,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-          }
-      }
-    >
+    <Box sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
@@ -380,6 +390,7 @@ FilterIconButtonContainerProps
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
+            fintelTemplatesContext={fintelTemplatesContext}
           />
         </Box>
       )}

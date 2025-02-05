@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -14,9 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { ACTIVITY_STREAM_NAME, createStreamProcessor, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
+import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
@@ -35,6 +35,7 @@ import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, Resolve
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
 import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { lockResources } from '../lock/master-lock';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -120,7 +121,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
   if (events.length > 0) {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     // If no events or enterprise edition is not activated
-    if (isEmptyField(settings.enterprise_edition) || isEmptyField(events) || events.length === 0) {
+    if (settings.valid_enterprise_edition !== true || isEmptyField(events) || events.length === 0) {
       return;
     }
     // Handle alerting and indexing
@@ -154,7 +155,7 @@ const initActivityManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
+      lock = await lockResources([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
       const streamOpts = { streamName: ACTIVITY_STREAM_NAME };
@@ -209,7 +210,7 @@ const initActivityManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'ACTIVITY_MANAGER',
-        enable: isNotEmptyField(settings?.enterprise_edition) && booleanConf('activity_manager:enabled', false),
+        enable: settings?.valid_enterprise_edition === true && booleanConf('activity_manager:enabled', false),
         running,
       };
     },

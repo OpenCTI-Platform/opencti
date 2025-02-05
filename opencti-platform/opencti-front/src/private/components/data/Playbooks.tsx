@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -28,12 +28,12 @@ import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables 
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
@@ -111,6 +111,7 @@ const Playbooks: FunctionComponent = () => {
   const { t_i18n, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Processing: Automation | Data'));
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -180,16 +181,17 @@ const Playbooks: FunctionComponent = () => {
     },
   };
   return (
-    <div style={{ paddingRight: '200px' }}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Data') },
-        { label: t_i18n('Processing') },
-        {
-          label: t_i18n('Automation'),
-          current: true,
-        }]}
+    <div style={{ paddingRight: '200px', height: '100%' }}>
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Processing') },
+          {
+            label: t_i18n('Automation'),
+            current: true,
+          }]}
       />
-      <ProcessingMenu/>
+      <ProcessingMenu />
       {isEnterpriseEdition ? (
         <>
           {queryRef && (
@@ -203,7 +205,7 @@ const Playbooks: FunctionComponent = () => {
               lineFragment={playbookFragment}
               entityTypes={['Playbook']}
               searchContextFinal={{ entityTypes: ['Playbook'] }}
-              taskScope='PLAYBOOK'
+              taskScope="PLAYBOOK"
               actions={(row) => (
                 <PlaybookPopover
                   paginationOptions={queryPaginationOptions}
@@ -213,14 +215,14 @@ const Playbooks: FunctionComponent = () => {
               )}
               createButton={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <PlaybookCreation paginationOptions={queryPaginationOptions}/>
+                  <PlaybookCreation paginationOptions={queryPaginationOptions} />
                 </Security>
               }
             />
           )}
         </>
       ) : (
-        <EnterpriseEdition feature={t_i18n('Playbook')}/>
+        <EnterpriseEdition feature={t_i18n('Playbook')} />
       )}
     </div>
   );

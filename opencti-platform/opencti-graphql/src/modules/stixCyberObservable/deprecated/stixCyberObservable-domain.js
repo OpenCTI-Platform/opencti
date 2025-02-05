@@ -3,9 +3,9 @@ import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS, INPUT_MARKINGS } fr
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { createIndicatorFromObservable } from '../../../domain/stixCyberObservable';
 
-// region [>=6.2 & <6.5]
+// region [>=6.2 & <6.8]
 /**
- * @deprecated [>=6.2 & <6.5]. Use `promoteToIndicator`.
+ * @deprecated [>=6.2 & <6.8]. Use `promoteToIndicator`.
  */
 export const promoteObservableToIndicator = async (context, user, observableId) => {
   const observable = await storeLoadByIdWithRefs(context, user, observableId);

@@ -43,6 +43,7 @@ const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
 const useAwsRole = booleanConf('minio:use_aws_role', false);
 const useAwsLogs = booleanConf('minio:use_aws_logs', false);
+export const defaultValidationMode = conf.get('app:validation_mode');
 
 let s3Client; // Client reference
 
@@ -411,7 +412,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 };
 
 export const uploadJobImport = async (context, user, file, entityId, opts = {}) => {
-  const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = 'draft' } = opts;
+  const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = defaultValidationMode } = opts;
   const validationModeToUse = isFeatureEnabled('DRAFT_WORKSPACE') ? validationMode : 'workbench';
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
   if (connectorId) {

@@ -61,9 +61,8 @@ const useStyles = makeStyles<Theme>(() => ({
     zIndex: 1001,
   },
   container: {
-    width: '100%',
-    height: '100%',
-    maxHeight: '100%',
+    flex: '1 0 0',
+    overflow: 'hidden',
   },
 }));
 
@@ -148,6 +147,10 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment 
 export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment = graphql`
   fragment StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node on StixCoreObject {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     standard_id
     parent_types
     entity_type
@@ -784,7 +787,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             {({ platformModuleHelpers }) => (
               <>
                 {queryRef && (
-                  <div style={{ height: '98%' }} ref={setTableRootRef}>
+                  <div style={{ height: '100%' }} ref={setTableRootRef}>
                     <DataTable
                       disableToolBar
                       disableSelectAll

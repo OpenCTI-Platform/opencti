@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -7,7 +7,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -49,6 +50,10 @@ const ThreatActorIndividualQuery = graphql`
   query RootThreatActorIndividualQuery($id: String!, $relatedRelationshipTypes: [String!]) {
     threatActorIndividual(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -93,13 +98,11 @@ const RootThreatActorIndividualComponent = ({
     }),
     [threatActorIndividualId],
   );
-
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorIndividualSubscription>(subConfig);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const {
     threatActorIndividual,
     connectorsForExport,
@@ -108,10 +111,7 @@ const RootThreatActorIndividualComponent = ({
     ThreatActorIndividualQuery,
     queryRef,
   );
-
   const { forceUpdate } = useForceUpdate();
-
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
@@ -166,6 +166,7 @@ const RootThreatActorIndividualComponent = ({
                   />
                 </Security>
               )}
+              enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
             />
             <Box
@@ -218,16 +219,17 @@ const RootThreatActorIndividualComponent = ({
                   label={t_i18n('History')}
                 />
               </Tabs>
-              {isOverview && (
-                <StixCoreObjectSimulationResult id={threatActorIndividual.id} type="threat" />
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                <AIInsights id={threatActorIndividual.id}/>
+                <StixCoreObjectSimulationResultContainer id={threatActorIndividual.id} type="threat"/>
+              </div>
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
-                }
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual}/>
+                  }
               />
               <Route
                 path="/knowledge"

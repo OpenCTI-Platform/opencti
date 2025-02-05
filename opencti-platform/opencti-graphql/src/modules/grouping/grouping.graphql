@@ -98,6 +98,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     avatar: OpenCtiFile
     # Container
     authorized_members: [MemberAccess!]
+    authorized_members_activation_date: DateTime
     currentUserAccessRight: String
     objects(
         first: Int
@@ -147,7 +148,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: FilterGroup
   ): FileConnection
     exportFiles(first: Int): FileConnection
-    contentsFromTemplate(
+    filesFromTemplate(
         first: Int
         prefixMimeType: String
         after: ID
@@ -156,10 +157,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         search: String
         filters: FilterGroup
     ): FileConnection
-    templates: [Template!]
-    templateAndUtils(
-        templateId: String!
-    ): TemplateAndUtils
+    fintelTemplates: [FintelTemplate!]
     editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]
@@ -265,6 +263,7 @@ input GroupingAddInput {
     x_opencti_workflow_id: String
     update: Boolean
     file: Upload
+    authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {

@@ -12,11 +12,14 @@ import NotificationsToolBar from './notifications/NotificationsToolBar';
 import { emptyFilterGroup, useGetDefaultFilterObject, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
 const Notifications: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Notifications'));
   const { me } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -26,7 +29,7 @@ const Notifications: FunctionComponent = () => {
       orderAsc: false,
       filters: {
         ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['is_read'], ['Notification']),
+        filters: useGetDefaultFilterObject(['is_read', 'trigger_id'], ['Notification']),
       },
       numberOfElements: {
         number: 0,
@@ -55,17 +58,17 @@ const Notifications: FunctionComponent = () => {
       },
       message: {
         label: 'Message',
-        width: '45%',
+        width: '48%',
         isSortable: false,
       },
       created: {
         label: 'Original creation date',
-        width: '15%',
+        width: '20%',
         isSortable: true,
       },
       name: {
-        label: 'Trigger',
-        width: '15%',
+        label: 'Trigger name',
+        width: '12%',
         isSortable: true,
       },
     };

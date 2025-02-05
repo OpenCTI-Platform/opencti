@@ -34,6 +34,9 @@ export const emptyFilterGroup = {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+export const SELF_ID = 'SELF_ID';
+export const SELF_ID_VALUE = 'CURRENT ENTITY';
+
 export const FiltersVariant = {
   list: 'list',
   dialog: 'dialog',
@@ -50,6 +53,7 @@ export const entityTypesFilters = [
   'type', // regardingOf subfilter
   'x_opencti_main_observable_type',
   'main_entity_type', // for DeleteOperation
+  'exclusion_list_entity_types',
 ];
 
 // context filters for audits (filters on the entity involved in an activity/knowledge event)
@@ -150,7 +154,7 @@ export const findFiltersFromKeys = (
   filters: Filter[],
   keys: string[],
   operator = 'eq',
-) => {
+): Filter[] => {
   const result = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
@@ -223,17 +227,25 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
-export const getEntityTypeTwoFirstLevelsFilterValues = (filters?: FilterGroup, observableTypes?: string[], domainObjectTypes?: string []) => {
+export const getEntityTypeTwoFirstLevelsFilterValues = (
+  filters?: FilterGroup,
+  observableTypes?: string[],
+  domainObjectTypes?: string [],
+): string[] => {
   if (!filters) {
     return [];
   }
-  let firstLevelValues = findFilterFromKey(filters.filters, 'entity_type', 'eq')?.values ?? [];
+  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
+    .map(({ values }) => values)
+    .flat();
   const subFiltersSeparatedWithAnd = filters.filterGroups
     .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
     .map((fg) => fg.filters)
     .flat();
   if (subFiltersSeparatedWithAnd.length > 0) {
-    const secondLevelValues = findFilterFromKey(subFiltersSeparatedWithAnd, 'entity_type', 'eq')?.values ?? [];
+    const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+      .map(({ values }) => values)
+      .flat();
     if (filters.mode === 'and') {
       // if all second values are observables sub types : remove observable from firstLevelValue
       if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
@@ -301,7 +313,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
     maxContentMarkingsIds: string[],
   ) => {
     // replace SELF_ID
-    let filters = inputFilters ? JSON.parse(inputFilters.replace('SELF_ID', containerId)) : undefined;
+    let filters = inputFilters ? JSON.parse(inputFilters.replace(SELF_ID, containerId)) : undefined;
     // restrict markings
     const maxContentMarkings = allowedMarkings.filter((m) => maxContentMarkingsIds.includes(m.id));
     const notAllowedMarkingIds = allowedMarkings
@@ -603,13 +615,6 @@ export const filtersAfterSwitchLocalMode = (filters: FilterGroup | undefined | n
   return undefined;
 };
 
-const defaultFilterObject: Filter = {
-  id: '',
-  key: '',
-  values: [],
-  operator: '',
-  mode: 'or',
-};
 export const getDefaultOperatorFilter = (
   filterDefinition?: FilterDefinition,
 ) => {
@@ -747,8 +752,10 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 };
 
+const notCleanableFilterKeys = ['entity_type', 'authorized_members.id'];
+
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat('entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
   if (!filters) {
     return undefined;
   }
@@ -836,23 +843,28 @@ export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core
 export const getDefaultFilterObject = (
   filterKey: string,
   filterDefinition?: FilterDefinition,
+  values?: FilterValue[],
+  mode?: string,
 ): Filter => {
   return {
-    ...defaultFilterObject,
     id: uuid(),
     key: filterKey,
     operator: getDefaultOperatorFilter(filterDefinition),
+    values: values ?? [],
+    mode: mode ?? 'or',
   };
 };
 
 export const useGetDefaultFilterObject = (
   filterKeys: string[],
   entityTypes: string[],
+  values?: FilterValue[],
+  mode?: string,
 ) => {
   const filtersDefinition = filterKeys.map((key) => useFilterDefinition(key, entityTypes));
   return (filtersDefinition
     .filter((def) => def) as FilterDefinition[])
-    .map((def) => getDefaultFilterObject(def.filterKey, def));
+    .map((def) => getDefaultFilterObject(def.filterKey, def, values, mode));
 };
 
 export const isStixObjectTypes = [
@@ -874,7 +886,7 @@ export const getSelectedOptions = (
   t_i18n: (s: string) => string,
 ): OptionValue[] => {
   // we try to get first the element from the search
-  // and if we did not find we tried one from filterReprensentative
+  // and if we did not find we tried one from filterRepresentative
   // Most of the time element from search should be sufficient
   const mapFilterValues: OptionValue[] = [];
   filterValues.forEach((value: string) => {
@@ -883,6 +895,14 @@ export const getSelectedOptions = (
       mapFilterValues.push({
         ...mapRepresentative,
         group: capitalizeFirstLetter(t_i18n('selected')),
+      });
+    } else if (value === SELF_ID) {
+      mapFilterValues.push({
+        value,
+        type: 'instance',
+        parentTypes: [],
+        group: capitalizeFirstLetter(t_i18n('selected')),
+        label: SELF_ID_VALUE,
       });
     } else {
       const filterRepresentative = filtersRepresentativesMap.get(value);

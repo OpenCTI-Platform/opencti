@@ -34,6 +34,9 @@ const ThemeDark = (
       main: '#f44336',
       dark: '#c62828',
     },
+    warn: {
+      main: '#ffa726',
+    },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: 'black', text: { primary: '#fbc2be' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
@@ -47,6 +50,7 @@ const ThemeDark = (
       main: '#ffffff',
     },
     chip: { main: '#ffffff' },
+    ai: { main: '#9575cd', light: '#d1c4e9', dark: '#673ab7', contrastText: 'black', text: { primary: '#9575cd' } },
     ee: {
       main: EE_COLOR,
       contrastText: '#ffffff',
@@ -65,6 +69,7 @@ const ThemeDark = (
     fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
+      lineHeight: '1.2rem',
     },
     body1: {
       fontSize: '0.9rem',
@@ -135,6 +140,15 @@ const ThemeDark = (
         root: {
           [`&.${buttonClasses.outlined}.${buttonClasses.sizeSmall}`]: {
             padding: '4px 9px',
+          },
+          '&.icon-outlined': {
+            borderColor: hexToRGB('#ffffff', 0.15),
+            padding: 7,
+            minWidth: 0,
+            '&:hover': {
+              borderColor: hexToRGB('#ffffff', 0.15),
+              backgroundColor: hexToRGB('#ffffff', 0.05),
+            },
           },
         },
       },

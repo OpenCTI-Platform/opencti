@@ -1,12 +1,16 @@
 import {
+  aiActivity,
+  aiForecast,
+  aiHistory,
   analysisClear,
-  askElementEnrichmentForConnector,
   askElementAnalysisForConnector,
+  askElementEnrichmentForConnector,
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
   externalReferencesPaginated,
   findAll,
+  findAllAuthMemberRestricted,
   findById,
   groupingsPaginated,
   notesPaginated,
@@ -59,6 +63,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);
@@ -81,6 +86,9 @@ const stixCoreObjectResolvers = {
       return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
     stixCoreObjectAnalysis: (_, { id, contentSource, contentType }, context) => stixCoreAnalysis(context, context.user, id, contentSource, contentType),
+    stixCoreObjectAskAiActivity: (_, args, context) => aiActivity(context, context.user, args),
+    stixCoreObjectAskAiForecast: (_, args, context) => aiForecast(context, context.user, args),
+    stixCoreObjectAskAiHistory: (_, args, context) => aiHistory(context, context.user, args),
   },
   StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
   StixCoreObject: {

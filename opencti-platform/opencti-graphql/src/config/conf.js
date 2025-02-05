@@ -34,6 +34,9 @@ import { UNKNOWN_ERROR, UnknownError, UnsupportedError } from './errors';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
+import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
+import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -82,6 +85,7 @@ const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerC
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
+export const PLATFORM_INSTANCE_ID = `platform:instance:${NODE_INSTANCE_ID}`;
 
 let configurationFile;
 if (externalConfigurationFile) {
@@ -518,6 +522,7 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 // a special flag name allows to enable all feature flags at once
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
+export const ORGA_SHARING_REQUEST_FF = 'ORGA_SHARING_REQUEST_FF';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
@@ -637,6 +642,16 @@ export const BUS_TOPICS = {
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_ADDED_TOPIC`,
   },
+  [ENTITY_TYPE_EXCLUSION_LIST]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_DISSEMINATION_LIST]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DISSEMINATION_LIST_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DISSEMINATION_LIST_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DISSEMINATION_LIST_ADDED_TOPIC`,
+  },
   [ENTITY_TYPE_MANAGER_CONFIGURATION]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_MANAGER_CONFIGURATION_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_MANAGER_CONFIGURATION_ADDED_TOPIC`,
@@ -663,6 +678,11 @@ export const BUS_TOPICS = {
   },
   [SUPPORT_BUS]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`,
+  },
+  [ENTITY_TYPE_FINTEL_TEMPLATE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}TEMPLATE_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}TEMPLATE_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}TEMPLATE_DELETE_TOPIC`,
   },
 };
 

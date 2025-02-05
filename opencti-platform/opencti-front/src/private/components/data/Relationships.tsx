@@ -18,6 +18,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../components/ItemIcon';
 import { itemColor } from '../../../utils/Colors';
 import ItemEntityType from '../../../components/ItemEntityType';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
@@ -36,7 +37,7 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
     created_at
     updated_at
     is_inferred
-    draftVersion{
+    draftVersion {
       draft_id
       draft_operation
     }
@@ -85,12 +86,20 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -112,12 +121,20 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -194,7 +211,7 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
           id
           entity_type
           created_at
-          draftVersion{
+          draftVersion {
             draft_id
             draft_operation
           }
@@ -224,6 +241,8 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
 
 const Relationships = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Relationships | Data'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

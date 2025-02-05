@@ -10,6 +10,9 @@ import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
 import useHelper from 'src/utils/hooks/useHelper';
 import { GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -31,6 +34,10 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -50,6 +57,9 @@ const groupingMutation = graphql`
       id
       standard_id
       name
+      representative {
+        main
+      }
       description
       entity_type
       parent_types
@@ -71,6 +81,7 @@ interface GroupingAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
+  authorized_members: { value: string, accessRight: string }[] | undefined;
 }
 
 interface GroupingFormProps {
@@ -99,6 +110,9 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
+  const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
@@ -108,6 +122,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
     file: Yup.mixed().nullable(),
+    authorized_members: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -133,6 +148,12 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
+        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
+          id: value,
+          access_right: accessRight,
+        })),
+      }),
     };
     commit({
       variables: {
@@ -173,8 +194,11 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    authorized_members: undefined,
   });
-
+  if (!canEditAuthorizedMembers) {
+    delete initialValues.authorized_members;
+  }
   return (
     <Formik<GroupingAddInput>
       initialValues={initialValues}
@@ -184,7 +208,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       onSubmit={onSubmit}
       onReset={onClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form>
           <Field
             component={TextField}
@@ -224,7 +248,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             name="content"
             label={t_i18n('Content')}
             required={mandatoryAttributes.includes('content')}
-            meta={{ error: errors.content }}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -260,6 +283,30 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isEnterpriseEdition && (
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+            >
+              <div style={fieldSpacingContainerStyle}>
+                <Accordion >
+                  <AccordionSummary id="accordion-panel">
+                    <Typography>{t_i18n('Advanced options')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Field
+                      name={'authorized_members'}
+                      component={AuthorizedMembersField}
+                      containerstyle={{ marginTop: 20 }}
+                      showAllMembersLine
+                      canDeactivate
+                      disabled={isSubmitting}
+                      addMeUserWithAdminRights
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </div>
+            </Security>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"

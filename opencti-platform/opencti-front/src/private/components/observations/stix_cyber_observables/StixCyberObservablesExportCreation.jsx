@@ -15,10 +15,11 @@ import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import SelectField from '../../../../components/fields/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
@@ -233,10 +234,11 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                 </Field>
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
-                                  label={t('Content max marking definition levels')}
+                                  label={t(CONTENT_MAX_MARKINGS_TITLE)}
                                   onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                   style={fieldSpacingContainerStyle}
                                   limitToMaxSharing
+                                  helpertext={t(CONTENT_MAX_MARKINGS_HELPERTEXT)}
                                 />
                                 <ObjectMarkingField
                                   name="fileMarkings"

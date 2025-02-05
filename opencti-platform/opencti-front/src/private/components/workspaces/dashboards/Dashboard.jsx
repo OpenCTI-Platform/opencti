@@ -5,6 +5,7 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
+import DashboardTimeFilters from './DashboardTimeFilters';
 import StixCoreObjectsPolarArea from '../../common/stix_core_objects/StixCoreObjectsPolarArea';
 import StixRelationshipsPolarArea from '../../common/stix_relationships/StixRelationshipsPolarArea';
 import { computerRelativeDate, dayStartDate, parse } from '../../../../utils/Time';
@@ -12,10 +13,10 @@ import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import WidgetPopover from './WidgetPopover';
+import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
-import WidgetConfig from './WidgetConfig';
-import WidgetText from './WidgetText';
+import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
+import WidgetText from '../../../../components/dashboard/WidgetText';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
@@ -65,6 +66,7 @@ import {
   serializeDashboardManifestForBackend,
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -87,6 +89,9 @@ const COL_WIDTH = 30;
 const DashboardComponent = ({ workspace, noToolbar }) => {
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
@@ -442,6 +447,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             endDate={endDate}
             dataSelection={widget.dataSelection} // dynamicFrom and dynamicTo TODO
             parameters={widget.parameters}
+            widgetId={widget.id}
             variant="inLine"
           />
         );
@@ -788,6 +794,11 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Not implemented yet';
     }
   };
+
+  const [idToResize, setIdToResize] = useState();
+
+  const handleResize = (updatedWidget) => setIdToResize(updatedWidget);
+
   return (
     <div
       className={classes.container}
@@ -797,12 +808,24 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       }}
     >
       {!noToolbar && (
-        <WorkspaceHeader
-          workspace={workspace}
-          config={manifest.config}
-          handleDateChange={handleDateChange}
-          variant="dashboard"
-        />
+        <>
+          <WorkspaceHeader
+            handleAddWidget={handleAddWidget}
+            workspace={workspace}
+            variant="dashboard"
+            config={manifest.config}
+            handleDateChange={handleDateChange}
+          />
+          {isFABReplaced && (
+            <div style={{ marginTop: 8 }}>
+              <DashboardTimeFilters
+                workspace={workspace}
+                config={manifest.config}
+                handleDateChange={handleDateChange}
+              />
+            </div>
+          )}
+        </>
       )}
       {isExploreUpdater && userCanEdit ? (
         <ReactGridLayout
@@ -814,6 +837,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           isResizable={!noToolbar}
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
           draggableCancel=".noDrag"
+          onResizeStart={(_, { i }) => handleResize(i)}
+          onResizeStop={handleResize}
+
         >
           {R.values(manifest.widgets).map((widget) => {
             let mainEntityTypes = ['Stix-Core-Object'];
@@ -831,33 +857,41 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
             };
-            return <Paper
-              key={widget.id}
-              data-grid={widget.layout}
-              classes={{ root: classes.paper }}
-              variant="outlined"
-                   >
-              {!noToolbar && (
-              <WidgetPopover
-                widget={widget}
-                manifest={manifest}
-                workspace={workspace}
-                onUpdate={handleUpdateWidget}
-                onDuplicate={handleDuplicateWidget}
-                onDelete={() => handleDeleteWidget(widget.id)}
-              />
-              )}
-              <ErrorBoundary>
-                {widget.perspective === 'entities'
-                    && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
-                {widget.perspective === 'relationships'
-                    && renderRelationshipsVisualization(removeIdFilterWidget, manifest.config)}
-                {widget.perspective === 'audits'
-                    && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
-                {widget.perspective === null
-                    && renderRawVisualization(removeIdFilterWidget)}
-              </ErrorBoundary>
-            </Paper>;
+            return (
+              <Paper
+                key={widget.id}
+                data-grid={widget.layout}
+                classes={{ root: classes.paper }}
+                variant="outlined"
+              >
+                {!noToolbar && (
+                  <WorkspaceWidgetPopover
+                    widget={widget}
+                    manifest={manifest}
+                    workspace={workspace}
+                    onUpdate={handleUpdateWidget}
+                    onDuplicate={handleDuplicateWidget}
+                    onDelete={() => handleDeleteWidget(widget.id)}
+                  />
+                )}
+                <ErrorBoundary>
+                  {widget.id === idToResize ? (
+                    <div />
+                  ) : (
+                    <>
+                      {widget.perspective === 'entities'
+                      && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
+                      {widget.perspective === 'relationships'
+                      && renderRelationshipsVisualization(removeIdFilterWidget, manifest.config)}
+                      {widget.perspective === 'audits'
+                      && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
+                      {widget.perspective === null
+                      && renderRawVisualization(removeIdFilterWidget)}
+                    </>
+                  )}
+                </ErrorBoundary>
+              </Paper>
+            );
           })}
         </ReactGridLayout>
       ) : (
@@ -906,7 +940,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           })}
         </ReactGridLayout>
       )}
-      {!noToolbar && userCanEdit && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
+      {!noToolbar && userCanEdit && !isFABReplaced && <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -41,12 +41,12 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import GroupField from '../../../common/form/GroupField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
 import { Option } from '../../../common/form/ReferenceField';
-import { isEmptyField } from '../../../../../utils/utils';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
+import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,7 +70,9 @@ export const configurationQuery = graphql`
   query ConfigurationQuery {
     settings {
       id
-      enterprise_edition
+      platform_enterprise_edition {
+        license_validated
+      }
       activity_listeners {
         id
         name
@@ -105,6 +107,8 @@ ConfigurationComponentProps
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Activity: Configuration | Settings'));
   const [commit] = useApiMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(
     configurationQuery,
@@ -125,7 +129,7 @@ ConfigurationComponentProps
       resetForm();
     };
   };
-  if (isEmptyField(settings.enterprise_edition)) {
+  if (!settings.platform_enterprise_edition.license_validated) {
     return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
   return (

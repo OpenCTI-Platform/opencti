@@ -1,10 +1,10 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { ArrowRightAltOutlined } from '@mui/icons-material';
+import { SubTypeQuery$data } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
-import { SubType_subType$data } from '../private/components/settings/sub_types/__generated__/SubType_subType.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,10 +30,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ItemStatusTemplate: FunctionComponent<{ statuses: SubType_subType$data['statuses'], disabled: boolean }> = ({
-  statuses,
-  disabled,
-}) => {
+interface ItemStatusTemplateProps {
+  statuses: NonNullable<SubTypeQuery$data['subType']>['statuses'],
+  disabled: boolean
+}
+
+const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   if (disabled || statuses.length === 0) {

@@ -175,6 +175,34 @@ export const containerTypes = [
   'Observed-Data',
 ];
 
+export const typesWithFintelTemplates = [
+  'Report',
+  'Grouping',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+];
+
+export const aliasedTypes = [
+  'Attack-Pattern',
+  'Campaign',
+  'Infrastructure',
+  'Intrusion-Set',
+  'Malware',
+  'Threat-Actor',
+  'Threat-Actor-Individual',
+  'Threat-Actor-Group',
+  'Tool',
+  'Incident',
+  'Channel',
+  'Language',
+  'Event',
+  'Narrative',
+  'Data-Component',
+  'Data-Source',
+  'Vocabulary',
+];
+
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
   const { sdos, scos } = useAuth().schema;
@@ -199,6 +227,8 @@ const useAttributes = () => {
     typesContainers,
     vocabularyAttributes: vocabularies.fields,
     containerTypes,
+    typesWithFintelTemplates,
+    aliasedTypes,
   };
 };
 

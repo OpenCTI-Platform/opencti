@@ -11,6 +11,7 @@ import { findById as findStatusById } from './status';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import type { BasicStoreEntity } from '../types/store';
 import { INTERNAL_USERS } from '../utils/access';
+import { SELF_ID, SELF_ID_VALUE } from '../utils/fintelTemplate/__fintelTemplateWidgets';
 
 interface FilterRepresentative {
   id: string
@@ -56,6 +57,15 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
       value: (entity ? extractEntityRepresentativeName(entity) : null),
       entity_type: entity?.entity_type ?? null,
       color: entity?.color || entity?.x_opencti_color || null
+    });
+  }
+  // resolve SELF_ID differently
+  if (idsToResolve.includes(SELF_ID)) {
+    filtersRepresentatives.push({
+      id: SELF_ID,
+      value: SELF_ID_VALUE,
+      entity_type: 'Instance',
+      color: null,
     });
   }
   // add ids that don't require a resolution

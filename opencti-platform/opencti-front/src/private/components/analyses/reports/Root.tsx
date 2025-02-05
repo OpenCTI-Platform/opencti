@@ -11,7 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
-import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
 import { RootReportSubscription } from './__generated__/RootReportSubscription.graphql';
@@ -27,7 +28,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -94,7 +95,6 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-
   return (
     <>
       <QueryRenderer
@@ -106,6 +106,7 @@ const RootReport = () => {
               const { report } = props;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
               const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
+              const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
@@ -127,9 +128,11 @@ const RootReport = () => {
                     )}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
-                    enableAskAi={true}
+                    enableEnrollPlaybook={true}
+                    enableAskAi={false}
                     overview={isOverview}
                     redirectToContent={true}
+                    enableEnricher={true}
                   />
                   <Box
                     sx={{
@@ -181,8 +184,11 @@ const RootReport = () => {
                         label={t_i18n('Data')}
                       />
                     </Tabs>
-                    {isOverview && (
-                      <StixCoreObjectSimulationResult id={report.id} type="container" />
+                    {!isKnowledgeOrContent && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <StixCoreObjectSimulationResultContainer id={report.id} type="container"/>
+                      </div>
                     )}
                   </Box>
                   <Routes>

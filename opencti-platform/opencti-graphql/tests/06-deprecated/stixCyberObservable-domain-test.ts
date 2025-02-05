@@ -22,7 +22,7 @@ const LIST_QUERY = gql`
   }
 `;
 
-describe('stixCyberObservable deprecated API [>=6.2 & <6.5]', () => {
+describe('stixCyberObservable deprecated API [>=6.2 & <6.8]', () => {
   it('Promote observable to indicator shall return the observable', async () => {
     const observable = await addStixCyberObservable(testContext, ADMIN_USER, {
       type: 'Domain-Name',

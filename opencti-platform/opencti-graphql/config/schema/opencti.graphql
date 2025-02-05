@@ -37,6 +37,7 @@ enum State {
   timeout
 }
 enum Capabilities {
+  BYPASS
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
@@ -49,6 +50,7 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
+  KNOWLEDGE_KNDISSEMINATION
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
@@ -62,6 +64,7 @@ enum Capabilities {
   SETTINGS_SETPARAMETERS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
+  SETTINGS_SETDISSEMINATION
   SETTINGS_SETLABELS
   SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
@@ -420,6 +423,25 @@ type OpinionsMetrics {
   min: Int
   max: Int
   total: Int
+}
+type AiActivity {
+  result: String
+  trend: String
+  updated_at: DateTime
+}
+type AiSummary {
+  result: String
+  topics: [String]
+  updated_at: DateTime
+}
+type AiForecast {
+  result: String
+  confidence: Int
+  updated_at: DateTime
+}
+type AiHistory {
+  result: String
+  updated_at: DateTime
 }
 
 ### INTERFACES & TYPES
@@ -802,6 +824,7 @@ type Work {
   messages: [WorkMessage]
   errors: [WorkMessage]
   tracking: WorkTracking
+  draft_context: String
 }
 type WorkEdge {
   cursor: String!
@@ -886,6 +909,8 @@ type WidgetDataSelection {
   dynamicTo: String
   columns: [WidgetColumn!]
   instance_id: String
+  sort_by: String
+  sort_mode: String
 }
 type WidgetParameters {
   title: String
@@ -911,18 +936,6 @@ type Widget {
   dataSelection: [WidgetDataSelection!]!
   parameters: WidgetParameters
   layout: WidgetLayout
-}
-type Template {
-  id: ID!
-  name: String!
-  description: String
-  filters: String
-  content: String!
-  template_widgets_ids: [String!]!
-}
-type TemplateAndUtils {
-  template: Template!,
-  template_widgets: [Widget!]!,
 }
 
 type IndexedFile {
@@ -999,6 +1012,7 @@ enum BackgroundTaskActionType {
   UNSHARE
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
+  REMOVE_AUTH_MEMBERS
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1231,6 +1245,23 @@ type SettingsMessage {
   recipients: [Member!] @auth(for: [SETTINGS_SETPARAMETERS])
 }
 
+type PlatformEE {
+  license_enterprise: Boolean!
+  license_by_configuration: Boolean!
+  license_customer: String!
+  license_validated: Boolean!
+  license_valid_cert: Boolean!
+  license_expired: Boolean!
+  license_expiration_prevention: Boolean!
+  license_start_date: DateTime!
+  license_expiration_date: DateTime!
+  license_platform: String!
+  license_type: String!
+  license_platform_match: Boolean!
+  license_creator: String!
+  license_global: Boolean!
+}
+
 enum PlatformCriticalAlertType {
   GROUP_WITH_NULL_CONFIDENCE_LEVEL
 }
@@ -1263,6 +1294,7 @@ type Settings implements InternalObject & BasicObject {
   entity_type: String! @auth
   parent_types: [String!]! @auth
   # Settings
+  platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
   platform_title: String
   platform_favicon: String
@@ -1318,7 +1350,6 @@ type Settings implements InternalObject & BasicObject {
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
-  enterprise_edition: DateTime
   activity_listeners: [Member!] @auth(for: [SETTINGS_SECURITYACTIVITY])
   otp_mandatory: Boolean @auth
   password_policy_min_length: Int @auth
@@ -1331,6 +1362,7 @@ type Settings implements InternalObject & BasicObject {
   platform_messages: [SettingsMessage!] @auth
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String @auth
+  playground_enabled: Boolean!
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
 }
@@ -1960,7 +1992,9 @@ type Inference {
 enum DraftOperation {
   create
   update
+  update_linked
   delete
+  delete_linked
 }
 
 type DraftVersion {
@@ -2325,6 +2359,7 @@ enum StixCoreObjectsOrdering {
   opinions_metrics_max
   opinions_metrics_total
   _score
+  authorized_members_activation_date
 }
 type StixCoreObjectConnection {
   pageInfo: PageInfo!
@@ -2656,6 +2691,7 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
+  objectMarking
   x_opencti_workflow_id
   _score
 }
@@ -3173,6 +3209,7 @@ interface Container {
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3194,7 +3231,7 @@ interface Container {
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3203,10 +3240,7 @@ interface Container {
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   # Technical
   creators: [Creator!]
   workflowEnabled: Boolean
@@ -3335,6 +3369,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3382,7 +3417,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3391,10 +3426,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3570,6 +3602,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3616,7 +3649,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3625,10 +3658,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -3781,6 +3811,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -3826,7 +3857,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -3835,10 +3866,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4010,6 +4038,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   avatar: OpenCtiFile
   # Container
   authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
     first: Int
@@ -4060,7 +4089,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  contentsFromTemplate(
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -4069,10 +4098,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: FilterGroup
   ): FileConnection
-  templates: [Template!]
-  templateAndUtils(
-    templateId: String!
-  ): TemplateAndUtils
+  fintelTemplates: [FintelTemplate!]
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
@@ -4108,6 +4134,7 @@ input ReportAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  authorized_members: [MemberAccessInput!]
 }
 
 ############## CoursesOfAction
@@ -12726,6 +12753,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
+  askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
@@ -12921,6 +12949,9 @@ type Query {
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
+  stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
+  stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast @auth(for: [KNOWLEDGE])
+  stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -12930,6 +12961,15 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  stixCoreObjectsRestricted(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): StixCoreObjectConnection @auth(for: [BYPASS])
   globalSearch(
     first: Int
     after: ID
@@ -13098,6 +13138,30 @@ type Query {
     search: String
   ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   containersNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  containersDistribution(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  containersAskAiSummary(
+    busId: String
+    first: Int
+    after: ID
+    orderBy: ContainersOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    language: String
+    forceRefresh: Boolean
+  ): AiSummary @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
@@ -13286,7 +13350,6 @@ type Query {
     search: String
     toStix: Boolean
   ): SystemConnection @auth(for: [KNOWLEDGE])
-
   infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
     first: Int
@@ -13852,6 +13915,7 @@ type WorkEditMutations {
   ping: ID!
   reportExpectation(error: WorkErrorInput): ID!
   addExpectations(expectations: Int): ID!
+  addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
   toProcessed(message: String, inError: Boolean): ID!
 }
@@ -14291,13 +14355,17 @@ type StixRefRelationshipEditMutations {
 }
 
 ### MUTATIONS DECLARATION
+enum ValidationMode {
+  draft
+  workbench
+}
 
 type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])
   resetFileIndexing: Boolean @auth(for: [SETTINGS_FILEINDEXING])
 

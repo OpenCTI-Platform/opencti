@@ -9,9 +9,10 @@ import {
   containersNumberByAuthor,
   containersNumberByEntity,
   containerEditAuthorizedMembers,
-  getContentsFromTemplate,
-  getTemplateAndUtils,
-  getTemplates
+  getFilesFromTemplate,
+  getFintelTemplates,
+  aiSummary,
+  containersDistributionByEntity
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
@@ -24,6 +25,8 @@ import {
 import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
 import { getUserAccessRight } from '../utils/access';
+import { distributionEntities } from '../database/middleware';
+import { ENTITY_TYPE_CONTAINER } from '../schema/general';
 
 const containerResolvers = {
   Query: {
@@ -39,6 +42,13 @@ const containerResolvers = {
       }
       return containersNumber(context, context.user, args);
     },
+    containersDistribution: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return containersDistributionByEntity(context, context.user, args);
+      }
+      return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER], args);
+    },
+    containersAskAiSummary: (_, args, context) => aiSummary(context, context.user, args),
   },
   Container: {
     __resolveType(obj) {
@@ -51,9 +61,8 @@ const containerResolvers = {
     currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
-    contentsFromTemplate: (container, { first, prefixMimeType }, context) => getContentsFromTemplate(context, context.user, container, { first, prefixMimeType }),
-    templates: (container, _, context) => getTemplates(context, context.user, container),
-    templateAndUtils: (container, args, context) => getTemplateAndUtils(context, context.user, container, args.templateId),
+    filesFromTemplate: (container, { first, prefixMimeType }, context) => getFilesFromTemplate(context, context.user, container, { first, prefixMimeType }),
+    fintelTemplates: (container, _, context) => getFintelTemplates(context, context.user, container),
   },
   // TODO Reactivate after official release of graphQL 17
   // StixObjectOrStixRelationshipRefConnection: {

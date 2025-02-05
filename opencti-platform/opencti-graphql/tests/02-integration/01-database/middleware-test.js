@@ -16,7 +16,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, buildStandardUser, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, TEST_ORGANIZATION, testContext, TESTING_ORGS } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -50,6 +50,7 @@ import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { generateInternalId } from '../../../src/schema/identifier';
+import { mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -184,7 +185,7 @@ describe('Entities listing', () => {
   it('should list multiple entities', async () => {
     const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
-    expect(entities.edges.length).toEqual(10); // 2 malwares + 8 organizations
+    expect(entities.edges.length).toEqual(TESTING_ORGS.length + 6 + 2); // 2 malwares + 6 organizations from data init
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
     expect(aggregationMap.get('Paradise Ransomware')).not.toBeUndefined();
     expect(aggregationMap.get('Allied Universal')).not.toBeUndefined();
@@ -255,7 +256,15 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
-    expect(stixRefRelationships.edges.length).toEqual(129);
+    const entityTypeMap = mapEdgesCountPerEntityType(stixRefRelationships);
+    expect(entityTypeMap.get('created-by')).toBe(22);
+    expect(entityTypeMap.get('kill-chain-phase')).toBe(3);
+    expect(entityTypeMap.get('object-label')).toBe(30);
+    expect(entityTypeMap.get('object')).toBe(38);
+    expect(entityTypeMap.get('external-reference')).toBe(7);
+    expect(entityTypeMap.get('object-marking')).toBe(29);
+    expect(entityTypeMap.get('operating-system')).toBe(1);
+    expect(stixRefRelationships.edges.length).toEqual(130);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {

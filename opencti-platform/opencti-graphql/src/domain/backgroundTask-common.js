@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, KNOWLEDGE_KNASKIMPORT, SETTINGS_SETLABELS, KNOWLEDGE_KNUPDATE } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -18,6 +18,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
@@ -31,6 +32,7 @@ export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
+export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -67,17 +69,17 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     // 2.3. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
-      const deleteOperationTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION);
+      const acceptedInternalTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION || type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));
-      const isNotKnowledge = (!deleteOperationTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
+      const isNotKnowledge = (!acceptedInternalTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
-      const deleteOperationTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION);
+      const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
-        || (!deleteOperationTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
+        || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
@@ -316,6 +318,7 @@ export const createListTask = async (context, user, input) => {
     ...task,
     actions,
     task_ids: ids,
+    draft_context: getDraftContext(context, user),
   };
   await publishUserAction({
     user,

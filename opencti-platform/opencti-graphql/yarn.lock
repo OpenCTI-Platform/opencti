@@ -72,17 +72,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/server-plugin-landing-page-graphql-playground@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@apollo/server-plugin-landing-page-graphql-playground@npm:4.0.1"
-  dependencies:
-    "@apollographql/graphql-playground-html": "npm:1.6.29"
-  peerDependencies:
-    "@apollo/server": ^4.0.0
-  checksum: 10/68005fca18bd41c25360f2f82c740e1f45b15a491acffb2ffb015647abae9ce953186898336d984331a2f7d94848bbf56e2050891838a0ece10625018555fe99
-  languageName: node
-  linkType: hard
-
 "@apollo/server@npm:4.11.0":
   version: 4.11.0
   resolution: "@apollo/server@npm:4.11.0"
@@ -234,15 +223,6 @@ __metadata:
   version: 2.0.1
   resolution: "@apollo/utils.withrequired@npm:2.0.1"
   checksum: 10/ddd3a72d0f13e6283128d1aae787b65f8ef0bf2f2cf351e143c479f0838679e72d82f42f653b6baadd33a092854fc9cb9dd8af4a45938ee25b718274cef408ee
-  languageName: node
-  linkType: hard
-
-"@apollographql/graphql-playground-html@npm:1.6.29":
-  version: 1.6.29
-  resolution: "@apollographql/graphql-playground-html@npm:1.6.29"
-  dependencies:
-    xss: "npm:^1.0.8"
-  checksum: 10/5e45cdc122dbc18c71f89fd9be8c19d1e35417ea27d3915206438d351f7775894957cd5b8bb378921bb96a8f6e6a9d182ce3d674abaddefd36a3a7e9cf6f1e68
   languageName: node
   linkType: hard
 
@@ -3815,6 +3795,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sesamecare-oss/redlock@npm:1.3.1":
+  version: 1.3.1
+  resolution: "@sesamecare-oss/redlock@npm:1.3.1"
+  peerDependencies:
+    ioredis: ">=5"
+  checksum: 10/db6f0a2a6b571687229fc0261459f74529de412b3b14d80c048df7323e20da94885680b0678a5e819a7750de3d9e63e9863874a2b54e3ec4c6f8c5d71dcf8651
+  languageName: node
+  linkType: hard
+
 "@smithy/abort-controller@npm:^3.1.5, @smithy/abort-controller@npm:^3.1.6":
   version: 3.1.6
   resolution: "@smithy/abort-controller@npm:3.1.6"
@@ -4761,6 +4750,15 @@ __metadata:
     "@types/node": "npm:*"
     form-data: "npm:^4.0.0"
   checksum: 10/c416df8f182ec3826278ea42557fda08f169a48a05e60722d9c8edd4e5b2076ae281c6b6601ad406035b7201f885b0257983b61c26b3f9eb0f41192a807b5de5
+  languageName: node
+  linkType: hard
+
+"@types/node-forge@npm:1.3.11":
+  version: 1.3.11
+  resolution: "@types/node-forge@npm:1.3.11"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/670c9b377c48189186ec415e3c8ed371f141ecc1a79ab71b213b20816adeffecba44dae4f8406cc0d09e6349a4db14eb8c5893f643d8e00fa19fc035cf49dee0
   languageName: node
   linkType: hard
 
@@ -6702,13 +6700,6 @@ __metadata:
     shebang-command: "npm:^2.0.0"
     which: "npm:^2.0.1"
   checksum: 10/0d52657d7ae36eb130999dffff1168ec348687b48dd38e2ff59992ed916c88d328cf1d07ff4a4a10bc78de5e1c23f04b306d569e42f7a2293915c081e4dfee86
-  languageName: node
-  linkType: hard
-
-"cssfilter@npm:0.0.10":
-  version: 0.0.10
-  resolution: "cssfilter@npm:0.0.10"
-  checksum: 10/1e45182f42de848f092f50a313113c28a88e4ac98333bf1603ee1c3b200384a3bc83c12e35cd61135e3b0f218295f600d51120ca1f926b7958b2d3262d711214
   languageName: node
   linkType: hard
 
@@ -10159,11 +10150,11 @@ __metadata:
   linkType: hard
 
 "json11@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "json11@npm:2.0.0"
+  version: 2.0.2
+  resolution: "json11@npm:2.0.2"
   bin:
     json11: dist/cli.mjs
-  checksum: 10/497cd4e5f35120160f4258aace56102ffd408a40125a9861eb3bdc9e0ba45514cf18c2fa84ee51e0cea9b3e289ca5c9de2a2aa742343d50ef41bdd77dd052fae
+  checksum: 10/300756428231f847a9b301e2f57baae4672dcde8f39e2ceb1a642d57adf96290d0026505a9de9f3aeee13e6e6ce7b02257115184f771fedc63d9d5aec8b57280
   languageName: node
   linkType: hard
 
@@ -10985,7 +10976,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-abort-controller@npm:^3.0.1, node-abort-controller@npm:^3.1.1":
+"node-abort-controller@npm:^3.1.1":
   version: 3.1.1
   resolution: "node-abort-controller@npm:3.1.1"
   checksum: 10/0a2cdb7ec0aeaf3cb31e1ca0e192f5add48f1c5c9c9ed822129f9dddbd9432f69b7425982f94ce803c56a2104884530aa67cd57696e5774b2e5b8ec2f58de042
@@ -11041,6 +11032,13 @@ __metadata:
     encoding:
       optional: true
   checksum: 10/b24f8a3dc937f388192e59bcf9d0857d7b6940a2496f328381641cb616efccc9866e89ec43f2ec956bbd6c3d3ee05524ce77fe7b29ccd34692b3a16f237d6676
+  languageName: node
+  linkType: hard
+
+"node-forge@npm:1.3.1":
+  version: 1.3.1
+  resolution: "node-forge@npm:1.3.1"
+  checksum: 10/05bab6868633bf9ad4c3b1dd50ec501c22ffd69f556cdf169a00998ca1d03e8107a6032ba013852f202035372021b845603aeccd7dfcb58cdb7430013b3daa8d
   languageName: node
   linkType: hard
 
@@ -11344,9 +11342,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.73.0":
-  version: 4.73.0
-  resolution: "openai@npm:4.73.0"
+"openai@npm:4.78.1":
+  version: 4.78.1
+  resolution: "openai@npm:4.78.1"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -11362,7 +11360,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10/d367a5f809716ffc5d07000aedccd01223b2c81a9aee2cf50902f45a5e876fa10e0efaabe9e727a6260daf86d3b7cda051021b3036cace3398cb10d0561edd38
+  checksum: 10/dd0fa54d693fabb802070dbd5096fb8d537b0be60fea55cf8a10f06e52bd2beeb3d9d8a2e103b37ac38966e71ac14ac3fbea0dc036ac56d815910ac0cc83b411
   languageName: node
   linkType: hard
 
@@ -11371,7 +11369,6 @@ __metadata:
   resolution: "opencti-graphql@workspace:."
   dependencies:
     "@apollo/server": "npm:4.11.0"
-    "@apollo/server-plugin-landing-page-graphql-playground": "npm:4.0.1"
     "@aws-sdk/client-s3": "npm:3.679.0"
     "@aws-sdk/client-sts": "npm:3.679.0"
     "@aws-sdk/credential-provider-node": "npm:3.679.0"
@@ -11412,6 +11409,7 @@ __metadata:
     "@opentelemetry/semantic-conventions": "npm:1.25.1"
     "@pyroscope/nodejs": "npm:0.4.3"
     "@rollup/plugin-graphql": "npm:2.0.5"
+    "@sesamecare-oss/redlock": "npm:1.3.1"
     "@types/archiver": "npm:6.0.3"
     "@types/bcryptjs": "npm:2.4.6"
     "@types/bluebird": "npm:3.5.42"
@@ -11421,6 +11419,7 @@ __metadata:
     "@types/graphql-upload": "npm:17.0.0"
     "@types/mime-types": "npm:2.1.4"
     "@types/nconf": "npm:0.10.7"
+    "@types/node-forge": "npm:1.3.11"
     "@types/ramda": "npm:0.30.2"
     "@types/turndown": "npm:5.0.5"
     "@types/xml2js": "npm:0.4.14"
@@ -11498,8 +11497,9 @@ __metadata:
     nconf: "npm:0.12.1"
     node-calls-python: "npm:1.9.1"
     node-fetch: "npm:3.3.2"
+    node-forge: "npm:1.3.1"
     nodemailer: "npm:6.10.0"
-    openai: "npm:4.73.0"
+    openai: "npm:4.78.1"
     openid-client: "npm:5.6.5"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
@@ -11513,7 +11513,6 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.30.1"
     rate-limiter-flexible: "npm:5.0.5"
-    redlock: "npm:5.0.0-beta.2"
     sanitize-filename: "npm:1.6.3"
     semver: "npm:7.6.3"
     set-interval-async: "npm:3.0.3"
@@ -12282,15 +12281,6 @@ __metadata:
   dependencies:
     redis-errors: "npm:^1.0.0"
   checksum: 10/b10846844b4267f19ce1a6529465819c3d78c3e89db7eb0c3bb4eb19f83784797ec411274d15a77dbe08038b48f95f76014b83ca366dc955a016a3a0a0234650
-  languageName: node
-  linkType: hard
-
-"redlock@npm:5.0.0-beta.2":
-  version: 5.0.0-beta.2
-  resolution: "redlock@npm:5.0.0-beta.2"
-  dependencies:
-    node-abort-controller: "npm:^3.0.1"
-  checksum: 10/c1df94fb229182ccf59b744f600b45f2cda1d9c7e5b87b9bbf5c3ef92eb47339af7b33b80dc71e97c08c1f476443be68987dad6c49cfc1a89e9a647127884963
   languageName: node
   linkType: hard
 
@@ -14703,18 +14693,6 @@ __metadata:
   version: 0.0.34
   resolution: "xpath@npm:0.0.34"
   checksum: 10/77ce03c4494dab97b70fa443761c35a6bd484538a449714b981387a532a6eb22e245b29164f5d8a4a82f4f3cfd71d27ba71d09ed2b6fe933654585c6e46c0a25
-  languageName: node
-  linkType: hard
-
-"xss@npm:^1.0.8":
-  version: 1.0.15
-  resolution: "xss@npm:1.0.15"
-  dependencies:
-    commander: "npm:^2.20.3"
-    cssfilter: "npm:0.0.10"
-  bin:
-    xss: bin/xss
-  checksum: 10/074ad54babac9dd5107466dbf30d3b871dbedae1f8e7b8f4e3b76d60da8b92bd0f66f18ccd26b8524545444ef784b78c526cee089a907aa904f83c8b8d7958f6
   languageName: node
   linkType: hard
 

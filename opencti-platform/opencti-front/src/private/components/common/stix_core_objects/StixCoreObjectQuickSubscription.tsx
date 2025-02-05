@@ -1,6 +1,7 @@
 import { ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import { OverridableStringUnion } from '@mui/types';
 import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
@@ -26,6 +27,7 @@ import {
   stixCoreObjectTriggersUtilsPaginationQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtilsPaginationQuery.graphql';
 import { stixCoreObjectTriggersUtils_triggers$key as FragmentKey } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtils_triggers.graphql';
+import { SvgIconPropsColorOverrides } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -43,6 +45,7 @@ import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPo
 import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface InstanceTriggerEditionFormValues {
@@ -100,6 +103,8 @@ StixCoreObjectQuickSubscriptionContentProps
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
 
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);
@@ -471,18 +476,26 @@ StixCoreObjectQuickSubscriptionContentProps
       </Drawer>
     );
   };
+
+  const title = disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Subscribe to updates (modifications and new relations)');
+  let color: OverridableStringUnion<'inherit' | 'disabled' | 'secondary' | 'primary' | 'action' | 'info' | 'success' | 'warning' | 'error', SvgIconPropsColorOverrides> | undefined;
+  if (disabledInDraft) {
+    color = 'disabled';
+  } else {
+    color = triggerUpdate ? 'secondary' : 'primary';
+  }
   return (
     <>
-      <Tooltip title={t_i18n('Subscribe to updates (modifications and new relations)')}>
+      <Tooltip title={title}>
         <ToggleButton
-          onClick={triggerUpdate ? handleOpen : createInstanceTrigger}
+          onClick={() => !disabledInDraft && (triggerUpdate ? handleOpen() : createInstanceTrigger())}
           value="quick-subscription"
           size="small"
           style={{ marginRight: 3 }}
         >
           <NotificationsOutlined
             fontSize="small"
-            color={triggerUpdate ? 'secondary' : 'primary'}
+            color={color}
           />
         </ToggleButton>
       </Tooltip>

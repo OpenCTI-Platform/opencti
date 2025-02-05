@@ -1,55 +1,45 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
-import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
+import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
+import type { WidgetColumn } from '../../utils/widget/widget';
 
 interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
-  dateAttribute: string
   publicWidget?: boolean
   rootRef: DataTableProps['rootRef']
   widgetId: string
   pageSize: number
-  sortBy?: string
+  columns: WidgetColumn[]
 }
 
 const WidgetListCoreObjects = ({
   data,
-  dateAttribute,
   publicWidget = false,
   rootRef,
   widgetId,
   pageSize,
-  sortBy,
+  columns,
 }: WidgetListCoreObjectsProps) => {
-  const dataColumns = {
-    entity_type: { percentWidth: 10, isSortable: false },
-    value: { percentWidth: 20, isSortable: false },
-    createdBy: { percentWidth: 15, isSortable: false },
-    date: {
-      id: 'date',
-      isSortable: false,
-      percentWidth: 15,
-      label: 'Date',
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      render: (({ [dateAttribute]: date }, { fsd }) => fsd(date)),
-    },
-    objectLabel: { percentWidth: 10, isSortable: false },
-    x_opencti_workflow_id: { percentWidth: 15, isSortable: false },
-    objectMarking: { percentWidth: 15, isSortable: false },
-  };
-  if (sortBy && !['entity_type', 'name', 'value', 'observable_value', 'createdBy', 'objectLabel', 'x_opencti_workflow_id', 'objectMarking'].includes(sortBy)) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    delete dataColumns.x_opencti_workflow_id;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    dataColumns[sortBy] = { percentWidth: 15, isSortable: false };
-  }
+  const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
+    const percentWidth = (100) / (columns.length ?? 1);
+
+    return columns
+      .reduce<Record<string, Partial<DataTableColumn>>>(
+      (acc, { attribute, label }) => {
+        if (!attribute) {
+          return acc;
+        }
+        acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+        return acc;
+      },
+      {},
+    );
+  }, [columns]);
+
   return (
     <DataTableWithoutFragment
-      dataColumns={dataColumns}
+      dataColumns={buildColumns}
       storageKey={widgetId}
       data={data.map(({ node }) => node)}
       globalCount={data.length}
@@ -57,6 +47,7 @@ const WidgetListCoreObjects = ({
       pageSize={pageSize.toString()}
       disableNavigation={publicWidget}
       rootRef={rootRef}
+      isLocalStorageEnabled={false}
     />
   );
 };

@@ -1,5 +1,8 @@
 import { FilterGroup } from '../filters/filtersHelpers-types';
-import { WidgetPerspective } from '../outcome_template/engine/__generated__/TemplateAndUtilsContainerQuery.graphql';
+
+export type WidgetContext = 'workspace' | 'fintelTemplate';
+
+export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
 interface WidgetColumn {
   attribute: string | null
@@ -8,7 +11,7 @@ interface WidgetColumn {
   variableName?: string | null
 }
 
-interface WidgetDataSelection {
+export interface WidgetDataSelection {
   label?: string | null
   number?: number | null
   attribute?: string | null
@@ -17,12 +20,14 @@ interface WidgetDataSelection {
   centerLng?: number | null
   zoom?: number | null
   isTo?: boolean | null
+  instance_id?: string | null
   perspective?: WidgetPerspective | null
   filters?: FilterGroup | null
   dynamicFrom?: FilterGroup | null
   dynamicTo?: FilterGroup | null
   columns?: readonly WidgetColumn[] | null
-  instance_id?: string | null
+  sort_by?: string | null
+  sort_mode?: string | null
 }
 
 interface WidgetParameters {
@@ -31,6 +36,7 @@ interface WidgetParameters {
   stacked?: boolean | null
   legend?: boolean | null
   distributed?: boolean | null
+  content?: string | null
 }
 
 interface WidgetLayout {
@@ -46,8 +52,8 @@ interface WidgetLayout {
 export interface Widget {
   id: string;
   type: string;
-  perspective?: WidgetPerspective
+  perspective?: WidgetPerspective | null
   dataSelection: WidgetDataSelection[]
-  parameters?: WidgetParameters
-  layout?: WidgetLayout
+  parameters?: WidgetParameters | null
+  layout?: WidgetLayout | null
 }

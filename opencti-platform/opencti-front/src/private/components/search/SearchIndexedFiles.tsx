@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2024 Filigran SAS
+Copyright (c) 2021-2025 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Enterprise Edition License (the "License");
@@ -39,10 +39,13 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
 import Security from '../../../utils/Security';
 import { SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFilesComponent = () => {
   const { fd, t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Files Search | Advanced Search'));
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
   } = useAuth();

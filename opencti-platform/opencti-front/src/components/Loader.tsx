@@ -1,11 +1,15 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
 import { FiligranLoader } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
-import { isNotEmptyField } from '../utils/utils';
+import { interval } from 'rxjs';
+import Typography from '@mui/material/Typography';
 import { UserContext } from '../utils/hooks/useAuth';
 import type { Theme } from './Theme';
+import { TEN_SECONDS } from '../utils/Time';
+
+const interval$ = interval(TEN_SECONDS);
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,21 +56,35 @@ interface LoaderProps {
   variant?: LoaderVariant;
   withRightPadding?: boolean;
   withTopMargin?: boolean;
+  rotatingTexts?: Array<string>;
 }
 
 const Loader: FunctionComponent<LoaderProps> = ({
   variant = LoaderVariant.container,
   withRightPadding = false,
   withTopMargin = false,
+  rotatingTexts,
 }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
-
   const { settings } = useContext(UserContext);
-
+  const [currentText, setCurrentText] = useState(0);
   // if you have EE and whitemark set, you can remove the loader
-  const hasFiligranLoader = theme && !(isNotEmptyField(settings?.enterprise_edition) && settings?.platform_whitemark);
-
+  const hasFiligranLoader = theme && !(settings?.platform_enterprise_edition.license_validated && settings?.platform_whitemark);
+  if (rotatingTexts && rotatingTexts.length > 0) {
+    useEffect(() => {
+      const subscription = interval$.subscribe(() => {
+        if (currentText === rotatingTexts.length - 1) {
+          setCurrentText(0);
+        } else {
+          setCurrentText(currentText + 1);
+        }
+      });
+      return () => {
+        subscription.unsubscribe();
+      };
+    });
+  }
   if (variant === 'inline') {
     return (
       <div style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
@@ -79,10 +97,14 @@ const Loader: FunctionComponent<LoaderProps> = ({
             className={classes.loaderCircle}
           />
         )}
+        {rotatingTexts && rotatingTexts.length > 0 && (
+          <Typography variant="body2">
+            {rotatingTexts[currentText]}...
+          </Typography>
+        )}
       </div>
     );
   }
-
   return (
     <div
       className={variant === 'inElement' ? classes.containerInElement : classes.container}
@@ -113,6 +135,11 @@ const Loader: FunctionComponent<LoaderProps> = ({
             thickness={1}
             className={classes.loaderCircle}
           />
+        )}
+        {rotatingTexts && rotatingTexts.length > 0 && (
+          <Typography variant="body2">
+            {rotatingTexts[currentText]}...
+          </Typography>
         )}
       </div>
     </div>

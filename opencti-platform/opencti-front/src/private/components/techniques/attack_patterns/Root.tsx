@@ -47,6 +47,10 @@ const attackPatternQuery = graphql`
   query RootAttackPatternQuery($id: String!) {
     attackPattern(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       standard_id
       entity_type
       name
@@ -134,7 +138,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
             <StixDomainObjectHeader
               entityType="Attack-Pattern"
               stixDomainObject={attackPattern}
-              PopoverComponent={<AttackPatternPopover />}
+              PopoverComponent={<AttackPatternPopover id={attackPattern.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />

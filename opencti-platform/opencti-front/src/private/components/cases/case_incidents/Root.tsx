@@ -9,9 +9,10 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSimulationResultContainer from '@components/common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
+import AIInsights from '@components/common/ai/AIInsights';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -28,7 +29,7 @@ import { RootIncidentSubscription } from '../../events/incidents/__generated__/R
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -95,7 +96,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-
   const {
     caseIncident: caseData,
     connectorsForExport,
@@ -104,9 +104,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   if (!caseData) {
     return <ErrorNotFound />;
   }
-  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
   const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/incidents', false);
-
+  const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }} data-testid="incident-details-page">
@@ -125,8 +124,9 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           </Security>
         )}
         enableQuickSubscription={true}
-        enableAskAi={true}
+        enableEnrollPlaybook={true}
         redirectToContent={true}
+        enableEnricher={true}
       />
       <Box
         sx={{
@@ -178,8 +178,11 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             label={t_i18n('Data')}
           />
         </Tabs>
-        {isOverview && (
-          <StixCoreObjectSimulationResult id={caseData.id} type="container" />
+        {!isKnowledgeOrContent && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+            <StixCoreObjectSimulationResultContainer id={caseData.id} type="container"/>
+          </div>
         )}
       </Box>
       <Routes>

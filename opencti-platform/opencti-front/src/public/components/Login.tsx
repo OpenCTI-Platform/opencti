@@ -46,22 +46,22 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     margin: theme.spacing(1),
-    color: '#009688',
-    borderColor: '#009688',
+    color: theme.palette.ee.main,
+    borderColor: theme.palette.ee.main,
     '&:hover': {
       backgroundColor: 'rgba(0, 121, 107, .1)',
-      borderColor: '#00796b',
-      color: '#00796b',
+      borderColor: theme.palette.ee.main,
+      color: theme.palette.ee.main,
     },
   },
   buttonGoogle: {
     margin: theme.spacing(1),
-    color: '#f44336',
-    borderColor: '#f44336',
+    color: theme.palette.error.main,
+    borderColor: theme.palette.error.main,
     '&:hover': {
       backgroundColor: 'rgba(189, 51, 46, .1)',
-      borderColor: '#bd332e',
-      color: '#bd332e',
+      borderColor: theme.palette.error.main,
+      color: theme.palette.error.main,
     },
   },
   buttonFacebook: {
@@ -121,7 +121,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
-  const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+  const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
 
   const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {

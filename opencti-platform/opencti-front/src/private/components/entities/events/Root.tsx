@@ -48,6 +48,10 @@ const eventQuery = graphql`
   query RootEventQuery($id: String!) {
     event(id: $id) {
       id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       entity_type
       name
       aliases
@@ -134,7 +138,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entityType="Event"
               stixDomainObject={event}
               enableQuickSubscription={true}
-              PopoverComponent={<EventPopover />}
+              PopoverComponent={<EventPopover id={event.id}/>}
               EditComponent={isFABReplaced && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <EventEdition eventId={event.id} />

@@ -34,7 +34,10 @@ const ThemeLight = (
       main: '#f44336',
       dark: '#c62828',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#D1584F', contrastText: 'black', text: { primary: '#D1584F' } },
+    warn: {
+      main: '#ffa726',
+    },
+    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: 'black', text: { primary: '#d1584f' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
@@ -48,6 +51,7 @@ const ThemeLight = (
       main: '#000000',
     },
     chip: { main: '#000000' },
+    ai: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2', contrastText: 'black', text: { primary: '#673ab7' } },
     ee: {
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),
@@ -66,6 +70,7 @@ const ThemeLight = (
     fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
+      lineHeight: '1.2rem',
     },
     body1: {
       fontSize: '0.9rem',
@@ -136,6 +141,15 @@ const ThemeLight = (
         root: {
           [`&.${buttonClasses.outlined}.${buttonClasses.sizeSmall}`]: {
             padding: '4px 9px',
+          },
+          '&.icon-outlined': {
+            borderColor: hexToRGB('#000000', 0.15),
+            padding: 7,
+            minWidth: 0,
+            '&:hover': {
+              borderColor: hexToRGB('#000000', 0.15),
+              backgroundColor: hexToRGB('#000000', 0.05),
+            },
           },
         },
       },

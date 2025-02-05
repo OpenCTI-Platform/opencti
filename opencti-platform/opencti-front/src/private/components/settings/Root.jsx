@@ -11,6 +11,7 @@ import useGranted, {
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
   SETTINGS_SETPARAMETERS,
+  SETTINGS_SETDISSEMINATION,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -46,6 +47,8 @@ const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
 const SupportPackage = lazy(() => import('./support/SupportPackages'));
+const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
+const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -225,6 +228,17 @@ const Root = () => {
             }
           />
           <Route
+            path="/accesses/dissemination_list"
+            element={
+              <Security
+                needs={[SETTINGS_SETDISSEMINATION]}
+                placeholder={<Navigate to={urlWithCapabilities()} />}
+              >
+                <DisseminationLists />
+              </Security>
+            }
+          />
+          <Route
             path="/activity"
             element={
               <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
@@ -325,6 +339,14 @@ const Root = () => {
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <DecayRule />
+              </Security>
+            }
+          />
+          <Route
+            path="customization/exclusion_lists"
+            element={
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <ExclusionLists />
               </Security>
             }
           />

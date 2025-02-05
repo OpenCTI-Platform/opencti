@@ -8,6 +8,7 @@ import {
   getMessagesFilteredByRecipients,
   getProtectedSensitiveConfig,
   getSettings,
+  isPlaygroundEnabled,
   settingDeleteMessage,
   settingEditMessage,
   settingsCleanContext,
@@ -21,6 +22,7 @@ import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
+import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
 const settingsResolvers = {
   Query: {
@@ -49,6 +51,8 @@ const settingsResolvers = {
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
+    playground_enabled: () => isPlaygroundEnabled(),
+    platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

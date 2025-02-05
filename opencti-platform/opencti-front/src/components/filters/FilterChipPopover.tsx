@@ -17,6 +17,8 @@ import {
   isBasicTextFilter,
   isNumericFilter,
   isStixObjectTypes,
+  SELF_ID,
+  SELF_ID_VALUE,
   useFilterDefinition,
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
@@ -26,6 +28,7 @@ import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+import useAttributes from '../../utils/hooks/useAttributes';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -39,6 +42,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  fintelTemplatesContext?: boolean;
 }
 
 export interface FilterChipsParameter {
@@ -153,6 +157,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
+  fintelTemplatesContext,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
@@ -161,6 +166,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterValues = filter?.values ?? [];
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
+  const { typesWithFintelTemplates } = useAttributes();
+
   const [inputValues, setInputValues] = useState<{
     key: string;
     values: string[];
@@ -283,10 +290,32 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
 
   const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string): ReactNode => {
-    const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
+    const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
+
+    const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
+    const shouldAddSelfId = fintelTemplatesContext
+      && (filterDefinition?.type === 'id' || (filterDefinition?.filterKey === 'regardingOf' && subKey === 'id'))
+      && (filterDefinition?.elementsForFilterValuesSearch ?? []).every((type) => completedTypesWithFintelTemplates.includes(type));
+
+    const getOptions = shouldAddSelfId
+      ? [
+        {
+          value: SELF_ID,
+          label: SELF_ID_VALUE,
+          group: 'Instance',
+          parentTypes: [],
+          color: 'primary',
+          type: 'Instance',
+        },
+        ...getEntitiesOptions,
+      ]
+      : getEntitiesOptions;
+
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
     const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+
+    const options = [...selectedOptions, ...entitiesOptions];
 
     const groupByEntities = (option: OptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);
@@ -297,7 +326,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         key={fKey}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
-        options={[...selectedOptions, ...entitiesOptions]}
+        options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
         onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
         renderInput={(paramsInput) => (

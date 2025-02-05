@@ -5,7 +5,7 @@ import { ThemeOptions } from '@mui/material/styles/createTheme';
 import { UserContext, UserContextType } from '../utils/hooks/useAuth';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
-import { useDocumentFaviconModifier, useDocumentTitleModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
+import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 
 interface AppThemeProviderProps {
@@ -62,8 +62,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   settings,
 }) => {
   const { me } = useContext<UserContextType>(UserContext);
-  const platformTitle = settings?.platform_title ?? 'OpenCTI - Cyber Threat Intelligence Platform';
-  useDocumentTitleModifier(platformTitle);
   useDocumentFaviconModifier(settings?.platform_favicon);
   // region theming
   const defaultTheme = settings?.platform_theme ?? null;

@@ -35,19 +35,18 @@ const DataSourceEditionContainer: FunctionComponent<DataSourceEditionContainerPr
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { dataSource } = usePreloadedQuery(dataSourceEditionQuery, queryRef);
 
   if (dataSource) {
     return (
       <Drawer
         title={t_i18n('Update a data source')}
-        variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+        variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
         context={dataSource.editContext}
         onClose={handleClose}
         open={open}
-        controlledDial={FABReplaced ? controlledDial : undefined}
+        controlledDial={isFABReplaced ? controlledDial : undefined}
       >
         {({ onClose }) => (
           <DataSourceEditionOverview

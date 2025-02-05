@@ -94,7 +94,7 @@ const RootNote = () => {
                     placeholder={
                       <ContainerHeader
                         container={props.note}
-                        PopoverComponent={<NotePopover note={note}/>}
+                        PopoverComponent={<NotePopover note={note} id={note.id} />}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                             <NoteEdition noteId={note.id}/>
@@ -102,6 +102,8 @@ const RootNote = () => {
                         }
                         redirectToContent={false}
                         disableAuthorizedMembers={true}
+                        enableEnricher={true}
+                        enableEnrollPlaybook={true}
                       />
                     }
                   >
@@ -115,6 +117,8 @@ const RootNote = () => {
                       }
                       redirectToContent={false}
                       disableAuthorizedMembers={true}
+                      enableEnricher={true}
+                      enableEnrollPlaybook={true}
                     />
                   </CollaborativeSecurity>
                   <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}>
