@@ -1683,6 +1683,7 @@ const buildCompleteUserFromCacheOrDb = async (context, user, userToLoad, cachedU
     // we need groups and capabilities to compute user effective confidence level, which are accurate in cache.
     completeUser = {
       ...userToLoad,
+      effective_confidence_level: cachedUser.effective_confidence_level, // already in cache (buildCompleteUser)
       groups: cachedUser.groups,
       capabilities: cachedUser.capabilities,
     };
