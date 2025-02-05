@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, AMBER_GROUP_EDITOR, editorQuery, queryAsAdmin, securityQuery, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
@@ -287,7 +287,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
         description: '',
         event_types: [EVENT_TYPE_CREATE],
         notifiers: [],
-        recipients: [AMBER_GROUP_EDITOR.id],
+        recipients: [AMBER_GROUP.id],
         instance_trigger: false,
       },
     };
@@ -332,7 +332,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
         description: '',
         event_types: [EVENT_TYPE_CREATE],
         notifiers: [],
-        recipients: [AMBER_GROUP_EDITOR.id],
+        recipients: [AMBER_GROUP.id],
         instance_trigger: false,
       },
     };

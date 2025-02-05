@@ -42,16 +42,6 @@ export const entitySettingFragment = graphql`
         width
         label
     }
-    request_access_workflow {
-      approved_workflow_id
-      declined_workflow_id
-      workflow
-    }
-    requestAccessStatus {
-      id
-      color
-      name
-    }
   }
 `;
 

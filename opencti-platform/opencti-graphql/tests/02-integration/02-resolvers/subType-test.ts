@@ -7,6 +7,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-r
 import type { TypeAttribute } from '../../../src/generated/graphql';
 import type { BasicStoreEntityEdge } from '../../../src/types/store';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { logApp } from '../../../src/config/conf';
 
 const LIST_QUERY = gql`
   query subTypes($type: String) {
@@ -43,15 +44,25 @@ const SUB_TYPE_FIND_BY_ID_QUERY = gql`
             settings {
                 id
                 availableSettings
-                request_access_workflow {
-                    approved_workflow_id
-                    declined_workflow_id
-                    workflow
-                }
-                requestAccessStatus {
-                    id
-                    color
-                    name
+                requestAccessConfiguration {
+                    approved_status {
+                        id
+                        template {
+                            id
+                            name
+                        }
+                    }
+                    declined_status {
+                        id
+                        template {
+                            id
+                            name
+                        }
+                    }
+                    approval_admin {
+                        id
+                        name
+                    }
                 }
             }
             statuses {
@@ -92,11 +103,19 @@ describe('SubType resolver for RFI and request access use case', () => {
   it('should request access configuration for case RFI exists', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: SUB_TYPE_FIND_BY_ID_QUERY, variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI } });
 
-    const requestAccessWorkflowConfiguration = queryResult?.data?.subType.settings.request_access_workflow;
-    expect(requestAccessWorkflowConfiguration.workflow.length).toEqual(2); // 2 status: accepted and declined
-    expect(requestAccessWorkflowConfiguration.approved_workflow_id).toBeDefined();
-    expect(requestAccessWorkflowConfiguration.declined_workflow_id).toBeDefined();
+    const requestAccessWorkflowConfiguration = queryResult?.data?.subType.settings.requestAccessConfiguration;
+    expect(requestAccessWorkflowConfiguration.approved_status.id).toBeDefined();
+    expect(requestAccessWorkflowConfiguration.approved_status.template.name).toBe('APPROVED');
+    expect(requestAccessWorkflowConfiguration.declined_status.id).toBeDefined();
+    expect(requestAccessWorkflowConfiguration.declined_status.template.name).toBe('DECLINED');
+  });
 
-    const requestAccessStatus = queryResult?.data?.subType.settings.requestAccessStatus;
+  it('should statuses list only global workflow statuses (and not request-access one)', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: SUB_TYPE_FIND_BY_ID_QUERY, variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI } });
+    logApp.info('ANGIE - queryResult', { queryResult });
+    const workflowStatuses = queryResult.data?.subType.statuses;
+    // From data-initalization we do expect some status
+    expect(workflowStatuses.some((status: any) => status.template.name === 'DECLINED')).toBeFalsy();
+    expect(workflowStatuses.some((status: any) => status.template.name === 'APPROVED')).toBeFalsy();
   });
 });

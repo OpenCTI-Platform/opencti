@@ -723,8 +723,6 @@ type SubType {
   statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting
-  requestAccessWorkflow: RequestAccessWorkflow
-  requestAccessStatus: RequestAccessStatus
 }
 
 enum StatusTemplateOrdering {
@@ -756,6 +754,11 @@ enum StatusOrdering {
   _score
 }
 
+enum StatusScope {
+  GLOBAL
+  REQUEST_ACCESS
+}
+
 type Status {
   id: ID!
   template_id: String!
@@ -763,6 +766,7 @@ type Status {
   type: String!
   order: Int!
   disabled: Boolean
+  scope: StatusScope
 }
 
 type StatusConnection {
@@ -778,6 +782,7 @@ type StatusEdge {
 input StatusAddInput {
   template_id: String!
   order: Int!
+  scope: StatusScope
 }
 
 input StatusTemplateAddInput {
@@ -9067,7 +9072,7 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
-  requestAccessConfigure(input: RequestAccessConfigureInput!): [StatusTemplate]
+  requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11003,8 +11008,7 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
-  request_access_workflow: RequestAccessWorkflow
-  requestAccessStatus: [StatusTemplate]
+  requestAccessConfiguration: RequestAccessConfiguration
 }
 
 enum EntitySettingsOrdering {
@@ -12726,18 +12730,21 @@ enum RequestAccessType {
   organization_sharing
 }
 
-enum ActionStatus {
-  APPROVED
-  DECLINED
-  NEW
-  NOT_FOUND
-  MISSING_PARAMETERS
+type RequestAccessMember {
+  id: ID!
+  type: String!
+  name: String!
+}
+
+type RequestAccessConfiguration {
+  approved_status: Status
+  declined_status: Status
+  approval_admin: [RequestAccessMember]
 }
 
 type RequestAccessWorkflow {
   approved_workflow_id: String
   declined_workflow_id: String
-  workflow: [String]
   approval_admin: [ID]
 }
 

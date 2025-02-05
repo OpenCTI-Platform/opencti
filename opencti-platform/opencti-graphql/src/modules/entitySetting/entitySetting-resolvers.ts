@@ -4,7 +4,6 @@ import {
   findById,
   findByType,
   getOverviewLayoutCustomization,
-  getRequestAccessStatus,
   getTemplatesForSetting,
   queryDefaultValuesAttributesForSetting,
   queryEntitySettingSchemaAttributes,
@@ -16,6 +15,7 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { getRequestAccessConfiguration } from '../requestAccess/requestAccess-domain';
 
 const entitySettingResolvers: Resolvers = {
   Query: {
@@ -31,7 +31,7 @@ const entitySettingResolvers: Resolvers = {
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
     overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),
     fintelTemplates: (entitySetting, args, context) => getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
-    requestAccessStatus: (entitySetting, _, context) => getRequestAccessStatus(context, context.user, entitySetting),
+    requestAccessConfiguration: (entitySetting, _, context) => getRequestAccessConfiguration(context, context.user, entitySetting),
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {

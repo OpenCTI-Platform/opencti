@@ -14,6 +14,7 @@ import {
   type QueryStatusTemplatesArgs,
   type StatusAddInput,
   StatusOrdering,
+  StatusScope,
   type StatusTemplate,
   type StatusTemplateAddInput
 } from '../generated/graphql';
@@ -77,7 +78,12 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
       connectionFormat: false
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
-    const statusesGrouped = R.groupBy((e) => e.type, statuses);
+    logApp.info('[STATUS] statuses', { statuses });
+    const globalStatuses = statuses.filter((status: BasicWorkflowStatus) => {
+      return status.scope === undefined || status.scope === null || status.scope === StatusScope.Global;
+    });
+    logApp.info('[STATUS] globalStatuses', { globalStatuses });
+    const statusesGrouped = R.groupBy((e) => e.type, globalStatuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
@@ -112,7 +118,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
 export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
-  logApp.info('ANGIE - statusEditField', { input });
+  logApp.info('ANGIE - statusEditField', { subTypeId, statusId, input });
   validateSetting(subTypeId, 'workflow_configuration');
   const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
   await publishUserAction({
