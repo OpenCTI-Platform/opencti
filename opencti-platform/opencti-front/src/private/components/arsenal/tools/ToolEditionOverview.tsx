@@ -163,6 +163,8 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     tool_version: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
     references: Yup.array().nullable(),
+    killChainPhases: Yup.array().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
