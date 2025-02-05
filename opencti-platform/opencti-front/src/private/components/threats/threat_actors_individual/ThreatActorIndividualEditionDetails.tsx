@@ -21,7 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
 import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -81,6 +81,8 @@ const threatActorIndividualEditionDetailsFragment = graphql`
   }
 `;
 
+const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
+
 interface ThreatActorIndividualEditionDetailsProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -109,7 +111,9 @@ ThreatActorIndividualEditionDetailsProps
   const [commitEditionDetailsFocus] = useApiMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
     ThreatActorIndividualEditionDetailsFocus,
   );
-  const basicShape = {
+
+  const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
+  const basicShape = yupShapeConditionalRequired({
     first_seen: Yup.date()
       .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -124,9 +128,9 @@ ThreatActorIndividualEditionDetailsProps
     personal_motivations: Yup.array().nullable(),
     goals: Yup.string().nullable(),
     references: Yup.array(),
-  };
-  const individualThreatActorValidator = useSchemaEditionValidation(
-    'Threat-Actor-Individual',
+  }, mandatoryAttributes);
+  const individualThreatActorValidator = useDynamicSchemaEditionValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -239,6 +243,8 @@ ThreatActorIndividualEditionDetailsProps
         enableReinitialize={true}
         initialValues={initialValues as never}
         validationSchema={individualThreatActorValidator}
+        validateOnChange={true}
+        validateOnBlur={true}
         onSubmit={onSubmit}
       >
         {({
@@ -259,6 +265,7 @@ ThreatActorIndividualEditionDetailsProps
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('First seen'),
+                  required: (mandatoryAttributes.includes('first_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   helperText: (
@@ -276,6 +283,7 @@ ThreatActorIndividualEditionDetailsProps
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('Last seen'),
+                  required: (mandatoryAttributes.includes('last_seen')),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -291,6 +299,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Sophistication')}
                 type="threat_actor_individual_sophistication_ov"
                 name="sophistication"
+                required={(mandatoryAttributes.includes('sophistication'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -303,6 +312,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
+                required={(mandatoryAttributes.includes('resource_level'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -315,6 +325,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Roles')}
                 type="threat-actor-individual-role-ov"
                 name="roles"
+                required={(mandatoryAttributes.includes('roles'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -327,6 +338,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
+                required={(mandatoryAttributes.includes('primary_motivation'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -339,6 +351,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
+                required={(mandatoryAttributes.includes('secondary_motivations'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -351,6 +364,7 @@ ThreatActorIndividualEditionDetailsProps
                 label={t_i18n('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
+                required={(mandatoryAttributes.includes('personal_motivations'))}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -363,6 +377,7 @@ ThreatActorIndividualEditionDetailsProps
                 component={TextField}
                 name="goals"
                 label={t_i18n('Goals (1 / line)')}
+                required={(mandatoryAttributes.includes('goals'))}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
