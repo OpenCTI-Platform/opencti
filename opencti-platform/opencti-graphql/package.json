@@ -40,7 +40,7 @@
     "node": ">= 17.*"
   },
   "dependencies": {
-    "@apollo/server": "4.11.0",
+    "@apollo/server": "4.11.3",
     "@aws-sdk/client-s3": "3.679.0",
     "@aws-sdk/client-sts": "3.679.0",
     "@aws-sdk/credential-provider-node": "3.679.0",
@@ -187,7 +187,7 @@
     "@typescript-eslint/eslint-plugin": "7.3.1",
     "@typescript-eslint/parser": "7.3.1",
     "@vitest/coverage-v8": "2.0.5",
-    "apollo-server-errors": "3.3.1",
+    "@apollo/server": "4.0.0",
     "cross-env": "7.0.3",
     "esbuild": "0.24.2",
     "esbuild-plugin-copy": "2.1.1",
