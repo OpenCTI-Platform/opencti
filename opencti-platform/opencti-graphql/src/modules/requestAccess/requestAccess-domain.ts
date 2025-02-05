@@ -1,5 +1,13 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type CaseRfiAddInput, type EditInput, FilterMode, OrderingMode, type RequestAccessAddInput, StatusOrdering } from '../../generated/graphql';
+import {
+  type CaseRfiAddInput,
+  type EditInput,
+  FilterMode,
+  OrderingMode,
+  type RequestAccessAddInput,
+  type RequestAccessConfigureInput,
+  StatusOrdering
+} from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import { SYSTEM_USER } from '../../utils/access';
 import { listAllEntities } from '../../database/middleware-loader';
@@ -19,9 +27,8 @@ import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils'
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import type { BasicStoreSettings } from '../../types/settings';
-import { createStatus, createStatusTemplate } from '../../domain/status';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
-import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
+import { findByType as findEntitySettingsByType, getRequestAccessStatus } from '../entitySetting/entitySetting-domain';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -215,29 +222,31 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, us
   throw FunctionalError('Please set an approval admin for request access');
 };
 
-/*
-const initForDev = async (context: AuthContext) => {
-  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
-  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
-  const statusEntityRFIDeclined = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateDeclined.id, order: 0 });
-  const statusEntityRFIApproved = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE, { template_id: statusTemplateApproved.id, order: 0 });
-
-  const initialConfig = {
-    workflow: [statusEntityRFIApproved.id, statusEntityRFIDeclined.id],
-    approved_workflow_id: statusEntityRFIApproved.id,
-    declined_workflow_id: statusEntityRFIDeclined.id,
-  };
+export const configureRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessConfigureInput) => {
+  logApp.info('[OPENCTI-MODULE][Request access] - configureRequestAccess', { input });
+  await checkRequestAccessEnabled(context, user);
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  if (rfiEntitySettings) {
-    logApp.info('ANGIE INIT rfiEntitySettings:', { rfiEntitySettings, initialConfig });
-    const editInput = [
-      { key: 'request_access_workflow', value: [initialConfig] }
-    ];
-    await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
+
+  if (input.decline_status_template_id && rfiEntitySettings.request_access_workflow && rfiEntitySettings.request_access_workflow.declined_workflow_id) {
+    const declineUpdateInput = [{ key: 'template_id', value: [input.decline_status_template_id] }];
+    await updateAttribute(context, user, rfiEntitySettings.request_access_workflow.declined_workflow_id, ENTITY_TYPE_STATUS, declineUpdateInput);
   }
+
+  if (input.approve_status_template_id && rfiEntitySettings.request_access_workflow && rfiEntitySettings.request_access_workflow.approved_workflow_id) {
+    const approveUpdateInput = [{ key: 'template_id', value: [input.approve_status_template_id] }];
+    await updateAttribute(context, user, rfiEntitySettings.request_access_workflow.approved_workflow_id, ENTITY_TYPE_STATUS, approveUpdateInput);
+  }
+
+  // TODO if (input.approval_admin)
+
+  if (rfiEntitySettings) {
+    const allStatus = await getRequestAccessStatus(context, user, rfiEntitySettings);
+    return allStatus;
+  }
+  return null;
 };
-*/
+
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   await checkRequestAccessEnabled(context, user);
@@ -320,6 +329,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
         RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
       }
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+      // TODO await publishUserAction(
     }
     logApp.error('Request Access is missing entities or members', { action, RFIId: id });
   }
@@ -354,6 +364,7 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
       RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
     }
     await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+    // TODO await publishUserAction(
   }
   logApp.error('Request Access is missing entities or members', { action, RFIId: id });
 
