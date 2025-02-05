@@ -37,6 +37,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -163,6 +164,8 @@ const ImportContentComponent = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   setTitle(t_i18n('Import: Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
@@ -466,28 +469,30 @@ const ImportContentComponent = ({
                       );
                     })}
                   </Field>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="validation_mode"
-                    label={t_i18n('Validation mode')}
-                    fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  >
-                    <MenuItem
-                      key={'workbench'}
-                      value={'workbench'}
+                  {isDraftFeatureEnabled && (
+                    <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="validation_mode"
+                      label={t_i18n('Validation mode')}
+                      fullWidth={true}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
                     >
-                      {'Workbench'}
-                    </MenuItem>
-                    <MenuItem
-                      key={'draft'}
-                      value={'draft'}
-                    >
-                      {'Draft'}
-                    </MenuItem>
-                  </Field>
+                      <MenuItem
+                        key={'workbench'}
+                        value={'workbench'}
+                      >
+                        {'Workbench'}
+                      </MenuItem>
+                      <MenuItem
+                        key={'draft'}
+                        value={'draft'}
+                      >
+                        {'Draft'}
+                      </MenuItem>
+                    </Field>
+                  )}
                   {selectedConnector?.configurations?.length > 0
                     ? <Field
                         component={SelectField}
