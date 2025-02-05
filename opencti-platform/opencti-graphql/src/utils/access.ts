@@ -400,39 +400,103 @@ export const isOnlyOrgaAdmin = (user: AuthUser) => {
   return !isUserHasCapability(user, SETTINGS_SET_ACCESSES) && isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN);
 };
 
-export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, settings:BasicStoreSettings) => {
-  const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
+// returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids
+export const computeUserMemberAccessIds = (user: AuthUser) => {
+  const memberAccessIds = [user.id];
+  if (user.organizations) {
+    const userOrganizationsIds = user.organizations.map((org) => org.internal_id);
+    memberAccessIds.push(...userOrganizationsIds);
+  }
+  if (user.groups) {
+    const userGroupsIds = user.groups.map((group) => group.internal_id);
+    memberAccessIds.push(...userGroupsIds);
+  }
+  if (user.roles) {
+    const userRolesIds = user.roles.map((role) => role.internal_id);
+    memberAccessIds.push(...userRolesIds);
+  }
+  return memberAccessIds;
+};
 
+// region entity access by user
+
+export const getUserAccessRight = (user: AuthUser, element: any) => {
+  if (!element.authorized_members || element.authorized_members.length === 0) { // no restricted user access on element
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  const accessMembers = [...element.authorized_members];
+  const userMemberAccessIds = computeUserMemberAccessIds(user);
+  const foundAccessMembers = accessMembers.filter((u) => u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id));
+  // If user have extended capabilities, is an admin
+  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  // if user is bypass, user has admin access (needed for data management usage)
+  if (isBypassUser(user)) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  if (!foundAccessMembers.length) { // user has no access
+    return null;
+  }
+  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_ADMIN)) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_EDIT)) {
+    return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+  return MEMBER_ACCESS_RIGHT_VIEW;
+};
+export const hasAuthorizedMemberAccess = (user: AuthUser, element: { authorized_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+  const userAccessRight = getUserAccessRight(user, element);
+  return !!userAccessRight;
+};
+
+const isEntityOrganizationsAllowed = (
+  entityInternalId: string,
+  entityOrganizations: string[],
+  user: AuthUser,
+  settings: BasicStoreSettings,
+  opts: { useStandardId?: boolean } = {}
+) => {
+  const { useStandardId = false } = opts;
   // If platform organization is set
   if (settings.platform_organization) {
-    const userOrganizations = user.organizations.map((o) => o.internal_id);
+    const userOrganizations = user.organizations.map((o) => (useStandardId ? o.standard_id : o.internal_id));
 
     // If user part of platform organization, is granted by default
     if (user.inside_platform_organization) {
       return true;
     }
     // Grant access to the user individual
-    if (element.internal_id === user.individual_id) {
+    if (entityInternalId === user.individual_id) {
       return true;
     }
     // If not, user is by design inside an organization
     // If element has no current sharing organization, it can be accessed (secure by default)
     // If element is shared, user must have a matching sharing organization
-    return elementOrganizations.some((r) => userOrganizations.includes(r));
+    return entityOrganizations.some((r) => userOrganizations.includes(r));
   }
   return true;
 };
 
+export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, settings: BasicStoreSettings) => {
+  const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
+  return isEntityOrganizationsAllowed(element.internal_id, elementOrganizations, user, settings);
+};
+
+const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
+  const types = [entityType, ...getParentTypes(entityType)];
+  if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
+    return true;
+  }
+  return false;
+};
 /**
  * Organization unrestricted mean that this element is visible whatever the organization the user belongs to.
  * @param element
  */
 export const isOrganizationUnrestricted = (element: BasicStoreCommon) => {
-  const types = [element.entity_type, ...getParentTypes(element.entity_type)];
-  if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
-    return true;
-  }
-  return false;
+  return isOrganizationUnrestrictedForEntityType(element.entity_type);
 };
 
 export const isMarkingAllowed = (element: BasicStoreCommon, userAuthorizedMarkings: string[]) => {
@@ -469,13 +533,19 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
       if (!isMarkingAllowed(element, authorizedMarkings)) {
         return false;
       }
-      // 2. Check organizations
+      // 2. check authorized members
+      if (!hasAuthorizedMemberAccess(user, element)) {
+        return false;
+      }
+      // 3. Check organizations
       // Allow unrestricted entities
       if (isOrganizationUnrestricted(element)) {
         return true;
       }
       // Check restricted elements
-      return isOrganizationAllowed(element, user, settings);
+      // either allowed by orga sharing or has authorized members access if authorized_members are defined (bypass orga sharing)
+      return isOrganizationAllowed(element, user, settings)
+        || (element.authorized_members && element.authorized_members.length > 0 && hasAuthorizedMemberAccess(user, element));
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
@@ -503,51 +573,28 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
       return false;
     }
   }
-  // 2. Check organizations
+  const authorized_members = instance.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
+  const authorizedMemberAllowed = hasAuthorizedMemberAccess(user, { authorized_members });
+  // 2. check authorized members
+  if (!authorizedMemberAllowed) {
+    return false;
+  }
+  // 3. Check organizations
   // Allow unrestricted entities
   const entityType = instance.extensions?.[STIX_EXT_OCTI]?.type ?? generateInternalType(instance);
-  const types = [entityType, ...getParentTypes(entityType)];
-  if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
+  if (isOrganizationUnrestrictedForEntityType(entityType)) {
     return true;
   }
   // Check restricted elements
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const userOrganizations = user.organizations.map((o) => o.standard_id);
-  // If platform organization is set
-  if (settings.platform_organization) {
-    // If user part of platform organization, is granted by default
-    if (user.inside_platform_organization) {
-      return true;
-    }
-    // If not, user is by design inside an organization
-    // If element has no current sharing organization, it can be accessed (secure by default)
-    // If element is shared, user must have a matching sharing organization
-    return elementOrganizations.some((r) => userOrganizations.includes(r));
-  }
-  // If no platform organization is set, user can access
-  return true;
+  const organizationAllowed = isEntityOrganizationsAllowed(instance.id, elementOrganizations, user, settings, { useStandardId: true });
+  // either allowed by organization or authorized members
+  return organizationAllowed || (authorized_members.length > 0 && authorizedMemberAllowed);
 };
+// end region
 
 // region member access
-
-// returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids
-export const computeUserMemberAccessIds = (user: AuthUser) => {
-  const memberAccessIds = [user.id];
-  if (user.organizations) {
-    const userOrganizationsIds = user.organizations.map((org) => org.internal_id);
-    memberAccessIds.push(...userOrganizationsIds);
-  }
-  if (user.groups) {
-    const userGroupsIds = user.groups.map((group) => group.internal_id);
-    memberAccessIds.push(...userGroupsIds);
-  }
-  if (user.roles) {
-    const userRolesIds = user.roles.map((role) => role.internal_id);
-    memberAccessIds.push(...userRolesIds);
-  }
-  return memberAccessIds;
-};
 
 // user access methods
 export const isDirectAdministrator = (user: AuthUser, element: any) => {
@@ -556,32 +603,6 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
     .map((u: AuthorizedMember) => u.id);
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
-};
-export const getUserAccessRight = (user: AuthUser, element: any) => {
-  if (!element.authorized_members || element.authorized_members.length === 0) { // no restricted user access on element
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  const accessMembers = [...element.authorized_members];
-  const userMemberAccessIds = computeUserMemberAccessIds(user);
-  const foundAccessMembers = accessMembers.filter((u) => u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id));
-  // If user have extended capabilities, is an admin
-  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  // if user is bypass, user has admin access (needed for data management usage)
-  if (isBypassUser(user)) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  if (!foundAccessMembers.length) { // user has no access
-    return null;
-  }
-  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_ADMIN)) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_EDIT)) {
-    return MEMBER_ACCESS_RIGHT_EDIT;
-  }
-  return MEMBER_ACCESS_RIGHT_VIEW;
 };
 
 // ensure that user can access the element (operation: edit / delete / manage-access)
