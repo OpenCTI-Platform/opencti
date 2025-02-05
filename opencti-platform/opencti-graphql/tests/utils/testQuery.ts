@@ -213,7 +213,7 @@ export const GREEN_GROUP: GroupTestData = {
 };
 TESTING_GROUPS.push(GREEN_GROUP);
 
-export const AMBER_GROUP_EDITOR: GroupTestData = {
+export const AMBER_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
   name: 'AMBER GROUP',
   markings: [MARKING_TLP_AMBER],
@@ -224,7 +224,7 @@ export const AMBER_GROUP_EDITOR: GroupTestData = {
   },
   max_shareable_markings: [MARKING_TLP_GREEN],
 };
-TESTING_GROUPS.push(AMBER_GROUP_EDITOR);
+TESTING_GROUPS.push(AMBER_GROUP);
 
 export const AMBER_STRICT_GROUP: GroupTestData = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER STRICT GROUP' }),
@@ -353,7 +353,7 @@ export const USER_EDITOR: UserTestData = {
   email: 'editor@opencti.io',
   password: 'editor',
   organizations: [TEST_ORGANIZATION],
-  groups: [AMBER_GROUP_EDITOR],
+  groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
 TESTING_USERS.push(USER_EDITOR);
