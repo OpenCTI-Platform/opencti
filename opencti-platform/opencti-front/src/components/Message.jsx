@@ -19,8 +19,8 @@ const Message = () => {
   let isRequestAccessFeatureEnabled = false;
   try {
     // FIXME find why it's breaking GraphIQL
-    const { isFeatureEnable } = useHelper();
-    isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
+    const { isRequestAccessEnabled, isFeatureEnable } = useHelper();
+    isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled();
   } catch (e) {
     // When called from public, no useAuth()
   }

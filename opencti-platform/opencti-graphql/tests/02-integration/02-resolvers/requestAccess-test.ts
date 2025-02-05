@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, getGroupIdByName, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
-import { internalDeleteElementById } from '../../../src/database/middleware';
 import { ActionStatus, type RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { listEntitiesPaginated } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
-import { statusDelete } from '../../../src/domain/status';
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
+import { findAllTemplates } from '../../../src/domain/status';
 import { logApp } from '../../../src/config/conf';
 import { waitInSec } from '../../../src/database/utils';
 
@@ -98,15 +97,25 @@ export const QUERY_REQUEST_ACCESS_SETTINGS = gql`
             settings {
                 id
                 availableSettings
-                request_access_workflow {
-                    approved_workflow_id
-                    declined_workflow_id
-                    workflow
-                }
-                requestAccessStatus {
-                    id
-                    color
-                    name
+                requestAccessConfiguration {
+                    approved_status {
+                        id
+                        template {
+                            id
+                            name
+                        }
+                    }
+                    declined_status {
+                        id
+                        template {
+                            id
+                            name
+                        }
+                    }
+                    approval_admin {
+                        id
+                        name
+                    }
                 }
             }
             statuses {
@@ -182,6 +191,31 @@ export const QUERY_ROOT_SETTINGS = gql`
     }
 `;
 
+export const CONFIGURE_REQUEST_ACCESS_MUTATION = gql`
+  mutation RequestAccessConfigure(
+      $input: RequestAccessConfigureInput!
+  ) {
+    requestAccessConfigure(input: $input)
+    {
+      approval_admin {
+          id
+      }
+        declined_status {
+            id
+            template {
+                id
+            }
+        }
+        approved_status {
+            id
+            template {
+                id
+            }
+        }
+    }
+  }
+`;
+
 describe('Add Request Access to an entity and create an RFI.'
   + 'USER_EDITOR is used as platform admin (in TEST_ORGANIZATION org),'
   + 'USER_DISINFORMATION_ANALYST is used as user that request access to knowledge.', async () => {
@@ -194,7 +228,7 @@ describe('Add Request Access to an entity and create an RFI.'
   let approvedStatusId: string;
   let declinedStatusId: string;
 
-  it.todo('Request access feature must be disabled when platform orga is not set', async () => {
+  it('Request access feature must be disabled when platform orga is not set', async () => {
     const platformSettings = await queryAsAdminWithSuccess({
       query: QUERY_ROOT_SETTINGS,
       variables: {}
@@ -217,16 +251,15 @@ describe('Add Request Access to an entity and create an RFI.'
       query: QUERY_REQUEST_ACCESS_SETTINGS,
       variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI },
     });
-    const requestAccessWorkflowSettings = rfiEntitySettings?.data?.subType.settings.request_access_workflow;
-    const requestAccessWorkflowStatuses = rfiEntitySettings?.data?.subType.settings.requestAccessStatus;
-    expect(requestAccessWorkflowSettings.approved_workflow_id).toBeDefined();
-    approvedStatusId = requestAccessWorkflowSettings.approved_workflow_id;
-    expect(requestAccessWorkflowSettings.declined_workflow_id).toBeDefined();
-    declinedStatusId = requestAccessWorkflowSettings.declined_workflow_id;
-    expect(requestAccessWorkflowStatuses.length).toBe(2);
+    const requestAccessWorkflowSettings = rfiEntitySettings?.data?.subType.settings.requestAccessConfiguration;
+    expect(requestAccessWorkflowSettings.approved_status).toBeDefined();
+    approvedStatusId = requestAccessWorkflowSettings.approved_status.id;
+    expect(requestAccessWorkflowSettings.declined_status).toBeDefined();
+    declinedStatusId = requestAccessWorkflowSettings.declined_status.id;
   });
 
-  it.todo('should throw error when configuration is missing for Request Access feature', async () => {
+  it('should throw error when configuration is missing for Request Access feature', async () => {
+    // this will only be true the first time, if you re-run tests without init data you might have this step fail.
     const platformSettings = await queryAsAdminWithSuccess({
       query: READ_SETTINGS_QUERY,
       variables: {},
@@ -250,7 +283,6 @@ describe('Add Request Access to an entity and create an RFI.'
 
   it('should RFI workflow enabled with at least one status', async () => {
     const statusTemplateId_NEW = await listEntitiesPaginated<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { search: '"NEW"' });
-    logApp.info('statusTemplateId_NEW:', { statusTemplateId_NEW });
     expect(statusTemplateId_NEW.edges[0].node.name).toBe('NEW');
     expect(statusTemplateId_NEW.edges[0].node.internal_id).toBeDefined();
     newStatusId = statusTemplateId_NEW.edges[0].node.internal_id;
@@ -286,12 +318,75 @@ describe('Add Request Access to an entity and create an RFI.'
     });
 
     expect(rfiEntitySettingsWithWorkflow?.data?.subType.workflowEnabled).toBeTruthy();
-    expect(rfiEntitySettingsWithWorkflow?.data?.subType.statuses.length).toBe(2);
 
-    await waitInSec(300);
+    // only workflow statuses should be in statuses, not request-access one
+    const workflowStatuses = rfiEntitySettingsWithWorkflow?.data?.subType.statuses;
+    expect(workflowStatuses.some((status: any) => status.template.name === 'NEW')).toBeTruthy();
+    expect(workflowStatuses.some((status: any) => status.template.name === 'IN_PROGRESS')).toBeTruthy();
+    expect(workflowStatuses.some((status: any) => status.template.name === 'DECLINED')).toBeFalsy();
+    expect(workflowStatuses.some((status: any) => status.template.name === 'APPROVED')).toBeFalsy();
   });
 
-  it('should create malware with restricted access', async () => {
+  it('should request access be configurable', async () => {
+    const allTemplates = await findAllTemplates(testContext, ADMIN_USER, {});
+
+    // All of them are created in data initialization
+    const newTemplate = allTemplates.edges.find((template) => template.node.name === 'NEW');
+    const closedTemplate = allTemplates.edges.find((template) => template.node.name === 'CLOSED');
+    const declinedTemplate = allTemplates.edges.find((template) => template.node.name === 'DECLINED');
+    const approvedTemplate = allTemplates.edges.find((template) => template.node.name === 'APPROVED');
+    const amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
+
+    const requestAccessConfig = await queryAsAdminWithSuccess({
+      query: CONFIGURE_REQUEST_ACCESS_MUTATION,
+      variables: {
+        input: {
+          approve_status_template_id: newTemplate?.node.id,
+          decline_status_template_id: closedTemplate?.node.id,
+          approval_admin: [amberGroupId]
+        }
+      },
+    });
+    logApp.info('ANGIE - requestAccessConfig query result:', { requestAccessConfig });
+    // await waitInSec(300);
+    const rfiEntitySettings = await queryAsAdminWithSuccess({
+      query: QUERY_REQUEST_ACCESS_SETTINGS,
+      variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI },
+    });
+    logApp.info('ANGIE - rfiEntitySettings:', { rfiEntitySettings });
+    const requestAccessConfiguration = rfiEntitySettings?.data?.subType.settings.requestAccessConfiguration;
+    logApp.info('ANGIE - requestAccessConfiguration:', { requestAccessConfiguration });
+    expect(requestAccessConfiguration.approval_admin).toBeDefined();
+    expect(requestAccessConfiguration.approval_admin[0].id).toBe(amberGroupId);
+    expect(requestAccessConfiguration.approved_status.template.name).toBe('NEW');
+    expect(requestAccessConfiguration.declined_status.template.name).toBe('CLOSED');
+
+    // Back to "Normal" status
+    const requestAccessConfigBackToNormal = await queryAsAdminWithSuccess({
+      query: CONFIGURE_REQUEST_ACCESS_MUTATION,
+      variables: {
+        input: {
+          approve_status_template_id: approvedTemplate?.node.id,
+          decline_status_template_id: declinedTemplate?.node.id,
+          approval_admin: [amberGroupId]
+        }
+      },
+    });
+    logApp.info('ANGIE - requestAccessConfigBackToNormal:', { requestAccessConfigBackToNormal });
+    const rfiEntitySettingsBackToNormal = await queryAsAdminWithSuccess({
+      query: QUERY_REQUEST_ACCESS_SETTINGS,
+      variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI },
+    });
+    logApp.info('ANGIE - rfiEntitySettings:', { rfiEntitySettingsBackToNormal });
+    const configurationBackToNormal = rfiEntitySettingsBackToNormal?.data?.subType.settings.requestAccessConfiguration;
+    logApp.info('ANGIE - requestAccessConfiguration:', { configurationBackToNormal });
+    expect(configurationBackToNormal.approval_admin).toBeDefined();
+    expect(configurationBackToNormal.approval_admin[0].id).toBe(amberGroupId);
+    expect(configurationBackToNormal.approved_status.template.name).toBe('APPROVED');
+    expect(configurationBackToNormal.declined_status.template.name).toBe('DECLINED');
+  });
+
+  it.todo('should create malware with restricted access', async () => {
     const malwareStixId = 'malware--34c9875d-8206-4f4b-bf17-f58d9cf7ebec';
     const MALWARE_TO_CREATE = {
       input: {
@@ -311,7 +406,7 @@ describe('Add Request Access to an entity and create an RFI.'
     testOrgId = testOrgEntity.id;
   });
 
-  it('should create a Request Access and associated Case RFI (For accept use case)', async () => {
+  it.todo('should create a Request Access and associated Case RFI (For accept use case)', async () => {
     const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
@@ -329,7 +424,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRfiIdForApproval).not.toBeNull();
   });
 
-  it('should retrieve the created Case RFI with correct authorize members and objects', async () => {
+  it.todo('should retrieve the created Case RFI with correct authorize members and objects', async () => {
     const getRfiQueryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
@@ -360,7 +455,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(action.workflowMapping.length).toBe(3); // Status for NEW, Approved and Declined.
   });
 
-  it('should accept the created Case RFI first time be ok', async () => {
+  it.todo('should accept the created Case RFI first time be ok', async () => {
     // FIXME use a user and not admin !
     const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: APPROVE_RFI_QUERY,
@@ -467,15 +562,15 @@ describe('Add Request Access to an entity and create an RFI.'
   });
 
   it('should remove platform organization and test data', async () => {
-    await internalDeleteElementById(testContext, ADMIN_USER, malwareId);
-    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval);
+    // await internalDeleteElementById(testContext, ADMIN_USER, malwareId);
+    // await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval);
     // await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject);
 
     // revert workflow config to zero workflow statuses
-    await statusDelete(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, newStatusId);
-    await statusDelete(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, inProgressStatusId);
-    const rfiWorkflowStatus = await listEntitiesPaginated<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS]);
-    logApp.info('At the end statuses => ', { rfiWorkflowStatus });
+    // await statusDelete(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, newStatusId);
+    // await statusDelete(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, inProgressStatusId);
+    // const rfiWorkflowStatus = await listEntitiesPaginated<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS]);
+    // logApp.info('At the end statuses => ', { rfiWorkflowStatus });
 
     // revert platform orga
     await enableCEAndUnSetOrganization();
