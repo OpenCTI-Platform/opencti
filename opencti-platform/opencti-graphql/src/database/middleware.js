@@ -711,7 +711,7 @@ export const validateCreatedBy = async (context, user, createdById) => {
  * @param markingId
  */
 export const validateMarking = (user, markingId) => {
-  const userMarkings = (user.allowed_marking || []).map((m) => m.internal_id);
+  const userMarkings = (user.allowed_marking || []).map((m) => [m.internal_id, m.standard_id]).flat();
   if (!userMarkings.includes(markingId)) {
     throw FunctionalError('User trying to create the data has missing markings', { id: markingId });
   }
