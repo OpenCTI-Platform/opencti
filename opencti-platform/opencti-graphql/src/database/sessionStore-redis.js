@@ -3,6 +3,7 @@ import session from 'express-session';
 import { LRUCache } from 'lru-cache';
 import AsyncLock from 'async-lock';
 import { clearSessions, extendSession, getSession, getSessionKeys, getSessions, getSessionTtl, killSession, setSession } from './redis';
+import { logApp } from '../config/conf';
 
 const { Store } = session;
 
@@ -91,12 +92,12 @@ class RedisStore extends Store {
     this._getAllKeys((err, keys) => {
       if (err) return cb(err);
       return cb(null, keys.length);
-    });
+    }).catch((err) => logApp.error('[REDIS] Error on get all keys', { cause: err }));
   }
 
   expiration(sid, cb = noop) {
     const key = this.prefix + sid;
-    getSessionTtl(key).then((ttl) => cb(null, ttl));
+    getSessionTtl(key).then((ttl) => cb(null, ttl)).catch((err) => logApp.error('[REDIS] Error on get session TTL', { cause: err }));
   }
 
   _getAllKeys(cb = noop) {

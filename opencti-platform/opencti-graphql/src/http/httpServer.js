@@ -99,7 +99,7 @@ const createHttpServer = async () => {
     async serverWillStart() {
       return {
         async drainServer() {
-          serverCleanup.dispose();
+          await serverCleanup.dispose();
         },
         async renderLandingPage() {
           const html = `
@@ -167,6 +167,8 @@ const listenServer = async () => {
         });
         const server = httpServer.listen(PORT);
         resolve({ server });
+      }).catch((reason) => {
+        logApp.error('Http listen server error', { cause: reason });
       });
     } catch (e) {
       logApp.error('Http listen server fail', { cause: e });

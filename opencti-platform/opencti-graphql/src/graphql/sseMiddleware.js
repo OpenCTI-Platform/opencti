@@ -702,7 +702,9 @@ const createSseMiddleware = () => {
         await elList(context, user, streamQueryIndices, queryOptions);
       }
       // noinspection ES6MissingAwait
-      processor.start(isRecoveryMode ? recoverStreamId : startStreamId);
+      processor.start(isRecoveryMode ? recoverStreamId : startStreamId).catch((reason) => {
+        logApp.error('Stream error', { cause: reason });
+      });
     } catch (e) {
       logApp.error('Stream handling error', { cause: e, id, type: 'live' });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;

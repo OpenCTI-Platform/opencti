@@ -1,7 +1,7 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, updateAttribute } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
@@ -58,16 +58,19 @@ export const stixSightingRelationshipDeleteRelation = async (context, user, stix
 // endregion
 
 // region context
-export const stixSightingRelationshipCleanContext = (context, user, stixSightingRelationshipId) => {
-  delEditContext(user, stixSightingRelationshipId);
+export const stixSightingRelationshipCleanContext = async (context, user, stixSightingRelationshipId) => {
+  await delEditContext(user, stixSightingRelationshipId);
   return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
     return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  });
+  }).catch((reason) => logApp.error('Error on store load for stix sighting relationship', { cause: reason }));
 };
-export const stixSightingRelationshipEditContext = (context, user, stixSightingRelationshipId, input) => {
-  setEditContext(user, stixSightingRelationshipId, input);
-  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
-    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  });
+
+export const stixSightingRelationshipEditContext = async (context, user, stixSightingRelationshipId, input) => {
+  await setEditContext(user, stixSightingRelationshipId, input);
+  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP)
+    .then((stixSightingRelationship) => {
+      return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+    })
+    .catch((reason) => logApp.error('Error on store load for stix sighting relationship', { cause: reason }));
 };
 // endregion
