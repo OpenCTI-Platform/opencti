@@ -8,7 +8,7 @@ import type { EditInput, EntitySettingFintelTemplatesArgs, QueryEntitySettingsAr
 import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypes } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -25,7 +25,6 @@ import type { BasicStoreEntity, StoreEntityConnection } from '../../types/store'
 import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { findTemplateById, findById as findStatusById } from '../../domain/status';
 
 // -- LOADING --
 
@@ -214,26 +213,4 @@ export const queryDefaultValuesAttributesForSetting = async (
     return { ...a, defaultValues: a.defaultValues ?? [] };
   }));
   return defaultValuesAttributes;
-};
-
-export const getRequestAccessStatus = async (
-  context: AuthContext,
-  user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
-) => {
-  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    return [];
-  }
-  const approvedId = entitySetting.request_access_workflow?.approved_workflow_id;
-  const declinedId = entitySetting.request_access_workflow?.declined_workflow_id;
-
-  if (approvedId && declinedId) {
-    const approvedStatus = await findStatusById(context, user, approvedId);
-    const declinedStatus = await findStatusById(context, user, declinedId);
-
-    const approvedDetail = await findTemplateById(context, user, approvedStatus.template_id);
-    const declinedDetail = await findTemplateById(context, user, declinedStatus.template_id);
-    return [approvedDetail, declinedDetail];
-  }
-  return [];
 };

@@ -2,18 +2,21 @@ enum RequestAccessType {
   organization_sharing
 }
 
-enum ActionStatus {
-  APPROVED,
-  DECLINED,
-  NEW,
-  NOT_FOUND,
-  MISSING_PARAMETERS
+type RequestAccessMember {
+  id: ID!
+  type: String!
+  name: String!
+}
+
+type RequestAccessConfiguration {
+  approved_status: Status
+  declined_status: Status
+  approval_admin: [RequestAccessMember]
 }
 
 type RequestAccessWorkflow {
   approved_workflow_id: String
   declined_workflow_id: String
-  workflow: [String]
   approval_admin: [ID]
 }
 
@@ -38,5 +41,5 @@ input RequestAccessConfigureInput {
 
 type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
-  requestAccessConfigure(input: RequestAccessConfigureInput!): [StatusTemplate] @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
