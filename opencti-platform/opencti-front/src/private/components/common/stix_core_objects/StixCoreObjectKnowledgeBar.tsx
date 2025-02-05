@@ -371,12 +371,14 @@ const StixCoreObjectKnowledgeBar = ({
       variant="permanent"
       anchor="right"
       sx={{
-        width: 200,
-        position: 'fixed',
-        overflow: 'auto',
-        padding: 0,
-        zIndex: 2,
-        background: theme.palette.background.nav,
+        '& .MuiPaper-root': {
+          width: 200,
+          position: 'fixed',
+          overflow: 'auto',
+          padding: 0,
+          zIndex: 2,
+          background: theme.palette.background.nav,
+        },
       }}
     >
       <Box sx={{ ...theme.mixins.toolbar }} />
