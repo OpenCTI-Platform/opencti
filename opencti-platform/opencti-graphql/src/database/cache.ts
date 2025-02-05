@@ -56,6 +56,20 @@ export const writeCacheForEntity = (entityType: string, data: unknown) => {
   cache[entityType] = data;
 };
 
+export const partialRefreshCacheForEntity = async (instance: StoreEntity | StoreRelation) => {
+  const instanceCache = cache[instance.entity_type];
+  if (instanceCache && instanceCache.values && instanceCache.refresh) {
+    logApp.debug('Partial refresh cache for entity', { type: instance.entity_type, id: instance.id });
+    const instanceToStore = await instanceCache.refresh(instance.id);
+    const cacheWithoutInstance = instanceCache.values.filter((v: any) => v.id !== instanceToStore.id);
+    if (cacheWithoutInstance) {
+      instanceCache.values = [...cacheWithoutInstance, instanceToStore];
+    } else { // instance not found (deleted)
+      instanceCache.values = [...cacheWithoutInstance];
+    }
+  }
+};
+
 export const resetCacheForEntity = (entityType: string) => {
   const types = [entityType, ...(STORE_ENTITIES_LINKS[entityType] ?? [])];
   types.forEach((type) => {
@@ -66,6 +80,18 @@ export const resetCacheForEntity = (entityType: string) => {
       // This entity type is not part of the caching system
     }
   });
+};
+
+export const refreshCacheForEntity = async (instance: StoreEntity | StoreRelation) => {
+  // called by manager
+  const entityType = instance.entity_type;
+  const entityCache = cache[entityType];
+  if (entityCache && entityCache.values && entityCache.refresh && !STORE_ENTITIES_LINKS[entityType]) {
+    // try to partial reset cache if we have the instance and there are no linked cache
+    await partialRefreshCacheForEntity(instance);
+  } else {
+    resetCacheForEntity(entityType);
+  }
 };
 
 export const dynamicCacheUpdater = (instance: StoreEntity | StoreRelation) => {

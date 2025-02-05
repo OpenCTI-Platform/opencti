@@ -1,7 +1,7 @@
 import { Promise as Bluebird } from 'bluebird';
 import * as R from 'ramda';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
+import { dynamicCacheUpdater, refreshCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -139,12 +139,15 @@ const platformRunningPlaybooks = (context: AuthContext) => {
   return { values: null, fn: reloadPlaybooks };
 };
 const platformUsers = (context: AuthContext) => {
+  const loadUser = async (userId: string) => {
+    return resolveUserById(context, userId);
+  };
   const reloadUsers = async () => {
     const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
     const allUserIds = users.map((user) => user.internal_id);
     return Bluebird.map(allUserIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY }).filter((u) => u != null);
   };
-  return { values: null, fn: reloadUsers };
+  return { values: null, fn: reloadUsers, refresh: loadUser };
 };
 const platformSettings = (context: AuthContext) => {
   const reloadSettings = async () => {
@@ -240,7 +243,7 @@ const initCacheManager = () => {
   const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
     const { instance } = event;
     // Invalid cache if any entity has changed.
-    resetCacheForEntity(instance.entity_type);
+    await refreshCacheForEntity(instance);
     // Smart dynamic cache loading (for filtering ...)
     dynamicCacheUpdater(instance);
   };
