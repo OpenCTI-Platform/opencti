@@ -82,9 +82,11 @@ AddIndividualsThreatActorIndividualComponentProps
   </div>);
 };
 
-const AddIndividualsThreatActorIndividual: FunctionComponent<
-Omit<AddIndividualsThreatActorIndividualComponentProps, 'queryRef'>
-> = (props) => {
+interface AddIndividualsThreatActorIndividualProps {
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+}
+
+const AddIndividualsThreatActorIndividual: FunctionComponent<AddIndividualsThreatActorIndividualProps> = (props) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
   const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
     count: 50,

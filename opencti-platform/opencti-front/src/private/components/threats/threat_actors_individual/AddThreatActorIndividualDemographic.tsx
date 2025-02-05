@@ -86,9 +86,13 @@ AddThreatActorIndividualDemographicComponentProps
   </div>);
 };
 
-const AddThreatActorIndividualDemographic: FunctionComponent<
-Omit<AddThreatActorIndividualDemographicComponentProps, 'queryRef'>
-> = (props) => {
+interface AddThreatActorIndividualDemographicProps {
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
+  relType: string,
+  title:string,
+}
+
+const AddThreatActorIndividualDemographic: FunctionComponent<AddThreatActorIndividualDemographicProps> = (props) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
   const queryRef = useQueryLoading<AddThreatActorIndividualDemographicLinesQuery>(
     addIndividualsThreatActorIndividualLinesQuery,
