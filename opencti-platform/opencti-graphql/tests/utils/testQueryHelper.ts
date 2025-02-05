@@ -169,42 +169,6 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
 };
 
 /**
- * Enable Enterprise edition and set the platform organisation.
- * @param organization organization to use as platform organization.
- */
-export const enableEEAndSetOrganization = async (organization: OrganizationTestData) => {
-  const platformOrganizationId = await getOrganizationIdByName(organization.name);
-  const platformSettings: any = await getSettings(testContext);
-
-  const input = [
-    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
-    { key: 'platform_organization', value: [platformOrganizationId] }
-  ];
-  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-
-  expect(settingsResult.platform_organization).not.toBeUndefined();
-  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-};
-
-/**
- * Remove any platform organization and go back to community edition.
- */
-export const enableCEAndUnSetOrganization = async () => {
-  const platformSettings: any = await getSettings(testContext);
-
-  const input = [
-    { key: 'enterprise_license', value: [] },
-    { key: 'platform_organization', value: [] }
-  ];
-  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-
-  expect(settingsResult.platform_organization).toBeUndefined();
-  // EE cant be disabled as setup by configuration
-  expect(settingsResult.platform_enterprise_edition.license_enterprise).toBeTruthy();
-};
-
-/**
  * Enable Enterprise edition
  */
 export const enableEE = async () => {
@@ -247,4 +211,37 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
   });
   upload.file = fileUpload;
   return upload;
+};
+
+/**
+ * Enable Enterprise edition and set the platform organisation.
+ * @param organization organization to use as platform organisation.
+ */
+export const enableEEAndSetOrganization = async (organization: OrganizationTestData) => {
+  const platformOrganizationId = await getOrganizationIdByName(organization.name);
+  const platformSettings: any = await getSettings(testContext);
+
+  await enableEE();
+
+  const input = [
+    { key: 'platform_organization', value: [platformOrganizationId] }
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+
+  expect(settingsResult.platform_organization).not.toBeUndefined();
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+};
+
+/**
+ * Remove any platform organization and go back to community edition.
+ */
+export const enableCEAndUnSetOrganization = async () => {
+  await disableEE();
+
+  const platformSettings: any = await getSettings(testContext);
+  const input = [
+    { key: 'platform_organization', value: [] }
+  ];
+  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
+  expect(settingsResult.platform_organization).toBeUndefined();
 };
