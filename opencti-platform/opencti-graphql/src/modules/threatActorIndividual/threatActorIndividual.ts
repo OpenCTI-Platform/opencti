@@ -238,6 +238,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       name: RELATION_COOPERATES_WITH,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
     { name: RELATION_EMPLOYED_BY,
