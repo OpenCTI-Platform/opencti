@@ -10,7 +10,8 @@ export const requestAccessFragment = graphql`
     id
     target_type
     request_access_workflow {
-      approved_workflow_id
+      approved_workflow_id {
+      }
       declined_workflow_id
       workflow
     }
@@ -19,6 +20,15 @@ export const requestAccessFragment = graphql`
       color
       name
     }
+
+      approveAccessStatus {
+          id
+          template {
+              id
+              color
+              name
+          }
+      }
   }
 `;
 

@@ -32,6 +32,8 @@ const entitySettingResolvers: Resolvers = {
     overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),
     fintelTemplates: (entitySetting, args, context) => getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
     requestAccessStatus: (entitySetting, _, context) => getRequestAccessStatus(context, context.user, entitySetting),
+    requestAccessApprovedStatus: (entitySetting, _, context) => getRequestAccessApprovedStatus(context, context.user, entitySetting),
+    requestAccessDeclinedStatus: (entitySetting, _, context) => getRequestAccessDeclinedStatus(context, context.user, entitySetting),
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {

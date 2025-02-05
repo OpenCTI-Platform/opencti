@@ -216,6 +216,14 @@ export const queryDefaultValuesAttributesForSetting = async (
   return defaultValuesAttributes;
 };
 
+export const getRequestApprovedAccessStatus = async () => {
+
+});
+
+export const getRequestDeclinedAccessStatus = async () => {
+
+});
+
 export const getRequestAccessStatus = async (
   context: AuthContext,
   user: AuthUser,
