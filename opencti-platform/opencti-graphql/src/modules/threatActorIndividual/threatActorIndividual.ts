@@ -232,7 +232,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       name: RELATION_PART_OF,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
-        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
     {
@@ -296,9 +295,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     {
       name: RELATION_DERIVED_FROM,
       targets: [
-        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_BUILT_IN },
-        { name: ENTITY_TYPE_THREAT_ACTOR, type: REL_BUILT_IN },
       ]
     }
   ],
