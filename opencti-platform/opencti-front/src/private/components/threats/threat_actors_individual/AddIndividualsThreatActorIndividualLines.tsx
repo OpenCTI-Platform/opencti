@@ -8,7 +8,7 @@ import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddIndividualsThreatActorIndividualLines_data$key } from './__generated__/AddIndividualsThreatActorIndividualLines_data.graphql';
-import { updateDelete } from '../../../../utils/store';
+import { deleteNodeFromEdge } from '../../../../utils/store';
 
 export const scoRelationshipAdd = graphql`
   mutation AddIndividualsThreatActorIndividualLinesRelationAddMutation(
@@ -140,6 +140,9 @@ const AddIndividualsThreatActorIndividualLines = ({
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
 
   const handleToggle = (toId: string) => {
+    const stixCoreRelationshipId = threatActorIndividual
+      .stixCoreRelationships?.edges
+      .find(({ node }) => node.to?.id === toId && node.relationship_type === 'impersonates')?.node.id;
     const isSelected = currentTargets.includes(toId);
     const input = {
       fromId: threatActorIndividual.id,
@@ -150,11 +153,11 @@ const AddIndividualsThreatActorIndividualLines = ({
       commitRelationDelete({
         ...defaultCommitMutation,
         variables: { ...input },
-        updater: (store) => updateDelete(
+        updater: (store) => deleteNodeFromEdge(
           store,
           'stixCoreRelationships',
           threatActorIndividual.id,
-          toId,
+          stixCoreRelationshipId,
         ),
         onCompleted: () => {
           setCurrentTargets(currentTargets.filter((id) => id !== toId));

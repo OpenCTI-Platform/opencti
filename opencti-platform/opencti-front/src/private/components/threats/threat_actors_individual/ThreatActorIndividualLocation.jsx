@@ -48,10 +48,9 @@ class ThreatActorIndividualLocationsComponent extends Component {
     const { t, threatActorIndividual } = this.props;
     return (
       <>
-        <CardLabel action={(
+        <CardLabel style={{ marginTop: 20 }} action={(
           <Security
             needs={[KNOWLEDGE_KNUPDATE]}
-            placeholder={<div style={{ height: 29 }} />}
           >
             <AddLocationsThreatActorIndividual
               threatActorIndividual={threatActorIndividual}

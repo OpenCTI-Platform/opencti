@@ -7,7 +7,10 @@ import CountryCreation from '@components/locations/countries/CountryCreation';
 import AddThreatActorIndividualDemographicLines, {
   addIndividualsThreatActorIndividualLinesQuery,
 } from '@components/threats/threat_actors_individual/AddThreatActorIndividualDemographicLines';
-import { AddThreatActorIndividualDemographicLinesQuery } from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLinesQuery.graphql';
+import {
+  AddThreatActorIndividualDemographicLinesQuery,
+  AddThreatActorIndividualDemographicLinesQuery$variables,
+} from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLinesQuery.graphql';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import SearchInput from '../../../../components/SearchInput';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -18,6 +21,8 @@ interface AddThreatActorIndividualDemographicComponentProps {
   relType: string,
   title:string,
   queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>,
+  onSearch: (search: string) => void,
+  paginationOptions: AddThreatActorIndividualDemographicLinesQuery$variables,
 }
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
@@ -27,13 +32,13 @@ AddThreatActorIndividualDemographicComponentProps
   relType,
   title,
   queryRef,
+  onSearch,
+  paginationOptions,
 }) => {
   const [open, setOpen] = useState<boolean>(false);
-  const [search, setSearch] = useState<string>('');
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleSearch = (term: string) => setSearch(term);
 
   const data = usePreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>(
     addIndividualsThreatActorIndividualLinesQuery,
@@ -64,13 +69,10 @@ AddThreatActorIndividualDemographicComponentProps
         >
           <SearchInput
             variant='inDrawer'
-            onSubmit={handleSearch}
+            onSubmit={onSearch}
           />
           <CountryCreation
-            paginationOptions={{
-              search,
-              count: 50,
-            }}
+            paginationOptions={paginationOptions}
           />
         </div>
       }
@@ -87,12 +89,19 @@ AddThreatActorIndividualDemographicComponentProps
 const AddThreatActorIndividualDemographic: FunctionComponent<
 Omit<AddThreatActorIndividualDemographicComponentProps, 'queryRef'>
 > = (props) => {
-  const queryRef = useQueryLoading<AddThreatActorIndividualDemographicLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
-    count: 50,
-  });
+  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
+  const queryRef = useQueryLoading<AddThreatActorIndividualDemographicLinesQuery>(
+    addIndividualsThreatActorIndividualLinesQuery,
+    paginationOptions,
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <AddThreatActorIndividualDemographicComponent {...props} queryRef={queryRef} />
+      <AddThreatActorIndividualDemographicComponent
+        {...props}
+        queryRef={queryRef}
+        onSearch={(search) => setPaginationOptions({ count: 50, search })}
+        paginationOptions={paginationOptions}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

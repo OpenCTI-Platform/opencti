@@ -45,10 +45,7 @@ const AddLocationsThreatActorIndividualComponent = ({
         aria-label="Add"
         onClick={handleOpen}
         size="large"
-        style={{
-          marginTop: -15,
-          float: 'left',
-        }}
+
       >
         <Add fontSize="small" />
       </IconButton>

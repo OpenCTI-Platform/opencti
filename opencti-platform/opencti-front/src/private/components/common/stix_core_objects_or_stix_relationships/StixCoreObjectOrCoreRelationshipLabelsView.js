@@ -27,6 +27,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import CardLabel from '../../../../components/CardLabel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -161,21 +162,22 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+        <CardLabel style={{ marginTop: 20 }} action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IconButton
+              color="primary"
+              aria-label={t_i18n('Add new labels')}
+              title={t_i18n('Add new labels')}
+              onClick={handleOpenAdd}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Security>
+        )}
+        >
           {t_i18n('Labels')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IconButton
-            color="primary"
-            aria-label={t_i18n('Add new labels')}
-            title={t_i18n('Add new labels')}
-            onClick={handleOpenAdd}
-            style={{ margin: '0 0 -14px 0' }}
-            size="large"
-          >
-            <Add fontSize="small" />
-          </IconButton>
-        </Security>
+        </CardLabel>
+
       </div>
       <div className={classes.objectLabel}>
         <FieldOrEmpty source={labels}>
