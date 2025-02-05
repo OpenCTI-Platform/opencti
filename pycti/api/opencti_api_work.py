@@ -82,6 +82,24 @@ class OpenCTIApiWork:
             except:
                 self.api.app_logger.error("Cannot report expectation")
 
+    def add_draft_context(self, work_id: str, draft_context: str):
+        if self.api.bundle_send_to_queue:
+            self.api.app_logger.info(
+                "Update draft context",
+                {"work_id": work_id, "draft_context": draft_context},
+            )
+            query = """
+                mutation addDraftContext($id: ID!, $draftContext: String) {
+                    workEdit(id: $id) {
+                        addDraftContext(draftContext: $draftContext)
+                    }
+                }
+               """
+            try:
+                self.api.query(query, {"id": work_id, "draftContext": draft_context})
+            except:
+                self.api.app_logger.error("Cannot report draft context")
+
     def initiate_work(self, connector_id: str, friendly_name: str) -> str:
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info("Initiate work", {"connector_id": connector_id})
