@@ -6,7 +6,10 @@ import SearchInput from 'src/components/SearchInput';
 import { useFormatter } from 'src/components/i18n';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import AddIndividualsThreatActorIndividualLines, { addIndividualsThreatActorIndividualLinesQuery } from './AddIndividualsThreatActorIndividualLines';
-import { AddIndividualsThreatActorIndividualLinesQuery } from './__generated__/AddIndividualsThreatActorIndividualLinesQuery.graphql';
+import {
+  AddIndividualsThreatActorIndividualLinesQuery,
+  AddIndividualsThreatActorIndividualLinesQuery$variables,
+} from './__generated__/AddIndividualsThreatActorIndividualLinesQuery.graphql';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import IndividualCreation from '../../entities/individuals/IndividualCreation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -14,7 +17,9 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddIndividualsThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
-  queryRef: PreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>
+  queryRef: PreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>,
+  onSearch: (search: string) => void,
+  paginationOptions: AddIndividualsThreatActorIndividualLinesQuery$variables,
 }
 
 const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
@@ -22,14 +27,14 @@ AddIndividualsThreatActorIndividualComponentProps
 > = ({
   threatActorIndividual,
   queryRef,
+  onSearch,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
-  const [search, setSearch] = useState<string>('');
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleSearch = (term: string) => setSearch(term);
 
   const data = usePreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>(
     addIndividualsThreatActorIndividualLinesQuery,
@@ -60,14 +65,11 @@ AddIndividualsThreatActorIndividualComponentProps
         >
           <SearchInput
             variant='inDrawer'
-            onSubmit={handleSearch}
+            onSubmit={onSearch}
           />
           <div style={{ height: 5 }} />
           <IndividualCreation
-            paginationOptions={{
-              search,
-              count: 50,
-            }}
+            paginationOptions={paginationOptions}
           />
         </div>
       }
@@ -83,12 +85,18 @@ AddIndividualsThreatActorIndividualComponentProps
 const AddIndividualsThreatActorIndividual: FunctionComponent<
 Omit<AddIndividualsThreatActorIndividualComponentProps, 'queryRef'>
 > = (props) => {
+  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
   const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
     count: 50,
   });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <AddIndividualsThreatActorIndividualComponent {...props} queryRef={queryRef} />
+      <AddIndividualsThreatActorIndividualComponent
+        {...props}
+        queryRef={queryRef}
+        onSearch={(search) => setPaginationOptions({ count: 50, search })}
+        paginationOptions={paginationOptions}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

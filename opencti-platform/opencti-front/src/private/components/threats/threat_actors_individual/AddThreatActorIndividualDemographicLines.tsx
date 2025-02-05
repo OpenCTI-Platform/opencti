@@ -8,7 +8,7 @@ import {
   AddThreatActorIndividualDemographicLines_data$key,
 } from '@components/threats/threat_actors_individual/__generated__/AddThreatActorIndividualDemographicLines_data.graphql';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
-import { updateDelete } from '../../../../utils/store';
+import { deleteNodeFromEdge } from '../../../../utils/store';
 
 export const scoRelationshipAdd = graphql`
   mutation AddThreatActorIndividualDemographicLinesRelationAddMutation(
@@ -142,6 +142,9 @@ const AddThreatActorIndividualDemographicLines = ({
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
 
   const handleToggle = (toId: string) => {
+    const stixCoreRelationshipId = threatActorIndividual
+      .stixCoreRelationships?.edges
+      .find(({ node }) => node.to?.id === toId && node.relationship_type === relType)?.node.id;
     const isSelected = currentTargets.includes(toId);
     const input = {
       fromId: threatActorIndividual.id,
@@ -151,11 +154,11 @@ const AddThreatActorIndividualDemographicLines = ({
     if (isSelected) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => updateDelete(
+        updater: (store) => deleteNodeFromEdge(
           store,
           'stixCoreRelationships',
           threatActorIndividual.id,
-          toId,
+          stixCoreRelationshipId,
         ),
         onCompleted: () => {
           setCurrentTargets(currentTargets.filter((id) => id !== toId));

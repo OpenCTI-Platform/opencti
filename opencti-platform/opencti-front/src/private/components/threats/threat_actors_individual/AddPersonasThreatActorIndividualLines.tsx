@@ -9,7 +9,7 @@ import { defaultCommitMutation } from 'src/relay/environment';
 import { scoRelationshipAdd, scoRelationshipDelete } from '@components/threats/threat_actors_individual/AddIndividualsThreatActorIndividualLines';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddPersonasThreatActorIndividualLines_data$key } from './__generated__/AddPersonasThreatActorIndividualLines_data.graphql';
-import { updateDelete } from '../../../../utils/store';
+import { deleteNodeFromEdge } from '../../../../utils/store';
 
 export const addPersonasThreatActorIndividualLinesQuery = graphql`
   query AddPersonasThreatActorIndividualLinesQuery(
@@ -110,6 +110,9 @@ AddPersonasThreatActorIndividualLinesProps
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
 
   const handleToggle = (toId: string) => {
+    const stixCoreRelationshipId = threatActorIndividual
+      .stixCoreRelationships?.edges
+      .find(({ node }) => node.to?.id === toId && node.relationship_type === 'known-as')?.node.id;
     const isSelected = currentTargets.includes(toId);
     const input = {
       fromId: threatActorIndividual.id,
@@ -120,11 +123,11 @@ AddPersonasThreatActorIndividualLinesProps
       commitRelationDelete({
         ...defaultCommitMutation,
         variables: { ...input },
-        updater: (store) => updateDelete(
+        updater: (store) => deleteNodeFromEdge(
           store,
           'stixCoreRelationships',
           threatActorIndividual.id,
-          toId,
+          stixCoreRelationshipId,
         ),
         onCompleted: () => {
           setCurrentTargets(currentTargets.filter((id) => id !== toId));
