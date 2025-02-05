@@ -7,6 +7,7 @@ import EntitySettingCustomOverview from '@components/settings/sub_types/entity_s
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
+import RequestAccessStatus from '@components/settings/sub_types/RequestAccessStatus';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -21,6 +22,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import RequestAccessWorkflowPopover from './RequestAccessWorkflowPopover';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -43,6 +46,8 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
+        ...RequestAccessStatusFragment_entitySetting
+        ...RequestAccessWorkflow_entitySettings
       }
       statuses {
         id
@@ -52,6 +57,7 @@ export const subTypeQuery = graphql`
           color
         }
       }
+      
     }
   }
 `;
@@ -63,6 +69,8 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -134,6 +142,18 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                   statuses={subType.statuses}
                   disabled={!subType.workflowEnabled}
                 />
+              </>
+            }
+
+            {isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+              && <>
+                <div style={{ marginTop: 20 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Request access workflow')}
+                    <RequestAccessWorkflowPopover id={subType.id} data={subType.settings}/>
+                  </Typography>
+                </div>
+                <RequestAccessStatus data={subType.settings}/>
               </>
             }
           </Paper>
