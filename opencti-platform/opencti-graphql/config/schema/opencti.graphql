@@ -683,8 +683,6 @@ type SubType {
   statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting # Simpler before moving workflow
-  requestAccessWorkflow: RequestAccessWorkflow
-  requestAccessStatus: RequestAccessStatus
 }
 
 ############## Statuses

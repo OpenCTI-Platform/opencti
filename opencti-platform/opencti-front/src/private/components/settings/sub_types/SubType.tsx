@@ -39,12 +39,6 @@ export const subTypeQuery = graphql`
       id
       label
       workflowEnabled
-      requestAccessWorkflow {
-        approved_workflow_id
-        declined_workflow_id
-        workflow
-        approval_admin
-      }
       settings {
         id
         availableSettings
@@ -53,6 +47,7 @@ export const subTypeQuery = graphql`
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
         ...RequestAccessStatusFragment_entitySetting
+        ...RequestAccessWorkflow_entitySettings
       }
       statuses {
         id

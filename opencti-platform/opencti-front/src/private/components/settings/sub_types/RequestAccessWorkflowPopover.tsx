@@ -41,7 +41,6 @@ const RequestAccessWorkflowEdition: FunctionComponent<RequestAccessWorkflowEditi
             queryRef={data}
             handleClose={handleCloseUpdate}
             open={displayUpdate}
-            workflowId={id}
           />
         </React.Suspense>
       )}
