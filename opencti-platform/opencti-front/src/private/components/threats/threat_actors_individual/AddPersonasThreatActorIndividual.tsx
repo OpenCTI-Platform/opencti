@@ -90,9 +90,11 @@ AddPersonaThreatActorIndividualComponentProps
   </div>);
 };
 
-const AddPersonaThreatActorIndividual: FunctionComponent<
-Omit<AddPersonaThreatActorIndividualComponentProps, 'queryRef'>
-> = (props) => {
+interface AddPersonaThreatActorIndividualProps {
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+}
+
+const AddPersonaThreatActorIndividual: FunctionComponent<AddPersonaThreatActorIndividualProps> = (props) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
   const queryRef = useQueryLoading<AddPersonasThreatActorIndividualLinesQuery>(
     addPersonasThreatActorIndividualLinesQuery,
@@ -104,6 +106,7 @@ Omit<AddPersonaThreatActorIndividualComponentProps, 'queryRef'>
         {...props}
         queryRef={queryRef}
         onSearch={(search) => setPaginationOptions({ count: 50, search })}
+        paginationOptions={paginationOptions}
       />
     </React.Suspense>
   ) : (
