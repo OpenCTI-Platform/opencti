@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import ItemIcon from 'src/components/ItemIcon';
