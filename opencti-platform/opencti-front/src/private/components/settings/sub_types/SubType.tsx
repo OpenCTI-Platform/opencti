@@ -23,6 +23,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import RequestAccessWorkflowPopover from './RequestAccessWorkflowPopover';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -73,6 +74,7 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);

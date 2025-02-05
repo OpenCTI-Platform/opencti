@@ -30,6 +30,13 @@ input RequestAccessAddInput {
   request_access_type: RequestAccessType
 }
 
+input RequestAccessConfigureInput {
+  approve_status_template_id: ID
+  decline_status_template_id: ID
+  approval_admin: [ID]
+}
+
 type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
+  requestAccessConfigure(input: RequestAccessConfigureInput!): [StatusTemplate] @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

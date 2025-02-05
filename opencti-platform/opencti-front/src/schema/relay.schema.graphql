@@ -9067,6 +9067,7 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
+  requestAccessConfigure(input: RequestAccessConfigureInput!): [StatusTemplate]
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12751,4 +12752,10 @@ input RequestAccessAddInput {
   request_access_entities: [ID!]!
   request_access_members: [ID!]!
   request_access_type: RequestAccessType
+}
+
+input RequestAccessConfigureInput {
+  approve_status_template_id: ID
+  decline_status_template_id: ID
+  approval_admin: [ID]
 }
