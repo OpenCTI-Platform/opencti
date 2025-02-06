@@ -248,10 +248,10 @@ const StixCoreObjectContentFilesList = ({
           </MenuItem>
         </Security>
         <DeleteDialog
-          title={t_i18n('Are you sure you want to delete this file?')}
           deletion={deletion}
-          onClose={handleClose}
           submitDelete={submitDelete}
+          onClose={handleClose}
+          message={t_i18n('Do you want to delete this file?')}
         />
       </Menu>
     </List>
