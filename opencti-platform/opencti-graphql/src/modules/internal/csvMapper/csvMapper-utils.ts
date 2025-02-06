@@ -1,18 +1,19 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntityCsvMapper, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
+import { CsvMapperRepresentationType } from './csvMapper-types';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
-import { CsvMapperRepresentationType } from './csvMapper-types';
 import { fillDefaultValues, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
 import { FunctionalError } from '../../../config/errors';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_REFS } from '../../../domain/attribute-utils';
 import { internalFindByIds } from '../../../database/middleware-loader';
-import type { BasicStoreEntity } from '../../../types/store';
+import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
 import { extractRepresentative } from '../../../database/entity-representative';
 import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
+import { idsValuesRemap } from '../../../database/stix-converter';
 
 export interface CsvMapperSchemaAttribute {
   name: string
@@ -232,4 +233,32 @@ export const getHashesNames = (entityType: string) => {
     return [];
   }
   return (hashesDefinition as ObjectAttribute).mappings.map((mapping) => (mapping.name));
+};
+
+// csv mapper representatives converter for default values ids
+// Export => ids must be converted to standard id
+// Import => ids must be converted back to internal id
+export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[]) => {
+  // First iteration to resolve all ids to translate
+  const resolvingIds: string[] = [];
+  representations.forEach((representation) => {
+    representation.attributes.forEach((attribute) => {
+      const defaultValues = attribute.default_values;
+      if (defaultValues) {
+        defaultValues.forEach((value) => resolvingIds.push(value));
+      }
+    });
+  });
+  // Resolve then second iteration to replace the ids
+  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
+  const resolvedMap = await internalFindByIds(context, user, resolvingIds, resolveOpts);
+  const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
+  representations.forEach((representation) => {
+    representation.attributes.forEach((attribute) => {
+      const defaultValues = attribute.default_values;
+      if (defaultValues) {
+        idsValuesRemap(defaultValues, idsMap, 'internal');
+      }
+    });
+  });
 };

@@ -64,6 +64,7 @@ type CsvMapper implements InternalObject & BasicObject {
   skipLineChar: String @auth
   representations: [CsvMapperRepresentation!]! @auth
   errors: String
+  toConfigurationExport: String!
 }
 
 # Ordering
@@ -106,7 +107,7 @@ type CsvMapperSchemaAttributes {
 
 # Queries
 type Query {
-  csvMapper(id: String!): CsvMapper @auth(for: [CSVMAPPERS])
+  csvMapper(id: ID!): CsvMapper @auth(for: [CSVMAPPERS])
   csvMappers(
     first: Int
     after: ID
