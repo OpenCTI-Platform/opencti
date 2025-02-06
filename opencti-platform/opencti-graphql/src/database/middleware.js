@@ -183,7 +183,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -707,12 +707,15 @@ export const validateCreatedBy = async (context, user, createdById) => {
 
 /**
  * Verify that the Entity in Marking is one of user allowed
+ * @param context
  * @param user
  * @param markingId
  */
-export const validateMarking = (user, markingId) => {
-  const userMarkings = (user.allowed_marking || []).map((m) => extractIdsFromStoreObject(m)).flat();
-  if (!userMarkings.includes(markingId)) {
+export const validateMarking = async (context, user, markingId) => {
+  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
+  const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
+  if (!userMarkingIds.includes(markingId)) {
     throw FunctionalError('User trying to create the data has missing markings', { id: markingId });
   }
 };

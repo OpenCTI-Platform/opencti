@@ -53,7 +53,7 @@ export const stixObjectOrRelationshipAddRefRelation = async (
 ): Promise<any> => { // TODO remove any when all resolvers in ts
   // Validate specific relations, created by and markings
   if (input.relationship_type === RELATION_OBJECT_MARKING) {
-    validateMarking(user, input.toId);
+    await validateMarking(context, user, input.toId);
   }
   if (input.relationship_type === RELATION_CREATED_BY) {
     await validateCreatedBy(context, user, input.toId);
