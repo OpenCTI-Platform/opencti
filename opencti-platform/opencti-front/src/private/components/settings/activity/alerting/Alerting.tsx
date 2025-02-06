@@ -190,6 +190,7 @@ const Alerting: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<AlertCreation paginationOptions={paginationOptions} />}
       >
         {queryRef && (
           <React.Suspense
@@ -222,7 +223,6 @@ const Alerting: FunctionComponent = () => {
       <ActivityMenu/>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}
-      <AlertCreation paginationOptions={paginationOptions}/>
     </div>
   );
 };
