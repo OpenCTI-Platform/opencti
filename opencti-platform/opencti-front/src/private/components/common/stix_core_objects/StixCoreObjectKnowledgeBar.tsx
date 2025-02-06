@@ -97,14 +97,14 @@ interface KnowledgeBarProps {
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
-
+  console.log('LOCATION', location);
   return (
     <MenuItem
       component={Link}
       to={to}
       selected={location.pathname === to}
       dense={true}
-      sx={{ height: 38, fontSize: 9 }}
+      sx={{ height: 37, fontSize: 9 }}
     >
       <ListItemIcon style={{ minWidth: 28 }}>
         <ItemIcon size="small" type={iconType} />
@@ -141,6 +141,7 @@ const StixCoreObjectKnowledgeBar = ({
     related: indexEntities(relationshipsRelatedDistribution),
     coreObjects: indexEntities(stixCoreObjectsDistribution),
   };
+  console.log('distributions', distributions);
 
   const sumEntitiesByKeys = (source: Record<string, number>, keys?: string[]) => {
     if (keys) {
@@ -150,6 +151,17 @@ const StixCoreObjectKnowledgeBar = ({
   };
 
   const sectionsConfig: SectionConfig[] = [
+    {
+      title: 'All entities',
+      items: [
+        {
+          label: 'All',
+          iconType: 'All',
+          path: 'all',
+          count: sumEntitiesByKeys(distributions.coreObjects),
+        },
+      ],
+    },
     {
       title: 'Entities',
       items: [
