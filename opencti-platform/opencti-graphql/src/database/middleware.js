@@ -712,6 +712,9 @@ export const validateCreatedBy = async (context, user, createdById) => {
  * @param markingId
  */
 export const validateMarking = async (context, user, markingId) => {
+  if (isBypassUser(user)) {
+    return;
+  }
   const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
   const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
