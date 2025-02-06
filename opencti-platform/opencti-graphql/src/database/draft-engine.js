@@ -172,7 +172,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     await removeDraftDeleteLinkedRelations(context, user, draftDeletedLinkedRelationsToRemove);
   }
 
-  if (hasDraftDeletedLinkedRelationsToKeep) {
+  if (!hasDraftDeletedLinkedRelationsToKeep) {
     // TODO: reapply denorm ref if element is a rel
     // TODO: clean up UPDATE_LINKED impacted element that no longer need to be in draft => how to know that an update_linked element can be safely removed?
     await elDeleteInstances([element]);
