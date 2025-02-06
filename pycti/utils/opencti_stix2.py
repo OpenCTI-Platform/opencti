@@ -2417,6 +2417,8 @@ class OpenCTIStix2:
             )
         elif StixCyberObservableTypes.has_value(item["type"]):
             self.opencti.stix_cyber_observable.update_field(id=item["id"], input=input)
+        elif item["type"] == "external-reference":
+            self.opencti.external_reference.update_field(id=item["id"], input=input)
         else:
             self.opencti.stix_domain_object.update_field(id=item["id"], input=input)
 
