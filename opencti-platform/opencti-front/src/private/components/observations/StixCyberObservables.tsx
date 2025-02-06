@@ -133,47 +133,49 @@ const StixCyberObservables: FunctionComponent = () => {
   );
 
   return (
-    <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
-      {queryRef && (
-        <DataTable
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          preloadedPaginationProps={preloadedPaginationProps}
-          resolvePath={(data: StixCyberObservablesLines_data$data) => data.stixCyberObservables?.edges?.map?.((n) => n?.node)}
-          dataColumns={dataColumns}
-          lineFragment={stixCyberObservableLineFragment}
-          toolbarFilters={contextFilters}
-          handleCopy={handleCopy}
-          exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
-          availableEntityTypes={['Stix-Cyber-Observable']}
-          searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }} // ???? for entity_type fileter
-          createButton={isFABReplaced
-            && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <StixCyberObservableCreation
-                paginationKey="Pagination_stixCyberObservables"
-                paginationOptions={queryPaginationOptions}
-                contextual={false}
-                open={false}
-                speeddial={false}
-                controlledDialStyles={{ marginLeft: 1 }}
-              />
-            </Security>
-          }
-        />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCyberObservableCreation
-            paginationKey="Pagination_stixCyberObservables"
-            paginationOptions={queryPaginationOptions}
-            contextual={false}
-            open={false}
-            speeddial={false}
+    <span data-testid="observables-page">
+      <ExportContextProvider>
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]}/>
+        {queryRef && (
+          <DataTable
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            preloadedPaginationProps={preloadedPaginationProps}
+            resolvePath={(data: StixCyberObservablesLines_data$data) => data.stixCyberObservables?.edges?.map?.((n) => n?.node)}
+            dataColumns={dataColumns}
+            lineFragment={stixCyberObservableLineFragment}
+            toolbarFilters={contextFilters}
+            handleCopy={handleCopy}
+            exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
+            availableEntityTypes={['Stix-Cyber-Observable']}
+            searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }} // ???? for entity_type fileter
+            createButton={isFABReplaced
+                  && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <StixCyberObservableCreation
+                      paginationKey="Pagination_stixCyberObservables"
+                      paginationOptions={queryPaginationOptions}
+                      contextual={false}
+                      open={false}
+                      speeddial={false}
+                      controlledDialStyles={{ marginLeft: 1 }}
+                    />
+                  </Security>
+              }
           />
-        </Security>
-      )}
-    </ExportContextProvider>
+        )}
+        {!isFABReplaced && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCyberObservableCreation
+              paginationKey="Pagination_stixCyberObservables"
+              paginationOptions={queryPaginationOptions}
+              contextual={false}
+              open={false}
+              speeddial={false}
+            />
+          </Security>
+        )}
+      </ExportContextProvider>
+    </span>
   );
 };
 

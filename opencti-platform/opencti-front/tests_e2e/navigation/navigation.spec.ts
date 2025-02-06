@@ -11,6 +11,8 @@ import GroupingDetailsPage from '../model/groupingDetails.pageModel';
 import MalwareAnalysesPage from '../model/MalwareAnalyses.pageModel';
 import MalwareAnalysesDetailsPage from '../model/MalwareAnalysesDetails.pageModel';
 import StixCoreObjectHistoryTab from '../model/StixCoreObjectHistoryTab.pageModel';
+import ObservablesPage from '../model/observable.pageModel';
+import ObservableDetailsPage from '../model/observableDetails.pageModel';
 
 /**
  * Goal: validate that everything is opening wihtout errors in Analyses > Malware analyses.
@@ -49,6 +51,26 @@ const navigateMalwareAnalyses = async (page: Page) => {
   await malwareAnalysesDetailsPage.tabs.goToHistoryTab();
   const historyTab = new StixCoreObjectHistoryTab(page);
   await expect(historyTab.getPage()).toBeVisible();
+};
+
+/**
+ * Goal: validate that enrich button is opening without errors in Observations > Observables.
+ * @param page
+ */
+const navigateObservables = async (page: Page) => {
+  const observableInitData = '1.2.3.4';
+
+  const observablePage = new ObservablesPage(page);
+  await observablePage.navigateFromMenu();
+  await expect(observablePage.getPage()).toBeVisible();
+  await expect(page.getByText(observableInitData)).toBeVisible();
+  await observablePage.getItemFromList(observableInitData).click();
+
+  const observableDetailsPage = new ObservableDetailsPage(page);
+  await expect(observableDetailsPage.getPage()).toBeVisible();
+  await observableDetailsPage.getEnrichButton().click();
+
+  await expect(page.getByText('Enrichment connectors')).toBeVisible();
 };
 
 /**
@@ -310,4 +332,5 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   await navigateReports(page);
   await navigateGroupings(page);
   await navigateMalwareAnalyses(page);
+  await navigateObservables(page);
 });
