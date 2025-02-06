@@ -33,7 +33,7 @@
     "d3-timer": "3.0.1",
     "dagre": "0.8.5",
     "date-fns": "3.6.0",
-    "dompurify": "3.2.1",
+    "dompurify": "3.2.4",
     "extract-files": "13.0.0",
     "filigran-icon": "0.11.0",
     "filigran-ui": "0.29.2",
