@@ -77,7 +77,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
-      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
+      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id, { includeDeletedInDraft: true })));
       const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
         || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))

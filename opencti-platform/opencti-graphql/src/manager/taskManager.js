@@ -203,6 +203,7 @@ const computeListTaskElements = async (context, user, task) => {
     type,
     orderMode: task_order_mode || 'desc',
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
+    includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
   const processingElements = elements.map((element) => ({ element, next: element.id }));

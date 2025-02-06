@@ -27,7 +27,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { buildReverseUpdateFieldPatch } from './draft-utils';
-import { updateAttributeFromLoadedWithRefs } from './middleware';
+import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './middleware';
 import { buildRefRelationKey } from '../schema/general';
 
 const completeDeleteElementsFromDraft = async (context, user, elements) => {
@@ -65,8 +65,9 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
   }
 
   // apply reverse field patch
+  const elementWithRefs = await storeLoadByIdWithRefs(context, user, element.internal_id);
   const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
-  await updateAttributeFromLoadedWithRefs(context, user, element, reverseUpdateFieldPatch);
+  await updateAttributeFromLoadedWithRefs(context, user, elementWithRefs, reverseUpdateFieldPatch);
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
 
   // verify if element can be entirely removed from draft or if it needs to be kept as update_linked
@@ -88,10 +89,11 @@ const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelat
     const { rel, dep } = deleteLinkedRelToRemove;
     const isFromImpact = rel.fromId === dep.internal_id;
     const isToImpact = rel.toId === dep.internal_id;
-    if (isFromImpact && !isImpactedRole(rel.fromRole)) {
+    const { entity_type, fromType, fromRole, toType, toRole } = rel;
+    if (isFromImpact && !isImpactedRole(entity_type, fromType, toType, fromRole)) {
       return undefined;
     }
-    if (isToImpact && !isImpactedRole(rel.toRole)) {
+    if (isToImpact && !isImpactedRole(entity_type, fromType, toType, toRole)) {
       return undefined;
     }
     const targetId = isFromImpact ? rel.toId : rel.fromId;
