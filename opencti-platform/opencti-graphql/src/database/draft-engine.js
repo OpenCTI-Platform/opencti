@@ -30,6 +30,14 @@ import { buildReverseUpdateFieldPatch } from './draft-utils';
 import { updateAttributeFromLoadedWithRefs } from './middleware';
 import { buildRefRelationKey } from '../schema/general';
 
+const completeDeleteElementsFromDraft = async (context, user, elements) => {
+  const draftContext = getDraftContext(context, user);
+  if (!draftContext) { return; }
+  await elDeleteInstances(elements);
+  const elementsIds = elements.map((e) => e.internal_id);
+  await elRemoveDraftIdFromElements(context, user, draftContext, elementsIds);
+};
+
 const isCreateOrDraftDelete = (draftOp) => {
   return draftOp === DRAFT_OPERATION_CREATE || draftOp === DRAFT_OPERATION_DELETE || draftOp === DRAFT_OPERATION_DELETE_LINKED;
 };
@@ -55,7 +63,6 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
   if (element.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE) {
     return;
   }
-  const draftContext = getDraftContext(context, user);
 
   // apply reverse field patch
   const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
@@ -71,8 +78,7 @@ const elRemoveUpdateElementFromDraft = async (context, user, element) => {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
     await elReplace(element._index, element._id, { doc: newDraftChange });
   } else {
-    await elDeleteInstances([element]);
-    await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
+    await completeDeleteElementsFromDraft(context, user, [element]);
   }
 };
 
@@ -108,10 +114,7 @@ const removeDraftDeleteLinkedRelations = async (context, user, deleteLinkedRelat
 
   // After reapplying denormalized refs, we delete relations draft instaces and we remove draftId from live instances
   const deleteLinkedRelationsInstances = deleteLinkedRelations.map((delRel) => delRel.rel);
-  const deleteLinkedRelationsInstancesIds = deleteLinkedRelationsInstances.map((r) => r.internal_id);
-  await elDeleteInstances(deleteLinkedRelationsInstances);
-  const draftContext = getDraftContext(context, user);
-  await elRemoveDraftIdFromElements(context, user, draftContext, deleteLinkedRelationsInstancesIds);
+  await completeDeleteElementsFromDraft(context, user, deleteLinkedRelationsInstances);
 };
 
 const elRemoveDeleteElementFromDraft = async (context, user, element) => {
@@ -126,7 +129,6 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     return;
   }
 
-  const draftContext = getDraftContext(context, user);
   // We get all related relations that are delete_linked
   const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
   const draftDeleteLinkedRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED);
@@ -175,8 +177,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
   if (!hasDraftDeletedLinkedRelationsToKeep) {
     // TODO: reapply denorm ref if element is a rel
     // TODO: clean up UPDATE_LINKED impacted element that no longer need to be in draft => how to know that an update_linked element can be safely removed?
-    await elDeleteInstances([element]);
-    await elRemoveDraftIdFromElements(context, user, draftContext, [element.internal_id]);
+    await completeDeleteElementsFromDraft(context, user, [element]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
     await elReplace(element._index, element._id, { doc: newDraftChange });
