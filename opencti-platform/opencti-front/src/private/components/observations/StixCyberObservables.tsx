@@ -150,17 +150,17 @@ const StixCyberObservables: FunctionComponent = () => {
             availableEntityTypes={['Stix-Cyber-Observable']}
             searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }} // ???? for entity_type fileter
             createButton={isFABReplaced
-                  && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <StixCyberObservableCreation
-                      paginationKey="Pagination_stixCyberObservables"
-                      paginationOptions={queryPaginationOptions}
-                      contextual={false}
-                      open={false}
-                      speeddial={false}
-                      controlledDialStyles={{ marginLeft: 1 }}
-                    />
-                  </Security>
-              }
+              && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCyberObservableCreation
+                  paginationKey="Pagination_stixCyberObservables"
+                  paginationOptions={queryPaginationOptions}
+                  contextual={false}
+                  open={false}
+                  speeddial={false}
+                  controlledDialStyles={{ marginLeft: 1 }}
+                />
+              </Security>
+            }
           />
         )}
         {!isFABReplaced && (
