@@ -9,7 +9,8 @@ import {
   timeSeriesEntities,
   updateAttribute,
   updateAttributeFromLoadedWithRefs,
-  validateCreatedBy
+  validateCreatedBy,
+  validateMarking
 } from '../database/middleware';
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
@@ -25,7 +26,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_MARKINGS } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -202,12 +203,19 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
-
-  const createdByKey = input.find((inputData) => inputData.key === 'createdBy');
+  // Validate specific relations, created by and markings
+  const markingsInput = input.find((inputData) => inputData.key === INPUT_MARKINGS);
+  if (markingsInput && markingsInput.value?.length > 0) {
+    for (let index = 0; index < markingsInput.value.length; index += 1) {
+      const markingId = markingsInput.value[index];
+      await validateMarking(context, user, markingId);
+    }
+  }
+  const createdByKey = input.find((inputData) => inputData.key === INPUT_CREATED_BY);
   if (createdByKey && createdByKey.value?.length > 0) {
     await validateCreatedBy(context, user, createdByKey.value[0]);
   }
-
+  // Start the element edition
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   // If indicator is score patched, we also patch the score of all observables attached to the indicator
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
@@ -245,7 +253,6 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
     return nonResolvedFile;
   });
-
   const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(context, user, stixDomainObject, { key: 'x_opencti_files', value: nonResolvedFiles });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
