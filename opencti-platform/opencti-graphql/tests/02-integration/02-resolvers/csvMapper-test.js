@@ -136,7 +136,7 @@ const CREATE_QUERY = gql`
 `;
 
 const READ_QUERY = gql`
-  query CsvMapper($id: String!) {
+  query CsvMapper($id: ID!) {
     csvMapper(id: $id) {
       id
       name

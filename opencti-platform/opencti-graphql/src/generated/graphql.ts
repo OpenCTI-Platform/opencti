@@ -5285,6 +5285,7 @@ export type CsvMapper = BasicObject & InternalObject & {
   separator: Scalars['String']['output'];
   skipLineChar?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
 };
 
 export type CsvMapperAddInput = {
@@ -20279,7 +20280,7 @@ export type QueryCreatorsArgs = {
 
 
 export type QueryCsvMapperArgs = {
-  id: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
 };
 
 
@@ -34492,6 +34493,7 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
