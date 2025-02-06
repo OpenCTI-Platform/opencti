@@ -131,7 +131,7 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
 
   // We get all related relations that are delete_linked
   const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
-  const draftDeleteLinkedRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED);
+  const draftDeleteLinkedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED);
   const draftDeleteLinkedRelationsIds = draftDeleteLinkedRelations.map((r) => r.internal_id);
   // We get all of those relations dependencies (that are not the current element or the related relations)
   const draftDeleteLinkedRelationsTargetsIds = draftDeleteLinkedRelations.map((r) => {
@@ -145,7 +145,8 @@ const elRemoveDeleteElementFromDraft = async (context, user, element) => {
     return undefined;
   }).filter((i) => i);
   // We resolve all those dependencies
-  const draftDeleteDependencies = await elFindByIds(context, user, draftDeleteLinkedRelationsTargetsIds, { includeDeletedInDraft: true });
+  const draftDeleteDependenciesRaw = await elFindByIds(context, user, draftDeleteLinkedRelationsTargetsIds, { includeDeletedInDraft: true });
+  const draftDeleteDependencies = draftDeleteDependenciesRaw.filter((d) => isDraftIndex((d._index)));
   let hasDraftDeletedLinkedRelationsToKeep = false;
   const draftDeletedLinkedRelationsToRemove = [];
   // We distinguish relations that need to be kept (from or to has a DELETE operation) from those that can be reverted in draft
