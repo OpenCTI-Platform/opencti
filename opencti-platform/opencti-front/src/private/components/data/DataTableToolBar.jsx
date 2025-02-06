@@ -29,7 +29,6 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
-  ArchitectureOutlined,
   AutoFixHighOutlined,
   BrushOutlined,
   CancelOutlined,
@@ -38,6 +37,7 @@ import {
   CloseOutlined,
   ContentCopyOutlined,
   DeleteOutlined,
+  DeleteSweepOutlined,
   LanguageOutlined,
   LinkOffOutlined,
   LockOpenOutlined,
@@ -1856,7 +1856,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {enableMerge && !removeAuthMembersEnabled && (
+                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
                       <Tooltip title={t('Merge')}>
                         <span>
                           <IconButton
@@ -1955,7 +1955,7 @@ class DataTableToolBar extends Component {
                       </Security>
                     </>
                   )}
-                  {deleteDisable !== true && !removeAuthMembersEnabled && (
+                  {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
                     <Security needs={[deleteCapability]}>
                       <Tooltip title={warningMessage || t('Delete')}>
                         <span>
@@ -1988,7 +1988,7 @@ class DataTableToolBar extends Component {
                               || this.state.processing
                           }
                         >
-                          <ArchitectureOutlined fontSize="small" color={'primary'} />
+                          <DeleteSweepOutlined fontSize="small" color={'primary'} />
                         </IconButton>
                       </Tooltip>
                     </Security>
