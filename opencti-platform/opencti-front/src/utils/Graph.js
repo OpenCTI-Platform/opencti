@@ -825,7 +825,7 @@ export const buildGraphData = (objects, graphData, t) => {
           if (n.parent_types.includes('basic-relationship')) {
             return t(`relationship_${n.relationship_type}`);
           } if (n.entity_type === 'StixFile' && n.observable_value) {
-            return n.observable_value;
+            return truncate(n.observable_value, 20);
           }
           return truncate(
             getMainRepresentative(n),
