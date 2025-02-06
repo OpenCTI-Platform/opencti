@@ -77,6 +77,9 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   const fullFile = await file;
   const { byteLength, linesNumber } = await checkFileSize(fullFile.createReadStream);
   const mimeType = guessMimeType(fullFile.filename);
+  if(mimeType !== "text/plain"){
+    throw FunctionalError('Exclusion list file type is incorrect', { mimeType });
+  }
   const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
   return { upload, byteLength, linesNumber };

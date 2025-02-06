@@ -213,7 +213,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                   />
                 </div>
                 {isUploadFileChecked
-                  ? <CustomFileUploader setFieldValue={setFieldValue} />
+                  ? <CustomFileUploader acceptMimeTypes={'text/plain'} setFieldValue={setFieldValue} />
                   : (
                     <Field
                       name="fileContent"
