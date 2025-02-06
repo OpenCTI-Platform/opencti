@@ -5,21 +5,16 @@ import IconButton from '@mui/material/IconButton';
 import { MoreVertOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { PopoverProps } from '@mui/material/Popover';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import VocabularyEdition from './VocabularyEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
-import Transition from '../../../../components/Transition';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -75,16 +70,10 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       deleteLabel = t_i18n('Some fields in usage are mandatory');
     }
   }
-  const {
-    deleting,
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-    setDeleting,
-  } = useDeletion({ handleClose });
+  const deletion = useDeletion({ handleClose });
   const [commit] = useApiMutation(VocabularyPopoverDeletionMutation);
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commit({
       variables: {
         id: vocab.id,
@@ -98,9 +87,9 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
         );
       },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
-        handleCloseDelete();
+        deletion.handleCloseDelete();
       },
     });
   };
@@ -111,31 +100,15 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete} disabled={!deletable}>
+        <MenuItem onClick={deletion.handleOpenDelete} disabled={!deletable}>
           {deleteLabel}
         </MenuItem>
       </Menu>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this vocabulary?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this vocabulary?')}
+      />
       <Drawer
         title={t_i18n('Update an attribute')}
         open={displayUpdate}
