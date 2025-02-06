@@ -4,27 +4,29 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React from 'react';
-import Transition from './Transition';
-import { useFormatter } from './i18n';
-import { Deletion } from '../utils/hooks/useDeletion';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import { AlertTitle } from '@mui/material';
+import Transition from './Transition';
+import { useFormatter } from './i18n';
+import { Deletion } from '../utils/hooks/useDeletion';
 
 type DeleteDialogProps = {
-  message?: React.ReactNode
   deletion: Deletion
   submitDelete: () => void
   onClose?: () => void
-  alertTitle?: React.ReactNode
+  isWarning?: boolean
+  warningTitle?: React.ReactNode
+  message: React.ReactNode
 };
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
-  message,
   deletion,
   submitDelete,
   onClose,
-  alertTitle,
+  isWarning = false,
+  warningTitle,
+  message,
 }) => {
   const { t_i18n } = useFormatter();
   return (
@@ -39,9 +41,9 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         {t_i18n('Are you sure?')}
       </DialogTitle>
       <DialogContent>
-        {alertTitle ? (
+        {isWarning ? (
           <Alert severity="warning" variant="outlined">
-            <AlertTitle>{alertTitle}</AlertTitle>
+            <AlertTitle>{warningTitle}</AlertTitle>
             {message}
           </Alert>
         ) : (
