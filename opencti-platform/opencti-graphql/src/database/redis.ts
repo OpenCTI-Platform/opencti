@@ -349,8 +349,11 @@ export const delUserContext = async (user: AuthUser) => {
 // endregion
 
 // region locking (clientContext)
-export const redisAddDeletions = async (internalIds: Array<string>) => {
-  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+export const redisAddDeletions = async (internalIds: Array<string>, draftId: string | undefined = undefined) => {
+  let ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+  if (draftId) {
+    ids = ids.map((id) => `${id}${draftId}`);
+  }
   await redisTx(getClientLock(), async (tx) => {
     const time = new Date().getTime();
     // remove the too old keys from the list of instances
@@ -381,7 +384,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   let extension: undefined | Promise<void>;
   const initialCallStack = getStackTrace();
   const draftId = opts.draftId ? opts.draftId : '';
-  const locks = R.uniq(resources).map((id) => `{locks}:${id}${draftId}`);
+  const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
+  const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
@@ -420,7 +424,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
   // If we do not check for that, we could update an entity even though it was just deleted, resulting in the entity being created again
   const latestDeletions = await redisFetchLatestDeletions();
-  const deletedParticipantsIds = resources.filter((x) => latestDeletions.includes(x));
+  const deletedParticipantsIds = resourcesId.filter((x) => latestDeletions.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
     await lock.release();

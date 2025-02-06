@@ -230,7 +230,7 @@ const DraftRelationships = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     draftVersion: {
       isSortable: false,
-      percentWidth: 10,
+      percentWidth: 8,
     },
     fromType: {
       id: 'fromType',
@@ -241,8 +241,8 @@ const DraftRelationships = () => {
         <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
       ),
     },
-    fromName: { percentWidth: 10 },
-    relationship_type: {},
+    fromName: { percentWidth: 13 },
+    relationship_type: { percentWidth: 10 },
     toType: {
       id: 'toType',
       label: 'To type',
@@ -252,11 +252,11 @@ const DraftRelationships = () => {
         <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
       ),
     },
-    toName: { percentWidth: 10 },
-    createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
-    creator: { percentWidth: 7, isSortable: isRuntimeSort },
+    toName: { percentWidth: 13 },
+    createdBy: { percentWidth: 8, isSortable: isRuntimeSort },
+    creator: { percentWidth: 8, isSortable: isRuntimeSort },
     created_at: { percentWidth: 12 },
-    objectMarking: { isSortable: isRuntimeSort },
+    objectMarking: { percentWidth: 8, isSortable: isRuntimeSort },
   };
 
   const preloadedPaginationProps = {
@@ -280,6 +280,7 @@ const DraftRelationships = () => {
         lineFragment={draftRelationshipsLineFragment}
         exportContext={{ entity_type: 'stix-core-relationship' }}
         redirectionModeEnabled
+        removeFromDraftEnabled
         disableSelectAll
       />
       )}

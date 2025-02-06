@@ -64,6 +64,7 @@ import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
+  ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
@@ -87,6 +88,7 @@ import { findById as findOrganizationById } from '../modules/organization/organi
 import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -201,6 +203,7 @@ const computeListTaskElements = async (context, user, task) => {
     type,
     orderMode: task_order_mode || 'desc',
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
+    includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
   const processingElements = elements.map((element) => ({ element, next: element.id }));
@@ -576,6 +579,9 @@ const executeProcessing = async (context, user, job, scope) => {
           }
           if (type === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
             await executeRemoveAuthMembers(context, user, element);
+          }
+          if (type === ACTION_TYPE_REMOVE_FROM_DRAFT) {
+            await elRemoveElementFromDraft(context, user, element);
           }
         } catch (err) {
           logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: elementIndex });

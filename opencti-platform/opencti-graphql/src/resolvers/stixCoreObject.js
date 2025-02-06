@@ -28,6 +28,7 @@ import {
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
   stixCoreObjectImportPush,
+  stixCoreObjectRemoveFromDraft,
   stixCoreObjectsConnectedNumber,
   stixCoreObjectsDistribution,
   stixCoreObjectsDistributionByEntity,
@@ -167,6 +168,7 @@ const stixCoreObjectResolvers = {
       analysisClear: ({ contentSource, contentType }) => analysisClear(context, context.user, id, contentSource, contentType),
       exportAsk: ({ input }) => stixCoreObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
+      removeFromDraft: () => stixCoreObjectRemoveFromDraft(context, context.user, id),
     }),
     stixCoreObjectsExportAsk: (_, { input }, context) => stixCoreObjectsExportAsk(context, context.user, input),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {

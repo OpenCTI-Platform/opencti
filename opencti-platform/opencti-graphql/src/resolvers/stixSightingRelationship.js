@@ -10,6 +10,7 @@ import {
   stixSightingRelationshipDeleteRelation,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
+  stixSightingRelationshipRemoveFromDraft,
   stixSightingRelationshipsNumber
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext } from '../database/redis';
@@ -28,7 +29,7 @@ import {
   externalReferencesPaginated,
   notesPaginated,
   opinionsPaginated,
-  reportsPaginated
+  reportsPaginated,
 } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
@@ -91,6 +92,7 @@ const stixSightingRelationshipResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
+      removeFromDraft: () => stixSightingRelationshipRemoveFromDraft(context, context.user, id),
     }),
     stixSightingRelationshipAdd: (_, { input }, context) => addStixSightingRelationship(context, context.user, input),
   },

@@ -11,16 +11,16 @@ import {
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
-import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements } from '../../database/draft-engine';
+import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, stixLoadByIds } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { usersSessionRefresh } from '../../domain/user';
 import { elAggregationCount, elList } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-converter';
@@ -156,6 +156,23 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
   }
 };
 
+const findAllWorksWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  const listArgs = {
+    connectionFormat: false,
+    indices: [READ_INDEX_HISTORY],
+    filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
+  };
+  return listAllEntities(context, user, [ENTITY_TYPE_WORK], listArgs);
+};
+
+// When deleting a draft, we need to remove all draft_ids from works currently linked to this draft
+const deleteDraftContextFromWorks = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  const worksWithDraftContext = await findAllWorksWithDraftContext(context, user, draftId);
+  if (worksWithDraftContext.length > 0) {
+    await elDeleteDraftContextFromWorks(context, user, draftId);
+  }
+};
+
 export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser, id: string) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot delete draft while in draft context');
   const draftWorkspace = await findById(context, user, id);
@@ -164,6 +181,7 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   }
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
+  await deleteDraftContextFromWorks(context, user, id);
   await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 
   return id;
@@ -175,7 +193,8 @@ export const buildDraftVersion = (object: BasicStoreCommon) => {
   }
 
   if (!object.draft_ids || object.draft_ids.length === 0) {
-    throw FunctionalError('Cannot find draft ids on draft entity', { id: object.id });
+    logApp.warn('Draft entity without draft ids found', { id: object.id });
+    return null;
   }
 
   return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
@@ -224,7 +243,7 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
     // Only add explicit expectation if the worker will not split anything
     await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, stixBundle.objects.length);
   }
-  await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id });
+  await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id, draft_id: '' });
   await deleteDraftWorkspace(contextOutOfDraft, user, draft_id);
 
   return work;

@@ -78,6 +78,7 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
+import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -269,6 +270,16 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   }
   await deleteElementById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   return stixCoreObjectId;
+};
+
+export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjectId) => {
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, { includeDeletedInDraft: true });
+  if (!stixCoreObject) {
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.');
+  }
+  // TODO currently not locked, but might need to be
+  await elRemoveElementFromDraft(context, user, stixCoreObject);
+  return stixCoreObject.id;
 };
 
 export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {

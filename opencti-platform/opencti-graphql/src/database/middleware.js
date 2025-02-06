@@ -1502,7 +1502,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(sources.map((s) => s.internal_id));
+    await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
     // - END TRANSACTION
     return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
@@ -2144,7 +2144,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             relationsToCreate.push(...newRelations);
-            updatedInputs.push({ key, value: refsToCreate, operation });
+            updatedInputs.push({ key, value: refsToCreate, operation, previous: updatedInstance[key] });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
@@ -2162,7 +2162,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
 
           if (relsToDelete.length > 0) {
             relationsToDelete.push(...relsToDelete);
-            updatedInputs.push({ key, value: refs, operation });
+            updatedInputs.push({ key, value: refs, operation, previous: updatedInstance[key] });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
@@ -3237,7 +3237,6 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 
 // region mutation deletion
 
-// We need to add the ability to revert deleted entities when in draft:
 const draftInternalDeleteElement = async (context, user, draftElement) => {
   let lock;
   const participantIds = [draftElement.internal_id];
@@ -3351,7 +3350,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       event = await storeDeleteEvent(context, user, element, opts);
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(participantIds);
+    await redisAddDeletions(participantIds, getDraftContext(context, user));
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });

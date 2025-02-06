@@ -1013,6 +1013,7 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
+  REMOVE_FROM_DRAFT
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -14070,6 +14071,7 @@ type StixCoreObjectEditMutations {
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -14330,6 +14332,7 @@ type StixCoreRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX SIGHTING RELATIONSHIPS
@@ -14344,6 +14347,7 @@ type StixSightingRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX REF RELATIONSHIPS
