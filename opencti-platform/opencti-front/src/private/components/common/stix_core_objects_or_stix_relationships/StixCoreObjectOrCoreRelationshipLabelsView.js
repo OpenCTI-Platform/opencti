@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { append, filter, map, pathOr, pipe, union } from 'ramda';
 import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
