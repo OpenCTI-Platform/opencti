@@ -44,7 +44,16 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
+import type {
+  BasicStoreObject,
+  StoreCommon,
+  StoreCyberObservable,
+  StoreEntity,
+  StoreEntityIdentity,
+  StoreFileWithRefs,
+  StoreObject,
+  StoreRelation
+} from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -121,6 +130,7 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
+import { isInternalId, isStixId } from '../schema/schemaUtils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -1605,5 +1615,17 @@ export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
     spec_version: STIX_SPEC_VERSION,
     type: 'bundle',
     objects: stixObjects
+  });
+};
+
+export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
+  return ids.map((id) => {
+    if (from === 'internal' && isInternalId(id)) {
+      return resolvedMap[id]?.standard_id ?? id;
+    }
+    if (from === 'stix' && isStixId(id)) {
+      return resolvedMap[id]?.internal_id ?? id;
+    }
+    return id;
   });
 };

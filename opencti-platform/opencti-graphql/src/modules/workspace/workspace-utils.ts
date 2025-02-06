@@ -6,6 +6,7 @@ import type { BasicStoreObject } from '../../types/store';
 import { internalFindByIds } from '../../database/middleware-loader';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
+import { idsValuesRemap } from '../../database/stix-converter';
 
 // workspace ids converter
 // Export => Dashboard filter ids must be converted to standard id
@@ -14,15 +15,7 @@ import { isInternalId, isStixId } from '../../schema/schemaUtils';
 const toKeys = (k: string | string[]) => (Array.isArray(k) ? k : [k]);
 
 const filterValuesRemap = (filter: Filter, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
-  return filter.values.map((value) => {
-    if (from === 'internal' && isInternalId(value)) {
-      return resolvedMap[value]?.standard_id ?? value;
-    }
-    if (from === 'stix' && isStixId(value)) {
-      return resolvedMap[value]?.internal_id ?? value;
-    }
-    return value;
-  });
+  return idsValuesRemap(filter.values, resolvedMap, from);
 };
 
 const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
