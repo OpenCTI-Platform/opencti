@@ -67,6 +67,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:graphql:armor_protection:max_tokens              | APP__GRAPHQL__ARMOR_PROTECTION__MAX_TOKENS             | 100000        | GraphQL armor protection max tokens                                                                                 |
 | app:graphql:armor_protection:cost_limit              | APP__GRAPHQL__ARMOR_PROTECTION__COST_LIMIT             | 3000000       | GraphQL armor protection cost limit                                                                                 |
 | app:graphql:armor_protection:block_field_suggestion  | APP__GRAPHQL__ARMOR_PROTECTION__BLOCK_FIELD_SUGGESTION | true          | GraphQL armor protection, block the field suggestion                                                                |
+| app:notifier_authorized_functions                    | APP__NOTIFIER_AUTHORIZED_FUNCTIONS                     | see [`default.json`](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json)  | Authorized function that can be used in webhook templates           |
 
 #### Logging
 

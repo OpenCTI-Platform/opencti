@@ -31,6 +31,21 @@ For example, if an attack pattern does not exist in the OpenBAS catalog, the res
 
 For more details, see [this migration guide](./breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md)
 
+## OpenCTI 6.4.11
+
+### Breaking change
+
+Webhook template are now restricted to a list of authorized functions.
+A new template cannot be created if it contains unauthorized function, and existing templates cannot be updated with unauthorized functions.
+
+In case a function is required in webhook template in addition of default safe list, it can be added to your own risk by overiding APP__NOTIFIER_AUTHORIZED_FUNCTIONS.
+
+For example:
+```bash
+APP__NOTIFIER_AUTHORIZED_FUNCTIONS="[\"if\", \"for\", \"forEach\", \"while\", \"stringify\", \"Date\", \"toLocaleString\"]"
+```
+
+
 ## OpenCTI 6.3
 
 ### Deprecation

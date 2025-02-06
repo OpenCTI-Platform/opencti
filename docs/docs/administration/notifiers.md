@@ -43,3 +43,6 @@ OpenCTI provides two notifier samples by default, designed to communicate with M
 Custom notifiers are manageable in the "Settings > Customization > Notifiers" window and can be restricted through Role-Based Access Control (RBAC). Administrators can control access, limiting usage to specific Users, Groups, or Organizations.
 
 For guidance on configuring notification triggers and exploring the usages of notifiers, refer to the [dedicated documentation page](../usage/notifications.md).
+
+For security reason, the authorized methods that can be used in webhook template is limited, see [notifier_authorized_functions parameter](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
+If you need to extend this authorization, you can update `APP__NOTIFIER_AUTHORIZED_FUNCTIONS` with a custom list. The default managed list by OpenCTI is safe, please be aware that you extends this list at your own risk.
