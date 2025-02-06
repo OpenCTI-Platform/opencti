@@ -53,6 +53,7 @@ const BulkTextModal = ({
       open={open}
       onClose={onClose}
       fullWidth={true}
+      PaperProps={{ elevation: 1 }}
     >
       <DialogTitle>{title || t_i18n('Create multiple entities')}</DialogTitle>
       <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
