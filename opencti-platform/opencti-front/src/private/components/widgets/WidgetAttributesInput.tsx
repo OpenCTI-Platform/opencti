@@ -16,7 +16,6 @@ import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext'
 import FormHelperText from '@mui/material/FormHelperText';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Alert } from '@mui/material';
 import { widgetAttributesInputInstanceQuery } from './WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery } from './__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
@@ -318,14 +317,8 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                       <DeleteDialog
                         deletion={deletion}
                         submitDelete={removeAttribute}
-                        title={(
-                          <>
-                            <span>{t_i18n('Are you sure you want to delete this attribute?')}</span>
-                            <Alert severity="warning" variant="outlined" sx={{ marginTop: 2 }}>
-                              {t_i18n('You are about to delete an attribute used in the template')}
-                            </Alert>
-                          </>
-                        )}
+                        isWarning={true}
+                        message={t_i18n('You are about to delete an attribute used in the template')}
                       />
                     </>
                   );

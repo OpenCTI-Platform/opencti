@@ -173,9 +173,9 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
       </Drawer>
 
       <DeleteDialog
-        title={t_i18n('Are you sure you want to delete this public dashboard?')}
         deletion={deletion}
         submitDelete={onDelete}
+        message={t_i18n('Are you sure you want to delete this public dashboard?')}
       />
     </>
   );
