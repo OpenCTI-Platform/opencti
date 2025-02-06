@@ -3,8 +3,8 @@ import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
 import React, { FunctionComponent } from 'react';
-import { useFormatter } from '../../../../components/i18n';
-import { hexToRGB } from '../../../../utils/Colors';
+import { useFormatter } from '../../../../../components/i18n';
+import { hexToRGB } from '../../../../../utils/Colors';
 
 export const requestAccessFragment = graphql`
   fragment RequestAccessStatusFragment_entitySetting on EntitySetting {

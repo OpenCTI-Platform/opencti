@@ -29,7 +29,7 @@ import { loadThroughDenormalized } from '../../resolvers/stix';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
-import { findById as findStatusById, findTemplateById } from '../../domain/status';
+import { findById as findStatusById, findTemplateById, statusEditField } from '../../domain/status';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
@@ -144,8 +144,7 @@ export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUse
 export const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
   const result = await verifyRequestAccessEnabled(context, user);
   if (!result.enabled) {
-    // TODO add doc code and doc page.
-    throw FunctionalError('[OPENCTI-MODULE][Request access] Request access feature is missing configuration.', { message: result.message, doc_code: 'REQUEST_ACCESS_CONFIGURATION' });
+    throw FunctionalError(`Request access feature is missing configuration: ${result.message}`, { message: result.message, doc_code: 'REQUEST_ACCESS_CONFIGURATION' });
   }
 };
 
@@ -251,10 +250,15 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
   await checkRequestAccessEnabled(context, user);
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  logApp.info('[OPENCTI-MODULE][Request access] - rfiEntitySettings', { rfiEntitySettings });
 
   if (input.decline_status_template_id && rfiEntitySettings.request_access_workflow && rfiEntitySettings.request_access_workflow.declined_workflow_id) {
-    const declineUpdateInput = [{ key: 'template_id', value: [input.decline_status_template_id] }];
-    await updateAttribute(context, user, rfiEntitySettings.request_access_workflow.declined_workflow_id, ENTITY_TYPE_STATUS, declineUpdateInput);
+    logApp.info('[OPENCTI-MODULE][Request access] - Updating', { statusId: rfiEntitySettings.request_access_workflow.declined_workflow_id, withTemplateId: input.decline_status_template_id });
+    const declineUpdateInput: EditInput = { key: 'template_id', value: [input.decline_status_template_id] };
+    // await updateAttribute(context, user, rfiEntitySettings.request_access_workflow.declined_workflow_id, ENTITY_TYPE_STATUS, declineUpdateInput);
+    // (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput)
+
+    await statusEditField(context, user, ENTITY_TYPE_CONTAINER_CASE, rfiEntitySettings.request_access_workflow.declined_workflow_id, declineUpdateInput);
   }
 
   if (input.approve_status_template_id && rfiEntitySettings.request_access_workflow && rfiEntitySettings.request_access_workflow.approved_workflow_id) {
