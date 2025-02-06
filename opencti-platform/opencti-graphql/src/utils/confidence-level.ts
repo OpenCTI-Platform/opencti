@@ -24,6 +24,8 @@ type ConfidenceOverride = {
 };
 
 export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
+  // already computed (in buildCompleteUser)
+  if (user.effective_confidence_level) { return user.effective_confidence_level; }
   // if a user has BYPASS capability, we consider a level 100
   if (isBypassUser(user)) {
     return {
