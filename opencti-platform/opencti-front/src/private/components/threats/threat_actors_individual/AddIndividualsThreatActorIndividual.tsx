@@ -88,9 +88,10 @@ interface AddIndividualsThreatActorIndividualProps {
 
 const AddIndividualsThreatActorIndividual: FunctionComponent<AddIndividualsThreatActorIndividualProps> = (props) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
-  const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(addIndividualsThreatActorIndividualLinesQuery, {
-    count: 50,
-  });
+  const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(
+    addIndividualsThreatActorIndividualLinesQuery,
+    paginationOptions,
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <AddIndividualsThreatActorIndividualComponent

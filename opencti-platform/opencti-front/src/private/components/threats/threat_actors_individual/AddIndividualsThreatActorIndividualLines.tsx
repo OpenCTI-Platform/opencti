@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Loader from 'src/components/Loader';
 import { List, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import ItemIcon from 'src/components/ItemIcon';
@@ -174,28 +173,25 @@ const AddIndividualsThreatActorIndividualLines = ({
     }
   };
 
-  if (data.individuals?.edges) {
-    const availableTargets = data.individuals.edges;
-    return (
-      <List>
-        {availableTargets.map((node, i) => {
-          if (node) {
-            return (
-              <AddIndividualsThreatActorIndividualLine
-                key={node.node.id}
-                id={node.node.id}
-                name={node.node.name}
-                currentTargets={currentTargets}
-                handleClick={() => handleToggle(node.node.id)}
-              />
-            );
-          }
-          return <div key={i} />;
-        })}
-      </List>
-    );
-  }
-  return (<Loader />);
+  const availableTargets = data.individuals?.edges;
+  return (
+    <List>
+      {availableTargets?.map((node, i) => {
+        if (node) {
+          return (
+            <AddIndividualsThreatActorIndividualLine
+              key={node.node.id}
+              id={node.node.id}
+              name={node.node.name}
+              currentTargets={currentTargets}
+              handleClick={() => handleToggle(node.node.id)}
+            />
+          );
+        }
+        return <div key={i} />;
+      })}
+    </List>
+  );
 };
 
 export default AddIndividualsThreatActorIndividualLines;
