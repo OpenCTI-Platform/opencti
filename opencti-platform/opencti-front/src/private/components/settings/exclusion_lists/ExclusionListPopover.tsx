@@ -111,9 +111,9 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
-        title={t_i18n('Do you want to delete this exclusion list?')}
         deletion={deletion}
         submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this exclusion list?')}
       />
       {isEditionFormOpen && (
         <ExclusionListEdition
