@@ -161,7 +161,7 @@ const processNotificationEvent = async (
     const notifier = userNotifiers[notifierIndex];
 
     // There is no await in purpose, the goal is to send notification and continue without waiting result.
-    internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, notification);
+    internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, notification).catch((reason) => logApp.error('Error on store load for settings', { cause: reason }));
   }
 };
 

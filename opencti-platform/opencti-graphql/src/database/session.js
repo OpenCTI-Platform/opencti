@@ -88,7 +88,7 @@ export const findUserSessions = async (userId) => {
   return [];
 };
 
-export const killSession = async (id) => {
+export const killSession = (id) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
     store.destroy(id, (_, data) => {

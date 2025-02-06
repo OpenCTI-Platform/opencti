@@ -404,7 +404,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }).catch((err) => {
           logApp.error('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef });
         });
-      });
+      }).catch((reason) => logApp.error('[OPENID] Error when enrich with remote credentials', { cause: reason }));
     }
     if (strategy === STRATEGY_FACEBOOK) {
       const providerRef = identifier || 'facebook';
@@ -521,7 +521,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         passport.use(providerRef, auth0Strategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
-      });
+      }).catch((reason) => logApp.error('[AUTH0] Error when enrich with remote credentials', { cause: reason }));
     }
     // CERT Strategies
     if (strategy === STRATEGY_CERT) {
