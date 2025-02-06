@@ -96,3 +96,12 @@ export const insertNodeFromEdge = (store, parentId, edgesPath, dataPath, params)
   const newEdge = payload.setLinkedRecord(payload, 'node');
   ConnectionHandler.insertEdgeBefore(records, newEdge);
 };
+
+export const updateDelete = (store, path, rootId, deleteId) => {
+  const node = store.get(rootId);
+  const records = node?.getLinkedRecord(path);
+  const edges = records?.getLinkedRecords('edges');
+  if (!records || !edges) { return; }
+  const newEdges = edges.filter((n) => n.getLinkedRecord('node')?.getValue('toId') !== deleteId);
+  records.setLinkedRecords(newEdges, 'edges');
+};

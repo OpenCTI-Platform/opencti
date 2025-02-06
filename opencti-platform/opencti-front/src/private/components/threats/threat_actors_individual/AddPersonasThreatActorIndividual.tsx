@@ -2,44 +2,48 @@ import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import { useLazyLoadQuery } from 'react-relay';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import SearchInput from 'src/components/SearchInput';
 import { useFormatter } from 'src/components/i18n';
 import AddPersonasThreatActorIndividualLines, { addPersonasThreatActorIndividualLinesQuery } from './AddPersonasThreatActorIndividualLines';
-import { AddPersonasThreatActorIndividualLinesQuery } from './__generated__/AddPersonasThreatActorIndividualLinesQuery.graphql';
+import {
+  AddPersonasThreatActorIndividualLinesQuery,
+  AddPersonasThreatActorIndividualLinesQuery$variables,
+} from './__generated__/AddPersonasThreatActorIndividualLinesQuery.graphql';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-interface AddPersonaThreatActorIndividualProps {
+interface AddPersonaThreatActorIndividualComponentProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+  queryRef: PreloadedQuery<AddPersonasThreatActorIndividualLinesQuery>,
+  onSearch: (search: string) => void,
+  paginationOptions: AddPersonasThreatActorIndividualLinesQuery$variables,
 }
 
-const AddPersonaThreatActorIndividual: FunctionComponent<
-AddPersonaThreatActorIndividualProps
+const AddPersonaThreatActorIndividualComponent: FunctionComponent<
+AddPersonaThreatActorIndividualComponentProps
 > = ({
   threatActorIndividual,
+  queryRef,
+  onSearch,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
-  const [search, setSearch] = useState<string>('');
-  const paginationOptions = { search };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleSearch = (term: string) => setSearch(term);
 
-  const data = useLazyLoadQuery<AddPersonasThreatActorIndividualLinesQuery>(
+  const data = usePreloadedQuery<AddPersonasThreatActorIndividualLinesQuery>(
     addPersonasThreatActorIndividualLinesQuery,
-    {
-      ...paginationOptions,
-      count: 50,
-    },
+    queryRef,
   );
 
   return (<div>
     <IconButton
       color='primary'
-      style={{ marginTop: '-11px' }}
       onClick={handleOpen}
     >
       <Add fontSize="small" />
@@ -61,15 +65,14 @@ AddPersonaThreatActorIndividualProps
         >
           <SearchInput
             variant='inDrawer'
-            onSubmit={handleSearch}
+            onSubmit={onSearch}
           />
           <div style={{ height: 5 }} />
           <StixCyberObservableCreation
             contextual={false}
             type="Persona"
-            inputValue={search}
-            paginationOptions={{ search, types: ['Persona'] }}
-            paginationKey="Pagination_stixCyberObservables"
+            paginationOptions={paginationOptions}
+            paginationKey="Pagination_tai_stixCyberObservables"
             controlledDialStyles={{
               marginLeft: '10px',
               marginTop: '5px',
@@ -84,6 +87,30 @@ AddPersonaThreatActorIndividualProps
       />
     </Drawer>
   </div>);
+};
+
+interface AddPersonaThreatActorIndividualProps {
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+}
+
+const AddPersonaThreatActorIndividual: FunctionComponent<AddPersonaThreatActorIndividualProps> = (props) => {
+  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '', types: ['Persona'] });
+  const queryRef = useQueryLoading<AddPersonasThreatActorIndividualLinesQuery>(
+    addPersonasThreatActorIndividualLinesQuery,
+    paginationOptions,
+  );
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <AddPersonaThreatActorIndividualComponent
+        {...props}
+        queryRef={queryRef}
+        onSearch={(search) => setPaginationOptions({ count: 50, search, types: ['Persona'] })}
+        paginationOptions={paginationOptions}
+      />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default AddPersonaThreatActorIndividual;
