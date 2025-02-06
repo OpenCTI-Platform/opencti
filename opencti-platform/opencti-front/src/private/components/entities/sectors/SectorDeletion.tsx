@@ -1,19 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 const SectorDeletionDeleteMutation = graphql`
   mutation SectorDeletionDeleteMutation($id: ID!) {
@@ -36,21 +32,15 @@ const SectorDeletion = ({ id }: { id: string }) => {
     { successMessage: deleteSuccessMessage },
   );
   const handleClose = () => {};
-  const {
-    deleting,
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-    setDeleting,
-  } = useDeletion({ handleClose });
+  const deletion = useDeletion({ handleClose });
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commit({
       variables: {
         id,
       },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
         navigate('/dashboard/entities/sectors');
       },
@@ -66,33 +56,18 @@ const SectorDeletion = ({ id }: { id: string }) => {
         <Button
           color="error"
           variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
+          onClick={deletion.handleOpenDelete}
+          disabled={deletion.deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}
         </Button>
       </Security>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this sector?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this sector?')}
+      />
     </>
   );
 };
