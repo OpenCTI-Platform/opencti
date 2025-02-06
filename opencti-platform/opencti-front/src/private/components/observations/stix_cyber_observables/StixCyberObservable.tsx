@@ -68,7 +68,7 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
-    <>
+    <div data-testid='observable-details-page'>
       <Grid
         container={true}
         spacing={3}
@@ -119,7 +119,7 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
           />
         </Security>
       )}
-    </>
+    </div>
   );
 };
 
