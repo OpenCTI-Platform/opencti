@@ -9,7 +9,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import CardLabel from '../../../../components/CardLabel';
 
 type SupportedTypes = 'known-as' | 'impersonates';
-type SupportedFields = 'persona_name' | 'name';
+type SupportedFields = 'observable_value' | 'name';
 
 interface MappingFields {
   title: string,
@@ -21,7 +21,7 @@ interface MappingFields {
 const typeMappings: Record<SupportedTypes, MappingFields> = {
   'known-as': {
     title: 'Also known as',
-    field: 'persona_name',
+    field: 'observable_value',
     path: '/dashboard/observations/observables',
     AddComponent: AddPersonaThreatActorIndividual,
   },

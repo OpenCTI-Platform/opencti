@@ -71,9 +71,8 @@ AddPersonaThreatActorIndividualComponentProps
           <StixCyberObservableCreation
             contextual={false}
             type="Persona"
-            inputValue={paginationOptions?.search}
             paginationOptions={paginationOptions}
-            paginationKey="Pagination_stixCyberObservables"
+            paginationKey="Pagination_tai_stixCyberObservables"
             controlledDialStyles={{
               marginLeft: '10px',
               marginTop: '5px',
@@ -95,7 +94,7 @@ interface AddPersonaThreatActorIndividualProps {
 }
 
 const AddPersonaThreatActorIndividual: FunctionComponent<AddPersonaThreatActorIndividualProps> = (props) => {
-  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
+  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '', types: ['Persona'] });
   const queryRef = useQueryLoading<AddPersonasThreatActorIndividualLinesQuery>(
     addPersonasThreatActorIndividualLinesQuery,
     paginationOptions,
@@ -105,7 +104,7 @@ const AddPersonaThreatActorIndividual: FunctionComponent<AddPersonaThreatActorIn
       <AddPersonaThreatActorIndividualComponent
         {...props}
         queryRef={queryRef}
-        onSearch={(search) => setPaginationOptions({ count: 50, search })}
+        onSearch={(search) => setPaginationOptions({ count: 50, search, types: ['Persona'] })}
         paginationOptions={paginationOptions}
       />
     </React.Suspense>

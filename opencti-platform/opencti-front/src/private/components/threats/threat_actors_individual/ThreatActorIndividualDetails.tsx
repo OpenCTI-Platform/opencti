@@ -76,7 +76,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
             }
             ... on Persona {
               id
-              persona_name
+              observable_value
               persona_type
             }
           }
