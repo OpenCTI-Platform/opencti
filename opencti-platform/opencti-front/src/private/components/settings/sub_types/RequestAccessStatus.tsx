@@ -1,4 +1,5 @@
 import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
 import React, { FunctionComponent } from 'react';
@@ -10,25 +11,26 @@ export const requestAccessFragment = graphql`
     id
     target_type
     request_access_workflow {
-      approved_workflow_id {
-      }
+      approved_workflow_id
       declined_workflow_id
       workflow
     }
-    requestAccessStatus {
-      id
-      color
-      name
+    requestAccessApprovedStatus {
+        id
+        template {
+            id
+            color
+            name
+        }
     }
-
-      approveAccessStatus {
-          id
-          template {
-              id
-              color
-              name
-          }
-      }
+    requestAccessDeclinedStatus {
+        id
+        template {
+            id
+            color
+            name
+        }
+    }
   }
 `;
 
@@ -41,19 +43,16 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const dataResolved = useFragment(requestAccessFragment, data);
-  const workflowStatus = dataResolved.requestAccessStatus?.map((n) => ({
-    id: n?.id,
-    color: n?.color,
-    name: n?.name,
-  }));
-
+  const approvedToRfiStatus = dataResolved.requestAccessApprovedStatus;
+  const declinedToRfiStatus = dataResolved.requestAccessDeclinedStatus;
   return (
-    <>{
-      workflowStatus?.map((status, idx) => (
+    <>
+      <Typography variant="h3" gutterBottom={true}>
+        {t_i18n('On approval move to status:')}
         <Chip
-          key={idx}
+          key={approvedToRfiStatus?.id}
           variant="outlined"
-          label={t_i18n(status?.name) || '-'}
+          label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : '-'}
           style={{
             fontSize: 12,
             lineHeight: '12px',
@@ -62,15 +61,41 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             textTransform: 'uppercase',
             borderRadius: 4,
             width: 100,
-            color: status?.color,
-            borderColor: status?.color,
+            color: approvedToRfiStatus?.template?.color,
+            borderColor: approvedToRfiStatus?.template?.color,
             backgroundColor: hexToRGB(
               '#000000',
             ),
           }}
         />
-      ))
-    }
+      </Typography>
+
+      <Typography variant="h3" gutterBottom={true}>
+        {t_i18n('On decline move to status:')}
+        <Chip
+          key={declinedToRfiStatus?.id}
+          variant="outlined"
+          label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : '-'}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 25,
+            margin: 7,
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 100,
+            color: declinedToRfiStatus?.template?.color,
+            borderColor: declinedToRfiStatus?.template?.color,
+            backgroundColor: hexToRGB(
+              '#000000',
+            ),
+          }}
+        />
+      </Typography>
+
+      <Typography variant="h3" gutterBottom={true}>
+        {t_i18n('Validator membership:')} TODO
+      </Typography>
     </>
   );
 };

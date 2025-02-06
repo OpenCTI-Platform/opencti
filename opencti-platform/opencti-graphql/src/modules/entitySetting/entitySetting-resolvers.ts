@@ -4,7 +4,6 @@ import {
   findById,
   findByType,
   getOverviewLayoutCustomization,
-  getRequestAccessStatus,
   getTemplatesForSetting,
   queryDefaultValuesAttributesForSetting,
   queryEntitySettingSchemaAttributes,
@@ -16,6 +15,7 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { getRequestAccessApprovedStatus, getRequestAccessDeclinedStatus, getRequestAccessStatus } from '../requestAccess/requestAccess-domain';
 
 const entitySettingResolvers: Resolvers = {
   Query: {

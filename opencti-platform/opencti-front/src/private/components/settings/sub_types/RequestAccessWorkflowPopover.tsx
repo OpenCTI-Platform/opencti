@@ -11,7 +11,7 @@ interface RequestAccessWorkflowEditionProps {
   id: string
   data: RequestAccessStatusFragment_entitySetting$key
 }
-const RequestAccessWorkflowEdition: FunctionComponent<RequestAccessWorkflowEditionProps> = ({
+const RequestAccessWorkflowPopover: FunctionComponent<RequestAccessWorkflowEditionProps> = ({
   id,
   data,
 }) => {
@@ -49,4 +49,4 @@ const RequestAccessWorkflowEdition: FunctionComponent<RequestAccessWorkflowEditi
   );
 };
 
-export default RequestAccessWorkflowEdition;
+export default RequestAccessWorkflowPopover;

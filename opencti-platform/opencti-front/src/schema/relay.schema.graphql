@@ -10981,6 +10981,8 @@ type EntitySetting implements InternalObject & BasicObject {
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   request_access_workflow: RequestAccessWorkflow
   requestAccessStatus: [StatusTemplate]
+  requestAccessApprovedStatus: Status
+  requestAccessDeclinedStatus: Status
 }
 
 enum EntitySettingsOrdering {

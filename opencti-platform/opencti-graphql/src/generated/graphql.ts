@@ -7300,6 +7300,8 @@ export type EntitySetting = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
+  requestAccessApprovedStatus?: Maybe<Status>;
+  requestAccessDeclinedStatus?: Maybe<Status>;
   requestAccessStatus?: Maybe<Array<Maybe<StatusTemplate>>>;
   request_access_workflow?: Maybe<RequestAccessWorkflow>;
   scaleAttributes: Array<ScaleAttribute>;
@@ -35317,6 +35319,8 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  requestAccessApprovedStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  requestAccessDeclinedStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   requestAccessStatus?: Resolver<Maybe<Array<Maybe<ResolversTypes['StatusTemplate']>>>, ParentType, ContextType>;
   request_access_workflow?: Resolver<Maybe<ResolversTypes['RequestAccessWorkflow']>, ParentType, ContextType>;
   scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;

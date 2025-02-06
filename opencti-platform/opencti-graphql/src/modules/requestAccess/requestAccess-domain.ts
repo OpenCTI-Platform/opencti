@@ -28,7 +28,9 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
-import { findByType as findEntitySettingsByType, getRequestAccessStatus } from '../entitySetting/entitySetting-domain';
+import { findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
+import { findById as findStatusById, findTemplateById } from '../../domain/status';
+import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -52,6 +54,28 @@ export interface RequestAccessAction {
   executionDate?: Date,
   workflowMapping: RequestAccessActionStatus[]
 }
+
+export const getRequestAccessStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  entitySetting: BasicStoreEntityEntitySetting
+) => {
+  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
+    return [];
+  }
+  const approvedId = entitySetting.request_access_workflow?.approved_workflow_id;
+  const declinedId = entitySetting.request_access_workflow?.declined_workflow_id;
+
+  if (approvedId && declinedId) {
+    const approvedStatus = await findStatusById(context, user, approvedId);
+    const declinedStatus = await findStatusById(context, user, declinedId);
+
+    const approvedDetail = await findTemplateById(context, user, approvedStatus.template_id);
+    const declinedDetail = await findTemplateById(context, user, declinedStatus.template_id);
+    return [approvedDetail, declinedDetail];
+  }
+  return [];
+};
 
 export const getPlatformOrganization = async (context: AuthContext, user: AuthUser) => {
   const settings: BasicStoreSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS); // TODO should we get from cache?
@@ -371,4 +395,36 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
   const rfiDeclined = await findRFIById(context, user, id);
   logApp.info('rfiDeclined:', { rfiDeclined });
   return rfiDeclined;
+};
+
+export const getRequestAccessApprovedStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  entitySetting: BasicStoreEntityEntitySetting
+) => {
+  const rfiEntitySettings = await getRfiEntitySettings(context);
+  if (rfiEntitySettings) {
+    const approvedId = rfiEntitySettings.request_access_workflow?.approved_workflow_id;
+    if (approvedId) {
+      const approvedStatus = await findStatusById(context, user, approvedId);
+      return approvedStatus;
+    }
+  }
+  return null;
+};
+
+export const getRequestAccessDeclinedStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  entitySetting: BasicStoreEntityEntitySetting
+) => {
+  const rfiEntitySettings = await getRfiEntitySettings(context);
+  if (rfiEntitySettings) {
+    const declinedId = rfiEntitySettings.request_access_workflow?.declined_workflow_id;
+    if (declinedId) {
+      const declinedStatus = await findStatusById(context, user, declinedId);
+      return declinedStatus;
+    }
+  }
+  return null;
 };

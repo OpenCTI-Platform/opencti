@@ -215,33 +215,3 @@ export const queryDefaultValuesAttributesForSetting = async (
   }));
   return defaultValuesAttributes;
 };
-
-export const getRequestApprovedAccessStatus = async () => {
-
-});
-
-export const getRequestDeclinedAccessStatus = async () => {
-
-});
-
-export const getRequestAccessStatus = async (
-  context: AuthContext,
-  user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
-) => {
-  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    return [];
-  }
-  const approvedId = entitySetting.request_access_workflow?.approved_workflow_id;
-  const declinedId = entitySetting.request_access_workflow?.declined_workflow_id;
-
-  if (approvedId && declinedId) {
-    const approvedStatus = await findStatusById(context, user, approvedId);
-    const declinedStatus = await findStatusById(context, user, declinedId);
-
-    const approvedDetail = await findTemplateById(context, user, approvedStatus.template_id);
-    const declinedDetail = await findTemplateById(context, user, declinedStatus.template_id);
-    return [approvedDetail, declinedDetail];
-  }
-  return [];
-};

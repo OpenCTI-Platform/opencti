@@ -4,15 +4,19 @@ import Drawer from '@components/common/drawer/Drawer';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar/ListItemAvatar';
-import Avatar from '@mui/material/Avatar';
 import ListItemText from '@mui/material/ListItemText/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import RequestAccessWorkflowStatusPopover from '@components/settings/sub_types/RequestAccessWorkflowStatusPopover';
-import { WorkflowStatusEditFormData } from '@components/settings/sub_types/RequestAccessWorkflowStatusEdit';
+import Box from '@mui/material/Box';
+import SubTypeWorkflowStatusPopover from '@components/settings/sub_types/SubTypeWorkflowStatusPopover';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import RequestAccessStatusPopover from '@components/settings/sub_types/RequestAccessStatusPopover';
+import CreatorField from '@components/common/form/CreatorField';
+import StatusTemplateField from '@components/common/form/StatusTemplateField';
+import { Option } from '@components/common/form/ReferenceField';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
-import ItemCopy from '../../../../components/ItemCopy';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const requestAccessWorkflowEditionQuery = graphql`
   query RequestAccessWorkflowEditionQuery($id: String!) {
@@ -25,16 +29,26 @@ export const requestAccessWorkflowEditionQuery = graphql`
 const requestAccessWorkflowFragment = graphql`
   fragment RequestAccessWorkflow_entitySettings on EntitySetting {
     id
-    request_access_workflow {
-      approved_workflow_id
-      declined_workflow_id
-      approval_admin
+    requestAccessApprovedStatus {
+        id
+        template {
+            id
+            color
+            name
+        }
     }
-    requestAccessStatus {
-      color
-      name
-      id
+    requestAccessDeclinedStatus {
+        id
+        template {
+            id
+            color
+            name
+        }
     }
+      request_access_workflow {
+          approval_admin
+      }
+      
   }
 `;
 
@@ -51,17 +65,19 @@ const RequestAccessWorkflow: FunctionComponent<RequestAccessWorkflowProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const queryData = useFragment(requestAccessWorkflowFragment, queryRef);
-  const changeStatus = (values: WorkflowStatusEditFormData, statusId: string) => {
-    console.log('coucou', values);
-    console.log('statusId', statusId);
-    console.log('approved_workflow', queryData.request_access_workflow?.approved_workflow_id);
-    console.log('statusId', statusId === queryData.request_access_workflow?.approved_workflow_id);
+  console.log('RequestAccessWorkflow.tsx => queryData', queryData);
+  const approvedToRfiStatus = queryData.requestAccessApprovedStatus;
+  const declinedToRfiStatus = queryData.requestAccessDeclinedStatus;
+  const onCreatorChange = (value) => {
+    console.log('On change', value);
   };
-
+  const setFieldValue = (field: string, value: Option) => {
+    console.log('setFieldValue', value);
+  };
   return (
     <Drawer
       open={open}
-      title={t_i18n('Request Access Workflow')}
+      title={t_i18n('Request Access Configuration')}
       onClose={handleClose}
     >
       <>
@@ -69,67 +85,139 @@ const RequestAccessWorkflow: FunctionComponent<RequestAccessWorkflowProps> = ({
           component="nav"
           aria-labelledby="nested-list-subheader"
         >
-          {queryData.requestAccessStatus?.map((status) => {
-            return (
-              <ListItem
-                key={status?.id}
-                divider={true}
-              >
-                <ListItemAvatar>
-                  <Avatar
-                    variant="square"
+
+          <ListItem
+            key={approvedToRfiStatus?.id}
+            divider={true}
+          >
+            <ListItemText
+              primary={
+                <>
+                  <div
                     style={{
-                      color: status?.color,
-                      borderColor: status?.color,
-                      backgroundColor: hexToRGB(status?.color),
+                      height: 40,
+                      fontSize: 13,
+                      float: 'left',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      paddingRight: 10,
+                      width: '100%',
                     }}
                   >
-                    {'0'}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <>
-                      <div
+                    <Typography>
+                      On approval move to status:
+                      <Chip
+                        key={approvedToRfiStatus?.id}
+                        variant="outlined"
+                        label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : '-'}
                         style={{
-                          height: 20,
-                          fontSize: 13,
-                          float: 'left',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          paddingRight: 10,
-                          width: '30%',
+                          fontSize: 12,
+                          lineHeight: '12px',
+                          height: 25,
+                          margin: 7,
+                          textTransform: 'uppercase',
+                          borderRadius: 4,
+                          width: 100,
+                          color: approvedToRfiStatus?.template?.color,
+                          borderColor: approvedToRfiStatus?.template?.color,
+                          backgroundColor: hexToRGB(
+                            '#000000',
+                          ),
                         }}
-                      >
-                        {status?.name ?? ''}
-                      </div>
-                      <div
+                      />
+                    </Typography>
+                  </div>
+                </>
+              }
+            />
+            <ListItemSecondaryAction>
+              <RequestAccessStatusPopover
+                subTypeId={'Case-Rfi'}
+                statusId={approvedToRfiStatus?.id}
+              />
+            </ListItemSecondaryAction>
+          </ListItem>
+
+          <ListItem
+            key={declinedToRfiStatus?.id}
+            divider={true}
+          >
+            <ListItemText
+              primary={
+                <>
+                  <div
+                    style={{
+                      height: 40,
+                      fontSize: 13,
+                      float: 'left',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      paddingRight: 10,
+                      width: '100%',
+                    }}
+                  >
+                    <Typography>
+                      On decline move to status:
+                      <Chip
+                        key={declinedToRfiStatus?.id}
+                        variant="outlined"
+                        label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : '-'}
                         style={{
-                          height: 20,
-                          fontSize: 13,
-                          float: 'left',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          paddingRight: 10,
-                          width: '60%',
+                          fontSize: 12,
+                          lineHeight: '12px',
+                          height: 25,
+                          margin: 7,
+                          textTransform: 'uppercase',
+                          borderRadius: 4,
+                          width: 100,
+                          color: declinedToRfiStatus?.template?.color,
+                          borderColor: declinedToRfiStatus?.template?.color,
+                          backgroundColor: hexToRGB(
+                            '#000000',
+                          ),
                         }}
-                      >
-                        <ItemCopy content={status?.id ?? ''} variant="inLine" />
-                      </div>
-                    </>
-                  }
-                />
-                <ListItemSecondaryAction>
-                  <RequestAccessWorkflowStatusPopover
-                    entitySettingId={queryData.id}
-                    onStatusChange={(values) => changeStatus(values, status?.id ?? '')}
-                  />
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
+                      />
+                    </Typography>
+                  </div>
+                </>
+              }
+            />
+            <ListItemSecondaryAction>
+              <RequestAccessStatusPopover
+                subTypeId={'Case-Rfi'}
+                statusId={declinedToRfiStatus?.id}
+              />
+            </ListItemSecondaryAction>
+          </ListItem>
+
+          <ListItem
+            key={1234}
+            divider={true}
+          >
+            <ListItemText
+              primary={
+                <>
+                  <div
+                    style={{
+                      height: 40,
+                      fontSize: 13,
+                      float: 'left',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      paddingRight: 10,
+                      width: '100%',
+                    }}
+                  >
+
+                  </div>
+                </>
+              }
+            />
+          </ListItem>
+
         </List>
       </>
     </Drawer>
