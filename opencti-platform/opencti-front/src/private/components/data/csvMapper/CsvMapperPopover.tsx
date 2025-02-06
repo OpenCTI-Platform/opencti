@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, UIEvent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
@@ -9,15 +9,28 @@ import CsvMapperEditionContainer, { csvMapperEditionContainerQuery } from '@comp
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
+import fileDownload from 'js-file-download';
+import { CsvMapperPopoverExportQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperPopoverExportQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import stopEvent from '../../../../utils/domEvent';
+import { fetchQuery } from '../../../../relay/environment';
 
 const csvMapperPopoverDelete = graphql`
   mutation CsvMapperPopoverDeleteMutation($id: ID!) {
     csvMapperDelete(id: $id)
+  }
+`;
+
+const csvMapperExportQuery = graphql`
+  query CsvMapperPopoverExportQuery($id: ID!) {
+    csvMapper(id: $id) {
+      name
+      toConfigurationExport
+    }
   }
 `;
 
@@ -81,6 +94,26 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
     });
   };
 
+  const exportCsvMapper = async () => {
+    const { csvMapper } = await fetchQuery(
+      csvMapperExportQuery,
+      { id: csvMapperId },
+    ).toPromise() as CsvMapperPopoverExportQuery$data;
+
+    if (csvMapper) {
+      const blob = new Blob([csvMapper.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_csvMapper_${csvMapper.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
+  const onExport = async (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    await exportCsvMapper();
+  };
+
   return (
     <>
       <IconButton onClick={handleOpen} aria-haspopup="true" size="large" color="primary">
@@ -90,6 +123,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
       {queryRef && (
         <React.Suspense fallback={<div />}>

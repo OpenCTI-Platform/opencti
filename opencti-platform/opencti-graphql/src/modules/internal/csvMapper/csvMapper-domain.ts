@@ -1,10 +1,17 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
+import { type BasicStoreEntityCsvMapper, type CsvMapperRepresentation, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
-import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
+import {
+  convertRepresentationsIds,
+  type CsvMapperSchemaAttribute,
+  type CsvMapperSchemaAttributes,
+  parseCsvMapper,
+  parseCsvMapperWithDefaultValues,
+  validateCsvMapper
+} from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -19,6 +26,7 @@ import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '..
 import { FunctionalError } from '../../../config/errors';
 import { parseReadableToLines } from '../../../parser/csv-parser';
 import type { FileUploadData } from '../../../database/file-storage-helper';
+import pjson from '../../../../package.json';
 
 // -- UTILS --
 
@@ -90,6 +98,29 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
 export const getParsedRepresentations = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
   const parsedMapper = await parseCsvMapperWithDefaultValues(context, user, csvMapper);
   return parsedMapper.representations;
+};
+
+export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
+  const {
+    name,
+    has_header,
+    separator,
+    representations,
+    skipLineChar,
+  } = csvMapper;
+  const resolvedRepresentations: CsvMapperRepresentation[] = JSON.parse(representations);
+  await convertRepresentationsIds(context, user, resolvedRepresentations);
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'csvMapper',
+    configuration: {
+      name,
+      has_header,
+      separator,
+      representations,
+      skipLineChar,
+    }
+  });
 };
 
 // -- Schema
