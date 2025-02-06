@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import conf, { BUS_TOPICS } from '../../config/conf';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
-import { deleteFile } from '../../database/file-storage';
+import { deleteFile, guessMimeType } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -76,6 +76,7 @@ const checkFileSize = async (createReadStream: () => Readable) => {
 const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exclusionListId: string, file: FileUploadData) => {
   const fullFile = await file;
   const { byteLength, linesNumber } = await checkFileSize(fullFile.createReadStream);
+  const mimeType = guessMimeType(fullFile.filename);
   const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
   return { upload, byteLength, linesNumber };
