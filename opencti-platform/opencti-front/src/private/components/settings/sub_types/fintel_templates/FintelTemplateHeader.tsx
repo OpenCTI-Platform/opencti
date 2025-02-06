@@ -49,7 +49,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
     { label: t_i18n('Settings') },
     { label: t_i18n('Customization') },
     { label: t_i18n('Entity types'), link: customizationLink },
-    { label: subTypeId, link: subTypeLink },
+    { label: t_i18n(`entity_${subTypeId}`), link: subTypeLink },
     { label: t_i18n('FINTEL Templates') },
     { label: template.name },
   ];
