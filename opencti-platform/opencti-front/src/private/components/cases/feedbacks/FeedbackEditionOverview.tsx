@@ -22,7 +22,7 @@ import RatingField from '../../../../components/fields/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import FeedbackDeletion from './FeedbackDeletion';
 
@@ -147,20 +147,25 @@ interface FeedbackEditionFormValues {
   objectMarking?: Option[]
 }
 
+const FEEDBACK_TYPE = 'Feedback';
+
 const FeedbackEditionOverviewComponent: FunctionComponent<
 FeedbackEditionOverviewProps
 > = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    FEEDBACK_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
-    rating: Yup.number(),
+    rating: Yup.number().min(1).max(5),
     confidence: Yup.number(),
-  };
-  const feedbackValidator = useSchemaEditionValidation('Feedback', basicShape);
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,
@@ -168,7 +173,7 @@ FeedbackEditionOverviewProps
     relationDelete: feedbackMutationRelationDelete,
     editionFocus: feedbackEditionOverviewFocus,
   };
-  const editor = useFormEditor(feedbackData as GenericData, enableReferences, queries, feedbackValidator);
+  const editor = useFormEditor(feedbackData as GenericData, enableReferences, queries, validator);
 
   const onSubmit: FormikConfig<FeedbackEditionFormValues>['onSubmit'] = (
     values,
@@ -208,7 +213,7 @@ FeedbackEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      feedbackValidator
+      validator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -239,7 +244,9 @@ FeedbackEditionOverviewProps
     <Formik<FeedbackEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={feedbackValidator}
+      validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -257,6 +264,7 @@ FeedbackEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -268,6 +276,7 @@ FeedbackEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -288,14 +297,20 @@ FeedbackEditionOverviewProps
           />
           <RatingField
             label={t_i18n('Rating')}
+            required={(mandatoryAttributes.includes('rating'))}
             rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}
-            handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
-            }
+            handleOnChange={(newValue) => {
+              // Cannot remove the rating, always required and not customizable, and can only be 1-5 in value
+              if (newValue != null && newValue >= 1 && newValue <= 5) {
+                handleSubmitField('rating', String(newValue));
+              }
+            }}
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
@@ -320,6 +335,7 @@ FeedbackEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -329,6 +345,7 @@ FeedbackEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
