@@ -51,7 +51,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   alias: {
-    margin: '4px 7px 0 0',
+    marginRight: '4px',
     fontSize: 12,
     lineHeight: '12px',
     height: 28,
@@ -449,7 +449,7 @@ const StixDomainObjectHeader = (props) => {
               </FormControl>
             </div>
           )}
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', marginTop: '4px' }}>
             {(!noAliases && aliases.length > 0) && (
               <div>
                 {R.take(5, aliases).map(
@@ -468,7 +468,12 @@ const StixDomainObjectHeader = (props) => {
                     >
                       <Tooltip title={label}>
                         <Chip
-                          classes={{ root: classes.alias }}
+                          sx={{
+                            marginRight: theme.spacing(1),
+                            fontSize: 12,
+                            lineHeight: '12px',
+                            height: 28,
+                          }}
                           label={truncate(label, 40)}
                           onDelete={
                             enableReferences
@@ -490,6 +495,7 @@ const StixDomainObjectHeader = (props) => {
                 unmountOnExit={true}
               >
                 <div>
+                  aze
                   <Formik
                     initialValues={{ new_alias: '' }}
                     onSubmit={onSubmitCreateAlias}
@@ -534,31 +540,33 @@ const StixDomainObjectHeader = (props) => {
               </Slide>
             )}
             {!noAliases && (
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                {aliases.length > 5 ? (
-                  <IconButton
-                    color="primary"
-                    aria-label="More"
-                    onClick={handleToggleOpenAliases}
-                    size="small"
-                  >
-                    <DotsHorizontalCircleOutline fontSize="small" />
-                  </IconButton>
-                ) : (
-                  <IconButton
-                    color="primary"
-                    aria-label="Alias"
-                    onClick={handleToggleCreateAlias}
-                    size="small"
-                  >
-                    {openAlias ? (
-                      <Close fontSize="small" />
-                    ) : (
-                      <Add fontSize="small" />
-                    )}
-                  </IconButton>
-                )}
-              </Security>
+              <div>
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  {aliases.length > 5 ? (
+                    <IconButton
+                      color="primary"
+                      aria-label="More"
+                      onClick={handleToggleOpenAliases}
+                      size="small"
+                    >
+                      <DotsHorizontalCircleOutline fontSize="small" />
+                    </IconButton>
+                  ) : (
+                    <IconButton
+                      color="primary"
+                      aria-label="Alias"
+                      onClick={handleToggleCreateAlias}
+                      size="small"
+                    >
+                      {openAlias ? (
+                        <Close fontSize="small" />
+                      ) : (
+                        <Add fontSize="small" />
+                      )}
+                    </IconButton>
+                  )}
+                </Security>
+              </div>
             )}
           </div>
         </div>
