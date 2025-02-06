@@ -87,7 +87,14 @@ interface SectionConfig {
   }[];
 }
 
-const KnowledgeBarItem = ({ to, iconType, label, count }: { to: string; iconType: string; label: string; count: number }) => {
+interface KnowledgeBarProps {
+  to: string;
+  iconType: string;
+  label: string;
+  count: number;
+}
+
+const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
 
@@ -372,6 +379,7 @@ const StixCoreObjectKnowledgeBar = ({
       anchor="right"
       sx={{
         '& .MuiPaper-root': {
+          minHeight: '100vh',
           width: 200,
           position: 'fixed',
           overflow: 'auto',
