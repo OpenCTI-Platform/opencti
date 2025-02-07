@@ -290,7 +290,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
             }
           }
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-          patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
+          patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
         });
       ingestionPromises.push(ingestionPromise);
     } else {
@@ -563,7 +563,7 @@ const csvExecutor = async (context: AuthContext) => {
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - CSV ingestion execution', { cause: e, name: ingestion.name });
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-          patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
+          patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
         });
       ingestionPromises.push(ingestionPromise);
     } else {

@@ -1,4 +1,5 @@
 import { initializeOnlyRedisLockClient, lockResource } from '../database/redis';
+import { logApp } from '../config/conf';
 
 const PARENT_PROCESS_SCHEDULE_LISTENER = 2000;
 
@@ -65,4 +66,4 @@ initializeOnlyRedisLockClient().then(() => {
       process.exit(1);
     }
   }, PARENT_PROCESS_SCHEDULE_LISTENER);
-});
+}).catch((reason) => logApp.error('Child lock manager unknown error.', { cause: reason }));

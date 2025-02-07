@@ -153,14 +153,16 @@ export const addSettings = async (context, user, settings) => {
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
-export const settingsCleanContext = (context, user, settingsId) => {
-  delEditContext(user, settingsId);
-  return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+export const settingsCleanContext = async (context, user, settingsId) => {
+  await delEditContext(user, settingsId);
+  const settings = await storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS);
+  return await notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
 };
 
-export const settingsEditContext = (context, user, settingsId, input) => {
-  setEditContext(user, settingsId, input);
-  return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+export const settingsEditContext = async (context, user, settingsId, input) => {
+  await setEditContext(user, settingsId, input);
+  const settings = await storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS);
+  return await notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
 };
 
 const ACCESS_SETTINGS_RESTRICTED_KEYS = [

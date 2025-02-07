@@ -76,6 +76,7 @@ module.exports = {
       }
     ],
     'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
+    '@typescript-eslint/no-floating-promises': ['error'],
   },
   overrides: [
     {
