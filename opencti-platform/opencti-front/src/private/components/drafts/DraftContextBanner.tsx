@@ -48,7 +48,6 @@ const DraftContextBanner = () => {
   const navigate = useNavigate();
   const draftContext = useDraftContext();
   const currentDraftContextName = draftContext?.name ?? '';
-  const currentDraftContextId = draftContext?.id ?? '';
 
   const handleExitDraft = () => {
     commitExitDraft({
@@ -77,10 +76,6 @@ const DraftContextBanner = () => {
     }
   };
 
-  const navigateToDraft = () => {
-    navigate(`/dashboard/drafts/${currentDraftContextId}`);
-  };
-
   return (
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
@@ -88,6 +83,16 @@ const DraftContextBanner = () => {
           <DraftBlock body={truncate(currentDraftContextName, 40)}/>
         </div>
         <div>
+          <Button
+            color="primary"
+            variant="outlined"
+            style={{ width: '100%' }}
+            onClick={handleExitDraft}
+          >
+            {t_i18n('Exit draft')}
+          </Button>
+        </div>
+        <div style={{ padding: '0 12px' }}>
           <Button
             variant="contained"
             color="primary"
@@ -120,26 +125,6 @@ const DraftContextBanner = () => {
               </Button>
             </DialogActions>
           </Dialog>
-        </div>
-        <div style={{ padding: '0 12px' }}>
-          <Button
-            variant="contained"
-            color="secondary"
-            style={{ width: '100%' }}
-            onClick={navigateToDraft}
-          >
-            {t_i18n('View draft')}
-          </Button>
-        </div>
-        <div>
-          <Button
-            color="primary"
-            variant="outlined"
-            style={{ width: '100%' }}
-            onClick={handleExitDraft}
-          >
-            {t_i18n('Exit draft')}
-          </Button>
         </div>
       </div>
     </div>

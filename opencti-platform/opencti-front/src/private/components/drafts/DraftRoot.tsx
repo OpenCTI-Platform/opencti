@@ -19,7 +19,6 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/utils';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
@@ -74,11 +73,6 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
 
   return (
     <>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
-        { label: draftWorkspace.name, current: true },
-      ]}
-      />
       <Box
         sx={{
           borderBottom: 1,
