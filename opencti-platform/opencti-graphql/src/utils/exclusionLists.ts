@@ -87,7 +87,7 @@ const binarySearchList = (exclusionListValues: string[], valueToCheck: string) =
     const midValue = exclusionListValues[mid];
 
     // If element is present at mid, return True
-    if (valueToCheck === midValue) {
+    if (valueToCheck.toLowerCase() === midValue.toLowerCase()) {
       return true;
     }
 
