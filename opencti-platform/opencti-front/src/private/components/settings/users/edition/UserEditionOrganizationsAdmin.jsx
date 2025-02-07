@@ -18,7 +18,6 @@ import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
@@ -101,14 +100,15 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
       {(user?.objectOrganization?.edges ?? []).map(({ node: organization }) => {
         const isAdmin = (organization.authorized_authorities ?? []).includes(user.id);
         return (
-          <ListItem key={organization.id} divider={true}>
+          <ListItem
+            key={organization.id}
+            divider={true}
+            secondaryAction={<Checkbox onChange={(event) => handleToggle(organization.id, event)} checked={isAdmin}/>}
+          >
             <ListItemIcon color="primary">
               <AccountBalanceOutlined />
             </ListItemIcon>
             <ListItemText primary={organization.name} secondary={organization.description ?? ''}/>
-            <ListItemSecondaryAction>
-              <Checkbox onChange={(event) => handleToggle(organization.id, event)} checked={isAdmin}/>
-            </ListItemSecondaryAction>
           </ListItem>
         );
       })}

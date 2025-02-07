@@ -92,10 +92,10 @@ ExternalReferenceDeletionProps
         </Button>
       </Security>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

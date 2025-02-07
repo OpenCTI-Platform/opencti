@@ -12,7 +12,6 @@ import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { Add, BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
@@ -407,9 +406,9 @@ const StixDomainObjectOverview = ({
         </Grid>
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={openStixIds}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleToggleOpenStixIds}
         fullWidth={true}
       >
@@ -418,9 +417,10 @@ const StixDomainObjectOverview = ({
           <List>
             {stixIds.map(
               (stixId) => stixId.length > 0 && (
-              <ListItem key={stixId} disableGutters={true} dense={true}>
-                <ListItemText primary={stixId} />
-                <ListItemSecondaryAction>
+              <ListItem
+                key={stixId}disableGutters={true}
+                dense={true}
+                secondaryAction={
                   <IconButton
                     edge="end"
                     aria-label="delete"
@@ -429,7 +429,9 @@ const StixDomainObjectOverview = ({
                   >
                     <Delete />
                   </IconButton>
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemText primary={stixId} />
               </ListItem>
               ),
             )}
@@ -451,9 +453,9 @@ const StixDomainObjectOverview = ({
       >
         {({ submitForm, handleReset }) => (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={openAddAssignee}
-            TransitionComponent={Transition}
+            slots={{ transition: Transition }}
             onClose={handleToggleAddAssignee}
             fullWidth={true}
           >
@@ -487,9 +489,9 @@ const StixDomainObjectOverview = ({
       >
         {({ submitForm }) => (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={openAddParticipant}
-            TransitionComponent={Transition}
+            slots={{ transition: Transition }}
             onClose={handleToggleAddParticipant}
             fullWidth={true}
           >

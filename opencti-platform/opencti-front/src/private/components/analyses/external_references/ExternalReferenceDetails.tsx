@@ -101,10 +101,10 @@ ExternalReferenceDetailsComponentProps
         </Grid>
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
         <DialogContent>

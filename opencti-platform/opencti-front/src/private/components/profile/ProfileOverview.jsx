@@ -287,7 +287,7 @@ const ProfileOverviewComponent = (props) => {
     <div className={classes.container}>
       <Dialog
         open={display2FA}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={false}
         onClose={() => setDisplay2FA(false)}
       >

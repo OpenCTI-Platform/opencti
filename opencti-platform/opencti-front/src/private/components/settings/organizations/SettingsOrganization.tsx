@@ -11,8 +11,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -181,11 +181,10 @@ const SettingsOrganization = ({
                   <FieldOrEmpty source={parentOrganizations}>
                     <List>
                       {parentOrganizations.map((parentOrganization) => (
-                        <ListItem
+                        <ListItemButton
                           key={parentOrganization.node.id}
                           dense={true}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
                         >
@@ -195,7 +194,7 @@ const SettingsOrganization = ({
                           <ListItemText
                             primary={parentOrganization.node.name}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </FieldOrEmpty>
@@ -207,11 +206,10 @@ const SettingsOrganization = ({
                   <FieldOrEmpty source={subOrganizations}>
                     <List>
                       {subOrganizations.map((subOrganization) => (
-                        <ListItem
+                        <ListItemButton
                           key={subOrganization.node.id}
                           dense={true}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
                         >
@@ -219,7 +217,7 @@ const SettingsOrganization = ({
                             <ItemIcon type="Organization" />
                           </ListItemIcon>
                           <ListItemText primary={subOrganization.node.name} />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </FieldOrEmpty>
@@ -233,30 +231,30 @@ const SettingsOrganization = ({
                       <ListItem
                         dense={true}
                         divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/workspaces/dashboards/${organization.default_dashboard?.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Dashboard" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(
-                            organization.default_dashboard?.name,
-                            40,
-                          )}
-                        />
-                        {!canAccessDashboard && (
-                          <ListItemSecondaryAction>
-                            <Tooltip
-                              title={t_i18n(
-                                'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
-                              )}
-                            >
-                              <WarningOutlined color="warning" />
-                            </Tooltip>
-                          </ListItemSecondaryAction>
+                        secondaryAction={!canAccessDashboard && (
+                          <Tooltip
+                            title={t_i18n(
+                              'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
+                            )}
+                          >
+                            <WarningOutlined color="warning" />
+                          </Tooltip>
                         )}
+                      >
+                        <ListItemButton
+                          component={Link}
+                          to={`/dashboard/workspaces/dashboards/${organization.default_dashboard?.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Dashboard" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={truncate(
+                              organization.default_dashboard?.name,
+                              40,
+                            )}
+                          />
+                        </ListItemButton>
                       </ListItem>
                     </List>
                   </FieldOrEmpty>
@@ -268,11 +266,10 @@ const SettingsOrganization = ({
                   <FieldOrEmpty source={organization.grantable_groups}>
                     <List>
                       {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
-                        <ListItem
+                        <ListItemButton
                           key={group.id}
                           dense={true}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/groups/${group.id}`}
                         >
@@ -294,7 +291,7 @@ const SettingsOrganization = ({
                                   <WarningOutlined color="warning" />
                                 </Tooltip>
                           )}
-                        </ListItem>
+                        </ListItemButton>
                       ) : (
                         <ListItem key={group.id} dense={true} divider={true}>
                           <ListItemIcon>

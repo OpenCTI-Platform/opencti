@@ -114,9 +114,9 @@ const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
         <Dialog
           open={displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>

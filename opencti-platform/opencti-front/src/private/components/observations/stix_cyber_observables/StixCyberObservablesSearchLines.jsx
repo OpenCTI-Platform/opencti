@@ -13,7 +13,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
@@ -114,28 +114,30 @@ class StixCyberObservablesContainer extends Component {
                 {stixCyberObservables[type].map((stixCyberObservable) => (
                   <ListItem
                     key={stixCyberObservable.id}
-                    classes={{ root: classes.menuItem }}
                     divider={true}
-                    button={true}
-                    component={Link}
-                    to={`/dashboard/observations/observables/${stixCyberObservable.id}`}
-                  >
-                    <ListItemIcon classes={{ root: classes.itemIcon }}>
-                      <ItemIcon type={type} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={truncate(
-                        stixCyberObservable.observable_value,
-                        100,
-                      )}
-                      secondary={truncate(stixCyberObservable.description, 150)}
-                    />
-                    <ListItemSecondaryAction>
+                    secondaryAction={
                       <StixCoreObjectLabels
                         labels={stixCyberObservable.objectLabel}
                         variant="inSearch"
                       />
-                    </ListItemSecondaryAction>
+                    }
+                  >
+                    <ListItemButton
+                      classes={{ root: classes.menuItem }}
+                      component={Link}
+                      to={`/dashboard/observations/observables/${stixCyberObservable.id}`}
+                    >
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <ItemIcon type={type} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={truncate(
+                          stixCyberObservable.observable_value,
+                          100,
+                        )}
+                        secondary={truncate(stixCyberObservable.description, 150)}
+                      />
+                    </ListItemButton>
                   </ListItem>
                 ))}
               </List>

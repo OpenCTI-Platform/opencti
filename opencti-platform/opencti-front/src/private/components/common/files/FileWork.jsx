@@ -210,9 +210,9 @@ const FileWorkComponent = (props) => {
         })}
       <Dialog
         open={displayDelete !== null}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setDisplayDelete(null)}
       >
         <DialogContent>
