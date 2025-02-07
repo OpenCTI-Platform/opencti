@@ -1,14 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
-import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -18,9 +12,10 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
-import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 export const externalReferencePopoverDeletionMutation = graphql`
   mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
@@ -53,8 +48,6 @@ ExternalReferencePopoverProps
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [commit] = useApiMutation(externalReferencePopoverDeletionMutation);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
@@ -71,15 +64,9 @@ ExternalReferencePopoverProps
   const handleCloseUpdate = () => {
     setDisplayEdit(false);
   };
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const deletion = useDeletion({ handleClose });
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commit({
       variables: {
         id,
@@ -96,10 +83,10 @@ ExternalReferencePopoverProps
         }
       },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
         if (handleRemove) {
-          handleCloseDelete();
+          deletion.handleCloseDelete();
         } else {
           navigate('/dashboard/analyses/external_references');
         }
@@ -142,7 +129,7 @@ ExternalReferencePopoverProps
               {t_i18n('Remove from this object')}
             </MenuItem>
           )}
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Menu>
         <QueryRenderer
           query={externalReferenceEditionQuery}
@@ -164,38 +151,14 @@ ExternalReferencePopoverProps
             return <div />;
           }}
         />
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={displayDelete}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this external reference?')}
-              {isExternalReferenceAttachment && (
-                <Alert
-                  severity="warning"
-                  variant="outlined"
-                  style={{ position: 'relative', marginTop: 20 }}
-                >
-                  {t_i18n(
-                    'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
-                  )}
-                </Alert>
-              )}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDelete} disabled={deleting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={isExternalReferenceAttachment ? t_i18n(
+            'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
+          ) : t_i18n('Do you want to delete this external reference?')}
+          isWarning={isExternalReferenceAttachment}
+        />
       </>
     );
 };
