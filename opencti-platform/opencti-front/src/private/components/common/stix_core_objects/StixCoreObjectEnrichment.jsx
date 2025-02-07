@@ -80,7 +80,7 @@ const StixCoreObjectEnrichment = (props) => {
       }
       {!isFABReplaced && (
         <Drawer
-          open={open || handleOpenEnrichment}
+          open={open || openDrawer}
           onClose={handleClose || handleCloseEnrichment}
           title={t('Enrichment connectors')}
         >

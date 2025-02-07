@@ -6778,12 +6778,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-scale@npm:*, @types/d3-scale@npm:4.0.8, @types/d3-scale@npm:^4.0.2":
+"@types/d3-scale@npm:*, @types/d3-scale@npm:^4.0.2":
   version: 4.0.8
   resolution: "@types/d3-scale@npm:4.0.8"
   dependencies:
     "@types/d3-time": "npm:*"
   checksum: 10/376e4f2199ee6db70906651587a4521976920fa5eaa847a976c434e7a8171cbfeeab515cc510c5130b1f64fcf95b9750a7fd21dfc0a40fc3398641aa7dd4e7e2
+  languageName: node
+  linkType: hard
+
+"@types/d3-scale@npm:4.0.9":
+  version: 4.0.9
+  resolution: "@types/d3-scale@npm:4.0.9"
+  dependencies:
+    "@types/d3-time": "npm:*"
+  checksum: 10/2cae90a5e39252ae51388f3909ffb7009178582990462838a4edd53dd7e2e08121b38f0d2e1ac0e28e41167e88dea5b99e064ca139ba917b900a8020cf85362f
   languageName: node
   linkType: hard
 
@@ -7085,12 +7094,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.17.14":
-  version: 20.17.14
-  resolution: "@types/node@npm:20.17.14"
+"@types/node@npm:20.17.17":
+  version: 20.17.17
+  resolution: "@types/node@npm:20.17.17"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10/517b8197d833782551bd01431321b83cc03655d7f3836c3e804f8d506eea6cc6f02768c8df078822c9583eeca4f059b7e0fd903e951587e6393bd35af22c37bb
+  checksum: 10/97319597fb277185df99271e20fc29f2bdd772090ffcd31a7aed6c5e59cd530352ed74674dd4bff9ed2950731e6309afef7c2a1a02331bdd15fda0022263585a
   languageName: node
   linkType: hard
 
@@ -10477,15 +10486,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.2.1":
-  version: 3.2.1
-  resolution: "dompurify@npm:3.2.1"
+"dompurify@npm:3.2.4":
+  version: 3.2.4
+  resolution: "dompurify@npm:3.2.4"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10/f5f906fadc5e92305ba4272ff60df77a803c0832f3f2ce941099f3dfe015cfb15db44e8623bd4ec1f2297a17bcdac90066c5cb0c5cf1059a09364d060c304ddb
+  checksum: 10/98570c53385518a2f9b617f796926338856acfdd3369c88b5905bddf96bd7d391bf8a5433127155e0046e6faa2bfb767185fcd571b865dfabe624c099e2537f5
   languageName: node
   linkType: hard
 
@@ -11928,10 +11937,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-icon@npm:0.11.0":
-  version: 0.11.0
-  resolution: "filigran-icon@npm:0.11.0"
-  checksum: 10/4a83c9d2514290219df2f5714a0567bfc58e2307cec79b0ca625dbd506487f64fd732b39712ead4d30b309c25b6d233fd4ff29456e16045b325dd07117e3b6e3
+"filigran-icon@npm:0.12.0":
+  version: 0.12.0
+  resolution: "filigran-icon@npm:0.12.0"
+  checksum: 10/c0dc4fbd4e5399f55ba3ab153f5fb055de1e6de71938dbc415f458991c806106fea8bc2000fff12aa7acbc7ae6d884429840a78a9ed562d582062a324083f3bc
   languageName: node
   linkType: hard
 
@@ -16539,9 +16548,9 @@ __metadata:
     "@testing-library/jest-dom": "npm:6.6.3"
     "@testing-library/react": "npm:16.2.0"
     "@testing-library/user-event": "npm:14.6.1"
-    "@types/d3-scale": "npm:4.0.8"
+    "@types/d3-scale": "npm:4.0.9"
     "@types/html-to-pdfmake": "npm:2.4.4"
-    "@types/node": "npm:20.17.14"
+    "@types/node": "npm:20.17.17"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.30.2"
     "@types/react": "npm:18.3.18"
@@ -16571,7 +16580,7 @@ __metadata:
     d3-timer: "npm:3.0.1"
     dagre: "npm:0.8.5"
     date-fns: "npm:3.6.0"
-    dompurify: "npm:3.2.1"
+    dompurify: "npm:3.2.4"
     esbuild: "npm:0.24.2"
     esbuild-jest: "npm:0.5.0"
     eslint: "npm:8.57.1"
@@ -16585,7 +16594,7 @@ __metadata:
     eslint-plugin-react: "npm:7.37.4"
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
-    filigran-icon: "npm:0.11.0"
+    filigran-icon: "npm:0.12.0"
     filigran-ui: "npm:0.29.2"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
