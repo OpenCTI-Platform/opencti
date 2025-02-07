@@ -135,10 +135,9 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
           );
           return (
             <div key={session.user.id}>
-              <ListItem
+              <ListItemButton
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/settings/accesses/users/${user.id}`}
               >
@@ -156,7 +155,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 <ListItemIcon classes={{ root: classes.goIcon }}>
                   &nbsp;
                 </ListItemIcon>
-              </ListItem>
+              </ListItemButton>
               <List style={{ margin: 0, padding: 0 }}>
                 {orderedSessions.map((userSession) => (
                   <ListItem
@@ -200,9 +199,9 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
       </List>
       <Dialog
         open={displayKillSession}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseKillSession}
       >
         <DialogContent>

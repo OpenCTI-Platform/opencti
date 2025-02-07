@@ -22,6 +22,7 @@ import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -223,12 +224,11 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                   if (externalReference.url) {
                     return (
                       <div key={externalReference.id}>
-                        <ListItem
+                        <ListItemButton
                           component={Link}
                           to={`/dashboard/analyses/external_references/${externalReference.id}`}
                           dense={true}
                           divider={true}
-                          button={true}
                         >
                           <ListItemIcon>
                             <ItemIcon type="External-Reference" />
@@ -279,7 +279,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                               />
                             </Security>
                           </ListItemSecondaryAction>
-                        </ListItem>
+                        </ListItemButton>
                         {externalReference.importFiles.edges.length > 0 && (
                           <List>
                             {externalReference.importFiles.edges.map((file) => file?.node && (
@@ -298,12 +298,11 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                   }
                   return (
                     <div key={externalReference.id}>
-                      <ListItem
+                      <ListItemButton
                         component={Link}
                         to={`/dashboard/analyses/external_references/${externalReference.id}`}
                         dense={true}
                         divider={true}
-                        button={true}
                       >
                         <ListItemIcon>
                           <ItemIcon type="External-Reference" />
@@ -335,7 +334,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                             />
                           </Security>
                         </ListItemSecondaryAction>
-                      </ListItem>
+                      </ListItemButton>
                       {externalReference.importFiles.edges.length > 0 && (
                         <List>
                           {externalReference.importFiles.edges.map((file) => file?.node && (
@@ -384,9 +383,9 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
         </Paper>
         <Dialog
           open={this.state.displayDialog}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
@@ -412,9 +411,9 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
         </Dialog>
         <Dialog
           open={this.state.displayExternalLink}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>

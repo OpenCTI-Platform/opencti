@@ -39,13 +39,13 @@ const FintelTemplateWidgetAttribute = ({
     <ListItem
       key={variableName}
       value={variableName}
-      sx={{
+      sx={(theme) => ({
         borderBottom: `1px solid ${theme.palette.divider}`,
         paddingRight: 1,
         gap: 0,
         flexDirection: 'column',
         alignItems: 'stretch',
-      }}
+      })}
     >
       <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
         <Tooltip title={widget.type}>

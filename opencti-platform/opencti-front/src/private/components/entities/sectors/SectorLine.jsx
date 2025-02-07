@@ -60,10 +60,9 @@ class SectorLineComponent extends Component {
     const { classes, subSectors, node, isSubSector, t } = this.props;
     return (
       <div>
-        <ListItem
+        <ListItemButton
           classes={{ root: isSubSector ? classes.itemNested : classes.item }}
           divider={true}
-          button={true}
           component={Link}
           to={`/dashboard/entities/sectors/${node.id}`}
         >
@@ -88,7 +87,7 @@ class SectorLineComponent extends Component {
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
-        </ListItem>
+        </ListItemButton>
         {subSectors && subSectors.length > 0 && (
           <List style={{ margin: 0, padding: 0 }}>
             {map(

@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -13,6 +12,7 @@ import Collapse from '@mui/material/Collapse';
 import { Launch } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { createRefetchContainer, graphql } from 'react-relay';
+import { ListItemButton } from '@mui/material';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -115,8 +115,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
           <List id="test">
             {stixRelationships.map((stixRelationship) => (
               <div key={stixRelationship.id}>
-                <ListItem
-                  button={true}
+                <ListItemButton
                   divider={true}
                   onClick={this.handleToggleLine.bind(
                     this,
@@ -144,7 +143,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         )}
                     </IconButton>
                   </ListItemSecondaryAction>
-                </ListItem>
+                </ListItemButton>
                 <Collapse
                   in={this.state.expandedLines[stixRelationship.id] !== false}
                 >
@@ -155,11 +154,10 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         const restricted = entityToDisplay === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
                         return (
-                          <ListItem
+                          <ListItemButton
                             key={stixDomainObject.id}
                             classes={{ root: classes.nested }}
                             divider={true}
-                            button={true}
                             dense={true}
                             component={Link}
                             to={link}
@@ -223,7 +221,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 onDelete={this.props.relay.refetch.bind(this)}
                               />
                             </ListItemSecondaryAction>
-                          </ListItem>
+                          </ListItemButton>
                         );
                       },
                     )}

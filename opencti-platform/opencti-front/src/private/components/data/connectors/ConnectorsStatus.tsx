@@ -21,6 +21,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -286,10 +287,10 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={!!connectorIdToReset}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
       >
         <DialogContent>
@@ -374,11 +375,10 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             </ListItem>
 
             {sortedConnectors && sortedConnectors.map((connector) => (
-              <ListItem
+              <ListItemButton
                 key={connector.id}
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/data/ingestion/connectors/${connector.id}`}
               >
@@ -468,7 +468,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     </>
                   </Security>
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
             ))}
           </List>
         </CardContent>

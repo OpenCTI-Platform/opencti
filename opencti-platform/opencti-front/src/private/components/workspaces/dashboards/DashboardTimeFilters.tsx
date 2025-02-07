@@ -9,6 +9,7 @@ import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
+import { buildDate } from '../../../../utils/Time';
 
 interface DashboardTimeFiltersProps {
   workspace: Dashboard_workspace$data
@@ -59,11 +60,11 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           </Select>
         </FormControl>
         <DatePicker
-          value={config.startDate ?? null}
+          value={buildDate(config.startDate)}
           label={t_i18n('Start date')}
           disableFuture={true}
           disabled={!!config.relativeDate}
-          onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
+          onChange={(value, context) => !context.validationError && handleDateChange('startDate', value?.toString() ?? null)}
           slotProps={{
             textField: {
               style: { marginRight: 8 },
@@ -73,11 +74,11 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           }}
         />
         <DatePicker
-          value={config.endDate ?? null}
+          value={buildDate(config.endDate)}
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
           disableFuture={true}
-          onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
+          onChange={(value, context) => !context.validationError && handleDateChange('endDate', value?.toString() ?? null)}
           slotProps={{
             textField: {
               variant: 'outlined',

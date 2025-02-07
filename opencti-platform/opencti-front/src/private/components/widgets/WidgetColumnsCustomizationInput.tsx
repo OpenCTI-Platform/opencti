@@ -62,13 +62,16 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
       <AccordionSummary>
         <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
-
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4">{`${t_i18n('Available columns')} (${availableColumns.length})`}</Typography>
-            <List sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: `${theme.borderRadius}px` }}>
+            <List sx={{
+              border: `1px solid ${theme.palette.common.white}`,
+              borderRadius: `${theme.borderRadius}px`,
+            }}
+            >
               {availableColumns.map((column) => (
                 <ListItem
                   disablePadding

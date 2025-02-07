@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
@@ -24,11 +23,10 @@ class SectorParentSectorsComponent extends Component {
           {sector.parentSectors.edges.map((parentSectorEdge) => {
             const parentSector = parentSectorEdge.node;
             return (
-              <ListItem
+              <ListItemButton
                 key={parentSector.id}
                 dense={true}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/entities/sectors/${parentSector.id}`}
               >
@@ -39,7 +37,7 @@ class SectorParentSectorsComponent extends Component {
                   primary={parentSector.name}
                   secondary={truncate(parentSector.description, 50)}
                 />
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

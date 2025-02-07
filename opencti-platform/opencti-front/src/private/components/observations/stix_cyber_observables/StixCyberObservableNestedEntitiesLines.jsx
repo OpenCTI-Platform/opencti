@@ -9,6 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { interval } from 'rxjs';
+import { ListItemButton } from '@mui/material';
 import { DraftChip } from '../../common/draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -83,11 +84,10 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                 stixCoreObject.id
               }`;
               return (
-                <ListItem
+                <ListItemButton
                   key={stixCoreObject.id}
                   classes={{ root: classes.item }}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={link}
                 >
@@ -147,7 +147,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                       paginationOptions={paginationOptions}
                     />
                   </ListItemSecondaryAction>
-                </ListItem>
+                </ListItemButton>
               );
             },
           )}

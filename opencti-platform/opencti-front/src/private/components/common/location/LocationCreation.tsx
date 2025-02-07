@@ -256,7 +256,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
         >
           <Add />
         </Fab>
-        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Add a location')}</DialogTitle>
           <DialogContent>
             <LocationCreationForm

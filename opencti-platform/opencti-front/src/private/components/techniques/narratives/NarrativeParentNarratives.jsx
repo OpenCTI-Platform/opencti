@@ -24,11 +24,10 @@ class NarrativeParentNarrativesComponent extends Component {
           {narrative.parentNarratives.edges.map((parentNarrativeEdge) => {
             const parentNarrative = parentNarrativeEdge.node;
             return (
-              <ListItem
+              <ListItemButton
                 key={parentNarrative.id}
                 dense={true}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/techniques/narratives/${parentNarrative.id}`}
               >
@@ -39,7 +38,7 @@ class NarrativeParentNarrativesComponent extends Component {
                   primary={parentNarrative.name}
                   secondary={truncate(parentNarrative.description, 50)}
                 />
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

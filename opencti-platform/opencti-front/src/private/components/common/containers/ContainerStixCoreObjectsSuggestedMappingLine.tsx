@@ -16,6 +16,7 @@ import {
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import { Theme } from '@mui/material/styles/createTheme';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
@@ -104,10 +105,9 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
   const mappedEntityData = useFragment(ContainerStixCoreObjectsSuggestedMappingFragment, node);
   const { matchedString, matchedEntity } = mappedEntityData;
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
     >
@@ -183,7 +183,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
           <CloseOutlined/>
         </IconButton>
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

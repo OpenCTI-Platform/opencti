@@ -200,7 +200,7 @@ class LabelCreation extends Component {
             <Form>
               <Dialog
                 open={open}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 onClose={handleClose.bind(this)}
                 fullWidth={true}
               >

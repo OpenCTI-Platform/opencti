@@ -65,11 +65,10 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
               stixCoreObject.id
             }`;
             return (
-              <ListItem
+              <ListItemButton
                 key={stixCoreObject.id}
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}
                 component={Link}
                 to={link}
               >
@@ -116,7 +115,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                     paginationOptions={paginationOptions}
                   />
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
             );
           })}
       </div>

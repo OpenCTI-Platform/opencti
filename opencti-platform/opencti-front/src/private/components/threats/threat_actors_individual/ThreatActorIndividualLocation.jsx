@@ -22,6 +22,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import {ListItemButton} from "@mui/material";
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -76,11 +77,10 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   ),
                 );
               return (
-                <ListItem
+                <ListItemButton
                   key={location.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`${link}/${location.id}`}
                 >
@@ -109,7 +109,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                       </Security>
                     </ListItemSecondaryAction>
                   ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
-                </ListItem>
+                </ListItemButton>
               );
             })}
           </List>

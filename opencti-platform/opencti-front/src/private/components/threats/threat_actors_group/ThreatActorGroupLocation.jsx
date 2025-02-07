@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
@@ -13,6 +12,7 @@ import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
+import { ListItemButton } from '@mui/material';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -74,11 +74,10 @@ class ThreatActorGroupLocationsComponent extends Component {
                 ),
               );
               return (
-                <ListItem
+                <ListItemButton
                   key={location.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`${link}/${location.id}`}
                 >
@@ -109,7 +108,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                       </Security>
                     </ListItemSecondaryAction>
                   ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
-                </ListItem>
+                </ListItemButton>
               );
             })}
           </List>

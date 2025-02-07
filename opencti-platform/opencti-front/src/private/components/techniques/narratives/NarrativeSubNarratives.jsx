@@ -11,6 +11,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { SpeakerNotesOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
+import { ListItemButton } from '@mui/material';
 import AddSubNarrative from './AddSubNarrative';
 import { addSubNarrativesMutationRelationDelete } from './AddSubNarrativesLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -59,11 +60,10 @@ class NarrativeSubNarrativesComponent extends Component {
           {narrative.subNarratives.edges.map((subNarrativeEdge) => {
             const subNarrative = subNarrativeEdge.node;
             return (
-              <ListItem
+              <ListItemButton
                 key={subNarrative.id}
                 dense={true}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/techniques/narratives/${subNarrative.id}`}
               >
@@ -83,7 +83,7 @@ class NarrativeSubNarrativesComponent extends Component {
                     <LinkOff />
                   </IconButton>
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

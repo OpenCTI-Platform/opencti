@@ -19,6 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import {ListItemButton} from "@mui/material";
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -83,10 +84,9 @@ class TaxiiLineLineComponent extends Component {
     const { classes, node, dataColumns, paginationOptions } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component="a"
         href={`/taxii2/root/collections/${node.id}/objects`}
         target={'_blank'} // open in new tab
@@ -138,7 +138,7 @@ class TaxiiLineLineComponent extends Component {
             />
           </Security>
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }

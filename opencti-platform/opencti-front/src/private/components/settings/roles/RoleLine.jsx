@@ -49,10 +49,9 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
   const { isSensitive } = useSensitiveModifications('roles', node.standard_id);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/roles/${node.id}`}
     >
@@ -118,7 +117,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

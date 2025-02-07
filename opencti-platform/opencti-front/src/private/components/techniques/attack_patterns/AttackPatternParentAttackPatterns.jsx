@@ -24,11 +24,10 @@ class AttackPatternParentAttackPatternsComponent extends Component {
             (parentAttackPatternEdge) => {
               const parentAttackPattern = parentAttackPatternEdge.node;
               return (
-                <ListItem
+                <ListItemButton
                   key={parentAttackPattern.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/attack_patterns/${parentAttackPattern.id}`}
                 >
@@ -38,7 +37,7 @@ class AttackPatternParentAttackPatternsComponent extends Component {
                   <ListItemText
                     primary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
                   />
-                </ListItem>
+                </ListItemButton>
               );
             },
           )}

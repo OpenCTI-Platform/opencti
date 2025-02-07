@@ -5,7 +5,6 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -14,6 +13,7 @@ import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -81,11 +81,10 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                   remoteNode.id
                 }`;
                 return (
-                  <ListItem
+                  <ListItemButton
                     key={stixCoreRelationship.id}
                     dense={true}
                     divider={true}
-                    button={true}
                     component={Link}
                     to={link}
                   >
@@ -126,7 +125,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                         />
                       )}
                     </ListItemSecondaryAction>
-                  </ListItem>
+                  </ListItemButton>
                 );
               },
             )}

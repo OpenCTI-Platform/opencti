@@ -332,11 +332,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
-            InputProps={{
-              ...paramsInput.InputProps,
-              endAdornment: isStixObjectTypes.includes(fKey)
-                ? renderSearchScopeSelection(fKey)
-                : paramsInput.InputProps.endAdornment,
+            slotProps={{
+              input: {
+                ...paramsInput.InputProps,
+                endAdornment: isStixObjectTypes.includes(fKey)
+                  ? renderSearchScopeSelection(fKey)
+                  : paramsInput.InputProps.endAdornment,
+              },
             }}
             label={t_i18n(fLabel)}
             variant="outlined"
@@ -455,7 +457,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      PaperProps={{ elevation: 1, style: { marginTop: 10 } }}
+      slotProps={{ paper: { elevation: 1, style: { marginTop: 10 } } }}
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
         ? <div

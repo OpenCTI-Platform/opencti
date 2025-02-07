@@ -14,6 +14,7 @@ import {
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
 import { useRefetchableFragment } from 'react-relay';
 import { stixCoreObjectTriggersUtils_triggers$key as FragmentKey } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtils_triggers.graphql';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -84,11 +85,10 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
             {triggersKnowledge?.edges.map((triggerEdge) => (
               <React.Fragment key={triggerEdge.node.id}>
                 {triggerEdge.node.recipients?.map((recipient) => (
-                  <ListItem
+                  <ListItemButton
                     classes={{ root: classes.item }}
                     key={recipient.id}
                     divider={true}
-                    button={true}
                     component={Link}
                     to={`${computeLink(recipient)}`}
                   >
@@ -99,7 +99,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
                     <ListItemIcon classes={{ root: classes.goIcon }}>
                       <KeyboardArrowRightOutlined />
                     </ListItemIcon>
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </React.Fragment>
             ))}

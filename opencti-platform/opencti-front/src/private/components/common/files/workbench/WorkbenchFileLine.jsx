@@ -25,6 +25,7 @@ import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
+import {ListItemButton} from "@mui/material";
 
 const styles = (theme) => ({
   itemNested: {
@@ -165,11 +166,10 @@ class WorkbenchFileLineComponent extends Component {
     const isOutdated = uploadStatus === 'timeout';
     return (
       <>
-        <ListItem
+        <ListItemButton
           divider={true}
           dense={dense === true}
           classes={{ root: nested ? classes.itemNested : classes.item }}
-          button={true}
           component={isOutdated ? null : Link}
           disabled={isProgress}
           to={`/dashboard/data/import/pending/${toB64(file.id)}`}
@@ -257,12 +257,12 @@ class WorkbenchFileLineComponent extends Component {
               </span>
             </Tooltip>
           </ListItemSecondaryAction>
-        </ListItem>
+        </ListItemButton>
         <FileWork file={file} />
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={displayDelete}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
