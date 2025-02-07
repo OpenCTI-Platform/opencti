@@ -137,7 +137,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
       <DeleteDialog
         deletion={deletion}
         submitDelete={onDelete}
-        message={t_i18n('Are you sure you want to delete this public dashboard?')}
+        message={t_i18n('Do you want to delete this public dashboard?')}
       />
     </>
   );

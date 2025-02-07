@@ -84,7 +84,7 @@ const SettingsMessagesPopover = ({
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this message ?')}
+        message={t_i18n('Do you want to delete this message?')}
       />
     </div>
   );
