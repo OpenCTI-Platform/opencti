@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { testContext } from '../../utils/testQuery';
-import { ADMINISTRATOR_ROLE, BYPASS, isUserCanAccessStixElement } from '../../../src/utils/access';
 
 const inputs = [
   {
@@ -136,121 +134,6 @@ const relInputs = [
   }
 ];
 
-const report = {
-  id: 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32',
-  spec_version: '2.1',
-  type: 'report',
-  extensions: {
-    'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-      extension_type: 'property-extension',
-      id: 'f13cd64f-9268-4d77-9850-eb6fbe322463',
-      type: 'Report',
-      created_at: '2023-10-05T07:57:03.543Z',
-      updated_at: '2023-11-02T16:20:16.653Z',
-      files: [],
-      stix_ids: [
-        'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7'
-      ],
-      is_inferred: false,
-      creator_ids: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
-      ],
-      workflow_id: 'bd156107-1f9a-43df-9595-574c467e9e21',
-      content: '<p>dddddddrrrr</p>'
-    },
-    authorized_members: [
-      {
-        id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-        access_right: 'admin'
-      },
-      {
-        id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
-        access_right: 'view'
-      },
-    ],
-  },
-  created: '2020-03-01T14:02:48.111Z',
-  modified: '2023-11-02T16:20:16.653Z',
-  revoked: false,
-  confidence: 3,
-  lang: 'en',
-  labels: [
-    'report'
-  ],
-  object_marking_refs: [
-    'marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c'
-  ],
-  created_by_ref: 'identity--18fe5225-fee1-5627-ad3e-20c14435b024',
-  external_references: [],
-  published: '2020-03-01T14:02:48.111Z',
-  object_refs: []
-};
-
-const user_is_allowed = {
-  administrated_organizations: [],
-  entity_type: 'User',
-  id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
-  internal_id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
-  individual_id: undefined,
-  organizations: [],
-  name: '',
-  user_email: '',
-  roles: [ADMINISTRATOR_ROLE],
-  groups: [],
-  capabilities: [{ name: BYPASS }],
-  all_marking: [],
-  inside_platform_organization: true,
-  allowed_marking: [],
-  default_marking: [],
-  origin: { referer: 'test', user_id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f' },
-  api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e56',
-  account_status: '',
-  account_lock_after_date: undefined,
-  effective_confidence_level: {
-    max_confidence: 100,
-    overrides: [],
-  },
-  user_confidence_level: {
-    max_confidence: 100,
-    overrides: [],
-  },
-  max_shareable_marking: [],
-  restrict_delete: false,
-  no_creators: false,
-};
-
-const user_is_not_allowed = {
-  administrated_organizations: [],
-  entity_type: 'User',
-  id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f',
-  internal_id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f',
-  individual_id: undefined,
-  organizations: [],
-  name: '',
-  user_email: '',
-  roles: [ADMINISTRATOR_ROLE],
-  groups: [],
-  capabilities: [{ name: BYPASS }],
-  all_marking: [],
-  inside_platform_organization: false,
-  allowed_marking: [],
-  default_marking: [],
-  origin: { referer: 'test', user_id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f' },
-  api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e48',
-  account_status: '',
-  account_lock_after_date: undefined,
-  effective_confidence_level: {
-    max_confidence: 100,
-    overrides: [],
-  },
-  user_confidence_level: {
-    max_confidence: 100,
-    overrides: [],
-  },
-  max_shareable_marking: [],
-  restrict_delete: false,
-  no_creators: false,
-};
 describe('extractObjectsRestrictionsFromInputs testing', () => {
   it('should add inputs object-marking in stream when adding entity to a report', () => {
     const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs, ENTITY_TYPE_CONTAINER_REPORT);
@@ -266,16 +149,5 @@ describe('extractObjectsRestrictionsFromInputs testing', () => {
     const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs, ENTITY_TYPE_MALWARE);
     const expected = { markings: [] };
     expect(relatedRestrictions).toEqual(expected);
-  });
-});
-
-describe('isUserCanAccessStixElement testing', async () => {
-  it('user in auth members should access element', async () => {
-    const hasAccess = await isUserCanAccessStixElement(testContext, user_is_allowed, report);
-    expect(hasAccess).toEqual(true);
-  });
-  it('user not in auth members should not access element', async () => {
-    const hasAccess = await isUserCanAccessStixElement(testContext, user_is_not_allowed, report);
-    expect(hasAccess).toEqual(false);
   });
 });

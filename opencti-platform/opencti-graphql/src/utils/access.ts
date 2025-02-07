@@ -455,12 +455,12 @@ const isEntityOrganizationsAllowed = (
   entityInternalId: string,
   entityOrganizations: string[],
   user: AuthUser,
-  settings: BasicStoreSettings,
+  hasPlatformOrg: boolean,
   opts: { useStandardId?: boolean } = {}
 ) => {
   const { useStandardId = false } = opts;
   // If platform organization is set
-  if (settings.platform_organization) {
+  if (hasPlatformOrg) {
     const userOrganizations = user.organizations.map((o) => (useStandardId ? o.standard_id : o.internal_id));
 
     // If user part of platform organization, is granted by default
@@ -479,9 +479,10 @@ const isEntityOrganizationsAllowed = (
   return true;
 };
 
-export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, settings: BasicStoreSettings) => {
+export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, platformOrganization: string) => {
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-  return isEntityOrganizationsAllowed(element.internal_id, elementOrganizations, user, settings);
+  const hasPlatformOrg = !!platformOrganization;
+  return isEntityOrganizationsAllowed(element.internal_id, elementOrganizations, user, hasPlatformOrg);
 };
 
 const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
@@ -511,7 +512,7 @@ export const canRequestAccess = async (context: AuthContext, user: AuthUser, ele
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const elementsThatRequiresAccess: Array<BasicStoreCommon> = [];
   for (let i = 0; i < elements.length; i += 1) {
-    if (!isOrganizationAllowed(elements[i], user, settings)) {
+    if (!isOrganizationAllowed(elements[i], user, settings.platform_organization)) {
       elementsThatRequiresAccess.push(elements[i]);
     }
     // TODO before removing ORGA_SHARING_REQUEST_FF: When it's ready check Authorized members
@@ -544,7 +545,7 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
       }
       // Check restricted elements
       // either allowed by orga sharing or has authorized members access if authorized_members are defined (bypass orga sharing)
-      return isOrganizationAllowed(element, user, settings)
+      return isOrganizationAllowed(element, user, settings.platform_organization)
         || (element.authorized_members && element.authorized_members.length > 0 && hasAuthorizedMemberAccess(user, element));
     });
   };
@@ -559,7 +560,7 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
-export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
+export const checkUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return true;
@@ -586,11 +587,16 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
     return true;
   }
   // Check restricted elements
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const organizationAllowed = isEntityOrganizationsAllowed(instance.id, elementOrganizations, user, settings, { useStandardId: true });
+  const organizationAllowed = isEntityOrganizationsAllowed(instance.id, elementOrganizations, user, hasPlatformOrg, { useStandardId: true });
   // either allowed by organization or authorized members
   return organizationAllowed || (authorized_members.length > 0 && authorizedMemberAllowed);
+};
+
+export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
+  return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
 };
 // end region
 
