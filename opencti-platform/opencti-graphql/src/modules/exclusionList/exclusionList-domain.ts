@@ -8,7 +8,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
 import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { generateInternalId } from '../../schema/identifier';
