@@ -35,7 +35,7 @@ import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { nowUTC } from '../../../utils/Time';
+import { buildDate, nowUTC } from '../../../utils/Time';
 import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
@@ -255,14 +255,14 @@ const WorkspaceHeader = ({
                 </Select>
               </FormControl>
               <DatePicker
-                value={R.propOr(null, 'startDate', config)}
+                value={buildDate(R.propOr(null, 'startDate', config))}
                 disableToolbar={true}
                 autoOk={true}
                 label={t_i18n('Start date')}
                 clearable={true}
                 disableFuture={true}
                 disabled={!!relativeDate}
-                onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
+                onChange={(value, context) => !context.validationError && handleDateChange('startDate', value.toString())}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
@@ -272,13 +272,13 @@ const WorkspaceHeader = ({
                 }}
               />
               <DatePicker
-                value={R.propOr(null, 'endDate', config)}
+                value={buildDate(R.propOr(null, 'endDate', config))}
                 autoOk={true}
                 label={t_i18n('End date')}
                 clearable={true}
                 disabled={!!relativeDate}
                 disableFuture={true}
-                onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
+                onChange={(value, context) => !context.validationError && handleDateChange('endDate', value.toString())}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
