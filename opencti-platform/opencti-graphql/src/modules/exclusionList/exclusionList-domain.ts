@@ -8,7 +8,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
 import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
-import { FunctionalError } from '../../config/errors';
+import { UnsupportedError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { generateInternalId } from '../../schema/identifier';
@@ -78,7 +78,7 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   const { byteLength, linesNumber } = await checkFileSize(fullFile.createReadStream);
   const mimeType = guessMimeType(fullFile.filename);
   if (mimeType !== 'text/plain') {
-    throw FunctionalError('Exclusion list file type is incorrect', { mimeType });
+    throw UnsupportedError('Exclusion list file format must be text/plain', { mimeType });
   }
   const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
