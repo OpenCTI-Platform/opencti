@@ -35,7 +35,6 @@ interface CsvMapperCreationFormProps {
   paginationOptions: csvMappers_MappersQuery$variables
   isDuplicated?: boolean
   onClose?: () => void
-  open: boolean
   mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key | null,
 }
 

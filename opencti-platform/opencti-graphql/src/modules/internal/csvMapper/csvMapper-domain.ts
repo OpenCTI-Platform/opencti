@@ -1,3 +1,4 @@
+import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import { type BasicStoreEntityCsvMapper, type CsvMapperRepresentation, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
@@ -27,6 +28,7 @@ import { FunctionalError } from '../../../config/errors';
 import { parseReadableToLines } from '../../../parser/csv-parser';
 import type { FileUploadData } from '../../../database/file-storage-helper';
 import pjson from '../../../../package.json';
+import { extractContentFrom } from '../../../utils/fileToContent';
 
 // -- UTILS --
 
@@ -108,8 +110,8 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
     representations,
     skipLineChar,
   } = csvMapper;
-  const resolvedRepresentations: CsvMapperRepresentation[] = JSON.parse(representations);
-  await convertRepresentationsIds(context, user, resolvedRepresentations);
+  const parsedRepresentations: CsvMapperRepresentation[] = JSON.parse(representations);
+  await convertRepresentationsIds(context, user, parsedRepresentations, 'internal');
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'csvMapper',
@@ -117,10 +119,24 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
       name,
       has_header,
       separator,
-      representations,
+      representations: parsedRepresentations,
       skipLineChar,
     }
   });
+};
+
+export const csvMapperConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+  // TODO check platform version
+
+  const representations = parsedData.configuration.representations as CsvMapperRepresentation[];
+  await convertRepresentationsIds(context, user, representations, 'stix');
+
+  const input = {
+    ...parsedData.configuration,
+    representations: JSON.stringify(representations),
+  };
+  return createCsvMapper(context, user, input);
 };
 
 // -- Schema

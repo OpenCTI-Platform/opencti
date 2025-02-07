@@ -30,14 +30,12 @@ const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({
       title={isDuplicated ? t_i18n('Duplicate a CSV mapper') : t_i18n('Create a CSV mapper')}
       open={open}
       onClose={onClose}
-      variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
     >
       <CsvMapperCreation
         mappingCsv={mappingCsv}
         paginationOptions={paginationOptions}
         onClose={onClose}
         isDuplicated={isDuplicated}
-        open={open}
       />
     </Drawer>
   );

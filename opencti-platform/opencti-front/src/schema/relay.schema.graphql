@@ -9003,6 +9003,7 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  csvMapperConfigurationImport(file: Upload!): CsvMapper
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard

@@ -13670,6 +13670,7 @@ export type Mutation = {
   courseOfActionAdd?: Maybe<CourseOfAction>;
   courseOfActionEdit?: Maybe<CourseOfActionEditMutations>;
   csvMapperAdd?: Maybe<CsvMapper>;
+  csvMapperConfigurationImport?: Maybe<CsvMapper>;
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
@@ -14321,6 +14322,11 @@ export type MutationCourseOfActionEditArgs = {
 
 export type MutationCsvMapperAddArgs = {
   input: CsvMapperAddInput;
+};
+
+
+export type MutationCsvMapperConfigurationImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -37533,6 +37539,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   courseOfActionAdd?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<MutationCourseOfActionAddArgs, 'input'>>;
   courseOfActionEdit?: Resolver<Maybe<ResolversTypes['CourseOfActionEditMutations']>, ParentType, ContextType, RequireFields<MutationCourseOfActionEditArgs, 'id'>>;
   csvMapperAdd?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperAddArgs, 'input'>>;
+  csvMapperConfigurationImport?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperConfigurationImportArgs, 'file'>>;
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
