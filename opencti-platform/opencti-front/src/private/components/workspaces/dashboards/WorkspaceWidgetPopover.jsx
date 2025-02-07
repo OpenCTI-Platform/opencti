@@ -87,9 +87,9 @@ const WorkspaceWidgetPopover = ({
       </Menu>
       <Dialog
         open={displayDelete}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setDisplayDelete(false)}
         className="noDrag"
       >
@@ -107,9 +107,9 @@ const WorkspaceWidgetPopover = ({
       </Dialog>
       <Dialog
         open={displayDuplicate}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setDisplayDuplicate(false)}
         className="noDrag"
       >

@@ -461,18 +461,22 @@ const LeftBar = () => {
       classes={{
         paper: navOpen ? classes.drawerPaperOpen : classes.drawerPaper,
       }}
-      sx={{
-        width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+      sx={[{
         zIndex: 2,
         background: theme.palette.background.nav,
         position: 'sticky',
         top: 0,
         height: '100vh',
+
         transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.easeInOut,
           duration: theme.transitions.duration.enteringScreen,
         }),
-      }}
+      }, navOpen ? {
+        width: OPEN_BAR_WIDTH,
+      } : {
+        width: SMALL_BAR_WIDTH,
+      }]}
     >
       <div ref={ref} aria-label="Main navigation">
         <MenuList

@@ -5,7 +5,6 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import { RssBox } from 'mdi-material-ui';
 import { compose } from 'ramda';
@@ -70,7 +69,19 @@ class IngestionRssLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t, nsdt } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionRssPopover
+              ingestionRssId={node.id}
+              paginationOptions={paginationOptions}
+              running={node.ingestion_running}
+            />
+          </Security>
+        }
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <RssBox />
         </ListItemIcon>
@@ -114,15 +125,6 @@ class IngestionRssLineLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <Security needs={[INGESTION_SETINGESTIONS]}>
-            <IngestionRssPopover
-              ingestionRssId={node.id}
-              paginationOptions={paginationOptions}
-              running={node.ingestion_running}
-            />
-          </Security>
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }
@@ -162,7 +164,11 @@ class IngestionRssDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"
@@ -232,9 +238,6 @@ class IngestionRssDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

@@ -9,7 +9,6 @@ import { Add, ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -392,6 +391,9 @@ const ImportContentComponent = ({
                   classes={{ root: classes.itemHead }}
                   divider={false}
                   style={{ paddingTop: 0 }}
+                  secondaryAction={
+                    <div style={{ width: 96 }}> &nbsp; </div>
+                  }
                 >
                   <ListItemIcon>
                     <span
@@ -415,7 +417,6 @@ const ImportContentComponent = ({
                       </div>
                       }
                   />
-                  <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
                 </ListItem>
                 {pendingFilesEdges.map((file) => (
                   <WorkbenchFileLine
@@ -442,7 +443,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToImport}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={() => handleReset()}
                 fullWidth={true}
@@ -560,7 +561,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToValidate}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={handleCloseValidate}
                 fullWidth={true}

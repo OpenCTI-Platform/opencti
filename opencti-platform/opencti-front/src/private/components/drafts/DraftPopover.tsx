@@ -159,9 +159,9 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         </Menu>
         <Dialog
           open={openDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>
@@ -178,8 +178,8 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         </Dialog>
         <Dialog
           open={openSwitch}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
           onClose={handleCloseSwitch}
           fullWidth={true}
           maxWidth="xs"
