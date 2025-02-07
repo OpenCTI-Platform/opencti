@@ -5,6 +5,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
+import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -62,6 +63,16 @@ const IncidentKnowledge = ({
               stixDomainObjectName={incident.name}
               stixDomainObjectType="Incident"
               displayObservablesStats={true}
+            />
+          )}
+        />
+        <Route
+          path="/all"
+          element={ (
+            <StixCoreObjects
+              entityId={incident.id}
+              stixDomainObjectName={incident.name}
+              stixDomainObjectType="Incident"
             />
           )}
         />

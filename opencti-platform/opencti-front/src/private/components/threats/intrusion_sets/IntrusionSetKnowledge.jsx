@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import StixCoreObjects from '@components/common/stix_core_objects/StixCoreObjects';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -42,6 +43,16 @@ class IntrusionSetKnowledgeComponent extends Component {
             element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={intrusionSet.id}
+                stixDomainObjectName={intrusionSet.name}
+                stixDomainObjectType="Intrusion-Set"
+              />
+            }
+          />
+          <Route
+            path="/all"
+            element={
+              <StixCoreObjects
+                entityId={intrusionSet.id}
                 stixDomainObjectName={intrusionSet.name}
                 stixDomainObjectType="Intrusion-Set"
               />

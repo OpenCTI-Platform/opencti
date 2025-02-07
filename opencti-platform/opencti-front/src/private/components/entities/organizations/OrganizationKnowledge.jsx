@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -46,6 +47,15 @@ class OrganizationKnowledgeComponent extends Component {
             />
           ))
             }
+        />
+        <Route
+          path="/all"
+          element={
+            <StixCoreObjects
+              entityId={organization.id}
+              stixDomainObjectType="Organization"
+            />
+          }
         />
         <Route
           path="/threats"

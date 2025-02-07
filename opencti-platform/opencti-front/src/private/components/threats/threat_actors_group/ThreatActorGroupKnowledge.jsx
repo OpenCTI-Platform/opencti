@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -41,6 +42,16 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             path="/overview"
             element={
               <StixDomainObjectThreatKnowledge
+                stixDomainObjectId={threatActorGroup.id}
+                stixDomainObjectName={threatActorGroup.name}
+                stixDomainObjectType="Threat-Actor-Group"
+              />
+            }
+          />
+          <Route
+            path="/all"
+            element={
+              <StixCoreObjects
                 stixDomainObjectId={threatActorGroup.id}
                 stixDomainObjectName={threatActorGroup.name}
                 stixDomainObjectType="Threat-Actor-Group"

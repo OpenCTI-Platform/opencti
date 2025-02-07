@@ -7,6 +7,7 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 
 class IndividualKnowledgeComponent extends Component {
   render() {
@@ -46,6 +47,15 @@ class IndividualKnowledgeComponent extends Component {
             />
           ))
             }
+        />
+        <Route
+          path="/all"
+          element={
+            <StixCoreObjects
+              entityId={individual.id}
+              stixDomainObjectType="Individual"
+            />
+          }
         />
         <Route
           path="/threats"
