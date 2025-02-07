@@ -13,6 +13,7 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
+import { ListItemButton } from '@mui/material';
 import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -71,10 +72,9 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
     const restricted = node.from === null;
     const link = `${entityLink}/relations/${node.id}`;
     return (
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component={Link}
         to={link}
       >
@@ -197,7 +197,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             />
           )}
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }

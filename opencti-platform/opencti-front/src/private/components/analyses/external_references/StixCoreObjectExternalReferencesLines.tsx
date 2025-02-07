@@ -5,7 +5,6 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -29,6 +28,7 @@ import { FileLine_file$data } from '@components/common/files/__generated__/FileL
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
@@ -294,12 +294,11 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 if (externalReference.url && !isFileAttached) {
                   return (
                     <React.Fragment key={externalReference.id}>
-                      <ListItem
+                      <ListItemButton
                         component={Link}
                         to={`/dashboard/analyses/external_references/${externalReference.id}`}
                         dense={true}
                         divider={true}
-                        button={true}
                       >
                         <ListItemIcon>
                           <ItemIcon type="External-Reference" />
@@ -347,7 +346,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                             />
                           </Security>
                         </ListItemSecondaryAction>
-                      </ListItem>
+                      </ListItemButton>
                       {externalReference.importFiles?.edges
                         && externalReference.importFiles?.edges.length > 0 && (
                           <List>
@@ -377,12 +376,11 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 }
                 return (
                   <React.Fragment key={externalReference.id}>
-                    <ListItem
+                    <ListItemButton
                       component={Link}
                       to={`/dashboard/analyses/external_references/${externalReference.id}`}
                       dense={true}
                       divider={true}
-                      button={true}
                     >
                       <ListItemIcon>
                         <ItemIcon type="External-Reference" />
@@ -413,7 +411,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           />
                         </Security>
                       </ListItemSecondaryAction>
-                    </ListItem>
+                    </ListItemButton>
                     {externalReference.importFiles?.edges
                       && externalReference.importFiles?.edges.length > 0 && (
                         <List>
@@ -472,10 +470,10 @@ StixCoreObjectExternalReferencesLinesContainerProps
         )}
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDialog}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDialog}
       >
         <DialogContent>
@@ -493,10 +491,10 @@ StixCoreObjectExternalReferencesLinesContainerProps
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
         <DialogContent>
@@ -521,7 +519,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         {({ submitForm, handleReset, setFieldValue, isSubmitting, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               open={!!fileToImport}
               keepMounted={true}
               onClose={() => handleReset()}

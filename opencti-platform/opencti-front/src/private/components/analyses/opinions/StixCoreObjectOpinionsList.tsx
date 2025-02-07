@@ -8,10 +8,10 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Tooltip from '@mui/material/Tooltip';
+import { ListItemButton } from '@mui/material';
 import OpinionPopover from './OpinionPopover';
 import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -63,7 +63,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
   const { opinions } = usePreloadedQuery<StixCoreObjectOpinionsListQuery>(stixCoreObjectOpinionsListQuery, queryRef);
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       open={open}
       onClose={handleClose}
       fullWidth={true}
@@ -77,10 +77,9 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
           {opinions && (opinions.edges ?? []).map((opinionEdge) => {
             const opinion = opinionEdge?.node;
             return (
-              <ListItem
+              <ListItemButton
                 key={opinion?.id}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/analyses/opinions/${opinion?.id}`}
               >
@@ -133,7 +132,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                        />
                   }
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

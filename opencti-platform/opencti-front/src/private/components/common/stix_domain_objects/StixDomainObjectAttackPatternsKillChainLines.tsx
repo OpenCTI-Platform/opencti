@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -234,13 +233,12 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                     const courseOfAction = courseOfActionEdge.node;
                                     const courseOfActionLink = `/dashboard/techniques/courses_of_action/${courseOfAction.id}`;
                                     return (
-                                      <ListItem
+                                      <ListItemButton
                                         key={courseOfAction.id}
                                         style={{
                                           paddingLeft: theme.spacing(8),
                                         }}
                                         divider={true}
-                                        button={true}
                                         dense={true}
                                         component={Link}
                                         to={courseOfActionLink}
@@ -271,7 +269,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                               )
                                           }
                                         />
-                                      </ListItem>
+                                      </ListItemButton>
                                     );
                                   },
                                 )}

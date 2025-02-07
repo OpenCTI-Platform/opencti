@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -17,6 +16,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCyberObservableAddIndicators from './StixCyberObservableAddIndicators';
@@ -163,12 +163,11 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
       <div className="clearfix" />
       <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
         {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
-          <ListItem
+          <ListItemButton
             aria-label={'stix cyber observable indicators item'}
             key={indicatorEdge.node.id}
             classes={{ root: { paddingLeft: 10, height: 50 } }}
             divider={true}
-            button={true}
             component={Link}
             to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
           >
@@ -205,14 +204,14 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                 indicatorId={indicatorEdge.node.id}
               />
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
       <Dialog
         open={isCreateIndicatorMenuOpen}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseCreateIndicatorMenu}
       >
         <DialogContent>

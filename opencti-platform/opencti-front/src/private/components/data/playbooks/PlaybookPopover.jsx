@@ -181,10 +181,10 @@ const PlaybookPopover = (props) => {
         }}
       />
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setDisplayDelete(false)}
       >
         <DialogContent>
@@ -202,10 +202,10 @@ const PlaybookPopover = (props) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayStart}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setDisplayStart(false)}
       >
         <DialogContent>
@@ -223,10 +223,10 @@ const PlaybookPopover = (props) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayStop}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setDisplayStop(false)}
       >
         <DialogContent>

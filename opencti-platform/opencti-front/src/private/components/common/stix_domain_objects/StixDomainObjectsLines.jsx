@@ -14,6 +14,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -124,10 +125,9 @@ class StixDomainObjectsContainer extends Component {
                     const link = resolveLink(stixDomainObject.entity_type);
                     if (link) {
                       return (
-                        <ListItem
+                        <ListItemButton
                           key={stixDomainObject.id}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`${link}/${stixDomainObject.id}`}
                         >
@@ -158,14 +158,14 @@ class StixDomainObjectsContainer extends Component {
                               variant="inSearch"
                             />
                           </ListItemSecondaryAction>
-                        </ListItem>
+                        </ListItemButton>
                       );
                     }
                     return (
                       <ListItem
                         key={stixDomainObject.id}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={type} />

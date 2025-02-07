@@ -3,9 +3,9 @@ import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { ListItemButton } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
@@ -60,11 +60,10 @@ class SectorSubSectorsComponent extends Component {
             const { types } = subSectorEdge;
             const subSector = subSectorEdge.node;
             return (
-              <ListItem
+              <ListItemButton
                 key={subSector.id}
                 dense={true}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/entities/sectors/${subSector.id}`}
               >
@@ -85,7 +84,7 @@ class SectorSubSectorsComponent extends Component {
                     </Security>
                   </ListItemSecondaryAction>
                 ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

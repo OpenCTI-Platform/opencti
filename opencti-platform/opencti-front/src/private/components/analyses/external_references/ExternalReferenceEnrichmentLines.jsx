@@ -7,12 +7,12 @@ import IconButton from '@mui/material/IconButton';
 import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
+import { ListItemButton } from '@mui/material';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -154,10 +154,9 @@ const ExternalReferenceEnrichment = (props) => {
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
             <div key={connector.id}>
-              <ListItem
+              <ListItemButton
                 divider={true}
                 classes={{ root: classes.item }}
-                button={true}
               >
                 <Tooltip
                   title={
@@ -193,7 +192,7 @@ const ExternalReferenceEnrichment = (props) => {
                     </Tooltip>
                   </ListItemSecondaryAction>
                 </Security>
-              </ListItem>
+              </ListItemButton>
               <List component="div" disablePadding={true}>
                 {jobs.map((work) => {
                   const isFail = work.errors && work.errors.length > 0;
@@ -221,9 +220,8 @@ const ExternalReferenceEnrichment = (props) => {
                       key={uuid()}
                       classes={{ tooltip: classes.tooltip }}
                     >
-                      <ListItem
+                      <ListItemButton
                         dense={true}
-                        button={true}
                         divider={true}
                         classes={{ root: classes.nested }}
                       >
@@ -262,7 +260,7 @@ const ExternalReferenceEnrichment = (props) => {
                             <Delete />
                           </IconButton>
                         </ListItemSecondaryAction>
-                      </ListItem>
+                      </ListItemButton>
                     </Tooltip>
                   );
                 })}

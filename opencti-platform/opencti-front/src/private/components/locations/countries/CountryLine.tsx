@@ -9,6 +9,7 @@ import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { CountryLine_node$key } from './__generated__/CountryLine_node.graphql';
@@ -83,10 +84,9 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
     (data.x_opencti_aliases ?? []).filter((n) => n?.length === 2),
   );
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/locations/countries/${data.id}`}
     >
@@ -129,7 +129,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

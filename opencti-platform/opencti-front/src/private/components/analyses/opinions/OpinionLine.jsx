@@ -10,6 +10,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import Checkbox from '@mui/material/Checkbox';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -63,10 +64,9 @@ class OpinionLineComponent extends Component {
       index,
     } = this.props;
     return (
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component={Link}
         to={`/dashboard/analyses/opinions/${node.id}`}
       >
@@ -153,7 +153,7 @@ class OpinionLineComponent extends Component {
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />
         </ListItemIcon>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }

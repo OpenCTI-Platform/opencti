@@ -2,7 +2,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -10,6 +9,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
 import AddDataComponents from './AddDataComponents';
@@ -75,11 +75,10 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                 );
               }
               return (
-                <ListItem
+                <ListItemButton
                   key={dataComponent.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/data_components/${dataComponent.id}`}
                 >
@@ -98,7 +97,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                       <LinkOff />
                     </IconButton>
                   </ListItemSecondaryAction>
-                </ListItem>
+                </ListItemButton>
               );
             })}
         </FieldOrEmpty>

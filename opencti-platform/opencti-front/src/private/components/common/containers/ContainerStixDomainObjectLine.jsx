@@ -14,6 +14,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
@@ -91,10 +92,9 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   const linkAnalyses = `${link}/analyses`;
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={link}
     >
@@ -217,7 +217,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           </Security>
         )}
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

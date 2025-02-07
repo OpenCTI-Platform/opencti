@@ -7,13 +7,13 @@ import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
@@ -112,11 +112,10 @@ class StixCyberObservablesContainer extends Component {
             <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
                 {stixCyberObservables[type].map((stixCyberObservable) => (
-                  <ListItem
+                  <ListItemButton
                     key={stixCyberObservable.id}
                     classes={{ root: classes.menuItem }}
                     divider={true}
-                    button={true}
                     component={Link}
                     to={`/dashboard/observations/observables/${stixCyberObservable.id}`}
                   >
@@ -136,7 +135,7 @@ class StixCyberObservablesContainer extends Component {
                         variant="inSearch"
                       />
                     </ListItemSecondaryAction>
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             </AccordionDetails>

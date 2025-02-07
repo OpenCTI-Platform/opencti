@@ -2033,10 +2033,10 @@ class DataTableToolBar extends Component {
                 </div>
               </Toolbar>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={this.state.displayTask}
                 keepMounted={true}
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 onClose={this.handleCloseTask.bind(this)}
                 fullWidth={true}
                 maxWidth="md"
@@ -2578,10 +2578,10 @@ class DataTableToolBar extends Component {
                 </div>
               </Drawer>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
               >
@@ -2699,10 +2699,10 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayShare}
                 onClose={() => this.setState({ displayShare: false })}
               >
@@ -2790,10 +2790,10 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayUnshare}
                 onClose={() => this.setState({ displayUnshare: false })}
               >

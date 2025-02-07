@@ -82,7 +82,6 @@ class AttackPatternCoursesOfActionComponent extends Component {
                   key={courseOfAction.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
                 >

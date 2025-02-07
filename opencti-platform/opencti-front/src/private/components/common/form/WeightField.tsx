@@ -67,7 +67,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                     name={`${name}.${index}.measure`}
                     label={t_i18n(`Weight (${weightPrimaryUnit})`)}
                     type="number"
-                    InputProps={{ inputProps: { min: 0 } }}
+                    slotProps={{ input: { min: 0 } }}
                   />
                   <Field
                     component={DateTimePickerField}
@@ -157,7 +157,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       component={TextField}
                       variant="standard"
                       type="number"
-                      InputProps={{ inputProps: { min: 0 } }}
+                      slotProps={{ input: { min: 0 } }}
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Weight (${weightPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
