@@ -407,7 +407,7 @@ const StixDomainObjectOverview = ({
         </Grid>
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={openStixIds}
         slots={{ desktopTransition: Transition }}
         onClose={handleToggleOpenStixIds}
@@ -451,7 +451,7 @@ const StixDomainObjectOverview = ({
       >
         {({ submitForm, handleReset }) => (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ desktopPaper: { elevation: 1 } }}
             open={openAddAssignee}
             slots={{ desktopTransition: Transition }}
             onClose={handleToggleAddAssignee}
@@ -487,7 +487,7 @@ const StixDomainObjectOverview = ({
       >
         {({ submitForm }) => (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ desktopPaper: { elevation: 1 } }}
             open={openAddParticipant}
             slots={{ desktopTransition: Transition }}
             onClose={handleToggleAddParticipant}

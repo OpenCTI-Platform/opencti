@@ -360,7 +360,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       disableRestoreFocus={true}
       open={open ?? false}
       onClose={onReset}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
     >
       <Formik
         initialValues={liveInitialValues}

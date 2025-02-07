@@ -2104,7 +2104,7 @@ class InvestigationGraphComponent extends Component {
                 variant="investigation"
               />
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 open={openExpandElements}
                 onClose={this.handleCloseExpandElements.bind(this)}
                 fullWidth={true}

@@ -311,7 +311,7 @@ class ContainerStixCoreObjectPopover extends Component {
           </Security>
         </Menu>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayDeleteMapping}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}
@@ -339,7 +339,7 @@ class ContainerStixCoreObjectPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayRemove}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}
@@ -393,7 +393,7 @@ class ContainerStixCoreObjectPopover extends Component {
           </Formik>
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}

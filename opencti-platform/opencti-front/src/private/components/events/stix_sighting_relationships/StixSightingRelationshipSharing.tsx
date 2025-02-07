@@ -186,7 +186,7 @@ ContainerHeaderSharedProps
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               open={displaySharing}
               onClose={() => handleReset()}
               fullWidth={true}

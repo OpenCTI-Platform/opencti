@@ -438,7 +438,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToImport}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={() => handleReset()}
                 fullWidth={true}
@@ -556,7 +556,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToValidate}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={handleCloseValidate}
                 fullWidth={true}

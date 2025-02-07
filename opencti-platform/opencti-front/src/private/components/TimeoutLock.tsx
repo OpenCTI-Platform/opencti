@@ -227,7 +227,7 @@ const TimeoutLock: React.FunctionComponent = () => {
       }}
       disableEscapeKeyDown={true}
       maxWidth="sm"
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       sx={{
         backdropFilter: 'blur(15px)',
         marginTop: `${bannerHeightNumber}px`,

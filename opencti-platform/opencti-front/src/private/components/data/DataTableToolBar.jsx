@@ -2006,7 +2006,7 @@ class DataTableToolBar extends Component {
                 </div>
               </Toolbar>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 open={this.state.displayTask}
                 keepMounted={true}
                 slots={{ desktopTransition: Transition }}
@@ -2551,7 +2551,7 @@ class DataTableToolBar extends Component {
                 </div>
               </Drawer>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
                 slots={{ desktopTransition: Transition }}
@@ -2672,7 +2672,7 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
                 slots={{ desktopTransition: Transition }}
@@ -2763,7 +2763,7 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
                 slots={{ desktopTransition: Transition }}

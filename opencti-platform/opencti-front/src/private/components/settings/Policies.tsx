@@ -224,7 +224,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             />
                           </EETooltip>
                           <Dialog
-                            PaperProps={{ elevation: 1 }}
+                            slotProps={{ desktopPaper: { elevation: 1 } }}
                             open={openPlatformOrganizationChanges}
                             keepMounted
                             slots={{ desktopTransition: Transition }}

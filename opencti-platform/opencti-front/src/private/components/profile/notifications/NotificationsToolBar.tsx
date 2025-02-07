@@ -224,12 +224,14 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           variant="persistent"
           classes={{ paper: classes.bottomNav }}
           open={isOpen}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              paddingLeft: navOpen ? 185 : 60,
-              bottom: bannerSettings?.bannerHeightNumber ?? 0,
+          slotProps={{
+            desktopPaper: {
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                paddingLeft: navOpen ? 185 : 60,
+                bottom: bannerSettings?.bannerHeightNumber ?? 0,
+              },
             },
           }}
         >
@@ -293,7 +295,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
             </Tooltip>
           </Toolbar>
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ desktopPaper: { elevation: 1 } }}
             open={displayTask}
             keepMounted={true}
             slots={{ desktopTransition: Transition }}

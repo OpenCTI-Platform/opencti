@@ -119,7 +119,7 @@ EntityDetailsRightsBarProps
       variant="permanent"
       anchor="right"
       classes={{ paper: classes.drawerPaper }}
-      PaperProps={{ variant: 'outlined' }}
+      slotProps={{ desktopPaper: { variant: 'outlined' } }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
       <div

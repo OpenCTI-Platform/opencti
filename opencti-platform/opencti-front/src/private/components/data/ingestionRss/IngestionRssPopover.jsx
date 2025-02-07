@@ -222,7 +222,7 @@ class IngestionRssPopover extends Component {
           }}
         />
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}
@@ -250,7 +250,7 @@ class IngestionRssPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayStart}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}
@@ -278,7 +278,7 @@ class IngestionRssPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayStop}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}

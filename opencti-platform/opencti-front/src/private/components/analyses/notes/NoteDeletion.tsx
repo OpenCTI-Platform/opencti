@@ -84,7 +84,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
       </Button>
       <Dialog
         open={displayDelete}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >

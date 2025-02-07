@@ -25,7 +25,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   return (
     <Dialog
       open={deletion.displayDelete}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       keepMounted={true}
       slots={{ desktopTransition: Transition }}
       onClose={onClose ?? deletion.handleCloseDelete}

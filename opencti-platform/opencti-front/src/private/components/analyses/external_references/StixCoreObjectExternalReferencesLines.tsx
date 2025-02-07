@@ -472,7 +472,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         )}
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayDialog}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
@@ -493,7 +493,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayExternalLink}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
@@ -521,7 +521,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         {({ submitForm, handleReset, setFieldValue, isSubmitting, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               open={!!fileToImport}
               keepMounted={true}
               onClose={() => handleReset()}

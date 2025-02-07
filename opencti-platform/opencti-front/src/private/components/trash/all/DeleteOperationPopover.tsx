@@ -152,7 +152,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
       </Menu>
 
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayConfirm}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}

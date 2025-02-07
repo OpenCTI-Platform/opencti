@@ -83,7 +83,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+    <Dialog open={open} onClose={handleClose} slotProps={{ desktopPaper: { elevation: 1 } }}>
       <DialogTitle>{t_i18n('Testing csv mapper')}</DialogTitle>
       <DialogContent>
         <Box

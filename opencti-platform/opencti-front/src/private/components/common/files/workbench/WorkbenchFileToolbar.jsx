@@ -170,12 +170,14 @@ class WorkbenchFileToolbar extends Component {
               paper: classes.bottomNav,
             }}
             open={isOpen}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                paddingLeft: navOpen ? 185 : 60,
-                bottom: bannerSettings.bannerHeightNumber,
+            slotProps={{
+              desktopPaper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  paddingLeft: navOpen ? 185 : 60,
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
               },
             }}
           >
@@ -224,7 +226,7 @@ class WorkbenchFileToolbar extends Component {
             </Toolbar>
             <Dialog
               open={displayApplyMarking}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               keepMounted={true}
               slots={{ desktopTransition: Transition }}
               onClose={this.handleCloseApplyMarking.bind(this)}
@@ -265,7 +267,7 @@ class WorkbenchFileToolbar extends Component {
             </Dialog>
             <Dialog
               open={displayDelete}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               keepMounted={true}
               slots={{ desktopTransition: Transition }}
               onClose={this.handleCloseDelete.bind(this)}

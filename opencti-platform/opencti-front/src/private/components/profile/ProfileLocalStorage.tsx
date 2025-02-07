@@ -52,7 +52,7 @@ const ProfileLocalStorage: React.FC = () => {
       {/* Confirmation dialog */}
       <Dialog
         open={displayConfirmation}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={false}
         slots={{ desktopTransition: Transition }}
         onClose={() => setDisplayConfirmation(false)}

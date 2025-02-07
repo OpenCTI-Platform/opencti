@@ -92,12 +92,14 @@ class ToolBar extends Component {
             variant="persistent"
             classes={{ paper: paperClass }}
             open={isOpen}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                marginLeft: navOpen ? 180 : 55,
-                bottom: bannerSettings.bannerHeightNumber,
+            slotProps={{
+              desktopPaper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  marginLeft: navOpen ? 180 : 55,
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
               },
             }}
           >

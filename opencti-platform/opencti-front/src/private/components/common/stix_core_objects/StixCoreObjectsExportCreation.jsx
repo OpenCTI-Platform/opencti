@@ -154,7 +154,7 @@ const StixCoreObjectsExportCreationComponent = ({
               {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                 <Form>
                   <Dialog
-                    PaperProps={{ elevation: 1 }}
+                    slotProps={{ desktopPaper: { elevation: 1 } }}
                     open={open}
                     onClose={() => {
                       resetForm();

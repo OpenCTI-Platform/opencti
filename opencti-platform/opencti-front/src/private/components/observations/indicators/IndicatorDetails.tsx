@@ -114,7 +114,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   {t_i18n('Lifecycle')}
                 </Button>
                 <Dialog
-                  PaperProps={{ elevation: 1 }}
+                  slotProps={{ desktopPaper: { elevation: 1 } }}
                   open={isLifecycleOpen}
                   keepMounted={true}
                   slots={{ desktopTransition: Transition }}

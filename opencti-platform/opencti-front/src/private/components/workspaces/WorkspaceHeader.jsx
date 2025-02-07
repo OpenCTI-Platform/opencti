@@ -435,7 +435,7 @@ const WorkspaceHeader = ({
               </div>
             </Slide>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               open={openTags}
               slots={{ desktopTransition: Transition }}
               onClose={handleToggleOpenTags}

@@ -427,7 +427,7 @@ const TasksList = ({ data }) => {
         );
       })}
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayMessages}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
@@ -466,7 +466,7 @@ const TasksList = ({ data }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayErrors}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}

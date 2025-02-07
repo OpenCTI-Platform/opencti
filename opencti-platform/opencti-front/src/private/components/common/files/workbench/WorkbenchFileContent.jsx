@@ -4227,7 +4227,7 @@ const WorkbenchFileContentComponent = ({
       {currentTab === 4 && renderContainers()}
       <Dialog
         open={!!deleteObject}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseDeleteObject}
@@ -4258,7 +4258,7 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayValidate}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               keepMounted
               onClose={handleCloseValidate}
               fullWidth
@@ -4333,7 +4333,7 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayConvertToDraft}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               keepMounted
               onClose={handleCloseConvertToDraft}
               fullWidth

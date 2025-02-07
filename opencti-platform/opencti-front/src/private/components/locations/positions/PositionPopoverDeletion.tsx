@@ -58,7 +58,7 @@ const PositionPopoverDeletion: FunctionComponent<PositionPopoverDeletionProps> =
     <Dialog
       open={displayDelete}
       slots={{ desktopTransition: Transition }}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       onClose={handleCloseDelete}
     >
       <DialogContent>

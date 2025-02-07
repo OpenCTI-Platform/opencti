@@ -286,7 +286,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={!!connectorIdToReset}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}

@@ -242,7 +242,7 @@ class StixCyberObservableOverview extends Component {
           </Grid>
         </Paper>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.openStixIds}
           slots={{ desktopTransition: Transition }}
           onClose={this.handleToggleOpenStixIds.bind(this)}

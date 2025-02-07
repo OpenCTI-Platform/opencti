@@ -43,7 +43,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
         onSubmit={handleSubmit}
       >
         {({ resetForm, submitForm, setFieldValue }) => (
-          <Dialog open={isOpen} fullWidth={true} PaperProps={{ elevation: 1 }} onClose={() => {
+          <Dialog open={isOpen} fullWidth={true} slotProps={{ desktopPaper: { elevation: 1 } }} onClose={() => {
             resetForm();
             closePopup();
           }}

@@ -34,7 +34,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   return (
     <Dialog
       open={open}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       slots={{ desktopTransition: Transition }}
       onClose={onCancel}
       fullWidth={true}

@@ -104,7 +104,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={isOpen}
         onClose={() => {
           setContent('');

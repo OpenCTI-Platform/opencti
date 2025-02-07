@@ -81,12 +81,14 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              paddingLeft: navOpen ? 185 : 60,
-              bottom: bannerSettings?.bannerHeightNumber,
+          slotProps={{
+            desktopPaper: {
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                paddingLeft: navOpen ? 185 : 60,
+                bottom: bannerSettings?.bannerHeightNumber,
+              },
             },
           }}
         >

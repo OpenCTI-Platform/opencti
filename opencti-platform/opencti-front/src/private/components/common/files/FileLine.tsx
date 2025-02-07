@@ -414,7 +414,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       <FileWork file={file} nested={workNested} />
       <Dialog
         open={displayDelete}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
@@ -450,7 +450,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       </Dialog>
       <Dialog
         open={displayRemove}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseRemove}
@@ -475,7 +475,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       </Dialog>
       <Dialog
         open={displayDownload}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseDownload}

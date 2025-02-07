@@ -165,7 +165,7 @@ const Drawer = forwardRef(({
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
-        PaperProps={{ ref }}
+        slotProps={{ desktopPaper: { ref } }}
       >
         <div className={classes.header}>
           <IconButton

@@ -455,7 +455,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      PaperProps={{ elevation: 1, style: { marginTop: 10 } }}
+      slotProps={{ desktopPaper: { elevation: 1, style: { marginTop: 10 } } }}
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
         ? <div

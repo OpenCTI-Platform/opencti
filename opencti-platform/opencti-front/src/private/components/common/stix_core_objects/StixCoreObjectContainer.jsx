@@ -170,7 +170,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
         </ToggleButton>
       </Tooltip>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         fullWidth={true}
         maxWidth="sm"
         slots={{ desktopTransition: Transition }}

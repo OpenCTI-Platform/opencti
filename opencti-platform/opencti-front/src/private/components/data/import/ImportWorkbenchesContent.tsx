@@ -195,7 +195,7 @@ const ImportWorkbenchesContent = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Analyst workbenches'), current: true }]} />
       <ImportMenu />
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={!!displayDelete}
         slots={{ desktopTransition: Transition }}
         onClose={() => setDisplayDelete('')}

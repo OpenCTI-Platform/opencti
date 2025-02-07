@@ -240,7 +240,7 @@ const PlaybookHeaderComponent = ({
         </List>
       </Drawer>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         slots={{ desktopTransition: Transition }}
         open={rawData !== null}
         onClose={() => setRawData(null)}

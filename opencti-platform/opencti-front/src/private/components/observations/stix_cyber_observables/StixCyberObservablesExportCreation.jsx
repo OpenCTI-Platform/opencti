@@ -176,7 +176,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   <Form>
                     <Dialog
                       open={this.state.open}
-                      PaperProps={{ elevation: 1 }}
+                      slotProps={{ desktopPaper: { elevation: 1 } }}
                       onClose={() => {
                         resetForm();
                         this.handleClose();

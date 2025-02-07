@@ -234,7 +234,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </React.Suspense>
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayDelete}
           keepMounted
           slots={{ desktopTransition: Transition }}
@@ -262,7 +262,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayResetState}
           keepMounted
           slots={{ desktopTransition: Transition }}
@@ -290,7 +290,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayStart}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}
@@ -318,7 +318,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayStop}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}

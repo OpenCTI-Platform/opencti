@@ -138,7 +138,7 @@ const CaseRftPopover = ({ id }: { id: string }) => {
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
         <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayDelete}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}

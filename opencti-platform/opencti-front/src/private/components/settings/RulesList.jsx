@@ -652,7 +652,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       })}
       <Dialog
         open={displayEnable}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseEnable}
@@ -686,7 +686,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       </Dialog>
       <Dialog
         open={displayDisable}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
         onClose={handleCloseDisable}

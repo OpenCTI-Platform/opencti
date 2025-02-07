@@ -165,7 +165,7 @@ class StreamCollectionPopover extends Component {
           />
         </Drawer>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
           slots={{ desktopTransition: Transition }}

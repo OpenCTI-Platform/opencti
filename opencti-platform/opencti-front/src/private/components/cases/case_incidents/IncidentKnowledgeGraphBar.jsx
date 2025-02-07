@@ -475,10 +475,12 @@ class IncidentKnowledgeGraphBar extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: { bottom: bannerSettings.bannerHeightNumber },
+            slotProps={{
+              desktopPaper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: { bottom: bannerSettings.bannerHeightNumber },
+              },
             }}
           >
             <div
@@ -1136,7 +1138,7 @@ class IncidentKnowledgeGraphBar extends Component {
                     <Dialog
                       open={this.state.displayRemove}
                       keepMounted={true}
-                      PaperProps={{ elevation: 1 }}
+                      slotProps={{ desktopPaper: { elevation: 1 } }}
                       slots={{ desktopTransition: Transition }}
                       onClose={this.handleCloseRemove.bind(this)}
                     >

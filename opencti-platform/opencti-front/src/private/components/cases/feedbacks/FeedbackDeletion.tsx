@@ -70,7 +70,7 @@ const FeedbackDeletion = ({ id }: { id: string }) => {
         </Button>
       </Security>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayDelete}
         keepMounted={true}
         slots={{ desktopTransition: Transition }}
