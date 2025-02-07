@@ -68,6 +68,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
       index,
     } = this.props;
     const remoteNode = node.from && node.from.id === entityId ? node.to : node.from;
+    const isReversed = node.from && node.from.id === entityId;
     const restricted = node.from === null || node.to === null;
     const link = `${entityLink}/relations/${node.id}`;
     return (
@@ -97,7 +98,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
+          <ItemIcon type={node.entity_type} isReversed={isReversed} />
         </ListItemIcon>
         <ListItemText
           primary={
