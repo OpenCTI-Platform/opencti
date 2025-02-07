@@ -645,7 +645,16 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
 
-              helpers.handleSetNumberOfElements({ });
+              // Update the counter
+              const pageInfo = conn.getLinkedRecord('pageInfo');
+              if (pageInfo) {
+                const currentCount = parseInt(`${pageInfo.getValue('globalCount')}` || '0', 10);
+                const newCount = currentCount + 1;
+
+                pageInfo.setValue(newCount, 'globalCount');
+                // TODO handleSetNumberOfElements should work but it doesn't update
+                // helpers.handleSetNumberOfElements({ number: newCount, original: newCount });
+              }
             }
           }
         },
