@@ -94,7 +94,7 @@ const ChannelPopover = ({ id }) => {
           open={displayDelete}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>

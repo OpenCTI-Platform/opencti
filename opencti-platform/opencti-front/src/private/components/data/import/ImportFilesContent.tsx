@@ -203,7 +203,7 @@ const ImportFilesContent = () => {
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={!!displayDelete}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setDisplayDelete('')}
       >
         <DialogContent>

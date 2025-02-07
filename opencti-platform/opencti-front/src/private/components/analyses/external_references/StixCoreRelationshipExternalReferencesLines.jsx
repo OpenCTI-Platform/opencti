@@ -386,7 +386,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           open={this.state.displayDialog}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
@@ -414,7 +414,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           open={this.state.displayExternalLink}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>

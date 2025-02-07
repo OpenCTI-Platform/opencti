@@ -90,7 +90,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={openModalErrorDetails}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleToggleModalError}
       >
         <DialogTitle>{t_i18n('Details')}</DialogTitle>

@@ -159,7 +159,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
         open={displayUnlink}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseUnlink}
       >
         <DialogContent>
@@ -180,7 +180,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
         open={displayDelete}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

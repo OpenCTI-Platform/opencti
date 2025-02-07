@@ -99,7 +99,7 @@ const DraftContextBanner = () => {
             open={displayApprove}
             PaperProps={{ elevation: 1 }}
             keepMounted={true}
-            TransitionComponent={Transition}
+            slots={{ desktopTransition: Transition }}
             onClose={() => setDisplayApprove(false)}
           >
             <DialogContent>

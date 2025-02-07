@@ -430,7 +430,7 @@ const TasksList = ({ data }) => {
         PaperProps={{ elevation: 1 }}
         open={displayMessages}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseMessages}
         fullScreen={true}
       >
@@ -469,7 +469,7 @@ const TasksList = ({ data }) => {
         PaperProps={{ elevation: 1 }}
         open={displayErrors}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseErrors}
         fullScreen={true}
       >

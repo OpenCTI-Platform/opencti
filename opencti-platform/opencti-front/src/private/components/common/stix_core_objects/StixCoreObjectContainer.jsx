@@ -173,7 +173,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
         PaperProps={{ elevation: 1 }}
         fullWidth={true}
         maxWidth="sm"
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         open={displayAddInContainer}
         onClose={() => setDisplayAddInContainer(false)}
       >

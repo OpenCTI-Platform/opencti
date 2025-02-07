@@ -441,7 +441,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           PaperProps={{ elevation: 1 }}
           open={this.state.displayExternalLink}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>

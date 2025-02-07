@@ -416,7 +416,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         open={displayDelete}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -452,7 +452,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         open={displayRemove}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseRemove}
       >
         <DialogContent>
@@ -477,7 +477,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         open={displayDownload}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDownload}
       >
         <DialogContent>

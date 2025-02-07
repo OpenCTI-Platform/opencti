@@ -685,7 +685,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         PaperProps={{ elevation: 1 }}
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -713,7 +713,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         PaperProps={{ elevation: 1 }}
         open={displayResetState}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseResetState}
       >
         <DialogContent>
@@ -744,7 +744,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         PaperProps={{ elevation: 1 }}
         open={displayClearWorks}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseClearWorks}
       >
         <DialogContent>

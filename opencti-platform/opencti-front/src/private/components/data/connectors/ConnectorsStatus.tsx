@@ -289,7 +289,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         PaperProps={{ elevation: 1 }}
         open={!!connectorIdToReset}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
       >
         <DialogContent>

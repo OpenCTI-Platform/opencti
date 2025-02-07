@@ -822,7 +822,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
           PaperProps={{ elevation: 1 }}
           open={selectedNode !== null && action === 'delete'}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={() => {
             setSelectedNode(null);
             setAction(null);

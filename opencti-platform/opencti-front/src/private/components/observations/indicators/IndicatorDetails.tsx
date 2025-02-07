@@ -117,7 +117,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   PaperProps={{ elevation: 1 }}
                   open={isLifecycleOpen}
                   keepMounted={true}
-                  TransitionComponent={Transition}
+                  slots={{ desktopTransition: Transition }}
                   onClose={onDecayLifecycleClose}
                   fullWidth
                   maxWidth='lg'

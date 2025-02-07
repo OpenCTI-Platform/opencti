@@ -89,7 +89,7 @@ const WorkspaceWidgetPopover = ({
         open={displayDelete}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setDisplayDelete(false)}
         className="noDrag"
       >
@@ -109,7 +109,7 @@ const WorkspaceWidgetPopover = ({
         open={displayDuplicate}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setDisplayDuplicate(false)}
         className="noDrag"
       >

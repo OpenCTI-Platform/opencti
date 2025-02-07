@@ -219,7 +219,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           <Dialog
             PaperProps={{ elevation: 1 }}
             open={openLabels}
-            TransitionComponent={Transition}
+            slots={{ desktopTransition: Transition }}
             onClose={handleCloseLabels}
             fullWidth={true}
             maxWidth="md"
@@ -288,7 +288,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           <Dialog
             PaperProps={{ elevation: 1 }}
             open={openAdd}
-            TransitionComponent={Transition}
+            slots={{ desktopTransition: Transition }}
             onClose={handleCloseAdd}
             fullWidth={true}
           >

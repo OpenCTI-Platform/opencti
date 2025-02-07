@@ -328,7 +328,7 @@ NotificationLineProps
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -350,7 +350,7 @@ NotificationLineProps
       </Dialog>
       <Dialog
         open={open}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         PaperProps={{ elevation: 1 }}
         fullWidth={true}
         maxWidth="md"

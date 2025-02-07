@@ -4229,7 +4229,7 @@ const WorkbenchFileContentComponent = ({
         open={!!deleteObject}
         PaperProps={{ elevation: 1 }}
         keepMounted
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDeleteObject}
       >
         <DialogContent>

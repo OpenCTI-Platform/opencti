@@ -212,7 +212,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         open={isCreateIndicatorMenuOpen}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseCreateIndicatorMenu}
       >
         <DialogContent>

@@ -370,7 +370,7 @@ const Settings = () => {
                                   PaperProps={{ elevation: 1 }}
                                   open={openEEChanges}
                                   keepMounted
-                                  TransitionComponent={Transition}
+                                  slots={{ desktopTransition: Transition }}
                                   onClose={() => setOpenEEChanges(false)}
                                 >
                                   <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>

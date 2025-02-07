@@ -190,7 +190,7 @@ ContainerHeaderSharedProps
               open={displaySharing}
               onClose={() => handleReset()}
               fullWidth={true}
-              TransitionComponent={Transition}
+              slots={{ desktopTransition: Transition }}
             >
               <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
               <DialogContent style={{ overflowY: 'hidden' }}>

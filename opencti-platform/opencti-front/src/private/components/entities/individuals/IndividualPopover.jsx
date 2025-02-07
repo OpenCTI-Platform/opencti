@@ -81,7 +81,7 @@ const IndividualPopover = ({ id }) => {
         <Dialog
           open={displayDelete}
           PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>

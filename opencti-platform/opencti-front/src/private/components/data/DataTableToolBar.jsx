@@ -2009,7 +2009,7 @@ class DataTableToolBar extends Component {
                 PaperProps={{ elevation: 1 }}
                 open={this.state.displayTask}
                 keepMounted={true}
-                TransitionComponent={Transition}
+                slots={{ desktopTransition: Transition }}
                 onClose={this.handleCloseTask.bind(this)}
                 fullWidth={true}
                 maxWidth="md"
@@ -2554,7 +2554,7 @@ class DataTableToolBar extends Component {
                 PaperProps={{ elevation: 1 }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ desktopTransition: Transition }}
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
               >
@@ -2675,7 +2675,7 @@ class DataTableToolBar extends Component {
                 PaperProps={{ elevation: 1 }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ desktopTransition: Transition }}
                 open={this.state.displayShare}
                 onClose={() => this.setState({ displayShare: false })}
               >
@@ -2766,7 +2766,7 @@ class DataTableToolBar extends Component {
                 PaperProps={{ elevation: 1 }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ desktopTransition: Transition }}
                 open={this.state.displayUnshare}
                 onClose={() => this.setState({ displayUnshare: false })}
               >

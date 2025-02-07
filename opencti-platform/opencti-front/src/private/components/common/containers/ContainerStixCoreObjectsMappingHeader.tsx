@@ -57,7 +57,7 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
       PaperProps={{ elevation: 1 }}
       open={openValidate}
       keepMounted
-      TransitionComponent={Transition}
+      slots={{ desktopTransition: Transition }}
       onClose={() => setOpenValidate(false)}
       >
       <DialogTitle>
@@ -88,7 +88,7 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
         PaperProps={{ elevation: 1 }}
         open={openClearMapping}
         keepMounted
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setOpenClearMapping(false)}
       >
         <DialogContent>

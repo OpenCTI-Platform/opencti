@@ -798,7 +798,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         open={displayKillSession}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseKillSession}
       >
         <DialogContent>
@@ -823,7 +823,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         open={displayKillSessions}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseKillSessions}
       >
         <DialogContent>
@@ -848,7 +848,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         open={displayRenewToken}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseRenewToken}
       >
         <DialogContent>

@@ -951,7 +951,7 @@ class InvestigationGraphBar extends Component {
                         open={this.state.displayRemove}
                         PaperProps={{ elevation: 1 }}
                         keepMounted={true}
-                        TransitionComponent={Transition}
+                        slots={{ desktopTransition: Transition }}
                         onClose={this.handleCloseRemove.bind(this)}
                       >
                         <DialogContent>

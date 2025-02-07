@@ -120,7 +120,7 @@ class StixDomainObjectDetectDuplicate extends Component {
           fullWidth={true}
           maxWidth="md"
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleClose.bind(this)}
           classes={{ paper: classes.dialogPaper }}
         >

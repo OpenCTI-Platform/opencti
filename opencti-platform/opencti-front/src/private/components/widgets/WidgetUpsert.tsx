@@ -35,7 +35,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
     <Dialog
       open={open}
       PaperProps={{ elevation: 1 }}
-      TransitionComponent={Transition}
+      slots={{ desktopTransition: Transition }}
       onClose={onCancel}
       fullWidth={true}
       maxWidth="md"

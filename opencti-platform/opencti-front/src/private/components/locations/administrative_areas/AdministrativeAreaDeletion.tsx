@@ -69,7 +69,7 @@ const AdministrativeAreaDeletion = ({ id }: { id: string }) => {
         PaperProps={{ elevation: 1 }}
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

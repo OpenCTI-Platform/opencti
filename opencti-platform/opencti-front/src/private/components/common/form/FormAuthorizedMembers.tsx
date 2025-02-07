@@ -52,7 +52,7 @@ const FormAuthorizedMembers = ({
           open={open}
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           maxWidth="sm"
           fullWidth={true}
           onClose={() => {

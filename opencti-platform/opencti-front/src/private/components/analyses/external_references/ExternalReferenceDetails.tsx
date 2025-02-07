@@ -104,7 +104,7 @@ ExternalReferenceDetailsComponentProps
         PaperProps={{ elevation: 1 }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseExternalLink}
       >
         <DialogContent>

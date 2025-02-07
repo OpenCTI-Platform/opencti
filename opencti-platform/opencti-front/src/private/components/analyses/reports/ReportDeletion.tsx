@@ -86,7 +86,7 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
       </Security>
       <Dialog
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         PaperProps={{ elevation: 1 }}
         onClose={handleCloseDelete}
       >

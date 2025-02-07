@@ -76,7 +76,7 @@ const InfrastructureDeletion = ({ id }: { id: string }) => {
       <Dialog
         open={displayDelete}
         PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

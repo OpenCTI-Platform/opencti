@@ -119,7 +119,7 @@ const ToolPopover: React.FC<ToolPopoverProps> = ({ id }) => {
           PaperProps={{ elevation: 1 }}
           open={displayDelete}
           keepMounted
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>

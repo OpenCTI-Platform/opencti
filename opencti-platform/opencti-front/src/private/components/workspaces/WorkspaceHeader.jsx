@@ -437,7 +437,7 @@ const WorkspaceHeader = ({
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={openTags}
-              TransitionComponent={Transition}
+              slots={{ desktopTransition: Transition }}
               onClose={handleToggleOpenTags}
               fullWidth={true}
             >

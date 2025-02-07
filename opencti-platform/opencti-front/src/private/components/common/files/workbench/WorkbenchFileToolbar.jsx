@@ -226,7 +226,7 @@ class WorkbenchFileToolbar extends Component {
               open={displayApplyMarking}
               PaperProps={{ elevation: 1 }}
               keepMounted={true}
-              TransitionComponent={Transition}
+              slots={{ desktopTransition: Transition }}
               onClose={this.handleCloseApplyMarking.bind(this)}
               maxWidth="xs"
               fullWidth={true}
@@ -267,7 +267,7 @@ class WorkbenchFileToolbar extends Component {
               open={displayDelete}
               PaperProps={{ elevation: 1 }}
               keepMounted={true}
-              TransitionComponent={Transition}
+              slots={{ desktopTransition: Transition }}
               onClose={this.handleCloseDelete.bind(this)}
             >
               <DialogContent>

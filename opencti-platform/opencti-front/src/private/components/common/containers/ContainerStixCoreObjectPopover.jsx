@@ -314,7 +314,7 @@ class ContainerStixCoreObjectPopover extends Component {
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDeleteMapping}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDeleteMapping.bind(this)}
         >
           <DialogContent>
@@ -342,7 +342,7 @@ class ContainerStixCoreObjectPopover extends Component {
           PaperProps={{ elevation: 1 }}
           open={this.state.displayRemove}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseRemove.bind(this)}
         >
           <DialogContent>
@@ -396,7 +396,7 @@ class ContainerStixCoreObjectPopover extends Component {
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

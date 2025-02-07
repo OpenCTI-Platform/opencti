@@ -342,7 +342,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                   <Dialog
                     PaperProps={{ elevation: 1 }}
                     open={displaySuggestions}
-                    TransitionComponent={Transition}
+                    slots={{ desktopTransition: Transition }}
                     onClose={() => setDisplaySuggestions(false)}
                     maxWidth="md"
                     fullWidth={true}

@@ -140,7 +140,7 @@ const FintelTemplateFormDrawer = ({
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

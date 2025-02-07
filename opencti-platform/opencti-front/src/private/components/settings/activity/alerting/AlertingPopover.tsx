@@ -107,7 +107,7 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
       </Menu>
       <Dialog open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         PaperProps={{ elevation: 1 }}
         onClose={handleCloseDelete}
       >

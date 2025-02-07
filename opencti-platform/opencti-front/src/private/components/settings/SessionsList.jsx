@@ -202,7 +202,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
         open={displayKillSession}
         PaperProps={{ elevation: 1 }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseKillSession}
       >
         <DialogContent>

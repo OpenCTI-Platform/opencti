@@ -122,7 +122,7 @@ WorkspaceDuplicationDialogProps
     <Dialog
       open={displayDuplicate}
       PaperProps={{ elevation: 1 }}
-      TransitionComponent={Transition}
+      slots={{ desktopTransition: Transition }}
       onClose={handleCloseDuplicate}
       fullWidth={true}
       maxWidth="xs"

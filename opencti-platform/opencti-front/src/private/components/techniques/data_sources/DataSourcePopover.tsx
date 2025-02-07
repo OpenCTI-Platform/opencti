@@ -94,7 +94,7 @@ const DataSourcePopover = ({ id }: { id: string }) => {
         <Dialog
           open={displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           PaperProps={{ elevation: 1 }}
           onClose={handleCloseDelete}
         >

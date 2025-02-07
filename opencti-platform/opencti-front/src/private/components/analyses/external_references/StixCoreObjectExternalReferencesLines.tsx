@@ -475,7 +475,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         PaperProps={{ elevation: 1 }}
         open={displayDialog}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDialog}
       >
         <DialogContent>
@@ -496,7 +496,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         PaperProps={{ elevation: 1 }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseExternalLink}
       >
         <DialogContent>

@@ -262,7 +262,7 @@ class WorkbenchFileLineComponent extends Component {
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={displayDelete}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

@@ -588,7 +588,7 @@ class ListLines extends Component {
           <Dialog
             open={this.state.openSettings}
             PaperProps={{ elevation: 1 }}
-            TransitionComponent={Transition}
+            slots={{ desktopTransition: Transition }}
             onClose={this.handleCloseSettings.bind(this)}
             maxWidth="xs"
             fullWidth={true}

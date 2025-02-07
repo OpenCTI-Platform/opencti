@@ -112,7 +112,7 @@ const DashboardSettings = () => {
       <Dialog
         open={open}
         PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleClose}
         maxWidth="xs"
         fullWidth={true}

@@ -227,7 +227,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             PaperProps={{ elevation: 1 }}
                             open={openPlatformOrganizationChanges}
                             keepMounted
-                            TransitionComponent={Transition}
+                            slots={{ desktopTransition: Transition }}
                             onClose={() => setOpenPlatformOrganizationChanges(false)}
                           >
                             <DialogTitle>{t_i18n('Numerous repercussions linked to the activation of this feature')}</DialogTitle>

@@ -1137,7 +1137,7 @@ class IncidentKnowledgeGraphBar extends Component {
                       open={this.state.displayRemove}
                       keepMounted={true}
                       PaperProps={{ elevation: 1 }}
-                      TransitionComponent={Transition}
+                      slots={{ desktopTransition: Transition }}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
                       <DialogContent>

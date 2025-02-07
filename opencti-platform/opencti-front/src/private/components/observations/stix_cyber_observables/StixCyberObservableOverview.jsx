@@ -244,7 +244,7 @@ class StixCyberObservableOverview extends Component {
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.openStixIds}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleToggleOpenStixIds.bind(this)}
           fullWidth={true}
         >

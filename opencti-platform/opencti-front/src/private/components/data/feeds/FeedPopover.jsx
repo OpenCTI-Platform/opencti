@@ -195,7 +195,7 @@ class FeedPopover extends Component {
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

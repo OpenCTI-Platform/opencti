@@ -54,7 +54,7 @@ const ProfileLocalStorage: React.FC = () => {
         open={displayConfirmation}
         PaperProps={{ elevation: 1 }}
         keepMounted={false}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setDisplayConfirmation(false)}
       >
         <DialogTitle>

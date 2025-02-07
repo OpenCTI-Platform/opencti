@@ -657,7 +657,7 @@ const StixCoreObjectSimulationResult = ({
       <Dialog
         open={!!(isSubmitting || result || resultError)}
         PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseFinal}
         maxWidth="xs"
         fullWidth={true}
@@ -674,7 +674,7 @@ const StixCoreObjectSimulationResult = ({
       <Dialog
         open={openCallToAction}
         PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setOpenCallToAction(false)}
         maxWidth="md"
         fullWidth={true}
