@@ -126,18 +126,22 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 multiline={true}
                 onChange={(event) => setContent(event.target.value)}
                 fullWidth={true}
-                InputProps={{
-                  endAdornment: (
-                    <TextFieldAskAI
-                      currentValue={content}
-                      setFieldValue={(val) => {
-                        setContent(val);
-                      }}
-                      format="text"
-                      variant="text"
-                      disabled={isDisabled}
-                    />
-                  ),
+                slotProps={{
+                  textField: {
+                    InputProps: {
+                      endAdornment: (
+                        <TextFieldAskAI
+                          currentValue={content}
+                          setFieldValue={(val) => {
+                            setContent(val);
+                          }}
+                          format="text"
+                          variant="text"
+                          disabled={isDisabled}
+                        />
+                      ),
+                    },
+                  },
                 }}
               />
             )}

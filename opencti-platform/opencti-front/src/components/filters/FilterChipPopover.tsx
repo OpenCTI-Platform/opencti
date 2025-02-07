@@ -332,11 +332,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
-            InputProps={{
-              ...paramsInput.InputProps,
-              endAdornment: isStixObjectTypes.includes(fKey)
-                ? renderSearchScopeSelection(fKey)
-                : paramsInput.InputProps.endAdornment,
+            slotProps={{
+              textField: {
+                InputProps: {
+                  ...paramsInput.InputProps,
+                  endAdornment: isStixObjectTypes.includes(fKey)
+                    ? renderSearchScopeSelection(fKey)
+                    : paramsInput.InputProps.endAdornment,
+                },
+              },
             }}
             label={t_i18n(fLabel)}
             variant="outlined"

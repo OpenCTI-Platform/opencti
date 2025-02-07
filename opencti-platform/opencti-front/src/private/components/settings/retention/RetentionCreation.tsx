@@ -183,22 +183,26 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 fullWidth={true}
                 onChange={() => setVerified(false)}
                 style={{ marginTop: 20 }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip
-                        title={t_i18n(
-                          'All objects matching the filters that have not been updated since this amount of units will be deleted',
-                        )}
-                      >
-                        <InformationOutline
-                          fontSize="small"
-                          color="primary"
-                          style={{ cursor: 'default' }}
-                        />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  textField: {
+                    InputProps: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip
+                            title={t_i18n(
+                              'All objects matching the filters that have not been updated since this amount of units will be deleted',
+                            )}
+                          >
+                            <InformationOutline
+                              fontSize="small"
+                              color="primary"
+                              style={{ cursor: 'default' }}
+                            />
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    },
+                  },
                 }}
               />
               <Field

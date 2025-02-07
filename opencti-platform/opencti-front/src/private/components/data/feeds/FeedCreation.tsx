@@ -439,22 +439,26 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         label={t_i18n('Rolling time (in minutes)')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <Tooltip
-                                title={t_i18n(
-                                  'Return all objects matching the filters that have been updated since this amount of minutes',
-                                )}
-                              >
-                                <InformationOutline
-                                  fontSize="small"
-                                  color="primary"
-                                  style={{ cursor: 'default' }}
-                                />
-                              </Tooltip>
-                            </InputAdornment>
-                          ),
+                        slotProps={{
+                          textField: {
+                            InputProps: {
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <Tooltip
+                                    title={t_i18n(
+                                      'Return all objects matching the filters that have been updated since this amount of minutes',
+                                    )}
+                                  >
+                                    <InformationOutline
+                                      fontSize="small"
+                                      color="primary"
+                                      style={{ cursor: 'default' }}
+                                    />
+                                  </Tooltip>
+                                </InputAdornment>
+                              ),
+                            },
+                          },
                         }}
                       />
                       <Field

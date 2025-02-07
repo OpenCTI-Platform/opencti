@@ -507,17 +507,21 @@ class StixCoreObjectContentComponent extends Component {
                     multiline={true}
                     onChange={this.onTextFieldChange.bind(this)}
                     fullWidth={true}
-                    InputProps={{
-                      endAdornment: (
-                        <TextFieldAskAI
-                          currentValue={currentContent ?? ''}
-                          setFieldValue={(val) => {
-                            this.onTextFieldChange({ target: { value: val } });
-                          }}
-                          format="text"
-                          variant="text"
-                        />
-                      ),
+                    slotProps={{
+                      textField: {
+                        InputProps: {
+                          endAdornment: (
+                            <TextFieldAskAI
+                              currentValue={currentContent ?? ''}
+                              setFieldValue={(val) => {
+                                this.onTextFieldChange({ target: { value: val } });
+                              }}
+                              format="text"
+                              variant="text"
+                            />
+                          ),
+                        },
+                      },
                     }}
                   />
                 </div>

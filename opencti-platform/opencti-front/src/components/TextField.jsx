@@ -92,21 +92,25 @@ const TextField = (props) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       onPaste={internalOnPaste}
-      InputProps={{
-        startAdornment,
-        endAdornment: askAi && (
-          <TextFieldAskAI
-            currentValue={value}
-            setFieldValue={(val) => {
-              setFieldValue(name, val);
-              if (typeof onSubmit === 'function') {
-                onSubmit(name, val || '');
-              }
-            }}
-            format="text"
-            disabled={props.disabled}
-          />
-        ),
+      slotProps={{
+        textField: {
+          InputProps: {
+            startAdornment,
+            endAdornment: askAi && (
+            <TextFieldAskAI
+              currentValue={value}
+              setFieldValue={(val) => {
+                setFieldValue(name, val);
+                if (typeof onSubmit === 'function') {
+                  onSubmit(name, val || '');
+                }
+              }}
+              format="text"
+              disabled={props.disabled}
+            />
+            ),
+          },
+        },
       }}
     />
   );

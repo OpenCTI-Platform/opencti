@@ -156,12 +156,16 @@ const PublicDashboardCreationFormComponent = ({
             label={t_i18n('Public dashboard URI KEY')}
             helperText={t_i18n('ID of your public dashboard')}
             style={fieldSpacingContainerStyle}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  public/dashboard/
-                </InputAdornment>
-              ),
+            slotProps={{
+              textField: {
+                InputProps: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      public/dashboard/
+                    </InputAdornment>
+                  ),
+                },
+              },
             }}
           />
           <Field

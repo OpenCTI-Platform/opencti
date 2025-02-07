@@ -184,11 +184,15 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
           fullWidth={true}
           onFocus={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
           }
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: isStixObjectTypes
-              ? renderSearchScopeSelection(filterKey)
-              : params.InputProps.endAdornment,
+          slotProps={{
+            textField: {
+              InputProps: {
+                ...params.InputProps,
+                endAdornment: isStixObjectTypes
+                  ? renderSearchScopeSelection(filterKey)
+                  : params.InputProps.endAdornment,
+              },
+            },
           }}
         />
       )}

@@ -168,8 +168,12 @@ const WidgetCreationParameters = () => {
             onChange={(event) => setConfigVariableName(event.target.value)}
             error={isWidgetVarNameAlreadyUsed || !isVariableNameValid}
             helperText={varNameError}
-            InputProps={{
-              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            slotProps={{
+              textField: {
+                InputProps: {
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                },
+              },
             }}
           />
         </div>

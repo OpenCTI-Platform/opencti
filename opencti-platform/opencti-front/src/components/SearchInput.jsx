@@ -112,48 +112,52 @@ const SearchInput = (props) => {
           onSubmit(value);
         }
       }}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <Search fontSize="small" />
-          </InputAdornment>
-        ),
-        endAdornment: variant === 'topBar' && (
-          <InputAdornment position="end">
-            <Tooltip title={t_i18n('Advanced search')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/search"
-                size="medium"
-                color={
-                   location.pathname.includes('/dashboard/search')
-                    && !location.pathname.includes('/dashboard/search_bulk')
-                     ? 'primary'
-                     : 'inherit'
-                    }
-              >
-                <BiotechOutlined fontSize='medium'/>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Bulk search')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/search_bulk"
-                size="medium"
-                color={
-                location.pathname.includes('/dashboard/search_bulk')
-                  ? 'primary'
-                  : 'inherit'
-              }
-              >
-                <ContentPasteSearchOutlined fontSize="medium"/>
-              </IconButton>
-            </Tooltip>
-          </InputAdornment>
-        ),
-        classes: {
-          root: classRoot,
-          input: classInput,
+      slotProps={{
+        textField: {
+          InputProps: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search fontSize="small"/>
+              </InputAdornment>
+            ),
+            endAdornment: variant === 'topBar' && (
+            <InputAdornment position="end">
+              <Tooltip title={t_i18n('Advanced search')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/search"
+                  size="medium"
+                  color={
+                                      location.pathname.includes('/dashboard/search')
+                                      && !location.pathname.includes('/dashboard/search_bulk')
+                                        ? 'primary'
+                                        : 'inherit'
+                                  }
+                >
+                  <BiotechOutlined fontSize='medium'/>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Bulk search')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/search_bulk"
+                  size="medium"
+                  color={
+                                      location.pathname.includes('/dashboard/search_bulk')
+                                        ? 'primary'
+                                        : 'inherit'
+                                  }
+                >
+                  <ContentPasteSearchOutlined fontSize="medium"/>
+                </IconButton>
+              </Tooltip>
+            </InputAdornment>
+            ),
+            classes: {
+              root: classRoot,
+              input: classInput,
+            },
+          },
         },
       }}
       {...otherProps}

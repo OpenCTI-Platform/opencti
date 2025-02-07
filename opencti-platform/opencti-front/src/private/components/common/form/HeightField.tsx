@@ -70,7 +70,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       component={TextField}
                       variant="standard"
                       type="number"
-                      InputProps={{ inputProps: { min: 0 } }}
+                      slotProps={{ textField: { InputProps: { inputProps: { min: 0 } } } }}
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
@@ -225,7 +225,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       type="number"
-                      InputProps={{ inputProps: { min: 0 } }}
+                      slotProps={{ textField: { InputProps: { inputProps: { min: 0 } } } }}
                     />
                     <Field
                       component={DateTimePickerField}
