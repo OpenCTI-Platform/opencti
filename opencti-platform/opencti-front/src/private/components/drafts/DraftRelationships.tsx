@@ -278,8 +278,6 @@ const DraftRelationships = () => {
         toolbarFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftRelationshipsLineFragment}
-        exportContext={{ entity_type: 'stix-core-relationship' }}
-        redirectionModeEnabled
         removeFromDraftEnabled
         disableSelectAll
       />

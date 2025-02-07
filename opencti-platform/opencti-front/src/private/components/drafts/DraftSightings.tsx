@@ -366,8 +366,6 @@ const DraftSightings = () => {
         toolbarFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftSightingsLineFragment}
-        exportContext={{ entity_type: 'stix-sighting-relationship' }}
-        redirectionModeEnabled
         removeFromDraftEnabled
         disableSelectAll
       />
