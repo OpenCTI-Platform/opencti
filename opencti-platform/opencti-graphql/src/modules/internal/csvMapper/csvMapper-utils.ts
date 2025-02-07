@@ -238,7 +238,7 @@ export const getHashesNames = (entityType: string) => {
 // csv mapper representatives converter for default values ids
 // Export => ids must be converted to standard id
 // Import => ids must be converted back to internal id
-export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[]) => {
+export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[], from: 'internal' | 'stix') => {
   // First iteration to resolve all ids to translate
   const resolvingIds: string[] = [];
   representations.forEach((representation) => {
@@ -257,7 +257,7 @@ export const convertRepresentationsIds = async (context: AuthContext, user: Auth
     representation.attributes.forEach((attribute) => {
       const defaultValues = attribute.default_values;
       if (defaultValues) {
-        idsValuesRemap(defaultValues, idsMap, 'internal');
+        idsValuesRemap(defaultValues, idsMap, from);
       }
     });
   });

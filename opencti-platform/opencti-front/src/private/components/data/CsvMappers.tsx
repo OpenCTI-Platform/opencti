@@ -1,13 +1,19 @@
-import React, { Suspense } from 'react';
+import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import CsvMapperLines from '@components/data/csvMapper/CsvMapperLines';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
-import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined, CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import CsvMappersProvider, { mappersQuery, schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { csvMappers_SchemaAttributesQuery } from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
+import { SpeedDialIcon } from '@mui/material';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import SpeedDial from '@mui/material/SpeedDial';
+import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
+import { graphql } from 'react-relay';
+import { CsvMappersImportMutation } from '@components/data/__generated__/CsvMappersImportMutation.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -15,16 +21,35 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import type { Theme } from '../../../components/Theme';
+import { handleError, MESSAGING$ } from '../../../relay/environment';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     paddingRight: '200px',
   },
+  speedDialButton: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
+  },
 }));
+
+const csvMapperImportMutation = graphql`
+  mutation CsvMappersImportMutation($file: Upload!) {
+    csvMapperConfigurationImport(file: $file) {
+      id
+      entity_type
+    }
+  }
+`;
 
 const CsvMappers = () => {
   const classes = useStyles();
@@ -40,6 +65,10 @@ const CsvMappers = () => {
       searchTerm: '',
     },
   );
+  const [open, setOpen] = useState(false);
+  const [commitImportMutation] = useApiMutation<CsvMappersImportMutation>(csvMapperImportMutation);
+
+  const inputFileRef = useRef<HTMLInputElement>(null);
 
   const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
     schemaAttributesQuery,
@@ -68,6 +97,28 @@ const CsvMappers = () => {
         );
       },
     },
+  };
+  const onClick = () => {
+    setOpen(true);
+  };
+
+  const handleFileImport = (event: BaseSyntheticEvent) => {
+    const importedFile = event.target.files[0];
+    if (importedFile) {
+      commitImportMutation({
+        variables: { file: importedFile },
+        onError: (e) => {
+          if (inputFileRef.current) inputFileRef.current.value = '';
+          handleError(e);
+        },
+        onCompleted: (response) => {
+          if (inputFileRef.current) inputFileRef.current.value = '';
+          if (response.csvMapperConfigurationImport) {
+            MESSAGING$.notifySuccess(t_i18n('CSV mapper created'));
+          }
+        },
+      });
+    }
   };
 
   return queryRefMappers && queryRefSchemaAttributes
@@ -102,8 +153,42 @@ const CsvMappers = () => {
                 />
               </React.Suspense>
             </ListLines>
-            <CsvMapperCreationContainer paginationOptions={paginationOptions} open={false} onClose={() => {
-            }}
+            <VisuallyHiddenInput
+              ref={inputFileRef}
+              type="file"
+              accept={'application/JSON'}
+              onChange={handleFileImport}
+            />
+            <SpeedDial
+              style={{
+                position: 'fixed',
+                bottom: 30,
+                right: 250,
+                zIndex: 1100,
+              }}
+              ariaLabel="Create"
+              icon={<SpeedDialIcon/>}
+              FabProps={{ color: 'primary' }}
+            >
+              <SpeedDialAction
+                title={t_i18n('Create a CSV mapper')}
+                icon={<WidgetsOutlined/>}
+                tooltipTitle={t_i18n('Create a CSV mapper')}
+                onClick={onClick}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+              <SpeedDialAction
+                title={t_i18n('Import a CSV mapper')}
+                icon={<CloudUploadOutlined/>}
+                tooltipTitle={t_i18n('Import a CSV mapper')}
+                onClick={() => inputFileRef?.current?.click()}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+            </SpeedDial>
+            <CsvMapperCreationContainer
+              paginationOptions={paginationOptions}
+              open={open}
+              onClose={() => setOpen(false)}
             />
           </div>
         </CsvMappersProvider>

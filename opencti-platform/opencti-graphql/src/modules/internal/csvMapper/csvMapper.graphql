@@ -176,4 +176,5 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult @auth(for: [CSVMAPPERS])
   csvMapperDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper @auth(for: [CSVMAPPERS])
+  csvMapperConfigurationImport(file: Upload!): CsvMapper @auth(for: [CSVMAPPERS])
 }
