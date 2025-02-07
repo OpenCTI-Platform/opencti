@@ -23,6 +23,12 @@ esbuild.build({
                 to: ['.'],
             }
         }),
+        copy({
+            assets: {
+                from: ['./node_modules/canvas/build/Release/*'],
+                to: ['.'],
+            }
+        }),
     ],
     entryPoints: [
         'src/back.js',

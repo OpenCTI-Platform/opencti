@@ -13,6 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
+import * as echarts from 'echarts';
 import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { sessionAuthenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
@@ -29,6 +30,8 @@ import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext, redisIsAlive } from '../database/redis';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
 import { isEngineAlive } from '../database/engine';
+import { publicStixCoreObjectsMultiTimeSeries } from '../modules/publicDashboard/publicDashboard-domain';
+import { utcDate } from '../utils/format';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -184,6 +187,115 @@ const createApp = async (app) => {
 
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
+
+  // -- File download
+  app.get(`${basePath}/chart`, async (req, res) => {
+    // const args = {
+    //   uriKey: 'test',
+    //   widgetId: 'df1c2c4a-d68b-47c9-ba27-2709095e745c',
+    //   startDate: '2024-02-06T00:00:00+01:00',
+    //   endDate: '2025-02-06T21:31:47+01:00'
+    // };
+    // http://localhost:4000/chart/ttt?uriKey=test&widgetId=df1c2c4a-d68b-47c9-ba27-2709095e745c&startDate=2024-02-06T00:00:00&endDate=2025-02-06T21:31:47
+    const args = {
+      uriKey: req.query.uriKey,
+      widgetId: req.query.widgetId,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate
+    };
+    const executeContext = executionContext('graph');
+    //  const auth = await authenticateUserFromRequest(executeContext, req, res);
+    const data = await publicStixCoreObjectsMultiTimeSeries(executeContext, args);
+    const categories = data[0].data.map((d) => d.date);
+    const values = data[0].data.map((d) => d.value);
+    // 1. Create a canvas
+    // const canvas = createCanvas(781, 297); // Adjust width and height as needed
+    let chart = echarts.init(null, null, {
+      renderer: 'svg', // must use SVG rendering mode
+      ssr: true, // enable SSR
+      width: 908, // need to specify height and width
+      height: 227
+    });
+    // 2. Configure chart options (like you would client-side)
+    const axisColor = 'white'; // black
+    const lineColor = 'rgba(15, 188, 255, 0.85)'; // rgba(0, 27, 218, 0.85)'
+    const option = {
+      title: {
+        show: false
+        // text: 'BARS',
+        // textStyle: {
+        //   color: 'black',
+        //   fontSize: 10,
+        // }
+      },
+      tooltip: {
+        show: true,
+        trigger: 'axis'
+      },
+      grid: {
+        top: 20,
+        left: 40,
+        right: 10,
+        bottom: 40,
+        backgroundColor: 'transparent',
+      },
+      xAxis: {
+        minInterval: 1,
+        boundaryGap: false,
+        axisLine: {
+          show: true,
+          lineStyle: {
+            color: 'rgb(182, 182, 182, 0.2)',
+            width: 1,
+            type: 'dashed'
+          }
+        },
+        axisLabel: {
+          color: axisColor,
+          fontSize: 12,
+          margin: 18,
+          formatter: (axisValue) => {
+            return utcDate(axisValue).format('ll');
+          }
+        },
+        type: 'category',
+        data: categories,
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          color: axisColor,
+          fontSize: 12,
+        },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            color: 'rgb(182, 182, 182, 0.2)',
+            width: 1,
+            type: 'dashed'
+          }
+        },
+      },
+      series: [{
+        type: 'bar',
+        color: lineColor,
+        data: values
+      }]
+    };
+    chart.setOption(option);
+    // 3. Set the options and render the chart
+    // chart.setOption(option);
+    // 4. Convert the canvas to a PNG image buffer
+    const svg = chart.renderToSVGString();
+    chart.dispose();
+    chart = null;
+    res.writeHead(200, {
+      'Content-Type': 'image/svg+xml',
+      'Content-Length': svg.length
+    });
+    // res.write(buffer);
+    res.end(svg);
+  });
 
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {

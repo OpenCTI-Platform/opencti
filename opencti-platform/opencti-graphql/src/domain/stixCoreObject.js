@@ -337,10 +337,10 @@ export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
   return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
-export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
+export const stixCoreObjectsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
     const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
-    return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
+    return timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }).then((data) => ({ data }));
   }));
 };
 
