@@ -120,6 +120,7 @@ nav:
       - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
+          - GenerationScenario Mutations in OpenCTI - OpenBAS with Placeholders: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
           - Removing bi-directional stream connectors: deployment/breaking-changes/6.3-removing-some-connectors.md
           - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
           - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md

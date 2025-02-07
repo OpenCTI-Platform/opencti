@@ -46,7 +46,7 @@ Deleted objects are kept in trash during a fixed period of time (7 days by defau
 
 ## Configuration
 
-The trash system is enabled by default but can be disabled in the platform [configuration](configuration.md).
+The trash system is enabled by default but can be disabled in the platform [configuration](../deployment/configuration.md).
 
 The trash retention period can also be configured in the settings of the garbage collector manager, you can set any number of days in parameter `garbage_collection_manager:deleted_retention_days`.   
 
