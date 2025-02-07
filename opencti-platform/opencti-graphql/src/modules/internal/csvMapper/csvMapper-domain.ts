@@ -29,6 +29,7 @@ import { parseReadableToLines } from '../../../parser/csv-parser';
 import type { FileUploadData } from '../../../database/file-storage-helper';
 import pjson from '../../../../package.json';
 import { extractContentFrom } from '../../../utils/fileToContent';
+import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 
 // -- UTILS --
 
@@ -125,10 +126,20 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
   });
 };
 
+const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
+
 export const csvMapperConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
-  // TODO check platform version
 
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  // convert default values ids in representations
   const representations = parsedData.configuration.representations as CsvMapperRepresentation[];
   await convertRepresentationsIds(context, user, representations, 'stix');
 
