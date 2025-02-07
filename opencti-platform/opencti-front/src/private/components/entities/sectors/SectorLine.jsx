@@ -8,6 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
+import { ListItemButton } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import { DraftChip } from '../../common/draft/DraftChip';
 import inject18n from '../../../../components/i18n';
@@ -60,10 +61,9 @@ class SectorLineComponent extends Component {
     const { classes, subSectors, node, isSubSector, t } = this.props;
     return (
       <div>
-        <ListItem
+        <ListItemButton
           classes={{ root: isSubSector ? classes.itemNested : classes.item }}
           divider={true}
-          button={true}
           component={Link}
           to={`/dashboard/entities/sectors/${node.id}`}
         >
@@ -88,7 +88,7 @@ class SectorLineComponent extends Component {
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
-        </ListItem>
+        </ListItemButton>
         {subSectors && subSectors.length > 0 && (
           <List style={{ margin: 0, padding: 0 }}>
             {map(

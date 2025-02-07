@@ -995,7 +995,7 @@ const StixCyberObservableCreation = ({
         )}
         <Dialog
           open={speeddial ? open : status.open}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           onClose={speeddial ? handleClose : localHandleClose}
           fullWidth={true}
         >

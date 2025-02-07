@@ -450,7 +450,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
         <Dialog
           open={open}
           onClose={handleClose}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
         >
           <DialogTitle>{t_i18n('Create an indicator')}</DialogTitle>
           <DialogContent>

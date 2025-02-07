@@ -7,6 +7,7 @@ import FormControl from '@mui/material/FormControl';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
 import type { PublicManifestConfig } from './PublicManifest';
+import { buildDate } from '../../../utils/Time';
 
 interface PublicDashboardHeaderProps {
   title: string
@@ -69,11 +70,11 @@ const PublicDashboardHeader = ({
       </FormControl>
       <DatePicker
         disabled
-        value={startDate ?? null}
+        value={buildDate(startDate)}
         label={t_i18n('Start date')}
         sx={{ width: 220 }}
         disableFuture
-        onChange={(value, context) => !context.validationError && onChangeStartDate(value)}
+        onChange={(value, context) => !context.validationError && onChangeStartDate(value?.toString() ?? null)}
         slotProps={{
           field: {
             clearable: true,
@@ -89,10 +90,10 @@ const PublicDashboardHeader = ({
       />
       <DatePicker
         disabled
-        value={endDate ?? null}
+        value={buildDate(endDate)}
         label={t_i18n('End date')}
         disableFuture
-        onChange={(value, context) => !context.validationError && onChangeEndDate(value)}
+        onChange={(value, context) => !context.validationError && onChangeEndDate(value?.toString() ?? null)}
         sx={{ width: 220 }}
         slotProps={{
           field: {

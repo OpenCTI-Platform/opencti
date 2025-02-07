@@ -1,5 +1,5 @@
 import Tooltip from '@mui/material/Tooltip';
-import { IconButton, List, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText } from '@mui/material';
+import { IconButton, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
 import { MoreVert, EmailOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
@@ -135,63 +135,68 @@ const StixCoreObjectContentFilesList = ({
         return (
           <Fragment key={file.id}>
             <Tooltip title={`${file.name} (${fileMimeType})`}>
-              <ListItemButton
+              <ListItem
                 dense={true}
                 divider={true}
-                selected={file.id === currentFileId}
-                onClick={() => handleSelectFile(file.id)}
-                disabled={deletion.deleting}
+                secondaryAction={
+                  <>
+                    {canDisseminate && (
+                      <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
+                        <>
+                          <EETooltip title={t_i18n('Disseminate')}>
+                            <IconButton
+                              onClick={(e) => handleDisseminate(e, file)}
+                              size="small"
+                              style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
+                              aria-label="disseminate"
+                              disabled={!isEnterpriseEdition}
+                            >
+                              <EmailOutlined />
+                            </IconButton>
+                          </EETooltip>
+                        </>
+                      </Security>
+                    )}
+                    <IconButton
+                      onClick={(e) => openPopover(e, file)}
+                      aria-haspopup="true"
+                      color="primary"
+                      size="small"
+                    >
+                      <MoreVert />
+                    </IconButton>
+                  </>
+                }
               >
-                <ListItemIcon>
-                  {renderIcon(fileMimeType)}
-                </ListItemIcon>
-                <ListItemText
-                  sx={{
-                    '.MuiListItemText-primary': {
-                      overflowX: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      marginRight: '20px',
-                    },
-                  }}
-                  primary={file.name}
-                  secondary={(
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ paddingBottom: theme.spacing(0.5) }}>
-                        {fld(file.lastModified ?? moment())}
-                      </span>
-                      <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
-                    </div>
+                <ListItemButton
+                  selected={file.id === currentFileId}
+                  onClick={() => handleSelectFile(file.id)}
+                  disabled={deletion.deleting}
+                >
+                  <ListItemIcon>
+                    {renderIcon(fileMimeType)}
+                  </ListItemIcon>
+                  <ListItemText
+                    sx={{
+                      '.MuiListItemText-primary': {
+                        overflowX: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginRight: '20px',
+                      },
+                    }}
+                    primary={file.name}
+                    secondary={(
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ paddingBottom: theme.spacing(0.5) }}>
+                          {fld(file.lastModified ?? moment())}
+                        </span>
+                        <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
+                      </div>
                 )}
-                />
-                <ListItemSecondaryAction>
-                  {canDisseminate && (
-                  <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
-                    <>
-                      <EETooltip title={t_i18n('Disseminate')}>
-                        <IconButton
-                          onClick={(e) => handleDisseminate(e, file)}
-                          size="small"
-                          style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
-                          aria-label="disseminate"
-                          disabled={!isEnterpriseEdition}
-                        >
-                          <EmailOutlined />
-                        </IconButton>
-                      </EETooltip>
-                    </>
-                  </Security>
-                  )}
-                  <IconButton
-                    onClick={(e) => openPopover(e, file)}
-                    aria-haspopup="true"
-                    color="primary"
-                    size="small"
-                  >
-                    <MoreVert />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItemButton>
+                  />
+                </ListItemButton>
+              </ListItem>
             </Tooltip>
             {canDisseminate && isEnterpriseEdition && (
             <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>

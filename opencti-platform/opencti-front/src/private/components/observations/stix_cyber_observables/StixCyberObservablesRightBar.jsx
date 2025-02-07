@@ -4,13 +4,13 @@ import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { FilterOffOutline } from 'mdi-material-ui';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
@@ -48,10 +48,12 @@ const StixCyberObservablesRightBar = ({
       variant="permanent"
       anchor="right"
       classes={{ paper: classes.drawerPaper }}
-      PaperProps={{
-        style: {
-          paddingTop: bannerSettings.bannerHeight,
-          paddingBottom: bannerSettings.bannerHeight,
+      slotProps={{
+        desktopPaper: {
+          style: {
+            paddingTop: bannerSettings.bannerHeight,
+            paddingBottom: bannerSettings.bannerHeight,
+          },
         },
       }}
     >
@@ -87,10 +89,9 @@ const StixCyberObservablesRightBar = ({
                 }
               >
                 {translatedOrderedList.map((subType) => (
-                  <ListItem
+                  <ListItemButton
                     key={subType.id}
                     dense={true}
-                    button={true}
                     onClick={() => handleToggle(subType.label)}
                     classes={{ root: classes.item }}
                   >
@@ -100,7 +101,7 @@ const StixCyberObservablesRightBar = ({
                       size="small"
                     />
                     <ListItemText primary={subType.tlabel} />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             );

@@ -53,7 +53,7 @@ EnterpriseEditionAgreementProps
   };
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       open={open}
       onClose={onClose}
       fullWidth={true}

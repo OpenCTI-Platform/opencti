@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { EventLine_node$key } from '@components/entities/events/__generated__/EventLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -76,10 +77,9 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
   const { fd } = useFormatter();
   const data = useFragment(eventLineFragment, node);
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/entities/events/${data.id}`}
     >
@@ -126,7 +126,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

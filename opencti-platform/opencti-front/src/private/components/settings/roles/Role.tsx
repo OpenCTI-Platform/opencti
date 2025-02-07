@@ -4,10 +4,10 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { ListItemButton } from '@mui/material';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
@@ -146,11 +146,10 @@ const Role = ({
                 </Typography>
                 <div>
                   {groupNodes(role)?.map((group) => (
-                    <ListItem
+                    <ListItemButton
                       key={group?.id}
                       dense={true}
                       divider={true}
-                      button={true}
                       component={Link}
                       to={`/dashboard/settings/accesses/groups/${group?.id}`}
                     >
@@ -158,7 +157,7 @@ const Role = ({
                         <ItemIcon type="Group" />
                       </ListItemIcon>
                       <ListItemText primary={group?.name} />
-                    </ListItem>
+                    </ListItemButton>
                   ))}
                 </div>
               </Grid>

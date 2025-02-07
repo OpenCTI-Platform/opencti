@@ -6,10 +6,10 @@ import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Button from '@mui/material/Button';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../i18n';
 import ItemAuthor from '../../ItemAuthor';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -436,10 +436,9 @@ EntityDetailsComponentProps
             const report = reportEdge?.node;
             if (report) {
               return (
-                <ListItem
+                <ListItemButton
                   key={report.id}
                   dense={true}
-                  button={true}
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
@@ -460,7 +459,7 @@ EntityDetailsComponentProps
                       </div>
                     }
                   />
-                </ListItem>
+                </ListItemButton>
               );
             }
             return '';
@@ -496,12 +495,11 @@ EntityDetailsComponentProps
               }
               return (
                 <React.Fragment key={externalReference.node.id}>
-                  <ListItem
+                  <ListItemButton
                     component={Link}
                     to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
                     dense={true}
                     divider={true}
-                    button={true}
                   >
                     <ListItemIcon>
                       <ItemIcon type="External-Reference" />
@@ -518,7 +516,7 @@ EntityDetailsComponentProps
                         </div>
                       }
                     />
-                  </ListItem>
+                  </ListItemButton>
                 </React.Fragment>
               );
             })}

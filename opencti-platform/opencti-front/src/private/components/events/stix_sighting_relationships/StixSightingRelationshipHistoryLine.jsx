@@ -20,6 +20,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -113,13 +114,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'create') {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <LinkOutlined fontSize="small" />
@@ -129,13 +133,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'delete') {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <LinkOffOutlined fontSize="small" />
@@ -146,13 +153,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'create') {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <AddOutlined fontSize="small" />
@@ -162,13 +172,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'merge') {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: teal[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <Merge fontSize="small" />
@@ -178,13 +191,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <EditOutlined fontSize="small" />
@@ -194,13 +210,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <EditOutlined fontSize="small" />
@@ -210,13 +229,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: indigo[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <LinkVariantPlus fontSize="small" />
@@ -226,13 +248,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventScope === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
-            sx={{
+            sx={[{
               width: 30,
               height: 30,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
-              cursor: commit ? 'pointer' : 'auto',
-            }}
+            }, commit ? {
+              cursor: 'pointer',
+            } : {
+              cursor: 'auto',
+            }]}
             onClick={() => commit && this.handleOpen()}
           >
             <LinkVariantRemove fontSize="small" />
@@ -331,11 +356,10 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
                       }
                       if (externalReference.url) {
                         return (
-                          <ListItem
+                          <ListItemButton
                             key={externalReference.id}
                             dense={true}
                             divider={true}
-                            button={true}
                             onClick={this.handleOpenExternalLink.bind(
                               this,
                               externalReference.url,
@@ -351,7 +375,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
                                 90,
                               )}
                             />
-                          </ListItem>
+                          </ListItemButton>
                         );
                       }
                       return (
@@ -359,7 +383,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
                           key={externalReference.id}
                           dense={true}
                           divider={true}
-                          button={false}
+
                         >
                           <ListItemIcon>
                             <Avatar classes={{ root: classes.avatar }}>
@@ -383,7 +407,7 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
         </div>
         <div className={classes.line} />
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
@@ -403,10 +427,10 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayExternalLink}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>

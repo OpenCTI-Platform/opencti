@@ -3,12 +3,12 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import { LockPattern } from 'mdi-material-ui';
 import { graphql, createFragmentContainer } from 'react-relay';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 
 class AttackPatternParentAttackPatternsComponent extends Component {
@@ -24,11 +24,10 @@ class AttackPatternParentAttackPatternsComponent extends Component {
             (parentAttackPatternEdge) => {
               const parentAttackPattern = parentAttackPatternEdge.node;
               return (
-                <ListItem
+                <ListItemButton
                   key={parentAttackPattern.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/attack_patterns/${parentAttackPattern.id}`}
                 >
@@ -38,7 +37,7 @@ class AttackPatternParentAttackPatternsComponent extends Component {
                   <ListItemText
                     primary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
                   />
-                </ListItem>
+                </ListItemButton>
               );
             },
           )}

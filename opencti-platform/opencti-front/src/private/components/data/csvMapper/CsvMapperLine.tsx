@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import TableViewIcon from '@mui/icons-material/TableView';
@@ -65,6 +64,12 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
       key={csvMapper.id}
       classes={{ root: classes.item }}
       divider={true}
+      secondaryAction={
+        <CsvMapperPopover
+          csvMapperId={csvMapper.id}
+          paginationOptions={paginationOptions}
+        />
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
@@ -84,12 +89,6 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <CsvMapperPopover
-          csvMapperId={csvMapper.id}
-          paginationOptions={paginationOptions}
-        />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

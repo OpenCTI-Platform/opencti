@@ -2,12 +2,12 @@ import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -36,11 +36,10 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <List classes={{ root: classes.list }}>
           {stixCoreObjects.map((stixCoreObjectOrRelationship) => (
-            <ListItem
+            <ListItemButton
               key={stixCoreObjectOrRelationship.id}
               classes={{ root: classes.menuItem }}
               divider={true}
-              button={true}
               component={Link}
               to={`${computeLink(stixCoreObjectOrRelationship)}`}
             >
@@ -49,10 +48,12 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
               </ListItemIcon>
               <ListItemText
                 primary={stixCoreObjectOrRelationship.representative?.main}
-                primaryTypographyProps={{ style: { wordWrap: 'break-word' } }}
                 secondary={truncate(stixCoreObjectOrRelationship.representative?.secondary, 150)}
+                slotProps={{
+                  primary: { style: { wordWrap: 'break-word' } },
+                }}
               />
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       </Paper>

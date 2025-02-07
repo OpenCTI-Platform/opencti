@@ -8,6 +8,7 @@ import { KeyboardArrowRight, KeyboardArrowRightOutlined } from '@mui/icons-mater
 import { graphql, useFragment } from 'react-relay';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
@@ -100,10 +101,9 @@ ThreatActorIndividualLineProps
   const data = useFragment(threatActorIndividualFragment, node);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/threats/threat_actors_individual/${data.id}`}
     >
@@ -145,7 +145,7 @@ ThreatActorIndividualLineProps
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

@@ -27,7 +27,7 @@ const dateTimeFormatsMapWithSeconds = {
 const DateTimePickerField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
-    field: { name },
+    field: { name, value },
     onChange,
     onFocus,
     onSubmit,
@@ -37,6 +37,7 @@ const DateTimePickerField = (props) => {
   } = props;
   const intl = useIntl();
   const [field, meta] = useField(name);
+  const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const internalOnAccept = React.useCallback(
     (date) => {
       setFieldTouched(name, true);
@@ -63,7 +64,6 @@ const DateTimePickerField = (props) => {
   }, [onFocus, name]);
   const internalOnBlur = React.useCallback(() => {
     setFieldTouched(name, true);
-    const { value } = field;
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
@@ -72,6 +72,7 @@ const DateTimePickerField = (props) => {
     return (
       <DateTimePicker
         {...fieldToDateTimePicker(props)}
+        value={parsedValue}
         variant="inline"
         required={required}
         disableToolbar={false}
@@ -98,6 +99,7 @@ const DateTimePickerField = (props) => {
   return (
     <DateTimePicker
       {...fieldToDateTimePicker(props)}
+      value={typeof field.value === 'string' ? new Date(field.value) : field.value} // Ensuring Date type
       variant="inline"
       required={required}
       disableToolbar={false}

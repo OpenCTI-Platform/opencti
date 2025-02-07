@@ -9,6 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@components/common/drawer/Drawer';
+import { ListItemButton } from '@mui/material';
 import { DataColumns } from '../../../../../components/list_lines';
 import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
@@ -129,10 +130,9 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
           </div>
         </>
       </Drawer>
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         onClick={() => setSelectedLog(data.id)}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -183,7 +183,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
             </div>
           }
         />
-      </ListItem>
+      </ListItemButton>
     </>
   );
 };

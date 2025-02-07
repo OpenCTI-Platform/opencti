@@ -104,7 +104,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={isOpen}
         onClose={() => {
           setContent('');
@@ -126,18 +126,20 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 multiline={true}
                 onChange={(event) => setContent(event.target.value)}
                 fullWidth={true}
-                InputProps={{
-                  endAdornment: (
-                    <TextFieldAskAI
-                      currentValue={content}
-                      setFieldValue={(val) => {
-                        setContent(val);
-                      }}
-                      format="text"
-                      variant="text"
-                      disabled={isDisabled}
-                    />
-                  ),
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <TextFieldAskAI
+                        currentValue={content}
+                        setFieldValue={(val) => {
+                          setContent(val);
+                        }}
+                        format="text"
+                        variant="text"
+                        disabled={isDisabled}
+                      />
+                    ),
+                  },
                 }}
               />
             )}

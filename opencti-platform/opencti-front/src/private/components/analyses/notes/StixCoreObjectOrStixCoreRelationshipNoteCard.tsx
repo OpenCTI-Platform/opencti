@@ -283,9 +283,9 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       </CardContent>
       <Dialog
         open={displayDialog}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDialog}
       >
         <DialogContent>

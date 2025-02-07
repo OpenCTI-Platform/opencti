@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay
 import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Checkbox from '@mui/material/Checkbox';
 import List from '@mui/material/List';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
@@ -147,6 +146,14 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             key="sensitive"
             divider={true}
             style={{ paddingLeft: 0 }}
+            secondaryAction={
+              <Checkbox
+                onChange={(event) => handleSensitiveToggle(event)}
+                checked={!!role.can_manage_sensitive_config}
+                style={{ color: theme.palette.dangerZone.main }}
+                disabled={false}
+              />
+            }
           >
             <ListItemIcon style={{ minWidth: 32 }}>
               <LocalPoliceOutlined fontSize="small" />
@@ -159,14 +166,6 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 </>
               }
             />
-            <ListItemSecondaryAction>
-              <Checkbox
-                onChange={(event) => handleSensitiveToggle(event)}
-                checked={!!role.can_manage_sensitive_config}
-                style={{ color: theme.palette.dangerZone.main }}
-                disabled={false}
-              />
-            </ListItemSecondaryAction>
           </ListItem>
         )}
         {capabilities.edges.map((edge) => {
@@ -189,20 +188,18 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 key={capability.name}
                 divider={true}
                 style={{ paddingLeft }}
+                secondaryAction={capability.name !== SETTINGS && (
+                  <Checkbox
+                    onChange={(event) => handleToggle(capability.id, event)}
+                    checked={isChecked}
+                    disabled={isDisabled}
+                  />
+                )}
               >
                 <ListItemIcon style={{ minWidth: 32 }}>
                   <LocalPoliceOutlined fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t_i18n(capability.description)} />
-                <ListItemSecondaryAction>
-                  {capability.name !== SETTINGS && (
-                    <Checkbox
-                      onChange={(event) => handleToggle(capability.id, event)}
-                      checked={isChecked}
-                      disabled={isDisabled}
-                    />
-                  )}
-                </ListItemSecondaryAction>
               </ListItem>
             );
           }

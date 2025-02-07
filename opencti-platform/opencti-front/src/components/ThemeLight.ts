@@ -37,7 +37,7 @@ const ThemeLight = (
     warn: {
       main: '#ffa726',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: 'black', text: { primary: '#d1584f' } },
+    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: '#000000', text: { primary: '#d1584f' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
@@ -52,7 +52,7 @@ const ThemeLight = (
       main: '#000000',
     },
     chip: { main: '#000000' },
-    ai: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2', contrastText: 'black', text: { primary: '#673ab7' } },
+    ai: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2', contrastText: '#000000', text: { primary: '#673ab7' } },
     ee: {
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),
@@ -132,8 +132,10 @@ const ThemeLight = (
   components: {
     MuiAccordion: {
       defaultProps: {
-        TransitionProps: {
-          unmountOnExit: true,
+        slotProps: {
+          transition: {
+            unmountOnExit: true,
+          },
         },
       },
     },

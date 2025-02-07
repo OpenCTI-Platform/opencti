@@ -3,10 +3,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Skeleton from '@mui/material/Skeleton';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumnsType } from './StatusTemplateLine';
 
@@ -42,7 +42,17 @@ StatusTemplateLineDummyProps
   const classes = useStyles();
 
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <IconButton disabled={true} aria-haspopup="true" size="large">
+            <MoreVert/>
+          </IconButton>
+        </Box>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -85,11 +95,6 @@ StatusTemplateLineDummyProps
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert/>
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

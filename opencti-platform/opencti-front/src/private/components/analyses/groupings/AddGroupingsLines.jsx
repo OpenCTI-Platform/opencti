@@ -4,12 +4,12 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import { map, filter, head, compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import { CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -129,11 +129,10 @@ class AddGroupingsLinesContainer extends Component {
             ? `(${grouping.external_id})`
             : '';
           return (
-            <ListItem
+            <ListItemButton
               key={grouping.id}
               classes={{ root: classes.menuItem }}
               divider={true}
-              button={true}
               onClick={this.toggleGrouping.bind(this, grouping)}
             >
               <ListItemIcon>
@@ -155,7 +154,7 @@ class AddGroupingsLinesContainer extends Component {
                   120,
                 )}
               />
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>

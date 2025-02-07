@@ -21,7 +21,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoAwesomeOutlined, CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
@@ -32,6 +31,7 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
+import { ListItemButton } from '@mui/material';
 import Drawer from '../../common/drawer/Drawer';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -173,9 +173,8 @@ const PlaybookHeaderComponent = ({
           {(playbook.last_executions ?? []).map((lastExecution) => {
             return (
               <React.Fragment key={lastExecution.id}>
-                <ListItem
+                <ListItemButton
                   dense={true}
-                  button={true}
                   divider={openExecution !== lastExecution.id}
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
                   }
@@ -196,7 +195,7 @@ const PlaybookHeaderComponent = ({
                   ) : (
                     <ExpandMoreOutlined />
                   )}
-                </ListItem>
+                </ListItemButton>
                 <Collapse
                   in={openExecution === lastExecution.id}
                   timeout="auto"
@@ -204,10 +203,9 @@ const PlaybookHeaderComponent = ({
                 >
                   <List component="div" disablePadding={true}>
                     {(lastExecution.steps ?? []).map((step) => (
-                      <ListItem
+                      <ListItemButton
                         key={step.id}
                         dense={true}
-                        button={true}
                         sx={{ pl: 4 }}
                         onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
                       >
@@ -229,7 +227,7 @@ const PlaybookHeaderComponent = ({
                             step.out_timestamp,
                           )}`}
                         />
-                      </ListItem>
+                      </ListItemButton>
                     ))}
                   </List>
                 </Collapse>
@@ -239,8 +237,8 @@ const PlaybookHeaderComponent = ({
         </List>
       </Drawer>
       <Dialog
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
         open={rawData !== null}
         onClose={() => setRawData(null)}
         fullWidth={true}

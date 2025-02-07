@@ -47,7 +47,7 @@ const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormPr
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={isOpen}
             onClose={onClose}
             fullWidth={true}

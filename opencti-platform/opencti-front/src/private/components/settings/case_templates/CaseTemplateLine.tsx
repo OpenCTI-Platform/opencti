@@ -5,7 +5,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
-import ListItem from '@mui/material/ListItem';
+import { ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
@@ -67,11 +67,10 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
   const data = useFragment(CaseTemplateLineFragment, node);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       component={Link}
       divider
-      button
       to={`/dashboard/settings/vocabularies/case_templates/${data.id}`}
     >
       <ListItemIcon>
@@ -95,7 +94,7 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

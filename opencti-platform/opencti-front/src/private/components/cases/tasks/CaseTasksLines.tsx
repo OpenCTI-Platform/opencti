@@ -169,7 +169,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         </IconButton>
       </Tooltip>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={openCaseTemplate}
         onClose={() => setOpenCaseTemplate(false)}
         fullWidth={true}

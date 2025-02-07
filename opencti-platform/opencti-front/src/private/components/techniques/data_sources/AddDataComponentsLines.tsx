@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { CheckCircle, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import type { Theme } from '../../../../components/Theme';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -152,11 +152,10 @@ AddDataComponentsLinesContainerProps
         }
         const alreadyAdded = dataComponentsIds?.includes(dataComponent.id);
         return (
-          <ListItem
+          <ListItemButton
             key={dataComponent.id}
             classes={{ root: classes.menuItem }}
             divider={true}
-            button={true}
             onClick={() => toggleDataComponent(dataComponent.id)}
           >
             <ListItemIcon>
@@ -170,7 +169,7 @@ AddDataComponentsLinesContainerProps
               primary={dataComponent.name}
               secondary={truncate(dataComponent.description, 120)}
             />
-          </ListItem>
+          </ListItemButton>
         );
       })}
     </List>

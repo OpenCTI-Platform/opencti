@@ -265,10 +265,10 @@ class SyncPopover extends Component {
           />
         </Drawer>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
@@ -293,10 +293,10 @@ class SyncPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayStart}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseStart.bind(this)}
         >
           <DialogContent>
@@ -321,10 +321,10 @@ class SyncPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayStop}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseStop.bind(this)}
         >
           <DialogContent>

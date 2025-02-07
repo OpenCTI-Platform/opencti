@@ -3,7 +3,6 @@ import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
@@ -18,6 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import { ListItemButton } from '@mui/material';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -451,10 +451,9 @@ const PlaybookAddComponentsContent = ({
         <List>
           {components.map((component) => {
             return (
-              <ListItem
+              <ListItemButton
                 key={component.id}
                 divider={true}
-                button={true}
                 onClick={() => setComponentId(component.id)}
               >
                 <ListItemIcon>
@@ -464,7 +463,7 @@ const PlaybookAddComponentsContent = ({
                   primary={component.name}
                   secondary={component.description}
                 />
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

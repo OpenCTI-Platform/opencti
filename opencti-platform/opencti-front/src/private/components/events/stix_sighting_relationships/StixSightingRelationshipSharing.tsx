@@ -186,11 +186,11 @@ ContainerHeaderSharedProps
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               open={displaySharing}
               onClose={() => handleReset()}
               fullWidth={true}
-              TransitionComponent={Transition}
+              slots={{ transition: Transition }}
             >
               <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
               <DialogContent style={{ overflowY: 'hidden' }}>

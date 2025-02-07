@@ -94,7 +94,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+    <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
       <DialogTitle>{t_i18n('Testing csv mapper')}</DialogTitle>
       <DialogContent>
         <Box>

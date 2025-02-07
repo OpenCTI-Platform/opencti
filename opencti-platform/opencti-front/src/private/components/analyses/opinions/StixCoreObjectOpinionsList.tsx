@@ -8,10 +8,10 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Tooltip from '@mui/material/Tooltip';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import OpinionPopover from './OpinionPopover';
 import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -63,7 +63,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
   const { opinions } = usePreloadedQuery<StixCoreObjectOpinionsListQuery>(stixCoreObjectOpinionsListQuery, queryRef);
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       open={open}
       onClose={handleClose}
       fullWidth={true}
@@ -80,59 +80,59 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
               <ListItem
                 key={opinion?.id}
                 divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/analyses/opinions/${opinion?.id}`}
+                secondaryAction={opinion
+                  && <OpinionPopover
+                    opinion={opinion}
+                    variant='inList'
+                    onDelete={() => {
+                      onDelete();
+                      handleClose();
+                    }}
+                     />
+                }
               >
-                <ListItemIcon>
-                  <ItemIcon type="Opinion" />
-                </ListItemIcon>
-                <ListItemText
-                  primary={opinion?.opinion}
-                  secondary={
-                    <Tooltip title={opinion?.explanation}>
-                      <span>{truncate(opinion?.explanation, 80)}</span>
-                    </Tooltip>
+                <ListItemButton
+                  component={Link}
+                  to={`/dashboard/analyses/opinions/${opinion?.id}`}
+                >
+                  <ListItemIcon>
+                    <ItemIcon type="Opinion" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={opinion?.opinion}
+                    secondary={
+                      <Tooltip title={opinion?.explanation}>
+                        <span>{truncate(opinion?.explanation, 80)}</span>
+                      </Tooltip>
                   }
-                  sx={{
-                    flex: 'none',
-                    width: '400px',
-                    marginRight: '50px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                />
-                <Tooltip title={R.pathOr('', ['createdBy', 'name'], opinion)}>
-                  <div style={{
-                    marginRight: 50,
-                    width: '200px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                  >
-                    {R.pathOr('', ['createdBy', 'name'], opinion)}
-                  </div>
-                </Tooltip>
-                <div style={{ marginRight: 50 }}>
-                  <ItemMarkings
-                    variant="inList"
-                    markingDefinitions={opinion?.objectMarking ?? []}
-                    limit={1}
+                    sx={{
+                      flex: 'none',
+                      width: '400px',
+                      marginRight: '50px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
                   />
-                </div>
-                <ListItemSecondaryAction>
-                  {opinion
-                    && <OpinionPopover
-                      opinion={opinion}
-                      variant='inList'
-                      onDelete={() => {
-                        onDelete();
-                        handleClose();
-                      }}
-                       />
-                  }
-                </ListItemSecondaryAction>
+                  <Tooltip title={R.pathOr('', ['createdBy', 'name'], opinion)}>
+                    <div style={{
+                      marginRight: 50,
+                      width: '200px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                    >
+                      {R.pathOr('', ['createdBy', 'name'], opinion)}
+                    </div>
+                  </Tooltip>
+                  <div style={{ marginRight: 50 }}>
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitions={opinion?.objectMarking ?? []}
+                      limit={1}
+                    />
+                  </div>
+                </ListItemButton>
               </ListItem>
             );
           })}

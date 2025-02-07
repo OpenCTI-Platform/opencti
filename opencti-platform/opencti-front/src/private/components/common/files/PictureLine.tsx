@@ -1,12 +1,12 @@
 import { useFragment } from 'react-relay';
 import { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import ListItem from '@mui/material/ListItem';
 import { React } from 'mdi-material-ui';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { NorthEastOutlined } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
+import { ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
 import { DataColumns } from '../../../../components/list_lines';
@@ -62,10 +62,9 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
   const handleCloseUpdate = () => setDisplayUpdate(false);
   return (
     <>
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         onClick={handleOpenUpdate}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -105,7 +104,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <NorthEastOutlined fontSize="small" />
         </ListItemIcon>
-      </ListItem>
+      </ListItemButton>
       <Drawer
         open={displayUpdate}
         title={t_i18n('Update a picture')}

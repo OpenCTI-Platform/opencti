@@ -577,7 +577,9 @@ const StixCoreObjectSimulationResult = ({
             <Typography
               variant="caption"
               component="div"
-              color="text.secondary"
+              sx={{
+                color: 'text.secondary',
+              }}
             >
               {t_i18n('Scenario generation in progress...')}
             </Typography>
@@ -611,7 +613,7 @@ const StixCoreObjectSimulationResult = ({
             )}
           </Alert>
         )}
-        <Box textAlign="center" style={{ marginTop: 20 }}>
+        <Box style={{ marginTop: 20 }} sx={{ textAlign: 'center' }}>
           <Button component={Link} to={result.urlResponse} target="_blank" variant="outlined" endIcon={<OpenInNewOutlined />}>
             {t_i18n('Access this scenario')}
           </Button>
@@ -656,8 +658,8 @@ const StixCoreObjectSimulationResult = ({
       </Drawer>
       <Dialog
         open={!!(isSubmitting || result || resultError)}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
         onClose={handleCloseFinal}
         maxWidth="xs"
         fullWidth={true}
@@ -673,8 +675,8 @@ const StixCoreObjectSimulationResult = ({
       </Dialog>
       <Dialog
         open={openCallToAction}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
         onClose={() => setOpenCallToAction(false)}
         maxWidth="md"
         fullWidth={true}

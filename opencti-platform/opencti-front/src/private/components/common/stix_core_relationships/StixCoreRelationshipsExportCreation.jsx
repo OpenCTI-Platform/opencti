@@ -182,7 +182,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                         <Form>
                           <Dialog
                             data-testid="StixCoreRelationshipsExportCreationDialog"
-                            PaperProps={{ elevation: 1 }}
+                            slotProps={{ paper: { elevation: 1 } }}
                             open={this.state.open}
                             onClose={() => {
                               resetForm();
