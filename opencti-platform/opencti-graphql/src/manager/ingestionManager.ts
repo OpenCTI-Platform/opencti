@@ -276,9 +276,14 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    // If ingestion have remaining messages in the queue, or if last execution was done before RSS_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    if (messages_number === 0 && shouldExecuteIngestion(ingestion, RSS_FEED_MIN_INTERVAL_MINUTES)) {
+    // If last execution was done before RSS_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
+    if (!shouldExecuteIngestion(ingestion, RSS_FEED_MIN_INTERVAL_MINUTES)) {
+      logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - last run is more recent than ${RSS_FEED_MIN_INTERVAL_MINUTES} minutes.`);
+      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { messages_size });
+      ingestionPromises.push(ingestionPromise);
+    // If no message in queue and last execution is old enough, fetch new data
+    } else if (messages_number === 0) {
       const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
         .catch((e) => {
           logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
@@ -293,9 +298,10 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
           patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() });
         });
       ingestionPromises.push(ingestionPromise);
+    // If ingestion have remaining messages in the queue dont fetch any new data
     } else {
       // Update the state
-      logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - queue already filled with messages (${messages_number}) or last run is more recent than ${RSS_FEED_MIN_INTERVAL_MINUTES} minutes.`);
+      logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - queue already filled with messages (${messages_number})`);
       const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
       ingestionPromises.push(ingestionPromise);
     }
