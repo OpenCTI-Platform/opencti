@@ -28,9 +28,8 @@ import {
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
-import { validateMarking } from './middleware';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');

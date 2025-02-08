@@ -5,7 +5,7 @@ import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { getEntityFromCache } from '../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
@@ -18,8 +18,9 @@ import type { BasicStoreSettings } from '../types/settings';
 import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
-import { isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
+import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -629,4 +630,22 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
     throw FunctionalError('Restricted to delete this element (not the technical creator)', { user_id: user.id, element_id: existingElement.id });
   }
   return true;
+};
+
+/**
+ * Verify that the Entity in Marking is one of user allowed
+ * @param context
+ * @param user
+ * @param markingId
+ */
+export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string) => {
+  if (isBypassUser(user)) {
+    return;
+  }
+  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
+  const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
+  if (!userMarkingIds.includes(markingId)) {
+    throw FunctionalError('User trying to create the data has missing markings', { id: markingId });
+  }
 };

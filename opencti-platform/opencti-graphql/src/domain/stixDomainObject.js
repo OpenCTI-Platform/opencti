@@ -10,7 +10,6 @@ import {
   updateAttribute,
   updateAttributeFromLoadedWithRefs,
   validateCreatedBy,
-  validateMarking
 } from '../database/middleware';
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
@@ -40,6 +39,7 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { usersSessionRefresh } from './user';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { validateMarking } from '../utils/access';
 
 export const findAll = async (context, user, args) => {
   let types = [];

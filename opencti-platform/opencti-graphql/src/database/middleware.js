@@ -705,24 +705,6 @@ export const validateCreatedBy = async (context, user, createdById) => {
   }
 };
 
-/**
- * Verify that the Entity in Marking is one of user allowed
- * @param context
- * @param user
- * @param markingId
- */
-export const validateMarking = async (context, user, markingId) => {
-  if (isBypassUser(user)) {
-    return;
-  }
-  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
-  const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
-  if (!userMarkingIds.includes(markingId)) {
-    throw FunctionalError('User trying to create the data has missing markings', { id: markingId });
-  }
-};
-
 const inputResolveRefs = async (context, user, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
     const fetchingIds = [];
