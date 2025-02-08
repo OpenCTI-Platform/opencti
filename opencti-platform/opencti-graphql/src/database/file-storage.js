@@ -462,7 +462,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
 export const upload = async (context, user, filePath, fileUpload, opts) => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
   // Verify markings
-  for (let index = 0; index < file_markings.length; index += 1) {
+  for (let index = 0; index < (file_markings ?? []).length; index += 1) {
     const markingId = file_markings[index];
     await validateMarking(context, user, markingId);
   }

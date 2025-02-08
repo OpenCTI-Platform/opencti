@@ -183,7 +183,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
