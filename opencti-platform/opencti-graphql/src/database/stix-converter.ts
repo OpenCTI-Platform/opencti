@@ -34,6 +34,7 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
+  objects,
   RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
@@ -163,7 +164,8 @@ export const cleanObject = <T>(data: T): T => {
   const obj: T = { ...data };
   // eslint-disable-next-line no-restricted-syntax
   for (const key in data) {
-    if (isEmptyField(obj[key])) {
+    // cleanup empty keys except object_refs
+    if (key !== objects.stixName && isEmptyField(obj[key])) {
       delete obj[key];
     }
   }
