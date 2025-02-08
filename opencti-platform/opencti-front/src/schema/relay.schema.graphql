@@ -8685,7 +8685,7 @@ enum ValidationMode {
 type Mutation {
   deleteImport(fileName: String): ID
   uploadImport(file: Upload!, fileMarkings: [String]): File
-  uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, refreshEntity: Boolean): File
+  uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
