@@ -16,7 +16,6 @@ import { EntityStixSightingRelationshipLine_node$key } from '@components/events/
 import {
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
-import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -260,9 +259,10 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
   const restricted = entity === null;
   const link = `${resolveLink(data.entity_type)}/${data.id}`;
   return (
-    <ListItemButton
+    <ListItem
       classes={{ root: classes.item }}
       divider={true}
+      button={true}
       component={Link}
       to={link}
       disabled={restricted}
@@ -351,7 +351,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
           />
         )}
       </ListItemSecondaryAction>
-    </ListItemButton>
+    </ListItem>
   );
 };
 
