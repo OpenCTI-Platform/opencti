@@ -1628,6 +1628,7 @@ class DataTableToolBar extends Component {
       <UserContext.Consumer>
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
+          const isInDraft = me.draftContext;
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -1780,7 +1781,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && (
+                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                     <UserContext.Consumer>
                       {({ platformModuleHelpers }) => {
                         const label = platformModuleHelpers.isRuleEngineEnable()
@@ -1856,7 +1857,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
+                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                       <Tooltip title={t('Merge')}>
                         <span>
                           <IconButton
@@ -1919,7 +1920,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
+                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
