@@ -107,7 +107,9 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
 };
 
 export const addDisseminationCount = () => {
-  filigranTelemetryMeterManager.addDisseminationCount();
+  if (filigranTelemetryMeterManager) {
+    filigranTelemetryMeterManager.addDisseminationCount();
+  }
 };
 
 const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
