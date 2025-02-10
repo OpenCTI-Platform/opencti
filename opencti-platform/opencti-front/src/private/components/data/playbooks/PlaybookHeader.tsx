@@ -54,7 +54,6 @@ const useStyles = makeStyles(() => ({
   },
   status: {
     float: 'left',
-    margin: '3px 0 0 5px',
   },
   chip: {
     fontSize: 12,
