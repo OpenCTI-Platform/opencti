@@ -15090,12 +15090,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:15.0.3":
-  version: 15.0.3
-  resolution: "marked@npm:15.0.3"
+"marked@npm:15.0.7":
+  version: 15.0.7
+  resolution: "marked@npm:15.0.7"
   bin:
     marked: bin/marked.js
-  checksum: 10/821c1af0e527b3f6f4684a68802a0fa5e91cd2b0887d0600ce9035896f8b0fbad180a3f8c5be91de25bdc20323abbd674351832c40d48820b6f0d888fd77cd59
+  checksum: 10/df4c3e91420bfa76250390813ce6881a3dad73b40d51d14cece1aff63a2828a171e7f1d3d99cdca70088cb305215ba79fce31bb9ce38cd03c360c788e2994a6a
   languageName: node
   linkType: hard
 
@@ -16616,7 +16616,7 @@ __metadata:
     leaflet: "npm:1.9.4"
     lodash: "npm:4.17.21"
     markdown-to-jsx: "npm:7.5.0"
-    marked: "npm:15.0.3"
+    marked: "npm:15.0.7"
     mdi-material-ui: "npm:7.9.1"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.46"
