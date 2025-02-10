@@ -215,6 +215,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={draftEntitiesLineFragment}
+          entityTypes={[entitiesType]}
           removeFromDraftEnabled
           disableSelectAll // TODO: To handle selectAll
           createButton={

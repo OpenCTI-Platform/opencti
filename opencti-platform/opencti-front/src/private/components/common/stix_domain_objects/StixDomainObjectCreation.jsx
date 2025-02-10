@@ -865,7 +865,7 @@ const StixDomainObjectCreation = ({
     <>
       {fabReplaced && !speeddial && (
         <CreateEntityControlledDial
-          entityType={'Entities'}
+          entityType={stixDomainObjectTypes}
           onOpen={stateHandleOpen}
           onClose={() => {}}
           style={controlledDialStyles}
