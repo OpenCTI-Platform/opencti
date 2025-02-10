@@ -2,10 +2,10 @@ import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { hexToRGB, itemColor } from '../Colors';
+import { hexToRGB, itemColor } from '../../Colors';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
-import ItemMarkings from '../../components/ItemMarkings';
-import { useFormatter } from '../../components/i18n';
+import ItemMarkings from '../../../components/ItemMarkings';
+import { useFormatter } from '../../../components/i18n';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
 // Deprecated - https://mui.com/system/styles/basics/

@@ -23,12 +23,12 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import LassoSelection from '../../../../utils/graph/LassoSelection';
+import LassoSelection from '../../../../utils/graph/components/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../../../utils/defaultRepresentatives';

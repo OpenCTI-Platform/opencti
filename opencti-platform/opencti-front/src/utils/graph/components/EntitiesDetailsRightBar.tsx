@@ -13,8 +13,8 @@ import { OpenInNewOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
-import { useFormatter } from '../../components/i18n';
-import { isStixNestedRefRelationship } from '../Relation';
+import { useFormatter } from '../../../components/i18n';
+import { isStixNestedRefRelationship } from '../../Relation';
 import StixMetaObjectDetails from './StixMetaObjectDetails';
 import BasicRelationshipDetails from './BasicRelationshipDetails';
 
