@@ -479,9 +479,8 @@ const isEntityOrganizationsAllowed = (
   return true;
 };
 
-export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, platformOrganization: string) => {
+export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, hasPlatformOrg: boolean) => {
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-  const hasPlatformOrg = !!platformOrganization;
   return isEntityOrganizationsAllowed(element.internal_id, elementOrganizations, user, hasPlatformOrg);
 };
 
@@ -510,14 +509,40 @@ export const isMarkingAllowed = (element: BasicStoreCommon, userAuthorizedMarkin
 
 export const canRequestAccess = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
   const elementsThatRequiresAccess: Array<BasicStoreCommon> = [];
   for (let i = 0; i < elements.length; i += 1) {
-    if (!isOrganizationAllowed(elements[i], user, settings.platform_organization)) {
+    if (!isOrganizationAllowed(elements[i], user, hasPlatformOrg)) {
       elementsThatRequiresAccess.push(elements[i]);
     }
     // TODO before removing ORGA_SHARING_REQUEST_FF: When it's ready check Authorized members
   }
   return elementsThatRequiresAccess;
+};
+
+export const checkUserFilterStoreElements = async (
+  user: AuthUser,
+  element: BasicStoreCommon,
+  authorizedMarkings: string[],
+  hasPlatformOrg: boolean
+) => {
+  // 1. Check markings
+  if (!isMarkingAllowed(element, authorizedMarkings)) {
+    return false;
+  }
+  // 2. check authorized members
+  if (!hasAuthorizedMemberAccess(user, element)) {
+    return false;
+  }
+  // 3. Check organizations
+  // Allow unrestricted entities
+  if (isOrganizationUnrestricted(element)) {
+    return true;
+  }
+  // Check restricted elements
+  // either allowed by orga sharing or has authorized members access if authorized_members are defined (bypass orga sharing)
+  return isOrganizationAllowed(element, user, hasPlatformOrg)
+    || (element.authorized_members && element.authorized_members.length > 0 && hasAuthorizedMemberAccess(user, element));
 };
 
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
@@ -528,25 +553,10 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     }
     // If not filter by the inner markings
     const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    const hasPlatformOrg = !!settings.platform_organization;
     const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
     return elements.filter((element) => {
-      // 1. Check markings
-      if (!isMarkingAllowed(element, authorizedMarkings)) {
-        return false;
-      }
-      // 2. check authorized members
-      if (!hasAuthorizedMemberAccess(user, element)) {
-        return false;
-      }
-      // 3. Check organizations
-      // Allow unrestricted entities
-      if (isOrganizationUnrestricted(element)) {
-        return true;
-      }
-      // Check restricted elements
-      // either allowed by orga sharing or has authorized members access if authorized_members are defined (bypass orga sharing)
-      return isOrganizationAllowed(element, user, settings.platform_organization)
-        || (element.authorized_members && element.authorized_members.length > 0 && hasAuthorizedMemberAccess(user, element));
+      return checkUserFilterStoreElements(user, element, authorizedMarkings, hasPlatformOrg);
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
