@@ -68,14 +68,16 @@ export const resolveContent = async (context, user, stixCoreObject) => {
     files = await resolveFiles(context, user, stixCoreObject);
   } else {
     const containers = await listAllToEntitiesThroughRelations(context, user, stixCoreObject.id, RELATION_OBJECT, [ENTITY_TYPE_CONTAINER_REPORT]);
-    const allFiles = await Promise.all(containers.slice(0, 15)).map((container) => resolveFiles(context, user, container));
-    files = allFiles.flat();
-    names = containers.map((n) => n.name);
-    descriptions = containers.map((n) => n.description);
+    if (containers) {
+      const allFilesPromise = containers.slice(0, 15).map((container) => resolveFiles(context, user, container));
+      const allFiles = await Promise.all(allFilesPromise);
+      files = allFiles.flat();
+      names = containers.map((n) => n.name);
+      descriptions = containers.map((n) => n.description);
+    }
   }
 
-  const result = [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
-  return result;
+  return [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
 };
 
 const generateTechnicalAttackPattern = async (obasAttackPattern, finalObasInjectorContract, scenarioId, dependsOnDuration) => {
