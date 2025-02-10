@@ -151,7 +151,7 @@
     "set-interval-async": "3.0.3",
     "showdown": "2.1.0",
     "source-map-support": "0.5.21",
-    "tough-cookie": "5.1.0",
+    "tough-cookie": "5.1.1",
     "turndown": "7.2.0",
     "unzipper": "0.12.3",
     "uuid": "11.0.3",
