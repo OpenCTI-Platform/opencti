@@ -44,16 +44,7 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type {
-  BasicStoreObject,
-  StoreCommon,
-  StoreCyberObservable,
-  StoreEntity,
-  StoreEntityIdentity,
-  StoreFileWithRefs,
-  StoreObject,
-  StoreRelation
-} from '../types/store';
+import type { BasicStoreObject, StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -1618,12 +1609,27 @@ export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
   });
 };
 
-export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
+export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix', nullForNotFoundStixId = false) => {
+  console.log('resolvedMap', resolvedMap);
+  console.log('ids', ids);
   return ids.map((id) => {
+    console.log('id', id);
+    console.log('isInternalId(id)', isInternalId(id));
+    console.log('from', from);
     if (from === 'internal' && isInternalId(id)) {
+      console.log('in internal ------');
       return resolvedMap[id]?.standard_id ?? id;
     }
     if (from === 'stix' && isStixId(id)) {
+      console.log('--------------');
+      console.log('in stix');
+      console.log('nullFor not found');
+      console.log('resolvedMap', resolvedMap);
+      console.log('--------------');
+      console.log('resolvedMap[id]?.internal_id', resolvedMap[id]?.internal_id);
+      if (nullForNotFoundStixId) {
+        return resolvedMap[id]?.internal_id ?? null;
+      }
       return resolvedMap[id]?.internal_id ?? id;
     }
     return id;
