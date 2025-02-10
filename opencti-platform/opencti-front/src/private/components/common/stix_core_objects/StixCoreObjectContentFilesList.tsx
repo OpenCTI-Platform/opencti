@@ -115,8 +115,9 @@ const StixCoreObjectContentFilesList = ({
     closePopover();
   };
 
-  const handleDisseminate = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleDisseminate = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
+    setMenuFile(file);
     return setDrawerOpen(true);
   };
 
@@ -158,12 +159,12 @@ const StixCoreObjectContentFilesList = ({
                 )}
               />
               <ListItemSecondaryAction>
-                {file.metaData?.mimetype === 'application/pdf' && (
+                {['application/pdf', 'text/html'].includes(file.metaData?.mimetype ?? '') && (
                 <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
                   <>
                     <EETooltip title={t_i18n('Disseminate')}>
                       <IconButton
-                        onClick={(e) => handleDisseminate(e)}
+                        onClick={(e) => handleDisseminate(e, file)}
                         size="small"
                         style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
                         aria-label="disseminate"
@@ -186,7 +187,7 @@ const StixCoreObjectContentFilesList = ({
               </ListItemSecondaryAction>
             </ListItemButton>
           </Tooltip>
-          {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
+          {['application/pdf', 'text/html'].includes(file.metaData?.mimetype ?? '') && isEnterpriseEdition && (
           <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
             <Drawer
               title={t_i18n('Disseminate a file')}
@@ -195,8 +196,8 @@ const StixCoreObjectContentFilesList = ({
             >
               <StixCoreObjectContentFilesDissemination
                 entityId={stixCoreObjectId}
-                fileId={file.id}
-                fileName={file.name}
+                fileId={menuFile?.id ?? ''}
+                fileName={menuFile?.name ?? ''}
                 onClose={() => setDrawerOpen(false)}
               />
             </Drawer>

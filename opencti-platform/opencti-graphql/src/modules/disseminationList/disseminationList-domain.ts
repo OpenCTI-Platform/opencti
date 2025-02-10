@@ -82,7 +82,7 @@ export const sendDisseminationEmail = async (
     const attachFileId = attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
     // To be disseminated a file must be Accessible and A PDF
-    if (file && file.metaData.mimetype === 'application/pdf') {
+    if (file && (file.metaData.mimetype === 'application/pdf' || file.metaData.mimetype === 'text/html')) {
       sentFiles.push(file);
       const stream = await downloadFile(file.id);
       attachmentListForSendMail.push({ filename: file.name, content: stream });
