@@ -12,7 +12,7 @@ import { draftContextBannerMutation } from '@components/drafts/DraftContextBanne
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
-import { usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -26,17 +26,23 @@ import { RelayError } from '../../../relay/relayTypes';
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
     draftWorkspace(id: $id) {
-      id
-      name
-      created_at
-      objectsCount {
-        containersCount
-        entitiesCount
-        observablesCount
-        relationshipsCount
-        sightingsCount
-        totalCount
-      }
+      ...DraftRootFragment
+    }
+  }
+`;
+
+const draftRootFragment = graphql`
+  fragment DraftRootFragment on DraftWorkspace {
+    id
+    name
+    created_at
+    objectsCount {
+      containersCount
+      entitiesCount
+      observablesCount
+      relationshipsCount
+      sightingsCount
+      totalCount
     }
   }
 `;
@@ -51,11 +57,13 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
     return (<ErrorNotFound />);
   }
 
+  const { id, objectsCount } = useFragment(draftRootFragment, draftWorkspace);
+
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
 
   useEffect(() => {
-    if (!draftContext || draftContext.id !== draftId) {
+    if (!draftContext || id !== draftId) {
       commitSwitchToDraft({
         variables: {
           input: [{ key: 'draft_context', value: [draftId] }],
@@ -89,7 +97,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             to={`/dashboard/drafts/${draftId}/entities`}
             value={`/dashboard/drafts/${draftId}/entities`}
             label={
-              <span>{t_i18n('Entities')} ({draftWorkspace.objectsCount.entitiesCount})</span>
+              <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
             }
           />
           <Tab
@@ -97,7 +105,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             to={`/dashboard/drafts/${draftId}/observables`}
             value={`/dashboard/drafts/${draftId}/observables`}
             label={
-              <span>{t_i18n('Observables')} ({draftWorkspace.objectsCount.observablesCount})</span>
+              <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
             }
           />
           <Tab
@@ -105,7 +113,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             to={`/dashboard/drafts/${draftId}/relationships`}
             value={`/dashboard/drafts/${draftId}/relationships`}
             label={
-              <span>{t_i18n('Relationships')} ({draftWorkspace.objectsCount.relationshipsCount})</span>
+              <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
             }
           />
           <Tab
@@ -113,7 +121,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             to={`/dashboard/drafts/${draftId}/sightings`}
             value={`/dashboard/drafts/${draftId}/sightings`}
             label={
-              <span>{t_i18n('Sightings')} ({draftWorkspace.objectsCount.sightingsCount})</span>
+              <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
             }
           />
           <Tab
@@ -121,7 +129,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             to={`/dashboard/drafts/${draftId}/containers`}
             value={`/dashboard/drafts/${draftId}/containers`}
             label={
-              <span>{t_i18n('Containers')} ({draftWorkspace.objectsCount.containersCount})</span>
+              <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
         </Tabs>

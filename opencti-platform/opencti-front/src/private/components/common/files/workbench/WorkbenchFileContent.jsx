@@ -1,4 +1,4 @@
-import { Add, ArchitectureOutlined, ArrowDropDown, ArrowDropUp, CheckCircleOutlined, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
+import { Add, ArchitectureOutlined, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -4201,7 +4201,6 @@ const WorkbenchFileContentComponent = ({
           <Button
             variant="contained"
             onClick={handleOpenValidate}
-            startIcon={<CheckCircleOutlined />}
             size="small"
           >
             {t_i18n('Validate this workbench')}
