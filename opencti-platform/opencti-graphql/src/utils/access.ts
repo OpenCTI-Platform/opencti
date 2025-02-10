@@ -560,7 +560,7 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
-export const checkUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
+export const checkUserCanAccessStixElement = async (user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return true;
@@ -596,7 +596,7 @@ export const checkUserCanAccessStixElement = async (context: AuthContext, user: 
 export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;
-  return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
+  return checkUserCanAccessStixElement(user, instance, hasPlatformOrg);
 };
 // end region
 
