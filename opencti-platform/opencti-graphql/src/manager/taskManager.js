@@ -2,18 +2,18 @@
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { lockResources } from '../lock/master-lock';
 import {
+  ACTION_TYPE_ADD,
   ACTION_TYPE_ENRICHMENT,
   ACTION_TYPE_MERGE,
   ACTION_TYPE_PROMOTE,
+  ACTION_TYPE_REMOVE,
+  ACTION_TYPE_REPLACE,
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
   ACTION_TYPE_RULE_ELEMENT_RESCAN,
   buildQueryFilters,
-  DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
   findAll,
   updateTask
 } from '../domain/backgroundTask';
@@ -35,6 +35,7 @@ import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_DELETE_DRAFT,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_RESTORE,
@@ -48,7 +49,6 @@ import {
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { BackgroundTaskScope, ConnectorType } from '../generated/graphql';
-import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
@@ -86,7 +86,6 @@ const findTaskToExecute = async (context) => {
   return R.head(tasks);
 };
 
-// region NEW implementation
 export const taskRule = async (context, user, task, callback) => {
   const { rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
@@ -106,6 +105,7 @@ export const taskRule = async (context, user, task, callback) => {
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
 };
+
 export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode);
@@ -115,26 +115,17 @@ export const taskQuery = async (context, user, task, callback) => {
   const finalOpts = { ...options, connectionFormat: false, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
+
 export const taskList = async (context, user, task, callback) => {
   const { task_ids, scope, task_order_mode } = task;
-  // processing elements in descending order makes possible restoring from trash elements with dependencies
-  let type = DEFAULT_ALLOWED_TASK_ENTITY_TYPES;
-  if (scope === BackgroundTaskScope.Import) {
-    type = [ENTITY_TYPE_INTERNAL_FILE];
-  } else if (scope === BackgroundTaskScope.PublicDashboard) {
-    type = [ENTITY_TYPE_PUBLIC_DASHBOARD];
-  } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
-    type = [ENTITY_TYPE_WORKSPACE];
-  }
   const options = {
-    type,
     orderMode: task_order_mode || 'desc',
+    // processing elements in descending order makes possible restoring from trash elements with dependencies
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
   };
   const elements = await internalFindByIds(context, user, task_ids, options);
   callback(elements);
 };
-// endregion
 
 const throwErrorInDraftContext = (context, user, actionType) => {
   if (!getDraftContext(context, user)) {
@@ -183,10 +174,6 @@ const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_RESTORE) {
     baseOperationObject.opencti_operation = 'restore';
   }
-  if (actionType === ACTION_TYPE_REMOVE_FROM_DRAFT) {
-    baseOperationObject.opencti_operation = 'delete-draft';
-    // TODO JRI HANDLE TEST ACTION_TYPE_REMOVE_FROM_DRAFT
-  }
   if (actionType === 'KNOWLEDGE_REMOVE') {
     baseOperationObject.opencti_operation = 'delete-force';
   }
@@ -198,6 +185,14 @@ const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'merge';
     baseOperationObject.merge_target_id = element.id; // To be compliant with current worker implementation
     baseOperationObject.merge_source_ids = operations[0].context.values;
+  }
+  // Draft management
+  if (actionType === ACTION_TYPE_REMOVE_FROM_DRAFT) {
+    baseOperationObject.opencti_operation = 'revert-draft';
+  }
+  if (actionType === ACTION_TYPE_DELETE_DRAFT) {
+    baseOperationObject.opencti_operation = 'delete-draft';
+    // TODO: frontend change operation for draft remove.
   }
   // Rule management
   if (actionType === ACTION_TYPE_RULE_APPLY) {
@@ -222,7 +217,7 @@ const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.sharing_organization_ids = operations[0].context.values;
     baseOperationObject.sharing_direct_container = false;
   }
-  // Access
+  // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
     baseOperationObject.opencti_operation = 'clear_access_restriction';
   }
@@ -242,6 +237,7 @@ const sendResultToQueue = async (context, user, task, work, connectorId, objects
     applicant_id: user.id,
     content,
     work_id: work.id,
+    draft_id: task.draft_context ?? null,
     no_split: opts.forceNoSplit ?? false
   });
   // Update task
@@ -552,7 +548,7 @@ const taskHandler = async () => {
         return 'KNOWLEDGE_CONTAINER';
       }
       // Support generic knowledge§
-      if (['ADD', 'REPLACE', 'REMOVE'].includes(action.type)) {
+      if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {
         return 'KNOWLEDGE_CHANGE';
       }
       // No need for transformation
