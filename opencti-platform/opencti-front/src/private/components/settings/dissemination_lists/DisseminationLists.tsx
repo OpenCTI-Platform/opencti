@@ -20,6 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import AlertInfo from '../../../../components/AlertInfo';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const disseminationListsQuery = graphql`
@@ -162,32 +163,34 @@ const DisseminationLists = () => {
   return (
     <>
       <AccessesMenu/>
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
-      {!isEnterpriseEdition ? (
-        <EnterpriseEdition feature="File indexing" />
-      ) : (
-        <>
-          <AlertInfo
-            style={{ marginBottom: '16px' }}
-            content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
-          />
-          {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            toolbarFilters={contextFilters}
-            lineFragment={disseminationListsLineFragment}
-            disableLineSelection
-            disableNavigation
-            preloadedPaginationProps={preloadedPaginationProps}
-            actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
-          />
-          )}
-          <DisseminationListCreation paginationOptions={queryPaginationOptions} />
-        </>
-      )}
+      <PageContainer withRightMenu>
+        <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
+        {!isEnterpriseEdition ? (
+          <EnterpriseEdition feature="File indexing" />
+        ) : (
+          <>
+            <AlertInfo
+              style={{ marginBottom: '16px' }}
+              content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
+            />
+            {queryRef && (
+              <DataTable
+                dataColumns={dataColumns}
+                resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                toolbarFilters={contextFilters}
+                lineFragment={disseminationListsLineFragment}
+                disableLineSelection
+                disableNavigation
+                preloadedPaginationProps={preloadedPaginationProps}
+                actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+              />
+            )}
+            <DisseminationListCreation paginationOptions={queryPaginationOptions} />
+          </>
+        )}
+      </PageContainer>
     </>
   );
 };
