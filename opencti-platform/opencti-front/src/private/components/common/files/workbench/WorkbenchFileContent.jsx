@@ -239,8 +239,8 @@ export const workbenchFileContentAttributesQuery = graphql`
 `;
 
 const workbenchFileContentMutation = graphql`
-  mutation WorkbenchFileContentMutation($file: Upload!, $entityId: String, $refreshEntity: Boolean) {
-    uploadPending(file: $file, entityId: $entityId, refreshEntity: $refreshEntity) {
+  mutation WorkbenchFileContentMutation($file: Upload!, $entityId: String, $file_markings: [String!], $refreshEntity: Boolean) {
+    uploadPending(file: $file, entityId: $entityId, file_markings: $file_markings, refreshEntity: $refreshEntity) {
       id
     }
   }
@@ -426,10 +426,7 @@ const WorkbenchFileContentComponent = ({
       + stixSightings.length
       + containers.length;
     if (numberOfObjects > 0) {
-      let currentEntityId = null;
-      if (file.metaData.entity_id && file.metaData.entity) {
-        currentEntityId = file.metaData.entity_id;
-      }
+      const currentEntityId = file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
       // update entity container objects_refs
       if (currentEntityId) {
         const currentEntityContainer = containers.find(
@@ -472,7 +469,11 @@ const WorkbenchFileContentComponent = ({
         });
         commitMutation({
           mutation: workbenchFileContentMutation,
-          variables: { file: fileToUpload, entityId: currentEntityId },
+          variables: {
+            file: fileToUpload,
+            entityId: currentEntityId,
+            file_markings: file.metaData.file_markings ?? [],
+          },
         });
       }
     }
@@ -846,10 +847,7 @@ const WorkbenchFileContentComponent = ({
 
   // region submission
   const onSubmitValidate = (values, { setSubmitting, resetForm }) => {
-    let currentEntityId = null;
-    if (file.metaData.entity_id && file.metaData.entity) {
-      currentEntityId = file.metaData.entity_id;
-    }
+    const currentEntityId = file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',
@@ -871,6 +869,7 @@ const WorkbenchFileContentComponent = ({
       variables: {
         file: fileToUpload,
         entityId: currentEntityId,
+        file_markings: file.metaData.file_markings ?? [],
         refreshEntity: values.refreshEntity,
       },
       onCompleted: () => {
@@ -909,10 +908,7 @@ const WorkbenchFileContentComponent = ({
   };
 
   const onSubmitConvertToDraft = (values, { setSubmitting, resetForm }) => {
-    let currentEntityId = null;
-    if (file.metaData.entity_id && file.metaData.entity) {
-      currentEntityId = file.metaData.entity_id;
-    }
+    const currentEntityId = file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',
@@ -934,6 +930,7 @@ const WorkbenchFileContentComponent = ({
       variables: {
         file: fileToUpload,
         entityId: currentEntityId,
+        file_markings: file.metaData.file_markings ?? [],
         refreshEntity: values.refreshEntity,
       },
       onCompleted: () => {
@@ -4431,6 +4428,7 @@ const WorkbenchFileContent = createFragmentContainer(
         metaData {
           mimetype
           encoding
+          file_markings
           list_filters
           messages {
             timestamp
