@@ -1,13 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -20,12 +15,13 @@ import NoteEditionContainer from './NoteEditionContainer';
 import Security, { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
-import Transition from '../../../../components/Transition';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const NotePopoverDeletionMutation = graphql`
   mutation NotePopoverDeletionMutation($id: ID!) {
@@ -55,23 +51,17 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => setDisplayDelete(false);
   const [commit] = useApiMutation(NotePopoverDeletionMutation);
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commit({
       variables: {
         id,
@@ -82,10 +72,10 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
         }
       },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
         if (handleOpenRemoveExternal) {
-          handleCloseDelete();
+          deletion.handleCloseDelete();
         } else {
           navigate('/dashboard/analyses/notes');
         }
@@ -158,31 +148,16 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             data={note}
             needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
           >
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </CollaborativeSecurity>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
         <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
-        <Dialog
-          open={displayDelete}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this note?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDelete} disabled={deleting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={t_i18n('Do you want to delete this note?')}
+        />
         <QueryRenderer
           query={noteEditionQuery}
           variables={{ id }}
