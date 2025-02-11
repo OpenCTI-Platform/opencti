@@ -35,7 +35,6 @@ import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
-  ACTION_TYPE_DELETE_DRAFT,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_RESTORE,
@@ -189,10 +188,6 @@ const baseOperationBuilder = (actionType, operations, element) => {
   // Draft management
   if (actionType === ACTION_TYPE_REMOVE_FROM_DRAFT) {
     baseOperationObject.opencti_operation = 'revert-draft';
-  }
-  if (actionType === ACTION_TYPE_DELETE_DRAFT) {
-    baseOperationObject.opencti_operation = 'delete-draft';
-    // TODO: frontend change operation for draft remove.
   }
   // Rule management
   if (actionType === ACTION_TYPE_RULE_APPLY) {

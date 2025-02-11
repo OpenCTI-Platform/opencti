@@ -69,6 +69,7 @@ type ObjectWithCreators = {
 const administratorRoleId = uuidv4();
 export const ADMINISTRATOR_ROLE: UserRole = {
   id: administratorRoleId,
+  entity_type: 'Role',
   internal_id: administratorRoleId,
   name: ROLE_ADMINISTRATOR
 };
@@ -76,6 +77,7 @@ export const ADMINISTRATOR_ROLE: UserRole = {
 const defaultRoleId = uuidv4();
 export const DEFAULT_ROLE: UserRole = {
   id: defaultRoleId,
+  entity_type: 'Role',
   internal_id: defaultRoleId,
   name: ROLE_DEFAULT
 };

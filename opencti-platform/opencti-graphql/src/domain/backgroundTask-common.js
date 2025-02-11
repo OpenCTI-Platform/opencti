@@ -26,7 +26,6 @@ export const TASK_TYPE_RULE = 'RULE';
 export const TASK_TYPE_LIST = 'LIST';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
-export const ACTION_TYPE_DELETE_DRAFT = 'DELETE_DRAFT';
 export const ACTION_TYPE_RESTORE = 'RESTORE';
 export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';

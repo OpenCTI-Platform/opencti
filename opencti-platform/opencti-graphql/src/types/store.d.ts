@@ -96,6 +96,7 @@ interface BasicStoreIdentifier {
   id: string;
   internal_id: string;
   standard_id?: StixId;
+  entity_type: string;
   x_opencti_stix_ids?: Array<StixId>;
 }
 
