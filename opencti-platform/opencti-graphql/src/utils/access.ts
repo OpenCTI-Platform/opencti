@@ -18,7 +18,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError } from '../config/errors';
-import { isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
+import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
@@ -456,12 +456,10 @@ const isEntityOrganizationsAllowed = (
   entityOrganizations: string[],
   user: AuthUser,
   hasPlatformOrg: boolean,
-  opts: { useStandardId?: boolean } = {}
 ) => {
-  const { useStandardId = false } = opts;
   // If platform organization is set
   if (hasPlatformOrg) {
-    const userOrganizations = user.organizations.map((o) => (useStandardId ? o.standard_id : o.internal_id));
+    const userOrganizations = user.organizations.map((o) => extractIdsFromStoreObject(o)).flat();
 
     // If user part of platform organization, is granted by default
     if (user.inside_platform_organization) {
@@ -598,7 +596,7 @@ export const checkUserCanAccessStixElement = (user: AuthUser, instance: StixObje
   }
   // Check restricted elements
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const organizationAllowed = isEntityOrganizationsAllowed(instance.id, elementOrganizations, user, hasPlatformOrg, { useStandardId: true });
+  const organizationAllowed = isEntityOrganizationsAllowed(instance.id, elementOrganizations, user, hasPlatformOrg);
   // either allowed by organization or authorized members
   return organizationAllowed || (authorized_members.length > 0 && authorizedMemberAllowed);
 };
