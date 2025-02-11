@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { DeleteOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
-import { interval } from 'rxjs';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -16,13 +15,11 @@ import IconButton from '@mui/material/IconButton';
 import { graphql, createRefetchContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../relay/environment';
-import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
+import { timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
 import ItemIcon from '../../../components/ItemIcon';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-
-const interval$ = interval(FIVE_SECONDS);
 
 const useStyles = makeStyles((theme) => ({
   item: {},
@@ -71,13 +68,6 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
   const [displayKillSession, setDisplayKillSession] = useState(false);
   const [killing, setKilling] = useState(false);
   const [sessionToKill, setSessionToKill] = useState(null);
-
-  useEffect(() => {
-    const subscription = interval$.subscribe(() => relay.refetch());
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   const handleOpenKillSession = (session) => {
     setDisplayKillSession(true);
