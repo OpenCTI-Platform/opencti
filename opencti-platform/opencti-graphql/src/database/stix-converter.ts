@@ -1610,23 +1610,11 @@ export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
 };
 
 export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix', nullForNotFoundStixId = false) => {
-  console.log('resolvedMap', resolvedMap);
-  console.log('ids', ids);
   return ids.map((id) => {
-    console.log('id', id);
-    console.log('isInternalId(id)', isInternalId(id));
-    console.log('from', from);
     if (from === 'internal' && isInternalId(id)) {
-      console.log('in internal ------');
       return resolvedMap[id]?.standard_id ?? id;
     }
     if (from === 'stix' && isStixId(id)) {
-      console.log('--------------');
-      console.log('in stix');
-      console.log('nullFor not found');
-      console.log('resolvedMap', resolvedMap);
-      console.log('--------------');
-      console.log('resolvedMap[id]?.internal_id', resolvedMap[id]?.internal_id);
       if (nullForNotFoundStixId) {
         return resolvedMap[id]?.internal_id ?? null;
       }
