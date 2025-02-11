@@ -203,7 +203,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 onClick={submitForm}
                 disabled={isSubmitting}
               >
-                {t_i18n('GO go go')}
+                {t_i18n('Save')}
               </Button>
             </Form>
           );
