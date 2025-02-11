@@ -46,6 +46,17 @@ class PositionKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/threats"
             element={
               <EntityStixCoreRelationships

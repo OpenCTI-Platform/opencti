@@ -60,6 +60,17 @@ const CountryKnowledgeComponent = ({
           }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={[]}
+              entityLink={link}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/threats"
           element={
             <EntityStixCoreRelationships

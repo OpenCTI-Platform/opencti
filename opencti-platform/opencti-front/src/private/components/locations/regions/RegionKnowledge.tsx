@@ -59,6 +59,17 @@ const RegionKnowledgeComponent = ({
           }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipTypes={[]}
+              entityLink={link}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/threats"
           element={
             <EntityStixCoreRelationships
