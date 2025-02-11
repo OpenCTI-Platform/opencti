@@ -97,7 +97,6 @@ interface KnowledgeBarProps {
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
-  console.log('LOCATION', location);
   return (
     <MenuItem
       component={Link}
@@ -141,7 +140,6 @@ const StixCoreObjectKnowledgeBar = ({
     related: indexEntities(relationshipsRelatedDistribution),
     coreObjects: indexEntities(stixCoreObjectsDistribution),
   };
-  console.log('distributions', distributions);
 
   const sumEntitiesByKeys = (source: Record<string, number>, keys?: string[]) => {
     if (keys) {
