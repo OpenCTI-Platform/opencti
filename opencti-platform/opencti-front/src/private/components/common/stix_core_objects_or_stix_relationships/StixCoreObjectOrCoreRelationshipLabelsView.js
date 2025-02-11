@@ -160,24 +160,21 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <CardLabel style={{ marginTop: 20 }} action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IconButton
-              color="primary"
-              aria-label={t_i18n('Add new labels')}
-              title={t_i18n('Add new labels')}
-              onClick={handleOpenAdd}
-            >
-              <Add fontSize="small" />
-            </IconButton>
-          </Security>
+      <CardLabel style={{ marginTop: 20 }} action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IconButton
+            color="primary"
+            aria-label={t_i18n('Add new labels')}
+            title={t_i18n('Add new labels')}
+            onClick={handleOpenAdd}
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        </Security>
         )}
-        >
-          {t_i18n('Labels')}
-        </CardLabel>
-
-      </div>
+      >
+        {t_i18n('Labels')}
+      </CardLabel>
       <div className={classes.objectLabel}>
         <FieldOrEmpty source={labels}>
           {map(

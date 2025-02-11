@@ -66,7 +66,6 @@ ThreatActorIndividualDetailsChipsProps
       <CardLabel action={(
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
         >
           <AddComponent threatActorIndividual={data} />
         </Security>

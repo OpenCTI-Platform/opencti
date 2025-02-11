@@ -75,7 +75,6 @@ const ThreatActorIndividualDemographics = ({
             <CardLabel action={(
               <Security
                 needs={[KNOWLEDGE_KNUPDATE]}
-                placeholder={<div style={{ height: 29 }}/>}
               >
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
@@ -105,7 +104,6 @@ const ThreatActorIndividualDemographics = ({
             <CardLabel action={(
               <Security
                 needs={[KNOWLEDGE_KNUPDATE]}
-                placeholder={<div style={{ height: 29 }}/>}
               >
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
