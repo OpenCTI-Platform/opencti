@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { dateFormat, jsDate } from '../../Time';
 import { isNone, useFormatter } from '../../../components/i18n';
 import { defaultDate, getMainRepresentative } from '../../defaultRepresentatives';
-import type { GraphData, GraphLink, GraphNode } from './graph';
+import type { GraphData, GraphLink, GraphNode } from '../graph.types';
 import { truncate } from '../../String';
 import GRAPH_IMAGES from './graphImages';
 import { graphImages } from '../../Graph';

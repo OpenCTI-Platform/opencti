@@ -42,3 +42,13 @@ export interface GraphData {
     y: number | null
   }
 }
+
+export interface GraphState {
+  mode3D: boolean
+  modeTree: 'vertical' | 'horizontal' | null
+  withForces: boolean
+  selectFreeRectangle: boolean
+  selectFree: boolean
+  selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
+  showTimeRange: boolean
+}
