@@ -255,11 +255,9 @@ export const convertRepresentationsIds = async (context: AuthContext, user: Auth
   const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
   representations.forEach((representation) => {
     representation.attributes.forEach((attribute) => {
-      console.log('attribute', attribute);
-      const defaultValues = attribute.default_values;
-      if (defaultValues) {
-        idsValuesRemap(defaultValues, idsMap, from, true);
-        // nullForNotFoundStixId = true because we don't want to display a not-found entity for default value at csv mapper export
+      if (attribute && attribute.default_values) {
+        // eslint-disable-next-line no-param-reassign
+        attribute.default_values = idsValuesRemap(attribute.default_values, idsMap, from, true);
       }
     });
   });
