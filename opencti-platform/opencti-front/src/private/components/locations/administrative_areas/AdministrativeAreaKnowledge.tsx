@@ -66,6 +66,8 @@ const AdministrativeAreaKnowledge = ({
               entityId={administrativeArea.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={administrativeArea.startTime}
+              defaultStopTime={administrativeArea.stopTime}
               allDirections
             />
           }
