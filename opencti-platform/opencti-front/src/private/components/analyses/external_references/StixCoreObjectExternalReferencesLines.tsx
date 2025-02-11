@@ -502,6 +502,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
