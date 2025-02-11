@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, AMBER_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, getGroupIdByName, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -11,6 +11,7 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { findAllTemplates } from '../../../src/domain/status';
 import { logApp } from '../../../src/config/conf';
+import { waitInSec } from '../../../src/database/utils';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -227,7 +228,7 @@ describe('Add Request Access to an entity and create an RFI.'
   let approvedStatusId: string;
   let declinedStatusId: string;
 
-  it.todo('Request access feature must be disabled when platform orga is not set', async () => {
+  it('Request access feature must be disabled when platform orga is not set', async () => {
     const platformSettings = await queryAsAdminWithSuccess({
       query: QUERY_ROOT_SETTINGS,
       variables: {}
@@ -258,6 +259,7 @@ describe('Add Request Access to an entity and create an RFI.'
   });
 
   it('should throw error when configuration is missing for Request Access feature', async () => {
+    // this will only be true the first time, if you re-run tests without init data you might have this step fail.
     const platformSettings = await queryAsAdminWithSuccess({
       query: READ_SETTINGS_QUERY,
       variables: {},
@@ -281,7 +283,6 @@ describe('Add Request Access to an entity and create an RFI.'
 
   it('should RFI workflow enabled with at least one status', async () => {
     const statusTemplateId_NEW = await listEntitiesPaginated<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { search: '"NEW"' });
-    logApp.info('statusTemplateId_NEW:', { statusTemplateId_NEW });
     expect(statusTemplateId_NEW.edges[0].node.name).toBe('NEW');
     expect(statusTemplateId_NEW.edges[0].node.internal_id).toBeDefined();
     newStatusId = statusTemplateId_NEW.edges[0].node.internal_id;
@@ -334,6 +335,7 @@ describe('Add Request Access to an entity and create an RFI.'
     const closedTemplate = allTemplates.edges.find((template) => template.node.name === 'CLOSED');
     const declinedTemplate = allTemplates.edges.find((template) => template.node.name === 'DECLINED');
     const approvedTemplate = allTemplates.edges.find((template) => template.node.name === 'APPROVED');
+    const amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
 
     const requestAccessConfig = await queryAsAdminWithSuccess({
       query: CONFIGURE_REQUEST_ACCESS_MUTATION,
@@ -341,20 +343,23 @@ describe('Add Request Access to an entity and create an RFI.'
         input: {
           approve_status_template_id: newTemplate?.node.id,
           decline_status_template_id: closedTemplate?.node.id,
-          approval_admin: [AMBER_GROUP.id]
+          approval_admin: [amberGroupId]
         }
       },
     });
-    logApp.info('ANGIE - requestAccessConfig:', { requestAccessConfig });
-
+    logApp.info('ANGIE - requestAccessConfig query result:', { requestAccessConfig });
+    // await waitInSec(300);
     const rfiEntitySettings = await queryAsAdminWithSuccess({
       query: QUERY_REQUEST_ACCESS_SETTINGS,
       variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI },
     });
     logApp.info('ANGIE - rfiEntitySettings:', { rfiEntitySettings });
-    const requestAccessWorkflowSettings = rfiEntitySettings?.data?.subType.settings.request_access_workflow;
-    logApp.info('ANGIE - request_access_workflow:', { requestAccessWorkflowSettings });
-    expect(requestAccessWorkflowSettings.approval_admin).toBeDefined();
+    const requestAccessConfiguration = rfiEntitySettings?.data?.subType.settings.requestAccessConfiguration;
+    logApp.info('ANGIE - requestAccessConfiguration:', { requestAccessConfiguration });
+    expect(requestAccessConfiguration.approval_admin).toBeDefined();
+    expect(requestAccessConfiguration.approval_admin[0].id).toBe(amberGroupId);
+    expect(requestAccessConfiguration.approved_status.template.name).toBe('NEW');
+    expect(requestAccessConfiguration.declined_status.template.name).toBe('CLOSED');
 
     // Back to "Normal" status
     const requestAccessConfigBackToNormal = await queryAsAdminWithSuccess({
@@ -363,11 +368,22 @@ describe('Add Request Access to an entity and create an RFI.'
         input: {
           approve_status_template_id: approvedTemplate?.node.id,
           decline_status_template_id: declinedTemplate?.node.id,
-          approval_admin: [AMBER_GROUP.id] // TODO euh..
+          approval_admin: [amberGroupId]
         }
       },
     });
     logApp.info('ANGIE - requestAccessConfigBackToNormal:', { requestAccessConfigBackToNormal });
+    const rfiEntitySettingsBackToNormal = await queryAsAdminWithSuccess({
+      query: QUERY_REQUEST_ACCESS_SETTINGS,
+      variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI },
+    });
+    logApp.info('ANGIE - rfiEntitySettings:', { rfiEntitySettingsBackToNormal });
+    const configurationBackToNormal = rfiEntitySettingsBackToNormal?.data?.subType.settings.requestAccessConfiguration;
+    logApp.info('ANGIE - requestAccessConfiguration:', { configurationBackToNormal });
+    expect(configurationBackToNormal.approval_admin).toBeDefined();
+    expect(configurationBackToNormal.approval_admin[0].id).toBe(amberGroupId);
+    expect(configurationBackToNormal.approved_status.template.name).toBe('APPROVED');
+    expect(configurationBackToNormal.declined_status.template.name).toBe('DECLINED');
   });
 
   it.todo('should create malware with restricted access', async () => {
