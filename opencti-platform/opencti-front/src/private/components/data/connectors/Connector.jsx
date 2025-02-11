@@ -42,6 +42,8 @@ import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -118,8 +120,6 @@ const ConnectorComponent = ({ connector, relay }) => {
   const connectorAvailableFilterKeys = getConnectorAvailableFilterKeys(connector);
   const [filters, helpers] = useFiltersState(connectorFilters);
 
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
@@ -159,14 +159,6 @@ const ConnectorComponent = ({ connector, relay }) => {
       submitUpdateConnectorTrigger(variables);
     }
   }, [filters]);
-
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
 
   const handleOpenResetState = () => {
     setDisplayResetState(true);
@@ -213,16 +205,16 @@ const ConnectorComponent = ({ connector, relay }) => {
       },
     });
   };
-
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commitMutation({
       mutation: connectorDeletionMutation,
       variables: {
         id: connector.id,
       },
       onCompleted: () => {
-        handleCloseDelete();
+        deletion.handleCloseDelete();
         navigate('/dashboard/data/ingestion/connectors');
       },
     });
@@ -301,7 +293,7 @@ const ConnectorComponent = ({ connector, relay }) => {
             </Tooltip>
             <Tooltip title={t_i18n('Clear this connector')}>
               <IconButton
-                onClick={handleOpenDelete}
+                onClick={deletion.handleOpenDelete}
                 aria-haspopup="true"
                 color="primary"
                 disabled={connector.active || connector.built_in}
@@ -681,34 +673,11 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Paper>
         </Grid>
       </Grid>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this connector?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this connector?')}
+      />
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayResetState}

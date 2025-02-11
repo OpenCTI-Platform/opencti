@@ -21,6 +21,8 @@ import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
 import IngestionTaxiiCollectionEdition, { ingestionTaxiiCollectionMutationFieldPatch } from './IngestionTaxiiCollectionEdition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiCollectionPopoverDeletionMutation($id: ID!) {
@@ -54,8 +56,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
   const [displayStop, setDisplayStop] = useState(false);
@@ -78,15 +78,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     setDisplayUpdate(false);
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
-
   const handleOpenStart = () => {
     setDisplayStart(true);
     handleClose();
@@ -106,8 +97,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   const [commitDelete] = useApiMutation(ingestionTaxiiPopoverDeletionMutation);
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commitDelete({
       variables: {
         id: ingestionTaxiiId,
@@ -121,8 +113,8 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         );
       },
       onCompleted: () => {
-        setDeleting(false);
-        handleCloseDelete();
+        deletion.setDeleting(false);
+        deletion.handleCloseDelete();
       },
     });
   };
@@ -186,7 +178,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
         </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
+        <MenuItem onClick={deletion.handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
       </Menu>
@@ -206,34 +198,11 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           return <div />;
         }}
       />
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this TAXII ingester?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this TAXII ingester?')}
+      />
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayStart}

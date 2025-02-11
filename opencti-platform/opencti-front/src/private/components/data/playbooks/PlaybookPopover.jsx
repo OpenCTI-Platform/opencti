@@ -31,6 +31,8 @@ import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,8 +67,6 @@ const PlaybookPopover = (props) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
   const [displayStop, setDisplayStop] = useState(false);
@@ -74,10 +74,6 @@ const PlaybookPopover = (props) => {
   const handleOpenUpdate = () => {
     setAnchorEl(null);
     setDisplayUpdate(true);
-  };
-  const handleOpenDelete = () => {
-    setAnchorEl(null);
-    setDisplayDelete(true);
   };
   const handleOpenStart = () => {
     setAnchorEl(null);
@@ -87,8 +83,9 @@ const PlaybookPopover = (props) => {
     setAnchorEl(null);
     setDisplayStop(true);
   };
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commitMutation({
       mutation: playbookPopoverDeletionMutation,
       variables: {
@@ -105,11 +102,11 @@ const PlaybookPopover = (props) => {
         }
       },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         if (!paginationOptions) {
           navigate('/dashboard/data/processing/automation');
         }
-        setDisplayDelete(true);
+        deletion.setDisplayDelete(true);
       },
     });
   };
@@ -162,7 +159,7 @@ const PlaybookPopover = (props) => {
           <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <QueryRenderer
         query={playbookEditionQuery}
@@ -180,27 +177,11 @@ const PlaybookPopover = (props) => {
           return <div />;
         }}
       />
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={() => setDisplayDelete(false)}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this playbook?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDisplayDelete(false)} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this playbook?')}
+      />
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayStart}
