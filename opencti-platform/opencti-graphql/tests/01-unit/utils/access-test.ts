@@ -214,20 +214,20 @@ describe('User access entity testing', async () => {
     ],
   } as BasicStoreCommon;
 
-  it('user in auth members should access element', async () => {
-    const hasAccess = await checkUserCanAccessStixElement(user_is_allowed as AuthUser, report as StixObject, true);
+  it('user in auth members should access element', () => {
+    const hasAccess = checkUserCanAccessStixElement(user_is_allowed as AuthUser, report as StixObject, true);
     expect(hasAccess).toEqual(true);
   });
-  it('User not in authorized members should not access STIX element', async () => {
-    const hasAccess = await checkUserCanAccessStixElement(user_is_not_allowed as AuthUser, report as StixObject, true);
+  it('User not in authorized members should not access STIX element', () => {
+    const hasAccess = checkUserCanAccessStixElement(user_is_not_allowed as AuthUser, report as StixObject, true);
     expect(hasAccess).toEqual(false);
   });
-  it('User in authorized members should access stored element', async () => {
-    const hasAccess = await checkUserFilterStoreElements(user_is_allowed as AuthUser, element as BasicStoreCommon, [], true);
+  it('User in authorized members should access stored element', () => {
+    const hasAccess = checkUserFilterStoreElements(user_is_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(true);
   });
-  it('User not in authorized members should not access stored element', async () => {
-    const hasAccess = await checkUserFilterStoreElements(user_is_not_allowed as AuthUser, element as BasicStoreCommon, [], true);
+  it('User not in authorized members should not access stored element', () => {
+    const hasAccess = checkUserFilterStoreElements(user_is_not_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(false);
   });
 });

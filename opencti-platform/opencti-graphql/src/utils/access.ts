@@ -520,7 +520,7 @@ export const canRequestAccess = async (context: AuthContext, user: AuthUser, ele
   return elementsThatRequiresAccess;
 };
 
-export const checkUserFilterStoreElements = async (
+export const checkUserFilterStoreElements = (
   user: AuthUser,
   element: BasicStoreCommon,
   authorizedMarkings: string[],
@@ -570,7 +570,7 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
-export const checkUserCanAccessStixElement = async (user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
+export const checkUserCanAccessStixElement = (user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return true;
