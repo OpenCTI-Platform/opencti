@@ -163,7 +163,7 @@ const CsvMappers = () => {
               style={{
                 position: 'fixed',
                 bottom: 30,
-                right: 250,
+                right: 230,
                 zIndex: 1100,
               }}
               ariaLabel="Create"

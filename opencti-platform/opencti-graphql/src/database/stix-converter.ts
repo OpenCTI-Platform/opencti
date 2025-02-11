@@ -1609,17 +1609,18 @@ export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
   });
 };
 
-export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix', nullForNotFoundStixId = false) => {
+export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix', removeNotFoundStixIds = false) => {
   return ids.map((id) => {
     if (from === 'internal' && isInternalId(id)) {
       return resolvedMap[id]?.standard_id ?? id;
     }
     if (from === 'stix' && isStixId(id)) {
-      if (nullForNotFoundStixId) {
+      if (removeNotFoundStixIds) {
         return resolvedMap[id]?.internal_id ?? null;
       }
       return resolvedMap[id]?.internal_id ?? id;
     }
     return id;
-  });
+  })
+    .filter((id) => !!id); // remove null values
 };
