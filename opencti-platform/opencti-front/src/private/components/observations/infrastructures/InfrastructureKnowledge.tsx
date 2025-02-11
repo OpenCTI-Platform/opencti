@@ -89,6 +89,8 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               entityId={infrastructureData.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={infrastructure.startTime}
+              defaultStopTime={infrastructure.stopTime}
               allDirections
             />
           }

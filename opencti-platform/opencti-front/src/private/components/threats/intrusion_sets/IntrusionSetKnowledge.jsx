@@ -54,6 +54,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 entityId={intrusionSet.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={intrusionSet.startTime}
+                defaultStopTime={intrusionSet.stopTime}
                 allDirections
               />
             }

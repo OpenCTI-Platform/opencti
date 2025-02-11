@@ -56,6 +56,8 @@ class SystemKnowledgeComponent extends Component {
                 entityId={system.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={system.startTime}
+                defaultStopTime={system.stopTime}
                 allDirections
               />
             }

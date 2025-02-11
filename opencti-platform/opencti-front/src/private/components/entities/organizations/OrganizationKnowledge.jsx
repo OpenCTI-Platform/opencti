@@ -54,6 +54,8 @@ class OrganizationKnowledgeComponent extends Component {
               entityId={organization.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={organization.startTime}
+              defaultStopTime={organization.stopTime}
               allDirections
             />
           }

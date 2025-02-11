@@ -75,6 +75,8 @@ const ThreatActorIndividualKnowledgeComponent = ({
             entityId={threatActorIndividual.id}
             relationshipTypes={[]}
             entityLink={link}
+            defaultStartTime={threatActorIndividual.startTime}
+            defaultStopTime={threatActorIndividual.stopTime}
             allDirections
           />
         }

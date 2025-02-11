@@ -52,6 +52,8 @@ class PositionKnowledgeComponent extends Component {
                 entityId={position.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={position.startTime}
+                defaultStopTime={position.stopTime}
                 allDirections
               />
             }

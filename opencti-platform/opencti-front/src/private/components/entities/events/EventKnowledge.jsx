@@ -48,6 +48,8 @@ class EventKnowledgeComponent extends Component {
                 entityId={event.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={event.startTime}
+                defaultStopTime={event.stopTime}
                 allDirections
               />
             }

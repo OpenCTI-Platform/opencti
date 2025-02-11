@@ -48,6 +48,8 @@ class SectorKnowledgeComponent extends Component {
                 entityId={sector.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={sector.startTime}
+                defaultStopTime={sector.stopTime}
                 allDirections
               />
             }

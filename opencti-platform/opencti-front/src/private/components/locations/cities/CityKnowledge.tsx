@@ -62,6 +62,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               entityId={city.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={city.startTime}
+              defaultStopTime={city.stopTime}
               allDirections
             />
           }

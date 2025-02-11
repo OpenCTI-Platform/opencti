@@ -54,6 +54,8 @@ class IndividualKnowledgeComponent extends Component {
               entityId={individual.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={individual.startTime}
+              defaultStopTime={individual.stopTime}
               allDirections
             />
           }

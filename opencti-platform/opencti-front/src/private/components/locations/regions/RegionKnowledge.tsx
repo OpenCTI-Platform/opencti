@@ -65,6 +65,8 @@ const RegionKnowledgeComponent = ({
               entityId={region.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={region.startTime}
+              defaultStopTime={region.stopTime}
               allDirections
             />
           }

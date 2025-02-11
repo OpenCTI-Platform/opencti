@@ -55,6 +55,8 @@ class ChannelKnowledgeComponent extends Component {
                 entityId={channel.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={channel.startTime}
+                defaultStopTime={channel.stopTime}
                 allDirections
               />
             }

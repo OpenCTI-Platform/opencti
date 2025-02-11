@@ -49,6 +49,8 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={[]}
+                defaultStartTime={narrative.startTime}
+                defaultStopTime={narrative.stopTime}
                 entityLink={link}
                 allDirections
               />

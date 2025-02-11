@@ -66,6 +66,8 @@ const CountryKnowledgeComponent = ({
               entityId={country.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={country.startTime}
+              defaultStopTime={counrty.stopTime}
               allDirections
             />
           }

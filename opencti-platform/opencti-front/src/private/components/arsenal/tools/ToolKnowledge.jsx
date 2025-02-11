@@ -55,6 +55,8 @@ class ToolKnowledgeComponent extends Component {
                 entityId={tool.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={tool.startTime}
+                defaultStopTime={tool.stopTime}
                 allDirections
               />
             }

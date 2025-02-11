@@ -72,6 +72,8 @@ const IncidentKnowledge = ({
               entityId={incident.id}
               relationshipTypes={[]}
               entityLink={link}
+              defaultStartTime={incident.startTime}
+              defaultStopTime={incident.stopTime}
               allDirections
             />
           }

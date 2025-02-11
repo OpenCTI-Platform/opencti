@@ -45,6 +45,8 @@ class AttackPatternKnowledgeComponent extends Component {
                 entityId={attackPattern.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={attackPattern.startTime}
+                defaultStopTime={attackPattern.stopTime}
                 allDirections
               />
             }
