@@ -42,9 +42,11 @@ class AttackPatternKnowledgeComponent extends Component {
           <Route
             path="/all"
             element={
-              <StixCoreObjects
+              <EntityStixCoreRelationships
                 entityId={attackPattern.id}
-                stixDomainObjectType="Attack-Pattern"
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
               />
             }
           />

@@ -14,7 +14,6 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 import { InfrastructureKnowledge_infrastructure$key } from './__generated__/InfrastructureKnowledge_infrastructure.graphql';
-import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 
 const infrastructureKnowledgeFragment = graphql`
   fragment InfrastructureKnowledge_infrastructure on Infrastructure {
@@ -86,10 +85,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
         <Route
           path="/all"
           element={
-            <StixCoreObjects
+            <EntityStixCoreRelationships
               entityId={infrastructureData.id}
-              stixDomainObjectName={infrastructureData.name}
-              stixDomainObjectType="Infrastructure"
+              relationshipTypes={[]}
+              entityLink={link}
+              allDirections
             />
           }
         />

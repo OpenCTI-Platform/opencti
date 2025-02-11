@@ -45,9 +45,11 @@ class SectorKnowledgeComponent extends Component {
           <Route
             path="/all"
             element={
-              <StixCoreObjects
+              <EntityStixCoreRelationships
                 entityId={sector.id}
-                stixDomainObjectType="Sector"
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
               />
             }
           />

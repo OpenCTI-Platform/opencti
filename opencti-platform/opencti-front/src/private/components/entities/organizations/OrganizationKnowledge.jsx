@@ -51,9 +51,11 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           path="/all"
           element={
-            <StixCoreObjects
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              stixDomainObjectType="Organization"
+              relationshipTypes={[]}
+              entityLink={link}
+              allDirections
             />
           }
         />

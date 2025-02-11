@@ -5,7 +5,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import StixCoreObjects from '@components/common/stix_core_objects/StixCoreObjects';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -72,10 +71,11 @@ const ThreatActorIndividualKnowledgeComponent = ({
       <Route
         path="/all"
         element={
-          <StixCoreObjects
-            stixDomainObjectId={threatActorIndividual.id}
-            stixDomainObjectName={threatActorIndividual.name}
-            stixDomainObjectType="Threat-Actor-Individual"
+          <EntityStixCoreRelationships
+            entityId={threatActorIndividual.id}
+            relationshipTypes={[]}
+            entityLink={link}
+            allDirections
           />
         }
       />

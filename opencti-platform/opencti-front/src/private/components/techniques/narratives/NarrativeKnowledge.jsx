@@ -8,7 +8,6 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
-import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 
 class NarrativeKnowledgeComponent extends Component {
   render() {
@@ -47,9 +46,11 @@ class NarrativeKnowledgeComponent extends Component {
           <Route
             path="/all"
             element={
-              <StixCoreObjects
+              <EntityStixCoreRelationships
                 entityId={narrative.id}
-                stixDomainObjectType="Narrative"
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
               />
             }
           />

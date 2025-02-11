@@ -52,10 +52,11 @@ class ToolKnowledgeComponent extends Component {
           <Route
             path="/all"
             element={
-              <StixCoreObjects
-                stixDomainObjectId={tool.id}
-                stixDomainObjectName={tool.name}
-                stixDomainObjectType="Tool"
+              <EntityStixCoreRelationships
+                entityId={tool.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
               />
             }
           />

@@ -53,9 +53,11 @@ class SystemKnowledgeComponent extends Component {
           <Route
             path="/all"
             element={
-              <StixCoreObjects
+              <EntityStixCoreRelationships
                 entityId={system.id}
-                stixDomainObjectType="System"
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
               />
             }
           />

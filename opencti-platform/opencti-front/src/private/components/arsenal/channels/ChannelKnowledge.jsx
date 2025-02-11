@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -52,10 +51,11 @@ class ChannelKnowledgeComponent extends Component {
           <Route
             path="/all"
             element={
-              <StixCoreObjects
+              <EntityStixCoreRelationships
                 entityId={channel.id}
-                stixDomainObjectName={channel.name}
-                stixDomainObjectType="Channel"
+                relationshipTypes={[]}
+                entityLink={link}
+                allDirections
               />
             }
           />
