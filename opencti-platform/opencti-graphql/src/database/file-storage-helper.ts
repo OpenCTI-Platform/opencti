@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { join } from 'node:path';
 import fs from 'node:fs';
-import { copyFile, deleteFile, deleteFiles, loadedFilesListing, storeFileConverter, upload } from './file-storage';
+import { copyFile, deleteFile, deleteFiles, deleteRawFiles, loadedFilesListing, storeFileConverter, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
@@ -126,10 +126,11 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
 export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, draftId: string) => {
   logApp.debug(`[FILE STORAGE] deleting all storage files for draft ${draftId}`);
   const draftPath = `draft${draftId}/`;
-  const draftFiles = await allFilesForPaths(context, user, [draftPath]);
+  const contextInDraft = { ...context, draft_context: draftId };
+  const draftFiles = await allFilesForPaths(contextInDraft, user, [draftPath]);
   const draftFilesIds = draftFiles.map((file) => file.id);
   logApp.debug('[FILE STORAGE] deleting all draft files with ids:', { draftFilesIds });
-  return deleteFiles(context, user, draftFilesIds);
+  return deleteRawFiles(context, user, draftFilesIds);
 };
 
 /**
