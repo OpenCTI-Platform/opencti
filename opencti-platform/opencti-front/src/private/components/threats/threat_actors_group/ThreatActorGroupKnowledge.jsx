@@ -54,6 +54,8 @@ class ThreatActorGroupKnowledgeComponent extends Component {
                 entityId={threatActorGroup.id}
                 relationshipTypes={[]}
                 entityLink={link}
+                defaultStartTime={threatActorGroup.startTime}
+                defaultStopTime={threatActorGroup.stopTime}
                 allDirections
               />
             }
