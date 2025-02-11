@@ -12,7 +12,6 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import StixCoreObjects from '../../common/stix_core_objects/StixCoreObjects';
 
 class ToolKnowledgeComponent extends Component {
   render() {
