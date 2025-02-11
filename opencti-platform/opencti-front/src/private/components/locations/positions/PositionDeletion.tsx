@@ -1,12 +1,13 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
+import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import Transition from '../../../../components/Transition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const positionDeletionMutation = graphql`
   mutation PositionDeletionMutation($id: ID!) {
@@ -27,8 +28,6 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Position') },
@@ -39,18 +38,13 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => {
-    setDeleting(false);
-    setDisplayDelete(false);
-  };
-
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commitMutation({
       variables: { id: positionId },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         if (typeof handleClose === 'function') handleClose();
         navigate('/dashboard/locations/positions');
       },
@@ -63,33 +57,18 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
         <Button
           color="error"
           variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
+          onClick={deletion.handleOpenDelete}
+          disabled={deletion.deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}
         </Button>
       </Security>
-      <Dialog
-        open={displayDelete}
-        TransitionComponent={Transition}
-        PaperProps={{ elevation: 1 }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this position?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this position?')}
+      />
     </>
   );
 };
