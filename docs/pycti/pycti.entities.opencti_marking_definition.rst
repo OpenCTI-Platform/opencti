@@ -3,6 +3,7 @@
 =============================================
 
 .. automodule:: pycti.entities.opencti_marking_definition
+   :members:
 
    .. contents::
       :local:

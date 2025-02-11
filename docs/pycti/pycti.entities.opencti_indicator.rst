@@ -3,6 +3,7 @@
 ====================================
 
 .. automodule:: pycti.entities.opencti_indicator
+   :members:
 
    .. contents::
       :local:

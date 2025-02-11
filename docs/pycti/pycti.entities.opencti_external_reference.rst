@@ -3,6 +3,7 @@
 =============================================
 
 .. automodule:: pycti.entities.opencti_external_reference
+   :members:
 
    .. contents::
       :local:

@@ -14,6 +14,7 @@ from pycti.api.opencti_api_playbook import OpenCTIApiPlaybook
 from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_campaign import Campaign
+from pycti.entities.opencti_capability import Capability
 from pycti.entities.opencti_case_incident import CaseIncident
 from pycti.entities.opencti_case_rfi import CaseRfi
 from pycti.entities.opencti_case_rft import CaseRft
@@ -24,6 +25,7 @@ from pycti.entities.opencti_data_source import DataSource
 from pycti.entities.opencti_event import Event
 from pycti.entities.opencti_external_reference import ExternalReference
 from pycti.entities.opencti_feedback import Feedback
+from pycti.entities.opencti_group import Group
 from pycti.entities.opencti_grouping import Grouping
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_incident import Incident
@@ -42,6 +44,8 @@ from pycti.entities.opencti_note import Note
 from pycti.entities.opencti_observed_data import ObservedData
 from pycti.entities.opencti_opinion import Opinion
 from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_role import Role
+from pycti.entities.opencti_settings import Settings
 from pycti.entities.opencti_stix import Stix
 from pycti.entities.opencti_stix_core_object import StixCoreObject
 from pycti.entities.opencti_stix_core_relationship import StixCoreRelationship
@@ -59,6 +63,7 @@ from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_threat_actor_group import ThreatActorGroup
 from pycti.entities.opencti_threat_actor_individual import ThreatActorIndividual
 from pycti.entities.opencti_tool import Tool
+from pycti.entities.opencti_user import User
 from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_logger import logger
@@ -128,6 +133,7 @@ class OpenCTIApiClient:
         # Configure logger
         self.logger_class = logger(log_level.upper(), json_logging)
         self.app_logger = self.logger_class("api")
+        self.admin_logger = self.logger_class("admin")
 
         # Define API
         self.api_token = token
@@ -197,6 +203,13 @@ class OpenCTIApiClient:
         self.opinion = Opinion(self)
         self.grouping = Grouping(self)
         self.indicator = Indicator(self)
+
+        # Admin functionality
+        self.capability = Capability(self)
+        self.role = Role(self)
+        self.group = Group(self)
+        self.user = User(self)
+        self.settings = Settings(self)
 
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
@@ -626,6 +639,43 @@ class OpenCTIApiClient:
         if "importFiles" in data:
             data["importFiles"] = self.process_multiple(data["importFiles"])
             data["importFilesIds"] = self.process_multiple_ids(data["importFiles"])
+
+        # Administrative data
+        if "groups" in data:
+            data["groups"] = self.process_multiple(data["groups"])
+            data["groupsIds"] = self.process_multiple_ids(data["groups"])
+        if "objectOrganization" in data:
+            data["objectOrganization"] = self.process_multiple(
+                data["objectOrganization"]
+            )
+            data["objectOrganizationIds"] = self.process_multiple_ids(
+                data["objectOrganization"]
+            )
+        if "roles" in data:
+            data["roles"] = self.process_multiple(data["roles"])
+            data["rolesIds"] = self.process_multiple_ids(data["roles"])
+        if "capabilities" in data:
+            data["capabilities"] = self.process_multiple(data["capabilities"])
+            data["capabilitiesIds"] = self.process_multiple_ids(data["capabilities"])
+        if "members" in data:
+            data["members"] = self.process_multiple(data["members"])
+            data["membersIds"] = self.process_multiple_ids(data["members"])
+        if "platform_messages" in data:
+            data["platform_messages"] = self.process_multiple(data["platform_messages"])
+            data["platform_messages_ids"] = self.process_multiple_ids(
+                data["platform_messages"]
+            )
+        if "messages_administration" in data:
+            data["messages_administration"] = self.process_multiple(
+                data["messages_administration"]
+            )
+            data["messages_administration_ids"] = self.process_multiple_ids(
+                data["messages_administration"]
+            )
+        if "recipients" in data:
+            data["recipients"] = self.process_multiple(data["recipients"])
+            data["recipientsIds"] = self.process_multiple_ids(data["recipients"])
+
         # See aliases of GraphQL query in stix_core_object method
         if "name_alt" in data:
             data["name"] = data["name_alt"]

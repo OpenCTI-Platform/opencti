@@ -3,6 +3,7 @@
 =======================================
 
 .. automodule:: pycti.entities.opencti_threat_actor
+   :members:
 
    .. contents::
       :local:

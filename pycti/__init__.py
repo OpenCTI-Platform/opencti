@@ -12,6 +12,9 @@ from .connector.opencti_connector_helper import (
 from .connector.opencti_metric_handler import OpenCTIMetricHandler
 from .entities.opencti_attack_pattern import AttackPattern
 from .entities.opencti_campaign import Campaign
+
+# Administrative entities
+from .entities.opencti_capability import Capability
 from .entities.opencti_case_incident import CaseIncident
 from .entities.opencti_case_rfi import CaseRfi
 from .entities.opencti_case_rft import CaseRft
@@ -21,6 +24,7 @@ from .entities.opencti_data_component import DataComponent
 from .entities.opencti_data_source import DataSource
 from .entities.opencti_external_reference import ExternalReference
 from .entities.opencti_feedback import Feedback
+from .entities.opencti_group import Group
 from .entities.opencti_grouping import Grouping
 from .entities.opencti_identity import Identity
 from .entities.opencti_incident import Incident
@@ -37,6 +41,8 @@ from .entities.opencti_note import Note
 from .entities.opencti_observed_data import ObservedData
 from .entities.opencti_opinion import Opinion
 from .entities.opencti_report import Report
+from .entities.opencti_role import Role
+from .entities.opencti_settings import Settings
 from .entities.opencti_stix_core_relationship import StixCoreRelationship
 from .entities.opencti_stix_cyber_observable import StixCyberObservable
 from .entities.opencti_stix_domain_object import StixDomainObject
@@ -50,6 +56,7 @@ from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_threat_actor_group import ThreatActorGroup
 from .entities.opencti_threat_actor_individual import ThreatActorIndividual
 from .entities.opencti_tool import Tool
+from .entities.opencti_user import User
 from .entities.opencti_vulnerability import Vulnerability
 from .utils.constants import (
     CustomObjectCaseIncident,
@@ -151,4 +158,9 @@ __all__ = [
     "STIX_EXT_MITRE",
     "STIX_EXT_OCTI_SCO",
     "STIX_EXT_OCTI",
+    "Capability",
+    "Role",
+    "Group",
+    "User",
+    "Settings",
 ]
