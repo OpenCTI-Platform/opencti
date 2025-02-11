@@ -10,6 +10,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';

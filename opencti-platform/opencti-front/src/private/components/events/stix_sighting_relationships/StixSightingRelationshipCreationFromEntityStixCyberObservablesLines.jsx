@@ -9,12 +9,12 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { ListItemButton } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { ListItemButton } from "@mui/material";
 
 const styles = (theme) => ({
   container: {

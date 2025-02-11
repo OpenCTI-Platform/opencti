@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';

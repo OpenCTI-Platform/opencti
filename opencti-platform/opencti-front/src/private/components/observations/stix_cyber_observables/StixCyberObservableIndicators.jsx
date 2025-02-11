@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';

@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';

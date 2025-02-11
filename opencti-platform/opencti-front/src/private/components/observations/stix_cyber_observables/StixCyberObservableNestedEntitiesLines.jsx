@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql, createPaginationContainer } from 'react-relay';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';

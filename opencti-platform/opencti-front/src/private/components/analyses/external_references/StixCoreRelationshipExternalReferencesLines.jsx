@@ -7,7 +7,6 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';

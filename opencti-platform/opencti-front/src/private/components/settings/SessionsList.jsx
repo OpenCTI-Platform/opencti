@@ -15,6 +15,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { graphql, createRefetchContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../relay/environment';
 import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';

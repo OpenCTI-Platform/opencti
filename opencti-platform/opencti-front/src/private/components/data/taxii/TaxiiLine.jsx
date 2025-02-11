@@ -6,6 +6,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
 import { DatabaseExportOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
@@ -19,7 +20,6 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import {ListItemButton} from "@mui/material";
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

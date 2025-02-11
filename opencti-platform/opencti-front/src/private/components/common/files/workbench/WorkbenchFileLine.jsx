@@ -9,7 +9,6 @@ import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-mate
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
@@ -20,12 +19,12 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
+import { ListItemButton } from '@mui/material';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
-import {ListItemButton} from "@mui/material";
 
 const styles = (theme) => ({
   itemNested: {
