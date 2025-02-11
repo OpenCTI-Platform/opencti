@@ -2,6 +2,7 @@ from typing import Dict, List, Union
 
 from stix2 import TLP_GREEN, TLP_WHITE, AttackPattern
 
+from pycti.entities.opencti_settings import Settings
 from pycti.utils.constants import ContainerTypes, IdentityTypes, LocationTypes
 from tests.utils import get_incident_end_date, get_incident_start_date
 
@@ -171,6 +172,22 @@ class EntityTestCases:
     def task(api_client):
         return TaskTest(api_client)
 
+    @staticmethod
+    def case_role(api_client):
+        return RoleTest(api_client)
+
+    @staticmethod
+    def case_group(api_client):
+        return GroupTest(api_client)
+
+    @staticmethod
+    def case_user(api_client):
+        return UserTest(api_client)
+
+    @staticmethod
+    def case_settings(api_client):
+        return SettingsTest(api_client)
+
 
 class EntityTest:
     def __init__(self, api_client):
@@ -211,6 +228,9 @@ class EntityTest:
             ],
             "filterGroups": [],
         }
+
+    def get_search(self) -> str:
+        return None
 
     def stix_class(self):
         pass
@@ -1151,3 +1171,154 @@ class ThreatActorIndividualTest(EntityTest):
 
     def own_class(self):
         return self.api_client.threat_actor_individual
+
+
+class RoleTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "name": "TestRole",
+            "description": "This is a role for testing",
+        }
+
+    def own_class(self):
+        return self.api_client.role
+
+    def base_class(self):
+        return self.own_class()
+
+    def update_data(self) -> Dict[str, bool]:
+        return {"can_manage_sensitive_config": True}
+
+    def get_filter(self) -> Dict[str, str]:
+        return {}
+
+    def get_search(self) -> str:
+        return "TestRole"
+
+
+class GroupTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "name": "TestGroup",
+            "group_confidence_level": {"max_confidence": 80, "overrides": []},
+        }
+
+    def own_class(self):
+        return self.api_client.group
+
+    def base_class(self):
+        return self.own_class()
+
+    def update_data(self) -> Dict:
+        return {
+            "description": "This is a test group",
+            "no_creators": True,
+            "group_confidence_level": {
+                "max_confidence": 90,
+                "overrides": [{"entity_type": "Indicator", "max_confidence": 80}],
+            },
+        }
+
+    def get_search(self) -> str:
+        return "TestGroup"
+
+
+class UserTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "name": "Test User",
+            "user_email": "test@localhost.local",
+        }
+
+    def own_class(self):
+        return self.api_client.user
+
+    def base_class(self):
+        return self.own_class()
+
+    def update_data(self) -> Dict:
+        return {
+            "description": "This is a test user",
+            "firstname": "Test",
+            "lastname": "User",
+            "user_confidence_level": {
+                "max_confidence": 70,
+                "overrides": [{"entity_type": "Indicator", "max_confidence": 80}],
+            },
+            "account_status": "Locked",
+            "submenu_show_icons": True,
+        }
+
+    def get_search(self):
+        return '"Test User"'
+
+
+class SettingsTest(EntityTest):
+
+    class SettingsWrapper(Settings):
+        def __init__(self, opencti):
+            self._deleted = False
+            super().__init__(opencti)
+
+        def create(self, **kwargs) -> Dict:
+            """Stub function for tests
+
+            :return: Settings as defined by self.read()
+            :rtype: Dict
+            """
+            self.opencti.admin_logger.info(
+                "Settings.create called with arguments", kwargs
+            )
+            self._deleted = False
+            return self.read()
+
+        def delete(self, **kwargs):
+            """Stub function for tests"""
+            self.opencti.admin_logger.info(
+                "Settings.delete called with arguments", kwargs
+            )
+            self._deleted = True
+
+        def read(self, **kwargs):
+            """Stub function for tests"""
+            if self._deleted:
+                return None
+            return super().read(**kwargs)
+
+    def setup(self):
+        self._ownclass = self.SettingsWrapper(self.api_client)
+        # Save current platform information
+        custom_attributes = self.own_class().editable_properties
+        self.own_class().create()
+        self._saved_settings = self.own_class().read(customAttributes=custom_attributes)
+        if self._saved_settings["platform_organization"] is not None:
+            self._saved_settings["platform_organization"] = self._saved_settings[
+                "platform_organization"
+            ]["id"]
+        return
+
+    def teardown(self):
+        # Restore platform information
+        id = self._saved_settings.pop("id")
+        input = [
+            {"key": key, "value": value}
+            for key, value in self._saved_settings.items()
+            if value is not None
+        ]
+        self.own_class().update_field(id=id, input=input)
+        return
+
+    def data(self) -> Dict:
+        return {}
+
+    def own_class(self):
+        return self._ownclass
+
+    def base_class(self):
+        return self.own_class()
+
+    def update_data(self):
+        return {"platform_title": "This is a test platform", "platform_theme": "light"}
+
+    def get_filter(self):
+        return None

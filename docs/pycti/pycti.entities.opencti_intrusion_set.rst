@@ -3,6 +3,7 @@
 ========================================
 
 .. automodule:: pycti.entities.opencti_intrusion_set
+   :members:
 
    .. contents::
       :local:

@@ -3,6 +3,7 @@
 ==================
 
 .. automodule:: pycti.entities
+   :members:
 
    .. contents::
       :local:
@@ -37,5 +38,10 @@ Submodules
    pycti.entities.opencti_threat_actor
    pycti.entities.opencti_tool
    pycti.entities.opencti_vulnerability
+   pycti.entities.opencti_capability
+   pycti.entities.opencti_role
+   pycti.entities.opencti_group
+   pycti.entities.opencti_user
+   pycti.entities.opencti_settings
 
 .. currentmodule:: pycti.entities

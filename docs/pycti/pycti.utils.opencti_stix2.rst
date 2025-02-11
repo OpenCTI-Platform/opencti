@@ -3,6 +3,7 @@
 =============================
 
 .. automodule:: pycti.utils.opencti_stix2
+   :members:
 
    .. contents::
       :local:

@@ -3,6 +3,7 @@
 =============================
 
 .. automodule:: pycti.api.opencti_api_job
+   :members:
 
    .. contents::
       :local:

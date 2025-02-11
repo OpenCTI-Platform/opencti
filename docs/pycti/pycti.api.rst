@@ -3,6 +3,7 @@
 =============
 
 .. automodule:: pycti.api
+   :members:
 
    .. contents::
       :local:
