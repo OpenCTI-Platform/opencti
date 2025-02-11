@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import ToggleButton from '@mui/material/ToggleButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import Transition from '../../../../components/Transition';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { channelEditionQuery } from './ChannelEdition';
 import ChannelEditionContainer from './ChannelEditionContainer';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const ChannelPopoverDeletionMutation = graphql`
   mutation ChannelPopoverDeletionMutation($id: ID!) {
@@ -30,26 +26,20 @@ const ChannelPopover = ({ id }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const [deleting, setDeleting] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => setDisplayDelete(false);
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commitMutation({
       mutation: ChannelPopoverDeletionMutation,
       variables: { id },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
         navigate('/dashboard/arsenal/channels');
       },
@@ -86,31 +76,15 @@ const ChannelPopover = ({ id }) => {
             <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-        <Dialog
-          open={displayDelete}
-          PaperProps={{ elevation: 1 }}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this channel?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDelete} disabled={deleting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={t_i18n('Do you want to delete this channel?')}
+        />
         <QueryRenderer
           query={channelEditionQuery}
           variables={{ id }}

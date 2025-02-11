@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import ToggleButton from '@mui/material/ToggleButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -16,10 +11,11 @@ import { indicatorEditionQuery } from './IndicatorEdition';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import Transition from '../../../../components/Transition';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const IndicatorPopoverDeletionMutation = graphql`
   mutation IndicatorPopoverDeletionMutation($id: ID!) {
@@ -32,26 +28,20 @@ const IndicatorPopover = ({ id }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayEnroll, setDisplayEnroll] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const [deleting, setDeleting] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => setDisplayDelete(false);
+  const deletion = useDeletion({});
   const submitDelete = () => {
-    setDeleting(true);
+    deletion.setDeleting(true);
     commitMutation({
       mutation: IndicatorPopoverDeletionMutation,
       variables: { id },
       onCompleted: () => {
-        setDeleting(false);
+        deletion.setDeleting(false);
         handleClose();
         navigate('/dashboard/observations/indicators');
       },
@@ -98,31 +88,16 @@ const IndicatorPopover = ({ id }) => {
             </MenuItem>
           </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
         <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
-        <Dialog
-          open={displayDelete}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this indicator?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDelete} disabled={deleting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={t_i18n('Do you want to delete this indicator?')}
+        />
         <QueryRenderer
           query={indicatorEditionQuery}
           variables={{ id }}
