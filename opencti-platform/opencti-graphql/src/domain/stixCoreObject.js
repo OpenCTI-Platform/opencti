@@ -292,7 +292,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id);
+  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
   const message = {
     internal: {
       work_id: work.id, // Related action for history
@@ -671,9 +671,6 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot import in draft');
-  }
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);

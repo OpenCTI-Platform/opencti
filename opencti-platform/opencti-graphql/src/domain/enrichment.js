@@ -25,7 +25,7 @@ export const createEntityAutoEnrichment = async (context, user, element, scope) 
   const workMessage = draftContext ? `Enrichment (${elementStandardId}) in draft ${draftContext}` : `Enrichment (${elementStandardId})`;
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId).then((work) => {
+      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId, { draftContext }).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)
