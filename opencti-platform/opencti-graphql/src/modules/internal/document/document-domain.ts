@@ -4,13 +4,7 @@ import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elAggregationCount, elCount, elDeleteInstances, elIndex } from '../../../database/engine';
-import {
-  INDEX_DRAFT_OBJECTS,
-  INDEX_INTERNAL_OBJECTS,
-  isEmptyField,
-  READ_INDEX_DRAFT_OBJECTS,
-  READ_INDEX_INTERNAL_OBJECTS
-} from '../../../database/utils';
+import { INDEX_DRAFT_OBJECTS, INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
@@ -46,11 +40,12 @@ export const getIndexFromDate = async (context: AuthContext) => {
   return lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toISOString() : FROM_START_STR;
 };
 
-export const buildFileDataForIndexing = (file: File) => {
+export const buildFileDataForIndexing = (file: File, draftContext?: string | undefined) => {
   const standardId = generateFileIndexId(file.id);
   const fileData = R.dissoc('id', file);
   return {
     ...fileData,
+    draft_ids: draftContext ? [draftContext] : null,
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
@@ -59,7 +54,8 @@ export const buildFileDataForIndexing = (file: File) => {
 };
 
 export const indexFileToDocument = async (context: AuthContext, file: any) => {
-  const data = buildFileDataForIndexing(file);
+  const draftContext = getDraftContext(context);
+  const data = buildFileDataForIndexing(file, draftContext);
   const internalFile = await storeLoadById(context, SYSTEM_USER, data.internal_id, ENTITY_TYPE_INTERNAL_FILE);
   let indexToTarget = INDEX_INTERNAL_OBJECTS;
   // update existing internalFile (if file has been saved in another index)
@@ -140,7 +136,8 @@ export const allFilesForPaths = async (context: AuthContext, user: AuthUser, pat
     orderOptions.orderBy = 'lastModified';
     orderOptions.orderMode = OrderingMode.Asc;
   }
-  const listOptions = { ...opts, ...findOpts, ...orderOptions, indices: [READ_INDEX_INTERNAL_OBJECTS] };
+  const indices = getDraftContext(context, user) ? [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_DRAFT_OBJECTS] : [READ_INDEX_INTERNAL_OBJECTS];
+  const listOptions = { ...opts, ...findOpts, ...orderOptions, indices };
   return listAllEntities<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
 };
 
@@ -175,7 +172,7 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const filterOpts = { ...opts, exact_path: isEmptyField(entity_id) };
   const draftContext = getDraftContext(context, user);
-  const pathsToTarget = getDraftContext(context, user) ? [`draft${draftContext}/${draftContext}`, path] : [path];
+  const pathsToTarget = getDraftContext(context, user) ? [`draft${draftContext}/${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(pathsToTarget, filterOpts),
     noFiltersChecking: true // No associated model

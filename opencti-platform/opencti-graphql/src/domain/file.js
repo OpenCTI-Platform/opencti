@@ -112,9 +112,6 @@ export const askJobImport = async (context, user, args) => {
 };
 
 export const uploadImport = async (context, user, args) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot upload import in draft');
-  }
   const { file, fileMarkings: file_markings } = args;
   const path = 'import/global';
   const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings });

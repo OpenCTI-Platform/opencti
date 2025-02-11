@@ -37,7 +37,7 @@ import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import {deleteAllDraftFiles} from "../../database/file-storage-helper";
+import { deleteAllDraftFiles } from '../../database/file-storage-helper';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
