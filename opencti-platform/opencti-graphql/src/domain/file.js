@@ -22,6 +22,8 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { getDraftContext } from '../utils/draftContext';
+import { UnsupportedError } from '../config/errors';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -110,6 +112,9 @@ export const askJobImport = async (context, user, args) => {
 };
 
 export const uploadImport = async (context, user, args) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot upload import in draft');
+  }
   const { file, fileMarkings: file_markings } = args;
   const path = 'import/global';
   const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings });
@@ -125,6 +130,9 @@ export const uploadImport = async (context, user, args) => {
 };
 
 export const uploadPending = async (context, user, args) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot upload pending in draft');
+  }
   const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
   const meta = { labels_text: labels ? labels.join(';') : undefined };
@@ -171,6 +179,9 @@ export const uploadPending = async (context, user, args) => {
 };
 
 export const deleteImport = async (context, user, fileName) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot delete global import in draft');
+  }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
   // and update the updated_at field of the source entity

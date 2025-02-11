@@ -30,6 +30,7 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
+import { getDraftContext } from '../utils/draftContext';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -414,6 +415,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 export const uploadJobImport = async (context, user, file, entityId, opts = {}) => {
   const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = defaultValidationMode } = opts;
   const validationModeToUse = isFeatureEnabled('DRAFT_WORKSPACE') ? validationMode : 'workbench';
+  const draftContext = getDraftContext(context, user);
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -424,7 +426,9 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
   if (connectors.length > 0) {
     // Create job and send ask to broker
     const createConnectorWork = async (connector) => {
-      const work = await createWork(context, user, connector, `Manual import of ${file.name}`, file.id);
+      const contextOutOfDraft = { ...context, draft_context: '' };
+      const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
+      const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id);
       return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector) => createConnectorWork(connector)));
@@ -435,6 +439,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
         internal: {
           work_id: work.id, // Related action for history
           applicant_id: user.id, // User asking for the import
+          draft_id: draftContext ?? null, // If we are in a draft, import in current draft context
         },
         event: {
           file_id: file.id,
@@ -442,8 +447,8 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
           file_markings: file.metaData.file_markings ?? [],
           file_fetch: `/storage/get/${file.id}`, // Path to get the file
           entity_id: entityId, // Context of the upload*
-          validation_mode: validationModeToUse,
-          bypass_validation: bypassValidation, // Force no validation
+          validation_mode: draftContext ? 'draft' : validationModeToUse, // Force to draft if we are in draft
+          bypass_validation: draftContext ? true : bypassValidation, // Force no validation: always force it when in draft
         },
         configuration: connectorConfiguration
       };
@@ -474,6 +479,11 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   // We lowercase the file name to make it case-insensitive
   let key = `${filePath}/${truncatedFileName.toLowerCase()}`;
+  // In draft, we add a prefix to file path
+  const draftContext = getDraftContext(context, user);
+  if (draftContext) {
+    key = `draft${draftContext}/${key}`;
+  }
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
     // If file exists, we want to use it's internal_id to use the same casing and keep it compatible

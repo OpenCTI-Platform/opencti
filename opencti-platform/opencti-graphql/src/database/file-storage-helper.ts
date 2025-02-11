@@ -55,9 +55,6 @@ interface S3File {
  * @param opts
  */
 export const uploadToStorage = (context: AuthContext, user: AuthUser, filePath: string, fileUpload: FileUploadData, opts: FileUploadOpts) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot upload file in draft context');
-  }
   return upload(context, user, filePath, fileUpload, opts);
 };
 
@@ -84,7 +81,10 @@ export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH, 
  */
 export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser, element: any) => {
   logApp.debug(`[FILE STORAGE] deleting all storage files for ${element.internal_id}`);
-
+  // In draft, do not delete any files
+  if (getDraftContext(context, user)) {
+    return true;
+  }
   let ids = [];
   if (element.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {
     const supportPath = `${SUPPORT_STORAGE_PATH}/${element.internal_id}`;
@@ -115,6 +115,21 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);
+};
+
+/**
+ * Delete all files in storage that relates to a draft.
+ * @param context
+ * @param user
+ * @param draftId
+ */
+export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  logApp.debug(`[FILE STORAGE] deleting all storage files for draft ${draftId}`);
+  const draftPath = `draft${draftId}/`;
+  const draftFiles = await allFilesForPaths(context, user, [draftPath]);
+  const draftFilesIds = draftFiles.map((file) => file.id);
+  logApp.debug('[FILE STORAGE] deleting all draft files with ids:', { draftFilesIds });
+  return deleteFiles(context, user, draftFilesIds);
 };
 
 /**
@@ -153,8 +168,10 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
  * @param targetEntity
  */
 export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user: AuthUser, sourceEntity: BasicStoreBase, targetEntity: BasicStoreBase) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot merge all files in draft');
+  }
   const updatedXOpenctiFiles: Partial<S3File> [] = [];
-
   for (let folderI = 0; folderI < ALL_MERGEABLE_FOLDERS.length; folderI += 1) {
     try {
       const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;
