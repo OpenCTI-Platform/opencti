@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import CsvMapperCreation from '@components/data/csvMapper/CsvMapperCreation';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
