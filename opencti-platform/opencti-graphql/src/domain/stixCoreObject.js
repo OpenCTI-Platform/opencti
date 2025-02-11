@@ -777,8 +777,8 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot delete imports in draft');
+  if (getDraftContext(context, user) && !fileId.startsWith('draft')) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
   }
   if (!fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');

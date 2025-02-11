@@ -158,6 +158,19 @@ export const deleteFiles = async (context, user, ids) => {
   return true;
 };
 
+export const deleteRawFiles = async (context, user, ids) => {
+  logApp.debug(`[FILE STORAGE] raw delete files ${ids} by ${user.user_email}`);
+  for (let i = 0; i < ids.length; i += 1) {
+    const id = ids[i];
+    // Delete in S3
+    await s3Client.send(new s3.DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: id
+    }));
+  }
+  return true;
+};
+
 /**
  * Download a file from S3 at given S3 key (id)
  * @param id
