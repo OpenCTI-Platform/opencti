@@ -166,21 +166,19 @@ class ReportKnowledgeGraphComponent extends Component {
 
   initialize() {
     if (this.initialized) return;
-    if (this.graph && this.graph.current) {
+    if (this.graph?.current) {
       this.graph.current.d3Force('link').distance(50);
       if (this.state.modeTree !== '') {
         this.graph.current.d3Force('charge').strength(-1000);
       }
       if (this.zoomed < 2) {
-        if (this.zoom && this.zoom.k && !this.state.mode3D) {
+        if (this.zoom?.k && !this.state.mode3D) {
           this.graph.current.zoom(this.zoom.k, 400);
         } else {
           // eslint-disable-next-line @typescript-eslint/no-this-alias
           const currentContext = this;
           setTimeout(
-            () => currentContext.graph
-              && currentContext.graph.current
-              && currentContext.graph.current.zoomToFit(0, 150),
+            () => currentContext.graph?.current?.zoomToFit(0, 150),
             1200,
           );
         }
@@ -222,15 +220,15 @@ class ReportKnowledgeGraphComponent extends Component {
       { zoom: this.zoom, ...this.state },
     );
     if (refreshGraphData) {
-      this.setState({
+      this.setState((prevState) => ({
         graphData: applyFilters(
           this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
+          prevState.stixCoreObjectsTypes,
+          prevState.markedBy,
+          prevState.createdBy,
           ignoredStixCoreObjectsTypes,
         ),
-      });
+      }));
     }
   }
 
@@ -267,15 +265,18 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleToggle3DMode() {
-    this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
+    this.setState(
+      (prevState) => ({ mode3D: !prevState.mode3D }),
+      () => this.saveParameters(),
+    );
   }
 
   handleToggleRectangleSelectModeFree() {
     this.setState(
-      {
-        selectRectangleModeFree: !this.state.selectRectangleModeFree,
+      (prevState) => ({
+        selectRectangleModeFree: !prevState.selectRectangleModeFree,
         selectModeFree: false,
-      },
+      }),
       () => {
         this.saveParameters();
       },
@@ -284,10 +285,10 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleToggleSelectModeFree() {
     this.setState(
-      {
-        selectModeFree: !this.state.selectModeFree,
+      (prevState) => ({
+        selectModeFree: !prevState.selectModeFree,
         selectRectangleModeFree: false,
-      },
+      }),
       () => {
         this.saveParameters();
       },
@@ -297,9 +298,9 @@ class ReportKnowledgeGraphComponent extends Component {
   handleToggleTreeMode(modeTree) {
     if (modeTree === 'horizontal') {
       this.setState(
-        {
-          modeTree: this.state.modeTree === 'horizontal' ? '' : 'horizontal',
-        },
+        (prevState) => ({
+          modeTree: prevState.modeTree === 'horizontal' ? '' : 'horizontal',
+        }),
         () => {
           if (this.state.modeTree === 'horizontal') {
             this.graph.current.d3Force('charge').strength(-1000);
@@ -311,9 +312,9 @@ class ReportKnowledgeGraphComponent extends Component {
       );
     } else if (modeTree === 'vertical') {
       this.setState(
-        {
-          modeTree: this.state.modeTree === 'vertical' ? '' : 'vertical',
-        },
+        (prevState) => ({
+          modeTree: prevState.modeTree === 'vertical' ? '' : 'vertical',
+        }),
         () => {
           if (this.state.modeTree === 'vertical') {
             this.graph.current.d3Force('charge').strength(-1000);
@@ -341,7 +342,12 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleToggleDisplayTimeRange() {
-    this.setState({ displayTimeRange: !this.state.displayTimeRange }, () => this.saveParameters());
+    this.setState(
+      (prevState) => ({
+        displayTimeRange: !prevState.displayTimeRange,
+      }),
+      () => this.saveParameters(),
+    );
   }
 
   handleToggleStixCoreObjectType(type) {
@@ -547,17 +553,17 @@ class ReportKnowledgeGraphComponent extends Component {
       this.graphObjects,
     );
     this.setState(
-      {
+      (prevState) => ({
         selectedTimeRangeInterval,
         graphData: applyFilters(
           this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
+          prevState.stixCoreObjectsTypes,
+          prevState.markedBy,
+          prevState.createdBy,
           ignoredStixCoreObjectsTypes,
           selectedTimeRangeInterval,
         ),
-      },
+      }),
       () => {
         setTimeout(() => this.handleZoomToFit(), 1500);
       },
@@ -587,17 +593,17 @@ class ReportKnowledgeGraphComponent extends Component {
           const selectedTimeRangeInterval = computeTimeRangeInterval(
             this.graphObjects,
           );
-          this.setState({
+          this.setState((prevState) => ({
             selectedTimeRangeInterval,
             graphData: applyFilters(
               this.graphData,
-              this.state.stixCoreObjectsTypes,
-              this.state.markedBy,
-              this.state.createdBy,
+              prevState.stixCoreObjectsTypes,
+              prevState.markedBy,
+              prevState.createdBy,
               ignoredStixCoreObjectsTypes,
               selectedTimeRangeInterval,
             ),
-          });
+          }));
         }
       },
     });
@@ -630,16 +636,16 @@ class ReportKnowledgeGraphComponent extends Component {
         },
       });
     }, relationshipsToRemove);
-    this.setState({
+    this.setState((prevState) => ({
       graphData: applyFilters(
         this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
+        prevState.stixCoreObjectsTypes,
+        prevState.markedBy,
+        prevState.createdBy,
         ignoredStixCoreObjectsTypes,
-        this.state.selectedTimeRangeInterval,
+        prevState.selectedTimeRangeInterval,
       ),
-    });
+    }));
   }
 
   async handleDeleteSelected(deleteObject = false, commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
@@ -755,18 +761,18 @@ class ReportKnowledgeGraphComponent extends Component {
       this.props.t,
     );
     await this.resetAllFilters();
-    this.setState({
+    this.setState((prevState) => ({
       graphData: applyFilters(
         this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
+        prevState.stixCoreObjectsTypes,
+        prevState.markedBy,
+        prevState.createdBy,
         ignoredStixCoreObjectsTypes,
-        this.state.selectedTimeRangeInterval,
+        prevState.selectedTimeRangeInterval,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
-    });
+    }));
     if (setSubmitting) setSubmitting(false);
     if (resetForm) resetForm(true);
   }
@@ -788,16 +794,16 @@ class ReportKnowledgeGraphComponent extends Component {
             decodeGraphData(this.props.report.x_opencti_graph_data),
             this.props.t,
           );
-          this.setState({
+          this.setState((prevState) => ({
             graphData: applyFilters(
               this.graphData,
-              this.state.stixCoreObjectsTypes,
-              this.state.markedBy,
-              this.state.createdBy,
+              prevState.stixCoreObjectsTypes,
+              prevState.markedBy,
+              prevState.createdBy,
               ignoredStixCoreObjectsTypes,
-              this.state.selectedTimeRangeInterval,
+              prevState.selectedTimeRangeInterval,
             ),
-          });
+          }));
         });
     }, 1500);
   }
@@ -819,16 +825,16 @@ class ReportKnowledgeGraphComponent extends Component {
             decodeGraphData(this.props.report.x_opencti_graph_data),
             this.props.t,
           );
-          this.setState({
+          this.setState((prevState) => ({
             graphData: applyFilters(
               this.graphData,
-              this.state.stixCoreObjectsTypes,
-              this.state.markedBy,
-              this.state.createdBy,
+              prevState.stixCoreObjectsTypes,
+              prevState.markedBy,
+              prevState.createdBy,
               ignoredStixCoreObjectsTypes,
-              this.state.selectedTimeRangeInterval,
+              prevState.selectedTimeRangeInterval,
             ),
-          });
+          }));
         });
     }, 1500);
   }
@@ -951,16 +957,16 @@ class ReportKnowledgeGraphComponent extends Component {
   handleResetLayout() {
     this.graphData = buildGraphData(this.graphObjects, {}, this.props.t);
     this.setState(
-      {
+      (prevState) => ({
         graphData: applyFilters(
           this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
+          prevState.stixCoreObjectsTypes,
+          prevState.markedBy,
+          prevState.createdBy,
           ignoredStixCoreObjectsTypes,
-          this.state.selectedTimeRangeInterval,
+          prevState.selectedTimeRangeInterval,
         ),
-      },
+      }),
       () => {
         this.handleDragEnd();
         this.forceUpdate();
@@ -981,31 +987,31 @@ class ReportKnowledgeGraphComponent extends Component {
     const selectedTimeRangeInterval = computeTimeRangeInterval(
       this.graphObjects,
     );
-    this.setState({
+    this.setState((prevState) => ({
       selectedTimeRangeInterval,
       graphData: applyFilters(
         this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
+        prevState.stixCoreObjectsTypes,
+        prevState.markedBy,
+        prevState.createdBy,
         ignoredStixCoreObjectsTypes,
         selectedTimeRangeInterval,
       ),
-    });
+    }));
   }
 
   handleTimeRangeChange(selectedTimeRangeInterval) {
-    this.setState({
+    this.setState((prevState) => ({
       selectedTimeRangeInterval,
       graphData: applyFilters(
         this.graphData,
-        this.state.stixCoreObjectsTypes,
-        this.state.markedBy,
-        this.state.createdBy,
+        prevState.stixCoreObjectsTypes,
+        prevState.markedBy,
+        prevState.createdBy,
         [],
         selectedTimeRangeInterval,
       ),
-    });
+    }));
   }
 
   handleSearch(keyword) {
@@ -1314,6 +1320,7 @@ class ReportKnowledgeGraphComponent extends Component {
                         },
                         node,
                         node.color,
+                        theme.palette.chip.main,
                         ctx,
                         this.selectedNodes.has(node),
                         node.isNestedInferred,
@@ -1419,10 +1426,10 @@ class ReportKnowledgeGraphComponent extends Component {
 
 ReportKnowledgeGraphComponent.propTypes = {
   report: PropTypes.object,
-  classes: PropTypes.object,
   theme: PropTypes.object,
   mode: PropTypes.string,
   t: PropTypes.func,
+  enableReferences: PropTypes.bool,
 };
 
 const ReportKnowledgeGraph = createFragmentContainer(

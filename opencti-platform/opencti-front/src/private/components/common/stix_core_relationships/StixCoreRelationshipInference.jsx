@@ -149,6 +149,7 @@ class StixCoreRelationshipInference extends Component {
             },
             node,
             node.color,
+            theme.palette.chip.main,
             ctx,
             false,
           )
