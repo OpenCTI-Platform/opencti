@@ -454,6 +454,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             log_level=self.log_level,
             ssl_verify=self.opencti_ssl_verify,
             json_logging=self.opencti_json_logging,
+            perform_health_check=False # No need to prevent worker start if API is not available yet
         )
         self.worker_logger = self.api.logger_class("worker")
         # Initialize variables
