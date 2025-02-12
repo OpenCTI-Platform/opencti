@@ -206,15 +206,16 @@ const ConnectorComponent = ({ connector, relay }) => {
     });
   };
   const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       mutation: connectorDeletionMutation,
       variables: {
         id: connector.id,
       },
       onCompleted: () => {
-        deletion.handleCloseDelete();
+        handleCloseDelete();
         navigate('/dashboard/data/ingestion/connectors');
       },
     });
@@ -293,7 +294,7 @@ const ConnectorComponent = ({ connector, relay }) => {
             </Tooltip>
             <Tooltip title={t_i18n('Clear this connector')}>
               <IconButton
-                onClick={deletion.handleOpenDelete}
+                onClick={handleOpenDelete}
                 aria-haspopup="true"
                 color="primary"
                 disabled={connector.active || connector.built_in}
