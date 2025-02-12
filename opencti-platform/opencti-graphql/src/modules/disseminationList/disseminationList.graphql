@@ -29,7 +29,7 @@ type DisseminationListEdge {
 
 # Queries
 type Query {
-  disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationList(id: ID!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationLists(
     first: Int
     after: ID
