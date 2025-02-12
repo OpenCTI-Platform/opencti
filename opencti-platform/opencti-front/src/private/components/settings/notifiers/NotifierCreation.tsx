@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useQueryLoader } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikHelpers } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
@@ -24,6 +24,8 @@ import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import notifierValidator from './NotifierValidator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -260,6 +262,15 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   );
 };
 
+const CreateNotifierControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='Notifier'
+    entityPrefix={false}
+    size='medium'
+    {...props}
+  />
+);
+
 const NotifierCreation: FunctionComponent<{
   contextual?: boolean;
   display?: boolean;
@@ -267,11 +278,17 @@ const NotifierCreation: FunctionComponent<{
   paginationOptions: NotifiersLinesPaginationQuery$variables;
 }> = ({ inputValue, paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');
   return (
     <Drawer
       title={t_i18n('Create a notifier')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced
+        ? CreateNotifierControlledDial
+        : undefined
+      }
     >
       <NotifierCreationForm
         inputValue={inputValue}

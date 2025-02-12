@@ -9,7 +9,7 @@ export default class GroupsSettingsPage {
   }
 
   getAddGroupButton() {
-    return this.page.getByLabel('Add');
+    return this.page.getByLabel('Create Group');
   }
 
   getGroupInList(ruleName: string) {

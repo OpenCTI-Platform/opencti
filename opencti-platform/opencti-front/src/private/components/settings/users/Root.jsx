@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
+import { graphql, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
-import UserPopover from './UserPopover';
+import UserPopover, { userEditionQuery } from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -18,6 +18,8 @@ import UserAnalytics from './UserAnalytics';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import UserEdition from './UserEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,6 +98,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   useSubscription(subConfig);
   const { me } = useAuth();
   const { user: data } = usePreloadedQuery(userQuery, queryRef);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const userEditionData = useLazyLoadQuery(
+    userEditionQuery,
+    { id: userId },
+  );
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {data ? (
@@ -108,19 +116,21 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             { label: data.name || data.user_email, current: true },
           ]}
           />
-          <>
-            <Typography
-              variant="h1"
-              gutterBottom={true}
-              classes={{ root: classes.title }}
-            >
-              {data.name}
-            </Typography>
-            <div className={classes.popover}>
-              <UserPopover userId={data.id} disabled={data.id === me.id} />
-            </div>
-            <div className="clearfix" />
-          </>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+          >
+            {data.name}
+          </Typography>
+          {!isFABReplaced && <div className={classes.popover}>
+            <UserPopover
+              userEditionData={userEditionData}
+              disabled={data.id === me.id}
+            />
+          </div>}
+          <UserEdition userEditionData={userEditionData} />
+          <div className="clearfix" />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
