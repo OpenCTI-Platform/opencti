@@ -499,7 +499,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'completed', label: 'Completed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'initiator_id', label: 'Initiator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'work_id', label: 'Work', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'connector_id', label: 'Connector', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     draftContext,
     { name: 'task_filters', label: 'Task filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'task_search', label: 'Search', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
