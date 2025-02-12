@@ -247,11 +247,16 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
-// region RETRO COMPATIBILITY Register internal queues
-/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
 export const initializeInternalQueues = async () => {
+  // region deprecated fixed queues
+  /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
   await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
   await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
+  // endregion
+  // Background task queues
+  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
+    await registerConnectorQueues(`background-task-${i}`, `Background ${i} queue`, 'internal', ENTITY_TYPE_BACKGROUND_TASK);
+  }
 };
 
 // This method reinitialize the expected queues in rabbitmq
@@ -276,10 +281,6 @@ export const enforceQueuesConsistency = async (context, user) => {
   for (let i = 0; i < syncs.length; i += 1) {
     const sync = syncs[i];
     await registerConnectorQueues(sync.internal_id, `Sync ${sync.internal_id} queue`, 'internal', ENTITY_TYPE_SYNC);
-  }
-  // Background task queues
-  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
-    await registerConnectorQueues(`background-task-${i}`, `Background ${i} queue`, 'internal', ENTITY_TYPE_BACKGROUND_TASK);
   }
 };
 
