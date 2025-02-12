@@ -133,7 +133,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
             open={displayUpdate}
           />
           <CsvMapperCreationContainer
-            queryRef={queryRef}
+            editionQueryRef={queryRef}
             isDuplicated={true}
             paginationOptions={paginationOptions}
             onClose={() => setDisplayDuplicate(false)}

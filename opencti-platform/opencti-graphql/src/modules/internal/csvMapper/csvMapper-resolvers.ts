@@ -8,7 +8,8 @@ import {
   findById,
   csvMapperSchemaAttributes,
   getParsedRepresentations,
-  csvMapperExport, csvMapperConfigurationImport
+  csvMapperExport,
+  csvMapperAddInputFromImport
 } from './csvMapper-domain';
 import { getCsvMapperErrorMessage } from './csvMapper-utils';
 
@@ -17,6 +18,7 @@ const csvMapperResolvers: Resolvers = {
     csvMapper: (_, { id }, context) => findById(context, context.user, id),
     csvMappers: (_, args, context) => findAll(context, context.user, args),
     csvMapperSchemaAttributes: (_, __, context) => csvMapperSchemaAttributes(context, context.user),
+    csvMapperAddInputFromImport: (_, { file }, context) => csvMapperAddInputFromImport(context, context.user, file),
   },
   CsvMapper: {
     errors: (csvMapper, _, context) => getCsvMapperErrorMessage(context, context.user, csvMapper),
@@ -35,9 +37,6 @@ const csvMapperResolvers: Resolvers = {
     },
     csvMapperFieldPatch: (_, { id, input }, context) => {
       return fieldPatchCsvMapper(context, context.user, id, input);
-    },
-    csvMapperConfigurationImport: (_, { file }, context) => {
-      return csvMapperConfigurationImport(context, context.user, file);
     },
   }
 };
