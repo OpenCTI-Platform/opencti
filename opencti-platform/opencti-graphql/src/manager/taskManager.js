@@ -2,6 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
+import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
 import {
   ACTION_TYPE_ADD,
@@ -47,11 +48,11 @@ import {
   TASK_TYPE_RULE
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { BackgroundTaskScope, ConnectorType } from '../generated/graphql';
+import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
-import { createWork, updateExpectationsNumber } from '../domain/work';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { updateExpectationsNumber } from '../domain/work';
 import { convertStoreToStix, convertTypeToStixType } from '../database/stix-converter';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -63,11 +64,12 @@ import { generateStandardId } from '../schema/identifier';
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('task_scheduler:interval');
 const TASK_MANAGER_KEY = conf.get('task_scheduler:lock_key');
+const TASK_CONCURRENCY = parseInt(conf.get('task_scheduler:max_concurrency') ?? '4', 10);
 
 let running = false;
 
-const findTaskToExecute = async (context) => {
-  const tasks = await findAll(context, SYSTEM_USER, {
+const findTasksToExecute = async (context) => {
+  return findAll(context, SYSTEM_USER, {
     connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
@@ -79,10 +81,6 @@ const findTaskToExecute = async (context) => {
     },
     noFiltersChecking: true
   });
-  if (tasks.length === 0) {
-    return null;
-  }
-  return R.head(tasks);
 };
 
 export const taskRule = async (context, user, task, callback) => {
@@ -90,7 +88,7 @@ export const taskRule = async (context, user, task, callback) => {
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
-    const options = { orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan) };
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan) };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -111,8 +109,9 @@ export const taskQuery = async (context, user, task, callback) => {
   if (task_excluded_ids.length > 0) {
     options.filters = addFilter(options.filters, 'id', task_excluded_ids, 'not_eq');
   }
-  const finalOpts = { ...options, connectionFormat: false, callback };
-  await elList(context, user, READ_DATA_INDICES, finalOpts);
+  const finalOpts = { ...options, connectionFormat: false, baseData: true };
+  const elements = await elList(context, user, READ_DATA_INDICES, finalOpts);
+  callback(elements);
 };
 
 export const taskList = async (context, user, task, callback) => {
@@ -121,6 +120,7 @@ export const taskList = async (context, user, task, callback) => {
     orderMode: task_order_mode || 'desc',
     // processing elements in descending order makes possible restoring from trash elements with dependencies
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
+    baseData: true
   };
   const elements = await internalFindByIds(context, user, task_ids, options);
   callback(elements);
@@ -141,11 +141,6 @@ const throwErrorInDraftContext = (context, user, actionType) => {
       || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
-};
-
-const createWorkForBackgroundTask = async (context, connectorId) => {
-  const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
-  return createWork(context, SYSTEM_USER, connector, `background task @ ${now()}`, connector.internal_id, { receivedTime: now() });
 };
 
 const isShareAction = (actionType) => {
@@ -219,19 +214,19 @@ const baseOperationBuilder = (actionType, operations, element) => {
   return baseOperationObject;
 };
 
-const sendResultToQueue = async (context, user, task, work, connectorId, objects, opts = {}) => {
+const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
   // Send actions to queue
   const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
   // Only add explicit expectation if the worker will not split anything
   if (objects.length === 1 || opts.forceNoSplit) {
-    await updateExpectationsNumber(context, user, work.id, objects.length);
+    await updateExpectationsNumber(context, user, task.work_id, objects.length);
   }
-  await pushToWorkerForConnector(connectorId, {
+  await pushToWorkerForConnector(task.connector_id, {
     type: 'bundle',
     applicant_id: user.id,
     content,
-    work_id: work.id,
+    work_id: task.work_id,
     draft_id: task.draft_context ?? null,
     no_split: opts.forceNoSplit ?? false
   });
@@ -240,7 +235,7 @@ const sendResultToQueue = async (context, user, task, work, connectorId, objects
   await updateTask(context, task.id, { task_processed_number: processedNumber });
 };
 
-const shareUnshareExtraOperation = async (context, user, task, actionType, operations) => {
+const shareUnshareExtraOperation = async (context, user, actionType, operations) => {
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
     const { containerId } = operations[0];
     if (containerId) {
@@ -267,14 +262,7 @@ const shareUnshareExtraOperation = async (context, user, task, actionType, opera
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
-  let work;
-  const connectorId = await getBestBackgroundConnectorId(context, user);
   return async (elements) => {
-  // Only create work at the first iteration, preventing creating a no work job
-    if (!work) {
-      work = await createWorkForBackgroundTask(context, connectorId);
-      await updateTask(context, task.id, { work_id: work.id });
-    }
     // Build limited stix object to limit memory footprint
     const objects = elements.map((e) => ({
       id: e.standard_id,
@@ -288,23 +276,16 @@ const standardOperationCallback = async (context, user, task, actionType, operat
       }
     }));
     // If share / unshare with container, add the container and force worker to not split the bundle
-    const { forceNoSplit, object } = await shareUnshareExtraOperation(context, user, task, actionType, operations);
+    const { forceNoSplit, object } = await shareUnshareExtraOperation(context, user, actionType, operations);
     if (object) objects.push(object);
     // Send actions to queue
-    await sendResultToQueue(context, user, task, work, connectorId, objects, { forceNoSplit });
+    await sendResultToQueue(context, user, task, objects, { forceNoSplit });
   };
 };
 
 const containerOperationCallback = async (context, user, task, containers, operations) => {
-  let work;
-  const connectorId = await getBestBackgroundConnectorId(context, user);
   const withNeighbours = operations[0].context.options.includeNeighbours;
   return async (elements) => {
-    // Only create work at the first iteration, preventing creating a no work job
-    if (!work) {
-      work = await createWorkForBackgroundTask(context, connectorId);
-      await updateTask(context, task.id, { work_id: work.id });
-    }
     const elementIds = new Set();
     const elementStandardIds = new Set();
     for (let index = 0; index < elements.length; index += 1) {
@@ -349,19 +330,12 @@ const containerOperationCallback = async (context, user, task, containers, opera
       });
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, work, connectorId, objects);
+    await sendResultToQueue(context, user, task, objects);
   };
 };
 
 const promoteOperationCallback = async (context, user, task, container) => {
-  let work;
-  const connectorId = await getBestBackgroundConnectorId(context, user);
   return async (elements) => {
-    // Only create work at the first iteration, preventing creating a no work job
-    if (!work) {
-      work = await createWorkForBackgroundTask(context, connectorId);
-      await updateTask(context, task.id, { work_id: work.id });
-    }
     const objects = [];
     const ids = elements.map((e) => e.internal_id);
     const loadedElements = await storeLoadByIdsWithRefs(context, user, ids);
@@ -452,7 +426,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
       });
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, work, connectorId, objects);
+    await sendResultToQueue(context, user, task, objects);
   };
 };
 
@@ -489,21 +463,9 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   return updateTask(context, task.id, { completed: true });
 };
 
-const taskHandler = async () => {
-  let lock;
-  try {
-    // Lock the manager
-    lock = await lockResources([TASK_MANAGER_KEY], { retryCount: 0 });
-    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
-    running = true;
-    const context = executionContext('task_manager', SYSTEM_USER);
-    const task = await findTaskToExecute(context);
-    // region Task checking
-    if (!task) {
-      // Nothing to execute.
-      logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] No task to execute found, stopping.');
-      return;
-    }
+const taskHandlerGenerator = (context) => {
+  return async (rawTask) => {
+    const task = { ...rawTask };
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
@@ -558,7 +520,21 @@ const taskHandler = async () => {
     } else {
       throw UnsupportedError('Multiple types of action inside the same background task', { actions: Object.keys(actionsGroup) });
     }
-    // endregion
+  };
+};
+
+const tasksHandler = async () => {
+  let lock;
+  try {
+    // Lock the manager
+    lock = await lockResources([TASK_MANAGER_KEY], { retryCount: 0 });
+    logApp.debug('[OPENCTI-MODULE][TASK-MANAGER] Starting task handler');
+    running = true;
+    const context = executionContext('task_manager', SYSTEM_USER);
+    const tasks = await findTasksToExecute(context);
+    const taskHandler = taskHandlerGenerator(context);
+    await BluePromise.map(tasks, taskHandler, { concurrency: TASK_CONCURRENCY })
+      .catch((error) => logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error', { cause: error }));
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
@@ -571,13 +547,14 @@ const taskHandler = async () => {
     if (lock) await lock.unlock();
   }
 };
+
 const initTaskManager = () => {
   let scheduler;
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE][TASK-MANAGER] Running task manager');
       scheduler = setIntervalAsync(async () => {
-        await taskHandler();
+        await tasksHandler();
       }, SCHEDULE_TIME);
     },
     status: () => {

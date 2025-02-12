@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS, SYSTEM_USER } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -15,11 +15,13 @@ import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../data
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
-import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
+import { BackgroundTaskScope, Capabilities, ConnectorType, FilterMode } from '../generated/graphql';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { createWork } from './work';
+import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -244,8 +246,15 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   }
 };
 
-export const createDefaultTask = (user, input, taskType, taskExpectedNumber, scope = undefined) => {
+const createWorkForBackgroundTask = async (context, connectorId) => {
+  const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
+  return createWork(context, SYSTEM_USER, connector, `background task @ ${now()}`, connector.internal_id, { receivedTime: now() });
+};
+
+export const createDefaultTask = async (context, user, input, taskType, taskExpectedNumber, scope = undefined) => {
   const taskId = generateInternalId();
+  const connectorId = await getBestBackgroundConnectorId(context, user);
+  const work = await createWorkForBackgroundTask(context, connectorId);
   let task = {
     id: taskId,
     internal_id: taskId,
@@ -254,6 +263,9 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
     initiator_id: user.internal_id,
     created_at: now(),
     completed: false,
+    // Associated job
+    work_id: work.id,
+    connector_id: connectorId,
     // Task related
     type: taskType,
     last_execution_date: null,
@@ -311,7 +323,7 @@ const authorizedMembersForTask = (user, scope) => {
 export const createListTask = async (context, user, input) => {
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
-  const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);
+  const task = await createDefaultTask(context, user, input, TASK_TYPE_LIST, ids.length, scope);
   const listTask = {
     ...task,
     actions,
