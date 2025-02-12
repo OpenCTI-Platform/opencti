@@ -14,14 +14,14 @@ import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_co
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const threatActorGroupKnowledgeFragment = graphql`
-    fragment ThreatActorGroupKnowledge_ThreatActorGroup on ThreatActorGroup {
-        id
-        name
-        aliases
-        first_seen
-        last_seen
-        entity_type
-    }
+  fragment ThreatActorGroupKnowledge_ThreatActorGroup on ThreatActorGroup {
+    id
+    name
+    aliases
+    first_seen
+    last_seen
+    entity_type
+  }
 `;
 
 const ThreatActorGroupKnowledgeComponent = ({

@@ -12,12 +12,12 @@ import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDo
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const channelKnowledgeFragment = graphql`
-    fragment ChannelKnowledge_channel on Channel {
-        id
-        name
-        aliases
-        entity_type
-    }
+  fragment ChannelKnowledge_channel on Channel {
+    id
+    name
+    aliases
+    entity_type
+  }
 `;
 
 const ChannelKnowledgeComponent = ({
