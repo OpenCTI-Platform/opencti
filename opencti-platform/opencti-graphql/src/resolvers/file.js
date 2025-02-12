@@ -1,5 +1,5 @@
 import { loadFile } from '../database/file-storage';
-import { askJobImport, batchFileMarkingDefinitions, batchFileWorks, deleteImport, filesMetrics, uploadImport, uploadPending } from '../domain/file';
+import { askJobImport, batchFileMarkingDefinitions, batchFileWorks, deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, uploadPending } from '../domain/file';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
@@ -40,6 +40,7 @@ const fileResolvers = {
     },
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
+    uploadAndAskJobImport: (_, args, context) => uploadAndAskJobImport(context, context.user, args),
   },
 };
 
