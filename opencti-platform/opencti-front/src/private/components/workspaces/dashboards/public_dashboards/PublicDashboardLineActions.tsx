@@ -42,7 +42,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   const [commitEditMutation] = useApiMutation(publicDashboardLineActionsEditMutation);
   const [commitDeleteMutation] = useApiMutation(publicDashboardLineActionsDeleteMutation);
   const deletion = useDeletion({});
-  const { handleOpenDelete } = deletion;
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const { canManage } = useGetCurrentUserAccessRight(publicDashboard.dashboard.currentUserAccessRight);
 
@@ -57,7 +57,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
 
   const onDelete = () => {
     if (publicDashboard.id) {
-      deletion.setDeleting(true);
+      setDeleting(true);
       commitDeleteMutation({
         variables: {
           id: publicDashboard.id,
@@ -68,8 +68,8 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
           }
         },
         onCompleted: () => {
-          deletion.setDeleting(false);
-          deletion.handleCloseDelete();
+          setDeleting(false);
+          handleCloseDelete();
         },
       });
     }

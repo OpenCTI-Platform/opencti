@@ -72,8 +72,9 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   }
   const deletion = useDeletion({ handleClose });
   const [commit] = useApiMutation(VocabularyPopoverDeletionMutation);
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id: vocab.id,
@@ -87,9 +88,9 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
         );
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
-        deletion.handleCloseDelete();
+        handleCloseDelete();
       },
     });
   };
@@ -100,7 +101,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete} disabled={!deletable}>
+        <MenuItem onClick={handleOpenDelete} disabled={!deletable}>
           {deleteLabel}
         </MenuItem>
       </Menu>

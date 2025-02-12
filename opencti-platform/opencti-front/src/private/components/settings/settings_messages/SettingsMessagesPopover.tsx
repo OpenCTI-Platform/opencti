@@ -52,15 +52,16 @@ const SettingsMessagesPopover = ({
   const deletion = useDeletion({ handleClose });
 
   const [commit] = useApiMutation(settingsMessagesPopoverPatch);
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id: settingsId,
         input: message.id,
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
       },
     });
@@ -73,7 +74,7 @@ const SettingsMessagesPopover = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <SettingsMessageEdition
         settingsId={settingsId}

@@ -31,14 +31,15 @@ const CaseIncidentDeletion = ({ id }: { id: string }) => {
   );
   const handleClose = () => {};
   const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id,
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
         navigate('/dashboard/cases/incidents');
       },
@@ -53,8 +54,8 @@ const CaseIncidentDeletion = ({ id }: { id: string }) => {
         <Button
           color="error"
           variant="contained"
-          onClick={deletion.handleOpenDelete}
-          disabled={deletion.deleting}
+          onClick={handleOpenDelete}
+          disabled={deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}

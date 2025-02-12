@@ -35,13 +35,14 @@ const GroupingDeletion: FunctionComponent<GroupingDeletionProps> = ({
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       variables: { id: groupingId },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         if (typeof handleClose === 'function') handleClose();
         navigate('/dashboard/analyses/groupings');
       },
@@ -54,8 +55,8 @@ const GroupingDeletion: FunctionComponent<GroupingDeletionProps> = ({
         <Button
           color="error"
           variant="contained"
-          onClick={deletion.handleOpenDelete}
-          disabled={deletion.deleting}
+          onClick={handleOpenDelete}
+          disabled={deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}

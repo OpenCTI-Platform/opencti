@@ -40,8 +40,9 @@ ExternalReferenceDeletionProps
     { successMessage: deleteSuccessMessage },
   );
   const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id,
@@ -58,9 +59,9 @@ ExternalReferenceDeletionProps
         }
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         if (handleRemove) {
-          deletion.handleCloseDelete();
+          handleCloseDelete();
         } else {
           navigate('/dashboard/analyses/external_references');
         }
@@ -73,8 +74,8 @@ ExternalReferenceDeletionProps
         <Button
           color="error"
           variant="contained"
-          onClick={deletion.handleOpenDelete}
-          disabled={deletion.deleting}
+          onClick={handleOpenDelete}
+          disabled={deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}

@@ -46,6 +46,7 @@ const ToolPopover: React.FC<ToolPopoverProps> = ({ id }) => {
   const queryRef = useQueryLoading<ToolEditionContainerQuery>(toolEditionQuery, { id });
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+  const { setDeleting, handleOpenDelete } = deletion;
 
   const handleOpen = (event: React.MouseEvent) => {
     setAnchorEl(event.currentTarget);
@@ -73,11 +74,11 @@ const ToolPopover: React.FC<ToolPopoverProps> = ({ id }) => {
   };
 
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: { id },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         navigate('/dashboard/arsenal/tools');
       },
     });
@@ -96,7 +97,7 @@ const ToolPopover: React.FC<ToolPopoverProps> = ({ id }) => {
             <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <StixCoreObjectEnrichment

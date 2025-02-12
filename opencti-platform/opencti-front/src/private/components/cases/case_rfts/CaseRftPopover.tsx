@@ -80,15 +80,16 @@ const CaseRftPopover = ({ id }: { id: string }) => {
   };
 
   const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
 
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id,
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
         navigate('/dashboard/cases/rfts');
       },
@@ -121,7 +122,7 @@ const CaseRftPopover = ({ id }: { id: string }) => {
             </MenuItem>
           </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />

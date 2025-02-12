@@ -96,9 +96,10 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
 
   // -- Deletion --
   const [commitDelete] = useApiMutation(ingestionCsvPopoverDeletionMutation);
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitDelete({
       variables: {
         id: ingestionCsvId,
@@ -107,8 +108,8 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         deleteNode(store, 'Pagination_ingestionCsvs', paginationOptions, ingestionCsvId);
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
-        deletion.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
     });
   };
@@ -204,7 +205,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           <MenuItem onClick={handleOpenResetState}>
             {t_i18n('Reset state')}
           </MenuItem>
-          <MenuItem onClick={deletion.handleOpenDelete}>
+          <MenuItem onClick={handleOpenDelete}>
             {t_i18n('Delete')}
           </MenuItem>
         </Menu>

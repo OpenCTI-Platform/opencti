@@ -41,6 +41,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
 
   const idToDelete = useRef<string>();
   const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [commitDeleteMutation] = useApiMutation(workspaceShareButtonDeleteMutation);
@@ -69,19 +70,19 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
 
   const confirmDelete = (id: string) => {
     idToDelete.current = id;
-    deletion.handleOpenDelete();
+    handleOpenDelete();
   };
 
   const onDelete = () => {
     if (idToDelete.current) {
-      deletion.setDeleting(true);
+      setDeleting(true);
       commitDeleteMutation({
         variables: {
           id: idToDelete.current,
         },
         onCompleted: () => {
-          deletion.setDeleting(false);
-          deletion.handleCloseDelete();
+          setDeleting(false);
+          handleCloseDelete();
           idToDelete.current = undefined;
           fetchPublicDashboardsWithFilters();
         },

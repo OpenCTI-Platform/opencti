@@ -38,13 +38,14 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       variables: { id: positionId },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         if (typeof handleClose === 'function') handleClose();
         navigate('/dashboard/locations/positions');
       },
@@ -57,8 +58,8 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
         <Button
           color="error"
           variant="contained"
-          onClick={deletion.handleOpenDelete}
-          disabled={deletion.deleting}
+          onClick={handleOpenDelete}
+          disabled={deleting}
           sx={{ marginTop: 2 }}
         >
           {t_i18n('Delete')}

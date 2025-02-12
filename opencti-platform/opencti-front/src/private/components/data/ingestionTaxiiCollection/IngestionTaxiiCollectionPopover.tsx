@@ -97,9 +97,10 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   const [commitDelete] = useApiMutation(ingestionTaxiiPopoverDeletionMutation);
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitDelete({
       variables: {
         id: ingestionTaxiiId,
@@ -113,8 +114,8 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         );
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
-        deletion.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
     });
   };
@@ -178,7 +179,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
         </MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>
+        <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
       </Menu>
