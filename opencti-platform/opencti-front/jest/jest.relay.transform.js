@@ -27,8 +27,8 @@ module.exports = {
           const formatted = print(parse(query));
           const name = /(fragment|mutation|query|subscription) (\w+)/.exec(formatted)[2];
           const id = `graphql__${crypto.randomBytes(10).toString('hex')}`;
-          const importFile = `import ${id} from "./__generated__/${name}.graphql";`;
-          imports.push(importFile);
+          const uploadAndAskJobImport = `import ${id} from "./__generated__/${name}.graphql";`;
+          imports.push(uploadAndAskJobImport);
           return id;
         });
         contents = imports.join('\n') + contents;
