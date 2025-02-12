@@ -720,7 +720,7 @@
   "Decay rules": "Règles de déclin",
   "Decay Rules | Customization | Settings": "Règles de déclin | Personnalisation | Paramètres",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Les règles de déclin sont appliquées aux indicateurs par ordre de priorité (de la plus grande à la plus petite, la plus petite étant 0). Des règles prédéfinies (built-in) sont appliquées par défaut et ne sont pas modifiables. Vous pouvez ajouter une règle de déclin personnalisée et définir son ordre de priorité.",
-  "Decline": "Déclin",
+  "Decline": "Décliner",
   "Decreasing": "Diminution",
   "Default": "Défaut",
   "Default author": "Auteur par défaut",
