@@ -5,6 +5,10 @@ import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
 
+export const getDraftFilePrefix = (draftId) => {
+  return `draft/${draftId}/`;
+};
+
 export const buildDraftFilter = (context, user, opts = {}) => {
   const { includeDeletedInDraft = false } = opts;
   const draftContext = getDraftContext(context, user);

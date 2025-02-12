@@ -918,6 +918,7 @@ enum FileOrdering {
 type File {
   id: ID!
   entity_type: String!
+  draftVersion: DraftVersion
   name: String!
   size: Int
   lastModified: DateTime

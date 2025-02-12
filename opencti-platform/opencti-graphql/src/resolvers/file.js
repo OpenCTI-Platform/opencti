@@ -4,6 +4,7 @@ import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import {buildDraftVersion} from "../modules/draftWorkspace/draftWorkspace-domain";
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
@@ -24,6 +25,7 @@ const fileResolvers = {
   File: {
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
     works: (file, _, context) => worksLoader.load(file.id, context, context.user),
+    draftVersion: (file, _, context) => buildDraftVersion(file),
   },
   FileMetadata: {
     entity: (metadata, _, context) => domainLoader.load(metadata.entity_id, context, context.user),

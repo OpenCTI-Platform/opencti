@@ -18,6 +18,8 @@ import { FROM_START_STR } from '../../../utils/format';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
 import { getDraftContext } from '../../../utils/draftContext';
+import { DRAFT_OPERATION_CREATE } from '../../draftWorkspace/draftOperations';
+import { getDraftFilePrefix } from '../../../database/draft-utils';
 
 export const SUPPORT_STORAGE_PATH = 'support';
 export const IMPORT_STORAGE_PATH = 'import';
@@ -46,6 +48,7 @@ export const buildFileDataForIndexing = (file: File, draftContext?: string | und
   return {
     ...fileData,
     draft_ids: draftContext ? [draftContext] : null,
+    draft_change: draftContext ? { draft_operation: DRAFT_OPERATION_CREATE } : null,
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
@@ -172,7 +175,7 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const filterOpts = { ...opts, exact_path: isEmptyField(entity_id) };
   const draftContext = getDraftContext(context, user);
-  const pathsToTarget = getDraftContext(context, user) ? [`draft${draftContext}/${path}`, path] : [path];
+  const pathsToTarget = draftContext ? [`${getDraftFilePrefix(draftContext)}${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(pathsToTarget, filterOpts),
     noFiltersChecking: true // No associated model
