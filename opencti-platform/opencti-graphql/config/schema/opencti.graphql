@@ -12894,6 +12894,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    scope: StatusScope
   ): StatusConnection @auth
   backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE])
   backgroundTasks(

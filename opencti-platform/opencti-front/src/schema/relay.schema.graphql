@@ -7942,7 +7942,7 @@ type Query {
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   status(id: String!): Status
-  statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StatusConnection
+  statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, scope: StatusScope): StatusConnection
   backgroundTask(id: String!): BackgroundTask
   backgroundTasks(first: Int, after: ID, orderBy: BackgroundTasksOrdering, orderMode: OrderingMode, includeAuthorities: Boolean, filters: FilterGroup, search: String): BackgroundTaskConnection
   rule(id: String!): Rule

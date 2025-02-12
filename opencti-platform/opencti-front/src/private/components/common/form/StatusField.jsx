@@ -103,7 +103,10 @@ class StatusField extends Component {
         ? {
           mode: 'and',
           filterGroups: [],
-          filters: [{ key: 'type', values: [this.props.type] }],
+          filters: [
+            { key: 'type', values: [this.props.type] },
+            { key: 'scope', values: [this.props.scope || 'GLOBAL'] },
+          ],
         }
         : null,
       orderBy: 'order',

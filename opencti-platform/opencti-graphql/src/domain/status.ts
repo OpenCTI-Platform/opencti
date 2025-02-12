@@ -44,9 +44,22 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
 };
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
-  return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+export const findAll = async (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
+  const allStatuses = await listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+
+  if (args.scope) {
+    if (args.scope === StatusScope.Global) {
+      return allStatuses.edges.filter((status) => {
+        return status.node.scope === undefined || status.node.scope === null || status.node.scope === StatusScope.Global;
+      });
+    }
+    return allStatuses.edges.filter((status) => {
+      return status.node.scope === args.scope;
+    });
+  }
+  return allStatuses;
 };
+
 export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
   const getTypeStatusesFn = async () => {
     const args = {

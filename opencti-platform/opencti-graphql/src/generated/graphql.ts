@@ -21661,6 +21661,7 @@ export type QueryStatusesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StatusOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  scope?: InputMaybe<StatusScope>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
