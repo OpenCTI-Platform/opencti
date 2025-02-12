@@ -46,8 +46,36 @@ export const csvMappersImportQuery = graphql`
       name
       has_header
       separator
-      representations
       skipLineChar
+      representations {
+        id
+        type
+        target {
+          entity_type
+          column_based {
+            column_reference
+            operator
+            value
+          }
+        }
+        attributes {
+          key
+          column {
+            column_name
+            configuration {
+              separator
+              pattern_date
+            }
+          }
+          default_values {
+            id
+            name
+          }
+          based_on {
+            representations
+          }
+        }
+      }
     }
   }
 `;
@@ -67,7 +95,11 @@ const CsvMappers = () => {
     },
   );
   const [open, setOpen] = useState(false);
+
   const [importedFile, setImportedFile] = useState(null);
+  const [importedFileQueryRef, loadImportedFileQuery] = useQueryLoader<CsvMappersImportQuery>(csvMappersImportQuery);
+  console.log('open', open);
+  console.log('importedfile', importedFile);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
@@ -78,8 +110,6 @@ const CsvMappers = () => {
     mappersQuery,
     paginationOptions,
   );
-
-  const [importedFileQueryRef, loadImportedFileQuery] = useQueryLoader<CsvMappersImportQuery>(csvMappersImportQuery);
 
   const dataColumns = {
     name: {

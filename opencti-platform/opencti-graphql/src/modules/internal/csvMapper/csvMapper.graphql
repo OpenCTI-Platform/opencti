@@ -56,7 +56,7 @@ type CsvMapperAddInputFromImport {
   name: String!
   has_header: Boolean!
   separator: String!
-  representations: String!
+  representations: [CsvMapperRepresentation!]!
   skipLineChar: String
 }
 
