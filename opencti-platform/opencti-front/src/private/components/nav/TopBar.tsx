@@ -270,10 +270,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </div>
         )}
-        {draftModeEnabled && (
-          <DraftContextBanner/>
-        )}
         <div className={classes.barRight}>
+          {draftModeEnabled && (
+            <DraftContextBanner/>
+          )}
           <div className={classes.barRightContainer}>
             {!draftModeEnabled && (
             <Security needs={[KNOWLEDGE]}>

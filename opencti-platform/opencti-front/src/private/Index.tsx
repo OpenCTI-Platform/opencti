@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
@@ -16,6 +16,7 @@ import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './compo
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
+import useDraftContext from '../utils/hooks/useDraftContext';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -48,6 +49,7 @@ const Index = ({ settings }: IndexProps) => {
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
+  const draftContext = useDraftContext();
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -98,7 +100,7 @@ const Index = ({ settings }: IndexProps) => {
         <Box component="main" sx={boxSx}>
           <Suspense fallback={<Loader />}>
             <Routes>
-              <Route path="/" element={boundaryWrapper(Dashboard)}/>
+              <Route path="/" element={draftContext?.id ? <Navigate to={`/dashboard/drafts/${draftContext.id}/`} replace={true} /> : boundaryWrapper(Dashboard)}/>
 
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />

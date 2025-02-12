@@ -1,10 +1,12 @@
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { getDraftModeColor } from './DraftChip';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface DraftBlockProps {
   title?: string
@@ -16,9 +18,11 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
+  const draftContext = useDraftContext();
 
   return (
-    <div
+    <Link
+      to={`/dashboard/drafts/${draftContext?.id}`}
       style={{
         border: `1px solid ${hexToRGB(draftColor, 0.5)}`,
         color: draftColor,
@@ -53,7 +57,7 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
         {title ?? t_i18n('Draft Mode')}
       </Typography>
       <span style={{ overflow: 'hidden' }}>{body}</span>
-    </div>
+    </Link>
   );
 };
 

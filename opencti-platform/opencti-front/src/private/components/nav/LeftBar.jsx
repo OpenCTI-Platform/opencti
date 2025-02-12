@@ -478,25 +478,48 @@ const LeftBar = () => {
           component="nav"
           style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 66px )` }}
         >
-          <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
-            <MenuItem
-              component={Link}
-              to="/dashboard"
-              selected={location.pathname === '/dashboard'}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <DashboardOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Home')}
-                />
-              )}
-            </MenuItem>
-          </StyledTooltip>
+          {!draftContext && (
+            <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard"
+                selected={location.pathname === '/dashboard'}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <DashboardOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Home')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+          )}
+          {draftContext && (
+            <StyledTooltip title={!navOpen && t_i18n('Draft overview')} placement="right">
+              <MenuItem
+                component={Link}
+                to={`/dashboard/drafts/${draftContext.id}/`}
+                selected={location.pathname.includes(`/dashboard/drafts/${draftContext.id}/`)}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <DashboardOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Draft overview')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+          )}
         </MenuList>
         <Divider />
         <Security needs={[KNOWLEDGE]}>
@@ -861,7 +884,7 @@ const LeftBar = () => {
                 </StyledTooltip>
               )}
             </Security>
-            {isDraftFeatureEnabled && (
+            {isDraftFeatureEnabled && !draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
                   <MenuItem

@@ -1,6 +1,8 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { AutoFix } from 'mdi-material-ui';
 import { graphql } from 'react-relay';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import { useTheme } from '@mui/styles';
 import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
@@ -17,6 +19,7 @@ import { itemColor } from '../../../../utils/Colors';
 import Security from '../../../../utils/Security';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreRelationshipsProps {
   storageKey: string;
@@ -95,11 +98,19 @@ export const stixCoreRelationshipsFragment = graphql`
       }
       ... on StixCoreObject {
         created_at
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -121,12 +132,20 @@ export const stixCoreRelationshipsFragment = graphql`
         parent_types
       }
       ... on StixCoreObject {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         representative {
           main
         }
       }
       ... on StixCoreRelationship {
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         created_at
         start_time
         stop_time
@@ -232,6 +251,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const theme = useTheme<Theme>();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     is_inferred: {
@@ -239,7 +259,16 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
       label: ' ',
       isSortable: false,
       percentWidth: 3,
-      render: ({ is_inferred, entity_type }) => (is_inferred ? <AutoFix style={{ color: itemColor(entity_type) }} /> : <ItemIcon type={entity_type} />),
+      render: ({ is_inferred, entity_type, draftVersion }) => {
+        if (is_inferred) {
+          const inferredColor = draftVersion ? getDraftModeColor(theme) : itemColor(entity_type);
+          return (<AutoFix style={{ color: inferredColor }} />);
+        }
+        if (draftVersion) {
+          return (<ItemIcon type={entity_type} color={getDraftModeColor(theme)} />);
+        }
+        return (<ItemIcon type={entity_type} />);
+      },
     },
     fromType: {
       id: 'fromType',

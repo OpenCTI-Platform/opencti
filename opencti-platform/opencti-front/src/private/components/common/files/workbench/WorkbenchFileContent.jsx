@@ -1,4 +1,4 @@
-import { Add, ArchitectureOutlined, ArrowDropDown, ArrowDropUp, CheckCircleOutlined, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
+import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -4189,10 +4189,9 @@ const WorkbenchFileContentComponent = ({
         <div style={{ float: 'right', display: 'flex', gap: 10 }}>
           {isDraftFeatureEnabled && (
           <Button
-            variant="contained"
-            color="secondary"
+            variant="outlined"
+            color="primary"
             onClick={handleOpenConvertToDraft}
-            startIcon={<ArchitectureOutlined />}
             size="small"
           >
             {t_i18n('Convert to draft')}
@@ -4201,7 +4200,6 @@ const WorkbenchFileContentComponent = ({
           <Button
             variant="contained"
             onClick={handleOpenValidate}
-            startIcon={<CheckCircleOutlined />}
             size="small"
           >
             {t_i18n('Validate this workbench')}

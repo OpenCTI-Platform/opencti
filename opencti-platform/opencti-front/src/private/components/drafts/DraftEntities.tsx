@@ -215,8 +215,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={draftEntitiesLineFragment}
-          exportContext={{ entity_type: 'Stix-Domain-Object' }}
-          redirectionModeEnabled
+          entityTypes={[entitiesType]}
           removeFromDraftEnabled
           disableSelectAll // TODO: To handle selectAll
           createButton={
@@ -247,12 +246,12 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
                   open={openCreateEntity}
                   handleClose={handleCloseCreateEntity}
                   onCompleted={() => setOpenCreateEntity(false)}
+                  stixDomainObjectTypes={entitiesType}
                   creationCallback={undefined}
                   confidence={undefined}
                   defaultCreatedBy={undefined}
                   isFromBulkRelation={undefined}
                   defaultMarkingDefinitions={undefined}
-                  stixDomainObjectTypes={undefined}
                 />
               </>
             )
