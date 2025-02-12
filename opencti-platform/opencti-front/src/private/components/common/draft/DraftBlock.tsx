@@ -44,7 +44,7 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
           fontSize: 10,
           height: 10,
           textTransform: 'uppercase',
-          fontFamily: '"Geoligica", sans-serif',
+          fontFamily: '"Geologica", sans-serif',
           fontWeight: 700,
           width: 'fit-content',
           ...(sx?.title ?? {}),
