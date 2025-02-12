@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useQueryLoader } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import Transition from '../../../../../components/Transition';
 import { deleteNode } from '../../../../../utils/store';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import { AlertingLine_node$data } from './__generated__/AlertingLine_node.graphql';
@@ -23,6 +17,8 @@ import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertDigestEdition from './AlertDigestEdition';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../../components/DeleteDialog';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,21 +49,15 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
   const isLiveEdition = data.trigger_type === 'live';
   const isDigestEdition = data.trigger_type === 'digest';
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
   const [commit] = useApiMutation(alertingPopoverDeletionMutation);
   //  popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => setAnchorEl(null);
-  // delete
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => setDisplayDelete(false);
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -105,26 +95,11 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
-      <Dialog open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        PaperProps={{ elevation: 1 }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this trigger?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this trigger?')}
+      />
       {displayEdit && <Drawer open={true}
         anchor="right"
         elevation={1}

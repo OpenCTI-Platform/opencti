@@ -40,9 +40,10 @@ StixSightingRelationshipProps
 
   const handleOpenEdit = () => setEditOpen(true);
   const handleCloseEdit = () => setEditOpen(false);
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       ...defaultCommitMutation,
       mutation: stixSightingRelationshipEditionDeleteMutation,
@@ -104,7 +105,7 @@ StixSightingRelationshipProps
                   // inferred={result.props.stixSightingRelationship.x_opencti_inferences !== null}
                   inferred={false}
                   handleClose={handleCloseEdit}
-                  handleDelete={deletion.handleOpenDelete}
+                  handleDelete={handleOpenDelete}
                   noStoreUpdate={undefined}
                   inGraph={undefined}
                 />
