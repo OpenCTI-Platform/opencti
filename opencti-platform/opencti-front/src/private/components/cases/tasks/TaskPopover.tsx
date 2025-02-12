@@ -75,8 +75,9 @@ const TaskPopover = ({
     setDisplayEdit(false);
   };
   const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id,
@@ -87,10 +88,10 @@ const TaskPopover = ({
         }
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
         if (objectId) {
-          deletion.handleCloseDelete();
+          handleCloseDelete();
         } else {
           navigate('/dashboard/cases/tasks');
         }
@@ -126,7 +127,7 @@ const TaskPopover = ({
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <DeleteDialog

@@ -41,9 +41,10 @@ const TriggerPopover = ({
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => setAnchorEl(null);
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id,
@@ -52,8 +53,8 @@ const TriggerPopover = ({
         deleteNode(store, 'Pagination_triggersKnowledge', paginationOptions, id);
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
-        deletion.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
     });
   };
@@ -78,7 +79,7 @@ const TriggerPopover = ({
       </Tooltip>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
         deletion={deletion}

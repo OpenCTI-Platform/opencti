@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import ToggleButton from '@mui/material/ToggleButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +10,10 @@ import { attackPatternEditionQuery } from './AttackPatternEdition';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import Transition from '../../../../components/Transition';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const AttackPatternPopoverDeletionMutation = graphql`
   mutation AttackPatternPopoverDeletionMutation($id: ID!) {
@@ -31,18 +27,13 @@ const AttackPatternPopover = ({ id }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const [deleting, setDeleting] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => setDisplayDelete(false);
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -77,26 +68,11 @@ const AttackPatternPopover = ({ id }) => {
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
-        <Dialog
-          open={displayDelete}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this attack pattern?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDelete} disabled={deleting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={t_i18n('Do you want to delete this attack pattern?')}
+        />
         <QueryRenderer
           query={attackPatternEditionQuery}
           variables={{ id }}

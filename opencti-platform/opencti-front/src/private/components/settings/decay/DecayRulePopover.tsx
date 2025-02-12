@@ -2,21 +2,17 @@ import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
 import { decayRuleEditionMutation } from './DecayRuleEdition';
-import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,8 +36,6 @@ const DecayRulePopover = ({ decayRule }: DecayRulePopoverProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [commitDeleteMutation] = useApiMutation(decayRuleDeletionMutation);
   const [commitUpdateMutation] = useApiMutation(decayRuleEditionMutation);
 
@@ -53,15 +47,8 @@ const DecayRulePopover = ({ decayRule }: DecayRulePopoverProps) => {
     setAnchorEl(null);
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
-
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitDeleteMutation({
@@ -112,28 +99,11 @@ const DecayRulePopover = ({ decayRule }: DecayRulePopoverProps) => {
         <MenuItem onClick={submitActivate}>{!decayRule.active ? t_i18n('Activate') : t_i18n('Deactivate')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
-
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this entity?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this entity?')}
+      />
     </div>
   );
 };
