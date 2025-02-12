@@ -8171,6 +8171,7 @@ type Query {
   csvMapper(id: ID!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
+  csvMapperAddInputFromImport(file: Upload!): CsvMapperAddInputFromImport!
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
@@ -9003,7 +9004,6 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
-  csvMapperConfigurationImport(file: Upload!): CsvMapper
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
@@ -12131,6 +12131,14 @@ type CsvMapperRepresentation {
   attributes: [CsvMapperRepresentationAttribute!]!
   from: String
   to: String
+}
+
+type CsvMapperAddInputFromImport {
+  name: String!
+  has_header: Boolean!
+  separator: String!
+  representations: String!
+  skipLineChar: String
 }
 
 type CsvMapper implements InternalObject & BasicObject {

@@ -13,7 +13,6 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDial from '@mui/material/SpeedDial';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
-import { CsvMappersImportMutation } from '@components/data/__generated__/CsvMappersImportMutation.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -22,8 +21,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
-import { handleError, MESSAGING$ } from '../../../relay/environment';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { CsvMappersImportQuery } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
@@ -42,11 +40,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const csvMapperImportMutation = graphql`
-  mutation CsvMappersImportMutation($file: Upload!) {
-    csvMapperConfigurationImport(file: $file) {
-      id
-      entity_type
+export const csvMappersImportQuery = graphql`
+  query CsvMappersImportQuery($file: Upload!) {
+    csvMapperAddInputFromImport(file: $file) {
+      name
+      has_header
+      separator
+      representations
+      skipLineChar
     }
   }
 `;
@@ -66,7 +67,7 @@ const CsvMappers = () => {
     },
   );
   const [open, setOpen] = useState(false);
-  const [commitImportMutation] = useApiMutation<CsvMappersImportMutation>(csvMapperImportMutation);
+  const [importedFile, setImportedFile] = useState(null);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
@@ -77,6 +78,10 @@ const CsvMappers = () => {
     mappersQuery,
     paginationOptions,
   );
+
+  const importedFileQueryRef = importedFile
+    ? useQueryLoading<CsvMappersImportQuery>(csvMappersImportQuery, { file: importedFile })
+    : undefined;
 
   const dataColumns = {
     name: {
@@ -103,21 +108,10 @@ const CsvMappers = () => {
   };
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
-    const importedFile = event.target.files[0];
-    if (importedFile) {
-      commitImportMutation({
-        variables: { file: importedFile },
-        onError: (e) => {
-          if (inputFileRef.current) inputFileRef.current.value = '';
-          handleError(e);
-        },
-        onCompleted: (response) => {
-          if (inputFileRef.current) inputFileRef.current.value = '';
-          if (response.csvMapperConfigurationImport) {
-            MESSAGING$.notifySuccess(t_i18n('CSV mapper created'));
-          }
-        },
-      });
+    const file = event.target.files[0];
+    if (file) {
+      setImportedFile(importedFile);
+      setOpen(true);
     }
   };
 
@@ -186,6 +180,7 @@ const CsvMappers = () => {
               />
             </SpeedDial>
             <CsvMapperCreationContainer
+              importedFileQueryRef={importedFileQueryRef}
               paginationOptions={paginationOptions}
               open={open}
               onClose={() => setOpen(false)}

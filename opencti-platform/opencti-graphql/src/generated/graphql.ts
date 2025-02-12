@@ -5297,6 +5297,15 @@ export type CsvMapperAddInput = {
   skipLineChar?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type CsvMapperAddInputFromImport = {
+  __typename?: 'CsvMapperAddInputFromImport';
+  has_header: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  representations: Scalars['String']['output'];
+  separator: Scalars['String']['output'];
+  skipLineChar?: Maybe<Scalars['String']['output']>;
+};
+
 export type CsvMapperConnection = {
   __typename?: 'CsvMapperConnection';
   edges: Array<CsvMapperEdge>;
@@ -13670,7 +13679,6 @@ export type Mutation = {
   courseOfActionAdd?: Maybe<CourseOfAction>;
   courseOfActionEdit?: Maybe<CourseOfActionEditMutations>;
   csvMapperAdd?: Maybe<CsvMapper>;
-  csvMapperConfigurationImport?: Maybe<CsvMapper>;
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
@@ -14322,11 +14330,6 @@ export type MutationCourseOfActionEditArgs = {
 
 export type MutationCsvMapperAddArgs = {
   input: CsvMapperAddInput;
-};
-
-
-export type MutationCsvMapperConfigurationImportArgs = {
-  file: Scalars['Upload']['input'];
 };
 
 
@@ -19618,6 +19621,7 @@ export type Query = {
   coursesOfAction?: Maybe<CourseOfActionConnection>;
   creators?: Maybe<CreatorConnection>;
   csvMapper?: Maybe<CsvMapper>;
+  csvMapperAddInputFromImport: CsvMapperAddInputFromImport;
   csvMapperSchemaAttributes: Array<CsvMapperSchemaAttributes>;
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
@@ -20289,6 +20293,11 @@ export type QueryCreatorsArgs = {
 
 export type QueryCsvMapperArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryCsvMapperAddInputFromImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -31334,6 +31343,7 @@ export type ResolversTypes = ResolversObject<{
   CryptographicKeyAddInput: CryptographicKeyAddInput;
   CsvMapper: ResolverTypeWrapper<BasicStoreEntityCsvMapper>;
   CsvMapperAddInput: CsvMapperAddInput;
+  CsvMapperAddInputFromImport: ResolverTypeWrapper<CsvMapperAddInputFromImport>;
   CsvMapperConnection: ResolverTypeWrapper<Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversTypes['CsvMapperEdge']> }>;
   CsvMapperEdge: ResolverTypeWrapper<Omit<CsvMapperEdge, 'node'> & { node: ResolversTypes['CsvMapper'] }>;
   CsvMapperOperator: CsvMapperOperator;
@@ -32192,6 +32202,7 @@ export type ResolversParentTypes = ResolversObject<{
   CryptographicKeyAddInput: CryptographicKeyAddInput;
   CsvMapper: BasicStoreEntityCsvMapper;
   CsvMapperAddInput: CsvMapperAddInput;
+  CsvMapperAddInputFromImport: CsvMapperAddInputFromImport;
   CsvMapperConnection: Omit<CsvMapperConnection, 'edges'> & { edges: Array<ResolversParentTypes['CsvMapperEdge']> };
   CsvMapperEdge: Omit<CsvMapperEdge, 'node'> & { node: ResolversParentTypes['CsvMapper'] };
   CsvMapperRepresentation: CsvMapperRepresentation;
@@ -34508,6 +34519,15 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
   skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CsvMapperAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperAddInputFromImport'] = ResolversParentTypes['CsvMapperAddInputFromImport']> = ResolversObject<{
+  has_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representations?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37539,7 +37559,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   courseOfActionAdd?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<MutationCourseOfActionAddArgs, 'input'>>;
   courseOfActionEdit?: Resolver<Maybe<ResolversTypes['CourseOfActionEditMutations']>, ParentType, ContextType, RequireFields<MutationCourseOfActionEditArgs, 'id'>>;
   csvMapperAdd?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperAddArgs, 'input'>>;
-  csvMapperConfigurationImport?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperConfigurationImportArgs, 'file'>>;
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
@@ -39060,6 +39079,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<QueryCoursesOfActionArgs>>;
   creators?: Resolver<Maybe<ResolversTypes['CreatorConnection']>, ParentType, ContextType, Partial<QueryCreatorsArgs>>;
   csvMapper?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<QueryCsvMapperArgs, 'id'>>;
+  csvMapperAddInputFromImport?: Resolver<ResolversTypes['CsvMapperAddInputFromImport'], ParentType, ContextType, RequireFields<QueryCsvMapperAddInputFromImportArgs, 'file'>>;
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
@@ -42375,6 +42395,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CryptocurrencyWallet?: CryptocurrencyWalletResolvers<ContextType>;
   CryptographicKey?: CryptographicKeyResolvers<ContextType>;
   CsvMapper?: CsvMapperResolvers<ContextType>;
+  CsvMapperAddInputFromImport?: CsvMapperAddInputFromImportResolvers<ContextType>;
   CsvMapperConnection?: CsvMapperConnectionResolvers<ContextType>;
   CsvMapperEdge?: CsvMapperEdgeResolvers<ContextType>;
   CsvMapperRepresentation?: CsvMapperRepresentationResolvers<ContextType>;

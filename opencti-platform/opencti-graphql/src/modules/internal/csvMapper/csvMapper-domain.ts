@@ -128,7 +128,7 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
 
 const MINIMAL_COMPATIBLE_VERSION = '6.5.0'; // TODO set to 6.6.0
 
-export const csvMapperConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const csvMapperAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
 
   // check platform version compatibility
@@ -147,7 +147,7 @@ export const csvMapperConfigurationImport = async (context: AuthContext, user: A
     ...parsedData.configuration,
     representations: JSON.stringify(representations),
   };
-  return createCsvMapper(context, user, input);
+  return input;
 };
 
 // -- Schema
