@@ -94,7 +94,6 @@ const inlineStyles: Record<string, CSSProperties> = {
   messages: {
     float: 'left',
     width: '10%',
-    paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -107,7 +106,6 @@ const inlineStyles: Record<string, CSSProperties> = {
   updated_at: {
     float: 'left',
     width: '15%',
-    paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
