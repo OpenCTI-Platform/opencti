@@ -12,7 +12,8 @@ import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDial from '@mui/material/SpeedDial';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
+import { CsvMappersImportQuery } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -21,7 +22,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
-import { CsvMappersImportQuery } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
@@ -79,9 +79,7 @@ const CsvMappers = () => {
     paginationOptions,
   );
 
-  const importedFileQueryRef = importedFile
-    ? useQueryLoading<CsvMappersImportQuery>(csvMappersImportQuery, { file: importedFile })
-    : undefined;
+  const [importedFileQueryRef, loadImportedFileQuery] = useQueryLoader<CsvMappersImportQuery>(csvMappersImportQuery);
 
   const dataColumns = {
     name: {
@@ -109,10 +107,8 @@ const CsvMappers = () => {
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];
-    if (file) {
-      setImportedFile(importedFile);
-      setOpen(true);
-    }
+    setImportedFile(file);
+    loadImportedFileQuery({ file });
   };
 
   return queryRefMappers && queryRefSchemaAttributes
@@ -179,12 +175,25 @@ const CsvMappers = () => {
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
             </SpeedDial>
-            <CsvMapperCreationContainer
-              importedFileQueryRef={importedFileQueryRef}
-              paginationOptions={paginationOptions}
-              open={open}
-              onClose={() => setOpen(false)}
-            />
+            {importedFile
+              ? <>
+                {importedFileQueryRef && (
+                <React.Suspense fallback={<div />}>
+                  <CsvMapperCreationContainer
+                    importedFileQueryRef={importedFileQueryRef}
+                    paginationOptions={paginationOptions}
+                    open={true}
+                    onClose={() => setOpen(false)}
+                  />
+                </React.Suspense>)
+                }
+              </>
+              : <CsvMapperCreationContainer
+                  paginationOptions={paginationOptions}
+                  open={open}
+                  onClose={() => setOpen(false)}
+                />
+            }
           </div>
         </CsvMappersProvider>
       </Suspense>
