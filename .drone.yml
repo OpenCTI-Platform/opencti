@@ -331,6 +331,26 @@ services:
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
       - python3 src/worker.py
+  - name: opencti-test-worker
+    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    volumes:
+      - name: cache-node-backend
+        path: /tmp/direct-start-platform/node_modules
+    environment:
+      OPENCTI_URL: http://api-tests:4010
+      OPENCTI_TOKEN: d434ce02-e58e-4cac-8b4c-42bf16748e84
+      WORKER_LOG_LEVEL: info
+    commands:
+      - sleep 10
+      - cp -a opencti-worker /tmp/opencti-test-worker
+      - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
+      - while ! nc -z api-tests 4010 ; do sleep 1 ; done
+      - cd /tmp/opencti-test-worker
+      - pip3 install -r src/requirements.txt
+      - python3 src/worker.py
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
