@@ -240,8 +240,8 @@ const PlaybookHeaderComponent = ({
         </List>
       </Drawer>
       <Dialog
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
+        slots={{ desktopTransition: Transition }}
         open={rawData !== null}
         onClose={() => setRawData(null)}
         fullWidth={true}

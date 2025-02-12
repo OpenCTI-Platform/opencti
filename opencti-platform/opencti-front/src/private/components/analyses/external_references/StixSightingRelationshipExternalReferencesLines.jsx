@@ -380,10 +380,10 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Paper>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayDialog}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
@@ -408,10 +408,10 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayExternalLink}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>

@@ -217,9 +217,9 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           )}
           {labels && labels.length > 12 && (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ desktopPaper: { elevation: 1 } }}
             open={openLabels}
-            TransitionComponent={Transition}
+            slots={{ desktopTransition: Transition }}
             onClose={handleCloseLabels}
             fullWidth={true}
             maxWidth="md"
@@ -286,9 +286,9 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ desktopPaper: { elevation: 1 } }}
             open={openAdd}
-            TransitionComponent={Transition}
+            slots={{ desktopTransition: Transition }}
             onClose={handleCloseAdd}
             fullWidth={true}
           >

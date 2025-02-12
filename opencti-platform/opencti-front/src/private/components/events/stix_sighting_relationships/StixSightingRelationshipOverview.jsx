@@ -608,9 +608,9 @@ class StixSightingRelationshipContainer extends Component {
         )}
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

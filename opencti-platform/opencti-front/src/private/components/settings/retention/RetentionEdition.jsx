@@ -169,22 +169,26 @@ const RetentionEditionContainer = (props) => {
               onChange={() => setVerified(false)}
               fullWidth={true}
               style={{ marginTop: 20 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip
-                      title={t(
-                        'All objects matching the filters that have not been updated since this amount of units will be deleted',
-                      )}
-                    >
-                      <InformationOutline
-                        fontSize="small"
-                        color="primary"
-                        style={{ cursor: 'default' }}
-                      />
-                    </Tooltip>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                textField: {
+                  InputProps: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip
+                          title={t(
+                            'All objects matching the filters that have not been updated since this amount of units will be deleted',
+                          )}
+                        >
+                          <InformationOutline
+                            fontSize="small"
+                            color="primary"
+                            style={{ cursor: 'default' }}
+                          />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  },
+                },
               }}
             />
             {retentionRule.scope === 'knowledge'

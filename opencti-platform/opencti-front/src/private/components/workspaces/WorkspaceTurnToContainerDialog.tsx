@@ -158,10 +158,10 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
 
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       fullWidth={true}
       maxWidth="sm"
-      TransitionComponent={Transition}
+      slots={{ desktopTransition: Transition }}
       open={open}
       onClose={() => handleClose()}
     >

@@ -115,12 +115,12 @@ class StixDomainObjectDetectDuplicate extends Component {
           ''
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.open}
           fullWidth={true}
           maxWidth="md"
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleClose.bind(this)}
           classes={{ paper: classes.dialogPaper }}
         >

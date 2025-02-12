@@ -260,9 +260,9 @@ class WorkbenchFileLineComponent extends Component {
         </ListItem>
         <FileWork file={file} />
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayDelete}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

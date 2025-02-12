@@ -63,7 +63,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
   const { opinions } = usePreloadedQuery<StixCoreObjectOpinionsListQuery>(stixCoreObjectOpinionsListQuery, queryRef);
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       open={open}
       onClose={handleClose}
       fullWidth={true}

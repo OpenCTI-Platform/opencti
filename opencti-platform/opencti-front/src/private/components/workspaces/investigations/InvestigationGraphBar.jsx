@@ -367,11 +367,13 @@ class InvestigationGraphBar extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                bottom: bannerSettings.bannerHeightNumber,
+            slotProps={{
+              desktopPaper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
               },
             }}
           >
@@ -949,9 +951,9 @@ class InvestigationGraphBar extends Component {
                       </Tooltip>
                       <Dialog
                         open={this.state.displayRemove}
-                        PaperProps={{ elevation: 1 }}
+                        slotProps={{ desktopPaper: { elevation: 1 } }}
                         keepMounted={true}
-                        TransitionComponent={Transition}
+                        slots={{ desktopTransition: Transition }}
                         onClose={this.handleCloseRemove.bind(this)}
                       >
                         <DialogContent>

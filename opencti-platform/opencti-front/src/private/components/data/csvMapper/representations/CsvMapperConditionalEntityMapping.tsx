@@ -106,13 +106,17 @@ CsvMapperConditionalEntityMappingProps
             label={t_i18n('Column index')}
             variant="outlined"
             size="small"
-            InputProps={{
-              ...params.InputProps,
-              sx: {
-                '& fieldset': {
-                  borderColor: (!columnBased?.column_reference)
-                    ? 'rgb(244, 67, 54)'
-                    : '',
+            slotProps={{
+              textField: {
+                InputProps: {
+                  ...params.InputProps,
+                  sx: {
+                    '& fieldset': {
+                      borderColor: (!columnBased?.column_reference)
+                        ? 'rgb(244, 67, 54)'
+                        : '',
+                    },
+                  },
                 },
               },
             }}
@@ -136,13 +140,17 @@ CsvMapperConditionalEntityMappingProps
             label={t_i18n('Operator')}
             variant="outlined"
             size="small"
-            InputProps={{
-              ...params.InputProps,
-              sx: {
-                '& fieldset': {
-                  borderColor: (!columnBased?.operator)
-                    ? 'rgb(244, 67, 54)'
-                    : '',
+            slotProps={{
+              textField: {
+                InputProps: {
+                  ...params.InputProps,
+                  sx: {
+                    '& fieldset': {
+                      borderColor: (!columnBased?.operator)
+                        ? 'rgb(244, 67, 54)'
+                        : '',
+                    },
+                  },
                 },
               },
             }}

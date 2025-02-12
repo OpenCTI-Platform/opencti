@@ -249,7 +249,7 @@ ExternalReferenceFileImportViewerBaseProps
           {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 open={fileToImportBoolean()}
                 keepMounted={true}
                 onClose={() => handleReset()}

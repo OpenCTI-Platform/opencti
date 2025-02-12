@@ -220,7 +220,7 @@ const StixCoreObjectFileExportForm = ({
         return (
           <Form>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               open={isOpen}
               onClose={() => {
                 handleReset();

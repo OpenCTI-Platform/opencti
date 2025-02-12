@@ -289,7 +289,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         />
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={openToneOptions}
           onClose={handleCloseToneOptions}
           fullWidth={true}

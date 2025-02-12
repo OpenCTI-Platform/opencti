@@ -306,8 +306,12 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                           label={t_i18n('Variable name')}
                           disabled
                           sx={{ flex: 1 }}
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                          slotProps={{
+                            textField: {
+                              InputProps: {
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                              },
+                            },
                           }}
                         />
                         <IconButton size="small" color="primary" disabled>

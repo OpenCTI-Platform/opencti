@@ -241,7 +241,7 @@ const AIInsights = ({
           )}
         </Tooltip>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={displayAIDialog}
           onClose={() => setDisplayAIDialog(false)}
           fullWidth={true}

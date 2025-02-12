@@ -48,10 +48,12 @@ const StixCyberObservablesRightBar = ({
       variant="permanent"
       anchor="right"
       classes={{ paper: classes.drawerPaper }}
-      PaperProps={{
-        style: {
-          paddingTop: bannerSettings.bannerHeight,
-          paddingBottom: bannerSettings.bannerHeight,
+      slotProps={{
+        desktopPaper: {
+          style: {
+            paddingTop: bannerSettings.bannerHeight,
+            paddingBottom: bannerSettings.bannerHeight,
+          },
         },
       }}
     >

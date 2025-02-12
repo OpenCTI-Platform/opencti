@@ -682,10 +682,10 @@ const ConnectorComponent = ({ connector, relay }) => {
         </Grid>
       </Grid>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -710,10 +710,10 @@ const ConnectorComponent = ({ connector, relay }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayResetState}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseResetState}
       >
         <DialogContent>
@@ -741,10 +741,10 @@ const ConnectorComponent = ({ connector, relay }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={displayClearWorks}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleCloseClearWorks}
       >
         <DialogContent>

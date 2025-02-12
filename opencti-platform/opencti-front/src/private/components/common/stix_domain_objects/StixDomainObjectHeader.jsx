@@ -619,9 +619,9 @@ const StixDomainObjectHeader = (props) => {
       </div>
       {!noAliases && (
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={openAliases}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={handleToggleOpenAliases}
           fullWidth={true}
         >

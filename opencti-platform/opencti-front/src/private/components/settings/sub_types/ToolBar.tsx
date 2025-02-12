@@ -170,10 +170,12 @@ const ToolBar: FunctionComponent<{
       variant="persistent"
       classes={{ paper: classes.bottomNav }}
       open={numberOfSelectedElements > 0 || selectAll}
-      PaperProps={{
-        variant: 'elevation',
-        elevation: 1,
-        style: { paddingLeft: navOpen ? 185 : 60, bottom: bannerHeightNumber },
+      slotProps={{
+        desktopPaper: {
+          variant: 'elevation',
+          elevation: 1,
+          style: { paddingLeft: navOpen ? 185 : 60, bottom: bannerHeightNumber },
+        },
       }}
     >
       <Toolbar style={{ minHeight: 54 }}>
@@ -250,7 +252,7 @@ const ToolBar: FunctionComponent<{
       </Toolbar>
       <Dialog
         open={display}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         keepMounted={true}
         onClose={handleClose}
       >

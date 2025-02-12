@@ -87,14 +87,16 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
         sx={{
           zIndex: 1202,
         }}
-        PaperProps={{
-          sx: {
-            minHeight: '100vh',
-            width: '50%',
-            position: 'fixed',
-            overflow: 'auto',
-            transition,
-            padding: 0,
+        slotProps={{
+          desktopPaper: {
+            sx: {
+              minHeight: '100vh',
+              width: '50%',
+              position: 'fixed',
+              overflow: 'auto',
+              transition,
+              padding: 0,
+            },
           },
         }}
         elevation={1}
@@ -126,14 +128,16 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
       sx={{
         zIndex: 1202,
       }}
-      PaperProps={{
-        sx: {
-          minHeight: '100vh',
-          width: '30%',
-          position: 'fixed',
-          overflow: 'auto',
-          transition,
-          padding: 0,
+      slotProps={{
+        desktopPaper: {
+          sx: {
+            minHeight: '100vh',
+            width: '30%',
+            position: 'fixed',
+            overflow: 'auto',
+            transition,
+            padding: 0,
+          },
         },
       }}
       onClose={handleGraphClose}

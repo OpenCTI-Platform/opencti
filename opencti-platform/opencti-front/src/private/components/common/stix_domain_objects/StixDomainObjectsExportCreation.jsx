@@ -194,7 +194,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                   <Form>
                     <Dialog
-                      PaperProps={{ elevation: 1 }}
+                      slotProps={{ desktopPaper: { elevation: 1 } }}
                       open={this.state.open}
                       onClose={resetForm}
                       fullWidth={true}

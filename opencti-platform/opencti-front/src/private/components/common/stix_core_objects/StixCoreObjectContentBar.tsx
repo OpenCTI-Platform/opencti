@@ -59,7 +59,7 @@ StixCoreObjectContentBarProps
       anchor="bottom"
       variant="permanent"
       classes={{ paper: classes.bottomNav }}
-      PaperProps={{ variant: 'elevation', elevation: 1 }}
+      slotProps={{ desktopPaper: { variant: 'elevation', elevation: 1 } }}
     >
       <div
         style={{

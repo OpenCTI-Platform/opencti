@@ -50,9 +50,9 @@ const FormAuthorizedMembers = ({
       {({ submitForm, isSubmitting, dirty, handleReset }) => (
         <Dialog
           open={open}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           maxWidth="sm"
           fullWidth={true}
           onClose={() => {

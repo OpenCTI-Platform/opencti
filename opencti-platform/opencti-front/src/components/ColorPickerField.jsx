@@ -74,14 +74,18 @@ const ColorPickerField = (props) => {
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton aria-label="open" onClick={handleClick} size="large">
-                <ColorLens />
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          textField: {
+            InputProps: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton aria-label="open" onClick={handleClick} size="large">
+                    <ColorLens/>
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          },
         }}
       />
       <Popover

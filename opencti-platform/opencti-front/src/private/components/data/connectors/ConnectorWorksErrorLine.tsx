@@ -88,9 +88,9 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
       </TableRow>
 
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={openModalErrorDetails}
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={handleToggleModalError}
       >
         <DialogTitle>{t_i18n('Details')}</DialogTitle>

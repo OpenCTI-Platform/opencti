@@ -161,7 +161,7 @@ class IdentityCreation extends Component {
           }) => (
             <Form>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 open={open}
                 onClose={handleClose.bind(this)}
                 fullWidth={true}

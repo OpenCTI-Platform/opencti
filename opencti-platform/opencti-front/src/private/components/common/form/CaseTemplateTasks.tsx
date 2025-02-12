@@ -154,7 +154,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
           </li>
         )}
       />
-      <Dialog PaperProps={{ elevation: 1 }} open={openCreation}>
+      <Dialog slotProps={{ desktopPaper: { elevation: 1 } }} open={openCreation}>
         <Formik<TaskTemplateAddInput>
           initialValues={{ name: '', description: '' }}
           onSubmit={submitTaskCreation}

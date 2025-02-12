@@ -332,7 +332,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
             </Fab>
           )
         }
-        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <Dialog open={open} onClose={handleClose} slotProps={{ desktopPaper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Create a course of action')}</DialogTitle>
           <DialogContent>
             <CourseOfActionCreationForm

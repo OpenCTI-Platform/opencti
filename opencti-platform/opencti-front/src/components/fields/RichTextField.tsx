@@ -125,7 +125,7 @@ const RichTextField = ({
 
       {fullScreen ? (
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={fullScreen}
           onClose={() => setFullScreen(false)}
           fullScreen

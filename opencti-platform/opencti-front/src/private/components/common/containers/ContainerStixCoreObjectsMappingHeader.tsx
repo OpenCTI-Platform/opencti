@@ -54,10 +54,10 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
 
   return (
     <><Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ desktopPaper: { elevation: 1 } }}
       open={openValidate}
       keepMounted
-      TransitionComponent={Transition}
+      slots={{ desktopTransition: Transition }}
       onClose={() => setOpenValidate(false)}
       >
       <DialogTitle>
@@ -85,10 +85,10 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
       </DialogActions>
     </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ desktopPaper: { elevation: 1 } }}
         open={openClearMapping}
         keepMounted
-        TransitionComponent={Transition}
+        slots={{ desktopTransition: Transition }}
         onClose={() => setOpenClearMapping(false)}
       >
         <DialogContent>

@@ -297,7 +297,7 @@ const StixCoreObjectFilesAndHistory = ({
         {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ desktopPaper: { elevation: 1 } }}
               open={fileToImport}
               keepMounted={true}
               onClose={() => handleReset()}
@@ -423,7 +423,7 @@ const StixCoreObjectFilesAndHistory = ({
           {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ desktopPaper: { elevation: 1 } }}
                 open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}

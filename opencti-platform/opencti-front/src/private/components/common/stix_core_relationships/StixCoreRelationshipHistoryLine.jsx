@@ -418,7 +418,7 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
         </div>
         <div className={classes.line} />
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
@@ -438,10 +438,10 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ desktopPaper: { elevation: 1 } }}
           open={this.state.displayExternalLink}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ desktopTransition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>

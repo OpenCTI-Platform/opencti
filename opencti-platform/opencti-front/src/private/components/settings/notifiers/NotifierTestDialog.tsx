@@ -82,7 +82,7 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
 
   const [target, setTarget] = useState('default_notification');
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ elevation: 1 }}>
+    <Dialog open={open} onClose={onClose} slotProps={{ desktopPaper: { elevation: 1 } }}>
       <DialogTitle>{t_i18n('Testing notifier')}</DialogTitle>
       <DialogContent>
         <div className={classes.container}>
