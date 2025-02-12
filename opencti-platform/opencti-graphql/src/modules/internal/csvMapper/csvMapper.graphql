@@ -52,6 +52,14 @@ type CsvMapperRepresentation {
   to: String
 }
 
+type CsvMapperAddInputFromImport {
+  name: String!
+  has_header: Boolean!
+  separator: String!
+  representations: String!
+  skipLineChar: String
+}
+
 type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
@@ -117,6 +125,9 @@ type Query {
     search: String
   ): CsvMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE, CSVMAPPERS])
+  csvMapperAddInputFromImport(
+    file: Upload!
+  ): CsvMapperAddInputFromImport! @auth(for: [CSVMAPPERS])
 }
 
 # Mutations
@@ -176,5 +187,4 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult @auth(for: [CSVMAPPERS])
   csvMapperDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper @auth(for: [CSVMAPPERS])
-  csvMapperConfigurationImport(file: Upload!): CsvMapper @auth(for: [CSVMAPPERS])
 }
