@@ -1,16 +1,11 @@
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MoreVertOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery } from 'react-relay';
-import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
 import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -24,13 +19,14 @@ import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLine
 import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
 import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
 import { commitMutation } from '../../../../relay/environment';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,22 +66,18 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [openEdition, setOpenEdition] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
-  const handleCloseDelete = () => setDisplayDelete(false);
   const handleMenuOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleMenuClose();
-  };
   const onUpdateClick = () => {
     setOpenEdition(true);
     handleMenuClose();
   };
+  const deletion = useDeletion({ handleClose });
+  const { handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     commitMutation({
       mutation: caseTemplateTasksDeletionMutation,
@@ -148,25 +140,11 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Menu>
       </div>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this case template?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>{t_i18n('Cancel')}</Button>
-          <Button color="secondary" onClick={submitDelete}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this template?')}
+      />
     </>
   );
 };

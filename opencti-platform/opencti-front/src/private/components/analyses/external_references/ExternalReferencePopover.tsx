@@ -65,8 +65,9 @@ ExternalReferencePopoverProps
     setDisplayEdit(false);
   };
   const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id,
@@ -83,10 +84,10 @@ ExternalReferencePopoverProps
         }
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
         if (handleRemove) {
-          deletion.handleCloseDelete();
+          handleCloseDelete();
         } else {
           navigate('/dashboard/analyses/external_references');
         }
@@ -129,7 +130,7 @@ ExternalReferencePopoverProps
               {t_i18n('Remove from this object')}
             </MenuItem>
           )}
-          <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Menu>
         <QueryRenderer
           query={externalReferenceEditionQuery}

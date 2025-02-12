@@ -84,8 +84,9 @@ const PlaybookPopover = (props) => {
     setDisplayStop(true);
   };
   const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       mutation: playbookPopoverDeletionMutation,
       variables: {
@@ -102,11 +103,11 @@ const PlaybookPopover = (props) => {
         }
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         if (!paginationOptions) {
           navigate('/dashboard/data/processing/automation');
         }
-        deletion.setDisplayDelete(true);
+        setDisplayDelete(true);
       },
     });
   };
@@ -159,7 +160,7 @@ const PlaybookPopover = (props) => {
           <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <QueryRenderer
         query={playbookEditionQuery}

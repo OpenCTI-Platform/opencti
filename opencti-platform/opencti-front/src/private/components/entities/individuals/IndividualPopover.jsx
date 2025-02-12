@@ -32,14 +32,15 @@ const IndividualPopover = ({ id }) => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       mutation: IndividualPopoverDeletionMutation,
       variables: { id },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
         navigate('/dashboard/entities/individuals');
       },
@@ -65,7 +66,7 @@ const IndividualPopover = ({ id }) => {
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <DeleteDialog

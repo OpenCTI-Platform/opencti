@@ -32,14 +32,15 @@ const ChannelPopover = ({ id }) => {
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       mutation: ChannelPopoverDeletionMutation,
       variables: { id },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
         navigate('/dashboard/arsenal/channels');
       },
@@ -76,7 +77,7 @@ const ChannelPopover = ({ id }) => {
             <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />

@@ -81,9 +81,10 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
   };
 
   const handleCloseUpdate = () => setDisplayUpdate(false);
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commitMutation({
       mutation: caseTemplateTasksPopoverDeletionMutation,
       variables: {
@@ -96,8 +97,8 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
         task.id,
       ),
       onCompleted: () => {
-        deletion.setDeleting(false);
-        deletion.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -141,7 +142,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenUnlink}>{t_i18n('Unlink')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <Drawer
         open={displayUpdate}
