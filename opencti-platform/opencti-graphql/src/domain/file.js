@@ -22,6 +22,9 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { getDraftContext } from '../utils/draftContext';
+import { UnsupportedError } from '../config/errors';
+import { getDraftFilePrefix } from '../database/draft-utils';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -125,6 +128,9 @@ export const uploadImport = async (context, user, args) => {
 };
 
 export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot upload pending in draft');
+  }
   let finalFile = file;
   const meta = { labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
@@ -170,10 +176,16 @@ export const uploadPending = async (context, user, file, entityId = null, labels
 };
 
 export const deleteImport = async (context, user, fileName) => {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !fileName.startsWith(getDraftFilePrefix(draftContext))) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
+  }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
   // and update the updated_at field of the source entity
-  if (fileName.startsWith('import') && !fileName.includes('global') && !fileName.includes('pending')) {
+  const draftFileImport = `${getDraftFilePrefix(draftContext)}import`;
+  const isImportFile = fileName.startsWith('import') || (draftContext && fileName.startsWith(draftFileImport));
+  if (isImportFile && !fileName.includes('global') && !fileName.includes('pending')) {
     await stixCoreObjectImportDelete(context, context.user, fileName);
     return fileName;
   }

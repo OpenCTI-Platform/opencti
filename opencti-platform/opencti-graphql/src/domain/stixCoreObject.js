@@ -79,6 +79,7 @@ import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { getDraftChanges, getDraftFilePrefix } from '../database/draft-utils';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -292,7 +293,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id);
+  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
   const message = {
     internal: {
       work_id: work.id, // Related action for history
@@ -671,9 +672,6 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot import in draft');
-  }
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -726,13 +724,19 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
-    await elUpdateElement(context, user, {
+
+    const elementWithUpdatedFiles = {
       _index: previous._index,
       internal_id: internalId,
       entity_type: previous.entity_type, // required for schema validation
       updated_at: now(),
       x_opencti_files: nonResolvedFiles
-    });
+    };
+    if (getDraftContext(context, user)) {
+      elementWithUpdatedFiles._id = previous._id;
+      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, []);
+    }
+    await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const fileMarkings = R.uniq(R.flatten(files.filter((f) => f.file_markings).map((f) => f.file_markings)));
     let fileMarkingsPromise = Promise.resolve();
@@ -780,10 +784,11 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot delete imports in draft');
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !fileId.startsWith(getDraftFilePrefix(draftContext))) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
   }
-  if (!fileId.startsWith('import')) {
+  if (!draftContext && !fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
   // Get the context
@@ -823,13 +828,18 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
-    await elUpdateElement(context, user, {
+    const elementWithUpdatedFiles = {
       _index: previous._index,
       internal_id: entityId,
       updated_at: now(),
       x_opencti_files: nonResolvedFiles,
       entity_type: previous.entity_type, // required for schema validation
-    });
+    };
+    if (getDraftContext(context, user)) {
+      elementWithUpdatedFiles._id = previous._id;
+      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, []);
+    }
+    await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``);
