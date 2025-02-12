@@ -11,6 +11,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import { isEmptyField } from '../../../../utils/utils';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import type { Theme } from '../../../../components/Theme';
+import CardLabel from '../../../../components/CardLabel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -83,10 +84,12 @@ const InfoTooltip = ({ text }: { text: string }) => (
 const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
   <Grid item xs={3} mt={-1}>
     <Box display="flex" alignItems="center">
-      <Typography variant="h3" m={0}>
+      <CardLabel action={(
+        <InfoTooltip text={tooltip} />
+      )}
+      >
         {title}
-      </Typography>
-      <InfoTooltip text={tooltip} />
+      </CardLabel>
       {extra}
     </Box>
     {children}

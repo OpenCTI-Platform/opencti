@@ -22,6 +22,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChips';
+import CardLabel from '../../../../components/CardLabel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -75,7 +76,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
             }
             ... on Persona {
               id
-              persona_name
+              observable_value
               persona_type
             }
           }
@@ -172,21 +173,13 @@ ThreatActorIndividualDetailsProps
               relType='impersonates'
             />
             <ThreatActorIndividualLocation threatActorIndividual={data} />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <CardLabel style={{ marginTop: 20 }}>
               {t_i18n('First seen')}
-            </Typography>
+            </CardLabel>
             {fldt(data.first_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <CardLabel style={{ marginTop: 20 }}>
               {t_i18n('Last seen')}
-            </Typography>
+            </CardLabel>
             {fldt(data.last_seen)}
           </Grid>
         </Grid>
@@ -234,13 +227,9 @@ ThreatActorIndividualDetailsProps
             />
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <CardLabel style={{ marginTop: 20 }}>
               {t_i18n('Roles')}
-            </Typography>
+            </CardLabel>
             <FieldOrEmpty source={data.roles}>
               {data.roles && (
                 <List>
@@ -265,13 +254,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <CardLabel style={{ marginTop: 20 }}>
               {t_i18n('Goals')}
-            </Typography>
+            </CardLabel>
             <FieldOrEmpty source={data.goals}>
               {data.goals && (
                 <List>
@@ -290,13 +275,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <CardLabel style={{ marginTop: 20 }}>
               {t_i18n('Secondary motivations')}
-            </Typography>
+            </CardLabel>
             <FieldOrEmpty source={data.secondary_motivations}>
               {data.secondary_motivations && (
                 <List>
@@ -325,13 +306,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
+            <CardLabel style={{ marginTop: 20 }}>
               {t_i18n('Personal motivations')}
-            </Typography>
+            </CardLabel>
             <FieldOrEmpty source={data.personal_motivations}>
               {data.personal_motivations && (
                 <List>
