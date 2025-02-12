@@ -142,12 +142,17 @@ export const csvMapperAddInputFromImport = async (context: AuthContext, user: Au
   // convert default values ids in representations
   const representations = parsedData.configuration.representations as CsvMapperRepresentation[];
   await convertRepresentationsIds(context, user, representations, 'stix');
-
-  const input = {
+  const csvMapper = {
     ...parsedData.configuration,
     representations: JSON.stringify(representations),
   };
-  return input;
+  const parsedRepresentations = await getParsedRepresentations(context, user, csvMapper);
+
+  const csvMapperAddInput = {
+    ...parsedData.configuration,
+    representations: parsedRepresentations,
+  };
+  return csvMapperAddInput;
 };
 
 // -- Schema

@@ -118,7 +118,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
         ...addInputFromImport,
         id: '',
         errors: undefined,
-        representations: JSON.parse(addInputFromImport.representations),
+        representations: addInputFromImport.representations,
       },
       data.csvMapperSchemaAttributes,
       computeDefaultValues,

@@ -5301,7 +5301,7 @@ export type CsvMapperAddInputFromImport = {
   __typename?: 'CsvMapperAddInputFromImport';
   has_header: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
-  representations: Scalars['String']['output'];
+  representations: Array<CsvMapperRepresentation>;
   separator: Scalars['String']['output'];
   skipLineChar?: Maybe<Scalars['String']['output']>;
 };
@@ -34525,7 +34525,7 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
 export type CsvMapperAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperAddInputFromImport'] = ResolversParentTypes['CsvMapperAddInputFromImport']> = ResolversObject<{
   has_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  representations?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representations?: Resolver<Array<ResolversTypes['CsvMapperRepresentation']>, ParentType, ContextType>;
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
