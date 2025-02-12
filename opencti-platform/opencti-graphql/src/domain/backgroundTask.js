@@ -126,7 +126,7 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
     };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
-  const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
+  const task = await createDefaultTask(context, user, input, TASK_TYPE_RULE, countExpected);
   const ruleTask = { ...task, rule, enable };
   await elIndex(INDEX_INTERNAL_OBJECTS, ruleTask);
   return ruleTask;
@@ -137,7 +137,7 @@ export const createQueryTask = async (context, user, input) => {
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
   const queryData = await executeTaskQuery(context, user, filters, search, scope, orderMode);
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
-  const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected, scope);
+  const task = await createDefaultTask(context, user, input, TASK_TYPE_QUERY, countExpected, scope);
   const queryTask = {
     ...task,
     actions,
