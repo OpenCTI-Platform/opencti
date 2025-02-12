@@ -32,7 +32,7 @@ describe('configuration testing', () => {
     expect(httpAgent.proxy.host).toBe('proxy.opencti.io:2000');
     expect(httpAgent.proxy.port).toBe('2000');
     // Test excluded uri
-    const excluded = getPlatformHttpProxyAgent('https://localhost:3000');
+    const excluded = getPlatformHttpProxyAgent('https://127.0.0.1:3000');
     expect(excluded).toBeUndefined();
   });
 });
