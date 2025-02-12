@@ -49,7 +49,7 @@ describe('Live streams tests', () => {
       const report = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = convertStoreToStix(report);
       const now = utcDate().toISOString();
-      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream/live?from=0&recover=${now}`);
+      const events = await fetchStreamEvents(`http://127.0.0.1:${PORT}/stream/live?from=0&recover=${now}`);
       writeTestDataToFile(JSON.stringify(events), 'live-test-all-event.json');
       expect(events.length).toBe(SYNC_LIVE_EVENTS_SIZE);
       await checkResultCounting(events);
