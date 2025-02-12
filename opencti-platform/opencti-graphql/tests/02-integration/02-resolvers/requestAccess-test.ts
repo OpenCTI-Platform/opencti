@@ -12,26 +12,14 @@ import {
   USER_EDITOR
 } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import {
-  disableEE,
-  enableCEAndUnSetOrganization,
-  enableEEAndSetOrganization,
-  queryAsAdminWithSuccess,
-  queryAsUserIsExpectedError,
-  queryAsUserWithSuccess
-} from '../../utils/testQueryHelper';
+import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { ActionStatus, type RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { listEntitiesPaginated } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
-import { findAllTemplates, statusDelete } from '../../../src/domain/status';
-import { logApp } from '../../../src/config/conf';
-import { waitInSec } from '../../../src/database/utils';
-import cacheManager from '../../../src/manager/cacheManager';
-import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
+import { findAllTemplates } from '../../../src/domain/status';
 import { internalDeleteElementById } from '../../../src/database/middleware';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`

@@ -168,8 +168,13 @@ const StixDomainObjectOverview = ({
     : stixDomainObject.x_opencti_reliability;
 
   let requestAccess = null;
+  let isRequestAccessNew = false;
   if (stixDomainObject.x_opencti_request_access) {
     requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
+    // see RequestAccessAction interface in backend
+    // Find action status that correspond to current RFI status.
+    const currentActionStatus = requestAccess.workflowMapping.find((status) => status.rfiStatusId === stixDomainObject.status.id);
+    isRequestAccessNew = currentActionStatus && currentActionStatus.actionStatus === 'NEW';
   }
 
   const onSubmitValidateRequestAccess = () => {
@@ -223,6 +228,7 @@ const StixDomainObjectOverview = ({
                     status={stixDomainObject.status}
                     disabled={!stixDomainObject.workflowEnabled}
                   />
+                  {isRequestAccessNew && (
                   <div>
                     <Button
                       color="primary"
@@ -239,7 +245,7 @@ const StixDomainObjectOverview = ({
                     >
                       {t_i18n('Decline')}
                     </Button>
-                  </div>
+                  </div>)}
                 </div>
                 <Divider style={{ marginTop: 20 }}/>
               </Grid>
