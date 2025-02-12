@@ -1,5 +1,6 @@
 import moment from 'moment';
 import * as R from 'ramda';
+import { logApp } from '../config/conf';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
@@ -209,6 +210,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     const params = { now: timestamp };
     let sourceScript = '';
     if (isComplete) {
+      logApp.info('Is complete', { isComplete, total });
       params.completed_number = total;
       sourceScript += `ctx._source['status'] = "complete";
       ctx._source['completed_number'] = params.completed_number;
