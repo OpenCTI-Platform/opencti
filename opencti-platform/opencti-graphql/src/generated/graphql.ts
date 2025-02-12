@@ -29181,7 +29181,6 @@ export type User = BasicObject & InternalObject & {
 
 
 export type UserGroupsArgs = {
-  first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<GroupsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
 };
@@ -29202,7 +29201,6 @@ export type UserObjectOrganizationArgs = {
 
 
 export type UserRolesArgs = {
-  first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<RolesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
 };
