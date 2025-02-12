@@ -98,8 +98,6 @@ const CsvMappers = () => {
 
   const [importedFile, setImportedFile] = useState(null);
   const [importedFileQueryRef, loadImportedFileQuery] = useQueryLoader<CsvMappersImportQuery>(csvMappersImportQuery);
-  console.log('open', open);
-  console.log('importedfile', importedFile);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
@@ -138,7 +136,7 @@ const CsvMappers = () => {
   const handleClose = () => {
     setOpen(false);
     setImportedFile(null);
-  }
+  };
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];
