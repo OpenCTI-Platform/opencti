@@ -135,6 +135,11 @@ const CsvMappers = () => {
     setOpen(true);
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setImportedFile(null);
+  }
+
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];
     setImportedFile(file);
@@ -213,7 +218,7 @@ const CsvMappers = () => {
                     importedFileQueryRef={importedFileQueryRef}
                     paginationOptions={paginationOptions}
                     open={true}
-                    onClose={() => setOpen(false)}
+                    onClose={handleClose}
                   />
                 </React.Suspense>)
                 }
@@ -221,7 +226,7 @@ const CsvMappers = () => {
               : <CsvMapperCreationContainer
                   paginationOptions={paginationOptions}
                   open={open}
-                  onClose={() => setOpen(false)}
+                  onClose={handleClose}
                 />
             }
           </div>
