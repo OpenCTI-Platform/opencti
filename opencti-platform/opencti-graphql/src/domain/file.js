@@ -24,6 +24,7 @@ import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
+import { getDraftFilePrefix } from '../database/draft-utils';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -176,13 +177,15 @@ export const uploadPending = async (context, user, args) => {
 };
 
 export const deleteImport = async (context, user, fileName) => {
-  if (getDraftContext(context, user) && !fileName.startsWith('draft')) {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !fileName.startsWith(getDraftFilePrefix(draftContext))) {
     throw UnsupportedError('Cannot delete non draft imports in draft');
   }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
   // and update the updated_at field of the source entity
-  const isImportFile = fileName.startsWith('import') || fileName.startsWith(`draft${getDraftContext(context, user)}/import`);
+  const draftFileImport = `${getDraftFilePrefix(draftContext)}import`;
+  const isImportFile = fileName.startsWith('import') || (draftContext && fileName.startsWith(draftFileImport));
   if (isImportFile && !fileName.includes('global') && !fileName.includes('pending')) {
     await stixCoreObjectImportDelete(context, context.user, fileName);
     return fileName;

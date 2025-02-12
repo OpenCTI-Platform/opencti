@@ -20,7 +20,7 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../.
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
-import { ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { usersSessionRefresh } from '../../domain/user';
 import { elAggregationCount, elList } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-converter';
@@ -225,7 +225,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   // We start by listing all elements currently in this draft context
   const draftEntities = await elList(contextInDraft, user, READ_INDEX_DRAFT_OBJECTS, includeDeleteOption);
 
-  const draftEntitiesMinusRefRel = draftEntities.filter((e) => !isStixRefRelationship(e.entity_type));
+  const draftEntitiesMinusRefRel = draftEntities.filter((e) => !isStixRefRelationship(e.entity_type) && e.entity_type !== ENTITY_TYPE_INTERNAL_FILE);
 
   // We add all created elements as stix objects to the bundle
   const createEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);

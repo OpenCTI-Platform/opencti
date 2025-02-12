@@ -10,6 +10,7 @@ import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
+import {getDraftFilePrefix} from "./draft-utils";
 
 interface FileUploadOpts {
   entity?:BasicStoreBase | unknown, // entity on which the file is uploaded
@@ -125,9 +126,8 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
  */
 export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, draftId: string) => {
   logApp.debug(`[FILE STORAGE] deleting all storage files for draft ${draftId}`);
-  const draftPath = `draft${draftId}/`;
   const contextInDraft = { ...context, draft_context: draftId };
-  const draftFiles = await allFilesForPaths(contextInDraft, user, [draftPath]);
+  const draftFiles = await allFilesForPaths(contextInDraft, user, [getDraftFilePrefix(draftId)]);
   const draftFilesIds = draftFiles.map((file) => file.id);
   logApp.debug('[FILE STORAGE] deleting all draft files with ids:', { draftFilesIds });
   return deleteRawFiles(context, user, draftFilesIds);

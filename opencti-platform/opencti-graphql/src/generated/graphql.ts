@@ -8162,6 +8162,7 @@ export enum FeedbacksOrdering {
 
 export type File = {
   __typename?: 'File';
+  draftVersion?: Maybe<DraftVersion>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   lastModified?: Maybe<Scalars['DateTime']['output']>;
@@ -35544,6 +35545,7 @@ export type FeedbackEdgeResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastModified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

@@ -31,6 +31,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
+import { getDraftFilePrefix } from './draft-utils';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -126,6 +127,10 @@ export const storageInit = async () => {
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !id.startsWith(getDraftFilePrefix(draftContext))) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
+  }
   const up = await loadFile(context, user, id);
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   // Delete in S3
@@ -495,7 +500,8 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   // In draft, we add a prefix to file path
   const draftContext = getDraftContext(context, user);
   if (draftContext) {
-    key = `draft${draftContext}/${key}`;
+    const draftPrefix = getDraftFilePrefix(draftContext);
+    key = `${draftPrefix}${key}`;
   }
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
