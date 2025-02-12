@@ -1,5 +1,16 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { createCsvMapper, csvMapperTest, deleteCsvMapper, fieldPatchCsvMapper, findAll, findById, csvMapperSchemaAttributes, getParsedRepresentations } from './csvMapper-domain';
+import {
+  createCsvMapper,
+  csvMapperTest,
+  deleteCsvMapper,
+  fieldPatchCsvMapper,
+  findAll,
+  findById,
+  csvMapperSchemaAttributes,
+  getParsedRepresentations,
+  csvMapperExport,
+  csvMapperAddInputFromImport
+} from './csvMapper-domain';
 import { getCsvMapperErrorMessage } from './csvMapper-utils';
 
 const csvMapperResolvers: Resolvers = {
@@ -7,10 +18,12 @@ const csvMapperResolvers: Resolvers = {
     csvMapper: (_, { id }, context) => findById(context, context.user, id),
     csvMappers: (_, args, context) => findAll(context, context.user, args),
     csvMapperSchemaAttributes: (_, __, context) => csvMapperSchemaAttributes(context, context.user),
+    csvMapperAddInputFromImport: (_, { file }, context) => csvMapperAddInputFromImport(context, context.user, file),
   },
   CsvMapper: {
     errors: (csvMapper, _, context) => getCsvMapperErrorMessage(context, context.user, csvMapper),
-    representations: (csvMapper, _, context) => getParsedRepresentations(context, context.user, csvMapper)
+    representations: (csvMapper, _, context) => getParsedRepresentations(context, context.user, csvMapper),
+    toConfigurationExport: (csvMapper, _, context) => csvMapperExport(context, context.user, csvMapper),
   },
   Mutation: {
     csvMapperAdd: (_, { input }, context) => {
