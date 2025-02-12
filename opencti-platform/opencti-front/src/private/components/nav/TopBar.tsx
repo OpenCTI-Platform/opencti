@@ -4,7 +4,7 @@ import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined, CloudUploadOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,13 +18,14 @@ import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import ImportFilesDialog from '@components/common/files/ImportFilesDialog';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
-import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -141,6 +142,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 }) => {
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -199,6 +201,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     anchorEl: HTMLButtonElement | null;
   }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [openImportFilesDialog, setOpenImportFilesDialog] = useState(false);
 
   const handleOpenMenu = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -279,6 +282,20 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             <Security needs={[KNOWLEDGE]}>
               <>
                 { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
+                { isImportWorkflowEnabled && (
+                  <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT]}>
+                    <Tooltip title={t_i18n('Import a file')} aria-label="Import a file">
+                      <IconButton
+                        size="medium"
+                        aria-haspopup="true"
+                        onClick={() => setOpenImportFilesDialog(true)}
+                        color="inherit"
+                      >
+                        <CloudUploadOutlined/>
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
+                )}
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"
@@ -424,6 +441,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
+      <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)} />
     </AppBar>
   );
 };
