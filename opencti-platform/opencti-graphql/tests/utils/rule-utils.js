@@ -2,9 +2,9 @@ import { expect } from 'vitest';
 import gql from 'graphql-tag';
 import { listThings } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
+import { isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
-import { internalLoadById, listEntities } from '../../src/database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntities } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
 import { logApp } from '../../src/config/conf';
@@ -44,12 +44,21 @@ export const changeRule = async (ruleId, active) => {
   // Wait for rule to finish activation
   let ruleActivated = false;
   while (ruleActivated !== true) {
+    // Handle tasks
     const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], { connectionFormat: false });
-    const allDone = tasks.filter((t) => !t.completed).length === 0;
     tasks.forEach((t) => {
       expect(t.errors.length).toBe(0);
     });
-    ruleActivated = allDone;
+    const doneProvision = tasks.filter((t) => !t.completed).length === 0;
+    // Handle works
+    const works = await internalFindByIds(testContext, SYSTEM_USER, tasks.map((task) => task.work_id)
+      .filter((workId) => isNotEmptyField(workId)));
+    works.forEach((w) => {
+      expect(w.errors.length).toBe(0);
+    });
+    const doneWorks = works.filter((t) => t.status !== 'completed').length === 0;
+    // Final status
+    ruleActivated = doneProvision && doneWorks;
     await wait(1000);
   }
   // Wait all events to be consumed
