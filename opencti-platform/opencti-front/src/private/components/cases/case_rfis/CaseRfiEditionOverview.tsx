@@ -395,6 +395,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             <StatusField
               name="x_opencti_workflow_id"
               type="Case-Rfi"
+              scope="GLOBAL"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
