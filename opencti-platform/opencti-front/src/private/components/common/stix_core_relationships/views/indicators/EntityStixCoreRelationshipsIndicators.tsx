@@ -57,7 +57,6 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             localStorage={localStorage}
             isRelationReversed
             currentView={view}
-            enableContextualView
              />}
 
         {view === 'relationships'
