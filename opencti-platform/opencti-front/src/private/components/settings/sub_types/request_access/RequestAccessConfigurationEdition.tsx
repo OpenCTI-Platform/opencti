@@ -2,7 +2,7 @@ import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import { Form, Formik } from 'formik';
-import StatusTemplateField, { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
+import { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
 import Button from '@mui/material/Button';
 import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
 import { FormikConfig } from 'formik/dist/types';
@@ -11,6 +11,7 @@ import {
   RequestAccessConfigurationEditionMutation,
   RequestAccessConfigureInput,
 } from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEditionMutation.graphql';
+import StatusTemplateFieldScoped from '@components/settings/sub_types/request_access/StatusTemplateFieldScoped';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -180,19 +181,21 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
         {({ submitForm, isSubmitting, setFieldValue }) => {
           return (
             <Form>
-              <StatusTemplateField
+              <StatusTemplateFieldScoped
                 name="acceptedTemplate"
                 setFieldValue={setFieldValue}
                 helpertext={'Request for information status to use when access request is accepted.'}
                 required={true}
                 style={fieldSpacingContainerStyle}
+                scope='REQUEST_ACCESS'
               />
-              <StatusTemplateField
+              <StatusTemplateFieldScoped
                 name="declinedTemplate"
                 setFieldValue={setFieldValue}
                 helpertext={'Request for information status to use when access request is declined.'}
                 required={true}
                 style={fieldSpacingContainerStyle}
+                scope='REQUEST_ACCESS'
               />
               <ObjectMembersField
                 name="approvalAdmin"

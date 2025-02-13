@@ -12,6 +12,7 @@ import {
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesArgs,
+  type QueryStatusTemplatesByStatusScopeArgs,
   type StatusAddInput,
   StatusOrdering,
   StatusScope,
@@ -34,6 +35,18 @@ export const findTemplateById = (context: AuthContext, user: AuthUser, statusTem
 };
 export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
+};
+export const findAllTemplatesByStatusScope = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesByStatusScopeArgs) => {
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const allStatusesByScope = platformStatuses.filter((status) => status.scope === args.scope);
+  const templateByScope: StatusTemplate[] = [];
+
+  for (let i = 0; i < allStatusesByScope.length; i += 1) {
+    const status = allStatusesByScope[i];
+    const templateForStatus = await storeLoadById(context, user, status.template_id, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
+    templateByScope.push(templateForStatus);
+  }
+  return templateByScope;
 };
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);

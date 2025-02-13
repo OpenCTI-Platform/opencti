@@ -12872,6 +12872,14 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): StatusTemplateConnection @auth
+  statusTemplatesByStatusScope(
+    first: Int
+    after: ID
+    orderBy: StatusTemplateOrdering
+    orderMode: OrderingMode
+    search: String
+    scope: StatusScope
+  ): [StatusTemplate] @auth
   status(id: String!): Status @auth
   statuses(
     first: Int
