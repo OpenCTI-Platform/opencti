@@ -28,12 +28,10 @@ describe('Request access domain  - initialized status', async () => {
     }
   });
 
-  let statusTemplateRfi: BasicStoreEntity;
   let statusTemplateGlobalRfi: BasicStoreEntity;
   let statusTemplateRequestAccess: BasicStoreEntity;
 
   it('should get request access scope status', async () => {
-    statusTemplateRfi = await createStatusTemplate(testContext, ADMIN_USER, { name: 'GLOBAL_RFI_NO_SCOPE', color: '#b83f13' });
     statusTemplateGlobalRfi = await createStatusTemplate(testContext, ADMIN_USER, { name: 'GLOBAL_RFI', color: '#b83f13' });
     statusTemplateRequestAccess = await createStatusTemplate(testContext, ADMIN_USER, { name: 'REQUEST_ACCESS_SCOPE', color: '#b83f13' });
     await createStatus(
@@ -41,13 +39,6 @@ describe('Request access domain  - initialized status', async () => {
       ADMIN_USER,
       ENTITY_TYPE_CONTAINER_CASE_RFI,
       { template_id: statusTemplateGlobalRfi.id, order: 666, scope: StatusScope.Global }
-    );
-
-    await createStatus(
-      testContext,
-      ADMIN_USER,
-      ENTITY_TYPE_CONTAINER_CASE_RFI,
-      { template_id: statusTemplateRfi.id, order: 333 }
     );
 
     await createStatus(
@@ -74,7 +65,6 @@ describe('Request access domain  - initialized status', async () => {
     result.edges.forEach((truc) => console.log('result:', truc));
     expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeTruthy();
     expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeFalsy();
-    expect(result.edges.some((status) => status.node.template_id === statusTemplateRfi.id)).toBeFalsy();
   });
 
   it('should get global status when scope is Global', async () => {
@@ -94,25 +84,5 @@ describe('Request access domain  - initialized status', async () => {
     const result = await findAllStatuses(testContext, ADMIN_USER, args);
     expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeFalsy();
     expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeTruthy();
-    expect(result.edges.some((status) => status.node.template_id === statusTemplateRfi.id)).toBeTruthy();
-  });
-
-  it('should get global status when scope is undefined', async () => {
-    const args: QueryStatusesArgs = {
-      first: 100,
-      filters: {
-        mode: FilterMode.And,
-        filterGroups: [],
-        filters: [
-          { key: ['type'], values: ['Case-Rfi'] },
-        ],
-      },
-      orderBy: StatusOrdering.Order,
-      orderMode: OrderingMode.Asc,
-    };
-    const result = await findAllStatuses(testContext, ADMIN_USER, args);
-    expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeFalsy();
-    expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeTruthy();
-    expect(result.edges.some((status) => status.node.template_id === statusTemplateRfi.id)).toBeTruthy();
   });
 });

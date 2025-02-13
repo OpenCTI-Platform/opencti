@@ -736,7 +736,7 @@ type StatusEdge {
 input StatusAddInput {
   template_id: String!
   order: Int!
-  scope: StatusScope
+  scope: StatusScope!
 }
 input StatusTemplateAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")

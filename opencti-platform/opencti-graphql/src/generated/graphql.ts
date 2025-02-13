@@ -24255,7 +24255,7 @@ export type Status = {
 
 export type StatusAddInput = {
   order: Scalars['Int']['input'];
-  scope?: InputMaybe<StatusScope>;
+  scope: StatusScope;
   template_id: Scalars['String']['input'];
 };
 

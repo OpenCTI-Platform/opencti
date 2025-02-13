@@ -1,7 +1,6 @@
 import {
   createStatusTemplate,
   findAll,
-  findAllByScope,
   findAllTemplates,
   findById,
   findTemplateById,
