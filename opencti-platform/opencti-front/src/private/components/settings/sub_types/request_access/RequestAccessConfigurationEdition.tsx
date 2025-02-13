@@ -14,6 +14,7 @@ import {
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
@@ -184,26 +185,31 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 setFieldValue={setFieldValue}
                 helpertext={'Request for information status to use when access request is accepted.'}
                 required={true}
+                style={fieldSpacingContainerStyle}
               />
               <StatusTemplateField
                 name="declinedTemplate"
                 setFieldValue={setFieldValue}
                 helpertext={'Request for information status to use when access request is declined.'}
                 required={true}
+                style={fieldSpacingContainerStyle}
               />
               <ObjectMembersField
                 name="approvalAdmin"
-                label="Select authorized members"
+                label={t_i18n('Select authorized members')}
                 onChange={setFieldValue}
                 required={true}
-                multiple={true}
+                multiple={false}
+                style={fieldSpacingContainerStyle}
               />
               <Button
+                variant="contained"
                 color="primary"
                 onClick={submitForm}
                 disabled={isSubmitting}
+                style={{ marginTop: 20, float: 'right' }}
               >
-                {t_i18n('Save')}
+                {t_i18n('Update')}
               </Button>
             </Form>
           );
