@@ -31,7 +31,7 @@ const FeedbackDeletion = ({ id }: { id: string }) => {
   const handleClose = () => {};
 
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
 
   const submitDelete = () => {
     setDeleting(true);

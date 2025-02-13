@@ -84,10 +84,10 @@ ExternalReferenceDeletionProps
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={isExternalReferenceAttachment ? t_i18n(
-          'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
-        ) : t_i18n('Do you want to delete this external reference?')}
-        isWarning={isExternalReferenceAttachment}
+        message={t_i18n('Do you want to delete this external reference?')}
+        warning={isExternalReferenceAttachment
+          ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
+          : undefined}
       />
     </>
   );

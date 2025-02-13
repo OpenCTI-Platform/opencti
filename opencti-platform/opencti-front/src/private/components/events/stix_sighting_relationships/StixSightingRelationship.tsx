@@ -40,7 +40,7 @@ StixSightingRelationshipProps
 
   const handleOpenEdit = () => setEditOpen(true);
   const handleCloseEdit = () => setEditOpen(false);
-  const deletion = useDeletion({ handleClose });
+  const deletion = useDeletion({});
   const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
