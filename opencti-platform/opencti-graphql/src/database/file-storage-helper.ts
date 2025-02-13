@@ -10,7 +10,7 @@ import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
-import {getDraftFilePrefix} from "./draft-utils";
+import { getDraftFilePrefix } from './draft-utils';
 
 interface FileUploadOpts {
   entity?:BasicStoreBase | unknown, // entity on which the file is uploaded

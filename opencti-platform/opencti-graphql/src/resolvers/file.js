@@ -25,7 +25,7 @@ const fileResolvers = {
   File: {
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
     works: (file, _, context) => worksLoader.load(file.id, context, context.user),
-    draftVersion: (file, _, context) => buildDraftVersion(file),
+    draftVersion: (file) => buildDraftVersion(file),
   },
   FileMetadata: {
     entity: (metadata, _, context) => domainLoader.load(metadata.entity_id, context, context.user),

@@ -1,9 +1,11 @@
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
+import { READ_INDEX_DRAFT_OBJECTS, toBase64, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
+import { getFileContent, loadFile } from './file-storage';
+import { INPUT_MARKINGS } from '../schema/general';
 
 export const getDraftFilePrefix = (draftId) => {
   return `draft/${draftId}/`;
@@ -56,12 +58,13 @@ export const isDraftSupportedEntity = (element) => {
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
 };
 
+const filesKey = 'x_opencti_files';
 // Transform a raw update patched stored in a draft_updates_patch to a list of reverse field patch inputs
 export const buildReverseUpdateFieldPatch = (rawUpdatePatch) => {
   const resulReverseFieldPatch = [];
   if (rawUpdatePatch) {
     const parsedUpdatePatch = JSON.parse(rawUpdatePatch);
-    const updatePatchKeys = Object.keys(parsedUpdatePatch);
+    const updatePatchKeys = Object.keys(parsedUpdatePatch).filter((k) => k !== filesKey);
     for (let i = 0; i < updatePatchKeys.length; i += 1) {
       const currentKey = updatePatchKeys[i];
       const currentValues = parsedUpdatePatch[currentKey];
@@ -76,11 +79,11 @@ export const buildReverseUpdateFieldPatch = (rawUpdatePatch) => {
 };
 
 // Transform a raw update patched stored in a draft_updates_patch to a list of field patch inputs
-export const buildUpdateFieldPatch = (rawUpdatePatch) => {
+export const buildUpdateFieldPatch = async (context, user, rawUpdatePatch) => {
   const resultFieldPatch = [];
   if (rawUpdatePatch) {
     const parsedUpdatePatch = JSON.parse(rawUpdatePatch);
-    const updatePatchKeys = Object.keys(parsedUpdatePatch);
+    const updatePatchKeys = Object.keys(parsedUpdatePatch).filter((k) => k !== filesKey);
     for (let i = 0; i < updatePatchKeys.length; i += 1) {
       const currentKey = updatePatchKeys[i];
       const currentValues = parsedUpdatePatch[currentKey];
@@ -98,6 +101,28 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
             resultFieldPatch.push(removeInput);
           }
         }
+      }
+    }
+    if (updatePatchKeys.find((k) => k === filesKey)) {
+      const fileValues = parsedUpdatePatch[filesKey];
+      if (fileValues) {
+        const fileIds = fileValues.added_value;
+        const loadedFileValues = [];
+        for (let i = 0; i < fileIds.length; i += 0) {
+          const currentFileId = fileIds[i];
+          const currentFile = await loadFile(context, user, currentFileId);
+          const currentFileContent = toBase64(await getFileContent(currentFileId));
+          const currentFileObject = {
+            name: currentFile.name,
+            data: currentFileContent,
+            version: currentFile.metaData.version,
+            mime_type: currentFile.metaData.mime_type,
+            object_marking_refs: currentFile.metaData.file_markings ?? [],
+          };
+          loadedFileValues.push(currentFileObject);
+        }
+        const addInput = { key: filesKey, value: loadedFileValues, operation: EditOperation.Add };
+        resultFieldPatch.push(addInput);
       }
     }
   }

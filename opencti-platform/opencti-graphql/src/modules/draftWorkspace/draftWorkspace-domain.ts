@@ -230,7 +230,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   // We add all created elements as stix objects to the bundle
   const createEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);
   const createEntitiesIds = createEntities.map((e) => e.internal_id);
-  const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds);
+  const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds, { resolveStixFiles: true });
 
   // We add all deleted elements as stix objects to the bundle, but we mark them as a delete operation
   const deletedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);
@@ -243,6 +243,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
   const updateStixEntitiesWithPatch = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch) }));
+  await Promise.all(updateStixEntitiesWithPatch);
 
   return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch]);
 };

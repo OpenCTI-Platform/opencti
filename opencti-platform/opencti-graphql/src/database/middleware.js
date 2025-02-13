@@ -39,7 +39,7 @@ import {
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, toBase64,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -208,10 +208,11 @@ import {
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { storeFileConverter } from './file-storage';
+import { downloadFile, getFileContent, loadFile, storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -464,12 +465,27 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
   return instance ? convertStoreToStix(instance) : undefined;
 };
+const convertStoreToStixWithResolvedFiles = async (instance) => {
+  const instanceInStix = convertStoreToStix(instance);
+  const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
+  for (let i = 0; i < nonResolvedFiles.length; i += 1) {
+    const currentFile = nonResolvedFiles[i];
+    const currentFileUri = currentFile.uri;
+    const fileId = currentFileUri.substring(currentFileUri.indexOf('storage/get'));
+    currentFile.data = toBase64(await getFileContent(fileId));
+    currentFile.no_trigger_import = true;
+  }
+  return instanceInStix;
+};
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
+  const { resolveStixFiles = false } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
     .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
-  return ids.map((id) => loadedInstancesMap.get(id)).filter((i) => isNotEmptyField(i)).map((e) => convertStoreToStix(e));
+  return ids.map((id) => loadedInstancesMap.get(id))
+    .filter((i) => isNotEmptyField(i))
+    .map((e) => (resolveStixFiles ? convertStoreToStixWithResolvedFiles(e) : convertStoreToStix(e)));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);

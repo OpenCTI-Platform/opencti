@@ -46,7 +46,7 @@ import { findById as documentFindById, paginatedForPathWithEnrichment } from '..
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -734,7 +734,8 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, []);
+      const eventFileInput = { key: 'x_opencti_files', value: [file.id], operation: UPDATE_OPERATION_ADD };
+      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
@@ -837,7 +838,8 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, []);
+      const eventFileInput = { key: 'x_opencti_files', value: [fileId], operation: UPDATE_OPERATION_REMOVE };
+      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
