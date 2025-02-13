@@ -62,7 +62,7 @@ const FeedbackPopover = ({ id }: { id: string }) => {
   };
 
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
+  const { setDeleting, handleOpenDelete } = deletion;
 
   const submitDelete = () => {
     setDeleting(true);
