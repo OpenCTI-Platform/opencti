@@ -80,6 +80,7 @@ interface ConnectorWorksComponentProps {
   options: ConnectorWorksQuery$variables[]
   relay: RelayRefetchProp
   inProgress?: boolean
+  isCompleted?: boolean
 }
 
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({
@@ -87,6 +88,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   options,
   relay,
   inProgress,
+  isCompleted,
 }) => {
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
@@ -137,6 +139,11 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('In progress works')}{` (${works.length})`}
       </Typography>
+      )}
+      {isCompleted && (
+        <Typography variant="h4" gutterBottom={true}>
+          {t_i18n('Completed works')}{` (${works.length})`}
+        </Typography>
       )}
       <div>
         {works.length === 0 && (

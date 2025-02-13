@@ -785,15 +785,13 @@ const ConnectorComponent = ({ connector, relay }) => {
           return <Loader variant="inElement" />;
         }}
       />
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Completed works')}
-      </Typography>
+
       <QueryRenderer
         query={connectorWorksQuery}
         variables={optionsFinished}
         render={({ props }) => {
           if (props) {
-            return <ConnectorWorks data={props} options={optionsFinished} />;
+            return <ConnectorWorks data={props} options={optionsFinished} isCompleted={true} />;
           }
           return <Loader variant="inElement" />;
         }}
