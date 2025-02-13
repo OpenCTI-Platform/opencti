@@ -77,7 +77,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         />
       </Typography>
 
-      <Typography variant="h3" gutterBottom={true}>
+      <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 10 }}>
         {t_i18n('On decline move to status:')}
         <Chip
           key={declinedToRfiStatus?.id}
@@ -99,24 +99,23 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
           }}
         />
       </Typography>
-
-      <Typography variant="h3" gutterBottom={true}>
+      <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 10 }}>
         {t_i18n('Validator membership:')}
-        {admins.map((member) => {
-          return (
-            <ListItemButton
-              key={member?.id}
-              dense={true}
-              divider={true}
-            >
-              <ListItemIcon>
-                <ItemIcon type="group" />
-              </ListItemIcon>
-              <ListItemText primary={member?.name}/>
-            </ListItemButton>
-          );
-        })}
       </Typography>
+      {admins.map((member) => {
+        return (
+          <ListItemButton
+            key={member?.id}
+            dense={true}
+            divider={true}
+          >
+            <ListItemIcon>
+              <ItemIcon type="group" />
+            </ListItemIcon>
+            <ListItemText primary={member?.name}/>
+          </ListItemButton>
+        );
+        })}
     </>
   );
 };

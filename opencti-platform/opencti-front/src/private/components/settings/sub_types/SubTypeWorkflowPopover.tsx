@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { Edit } from '@mui/icons-material';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypeWorkflow, { subTypeWorkflowEditionQuery } from './SubTypeWorkflow';
 import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
+import { StatusScope } from './__generated__/SubTypeQuery.graphql';
 
-const SubTypeStatusPopover = ({ subTypeId }: { subTypeId: string }) => {
+interface SubTypeStatusPopoverProps {
+  subTypeId: string
+  scope: StatusScope
+}
+
+const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ subTypeId, scope }) => {
   const queryRef = useQueryLoading<SubTypeWorkflowEditionQuery>(
     subTypeWorkflowEditionQuery,
     { id: subTypeId },
@@ -30,6 +36,7 @@ const SubTypeStatusPopover = ({ subTypeId }: { subTypeId: string }) => {
           fallback={<Loader variant={LoaderVariant.inElement} />}
         >
           <SubTypeWorkflow
+            scope={scope}
             queryRef={queryRef}
             handleClose={handleCloseUpdate}
             open={displayUpdate}

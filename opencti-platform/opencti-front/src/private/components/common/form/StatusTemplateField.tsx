@@ -34,6 +34,7 @@ interface StatusTemplateFieldProps {
   helpertext: string;
   required?: boolean;
   onChange?: (field: string, value: Option) => void;
+  style?: Record<string, string | number>;
 }
 
 export const StatusTemplateFieldQuery = graphql`
@@ -58,6 +59,7 @@ export interface StatusTemplateFieldData {
 
 const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   name,
+  style,
   setFieldValue,
   helpertext,
   required = false,
@@ -114,6 +116,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
       <Field
         component={AutocompleteField}
         name={name}
+        style={style}
         textfieldprops={{
           variant: 'standard',
           label: t_i18n('Name'),
