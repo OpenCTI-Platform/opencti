@@ -3624,9 +3624,25 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
     const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true });
-    const elIdsCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._id })));
-    const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
+    // Build cache for rest of execution
+    const elIdsCache = {};
+    const indexCache = {};
+    let startProcessingTime = new Date().getTime();
+    for (let idIndex = 0; idIndex < dataIds.length; idIndex += 1) {
+      const element = dataIds[idIndex];
+      elIdsCache[element.internal_id] = element._id;
+      indexCache[element.internal_id] = element._index;
+      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      }
+    }
+    // Split by max operations, create the bulk
     const groupsOfImpacts = R.splitEvery(MAX_BULK_OPERATIONS, impacts);
+    startProcessingTime = new Date().getTime();
     for (let i = 0; i < groupsOfImpacts.length; i += 1) {
       const impactsBulk = groupsOfImpacts[i];
       const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
@@ -3655,6 +3671,13 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
       const bodyUpdate = R.flatten(bodyUpdateRaw);
       if (bodyUpdate.length > 0) {
         await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+      }
+      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
       }
     }
   }
