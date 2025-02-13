@@ -243,8 +243,6 @@ const ConnectorComponent = ({ connector, relay }) => {
   };
   const optionsFinished = {
     count: 50,
-    orderBy: 'created_at',
-    orderMode: 'asc',
     filters: {
       mode: 'and',
       filters: [
