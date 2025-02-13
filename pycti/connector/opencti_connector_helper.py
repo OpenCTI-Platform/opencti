@@ -1591,6 +1591,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         event_version = kwargs.get("event_version", None)
         bypass_validation = kwargs.get("bypass_validation", False)
         entity_id = kwargs.get("entity_id", None)
+        file_markings = kwargs.get("file_markings", None)
         file_name = kwargs.get("file_name", None)
         bundle_send_to_queue = kwargs.get("send_to_queue", self.bundle_send_to_queue)
         cleanup_inconsistent_bundle = kwargs.get("cleanup_inconsistent_bundle", False)
@@ -1658,6 +1659,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     data=bundle,
                     mime_type="application/json",
                     entity_id=entity_id,
+                    file_markings=file_markings,
                 )
                 return []
             elif validation_mode == "draft" and not draft_id:
