@@ -292,7 +292,7 @@ describe('Verify csv ingestion', () => {
     expect(ingestionCsv.id).toBeDefined();
     expect(ingestionCsv.internal_id).toBeDefined();
 
-    await wait(30000); // Wait 30 sec for worker to discover the new queue
+    await wait(60000); // Wait 1 minute for worker to discover the new queue
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
     csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
