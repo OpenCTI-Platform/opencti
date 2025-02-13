@@ -24,9 +24,9 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes['kill-chain-phase'].length).toBe(3);
       expect(createEventsByTypes['course-of-action'].length).toBe(3);
-      expect(createEventsByTypes.label.length).toBe(15);
+      expect(createEventsByTypes.label.length).toBe(19);
       expect(createEventsByTypes.identity.length).toBe(35);
-      expect(createEventsByTypes.location.length).toBe(16);
+      expect(createEventsByTypes.location.length).toBe(19);
       expect(createEventsByTypes.relationship.length).toBe(134);
       expect(createEventsByTypes.sighting.length).toBe(4);
       expect(createEventsByTypes.indicator.length).toBe(35);
@@ -48,7 +48,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(342); // 328 created at init + 2 created in tests + 5 vocabulary organizations types + 7 persona
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(792);
+      expect(createEvents.length).toBe(799);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -64,7 +64,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['malware'].length).toBe(16);
       expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
       expect(updateEventsByTypes['data-component'].length).toBe(4);
-      expect(updateEventsByTypes['location'].length).toBe(14);
+      expect(updateEventsByTypes['location'].length).toBe(15);
       expect(updateEventsByTypes['attack-pattern'].length).toBe(3);
       expect(updateEventsByTypes['feedback'].length).toBe(1);
       expect(updateEventsByTypes['course-of-action'].length).toBe(3);
@@ -84,7 +84,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(167);
+      expect(updateEvents.length).toBe(168);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;

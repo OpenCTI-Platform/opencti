@@ -12,6 +12,7 @@ import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
 import { readCsvFromFileStream } from '../../utils/testQueryHelper';
+import { wait } from '../../../src/database/utils';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -285,12 +286,13 @@ describe('Verify csv ingestion', () => {
       name: 'csv ingestion',
       uri: 'http://test.invalid',
       csv_mapper_id: mapperCreated.id,
-      user_id: USER_EDITOR.id
+      user_id: ADMIN_USER.id
     };
     ingestionCsv = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
     expect(ingestionCsv.id).toBeDefined();
     expect(ingestionCsv.internal_id).toBeDefined();
 
+    await wait(30000); // Wait 30 sec for worker to discover the new queue
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
     csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
