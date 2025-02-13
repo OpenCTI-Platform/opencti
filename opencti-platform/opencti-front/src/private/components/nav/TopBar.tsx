@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,6 +18,7 @@ import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import MuiSwitch from '@mui/material/Switch';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -43,6 +44,7 @@ import omtdLight from '../../../static/images/xtm/omtd_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -72,9 +74,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     cursor: 'pointer',
     height: 35,
     marginRight: 4,
-  },
-  menuContainer: {
-    width: '30%',
   },
   barRight: {
     marginRight: theme.spacing(2),
@@ -151,13 +150,18 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee },
   } = useAuth();
   const draftContext = useDraftContext();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [askAI, setAskAI] = useState<boolean>(false);
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
+  const handleChangeAskAI = () => {
+    setAskAI(!askAI);
+  };
   const handleNewNotificationsNumber = (
     response: TopBarNotificationNumberSubscription$data | null | undefined | unknown,
   ) => {
@@ -260,14 +264,24 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         {hasKnowledgeAccess && (
-          <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
+          <div
+            style={{ display: 'flex', marginLeft: theme.spacing(3) }}
+          >
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
+              askAI={askAI}
             />
+            {isEnterpriseEdition && <div style={{ marginLeft: theme.spacing(2), width: '20%' }}>
+              <MuiSwitch
+                checked={askAI}
+                onChange={handleChangeAskAI}
+              />
+              <span>{t_i18n('Ask AI')}</span>
+            </div>}
           </div>
         )}
         <div className={classes.barRight}>
