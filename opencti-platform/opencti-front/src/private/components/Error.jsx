@@ -1,5 +1,5 @@
 import React from 'react';
-import { includes, map } from 'ramda';
+import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import { commitMutation } from '../../relay/environment';
+import withRouter from '../../utils/compat_router/withRouter';
 
 // Highest level of error catching, do not rely on any tierce (intl, theme, ...) pure fallback
 export const HighLevelError = () => (
@@ -76,6 +77,13 @@ class ErrorBoundaryComponent extends React.Component {
     }
   }
 
+  componentDidUpdate(prevProps, _prevState) {
+    // Reset the error state when browsing
+    if (prevProps.location.pathname !== this.props.location.pathname) {
+      this.setState({ error: null });
+    }
+  }
+
   render() {
     if (this.state.error) {
       const baseErrors = this.state.error.res?.errors ?? [];
@@ -86,7 +94,10 @@ class ErrorBoundaryComponent extends React.Component {
         return <DedicatedWarning title={'Complex search'} description={'Your search have too much terms to be executed. Please limit the number of words or the complexity'} />;
       }
       // Access error must be forwarded
-      if (includes('FORBIDDEN_ACCESS', types) || includes('AUTH_REQUIRED', types)) {
+      if (includes('FORBIDDEN_ACCESS', types)) {
+        return <ErrorNotFound/>;
+      }
+      if (includes('AUTH_REQUIRED', types)) {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
       }
@@ -101,7 +112,7 @@ ErrorBoundaryComponent.propTypes = {
   display: PropTypes.object,
   children: PropTypes.node,
 };
-export const ErrorBoundary = ErrorBoundaryComponent;
+export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);
 
 export const boundaryWrapper = (Component) => {
   // eslint-disable-next-line react/display-name
