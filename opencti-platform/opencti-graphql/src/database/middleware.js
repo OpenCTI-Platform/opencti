@@ -39,7 +39,8 @@ import {
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, toBase64,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  toBase64,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -208,7 +209,7 @@ import {
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { downloadFile, getFileContent, loadFile, storeFileConverter } from './file-storage';
+import { getFileContent, storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
@@ -471,7 +472,7 @@ const convertStoreToStixWithResolvedFiles = async (instance) => {
   for (let i = 0; i < nonResolvedFiles.length; i += 1) {
     const currentFile = nonResolvedFiles[i];
     const currentFileUri = currentFile.uri;
-    const fileId = currentFileUri.substring(currentFileUri.indexOf('storage/get'));
+    const fileId = currentFileUri.replace('/storage/get/', '');
     currentFile.data = toBase64(await getFileContent(fileId));
     currentFile.no_trigger_import = true;
   }
@@ -483,9 +484,15 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
     .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
+  if(resolveStixFiles){
+    const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
+        .filter((i) => isNotEmptyField(i))
+        .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+    return Promise.all(fileResolvedInstancesPromise);
+  }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
-    .map((e) => (resolveStixFiles ? convertStoreToStixWithResolvedFiles(e) : convertStoreToStix(e)));
+    .map((e) => (convertStoreToStix(e)));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);

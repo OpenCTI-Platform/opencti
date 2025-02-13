@@ -242,8 +242,8 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
-  const updateStixEntitiesWithPatch = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch) }));
-  await Promise.all(updateStixEntitiesWithPatch);
+  const updateStixEntitiesWithPatchPromises = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch) }));
+  const updateStixEntitiesWithPatch = await Promise.all(updateStixEntitiesWithPatchPromises);
 
   return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch]);
 };
