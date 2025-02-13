@@ -198,6 +198,7 @@ const StixCoreObjectContentFilesList = ({
                 entityId={stixCoreObjectId}
                 fileId={menuFile?.id ?? ''}
                 fileName={menuFile?.name ?? ''}
+                fileType={menuFile?.metaData?.mimetype ?? ''}
                 onClose={() => setDrawerOpen(false)}
               />
             </Drawer>
