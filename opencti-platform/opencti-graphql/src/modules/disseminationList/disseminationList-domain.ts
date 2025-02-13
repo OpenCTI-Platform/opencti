@@ -28,7 +28,7 @@ import { notify } from '../../database/redis';
 import { downloadFile, loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import { EMAIL_TEMPLATE } from '../../utils/emailTemplates/emailTemplate';
+import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
 import { sendMail } from '../../database/smtp';
 import type { BasicStoreSettings } from '../../types/settings';
 import { emailChecker } from '../../utils/syntax';
@@ -95,7 +95,7 @@ export const sendDisseminationEmail = async (
             fileContent += chunk;
           });
           stream.on('end', () => {
-            generatedEmailBody = ejs.render(EMAIL_TEMPLATE, { settings, body: fileContent });
+            generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: fileContent });
             const sendMailArgs: SendMailArgs = {
               from: settings.platform_email,
               to: toEmail,
@@ -120,7 +120,7 @@ export const sendDisseminationEmail = async (
   }
   if (!includeHtmlInBody) {
     const emailBodyFormatted = body.replaceAll('\n', '<br/>');
-    generatedEmailBody = ejs.render(EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+    generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: toEmail,
