@@ -824,21 +824,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
-  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW },
-    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW },
-    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW },
-    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
-  ],
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
@@ -910,18 +895,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
-  [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW },
-    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
-  ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
