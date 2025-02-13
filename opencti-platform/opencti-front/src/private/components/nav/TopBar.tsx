@@ -27,7 +27,9 @@ import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
 import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import {
+  TopBarNotificationNumberSubscription$data
+} from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
@@ -42,7 +44,6 @@ import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
