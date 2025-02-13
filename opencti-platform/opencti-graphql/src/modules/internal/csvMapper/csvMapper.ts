@@ -1,12 +1,12 @@
+import { v4 as uuidv4 } from 'uuid';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
 import type { StixCsvMapper, StoreEntityCsvMapper } from './csvMapper-types';
 import { ENTITY_TYPE_CSV_MAPPER } from './csvMapper-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
-import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
+import { normalizeName } from '../../../schema/identifier';
 import convertCsvMapperToStix from './csvMapper-converter';
 import './deprecated/csvMapper-deprecated';
-import { v4 as uuidv4 } from 'uuid';
 
 const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMapper> = {
   type: {
