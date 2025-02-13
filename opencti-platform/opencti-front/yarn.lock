@@ -10619,6 +10619,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"embla-carousel-react@npm:8.5.2":
+  version: 8.5.2
+  resolution: "embla-carousel-react@npm:8.5.2"
+  dependencies:
+    embla-carousel: "npm:8.5.2"
+    embla-carousel-reactive-utils: "npm:8.5.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.1 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+  checksum: 10/7390154357ffad9eb4641d5d5cd7ed061d33dfaa02c7cfb1b8828e562fe0b7dfb1a0590108db832179a9c4453184b63926d4d4403ba576e8ea6710bad9fd13f0
+  languageName: node
+  linkType: hard
+
+"embla-carousel-reactive-utils@npm:8.5.2":
+  version: 8.5.2
+  resolution: "embla-carousel-reactive-utils@npm:8.5.2"
+  peerDependencies:
+    embla-carousel: 8.5.2
+  checksum: 10/b46011e7031af6642673a7ded7139559ea8af12bf61a6e9aab1ae8006cabafce78ad0c7a3e1c425e96a0fa22de02849fd6d07e86bc118da26cf84eaedccd8a6f
+  languageName: node
+  linkType: hard
+
+"embla-carousel@npm:8.5.2":
+  version: 8.5.2
+  resolution: "embla-carousel@npm:8.5.2"
+  checksum: 10/ed1407d38b86523d4d5abd88ab47804f08e194fb0da0b4b225013ca217d5bb9c40c0899e31261ba2b1748101ae9ccb02a3eaf08d509080f85c9229223f8f8ff3
+  languageName: node
+  linkType: hard
+
 "emoji-regex@npm:^8.0.0":
   version: 8.0.0
   resolution: "emoji-regex@npm:8.0.0"
@@ -11994,9 +12022,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-ui@npm:0.29.2":
-  version: 0.29.2
-  resolution: "filigran-ui@npm:0.29.2"
+"filigran-ui@npm:0.31.5":
+  version: 0.31.5
+  resolution: "filigran-ui@npm:0.31.5"
   dependencies:
     "@dnd-kit/core": "npm:6.1.0"
     "@dnd-kit/modifiers": "npm:7.0.0"
@@ -12019,6 +12047,7 @@ __metadata:
     class-variance-authority: "npm:0.7.0"
     clsx: "npm:2.1.1"
     cmdk: "npm:1.0.0"
+    embla-carousel-react: "npm:8.5.2"
     filigran-icon: "npm:^0.10.0"
     react-easy-sort: "npm:1.6.0"
     react-hook-form: "npm:7.52.0"
@@ -12028,7 +12057,7 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0
     react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0
-  checksum: 10/a42f2f9be39ef1e46c93f0fdb711a6083b20fb4a2fe73d2be0b807656a0ade369ec9282abfa2fdeb9ef4fd7bb0c7dab023de13ecc3ca5e1dd9b3238e65eed531
+  checksum: 10/55c3dce98222067cf2d4f6cc27b365c98fe60196bb93aaab095498d65c5a72438531e986fb910f2c2bf3e3532feaf460247485313953bcf09fa0f1e8e4270e24
   languageName: node
   linkType: hard
 
@@ -16638,7 +16667,7 @@ __metadata:
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.12.0"
-    filigran-ui: "npm:0.29.2"
+    filigran-ui: "npm:0.31.5"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
