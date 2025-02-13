@@ -259,7 +259,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                 element={
                   <div key={forceUpdate}>
                     <OrganizationKnowledge
-                      organization={organization}
+                      organizationData={organization}
                       viewAs={viewAs}
                     />
                   </div>
