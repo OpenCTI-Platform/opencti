@@ -3795,12 +3795,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sesamecare-oss/redlock@npm:1.3.1":
-  version: 1.3.1
-  resolution: "@sesamecare-oss/redlock@npm:1.3.1"
+"@sesamecare-oss/redlock@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@sesamecare-oss/redlock@npm:1.4.0"
   peerDependencies:
     ioredis: ">=5"
-  checksum: 10/db6f0a2a6b571687229fc0261459f74529de412b3b14d80c048df7323e20da94885680b0678a5e819a7750de3d9e63e9863874a2b54e3ec4c6f8c5d71dcf8651
+  checksum: 10/72cf406b0dc1b603de505bb9db3aba0b6189926a8446257485080508c20d24b120fa9e879aeb628ace326c6cf735f8b958d337a95167af2864ef406e38cb1f72
   languageName: node
   linkType: hard
 
@@ -11409,7 +11409,7 @@ __metadata:
     "@opentelemetry/semantic-conventions": "npm:1.25.1"
     "@pyroscope/nodejs": "npm:0.4.3"
     "@rollup/plugin-graphql": "npm:2.0.5"
-    "@sesamecare-oss/redlock": "npm:1.3.1"
+    "@sesamecare-oss/redlock": "npm:1.4.0"
     "@types/archiver": "npm:6.0.3"
     "@types/bcryptjs": "npm:2.4.6"
     "@types/bluebird": "npm:3.5.42"
