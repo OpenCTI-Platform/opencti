@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { graphql } from 'react-relay';
@@ -8,6 +8,8 @@ import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useTheme } from '@mui/styles';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import DisseminationListField from '../../../../components/fields/DisseminationListField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
@@ -21,6 +23,7 @@ interface StixCoreObjectContentFilesDisseminationProps {
   entityId: string;
   fileId: string;
   fileName: string;
+  fileType: string;
   onClose: () => void;
 }
 
@@ -28,6 +31,7 @@ interface DisseminationInput {
   disseminationListId: string;
   emailObject: string;
   emailBody: string;
+  includeHtmlInBody: boolean;
 }
 
 export const DisseminationListSendInputMutation = graphql`
@@ -43,15 +47,21 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   fileId,
   entityId,
   fileName,
+  fileType,
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [useFileContent, setUseFileContent] = useState(false);
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
-    emailBody: Yup.string().required(t_i18n('This field is required')),
+    emailBody: Yup.string().when('useFileContent', {
+      is: false,
+      then: (schema) => schema.required(t_i18n('This field is required')),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   };
   const validator = Yup.object().shape(basicShape);
   const [commitMutation, inProgress] = useApiMutation(
@@ -78,6 +88,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
           email_attachment_ids: [fileId],
+          include_html_in_body: useFileContent,
         },
       },
       onCompleted: () => {
@@ -95,6 +106,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     disseminationListId: '',
     emailObject: '',
     emailBody: '',
+    includeHtmlInBody: false,
   };
   return (
     <Formik
@@ -115,6 +127,18 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             required
             style={fieldSpacingContainerStyle}
           />
+          {fileType === 'text/html' && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={useFileContent}
+                  onChange={() => setUseFileContent(!useFileContent)}
+                  color="primary"
+                />
+                }
+              label={t_i18n('Use file content as email body')}
+            />
+          )}
           <Field
             component={MarkdownField}
             label={t_i18n('Email body')}
@@ -123,6 +147,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             rows="4"
             fullWidth
             required
+            disabled={useFileContent}
             style={fieldSpacingContainerStyle}
           />
           <Field
