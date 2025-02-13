@@ -840,6 +840,7 @@ input SynchronizerFetchInput {
 
 enum WorksOrdering {
   status
+  created_at
   timestamp
   _score
 }
