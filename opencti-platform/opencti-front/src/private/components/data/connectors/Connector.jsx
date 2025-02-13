@@ -779,7 +779,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         render={({ props }) => {
           if (props) {
             return (
-              <ConnectorWorks data={props} options={optionsInProgress} />
+              <ConnectorWorks data={props} options={optionsInProgress} inProgress={true}/>
             );
           }
           return <Loader variant="inElement" />;
