@@ -77,7 +77,7 @@ describe('Database sync raw', () => {
       const countersMap = new Map(counters.map((i) => [i.label, i.value]));
       expect(countersMap.get('Indicator')).toEqual(28);
       expect(countersMap.get('Malware')).toEqual(27);
-      expect(countersMap.get('Label')).toEqual(13);
+      expect(countersMap.get('Label')).toEqual(17);
       expect(countersMap.get('Vocabulary')).toEqual(342);
 
       // Post check
