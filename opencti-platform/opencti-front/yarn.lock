@@ -12940,12 +12940,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:5.16.2":
-  version: 5.16.2
-  resolution: "graphql-ws@npm:5.16.2"
+"graphql-ws@npm:6.0.3":
+  version: 6.0.3
+  resolution: "graphql-ws@npm:6.0.3"
   peerDependencies:
-    graphql: ">=0.11 <=16"
-  checksum: 10/6647bfe640b467f27aaf5ee044c1d114fe266e82cda4ebbb4368d5a4e98df5d2de9d6be70d28eb5e821d87fbf8964c3a8a18abf87c76d4f148800fd8e0488c3d
+    "@fastify/websocket": ^10 || ^11
+    graphql: ^15.10.1 || ^16
+    uWebSockets.js: ^20
+    ws: ^8
+  peerDependenciesMeta:
+    "@fastify/websocket":
+      optional: true
+    uWebSockets.js:
+      optional: true
+    ws:
+      optional: true
+  checksum: 10/58d8ab8760443235387b1a921ad0c3fcbb40c85c5ad1dcc6eeb64e66072e5202bf08a70dcc30377183c7bf87823c7a1315b13e8f153c1100ef6c72ef77528db2
   languageName: node
   linkType: hard
 
@@ -16731,7 +16741,7 @@ __metadata:
     fs-extra: "npm:11.3.0"
     graphiql: "npm:3.8.3"
     graphql: "npm:16.10.0"
-    graphql-ws: "npm:5.16.2"
+    graphql-ws: "npm:6.0.3"
     html-react-parser: "npm:5.2.2"
     html-to-image: "npm:1.11.11"
     html-to-pdfmake: "npm:2.5.20"
