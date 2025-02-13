@@ -52,6 +52,7 @@ export const subTypeQuery = graphql`
       statuses {
         id
         order
+        scope
         template {
           name
           color
@@ -95,6 +96,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { searchTerm } = viewStorage;
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
+  const scope = subType.statuses.map((n) => n.scope);
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
@@ -135,7 +137,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 10 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} />
+                    <SubTypeStatusPopover subTypeId={subType.id} scope={scope} />
                   </Typography>
                 </div>
                 <ItemStatusTemplate
@@ -144,16 +146,21 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 />
               </>
             }
-
             {isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
               && <>
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access workflow')}
-                    <RequestAccessConfigurationPopover id={subType.id} data={subType.settings}/>
+                    <SubTypeStatusPopover subTypeId={subType.id} scope={scope}/>
                   </Typography>
                 </div>
-                <RequestAccessStatus data={subType.settings}/>
+                <div style={{ marginTop: 20 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Request access action configuration')}
+                    <RequestAccessConfigurationPopover id={subType.id} data={subType.settings}/>
+                    <RequestAccessStatus data={subType.settings}/>
+                  </Typography>
+                </div>
               </>
             }
           </Paper>
