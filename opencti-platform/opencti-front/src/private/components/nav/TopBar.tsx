@@ -273,7 +273,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               onSubmit={handleSearch}
               keyword={keyword}
               variant="topBar"
-              placeholder={`${t_i18n('Search the platform')}...`}
+              placeholder={isEnterpriseEdition && askAI
+                ? `${t_i18n('Ask your question')}...`
+                : `${t_i18n('Search the platform')}...`}
               fullWidth={true}
               askAI={askAI}
             />
