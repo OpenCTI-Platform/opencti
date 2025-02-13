@@ -72,10 +72,14 @@ const SearchInput = (props) => {
     variant,
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
-    askAI,
     ...otherProps
   } = props;
-  const isAIEnabled = variant === 'topBar' && askAI && isEnterpriseEdition;
+  const [askAI, setAskAI] = useState(false);
+  const handleChangeAskAI = () => {
+    setAskAI(!askAI);
+  };
+  const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && askAI;
+
   let classRoot = classes.searchRoot;
   if (variant === 'inDrawer') {
     classRoot = classes.searchRootInDrawer;
@@ -107,7 +111,7 @@ const SearchInput = (props) => {
       value={searchValue}
       variant="outlined"
       size="small"
-      placeholder={placeholder}
+      placeholder={isAIEnabled ? `${t_i18n('Ask your question')}...` : placeholder}
       onChange={(event) => {
         const { value } = event.target;
         setSearchValue(value);
@@ -122,6 +126,10 @@ const SearchInput = (props) => {
         borderColor: 'red',
         '& .MuiOutlinedInput-root': {
           '& fieldset': {
+            borderColor: theme.palette.ai.main,
+            borderWidth: '2px',
+          },
+          '&:hover fieldset': {
             borderColor: theme.palette.ai.main,
             borderWidth: '2px',
           },
@@ -164,6 +172,15 @@ const SearchInput = (props) => {
               }
               >
                 <ContentPasteSearchOutlined fontSize="medium"/>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Ask AI')}>
+              <IconButton
+                size="medium"
+                style={{ color: theme.palette.ai.main }}
+                onClick={handleChangeAskAI}
+              >
+                <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
             </Tooltip>
           </InputAdornment>
