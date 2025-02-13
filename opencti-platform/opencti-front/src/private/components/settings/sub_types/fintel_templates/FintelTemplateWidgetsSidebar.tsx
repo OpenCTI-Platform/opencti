@@ -251,8 +251,10 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDeleteWidget}
-        isWarning={isSelectedWidgetUsed}
-        message={isSelectedWidgetUsed ? t_i18n('You are about to delete a widget used in the template') : t_i18n('Do you want to delete this widget?')}
+        message={t_i18n('Do you want to delete this widget?')}
+        warning={isSelectedWidgetUsed
+          ? { message: t_i18n('You are about to delete a widget used in the template') }
+          : undefined}
       />
     </>
   );

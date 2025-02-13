@@ -45,6 +45,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToggleButtonGroup } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
+import DialogTitle from '@mui/material/DialogTitle';
 import CommitMessage from '../../common/form/CommitMessage';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
@@ -1137,6 +1138,9 @@ class GroupingKnowledgeGraphBar extends Component {
                       TransitionComponent={Transition}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
+                      <DialogTitle>
+                        {t('Are you sure?')}
+                      </DialogTitle>
                       <DialogContent>
                         <Typography variant="body">
                           {t(
