@@ -45,7 +45,6 @@ const closeOldWorks = async (context, connector) => {
             const currentWorkStatus = await redisGetWork(element.internal_id);
             if (currentWorkStatus) {
               const params = { completed_time: now(), completed_number: parseInt(currentWorkStatus.import_processed_number, 10) };
-              logApp.info('Is complete: connector manager', { currentWorkStatus, workId: element.internal_id });
               const sourceScript = `ctx._source['status'] = "complete";
                   ctx._source['completed_time'] = params.completed_time;
                   ctx._source['completed_number'] = params.completed_number;`;
