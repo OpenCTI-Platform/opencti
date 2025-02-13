@@ -95,7 +95,7 @@
     "rxjs": "7.8.1",
     "three-spritetext": "1.9.4",
     "use-analytics": "1.1.0",
-    "uuid": "11.0.3",
+    "uuid": "11.0.5",
     "yup": "1.6.1"
   },
   "devDependencies": {
