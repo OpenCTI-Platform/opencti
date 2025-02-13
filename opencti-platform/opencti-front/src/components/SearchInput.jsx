@@ -9,6 +9,10 @@ import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from './i18n';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
+import useAuth from '../utils/hooks/useAuth';
+import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
+import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -74,11 +78,18 @@ const SearchInput = (props) => {
     placeholder = `${t_i18n('Search these results')}...`,
     ...otherProps
   } = props;
+  const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [askAI, setAskAI] = useState(false);
   const handleChangeAskAI = () => {
-    setAskAI(!askAI);
+    if (isEnterpriseEdition) {
+      setAskAI(!askAI);
+    } else {
+      setDisplayEEDialog(true);
+    }
   };
   const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && askAI;
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  const { settings: { id: settingsId } } = useAuth();
 
   let classRoot = classes.searchRoot;
   if (variant === 'inDrawer') {
@@ -106,44 +117,45 @@ const SearchInput = (props) => {
   }, [keyword]);
 
   return (
-    <TextField
-      name="keyword"
-      value={searchValue}
-      variant="outlined"
-      size="small"
-      placeholder={isAIEnabled ? `${t_i18n('Ask your question')}...` : placeholder}
-      onChange={(event) => {
-        const { value } = event.target;
-        setSearchValue(value);
-      }}
-      onKeyDown={(event) => {
-        const { value } = event.target;
-        if (typeof onSubmit === 'function' && event.key === 'Enter') {
-          onSubmit(value);
-        }
-      }}
-      sx={isAIEnabled ? {
-        borderColor: 'red',
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': {
-            borderColor: theme.palette.ai.main,
-            borderWidth: '2px',
+    <>
+      <TextField
+        name="keyword"
+        value={searchValue}
+        variant="outlined"
+        size="small"
+        placeholder={isAIEnabled ? `${t_i18n('Ask your question')}...` : placeholder}
+        onChange={(event) => {
+          const { value } = event.target;
+          setSearchValue(value);
+        }}
+        onKeyDown={(event) => {
+          const { value } = event.target;
+          if (typeof onSubmit === 'function' && event.key === 'Enter') {
+            onSubmit(value);
+          }
+        }}
+        sx={isAIEnabled ? {
+          borderColor: 'red',
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: theme.palette.ai.main,
+              borderWidth: '2px',
+            },
+            '&:hover fieldset': {
+              borderColor: theme.palette.ai.main,
+              borderWidth: '2px',
+            },
           },
-          '&:hover fieldset': {
-            borderColor: theme.palette.ai.main,
-            borderWidth: '2px',
-          },
-        },
-      } : undefined}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start" style={{ color: isAIEnabled ? theme.palette.ai.main : undefined }} >
-            {isAIEnabled
-              ? <AutoAwesomeOutlined fontSize="small" />
-              : <Search fontSize="small"/>}
-          </InputAdornment>
-        ),
-        endAdornment: variant === 'topBar' && (
+        } : undefined}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" style={{ color: isAIEnabled ? theme.palette.ai.main : undefined }} >
+              {isAIEnabled
+                ? <AutoAwesomeOutlined fontSize="small" />
+                : <Search fontSize="small"/>}
+            </InputAdornment>
+          ),
+          endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton
@@ -184,15 +196,31 @@ const SearchInput = (props) => {
               </IconButton>
             </Tooltip>
           </InputAdornment>
-        ),
-        classes: {
-          root: classRoot,
-          input: classInput,
-        },
-      }}
-      {...otherProps}
-      autoComplete="off"
-    />
+          ),
+          classes: {
+            root: classRoot,
+            input: classInput,
+          },
+        }}
+        {...otherProps}
+        autoComplete="off"
+      />
+      {isAdmin && isAIEnabled ? (
+        <EnterpriseEditionAgreement
+          open={displayEEDialog}
+          onClose={() => setDisplayEEDialog(false)}
+          settingsId={settingsId}
+        />
+      ) : (
+        <FeedbackCreation
+          openDrawer={displayEEDialog}
+          handleCloseDrawer={() => setDisplayEEDialog(false)}
+          initialValue={{
+            description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
+          }}
+        />
+      )}
+    </>
   );
 };
 
