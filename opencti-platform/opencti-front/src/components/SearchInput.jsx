@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import { AutoAwesomeOutlined, BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from './i18n';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -62,14 +64,18 @@ const useStyles = makeStyles((theme) => ({
 const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
     onSubmit,
     variant,
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
+    askAI,
     ...otherProps
   } = props;
+  const isAIEnabled = variant === 'topBar' && askAI && isEnterpriseEdition;
   let classRoot = classes.searchRoot;
   if (variant === 'inDrawer') {
     classRoot = classes.searchRootInDrawer;
@@ -114,8 +120,10 @@ const SearchInput = (props) => {
       }}
       InputProps={{
         startAdornment: (
-          <InputAdornment position="start">
-            <Search fontSize="small" />
+          <InputAdornment position="start" style={{ color: isAIEnabled ? theme.palette.ai.main : undefined }} >
+            {isAIEnabled
+              ? <AutoAwesomeOutlined fontSize="small" />
+              : <Search fontSize="small"/>}
           </InputAdornment>
         ),
         endAdornment: variant === 'topBar' && (
