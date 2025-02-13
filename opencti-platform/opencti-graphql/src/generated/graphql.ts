@@ -20361,7 +20361,7 @@ export type QueryDeleteOperationsArgs = {
 
 
 export type QueryDisseminationListArgs = {
-  id: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
 };
 
 
