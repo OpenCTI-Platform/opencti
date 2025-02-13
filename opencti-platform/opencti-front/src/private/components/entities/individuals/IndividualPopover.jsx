@@ -33,7 +33,7 @@ const IndividualPopover = ({ id }) => {
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
