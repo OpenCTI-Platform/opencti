@@ -80,7 +80,7 @@ export const checkPreSyncContent = async () => {
   const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
   expect(objectMap.get('Indicator')).toEqual(28);
   expect(objectMap.get('Malware')).toEqual(27);
-  expect(objectMap.get('Label')).toEqual(13);
+  expect(objectMap.get('Label')).toEqual(17);
   expect(objectMap.get('Vocabulary')).toEqual(342);
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
