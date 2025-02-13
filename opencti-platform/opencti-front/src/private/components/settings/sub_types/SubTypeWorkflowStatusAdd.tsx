@@ -15,7 +15,7 @@ import TextField from '../../../../components/TextField';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
+import { StatusScope } from './__generated__/SubTypeQuery.graphql';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles({
@@ -43,18 +43,19 @@ const subTypeWorkflowStatusAddCreationMutation = graphql`
 interface SubTypeWorkflowStatusAddProps {
   display: boolean;
   subTypeId: string;
+  scope: string;
 }
 
 const SubTypeWorkflowStatusAdd: FunctionComponent<
 SubTypeWorkflowStatusAddProps
-> = ({ display, subTypeId }) => {
+> = ({ display, subTypeId, scope }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const initialValues: StatusForm = { template: null, order: '' };
+  const initialValues: StatusForm = { template: null, order: '', scope };
   const [commit] = useApiMutation(subTypeWorkflowStatusAddCreationMutation);
   const onSubmit: FormikConfig<StatusForm>['onSubmit'] = (
     values,
@@ -63,6 +64,7 @@ SubTypeWorkflowStatusAddProps
     const finalValues = {
       order: parseInt(values.order, 10),
       template_id: values.template?.value,
+      scope,
     };
     commit({
       variables: {
