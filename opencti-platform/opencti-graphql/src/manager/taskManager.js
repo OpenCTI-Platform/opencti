@@ -22,7 +22,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
-import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_CONTAINER, RULE_PREFIX } from '../schema/general';
@@ -58,6 +58,8 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -97,21 +99,29 @@ export const taskRule = async (context, user, task, callback) => {
       filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
       filterGroups: [],
     };
-    const options = { orderMode: 'asc', orderBy: 'updated_at', filters };
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
 };
 
-export const taskQuery = async (context, user, task, callback) => {
+export const taskQuery = async (context, user, task, actionType, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode);
   if (task_excluded_ids.length > 0) {
     options.filters = addFilter(options.filters, 'id', task_excluded_ids, 'not_eq');
   }
-  const finalOpts = { ...options, connectionFormat: false, baseData: true };
-  const elements = await elList(context, user, READ_DATA_INDICES, finalOpts);
-  callback(elements);
+  // For share / Unshare, we need to enlist in one step
+  // Its required as we need to keep the ordering and add the container at the end
+  if (isShareAction(actionType) || isUnshareAction(actionType)) {
+    const finalOpts = { ...options, connectionFormat: false, baseData: true };
+    const elements = await elList(context, user, READ_DATA_INDICES, finalOpts);
+    callback(elements);
+  } else {
+    // For other operations, it can be step by step
+    const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
+    await elList(context, user, READ_DATA_INDICES, finalOpts);
+  }
 };
 
 export const taskList = async (context, user, task, callback) => {
@@ -264,17 +274,39 @@ const shareUnshareExtraOperation = async (context, user, actionType, operations)
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
   return async (elements) => {
     // Build limited stix object to limit memory footprint
-    const objects = elements.map((e) => ({
-      id: e.standard_id,
-      type: convertTypeToStixType(e.entity_type),
-      ...baseOperationBuilder(actionType, operations, e),
-      extensions: {
-        [STIX_EXT_OCTI]: {
-          id: e.internal_id,
-          type: e.entity_type
+    const objects = [];
+    let startProcessingTime = new Date().getTime();
+    for (let index = 0; index < elements.length; index += 1) {
+      const e = elements[index];
+      const baseObject = {
+        id: e.standard_id,
+        type: convertTypeToStixType(e.entity_type),
+        ...baseOperationBuilder(actionType, operations, e),
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: e.internal_id,
+            type: e.entity_type
+          }
         }
+      };
+      // region Handle specific relationship attributes
+      if (isStixSightingRelationship(e.entity_type)) {
+        baseObject.sighting_of_ref = e.fromId;
+        baseObject.where_sighted_refs = [e.toId];
+      } else if (isBasicRelationship(e.entity_type)) {
+        baseObject.source_ref = e.fromId;
+        baseObject.target_ref = e.toId;
       }
-    }));
+      // endregion
+      objects.push(baseObject);
+      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+        startProcessingTime = new Date().getTime();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      }
+    }
     // If share / unshare with container, add the container and force worker to not split the bundle
     const { forceNoSplit, object } = await shareUnshareExtraOperation(context, user, actionType, operations);
     if (object) objects.push(object);
@@ -452,12 +484,15 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
   if (task.type === TASK_TYPE_QUERY) {
-    await taskQuery(context, user, task, callback);
+    // Task query will be enlisted step by step except for sharing/un sharing
+    await taskQuery(context, user, task, actionType, callback);
   }
   if (task.type === TASK_TYPE_LIST) {
+    // Task list is enlist in one shot
     await taskList(context, user, task, callback);
   }
   if (task.type === TASK_TYPE_RULE) {
+    // Task rule is enlist step by step
     await taskRule(context, user, task, callback);
   }
   return updateTask(context, task.id, { completed: true });
