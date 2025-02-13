@@ -137,6 +137,7 @@ const UserFragment = graphql`
     groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
     organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
     organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+    organizationsCount: { type: "Int", defaultValue: 500 }
     rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
     rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
@@ -200,6 +201,7 @@ const UserFragment = graphql`
       }
     }
     objectOrganization(
+      first: $organizationsCount
       orderBy: $organizationsOrderBy
       orderMode: $organizationsOrderMode
     ) {
