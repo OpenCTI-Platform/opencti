@@ -11,6 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { GroupLine_node$data } from '@components/settings/groups/__generated__/GroupLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -55,10 +56,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
   const { isSensitive } = useSensitiveModifications('groups', node.standard_id);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/groups/${node.id}`}
     >
@@ -134,7 +134,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined/>
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

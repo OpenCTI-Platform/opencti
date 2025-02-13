@@ -23,6 +23,7 @@ import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import Tooltip from '@mui/material/Tooltip';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -493,19 +494,18 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List>
                     {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                      <ListItem
+                      <ListItemButton
                         key={role?.id}
                         dense={true}
                         divider={true}
                         component={Link}
-                        button={true}
                         to={`/dashboard/settings/accesses/roles/${role?.id}`}
                       >
                         <ListItemIcon>
                           <ItemIcon type="Role" />
                         </ListItemIcon>
                         <ListItemText primary={role?.name} />
-                      </ListItem>
+                      </ListItemButton>
                     ) : (
                       <ListItem key={role?.id} dense={true} divider={true}>
                         <ListItemIcon>
@@ -524,11 +524,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List>
                     {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                      <ListItem
+                      <ListItemButton
                         key={groupEdge?.node.id}
                         dense={true}
                         divider={true}
-                        button={true}
                         component={Link}
                         to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
                       >
@@ -536,7 +535,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           <ItemIcon type="Group" />
                         </ListItemIcon>
                         <ListItemText primary={groupEdge?.node.name} />
-                      </ListItem>
+                      </ListItemButton>
                     ) : (
                       <ListItem
                         key={groupEdge?.node.id}
@@ -559,11 +558,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <FieldOrEmpty source={user.objectOrganization?.edges}>
                   <List>
                     {user.objectOrganization?.edges.map((organizationEdge) => (
-                      <ListItem
+                      <ListItemButton
                         key={organizationEdge.node.id}
                         dense={true}
                         divider={true}
-                        button={true}
                         component={Link}
                         to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
                       >
@@ -584,7 +582,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           />
                         </ListItemIcon>
                         <ListItemText primary={organizationEdge.node.name} />
-                      </ListItem>
+                      </ListItemButton>
                     ))}
                   </List>
                 </FieldOrEmpty>
@@ -619,7 +617,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           key={session.id}
                           dense={true}
                           divider={true}
-                          button={false}
+
                         >
                           <ListItemIcon>
                             <ItemIcon type="Session" />
@@ -796,9 +794,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       />
       <Dialog
         open={displayKillSession}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseKillSession}
       >
         <DialogContent>
@@ -821,9 +819,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       </Dialog>
       <Dialog
         open={displayKillSessions}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseKillSessions}
       >
         <DialogContent>
@@ -846,9 +844,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       </Dialog>
       <Dialog
         open={displayRenewToken}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseRenewToken}
       >
         <DialogContent>

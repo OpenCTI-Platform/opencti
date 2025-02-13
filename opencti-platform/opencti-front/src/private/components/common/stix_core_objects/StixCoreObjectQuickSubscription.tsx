@@ -6,7 +6,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
@@ -27,7 +26,7 @@ import {
   stixCoreObjectTriggersUtilsPaginationQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtilsPaginationQuery.graphql';
 import { stixCoreObjectTriggersUtils_triggers$key as FragmentKey } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtils_triggers.graphql';
-import { SvgIconPropsColorOverrides } from '@mui/material';
+import { ListItemButton, SvgIconPropsColorOverrides } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -442,8 +441,7 @@ StixCoreObjectQuickSubscriptionContentProps
           </div>
           {otherInstanceTriggersToDisplay.length > 0 && (
             <List>
-              <ListItem
-                button={true}
+              <ListItemButton
                 divider={true}
                 classes={{ root: classes.nested }}
                 onClick={handleToggleLine}
@@ -462,7 +460,7 @@ StixCoreObjectQuickSubscriptionContentProps
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
               <Collapse in={expandedLines}>
                 {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(
                   instanceTrigger.values,

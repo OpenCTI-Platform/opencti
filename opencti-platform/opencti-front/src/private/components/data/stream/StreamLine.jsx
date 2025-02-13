@@ -6,6 +6,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import { MoreVert, Stream } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
@@ -76,10 +77,9 @@ class StreamLineLineComponent extends Component {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component="a"
         href={`/stream/${node.id}`}
         target={'_blank'} // open in new tab
@@ -152,7 +152,7 @@ class StreamLineLineComponent extends Component {
             />
           </Security>
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }

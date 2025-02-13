@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
@@ -12,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import { LockPattern } from 'mdi-material-ui';
 import { LinkOff } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSubAttackPattern from './AddSubAttackPattern';
 import { addSubAttackPatternsMutationRelationDelete } from './AddSubAttackPatternsLines';
@@ -70,11 +70,10 @@ class AttackPatternSubAttackPatternsComponent extends Component {
         <List style={{ marginTop: -10, paddingTop: 0 }}>
           <FieldOrEmpty source={subAttackPatterns}>
             {subAttackPatterns.map((subAttackPattern) => (
-              <ListItem
+              <ListItemButton
                 key={subAttackPattern.id}
                 dense={true}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
               >
@@ -96,7 +95,7 @@ class AttackPatternSubAttackPatternsComponent extends Component {
                     <LinkOff/>
                   </IconButton>
                 </ListItemSecondaryAction>
-              </ListItem>
+              </ListItemButton>
             ))}
           </FieldOrEmpty>
         </List>

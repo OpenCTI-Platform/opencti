@@ -87,7 +87,7 @@ const TimePickerField = (props) => {
       onAccept={internalOnAccept}
       onChange={internalOnChange}
       views={views}
-      inputFormat={inputFormat}
+      format={inputFormat}
       slotProps={{
         textField: {
           ...textFieldProps,

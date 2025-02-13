@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { SettingsOrganizationUserLine_node$key } from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
-import { ListItemSecondaryAction } from '@mui/material';
+import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
@@ -75,10 +75,9 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   const external = user.external === true;
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/users/${user.id}`}
     >
@@ -104,7 +103,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       <ListItemSecondaryAction>
         <KeyboardArrowRightOutlined />
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

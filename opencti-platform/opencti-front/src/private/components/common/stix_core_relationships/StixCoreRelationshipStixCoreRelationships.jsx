@@ -71,7 +71,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
               <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem key={i} divider={true} button={false}>
+                    <ListItem key={i} divider={true}>
                       <ListItemIcon>
                         <Skeleton
                           animation="wave"

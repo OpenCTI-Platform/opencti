@@ -23,7 +23,6 @@ import {
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
@@ -43,7 +42,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { Form, Formik } from 'formik';
-import { ToggleButtonGroup } from '@mui/material';
+import { ListItemButton, ToggleButtonGroup } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -657,11 +656,10 @@ class IncidentKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                        <ListItem
+                        <ListItemButton
                           key={stixCoreObjectType}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={this.handleSelectByType.bind(
                             this,
                             stixCoreObjectType,
@@ -670,7 +668,7 @@ class IncidentKnowledgeGraphBar extends Component {
                           <ListItemText
                             primary={t(`entity_${stixCoreObjectType}`)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -730,11 +728,10 @@ class IncidentKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                        <ListItem
+                        <ListItemButton
                           key={stixCoreObjectType}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleStixCoreObjectType.bind(
                             this,
                             stixCoreObjectType,
@@ -754,7 +751,7 @@ class IncidentKnowledgeGraphBar extends Component {
                           <ListItemText
                             primary={t(`entity_${stixCoreObjectType}`)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -791,11 +788,10 @@ class IncidentKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {markedBy.map((markingDefinition) => (
-                        <ListItem
+                        <ListItemButton
                           key={markingDefinition.id}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleMarkedBy.bind(
                             this,
                             markingDefinition.id,
@@ -813,7 +809,7 @@ class IncidentKnowledgeGraphBar extends Component {
                           <ListItemText
                             primary={truncate(markingDefinition.definition, 20)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -850,11 +846,10 @@ class IncidentKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {createdBy.map((createdByRef) => (
-                        <ListItem
+                        <ListItemButton
                           key={createdBy.id}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleCreatedBy.bind(
                             this,
                             createdByRef.id,
@@ -870,7 +865,7 @@ class IncidentKnowledgeGraphBar extends Component {
                             />
                           </ListItemIcon>
                           <ListItemText primary={createdByRef.name} />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -1136,8 +1131,8 @@ class IncidentKnowledgeGraphBar extends Component {
                     <Dialog
                       open={this.state.displayRemove}
                       keepMounted={true}
-                      PaperProps={{ elevation: 1 }}
-                      TransitionComponent={Transition}
+                      slotProps={{ paper: { elevation: 1 } }}
+                      slots={{ transition: Transition }}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
                       <DialogContent>

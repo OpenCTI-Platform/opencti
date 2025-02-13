@@ -2,11 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemSecondaryAction } from '@mui/material';
+import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff, StreamOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
@@ -75,11 +74,10 @@ DataComponentDataSourcesProps
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>
         {dataSourceId && (
-          <ListItem
+          <ListItemButton
             key={data.dataSource?.id}
             dense={true}
             divider={true}
-            button={true}
             component={Link}
             to={`/dashboard/techniques/data_sources/${dataSourceId}`}
           >
@@ -100,7 +98,7 @@ DataComponentDataSourcesProps
                 </IconButton>
               </Security>
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
         )}
       </List>
     </div>

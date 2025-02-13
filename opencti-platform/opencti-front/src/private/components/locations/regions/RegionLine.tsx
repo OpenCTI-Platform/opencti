@@ -8,6 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionLine_node$key } from './__generated__/RegionLine_node.graphql';
 import type { Theme } from '../../../../components/Theme';
@@ -76,10 +77,9 @@ RegionLineComponentProps
   const { fd } = useFormatter();
   const data = useFragment(regionLineFragment, node);
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/locations/regions/${data.id}`}
     >
@@ -114,7 +114,7 @@ RegionLineComponentProps
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

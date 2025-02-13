@@ -11,6 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
@@ -64,10 +65,9 @@ class IndicatorEntityLineComponent extends Component {
     const restricted = isEmptyField(element);
     const link = `${entityLink}/relations/${node.id}`;
     return (
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component={Link}
         to={link}
         disabled={restricted}
@@ -158,7 +158,7 @@ class IndicatorEntityLineComponent extends Component {
             />
           </Security>
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }

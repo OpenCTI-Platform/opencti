@@ -340,9 +340,9 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                     </ToggleButton>
                   </Tooltip>
                   <Dialog
-                    PaperProps={{ elevation: 1 }}
+                    slotProps={{ paper: { elevation: 1 } }}
                     open={displaySuggestions}
-                    TransitionComponent={Transition}
+                    slots={{ transition: Transition }}
                     onClose={() => setDisplaySuggestions(false)}
                     maxWidth="md"
                     fullWidth={true}

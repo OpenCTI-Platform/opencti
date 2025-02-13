@@ -14,6 +14,7 @@ import { AutoFix } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
 import withTheme from '@mui/styles/withTheme';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -74,10 +75,9 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
     const restricted = node.from === null || node.to === null;
     const link = `${entityLink}/relations/${node.id}`;
     return (
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component={Link}
         to={link}
         disabled={restricted}
@@ -202,7 +202,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
             />
           )}
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }

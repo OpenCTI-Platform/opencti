@@ -10,7 +10,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Fab from '@mui/material/Fab';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
@@ -29,6 +28,8 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -1757,15 +1758,14 @@ const WorkbenchFileContentComponent = ({
     return (
       <List>
         {translatedOrderedList.map((subType) => (
-          <ListItem
+          <ListItemButton
             key={subType.label}
             divider
-            button
             dense
             onClick={() => setEntityType(subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     );
@@ -2450,15 +2450,14 @@ const WorkbenchFileContentComponent = ({
     return (
       <List>
         {translatedOrderedList.map((subType) => (
-          <ListItem
+          <ListItemButton
             key={subType.label}
             divider
-            button
             dense
             onClick={() => setObservableType(subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     );
@@ -2969,7 +2968,7 @@ const WorkbenchFileContentComponent = ({
     return (
       <div style={{ padding: '0 15px 0 15px' }}>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem
+          <ListItemButton
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
@@ -3007,7 +3006,7 @@ const WorkbenchFileContentComponent = ({
                 </div>
               }
             />
-          </ListItem>
+          </ListItemButton>
           {sortedObjects.map((object) => {
             let type = convertFromStixType(object.type);
             let secondaryType = '';
@@ -3034,7 +3033,6 @@ const WorkbenchFileContentComponent = ({
                 key={object.id}
                 classes={{ root: classes.item }}
                 divider
-                button
                 onClick={(event) => handleToggleContainerSelectObject(object, event)
                 }
               >
@@ -3221,7 +3219,7 @@ const WorkbenchFileContentComponent = ({
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem
+          <ListItemButton
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
@@ -3257,7 +3255,7 @@ const WorkbenchFileContentComponent = ({
               }
             />
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
           {sortedStixDomainObjects.map((object) => {
             let type = convertFromStixType(object.type);
             let secondaryType = '';
@@ -3695,11 +3693,10 @@ const WorkbenchFileContentComponent = ({
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedStixCoreRelationships.map((object) => (
-            <ListItem
+            <ListItemButton
               key={object.id}
               classes={{ root: classes.item }}
               divider
-              button
               onClick={() => handleOpenRelationship(object.id)}
             >
               <ListItemIcon
@@ -3764,7 +3761,7 @@ const WorkbenchFileContentComponent = ({
                   <DeleteOutlined />
                 </IconButton>
               </ListItemSecondaryAction>
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
         <Drawer
@@ -3847,11 +3844,11 @@ const WorkbenchFileContentComponent = ({
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedStixSightings.map((object) => (
-            <ListItem
+            <ListItemButton
               key={object.id}
               classes={{ root: classes.item }}
               divider
-              button={false}
+
             >
               <ListItemIcon
                 classes={{ root: classes.itemIcon }}
@@ -3915,7 +3912,7 @@ const WorkbenchFileContentComponent = ({
                   <DeleteOutlined />
                 </IconButton>
               </ListItemSecondaryAction>
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       </>
@@ -3948,15 +3945,14 @@ const WorkbenchFileContentComponent = ({
     return (
       <List>
         {translatedOrderedList.map((subType) => (
-          <ListItem
+          <ListItemButton
             key={subType.label}
             divider
-            button
             dense
             onClick={() => setContainerType(subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     );
@@ -4225,9 +4221,9 @@ const WorkbenchFileContentComponent = ({
       {currentTab === 4 && renderContainers()}
       <Dialog
         open={!!deleteObject}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDeleteObject}
       >
         <DialogContent>
@@ -4256,7 +4252,7 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayValidate}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               keepMounted
               onClose={handleCloseValidate}
               fullWidth
@@ -4331,7 +4327,7 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayConvertToDraft}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               keepMounted
               onClose={handleCloseConvertToDraft}
               fullWidth

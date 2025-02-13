@@ -326,9 +326,9 @@ NotificationLineProps
         </ListItemSecondaryAction>
       </ListItem>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -350,8 +350,8 @@ NotificationLineProps
       </Dialog>
       <Dialog
         open={open}
-        TransitionComponent={Transition}
-        PaperProps={{ elevation: 1 }}
+        slots={{ transition: Transition }}
+        slotProps={{ paper: { elevation: 1 } }}
         fullWidth={true}
         maxWidth="md"
         onClose={() => setOpen(false)}

@@ -7,7 +7,6 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -22,6 +21,7 @@ import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -220,12 +220,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                   if (externalReference.url) {
                     return (
                       <div key={externalReference.id}>
-                        <ListItem
+                        <ListItemButton
                           component={Link}
                           to={`/dashboard/analyses/external_references/${externalReference.id}`}
                           dense={true}
                           divider={true}
-                          button={true}
                         >
                           <ListItemIcon>
                             <ItemIcon type="External-Reference" />
@@ -276,7 +275,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               />
                             </Security>
                           </ListItemSecondaryAction>
-                        </ListItem>
+                        </ListItemButton>
                         {externalReference.importFiles.edges.length > 0 && (
                           <List>
                             {externalReference.importFiles.edges.map((file) => file?.node && (
@@ -295,12 +294,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                   }
                   return (
                     <div key={externalReference.id}>
-                      <ListItem
+                      <ListItemButton
                         component={Link}
                         to={`/dashboard/analyses/external_references/${externalReference.id}`}
                         dense={true}
                         divider={true}
-                        button={true}
                       >
                         <ListItemIcon>
                           <ItemIcon type="External-Reference" />
@@ -332,7 +330,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                             />
                           </Security>
                         </ListItemSecondaryAction>
-                      </ListItem>
+                      </ListItemButton>
                       {externalReference.importFiles.edges.length > 0 && (
                         <List>
                           {externalReference.importFiles.edges.map((file) => file?.node && (
@@ -380,10 +378,10 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Paper>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDialog}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
@@ -408,10 +406,10 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayExternalLink}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
           <DialogContent>
