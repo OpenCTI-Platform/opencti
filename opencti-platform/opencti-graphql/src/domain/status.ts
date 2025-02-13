@@ -12,14 +12,16 @@ import {
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesArgs,
+  type QueryStatusTemplatesByStatusScopeArgs,
   type StatusAddInput,
   StatusOrdering,
+  StatusScope,
   type StatusTemplate,
   type StatusTemplateAddInput
 } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -34,6 +36,18 @@ export const findTemplateById = (context: AuthContext, user: AuthUser, statusTem
 export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
+export const findAllTemplatesByStatusScope = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesByStatusScopeArgs) => {
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const allStatusesByScope = platformStatuses.filter((status) => status.scope === args.scope);
+  const templateByScope: StatusTemplate[] = [];
+
+  for (let i = 0; i < allStatusesByScope.length; i += 1) {
+    const status = allStatusesByScope[i];
+    const templateForStatus = await storeLoadById(context, user, status.template_id, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
+    templateByScope.push(templateForStatus);
+  }
+  return templateByScope;
+};
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const basicWorkflowStatus = platformStatuses.find((status) => status.id === statusId);
@@ -46,6 +60,7 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
   return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };
+
 export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
   const getTypeStatusesFn = async () => {
     const args = {
@@ -77,7 +92,12 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
       connectionFormat: false
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
-    const statusesGrouped = R.groupBy((e) => e.type, statuses);
+    logApp.info('[STATUS] statuses', { statuses });
+    const globalStatuses = statuses.filter((status: BasicWorkflowStatus) => {
+      return status.scope === undefined || status.scope === null || status.scope === StatusScope.Global;
+    });
+    logApp.info('[STATUS] globalStatuses', { globalStatuses });
+    const statusesGrouped = R.groupBy((e) => e.type, globalStatuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
@@ -111,7 +131,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
-export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
+export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput[]) => {
   validateSetting(subTypeId, 'workflow_configuration');
   const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
   await publishUserAction({

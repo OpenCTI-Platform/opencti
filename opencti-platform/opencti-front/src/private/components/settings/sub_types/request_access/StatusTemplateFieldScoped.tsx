@@ -1,16 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field } from 'formik';
-import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
-import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import StatusTemplateCreation from '../../settings/status_templates/StatusTemplateCreation';
-import { useFormatter } from '../../../../components/i18n';
-import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
-import { Option } from './ReferenceField';
-import { StatusTemplateCreationContextualMutation$data } from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
-
+import { Option } from '@components/common/form/ReferenceField';
+import { Field } from 'formik';
+import { Label } from 'mdi-material-ui';
+import { useFormatter } from '../../../../../components/i18n';
+import { fetchQuery } from '../../../../../relay/environment';
+import AutocompleteField from '../../../../../components/AutocompleteField';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
@@ -28,25 +24,22 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface StatusTemplateFieldProps {
+interface StatusTemplateFieldScopedProps {
   name: string;
   setFieldValue: (field: string, value: Option) => void;
   helpertext: string;
   required?: boolean;
   onChange?: (field: string, value: Option) => void;
   style?: Record<string, string | number>;
+  scope: string;
 }
 
-export const StatusTemplateFieldQuery = graphql`
-  query StatusTemplateFieldSearchQuery($search: String) {
-    statusTemplates(search: $search) {
-      edges {
-        node {
-          id
-          name
-          color
-        }
-      }
+export const StatusTemplateFieldScopedSearchQuery = graphql`
+  query StatusTemplateFieldScopedSearchQuery($search: String) {
+      statusTemplatesByStatusScope(search: $search) {
+        id
+        name
+        color
     }
   }
 `;
@@ -57,12 +50,13 @@ export interface StatusTemplateFieldData {
   color: string | undefined;
 }
 
-const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
+const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProps> = ({
   name,
   style,
   setFieldValue,
   helpertext,
   required = false,
+  scope,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -87,27 +81,14 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
     setStatusTemplateInput(
       event && event.target.value ? event.target.value : '',
     );
-    fetchQuery(StatusTemplateFieldQuery, {
+    fetchQuery(StatusTemplateFieldScopedSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
+      scope,
     })
       .toPromise()
-      .then((data) => {
-        const NewStatusTemplates = (
-          (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates
-            ?.edges ?? []
-        ).map((n) => ({
-          label: n?.node.name,
-          value: n?.node.id,
-          color: n?.node.color,
-        }));
-        const templateValues = [...statusTemplates, ...NewStatusTemplates];
-        // Keep only the unique list of options
-        const uniqTemplates = templateValues.filter((item, index) => {
-          return (
-            templateValues.findIndex((e) => e.value === item.value) === index
-          );
-        });
-        setStatusTemplates(uniqTemplates);
+      .then((data: any) => {
+        console.log('Data:', data);
+        setStatusTemplates({ label: 'label', value: 'value', color: '#fff' });
       });
   };
 
@@ -141,22 +122,8 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
-      <StatusTemplateCreation
-        contextual={true}
-        inputValueContextual={statusTemplateInput}
-        openContextual={statusTemplateCreation}
-        handleCloseContextual={handleCloseStatusTemplateCreation}
-        creationCallback={({
-          statusTemplateAdd: data,
-        }: StatusTemplateCreationContextualMutation$data) => {
-          setFieldValue(name, {
-            value: data.id,
-            label: data.name,
-          });
-        }}
-      />
     </div>
   );
 };
 
-export default StatusTemplateField;
+export default StatusTemplateFieldScoped;

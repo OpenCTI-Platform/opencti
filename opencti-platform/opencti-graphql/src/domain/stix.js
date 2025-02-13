@@ -22,7 +22,7 @@ import {
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { createQueryTask } from './backgroundTask';
 import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
@@ -285,6 +285,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
+  logApp.info('addOrganizationRestriction:', { organizationId });
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot restrict organization in draft');
   }
