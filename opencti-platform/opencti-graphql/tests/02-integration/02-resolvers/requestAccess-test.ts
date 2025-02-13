@@ -21,6 +21,7 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { findAllTemplates } from '../../../src/domain/status';
 import { internalDeleteElementById } from '../../../src/database/middleware';
+import { StatusScope } from '../../../src/generated/graphql';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -308,7 +309,8 @@ describe('Add Request Access to an entity and create an RFI.'
         id: ENTITY_TYPE_CONTAINER_CASE_RFI,
         input: {
           order: 2,
-          template_id: inProgressStatusId
+          template_id: inProgressStatusId,
+          scope: StatusScope.Global,
         }
       },
     });
@@ -319,7 +321,8 @@ describe('Add Request Access to an entity and create an RFI.'
         id: ENTITY_TYPE_CONTAINER_CASE_RFI,
         input: {
           order: 0,
-          template_id: newStatusId
+          template_id: newStatusId,
+          scope: StatusScope.Global,
         }
       },
     });

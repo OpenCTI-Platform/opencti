@@ -78,7 +78,6 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
       subTypeWorkflowEditionFragment,
       queryData.subType,
     ) as SubTypeWorkflow_subType$data;
-    console.log('scope', scope);
     return (
       <Drawer
         open={open}
@@ -153,7 +152,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                 );
               })}
           </List>
-          <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} />
+          <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} scope={scope} />
         </>
       </Drawer>
     );

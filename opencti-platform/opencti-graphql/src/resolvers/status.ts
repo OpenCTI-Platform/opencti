@@ -1,8 +1,8 @@
 import {
   createStatusTemplate,
   findAll,
-  findAllByScope,
   findAllTemplates,
+  findAllTemplatesByStatusScope,
   findById,
   findTemplateById,
   statusTemplateCleanContext,
@@ -17,6 +17,7 @@ const statusResolvers: Resolvers = {
   Query: {
     statusTemplate: (_, { id }, context) => findTemplateById(context, context.user, id),
     statusTemplates: (_, args, context) => findAllTemplates(context, context.user, args),
+    statusTemplatesByStatusScope: (_, args, context) => findAllTemplatesByStatusScope(context, context.user, args),
     status: (_, { id }, context) => findById(context, context.user, id),
     statuses: (_, args, context) => findAll(context, context.user, args),
   },

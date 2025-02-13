@@ -15,4 +15,5 @@ export interface StatusForm {
     color: string;
   } | null;
   order: string;
+  scope: string;
 }

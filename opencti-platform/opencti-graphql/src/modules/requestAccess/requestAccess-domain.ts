@@ -21,7 +21,7 @@ import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
 import { elLoadById } from '../../database/engine';
-import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { FunctionalError, ValidationError } from '../../config/errors';
@@ -250,13 +250,13 @@ export const getRequestAccessConfiguration = async (
             filterGroups: [],
           },
         };
-        const members = await findAllMembers(context, user, args);
+        const members: BasicStoreEntity[] = await findAllMembers(context, user, args) as unknown as BasicStoreEntity[];
         logApp.info('[OPENCTI-MODULE][Request Access] approval_admin members:', { members });
-        approvalAdmin = members.map((member) => {
+        approvalAdmin = members.map((member: BasicStoreEntity) => {
           const memberData: RequestAccessMember = {
             id: member.id,
             type: member.entity_type,
-            name: member.representative?.main || 'Not Found'
+            name: member.name
           };
           return memberData;
         });

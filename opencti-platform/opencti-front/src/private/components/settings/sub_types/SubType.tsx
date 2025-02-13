@@ -96,7 +96,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { searchTerm } = viewStorage;
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
-  const scope = subType.statuses.map((n) => n.scope);
+  // const scope = subType.statuses.map((n) => n.scope);
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
@@ -137,7 +137,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 10 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} scope={scope} />
+                    <SubTypeStatusPopover subTypeId={subType.id} scope='GLOBAL' />
                   </Typography>
                 </div>
                 <ItemStatusTemplate
@@ -151,7 +151,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} scope={scope}/>
+                    <SubTypeStatusPopover subTypeId={subType.id} scope='REQUEST_ACCESS'/>
                   </Typography>
                 </div>
                 <div style={{ marginTop: 20 }}>
