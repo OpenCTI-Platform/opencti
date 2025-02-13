@@ -317,8 +317,8 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                       <DeleteDialog
                         deletion={deletion}
                         submitDelete={removeAttribute}
-                        isWarning={true}
-                        message={t_i18n('You are about to delete an attribute used in the template')}
+                        message={t_i18n('Do you want to delete this attribute?')}
+                        warning={{ message: t_i18n('You are about to delete an attribute used in the template') }}
                       />
                     </>
                   );

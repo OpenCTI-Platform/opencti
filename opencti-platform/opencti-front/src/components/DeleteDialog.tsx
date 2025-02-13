@@ -15,18 +15,19 @@ type DeleteDialogProps = {
   deletion: Deletion
   submitDelete: () => void
   onClose?: () => void
-  isWarning?: boolean
-  warningTitle?: React.ReactNode
   message: React.ReactNode
+  warning?: {
+    title?: string,
+    message: string,
+  }
 };
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
   deletion,
   submitDelete,
   onClose,
-  isWarning = false,
-  warningTitle,
   message,
+  warning,
 }) => {
   const { t_i18n } = useFormatter();
   return (
@@ -41,13 +42,12 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         {t_i18n('Are you sure?')}
       </DialogTitle>
       <DialogContent>
-        {isWarning ? (
-          <Alert severity="warning" variant="outlined">
-            <AlertTitle>{warningTitle}</AlertTitle>
-            {message}
+        <DialogContentText>{message}</DialogContentText>
+        {warning && (
+          <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+            <AlertTitle>{warning.title}</AlertTitle>
+            {warning.message}
           </Alert>
-        ) : (
-          <DialogContentText>{message}</DialogContentText>
         )}
       </DialogContent>
       <DialogActions>

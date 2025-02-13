@@ -36,7 +36,7 @@ const GroupingDeletion: FunctionComponent<GroupingDeletionProps> = ({
     { successMessage: deleteSuccessMessage },
   );
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
