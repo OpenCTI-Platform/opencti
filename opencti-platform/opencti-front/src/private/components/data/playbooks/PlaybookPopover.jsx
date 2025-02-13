@@ -125,7 +125,6 @@ const PlaybookPopover = (props) => {
         if (!paginationOptions) {
           navigate('/dashboard/data/processing/automation');
         }
-        setDisplayDelete(true);
       },
     });
   };
