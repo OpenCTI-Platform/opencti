@@ -772,9 +772,7 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('In progress works')}
-      </Typography>
+
       <QueryRenderer
         query={connectorWorksQuery}
         variables={optionsInProgress}

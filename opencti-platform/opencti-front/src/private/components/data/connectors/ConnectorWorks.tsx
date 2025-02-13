@@ -130,8 +130,14 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   }, []);
 
   return (
-    <div>
-      {works.length === 0 && (
+    <>
+      <div>
+        <Typography variant="h4" gutterBottom={true}>
+          {t_i18n('In progress works')}{` (${works.length})`}
+        </Typography>
+      </div>
+      <div>
+        {works.length === 0 && (
         <Paper
           classes={{ root: classes.paper }}
           variant="outlined"
@@ -140,156 +146,157 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             {t_i18n('No work')}
           </Typography>
         </Paper>
-      )}
-      {works.map((workEdge) => {
-        const work = workEdge?.node;
-        if (!work) return null;
-        const { tracking } = work;
-        return (
-          <Paper
-            key={work.id}
-            classes={{ root: classes.paper }}
-            variant="outlined"
-          >
-            <Grid container={true} spacing={3}>
-              <Grid item xs={7}>
-                <Grid container={true} spacing={1}>
-                  <Grid item xs={8}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Name')}
-                    </Typography>
-                    <Tooltip title={work.name}>
-                      <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
-                        {work.name}
+        )}
+        {works.map((workEdge) => {
+          const work = workEdge?.node;
+          if (!work) return null;
+          const { tracking } = work;
+          return (
+            <Paper
+              key={work.id}
+              classes={{ root: classes.paper }}
+              variant="outlined"
+            >
+              <Grid container={true} spacing={3}>
+                <Grid item xs={7}>
+                  <Grid container={true} spacing={1}>
+                    <Grid item xs={8}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Name')}
                       </Typography>
-                    </Tooltip>
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Status')}
-                    </Typography>
-                    <TaskStatus status={work.status} label={t_i18n(work.status)} />
-                  </Grid>
-                  <Grid item xs={8}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      classes={{ root: classes.bottomTypo }}
-                    >
-                      {t_i18n('Work start time')}
-                    </Typography>
-                    {nsdt(work.received_time)}
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      classes={{ root: classes.bottomTypo }}
-                    >
-                      {t_i18n('Work end time')}
-                    </Typography>
-                    {work.completed_time ? nsdt(work.completed_time) : '-'}
+                      <Tooltip title={work.name}>
+                        <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
+                          {work.name}
+                        </Typography>
+                      </Tooltip>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Status')}
+                      </Typography>
+                      <TaskStatus status={work.status} label={t_i18n(work.status)} />
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        classes={{ root: classes.bottomTypo }}
+                      >
+                        {t_i18n('Work start time')}
+                      </Typography>
+                      {nsdt(work.received_time)}
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        classes={{ root: classes.bottomTypo }}
+                      >
+                        {t_i18n('Work end time')}
+                      </Typography>
+                      {work.completed_time ? nsdt(work.completed_time) : '-'}
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
-              <Grid item xs={4}>
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Operations completed')}
-                    </Typography>
-                    <span className={classes.number}>
-                      {work.status === 'wait'
-                        ? '-'
-                        : tracking?.import_processed_number ?? '-'}
-                    </span>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Total number of operations')}
-                    </Typography>
-                    <span className={classes.number}>
-                      {tracking?.import_expected_number ?? '-'}
-                    </span>
-                  </Grid>
-                  <Grid item xs={11}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Progress')}
-                    </Typography>
-                    <LinearProgress
-                      classes={{ root: classes.progress }}
-                      variant="determinate"
-                      value={
+                <Grid item xs={4}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item xs={6}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Operations completed')}
+                      </Typography>
+                      <span className={classes.number}>
+                        {work.status === 'wait'
+                          ? '-'
+                          : tracking?.import_processed_number ?? '-'}
+                      </span>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Total number of operations')}
+                      </Typography>
+                      <span className={classes.number}>
+                        {tracking?.import_expected_number ?? '-'}
+                      </span>
+                    </Grid>
+                    <Grid item xs={11}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Progress')}
+                      </Typography>
+                      <LinearProgress
+                        classes={{ root: classes.progress }}
+                        variant="determinate"
+                        value={
                         tracking && !!tracking.import_expected_number && !!tracking.import_processed_number
                           ? Math.round((tracking.import_processed_number / tracking.import_expected_number) * 100)
                           : 0
                       }
-                    />
+                      />
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
-              <Button
-                classes={{ root: classes.errorButton }}
-                variant="outlined"
-                color={(work.errors ?? []).length === 0 ? 'success' : 'warning'}
-                onClick={() => handleOpenDrawerErrors(work.errors ?? [])}
-                size="small"
-              >
-                {work.errors?.length} {t_i18n('errors')}
-              </Button>
-              <Security needs={[MODULES_MODMANAGE]}>
                 <Button
+                  classes={{ root: classes.errorButton }}
                   variant="outlined"
-                  classes={{ root: classes.deleteButton }}
-                  onClick={() => handleDeleteWork(work.id)}
+                  color={(work.errors ?? []).length === 0 ? 'success' : 'warning'}
+                  onClick={() => handleOpenDrawerErrors(work.errors ?? [])}
                   size="small"
-                  startIcon={<Delete/>}
                 >
-                  {t_i18n('Delete')}
+                  {work.errors?.length} {t_i18n('errors')}
                 </Button>
-              </Security>
-            </Grid>
-          </Paper>
-        );
-      })}
-      <Drawer
-        title={t_i18n('Errors')}
-        open={openDrawerErrors}
-        onClose={handleCloseDrawerErrors}
-      >
-        <>
-          <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
-          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-            <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
-            <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
-            <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
-          </Tabs>
-          <TableContainer component={Paper}>
-            <Table aria-label="errors table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Timestamp')}</TableCell>
-                  <TableCell>{t_i18n('Code')}</TableCell>
-                  <TableCell>{t_i18n('Message')}</TableCell>
-                  <TableCell>{t_i18n('Source')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tabValue === 'Critical' && criticals.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'Warning' && warnings.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'All' && errors.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </>
-      </Drawer>
-    </div>
+                <Security needs={[MODULES_MODMANAGE]}>
+                  <Button
+                    variant="outlined"
+                    classes={{ root: classes.deleteButton }}
+                    onClick={() => handleDeleteWork(work.id)}
+                    size="small"
+                    startIcon={<Delete/>}
+                  >
+                    {t_i18n('Delete')}
+                  </Button>
+                </Security>
+              </Grid>
+            </Paper>
+          );
+        })}
+        <Drawer
+          title={t_i18n('Errors')}
+          open={openDrawerErrors}
+          onClose={handleCloseDrawerErrors}
+        >
+          <>
+            <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
+            <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+              <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
+              <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
+              <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
+            </Tabs>
+            <TableContainer component={Paper}>
+              <Table aria-label="errors table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t_i18n('Timestamp')}</TableCell>
+                    <TableCell>{t_i18n('Code')}</TableCell>
+                    <TableCell>{t_i18n('Message')}</TableCell>
+                    <TableCell>{t_i18n('Source')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tabValue === 'Critical' && criticals.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                  {tabValue === 'Warning' && warnings.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                  {tabValue === 'All' && errors.map((error, i) => (
+                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        </Drawer>
+      </div>
+    </>
   );
 };
 
