@@ -16706,7 +16706,7 @@ __metadata:
     three-spritetext: "npm:1.9.4"
     typescript: "npm:5.7.3"
     use-analytics: "npm:1.1.0"
-    uuid: "npm:11.0.3"
+    uuid: "npm:11.0.5"
     vite: "npm:5.4.14"
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:2.2.0"
@@ -20854,12 +20854,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.0.3":
-  version: 11.0.3
-  resolution: "uuid@npm:11.0.3"
+"uuid@npm:11.0.5":
+  version: 11.0.5
+  resolution: "uuid@npm:11.0.5"
   bin:
     uuid: dist/esm/bin/uuid
-  checksum: 10/251385563195709eb0697c74a834764eef28e1656d61174e35edbd129288acb4d95a43f4ce8a77b8c2fc128e2b55924296a0945f964b05b9173469d045625ff2
+  checksum: 10/0594ecdff3051e15d4a2c614b4c72e73af373bde0a5d156512353c01156975295d024ae8d7151846d7bd4d22ccd251b16ed51b4318fa71505fb20ad984102dc1
   languageName: node
   linkType: hard
 
