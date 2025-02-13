@@ -30,7 +30,7 @@ import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 const ajv = new Ajv();
 
 const EJS_FUNCTION_ALLOWED_LIST = conf.get('app:notifier_authorized_functions') || [];
-const EJS_FORBIDDEN_WORD_LIST = ['process', 'global', '__dirname', '__filename', 'exports', 'module'];
+const EJS_FORBIDDEN_WORD_LIST = ['process', 'global', '__dirname', '__filename', 'exports', 'module', '__proto__', 'Object.prototype'];
 
 export const checkAllowedEjsFunctions = (template: string, throwError: boolean = true) => {
   // look for <% xxxx %> including new lines.

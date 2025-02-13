@@ -54,6 +54,9 @@ describe('EJS pre verifications test', () => {
     JSON.stringify(truc.env)
    
     %>"}`)).toThrowError();
+
+    expect(() => checkAllowedEjsFunctions('{"random": "<% p = {}; p.__proto__.status = 200; %>"}')).toThrowError();
+    expect(() => checkAllowedEjsFunctions('{"random": "<% p = {}; Object.prototype.status = 200; %>"}')).toThrowError();
   });
 
   it('should be ok to use parentheses in if', async () => {
