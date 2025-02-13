@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { dateFormat, jsDate } from '../../Time';
 import { isNone, useFormatter } from '../../../components/i18n';
 import { defaultDate, getMainRepresentative } from '../../defaultRepresentatives';
-import type { GraphData, GraphLink, GraphNode } from '../graph.types';
+import type { OctiGraphPositions, GraphLink, GraphNode } from '../graph.types';
 import { truncate } from '../../String';
 import GRAPH_IMAGES from './graphImages';
 import { graphImages } from '../../Graph';
@@ -147,15 +147,17 @@ const useGraphParser = () => {
 
   const buildNode = (
     data: ObjectToParse,
-    graphData: GraphData,
+    graphData: OctiGraphPositions,
     numberOfConnectedElement?: number,
   ): GraphNode => {
     return {
       id: data.id,
       disabled: false,
       val: 1,
-      fx: graphData[data.id] && graphData[data.id].x ? graphData[data.id].x : null,
-      fy: graphData[data.id] && graphData[data.id].y ? graphData[data.id].y : null,
+      fx: graphData[data.id] && graphData[data.id].x,
+      fy: graphData[data.id] && graphData[data.id].y,
+      x: graphData[data.id] && graphData[data.id].x,
+      y: graphData[data.id] && graphData[data.id].y,
       color: data.x_opencti_color || data.color || itemColor(data.entity_type, false),
       parent_types: data.parent_types,
       entity_type: data.entity_type,
@@ -201,7 +203,7 @@ const useGraphParser = () => {
     };
   };
 
-  const buildGraphData = (objects: ObjectToParse[], graphData: GraphData) => {
+  const buildGraphData = (objects: ObjectToParse[], graphData: OctiGraphPositions) => {
     const uniqObjects = R.uniqBy(R.prop('id'), objects);
     const relationshipsIdsInNestedRelationship = objects.flatMap((o) => {
       if (o.from && o.to && (o.from.relationship_type || o.to.relationship_type)) {

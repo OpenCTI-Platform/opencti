@@ -3,23 +3,28 @@ import React from 'react';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import {
   AccountBalanceOutlined,
+  Add,
   AspectRatioOutlined,
   CenterFocusStrongOutlined,
   DateRangeOutlined,
+  DeleteOutlined,
+  EditOutlined,
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
+  LinkOutlined,
   ScatterPlotOutlined,
   SwipeDown,
   SwipeUp,
   SwipeVertical,
   TouchApp,
+  VisibilityOutlined,
 } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
 import { useFormatter } from '../../../components/i18n';
 import { useGraphContext } from '../utils/GraphContext';
 import GraphToolbarItem from './GraphToolbarItem';
-import useGraphToolbar from '../utils/useGraphToolbar';
+import useGraphInteractions from '../utils/useGraphInteractions';
 import SearchInput from '../../../components/SearchInput';
 
 const GraphToolbar = () => {
@@ -47,7 +52,7 @@ const GraphToolbar = () => {
     toggleTimeRange,
     toggleVerticalTree,
     switchSelectRelationshipMode,
-  } = useGraphToolbar();
+  } = useGraphInteractions();
 
   const titleSelectRelationshipMode = () => {
     if (selectRelationshipMode === 'children') return t_i18n('Select Child Relationships of Selected Nodes (From)');
@@ -70,7 +75,7 @@ const GraphToolbar = () => {
         elevation: 1,
         style: {
           zIndex: 1,
-          paddingLeft: navOpen ? 185 : 60,
+          paddingLeft: navOpen ? 180 : 60,
           height: 54,
         },
       }}
@@ -85,14 +90,14 @@ const GraphToolbar = () => {
         <GraphToolbarItem
           Icon={<FamilyTree />}
           disabled={!withForces}
-          color={modeTree === 'vertical' ? 'secondary' : 'primary'}
+          color={modeTree === 'td' ? 'secondary' : 'primary'}
           onClick={toggleVerticalTree}
           title={modeTree ? t_i18n('Disable vertical tree mode') : t_i18n('Enable vertical tree mode')}
         />
         <GraphToolbarItem
           Icon={<FamilyTree style={{ transform: 'rotate(-90deg)' }} />}
           disabled={!withForces}
-          color={modeTree === 'horizontal' ? 'secondary' : 'primary'}
+          color={modeTree === 'lr' ? 'secondary' : 'primary'}
           onClick={toggleHorizontalTree}
           title={modeTree ? t_i18n('Disable horizontal tree mode') : t_i18n('Enable horizontal tree mode')}
         />
@@ -122,14 +127,14 @@ const GraphToolbar = () => {
           Icon={<SelectionDrag />}
           disabled={mode3D}
           color={selectFreeRectangle ? 'secondary' : 'primary'}
-          onClick={toggleSelectFree}
+          onClick={toggleSelectFreeRectangle}
           title={t_i18n('Free rectangle select')}
         />
         <GraphToolbarItem
           Icon={<GestureOutlined />}
           disabled={mode3D}
           color={selectFree ? 'secondary' : 'primary'}
-          onClick={toggleSelectFreeRectangle}
+          onClick={toggleSelectFree}
           title={t_i18n('Free select')}
         />
         <GraphToolbarItem
@@ -192,11 +197,48 @@ const GraphToolbar = () => {
 
         <Divider sx={{ margin: 1, marginRight: 3, height: '80%' }} orientation="vertical" />
 
-        <SearchInput
-          variant="thin"
-          onSubmit={console.log}
-        />
+        <div style={{ flex: 1 }}>
+          <SearchInput
+            variant="thin"
+            onSubmit={console.log}
+          />
+        </div>
 
+        <GraphToolbarItem
+          Icon={<Add />}
+          color="primary"
+          onClick={() => console.log('TODO')}
+          title={t_i18n('Add an entity to this container')}
+        />
+        <GraphToolbarItem
+          Icon={<EditOutlined />}
+          disabled={false}
+          color="primary"
+          onClick={() => console.log('handleOpenEditItem')}
+          title={t_i18n('Edit the selected item')}
+        />
+        <GraphToolbarItem
+          Icon={<LinkOutlined />}
+          disabled={false}
+          color="primary"
+          onClick={() => console.log('handleOpenCreateRelationship')}
+          title={t_i18n('Create a relationship')}
+        />
+        <div>...</div>
+        <GraphToolbarItem
+          Icon={<VisibilityOutlined />}
+          disabled={false}
+          color="primary"
+          onClick={() => console.log('handleOpenCreateSighting')}
+          title={t_i18n('Create a sighting')}
+        />
+        <GraphToolbarItem
+          Icon={<DeleteOutlined />}
+          disabled={false}
+          color="primary"
+          onClick={() => console.log('handleOpenRemove')}
+          title={t_i18n('Remove selected items')}
+        />
       </div>
     </Drawer>
   );

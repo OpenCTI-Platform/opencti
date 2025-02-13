@@ -1,27 +1,17 @@
 import { useTheme } from '@mui/material/styles';
-import { LinkObject } from 'react-force-graph-2d';
 import SpriteText from 'three-spritetext';
 import type { Theme } from '../../../components/Theme';
-
-interface PaintData {
-  label: string
-  name: string
-  img: CanvasImageSource
-  x: number
-  y: number
-  numberOfConnectedElement: number
-}
+import type { GraphLink, GraphNode } from '../graph.types';
+import { useGraphContext } from './GraphContext';
 
 interface PaintOptions {
-  color: string
-  selected?: boolean
-  inferred?: boolean
-  disabled?: boolean
   showNbConnectedElements?: boolean
 }
 
 const useGraphPainter = () => {
   const theme = useTheme<Theme>();
+  const { selectedLinks, selectedNodes } = useGraphContext();
+
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {
     selected: theme.palette.secondary.main ?? DEFAULT_COLOR,
@@ -42,12 +32,13 @@ const useGraphPainter = () => {
    * @param opts Options to change drawing.
    */
   const nodePaint = (
-    data: PaintData,
-    opts: PaintOptions,
+    data: GraphNode,
     ctx: CanvasRenderingContext2D,
+    opts: PaintOptions = {},
   ) => {
-    const { label, img, x, y, numberOfConnectedElement } = data;
-    const { disabled, inferred, selected, showNbConnectedElements, color } = opts;
+    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred } = data;
+    const { showNbConnectedElements } = opts;
+    const selected = !!selectedNodes.find((n) => n.id === data.id);
 
     ctx.beginPath();
     ctx.fillStyle = disabled ? colors.disabled : color;
@@ -58,7 +49,7 @@ const useGraphPainter = () => {
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = colors.selected;
       ctx.stroke();
-    } else if (inferred) {
+    } else if (isNestedInferred) {
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = colors.inferred;
       ctx.stroke();
@@ -86,7 +77,7 @@ const useGraphPainter = () => {
         numberLabel = `${numberOfConnectedElement}`;
       }
       if (numberLabel !== '?') {
-        numberLabel = numberOfConnectedElement > 99 ? '99+' : `${numberLabel}+`;
+        numberLabel = (numberOfConnectedElement ?? 0) > 99 ? '99+' : `${numberLabel}+`;
       }
       ctx.font = '1.5px IBM Plex Sans';
       ctx.fillText(numberLabel, x + 4, y - 2.9);
@@ -101,7 +92,7 @@ const useGraphPainter = () => {
    * @param ctx Context of the canvas.
    */
   const nodePointerAreaPaint = (
-    data: PaintData,
+    data: GraphNode,
     color: string,
     ctx: CanvasRenderingContext2D,
   ) => {
@@ -118,13 +109,28 @@ const useGraphPainter = () => {
   };
 
   /**
+   * Determines color of the link.
+   *
+   * @param link The link to chose color for.
+   * @returns The color for the link.
+   */
+  const linkColorPaint = (link: GraphLink) => {
+    const selected = !!selectedLinks.find((l) => l.id === link.id);
+
+    if (selected) return colors.selected;
+    if (link.isNestedInferred) return colors.inferred;
+    if (link.disabled) return colors.disabled;
+    return theme.palette.primary.main;
+  };
+
+  /**
    * Draws link between two nodes.
    *
    * @param link Link object from the lib of graphs.
    * @param ctx Context of the canvas.
    */
-  const linkPaint = (
-    link: LinkObject,
+  const linkLabelPaint = (
+    link: GraphLink,
     ctx: CanvasRenderingContext2D,
   ) => {
     const start = link.source;
@@ -169,14 +175,14 @@ const useGraphPainter = () => {
    *
    * @param node Node to draw.
    */
-  const nodeThreePaint = (node: PaintData) => {
+  const nodeThreePaint = (node: GraphNode) => {
     const sprite = new SpriteText(node.label);
     sprite.color = colors.linkText;
     sprite.textHeight = 1.5;
     return sprite;
   };
 
-  return { nodePaint, nodePointerAreaPaint, linkPaint, nodeThreePaint };
+  return { nodePaint, nodePointerAreaPaint, linkLabelPaint, linkColorPaint, nodeThreePaint };
 };
 
 export default useGraphPainter;

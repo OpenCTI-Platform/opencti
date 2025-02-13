@@ -1,8 +1,10 @@
+import { ForceGraphProps } from 'react-force-graph-2d';
+
 interface GraphElement {
   id: string
   name: string
   label: string
-  disabled:boolean
+  disabled: boolean
   defaultDate: Date
   entity_type: string
   parent_types: string[]
@@ -13,9 +15,9 @@ interface GraphElement {
 }
 
 export interface GraphLink extends GraphElement {
-  target: string
+  target: string | GraphNode
   target_id: string
-  source: string
+  source: string | GraphNode
   source_id: string
   inferred: boolean
 }
@@ -23,32 +25,26 @@ export interface GraphLink extends GraphElement {
 export interface GraphNode extends GraphElement {
   val: number
   color: string
+  x: number
+  y: number
+  fx?: number
+  fy?: number
   toId?: string
   toType?: string
   fromId?: string
   fromType?: string
-  fx: number | null
-  fy: number | null
   isObservable: boolean
   rawImg: string
   img: HTMLImageElement
   numberOfConnectedElement?: number
 }
 
-export interface GraphData {
+export interface OctiGraphPositions {
   [key: string]: {
     id: string
-    x: number | null
-    y: number | null
+    x: number
+    y: number
   }
 }
 
-export interface GraphState {
-  mode3D: boolean
-  modeTree: 'vertical' | 'horizontal' | null
-  withForces: boolean
-  selectFreeRectangle: boolean
-  selectFree: boolean
-  selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
-  showTimeRange: boolean
-}
+export type LibGraphProps = ForceGraphProps<GraphNode, GraphLink>;

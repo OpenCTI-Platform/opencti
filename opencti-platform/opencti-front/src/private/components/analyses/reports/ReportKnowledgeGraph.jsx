@@ -56,6 +56,7 @@ export const reportKnowledgeGraphQuery = graphql`
   query ReportKnowledgeGraphQuery($id: String) {
     report(id: $id) {
       ...ReportKnowledgeGraph_report
+      ...ReportKnowledgeGraph_fragment
     }
   }
 `;
@@ -186,7 +187,7 @@ class ReportKnowledgeGraphComponent extends Component {
         }
       }
       this.initialized = true;
-      this.zoomed += 1;
+      // this.zoomed += 1;
       const currentCanvas = document.getElementsByTagName('canvas')[0];
       if (!this.canvas) {
         this.canvas = currentCanvas;
