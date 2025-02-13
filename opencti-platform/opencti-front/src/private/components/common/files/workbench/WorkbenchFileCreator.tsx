@@ -11,6 +11,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import TextField from '../../../../../components/TextField';
 import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFreeSoloField';
 import ItemIcon from '../../../../../components/ItemIcon';
@@ -21,6 +22,7 @@ import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileVi
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { fetchQuery } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,11 +46,13 @@ const workbenchFileCreatorMutation = graphql`
   mutation WorkbenchFileCreatorMutation(
     $file: Upload!
     $labels: [String]
+    $file_markings: [String!]
     $entityId: String
   ) {
     uploadPending(
       file: $file
       labels: $labels
+      file_markings: $file_markings
       errorOnExisting: true
       entityId: $entityId
     ) {
@@ -65,6 +69,7 @@ const fileValidation = (t: (value: string) => string) => Yup.object().shape({
 interface WorkbenchFileCreatorFormValues {
   name: string;
   labels: Option[];
+  fileMarkings: Option[];
 }
 
 interface WorkbenchFileCreatorProps {
@@ -99,6 +104,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
   const onSubmitCreate: FormikConfig<WorkbenchFileCreatorFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     let { name } = values;
     const finalLabels = values.labels.map((label) => label.value);
+    const file_markings = values.fileMarkings.map(({ value }) => value);
     if (!name.endsWith('.json')) {
       name += '.json';
     }
@@ -119,10 +125,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objects: any = [];
     if (entityId) {
-      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, {
-        id: entityId,
-      })
-        .toPromise()
+      fetchQuery(workbenchFileCreatorStixCoreObjectQuery, { id: entityId }).toPromise()
         .then(async (entityData) => {
           const { stixCoreObject: workbenchStixCoreObject } = entityData as WorkbenchFileCreatorStixCoreObjectQuery$data;
           if (workbenchStixCoreObject?.toStix) {
@@ -138,7 +141,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
             type: 'application/json',
           });
           commitWorkbench({
-            variables: { file, labels: finalLabels, entityId },
+            variables: { file, labels: finalLabels, entityId, file_markings },
             onCompleted: () => {
               handleCompleted();
             },
@@ -155,7 +158,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
         type: 'application/json',
       });
       commitWorkbench({
-        variables: { file, labels: finalLabels, entityId },
+        variables: { file, labels: finalLabels, entityId, file_markings },
         onCompleted: () => {
           handleCompleted();
         },
@@ -169,6 +172,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
   const initialValues: WorkbenchFileCreatorFormValues = {
     name: '',
     labels: [],
+    fileMarkings: [],
   };
 
   return (
@@ -179,7 +183,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
       onSubmit={onSubmitCreate}
       onReset={handleCloseCreate}
     >
-      {({ submitForm, handleReset, isSubmitting }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
           <Dialog
             PaperProps={{ elevation: 1 }}
@@ -220,6 +224,13 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 classes={{
                   clearIndicator: classes.autoCompleteIndicator,
                 }}
+              />
+              <ObjectMarkingField
+                name="fileMarkings"
+                label={t_i18n('File marking definition levels')}
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                required={false}
               />
             </DialogContent>
             <DialogActions>

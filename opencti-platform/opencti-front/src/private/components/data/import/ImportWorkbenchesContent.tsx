@@ -40,6 +40,9 @@ export const workbenchLineFragment = graphql`
     uploadStatus
     lastModified
     lastModifiedSinceMin
+    objectMarking {
+      id
+    }
     metaData {
       mimetype
       list_filters

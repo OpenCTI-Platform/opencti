@@ -28,7 +28,7 @@ import {
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
@@ -439,6 +439,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
         event: {
           file_id: file.id,
           file_mime: file.metaData.mimetype,
+          file_markings: file.metaData.file_markings ?? [],
           file_fetch: `/storage/get/${file.id}`, // Path to get the file
           entity_id: entityId, // Context of the upload*
           validation_mode: validationModeToUse,
@@ -460,6 +461,11 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  // Verify markings
+  for (let index = 0; index < (file_markings ?? []).length; index += 1) {
+    const markingId = file_markings[index];
+    await validateMarking(context, user, markingId);
+  }
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();

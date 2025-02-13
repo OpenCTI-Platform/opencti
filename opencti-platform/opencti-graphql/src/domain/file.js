@@ -124,7 +124,8 @@ export const uploadImport = async (context, user, args) => {
   return up;
 };
 
-export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false) => {
+export const uploadPending = async (context, user, args) => {
+  const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
   const meta = { labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
@@ -157,7 +158,7 @@ export const uploadPending = async (context, user, file, entityId = null, labels
     };
   }
 
-  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, errorOnExisting, entity });
+  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, file_markings, errorOnExisting, entity });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name, up.metaData.file_markings);
   await publishUserAction({
     user,
