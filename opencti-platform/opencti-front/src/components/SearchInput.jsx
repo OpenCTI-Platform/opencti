@@ -13,6 +13,7 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
+import useHelper from '../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,6 +79,8 @@ const SearchInput = (props) => {
     placeholder = `${t_i18n('Search these results')}...`,
     ...otherProps
   } = props;
+  const { isFeatureEnable } = useHelper();
+  const isNLQEnabled = isFeatureEnable('NLQ');
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [askAI, setAskAI] = useState(false);
   const handleChangeAskAI = () => {
@@ -186,7 +189,7 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
-            <Tooltip title={t_i18n('Ask AI')}>
+            {isNLQEnabled && <Tooltip title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
                 style={{ color: theme.palette.ai.main }}
@@ -194,7 +197,7 @@ const SearchInput = (props) => {
               >
                 <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
-            </Tooltip>
+            </Tooltip>}
           </InputAdornment>
           ),
           classes: {
@@ -205,7 +208,7 @@ const SearchInput = (props) => {
         {...otherProps}
         autoComplete="off"
       />
-      {isAdmin && isAIEnabled ? (
+      {isAdmin ? (
         <EnterpriseEditionAgreement
           open={displayEEDialog}
           onClose={() => setDisplayEEDialog(false)}
