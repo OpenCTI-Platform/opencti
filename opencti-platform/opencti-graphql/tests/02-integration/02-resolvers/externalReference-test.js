@@ -120,7 +120,7 @@ describe('ExternalReference resolver standard behavior', () => {
     };
 
     const elements = [];
-    await taskQuery(testContext, ADMIN_USER, task, (results) => {
+    await taskQuery(testContext, ADMIN_USER, task, 'KNOWLEDGE_CHANGE', (results) => {
       elements.push(...results);
     });
 
