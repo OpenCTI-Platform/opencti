@@ -712,12 +712,13 @@ class OpenCTIApiClient:
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         entity_id = kwargs.get("entity_id", None)
+        file_markings = kwargs.get("file_markings", [])
 
         if file_name is not None:
             self.app_logger.info("Uploading a file.")
             query = """
-                    mutation UploadPending($file: Upload!, $entityId: String) {
-                        uploadPending(file: $file, entityId: $entityId) {
+                    mutation UploadPending($file: Upload!, $entityId: String, $file_markings: [String!]) {
+                        uploadPending(file: $file, entityId: $entityId, file_markings: $file_markings) {
                             id
                             name
                         }
@@ -731,7 +732,11 @@ class OpenCTIApiClient:
                     mime_type = magic.from_file(file_name, mime=True)
             return self.query(
                 query,
-                {"file": (File(file_name, data, mime_type)), "entityId": entity_id},
+                {
+                    "file": (File(file_name, data, mime_type)),
+                    "entityId": entity_id,
+                    "file_markings": file_markings,
+                },
             )
         else:
             self.app_logger.error("[upload] Missing parameter: file_name")
