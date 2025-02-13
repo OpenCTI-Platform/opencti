@@ -150,7 +150,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl },
   } = useAuth();
   const draftContext = useDraftContext();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
