@@ -19860,6 +19860,7 @@ export type Query = {
   status?: Maybe<Status>;
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
+  statusTemplatesByStatusScope?: Maybe<Array<Maybe<StatusTemplate>>>;
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']['output']>;
   stixCoreObject?: Maybe<StixCoreObject>;
@@ -21610,6 +21611,16 @@ export type QueryStatusTemplatesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StatusTemplateOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStatusTemplatesByStatusScopeArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StatusTemplateOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  scope?: InputMaybe<StatusScope>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -24304,7 +24315,7 @@ export type Status = {
 
 export type StatusAddInput = {
   order: Scalars['Int']['input'];
-  scope?: InputMaybe<StatusScope>;
+  scope: StatusScope;
   template_id: Scalars['String']['input'];
 };
 
@@ -39408,6 +39419,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryStatusArgs, 'id'>>;
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
+  statusTemplatesByStatusScope?: Resolver<Maybe<Array<Maybe<ResolversTypes['StatusTemplate']>>>, ParentType, ContextType, Partial<QueryStatusTemplatesByStatusScopeArgs>>;
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
