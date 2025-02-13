@@ -42,6 +42,19 @@ class SectorKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={sector.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                defaultStartTime={sector.startTime}
+                defaultStopTime={sector.stopTime}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/threats"
             element={
               <EntityStixCoreRelationships

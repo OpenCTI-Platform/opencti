@@ -50,6 +50,19 @@ class SystemKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={system.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                defaultStartTime={system.startTime}
+                defaultStopTime={system.stopTime}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/threats"
             element={
               <EntityStixCoreRelationships

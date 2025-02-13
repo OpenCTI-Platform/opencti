@@ -56,6 +56,19 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={[]}
+              entityLink={link}
+              defaultStartTime={city.startTime}
+              defaultStopTime={city.stopTime}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/threats"
           element={
             <EntityStixCoreRelationships

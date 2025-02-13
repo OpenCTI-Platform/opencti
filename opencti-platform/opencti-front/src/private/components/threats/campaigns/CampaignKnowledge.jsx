@@ -48,6 +48,19 @@ class CampaignKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={campaign.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                defaultStartTime={campaign.startTime}
+                defaultStopTime={campaign.stopTime}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/related"
             element={
               <EntityStixCoreRelationships

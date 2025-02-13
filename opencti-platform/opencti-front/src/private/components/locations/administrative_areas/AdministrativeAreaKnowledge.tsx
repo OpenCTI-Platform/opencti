@@ -60,6 +60,19 @@ const AdministrativeAreaKnowledge = ({
           }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={administrativeArea.id}
+              relationshipTypes={[]}
+              entityLink={link}
+              defaultStartTime={administrativeArea.startTime}
+              defaultStopTime={administrativeArea.stopTime}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/threats"
           element={
             <EntityStixCoreRelationships

@@ -48,6 +48,19 @@ class IntrusionSetKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={intrusionSet.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                defaultStartTime={intrusionSet.startTime}
+                defaultStopTime={intrusionSet.stopTime}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/related"
             element={
               <EntityStixCoreRelationships

@@ -83,6 +83,19 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
         }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={infrastructureData.id}
+              relationshipTypes={[]}
+              entityLink={link}
+              defaultStartTime={infrastructure.startTime}
+              defaultStopTime={infrastructure.stopTime}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/related"
           element={
             <EntityStixCoreRelationships

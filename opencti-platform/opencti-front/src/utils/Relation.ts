@@ -142,3 +142,8 @@ export const getRelationsFromOneEntityToAny = (
     allRelationsToEntity: entityList,
   };
 };
+
+export const getRelationshipTypesForEntityType = (entityType: string, schema: SchemaType) => {
+  const { allPossibleRelations } = getRelationsFromOneEntityToAny(entityType, schema);
+  return allPossibleRelations;
+};

@@ -44,6 +44,19 @@ class NarrativeKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={narrative.id}
+                relationshipTypes={[]}
+                defaultStartTime={narrative.startTime}
+                defaultStopTime={narrative.stopTime}
+                entityLink={link}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/related"
             element={
               <EntityStixCoreRelationships

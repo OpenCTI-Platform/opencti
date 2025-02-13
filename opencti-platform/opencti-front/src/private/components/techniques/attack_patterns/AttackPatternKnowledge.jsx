@@ -39,6 +39,19 @@ class AttackPatternKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/all"
+            element={
+              <EntityStixCoreRelationships
+                entityId={attackPattern.id}
+                relationshipTypes={[]}
+                entityLink={link}
+                defaultStartTime={attackPattern.startTime}
+                defaultStopTime={attackPattern.stopTime}
+                allDirections
+              />
+            }
+          />
+          <Route
             path="/related"
             element={
               <EntityStixCoreRelationships

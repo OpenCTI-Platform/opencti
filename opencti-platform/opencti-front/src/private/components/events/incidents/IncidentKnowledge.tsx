@@ -66,6 +66,19 @@ const IncidentKnowledge = ({
           )}
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={incident.id}
+              relationshipTypes={[]}
+              entityLink={link}
+              defaultStartTime={incident.startTime}
+              defaultStopTime={incident.stopTime}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/related"
           element={ (
             <EntityStixCoreRelationships
