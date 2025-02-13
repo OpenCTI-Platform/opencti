@@ -118,6 +118,15 @@ const SearchInput = (props) => {
           onSubmit(value);
         }
       }}
+      sx={isAIEnabled ? {
+        borderColor: 'red',
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': {
+            borderColor: theme.palette.ai.main,
+            borderWidth: '2px',
+          },
+        },
+      } : undefined}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start" style={{ color: isAIEnabled ? theme.palette.ai.main : undefined }} >
