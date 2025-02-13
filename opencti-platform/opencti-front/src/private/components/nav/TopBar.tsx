@@ -18,7 +18,6 @@ import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import MuiSwitch from '@mui/material/Switch';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -156,12 +155,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
-  const [askAI, setAskAI] = useState<boolean>(false);
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
-  const handleChangeAskAI = () => {
-    setAskAI(!askAI);
-  };
   const handleNewNotificationsNumber = (
     response: TopBarNotificationNumberSubscription$data | null | undefined | unknown,
   ) => {
@@ -271,19 +266,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               onSubmit={handleSearch}
               keyword={keyword}
               variant="topBar"
-              placeholder={isEnterpriseEdition && askAI
-                ? `${t_i18n('Ask your question')}...`
-                : `${t_i18n('Search the platform')}...`}
+              placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
-              askAI={askAI}
             />
-            {isEnterpriseEdition && <div style={{ marginLeft: theme.spacing(2), width: '20%' }}>
-              <MuiSwitch
-                checked={askAI}
-                onChange={handleChangeAskAI}
-              />
-              <span>{t_i18n('Ask AI')}</span>
-            </div>}
           </div>
         )}
         <div className={classes.barRight}>
