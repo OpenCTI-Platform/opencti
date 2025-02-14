@@ -71,7 +71,6 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntityS
 };
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
-  // TODO cache management ? => invalid cache ?
   const authorizedMembersEdit = input
     .filter(({ key, value }) => key === 'attributes_configuration' && value.length > 0)
     .flatMap(({ value }) => JSON.parse(value[0]))

@@ -24,6 +24,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -137,7 +138,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 10 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} scope='GLOBAL' />
+                    <SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.GLOBAL} />
                   </Typography>
                 </div>
                 <ItemStatusTemplate
