@@ -9,12 +9,15 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { RegionKnowledge_region$key } from './__generated__/RegionKnowledge_region.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const regionKnowledgeFragment = graphql`
   fragment RegionKnowledge_region on Region {
     id
     name
     x_opencti_aliases
+    entity_type
   }
 `;
 
@@ -28,6 +31,8 @@ const RegionKnowledgeComponent = ({
     regionData,
   );
   const link = `/dashboard/locations/regions/${region.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(region.entity_type, schema);
   return (
     <>
       <Routes>
@@ -63,7 +68,7 @@ const RegionKnowledgeComponent = ({
           element={
             <EntityStixCoreRelationships
               entityId={region.id}
-              relationshipTypes={[]}
+              relationshipTypes={allRelationshipsTypes}
               entityLink={link}
               defaultStartTime={region.startTime}
               defaultStopTime={region.stopTime}

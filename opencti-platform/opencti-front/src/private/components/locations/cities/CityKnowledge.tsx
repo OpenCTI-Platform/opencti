@@ -10,12 +10,15 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const cityKnowledgeFragment = graphql`
   fragment CityKnowledge_city on City {
     id
     name
     x_opencti_aliases
+    entity_type
   }
 `;
 
@@ -25,6 +28,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
     cityData,
   );
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(city.entity_type, schema);
   return (
     <>
       <Routes>
@@ -60,7 +65,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           element={
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={[]}
+              relationshipTypes={allRelationshipsTypes}
               entityLink={link}
               defaultStartTime={city.startTime}
               defaultStopTime={city.stopTime}

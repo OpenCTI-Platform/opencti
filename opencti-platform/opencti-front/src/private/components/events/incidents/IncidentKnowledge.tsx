@@ -12,6 +12,8 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
 import { IncidentKnowledge_incident$key } from './__generated__/IncidentKnowledge_incident.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const IncidentKnowledgeFragment = graphql`
   fragment IncidentKnowledge_incident on Incident {
@@ -20,6 +22,7 @@ const IncidentKnowledgeFragment = graphql`
     aliases
     first_seen
     last_seen
+    entity_type
   }
 `;
 
@@ -33,6 +36,8 @@ const IncidentKnowledge = ({
     incidentData,
   );
   const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(incident.entity_type, schema);
   return (
     <>
       <Routes>
@@ -70,7 +75,7 @@ const IncidentKnowledge = ({
           element={
             <EntityStixCoreRelationships
               entityId={incident.id}
-              relationshipTypes={[]}
+              relationshipTypes={allRelationshipsTypes}
               entityLink={link}
               defaultStartTime={incident.startTime}
               defaultStopTime={incident.stopTime}
