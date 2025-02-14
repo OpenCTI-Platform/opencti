@@ -57,11 +57,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
-    emailBody: Yup.string().when('useFileContent', {
-      is: false,
-      then: (schema) => schema.required(t_i18n('This field is required')),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    emailBody: useFileContent ? Yup.string() : Yup.string().required(t_i18n('This field is required')),
   };
   const validator = Yup.object().shape(basicShape);
   const [commitMutation, inProgress] = useApiMutation(
@@ -129,6 +125,9 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           />
           {fileType === 'text/html' && (
             <FormControlLabel
+              style={{
+                marginTop: theme.spacing(2),
+              }}
               control={
                 <Switch
                   checked={useFileContent}
@@ -139,6 +138,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               label={t_i18n('Use file content as email body')}
             />
           )}
+          {!useFileContent && (
           <Field
             component={MarkdownField}
             label={t_i18n('Email body')}
@@ -147,9 +147,9 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             rows="4"
             fullWidth
             required
-            disabled={useFileContent}
             style={fieldSpacingContainerStyle}
           />
+          )}
           <Field
             component={TextField}
             label={t_i18n('File')}
