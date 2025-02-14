@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import DialogContent from '@mui/material/DialogContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -128,7 +128,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         spacing={3}
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
-        <Grid item xs={7}>
+        <Grid size={{ xs: 1 }}>
           <DecayChart
             currentScore={indicator.x_opencti_score || 0}
             revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
@@ -137,7 +137,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             decayLiveScore={indicator.decayLiveDetails?.live_score}
           />
         </Grid>
-        <Grid item xs={5}>
+        <Grid size={{ xs: 1 }}>
           <TableContainer component={Paper}>
             <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
               <TableHead>

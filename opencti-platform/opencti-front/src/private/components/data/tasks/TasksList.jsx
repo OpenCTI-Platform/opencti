@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -230,9 +230,9 @@ const TasksList = ({ data }) => {
             style={{ marginBottom: 20 }}
           >
             <Grid container={true} spacing={3}>
-              <Grid item xs={5}>
+              <Grid size={{ xs: 1 }}>
                 <Grid container={true} spacing={1}>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Targeted entities')} ({n(task.task_expected_number)}
                       )
@@ -280,7 +280,7 @@ const TasksList = ({ data }) => {
                     />
                     )}
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Actions')}
                     </Typography>
@@ -329,9 +329,9 @@ const TasksList = ({ data }) => {
                   </Grid>
                 </Grid>
               </Grid>
-              <Grid item xs={7}>
+              <Grid size={{ xs: 1 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={2}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Initiator')}
                     </Typography>
@@ -339,13 +339,13 @@ const TasksList = ({ data }) => {
                       {truncate(task.initiator?.name, 15)}
                     </Tooltip>
                   </Grid>
-                  <Grid item xs={2}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Task start time')}
                     </Typography>
                     {nsdt(task.created_at)}
                   </Grid>
-                  <Grid item xs={2}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {task.completed
                         ? t_i18n('Task end time')
@@ -354,20 +354,20 @@ const TasksList = ({ data }) => {
                     {nsdt(task.last_execution_date)}
                   </Grid>
                   {(task.scope ?? task.type)
-                      && <Grid item xs={2}>
+                      && <Grid size={{ xs: 1 }}>
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Scope')}
                         </Typography>
                         <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
                       </Grid>
                     }
-                  <Grid item xs={2}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
                     </Typography>
                     <TaskStatus status={status} label={t_i18n(status)} />
                   </Grid>
-                  <Grid item xs={10}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Progress')}
                     </Typography>
@@ -427,10 +427,10 @@ const TasksList = ({ data }) => {
         );
       })}
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayMessages}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseMessages}
         fullScreen={true}
       >
@@ -466,10 +466,10 @@ const TasksList = ({ data }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayErrors}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseErrors}
         fullScreen={true}
       >

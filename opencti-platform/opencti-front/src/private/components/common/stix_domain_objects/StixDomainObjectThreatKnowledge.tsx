@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
@@ -275,7 +275,7 @@ StixDomainObjectThreatKnowledgeProps
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -318,7 +318,7 @@ StixDomainObjectThreatKnowledgeProps
             />
           </Card>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -377,7 +377,7 @@ StixDomainObjectThreatKnowledgeProps
             />
           </Card>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}

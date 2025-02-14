@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { Narrative_narrative$key } from '@components/techniques/narratives/__generated__/Narrative_narrative.graphql';
 import NarrativeDetails from './NarrativeDetails';
 import NarrativeEdition from './NarrativeEdition';
@@ -89,19 +89,19 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <NarrativeDetails narrative={narrative} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview stixDomainObject={narrative} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={narrative.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
@@ -110,7 +110,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={narrative.id}
                     />
@@ -118,7 +118,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={narrative.id}
                     />
@@ -126,7 +126,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={narrative.id}
                     />
@@ -134,7 +134,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={narrative.id}
                       defaultMarkings={narrative.objectMarking ?? []}

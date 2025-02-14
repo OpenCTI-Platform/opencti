@@ -5,7 +5,7 @@ import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
@@ -120,7 +120,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
     return (
       <div>
         <Grid container={true} spacing={3}>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -161,7 +161,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -205,7 +205,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -247,7 +247,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Created entities')}
             </Typography>

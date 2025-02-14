@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/material/styles';
 import { StixCoreObjectHistoryLines_data$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -90,7 +90,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           />
         </Grid>
         {!withoutRelations && (
-        <Grid item xs={6} style={{ paddingTop: 0 }}>
+        <Grid size={{ xs: 1 }} style={{ paddingTop: 0 }}>
           <Typography
             variant="h4"
             gutterBottom

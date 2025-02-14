@@ -1,5 +1,5 @@
 import React from 'react';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import { RelatedContainerNode } from '@components/common/containers/related_containers/RelatedContainers';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -118,14 +118,14 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
 
   return (
     <Grid container rowSpacing={3}>
-      <Grid container item xs={12} columnSpacing={3}>
-        <Grid item xs={6}>
+      <Grid container size={{ xs: 1 }} columnSpacing={3}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Entity type')}
           </Typography>
           <ItemEntityType entityType={relatedContainer.entity_type} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Marking')}
           </Typography>
@@ -133,14 +133,14 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      <Grid container item xs={12} columnSpacing={3}>
-        <Grid item xs={6}>
+      <Grid container size={{ xs: 1 }} columnSpacing={3}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Description')}
           </Typography>
           <ExpandableMarkdown source={relatedContainer.description} limit={300} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Processing status')}
           </Typography>
@@ -148,14 +148,14 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      <Grid container item xs={12} columnSpacing={3}>
-        <Grid item xs={6}>
+      <Grid container size={{ xs: 1 }} columnSpacing={3}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Author')}
           </Typography>
           <ItemAuthor createdBy={relatedContainer.createdBy} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Assignees')}
           </Typography>
@@ -166,14 +166,14 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
         </Grid>
       </Grid>
 
-      <Grid container item xs={12} columnSpacing={3}>
-        <Grid item xs={6}>
+      <Grid container size={{ xs: 1 }} columnSpacing={3}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Modification date')}
           </Typography>
           {fldt(relatedContainer.modified)}
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Creators')}
           </Typography>
@@ -182,7 +182,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
       </Grid>
 
       {/* Related Containers Distribution */}
-      <Grid item xs={12} >
+      <Grid size={{ xs: 1 }} >
         <Typography variant="h4" >
           {t_i18n('Correlated indicators and observables distribution')}
         </Typography>
@@ -190,7 +190,7 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
       </Grid>
 
       {/* Related Containers Table */}
-      <Grid item xs={12}>
+      <Grid size={{ xs: 1 }}>
         <RelatedContainersDetailsTable filters={queryFilters} />
       </Grid>
     </Grid>

@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { UserAnalytics_user$key } from '@components/settings/users/__generated__/UserAnalytics_user.graphql';
@@ -64,7 +64,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         columnSpacing={2}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <AuditsMultiVerticalBars
             height={300}
             parameters={{
@@ -91,7 +91,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <AuditsMultiLineChart
             height={300}
             parameters={{
@@ -155,7 +155,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <AuditsHorizontalBars
             height={350}
             parameters={{
@@ -180,7 +180,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <AuditsDonut
             height={350}
             parameters={{
@@ -209,7 +209,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <AuditsRadar
             height={350}
             parameters={{
@@ -239,7 +239,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={8}>
+        <Grid size={{ xs: 1 }}>
           <AuditsList
             height={350}
             parameters={{
@@ -266,7 +266,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <AuditsHorizontalBars
             height={350}
             parameters={{

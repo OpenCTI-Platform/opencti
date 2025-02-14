@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import ContainerStixObjectsOrStixRelationships from '@components/common/containers/ContainerStixObjectsOrStixRelationships';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -73,7 +73,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -99,7 +99,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
           </Typography>
           {fldt(data.created)}
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -129,7 +129,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             </>
           )}
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={data}

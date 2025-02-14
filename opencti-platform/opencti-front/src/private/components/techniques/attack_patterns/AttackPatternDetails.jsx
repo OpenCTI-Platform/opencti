@@ -11,7 +11,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { PermIdentity, SettingsApplications } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -39,7 +39,7 @@ class AttackPatternDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               {attackPattern.isSubAttackPattern && (
                 <AttackPatternParentAttackPatterns
                   attackPattern={attackPattern}
@@ -96,7 +96,7 @@ class AttackPatternDetailsComponent extends Component {
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <StixCoreObjectKillChainPhasesView
                 killChainPhases={attackPattern.killChainPhases}
                 firstLine={true}

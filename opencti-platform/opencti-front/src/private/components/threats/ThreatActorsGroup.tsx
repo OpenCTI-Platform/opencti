@@ -1,5 +1,5 @@
 import React from 'react';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
 import {
   ThreatActorsGroupCardsPaginationQuery,
@@ -111,9 +111,7 @@ const ThreatActorsGroup = () => {
                   .fill(0)
                   .map((_, idx) => (
                     <Grid
-                      item
-                      xs={3}
-                      key={idx}
+                      size={{ xs: 1 }} key={idx}
                     >
                       <GenericAttackCardDummy />
                     </Grid>

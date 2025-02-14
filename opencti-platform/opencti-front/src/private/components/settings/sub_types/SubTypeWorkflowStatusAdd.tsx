@@ -96,7 +96,7 @@ SubTypeWorkflowStatusAddProps
           <Form>
             <Dialog
               open={open}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               onClose={handleClose}
               fullWidth={true}
             >

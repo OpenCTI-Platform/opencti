@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
@@ -93,13 +93,13 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <CaseRftDetails caseRftData={caseRft} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview
                       stixDomainObject={caseRft}
                       displayAssignees
@@ -109,7 +109,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'task':
                 return (
-                  <Grid key={key} item xs={width} ref={ref}>
+                  <Grid key={key} size={{ xs: 1 }} ref={ref}>
                     {queryRef && (
                       <React.Suspense
                         fallback={
@@ -158,7 +158,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'originOfTheCase':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseRft}
@@ -170,7 +170,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'observables':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseRft}
@@ -182,7 +182,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseRft}
@@ -203,7 +203,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={caseRft.id}
                     />
@@ -211,7 +211,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={caseRft.id}
                     />
@@ -219,7 +219,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={caseRft.id}
                       defaultMarkings={caseRft.objectMarking ?? []}

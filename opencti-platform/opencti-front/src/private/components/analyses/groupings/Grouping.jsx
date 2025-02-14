@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import useHelper from '../../../../utils/hooks/useHelper';
 import GroupingDetails from './GroupingDetails';
@@ -42,13 +42,13 @@ const GroupingComponent = ({ grouping }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <GroupingDetails grouping={grouping} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview
                       stixDomainObject={grouping}
                     />
@@ -56,7 +56,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={grouping.id}
                     />
@@ -64,7 +64,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={grouping.id}
                     />
@@ -72,7 +72,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={grouping.id}
                       defaultMarkings={grouping.objectMarking ?? []}

@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
@@ -64,7 +64,7 @@ ExternalReferenceDetailsComponentProps
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('External ID')}
             </Typography>
@@ -78,7 +78,7 @@ ExternalReferenceDetailsComponentProps
             </Typography>
             <ItemCreators creators={externalReference.creators ?? []} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('URL')}
             </Typography>
@@ -101,10 +101,10 @@ ExternalReferenceDetailsComponentProps
         </Grid>
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
         <DialogContent>

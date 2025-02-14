@@ -1,6 +1,6 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import OpinionDetails from './OpinionDetails';
@@ -48,23 +48,23 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <OpinionDetails opinion={opinion} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview stixDomainObject={opinion} displayOpinions={false} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <ContainerStixObjectsOrStixRelationships
             container={opinion}
             isSupportParticipation={true}
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={opinion.id}
             isSupportParticipation={true}

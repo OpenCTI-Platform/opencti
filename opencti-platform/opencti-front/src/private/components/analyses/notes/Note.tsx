@@ -91,19 +91,19 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
           switch (key) {
             case 'details':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <NoteDetails note={note} />
                 </Grid>
               );
             case 'basicInformation':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <StixDomainObjectOverview stixDomainObject={note} />
                 </Grid>
               );
             case 'relatedEntities':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <ContainerStixObjectsOrStixRelationships
                     isSupportParticipation={true}
                     container={note}
@@ -113,7 +113,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
               );
             case 'externalReferences':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <StixCoreObjectExternalReferences
                     stixCoreObjectId={note.id}
                   />
@@ -121,7 +121,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
               );
             case 'mostRecentHistory':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <StixCoreObjectLatestHistory
                     stixCoreObjectId={note.id}
                   />

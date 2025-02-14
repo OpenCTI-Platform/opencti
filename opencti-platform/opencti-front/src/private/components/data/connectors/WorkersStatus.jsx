@@ -6,7 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { graphql, createRefetchContainer } from 'react-relay';
 import { MultilineChart } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
@@ -98,13 +98,13 @@ class WorkersStatusComponent extends Component {
             spacing={3}
             style={{ paddingBottom: 0, height: '100%' }}
           >
-            <Grid item xs={2} style={{ height: '25%' }}>
+            <Grid size={{ xs: 1 }} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(consumers)}</div>
                 <div className={classes.title}>{t('Connected workers')}</div>
               </div>
             </Grid>
-            <Grid item xs={2} style={{ height: '25%' }}>
+            <Grid size={{ xs: 1 }} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
                   {n(pathOr(0, ['queue_totals', 'messages'], overview))}
@@ -112,7 +112,7 @@ class WorkersStatusComponent extends Component {
                 <div className={classes.title}>{t('Queued bundles')}</div>
               </div>
             </Grid>
-            <Grid item xs={2} style={{ height: '25%' }}>
+            <Grid size={{ xs: 1 }} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
                   {n(
@@ -127,19 +127,19 @@ class WorkersStatusComponent extends Component {
                 <div className={classes.title}>{t('Bundles processed')}</div>
               </div>
             </Grid>
-            <Grid item xs={2} style={{ height: '25%' }}>
+            <Grid size={{ xs: 1 }} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(readOperations)}/s</div>
                 <div className={classes.title}>{t('Read operations')}</div>
               </div>
             </Grid>
-            <Grid item xs={2} style={{ height: '25%' }}>
+            <Grid size={{ xs: 1 }} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(writeOperations)}/s</div>
                 <div className={classes.title}>{t('Write operations')}</div>
               </div>
             </Grid>
-            <Grid item xs={2} style={{ height: '25%' }}>
+            <Grid size={{ xs: 1 }} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>{n(docs.count)}</div>
                 <div className={classes.title}>

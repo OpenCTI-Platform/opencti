@@ -9,7 +9,6 @@ import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-mate
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
@@ -20,6 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
+import { ListItemButton } from '@mui/material';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
@@ -153,11 +153,10 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
   const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
   return (
     <>
-      <ListItem
+      <ListItemButton
         divider={true}
         dense={dense === true}
         classes={{ root: nested ? classes.itemNested : classes.item }}
-        button={true}
         component={isOutdated ? null : Link}
         disabled={isProgress}
         to={`/dashboard/data/import/pending/${toB64(file.id)}`}
@@ -239,12 +238,12 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
             </span>
           </Tooltip>
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
       <FileWork file={file} />
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

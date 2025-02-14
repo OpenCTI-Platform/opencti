@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
@@ -239,7 +239,7 @@ class StixCoreRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip/>)}
             </Typography>
@@ -370,7 +370,7 @@ class StixCoreRelationshipContainer extends Component {
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
@@ -392,7 +392,7 @@ class StixCoreRelationshipContainer extends Component {
                     </Typography>
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <StixCoreRelationshipSharing
                       elementId={stixCoreRelationship.id}
                     />
@@ -424,13 +424,13 @@ class StixCoreRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Confidence level')}
                   </Typography>
@@ -473,7 +473,7 @@ class StixCoreRelationshipContainer extends Component {
                   </Typography>
                   {nsdt(stixCoreRelationship.updated_at)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Processing status')}
                   </Typography>
@@ -510,27 +510,27 @@ class StixCoreRelationshipContainer extends Component {
           </Grid>
           {stixCoreRelationship.x_opencti_inferences == null && (
             <>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreRelationshipStixCoreRelationships
                   entityId={stixCoreRelationship.id}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreObjectOrStixRelationshipLastContainers
                   stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreRelationshipExternalReferences
                   stixCoreRelationshipId={stixCoreRelationship.id}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreRelationshipLatestHistory
                   stixCoreRelationshipId={stixCoreRelationship.id}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreObjectOrStixCoreRelationshipNotes
                   stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                   isRelationship={true}
@@ -599,9 +599,9 @@ class StixCoreRelationshipContainer extends Component {
         )}
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

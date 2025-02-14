@@ -13,6 +13,7 @@ import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
@@ -73,10 +74,9 @@ const ContainerStixCoreObjectLineComponent = (props) => {
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
   const mappedString = Object.keys(contentMappingData).find((key) => contentMappingData[key] === node.standard_id);
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`${resolveLink(node.entity_type)}/${node.id}`}
     >
@@ -158,7 +158,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
           </Security>
         )}
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

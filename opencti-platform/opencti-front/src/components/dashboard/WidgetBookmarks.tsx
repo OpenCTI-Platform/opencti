@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import { Link } from 'react-router-dom';
@@ -36,7 +36,7 @@ const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {
           const bookmark = bookmarkEdge.node;
           const link = resolveLink(bookmark.entity_type);
           return (
-            <Grid item xs={4} key={bookmark.id}>
+            <Grid size={{ xs: 1 }} key={bookmark.id}>
               <Card
                 variant="outlined"
                 style={{

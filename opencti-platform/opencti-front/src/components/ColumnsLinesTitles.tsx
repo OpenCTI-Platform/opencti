@@ -90,7 +90,7 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
     );
   };
   return (
-    <ListItem classes={{ root: classes.item }} divider={false} button={false}>
+    <ListItem classes={{ root: classes.item }} divider={false}>
       <ListItemIcon> &nbsp; </ListItemIcon>
       <ListItemText
         primary={

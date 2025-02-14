@@ -90,16 +90,16 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <OrganizationDetails organization={organization} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={organization}
           />
         </Grid>
         {viewAs === 'knowledge' && (
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={organization.id}
               stixObjectOrStixRelationshipLink={`/dashboard/entities/organizations/${organization.id}/knowledge`}
@@ -114,12 +114,12 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
             {...lastReportsProps}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={organization.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={organization.id} />
         </Grid>
       </Grid>

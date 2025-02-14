@@ -10,6 +10,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
@@ -66,9 +67,8 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
         : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
-      button={true}
       divider={true}
       component={Link}
       to={link}
@@ -143,7 +143,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
           />
         </Security>
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

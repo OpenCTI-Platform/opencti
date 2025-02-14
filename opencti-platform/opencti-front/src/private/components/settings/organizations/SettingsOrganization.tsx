@@ -1,5 +1,5 @@
 import { WarningOutlined } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -13,6 +13,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -161,33 +162,32 @@ const SettingsOrganization = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <div style={{ height: '100%' }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('More information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 1 }}>
                   <SettingsOrganizationHiddenTypesChipList
                     organizationData={organization}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Parent organizations')}
                   </Typography>
                   <FieldOrEmpty source={parentOrganizations}>
                     <List>
                       {parentOrganizations.map((parentOrganization) => (
-                        <ListItem
+                        <ListItemButton
                           key={parentOrganization.node.id}
                           dense={true}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
                         >
@@ -197,23 +197,22 @@ const SettingsOrganization = ({
                           <ListItemText
                             primary={parentOrganization.node.name}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Child organizations')}
                   </Typography>
                   <FieldOrEmpty source={subOrganizations}>
                     <List>
                       {subOrganizations.map((subOrganization) => (
-                        <ListItem
+                        <ListItemButton
                           key={subOrganization.node.id}
                           dense={true}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
                         >
@@ -221,21 +220,20 @@ const SettingsOrganization = ({
                             <ItemIcon type="Organization" />
                           </ListItemIcon>
                           <ListItemText primary={subOrganization.node.name} />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Default dashboard')}
                   </Typography>
                   <FieldOrEmpty source={organization.default_dashboard}>
                     <List>
-                      <ListItem
+                      <ListItemButton
                         dense={true}
                         divider={true}
-                        button={true}
                         component={Link}
                         to={`/dashboard/workspaces/dashboards/${organization.default_dashboard?.id}`}
                       >
@@ -259,22 +257,21 @@ const SettingsOrganization = ({
                             </Tooltip>
                           </ListItemSecondaryAction>
                         )}
-                      </ListItem>
+                      </ListItemButton>
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Grantable groups by organization administrators')}
                   </Typography>
                   <FieldOrEmpty source={organization.grantable_groups}>
                     <List>
                       {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
-                        <ListItem
+                        <ListItemButton
                           key={group.id}
                           dense={true}
                           divider={true}
-                          button={true}
                           component={Link}
                           to={`/dashboard/settings/accesses/groups/${group.id}`}
                         >
@@ -296,7 +293,7 @@ const SettingsOrganization = ({
                                   <WarningOutlined color="warning" />
                                 </Tooltip>
                           )}
-                        </ListItem>
+                        </ListItemButton>
                       ) : (
                         <ListItem key={group.id} dense={true} divider={true}>
                           <ListItemIcon>
@@ -332,7 +329,7 @@ const SettingsOrganization = ({
             <SettingsOrganizationUsers organization={organization} />
           </>
         ) : (
-          <Grid item xs={12}>
+          <Grid size={{ xs: 1 }}>
             <EnterpriseEdition
               feature={t_i18n('Organization sharing')}
             />

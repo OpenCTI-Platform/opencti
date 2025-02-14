@@ -1,5 +1,5 @@
 import { WarningOutlined } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -168,13 +169,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Description')}
                 </Typography>
@@ -183,10 +184,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   limit={400}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <GroupHiddenTypesChipList groupData={group} />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Auto new markings')}
                 </Typography>
@@ -195,7 +196,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   label={group.auto_new_marking ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Default membership')}
                 </Typography>
@@ -207,23 +208,22 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Roles')}
                 </Typography>
                 <List>
                   {group.roles?.edges?.map(({ node: role }) => (
-                    <ListItem
+                    <ListItemButton
                       key={role?.id}
                       dense={true}
                       divider={true}
-                      button={true}
                       component={Link}
                       to={`/dashboard/settings/accesses/roles/${role?.id}`}
                     >
@@ -231,20 +231,19 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         <ItemIcon type="Role" />
                       </ListItemIcon>
                       <ListItemText primary={role?.name} />
-                    </ListItem>
+                    </ListItemButton>
                   ))}
                 </List>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Default dashboard')}
                 </Typography>
                 <FieldOrEmpty source={group.default_dashboard}>
                   <List>
-                    <ListItem
+                    <ListItemButton
                       dense={true}
                       divider={true}
-                      button={true}
                       component={Link}
                       to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
                     >
@@ -265,11 +264,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           </Tooltip>
                         </ListItemSecondaryAction>
                       )}
-                    </ListItem>
+                    </ListItemButton>
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -282,7 +281,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   confidenceLevel={group.group_confidence_level}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('No creators accumulation')}
                 </Typography>
@@ -291,7 +290,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   label={group.no_creators ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Restrict delete to created entities')}
                 </Typography>
@@ -303,14 +302,14 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
             {t_i18n('Markings')}
           </Typography>
           <div className="clearfix" />
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={4}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Default markings')}
                   <Tooltip
@@ -332,7 +331,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         key={marking?.id}
                         dense={true}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -348,7 +347,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Allowed markings')}
                 </Typography>
@@ -359,7 +358,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         key={marking?.id}
                         dense={true}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -375,7 +374,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Maximum shareable markings')}
                 </Typography>
@@ -390,9 +389,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             key={marking.id}
                             dense={true}
                             divider={true}
-                            button={false}
+
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} sx={{
+                              width: 100,
+                            }}
+                            >
                               {truncate(type, 40)}
                             </Typography>
                             {isMarkingAllowed
@@ -429,9 +431,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             key={type}
                             dense={true}
                             divider={true}
-                            button={false}
+
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} sx={{
+                              width: 100,
+                            }}
+                            >
                               {truncate(type, 40)}
                             </Typography>
                             <ListItemText
@@ -445,9 +450,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           key={type}
                           dense={true}
                           divider={true}
-                          button={false}
+
                         >
-                          <Typography variant="h3" gutterBottom={true} width={100}>
+                          <Typography variant="h3" gutterBottom={true} sx={{
+                            width: 100,
+                          }}
+                          >
                             {truncate(type, 40)}
                           </Typography>
                           <ListItemText

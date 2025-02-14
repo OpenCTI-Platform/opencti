@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -81,7 +81,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
           spacing={3}
           sx={{ marginTop: '10px', marginBottom: '10px' }}
         >
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Valid from')}
             </Typography>
@@ -89,7 +89,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               label={fldt(indicator.valid_from)}
             />
             <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
-              <Grid item xs={4}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <span>{t_i18n('Score')}</span>
@@ -103,7 +103,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 <ItemScore score={indicator.x_opencti_score} />
               </Grid>
               {indicator.decay_applied_rule && (
-              <Grid item xs={8}>
+              <Grid size={{ xs: 1 }}>
                 <Button
                   size="small"
                   variant="outlined"
@@ -114,10 +114,10 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   {t_i18n('Lifecycle')}
                 </Button>
                 <Dialog
-                  PaperProps={{ elevation: 1 }}
+                  slotProps={{ paper: { elevation: 1 } }}
                   open={isLifecycleOpen}
                   keepMounted={true}
-                  TransitionComponent={Transition}
+                  slots={{ transition: Transition }}
                   onClose={onDecayLifecycleClose}
                   fullWidth
                   maxWidth='lg'
@@ -156,7 +156,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               />
             ))}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Valid until')}
             </Typography>

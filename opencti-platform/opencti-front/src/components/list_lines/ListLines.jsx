@@ -587,8 +587,8 @@ class ListLines extends Component {
           {handleSwitchRedirectionMode && (
           <Dialog
             open={this.state.openSettings}
-            PaperProps={{ elevation: 1 }}
-            TransitionComponent={Transition}
+            slotProps={{ paper: { elevation: 1 } }}
+            slots={{ transition: Transition }}
             onClose={this.handleCloseSettings.bind(this)}
             maxWidth="xs"
             fullWidth={true}

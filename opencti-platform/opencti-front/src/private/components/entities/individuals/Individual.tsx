@@ -91,16 +91,16 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <IndividualDetails individual={individual} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={individual}
           />
         </Grid>
         {viewAs === 'knowledge' && (
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={individual.id}
               stixObjectOrStixRelationshipLink={`/dashboard/entities/individuals/${individual.id}/knowledge`}
@@ -115,12 +115,12 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
             {...lastReportsProps}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={individual.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={individual.id} />
         </Grid>
       </Grid>

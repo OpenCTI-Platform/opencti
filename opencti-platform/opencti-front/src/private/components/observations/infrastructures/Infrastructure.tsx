@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import InfrastructureDetails from './InfrastructureDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -94,34 +94,34 @@ const Infrastructure = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <InfrastructureDetails infrastructure={infrastructureData} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview stixDomainObject={infrastructureData} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={infrastructureData.id}
             stixObjectOrStixRelationshipLink={`/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={infrastructureData.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={infrastructureData.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={infrastructureData.id}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
             defaultMarkings={infrastructureData.objectMarking ?? []}

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
@@ -96,7 +96,7 @@ MembersListContainerProps
   };
 
   return (
-    <Grid item xs={12} style={{ marginTop: 0 }}>
+    <Grid size={{ xs: 1 }} style={{ marginTop: 0 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Users')}
       </Typography>

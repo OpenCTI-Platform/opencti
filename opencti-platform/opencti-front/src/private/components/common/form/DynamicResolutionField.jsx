@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import * as R from 'ramda';
 import TextField from '@mui/material/TextField';
 import { useField } from 'formik';
@@ -168,7 +168,7 @@ const DynamicResolutionField = ({
     <div style={style}>
       <Typography variant="h4">{title}</Typography>
       <Grid container={true} spacing={3}>
-        <Grid item xs={5}>
+        <Grid size={{ xs: 1 }}>
           <TextField
             error={!R.isNil(meta.error)}
             helperText={helperText}
@@ -177,10 +177,12 @@ const DynamicResolutionField = ({
             multiline={true}
             fullWidth={true}
             minRows={6}
-            inputProps={{ style: { lineHeight: '34px' } }}
+            slotProps={{
+              htmlInput: { style: { lineHeight: '34px' } },
+            }}
           />
         </Grid>
-        <Grid item xs={7}>
+        <Grid size={{ xs: 1 }}>
           {(field.value || []).length > 0 ? (
             <List style={{ marginTop: 0 }}>
               {(field.value || []).map((item) => (

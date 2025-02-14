@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
@@ -48,7 +48,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
   }, []);
 
   return (
-    <Grid item xs={6}>
+    <Grid size={{ xs: 1 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Exported files')}
       </Typography>

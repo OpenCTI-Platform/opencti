@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
@@ -95,7 +95,7 @@ const ReportDetails = ({ report }) => {
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={6} ref={ref}>
+          <Grid size={{ xs: 1 }} ref={ref}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
@@ -126,9 +126,7 @@ const ReportDetails = ({ report }) => {
             {fldt(reportData.published)}
           </Grid>
           <Grid
-            item
-            xs={6}
-            style={{ minHeight: 200, maxHeight: height }}
+            size={{ xs: 1 }} style={{ minHeight: 200, maxHeight: height }}
           >
             <StixRelationshipsHorizontalBars
               isWidget={false}

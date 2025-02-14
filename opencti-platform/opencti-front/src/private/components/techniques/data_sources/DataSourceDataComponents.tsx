@@ -2,11 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemSecondaryAction } from '@mui/material';
+import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
@@ -58,11 +57,10 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                 );
               }
               return (
-                <ListItem
+                <ListItemButton
                   key={dataComponent.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/data_components/${dataComponent.id}`}
                 >
@@ -81,7 +79,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                       <LinkOff />
                     </IconButton>
                   </ListItemSecondaryAction>
-                </ListItem>
+                </ListItemButton>
               );
             })}
         </List>

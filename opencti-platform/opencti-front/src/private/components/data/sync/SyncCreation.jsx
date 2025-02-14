@@ -12,7 +12,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
@@ -279,13 +279,13 @@ const SyncCreation = ({ paginationOptions }) => {
                                   spacing={1}
                                   style={{ overflow: 'hidden' }}
                                 >
-                                  <Grid key={name} item xs={12}>
+                                  <Grid key={name} size={{ xs: 1 }}>
                                     <Typography>{name}</Typography>
                                   </Grid>
-                                  <Grid key={description} item xs={12}>
+                                  <Grid key={description} size={{ xs: 1 }}>
                                     <Typography>{description}</Typography>
                                   </Grid>
-                                  <Grid key={filters} item xs={12}>
+                                  <Grid key={filters} size={{ xs: 1 }}>
                                     <FilterIconButton
                                       filters={streamsFilters}
                                       styleNumber={3}

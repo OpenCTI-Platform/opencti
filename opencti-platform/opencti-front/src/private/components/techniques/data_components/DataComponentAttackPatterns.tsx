@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPattern } from 'mdi-material-ui';
@@ -11,6 +10,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import AddAttackPatterns from './AddAttackPatterns';
@@ -73,11 +73,10 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                 );
               }
               return (
-                <ListItem
+                <ListItemButton
                   key={attackPattern.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
                 >
@@ -96,7 +95,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                       <LinkOff />
                     </IconButton>
                   </ListItemSecondaryAction>
-                </ListItem>
+                </ListItemButton>
               );
             })}
         </List>

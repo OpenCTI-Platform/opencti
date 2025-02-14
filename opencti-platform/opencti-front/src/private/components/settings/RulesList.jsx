@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
 import { createRefetchContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -311,9 +311,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -333,7 +333,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -353,7 +353,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -374,7 +374,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Card
                 classes={{ root: classes.card }}
                 variant="outlined"
@@ -401,7 +401,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
@@ -459,7 +459,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   spacing={3}
                   style={{ marginBottom: 50 }}
                 >
-                  <Grid item xs={3}>
+                  <Grid size={{ xs: 1 }}>
                     <DangerZoneBlock
                       type={'rules'}
                       title={t_i18n(rule.name)}
@@ -471,13 +471,13 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                           style={style}
                         >
                           <Grid container={true} spacing={3}>
-                            <Grid item xs={6}>
+                            <Grid size={{ xs: 1 }}>
                               <Typography variant="h3">
                                 {t_i18n('Description')}
                               </Typography>
                               {t_i18n(rule.description)}
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={{ xs: 1 }}>
                               <Typography variant="h3" gutterBottom={true}>
                                 {t_i18n('Status')}
                               </Typography>
@@ -502,7 +502,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                 />
                               </FormGroup>
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 1 }}>
                               {isEngineEnabled && task && (
                               <div
                                 style={{
@@ -549,7 +549,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                       )}
                     />
                   </Grid>
-                  <Grid item xs={9}>
+                  <Grid size={{ xs: 1 }}>
                     <Paper
                       variant="outlined"
                       classes={{ root: classes.paper }}
@@ -652,9 +652,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       })}
       <Dialog
         open={displayEnable}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseEnable}
       >
         <DialogContent>
@@ -686,9 +686,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       </Dialog>
       <Dialog
         open={displayDisable}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDisable}
       >
         <DialogContent>

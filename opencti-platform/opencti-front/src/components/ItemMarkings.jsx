@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import Badge from '@mui/material/Badge';
 import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import EnrichedTooltip from './EnrichedTooltip';
@@ -273,7 +273,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit, onClick }) => {
       title={
         <Grid container={true} spacing={3}>
           {markings.map((markingDefinition) => (
-            <Grid key={markingDefinition.id} item xs={6}>
+            <Grid key={markingDefinition.id} size={{ xs: 1 }}>
               {renderChip(markingDefinition, { isInTooltip: true, withTooltip: true })}
             </Grid>
           ))}

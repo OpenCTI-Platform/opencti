@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, createRefetchContainer, RelayRefetchProp } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
@@ -152,9 +152,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             variant="outlined"
           >
             <Grid container={true} spacing={3}>
-              <Grid item xs={7}>
+              <Grid size={{ xs: 1 }}>
                 <Grid container={true} spacing={1}>
-                  <Grid item xs={8}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Name')}
                     </Typography>
@@ -164,13 +164,13 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       </Typography>
                     </Tooltip>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
                     </Typography>
                     <TaskStatus status={work.status} label={t_i18n(work.status)} />
                   </Grid>
-                  <Grid item xs={8}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -180,7 +180,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     </Typography>
                     {nsdt(work.received_time)}
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -192,9 +192,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                   </Grid>
                 </Grid>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={{ xs: 1 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Operations completed')}
                     </Typography>
@@ -204,7 +204,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                         : tracking?.import_processed_number ?? '-'}
                     </span>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Total number of operations')}
                     </Typography>
@@ -212,7 +212,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       {tracking?.import_expected_number ?? '-'}
                     </span>
                   </Grid>
-                  <Grid item xs={11}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Progress')}
                     </Typography>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import {
@@ -132,7 +132,7 @@ const SupportPackages = () => {
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
         />
         <Grid container={true} spacing={4}>
-          <Grid item xs={12} style={{ paddingTop: '24px' }}>
+          <Grid size={{ xs: 1 }} style={{ paddingTop: '24px' }}>
             <div>
               <Typography variant="h4" gutterBottom={true} style={{ marginBottom: '10px' }}>
                 {t_i18n('Generated Support Package')}

@@ -1,6 +1,7 @@
 import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
-import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
+import { MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
@@ -66,7 +67,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
     return (
       <>
         <Grid container={true} spacing={3} >
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Field
               component={SimpleTextField}
               fullWidth
@@ -81,7 +82,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               }
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Select
               fullWidth
               labelId={name}
@@ -122,7 +123,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   return (
     <>
       <Grid container={true} spacing={3} >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Field
             component={SimpleTextField}
             fullWidth
@@ -132,7 +133,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             disabled={disabled}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Select
             fullWidth
             labelId={name}

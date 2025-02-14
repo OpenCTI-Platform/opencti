@@ -7,11 +7,11 @@ import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
@@ -125,11 +125,10 @@ class StixSightingRelationshipCreationFromEntityLinesContainer extends Component
                 >
                   <List classes={{ root: classes.list }}>
                     {stixDomainObjects[type].map((stixDomainObject) => (
-                      <ListItem
+                      <ListItemButton
                         key={stixDomainObject.id}
                         classes={{ root: classes.menuItem }}
                         divider={true}
-                        button={true}
                         onClick={handleSelect.bind(this, stixDomainObject)}
                       >
                         <ListItemIcon>
@@ -142,7 +141,7 @@ class StixSightingRelationshipCreationFromEntityLinesContainer extends Component
                             100,
                           )}
                         />
-                      </ListItem>
+                      </ListItemButton>
                     ))}
                   </List>
                 </AccordionDetails>

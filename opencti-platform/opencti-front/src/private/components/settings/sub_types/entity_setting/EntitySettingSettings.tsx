@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
@@ -79,7 +79,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
   };
   return (
     <Grid container={true} spacing={3}>
-      <Grid item xs={6}>
+      <Grid size={{ xs: 1 }}>
         <div>
           <Typography
             variant="h3"
@@ -132,7 +132,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           </>
         </Security>
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={{ xs: 1 }}>
         <div>
           <Typography
             variant="h3"

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -338,7 +338,7 @@ const Settings = () => {
                 <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
                 {isEnterpriseEditionActivated && (
                   <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 1 }}>
                       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
                         {t_i18n('Enterprise Edition')}
                       </Typography>
@@ -367,10 +367,10 @@ const Settings = () => {
                                   {t_i18n('Disable Enterprise Edition')}
                                 </Button>
                                 <Dialog
-                                  PaperProps={{ elevation: 1 }}
+                                  slotProps={{ paper: { elevation: 1 } }}
                                   open={openEEChanges}
                                   keepMounted
-                                  TransitionComponent={Transition}
+                                  slots={{ transition: Transition }}
                                   onClose={() => setOpenEEChanges(false)}
                                 >
                                   <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
@@ -442,7 +442,7 @@ const Settings = () => {
                         </List>
                       </Paper>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 1 }}>
                       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
                         {t_i18n('License')}
                       </Typography>
@@ -498,7 +498,7 @@ const Settings = () => {
                   </Grid>
                 )}
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Configuration')}
                     </Typography>
@@ -612,7 +612,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
@@ -734,10 +734,10 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item xs={8}>
+                  <Grid size={{ xs: 1 }}>
                     <SettingsMessages settings={settings}/>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <SettingsAnalytics
                       settings={settings}
                       handleChangeFocus={handleChangeFocus}
@@ -745,7 +745,7 @@ const Settings = () => {
                       isEnterpriseEdition={isEnterpriseEditionValid}
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Dark theme')}
                     </Typography>
@@ -952,7 +952,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Light theme')}
                     </Typography>
@@ -1159,7 +1159,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Tools')}
                     </Typography>

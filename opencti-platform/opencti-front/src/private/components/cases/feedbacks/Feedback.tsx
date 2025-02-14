@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import useHelper from 'src/utils/hooks/useHelper';
 import FeedbackDetails from './FeedbackDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -98,7 +98,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <FeedbackDetails
                       feedbackData={feedback}
                     />
@@ -106,7 +106,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview
                       stixDomainObject={feedback}
                       displayAssignees={true}
@@ -116,7 +116,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={feedback}
@@ -126,7 +126,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={feedback.id}
                     />
@@ -134,7 +134,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={feedback.id}
                     />

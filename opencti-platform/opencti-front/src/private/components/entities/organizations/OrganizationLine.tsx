@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { OrganizationLine_node$key } from '@components/entities/organizations/__generated__/OrganizationLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -86,10 +87,9 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
   const { fd } = useFormatter();
   const data = useFragment(organizationLineFragment, node);
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/entities/organizations/${data.id}`}
     >
@@ -140,7 +140,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

@@ -4,7 +4,7 @@ import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { Add, ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -323,7 +323,7 @@ const ImportContentComponent = ({
         classes={{ container: classes.gridContainer }}
         style={{ marginTop: 0 }}
       >
-        <Grid item xs={12} style={{ paddingTop: 0 }}>
+        <Grid size={{ xs: 1 }} style={{ paddingTop: 0 }}>
           <div style={{ height: '100%' }} className="break">
             <Typography
               variant="h4"
@@ -373,7 +373,7 @@ const ImportContentComponent = ({
             </Paper>
           </div>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <div style={{ height: '100%' }} className="break">
             <Typography
               variant="h4"
@@ -438,7 +438,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToImport}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={() => handleReset()}
                 fullWidth={true}
@@ -556,7 +556,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToValidate}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={handleCloseValidate}
                 fullWidth={true}

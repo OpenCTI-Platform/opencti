@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { makeStyles, useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -186,7 +186,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <Formik
             onSubmit={() => {
             }}
@@ -197,7 +197,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             {({ values, setFieldValue }) => (
               <Form>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <DangerZoneBlock
                       type={'platform_organization'}
                       title={(
@@ -224,10 +224,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             />
                           </EETooltip>
                           <Dialog
-                            PaperProps={{ elevation: 1 }}
+                            slotProps={{ paper: { elevation: 1 } }}
                             open={openPlatformOrganizationChanges}
                             keepMounted
-                            TransitionComponent={Transition}
+                            slots={{ transition: Transition }}
                             onClose={() => setOpenPlatformOrganizationChanges(false)}
                           >
                             <DialogTitle>{t_i18n('Numerous repercussions linked to the activation of this feature')}</DialogTitle>
@@ -272,7 +272,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
@@ -309,7 +309,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Local password policies')}
                     </Typography>
@@ -434,7 +434,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}
                     </Typography>
@@ -470,7 +470,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Platform Banner Configuration')}
                     </Typography>

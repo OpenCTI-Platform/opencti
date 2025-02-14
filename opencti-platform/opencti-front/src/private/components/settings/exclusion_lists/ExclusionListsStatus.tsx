@@ -4,7 +4,7 @@ import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, useEffect } from 'react';
 import { EventRepeatOutlined, UpdateOutlined } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import type { Theme } from 'src/components/Theme';
 import { interval } from 'rxjs';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -58,7 +58,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={4}>
+      <Grid size={{ xs: 1 }}>
         <Typography variant={'h4'}>
           {t_i18n('Status')}
         </Typography>
@@ -86,7 +86,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
           )}
         </Paper>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={{ xs: 1 }}>
         <Typography variant={'h4'}>
           {t_i18n('Last modification date')}
         </Typography>
@@ -104,7 +104,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
           <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
         </Paper>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={{ xs: 1 }}>
         <Typography variant={'h4'}>
           {t_i18n('Current cache version date')}
         </Typography>

@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { makeStyles } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
@@ -127,7 +127,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Incident type')}
             </Typography>
@@ -152,7 +152,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             </Typography>
             <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Severity')}
             </Typography>
@@ -193,7 +193,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             </Typography>
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <StixCoreObjectsDonut
               dataSelection={entitiesDataSelection}
               parameters={{ title: t_i18n('Entities distribution') }}
@@ -201,7 +201,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               height={250}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <StixCoreObjectsDonut
               dataSelection={observablesDataSelection}
               parameters={{ title: t_i18n('Observables distribution') }}

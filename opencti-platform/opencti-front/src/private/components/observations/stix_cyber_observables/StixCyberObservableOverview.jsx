@@ -5,7 +5,7 @@ import { compose, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
@@ -129,7 +129,7 @@ class StixCyberObservableOverview extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Marking')}
               </Typography>
@@ -163,7 +163,7 @@ class StixCyberObservableOverview extends Component {
                 entity_type={stixCyberObservable.entity_type}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Observable type')}
               </Typography>
@@ -242,9 +242,9 @@ class StixCyberObservableOverview extends Component {
           </Grid>
         </Paper>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.openStixIds}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleToggleOpenStixIds.bind(this)}
           fullWidth={true}
         >

@@ -3,14 +3,13 @@ import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -18,6 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import { ListItemButton } from '@mui/material';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -451,10 +451,9 @@ const PlaybookAddComponentsContent = ({
         <List>
           {components.map((component) => {
             return (
-              <ListItem
+              <ListItemButton
                 key={component.id}
                 divider={true}
-                button={true}
                 onClick={() => setComponentId(component.id)}
               >
                 <ListItemIcon>
@@ -464,7 +463,7 @@ const PlaybookAddComponentsContent = ({
                   primary={component.name}
                   secondary={component.description}
                 />
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>
@@ -677,7 +676,7 @@ const PlaybookAddComponentsContent = ({
                                   <CancelOutlined fontSize="small" />
                                 </IconButton>
                                 <Grid container={true} spacing={3}>
-                                  <Grid item xs={3}>
+                                  <Grid size={{ xs: 1 }}>
                                     <FormControl className={classes.formControl}>
                                       <InputLabel>{t_i18n('Action type')}</InputLabel>
                                       <Select
@@ -693,13 +692,13 @@ const PlaybookAddComponentsContent = ({
                                       </Select>
                                     </FormControl>
                                   </Grid>
-                                  <Grid item xs={3}>
+                                  <Grid size={{ xs: 1 }}>
                                     <FormControl className={classes.formControl}>
                                       <InputLabel>{t_i18n('Field')}</InputLabel>
                                       {renderFieldOptions(i, values, setValues)}
                                     </FormControl>
                                   </Grid>
-                                  <Grid item xs={6}>
+                                  <Grid size={{ xs: 1 }}>
                                     {renderValuesOptions(i, setFieldValue)}
                                   </Grid>
                                 </Grid>

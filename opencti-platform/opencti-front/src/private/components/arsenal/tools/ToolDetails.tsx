@@ -5,7 +5,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Tooltip from '@mui/material/Tooltip';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -56,7 +56,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
         }}
       >
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
@@ -74,7 +74,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
               </Tooltip>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Tool types')}
             </Typography>

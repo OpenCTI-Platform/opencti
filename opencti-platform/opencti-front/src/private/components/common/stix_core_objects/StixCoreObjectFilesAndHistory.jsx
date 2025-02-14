@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
@@ -280,7 +280,7 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <Grid item xs={12} style={{ marginTop: 24 }}>
+        <Grid size={{ xs: 1 }} style={{ marginTop: 24 }}>
           <StixCoreObjectHistory
             stixCoreObjectId={id}
             withoutRelations={withoutRelations}
@@ -297,7 +297,7 @@ const StixCoreObjectFilesAndHistory = ({
         {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               open={fileToImport}
               keepMounted={true}
               onClose={() => handleReset()}
@@ -423,7 +423,7 @@ const StixCoreObjectFilesAndHistory = ({
           {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}

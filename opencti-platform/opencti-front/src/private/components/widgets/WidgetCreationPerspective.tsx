@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
@@ -82,7 +82,7 @@ const WidgetCreationPerspective = () => {
       style={{ marginTop: 20, marginBottom: 20 }}
     >
       {getCurrentIsEntities() && (
-        <Grid item xs={xs}>
+        <Grid size={{ xs }}>
           <Card
             variant="outlined"
             style={{
@@ -114,7 +114,7 @@ const WidgetCreationPerspective = () => {
         </Grid>
       )}
       {getCurrentIsRelationships() && (
-        <Grid item xs={xs}>
+        <Grid size={{ xs }}>
           <Card
             variant="outlined"
             style={{
@@ -148,7 +148,7 @@ const WidgetCreationPerspective = () => {
         </Grid>
       )}
       {getCurrentIsAudits() && (
-        <Grid item xs={xs}>
+        <Grid size={{ xs }}>
           <Card
             variant="outlined"
             style={{
