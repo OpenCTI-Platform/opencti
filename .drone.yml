@@ -340,10 +340,14 @@ services:
       OPENCTI_URL: http://api-tests:4010
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
       - sleep 10
       - cp -a opencti-worker /tmp/opencti-test-worker
-      - apk add build-base git libffi-dev cargo
+      - apk add build-base git libffi-dev cargo git github-cli
+      - chmod 777 scripts/*
+      - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
@@ -351,8 +355,6 @@ services:
       - cd /tmp/opencti-test-worker
       - pip3 install -r src/requirements.txt
       - python3 src/worker.py
-    depends_on:
-      - dependencies-checkout
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
