@@ -296,26 +296,15 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
   const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
-
   const timeSeriesParameters = dataSelection.map((selection) => {
-    const filters = {
-      filterGroups: [selection.filters],
-      filters: [],
-      mode: 'and'
-    };
-    return {
-      field: selection.date_attribute,
-      filters,
-    };
+    return { field: selection.date_attribute, filters: selection.filters };
   });
-
   const standardArgs = {
     startDate: args.startDate,
     endDate: args.endDate,
     interval: parameters?.interval ?? 'day',
     timeSeriesParameters
   };
-
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };

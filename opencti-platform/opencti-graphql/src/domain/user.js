@@ -74,6 +74,7 @@ import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-lo
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { UnitSystem } from '../generated/graphql';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -730,6 +731,12 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         if (!draftWorkspace) throw Error('Could not find draft workspace');
       }
       refreshSessionNeeded = true;
+    }
+    if (input.key === 'unit_system') {
+      const unit = R.head(input.value).toString();
+      if (!Object.keys(UnitSystem).map((option) => option.toLowerCase()).includes(unit.toLowerCase())) {
+        throw UnsupportedError('Unsupported unit system', { unit });
+      }
     }
     inputs.push(input);
   }

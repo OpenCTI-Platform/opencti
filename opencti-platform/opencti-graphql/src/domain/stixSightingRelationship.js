@@ -60,17 +60,15 @@ export const stixSightingRelationshipDeleteRelation = async (context, user, stix
 // endregion
 
 // region context
-export const stixSightingRelationshipCleanContext = (context, user, stixSightingRelationshipId) => {
-  delEditContext(user, stixSightingRelationshipId);
-  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
-    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  });
+export const stixSightingRelationshipCleanContext = async (context, user, stixSightingRelationshipId) => {
+  await delEditContext(user, stixSightingRelationshipId);
+  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return await notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
-export const stixSightingRelationshipEditContext = (context, user, stixSightingRelationshipId, input) => {
-  setEditContext(user, stixSightingRelationshipId, input);
-  return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
-    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  });
+export const stixSightingRelationshipEditContext = async (context, user, stixSightingRelationshipId, input) => {
+  await setEditContext(user, stixSightingRelationshipId, input);
+  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return await notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
 // endregion
 

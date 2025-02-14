@@ -101,7 +101,6 @@ const Index = ({ settings }: IndexProps) => {
           <Suspense fallback={<Loader />}>
             <Routes>
               <Route path="/" element={draftContext?.id ? <Navigate to={`/dashboard/drafts/${draftContext.id}/`} replace={true} /> : boundaryWrapper(Dashboard)}/>
-
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
               <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
@@ -113,51 +112,17 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
               <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
               {/* Need to refactor below */}
-              <Route
-                path="/entities/*"
-                element={boundaryWrapper(RootEntities)}
-              />
-              <Route
-                path="/locations/*"
-                element={boundaryWrapper(RootLocation)}
-              />
-              <Route path="/data/*"
-                element={boundaryWrapper(RootData)}
-              />
-              {isTrashEnable() && (
-                <Route
-                  path="/trash/*"
-                  element={boundaryWrapper(RootTrash)}
-                />
-              )}
-              {isDraftFeatureEnabled && (
-                <Route path="/drafts/*"
-                  element={boundaryWrapper(RootDrafts)}
-                />
-              )}
-              <Route
-                path="/workspaces/*"
-                element={boundaryWrapper(RootWorkspaces)}
-              />
-              <Route
-                path="/settings/*"
-                element={boundaryWrapper(RootSettings)}
-              />
-              <Route
-                path="/audits/*"
-                element={boundaryWrapper(RootAudit)}
-              />
-              <Route
-                path="/profile/*"
-                element={boundaryWrapper(RootProfile)}
-              />
-              <Route
-                path="/observations/*"
-                element={boundaryWrapper(RootObservations)}
-              />
-              <Route
-                element={<NoMatch/>}
-              />
+              <Route path="/entities/*" element={boundaryWrapper(RootEntities)}/>
+              <Route path="/locations/*" element={boundaryWrapper(RootLocation)}/>
+              <Route path="/data/*" element={boundaryWrapper(RootData)}/>
+              {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
+              {isDraftFeatureEnabled && (<Route path="/drafts/*" element={boundaryWrapper(RootDrafts)}/>)}
+              <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
+              <Route path="/settings/*" element={boundaryWrapper(RootSettings)}/>
+              <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>
+              <Route path="/profile/*" element={boundaryWrapper(RootProfile)}/>
+              <Route path="/observations/*" element={boundaryWrapper(RootObservations)}/>
+              <Route path="/*" element={<NoMatch/>}/>
             </Routes>
           </Suspense>
         </Box>

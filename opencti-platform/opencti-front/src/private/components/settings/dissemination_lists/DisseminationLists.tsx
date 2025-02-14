@@ -164,12 +164,13 @@ const DisseminationLists = () => {
     <>
       <AccessesMenu/>
       <PageContainer withRightMenu>
-        <Breadcrumbs noMargin elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
         {!isEnterpriseEdition ? (
           <EnterpriseEdition feature="File indexing" />
         ) : (
           <>
             <AlertInfo
+              style={{ marginBottom: '16px' }}
               content={t_i18n('Disseminations lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
             />
             {queryRef && (

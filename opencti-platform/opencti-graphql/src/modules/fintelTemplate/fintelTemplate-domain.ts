@@ -256,7 +256,7 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
 };
 
-const MINIMAL_VERSION_FOR_IMPORT = '6.4.8';
+const MINIMAL_VERSION_FOR_IMPORT = '6.5.0';
 
 export const fintelTemplateExport = async (context: AuthContext, user: AuthUser, template: BasicStoreEntityFintelTemplate) => {
   const {

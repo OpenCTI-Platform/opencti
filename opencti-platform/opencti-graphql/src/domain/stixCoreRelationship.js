@@ -137,18 +137,16 @@ export const stixCoreRelationshipDeleteRelation = async (context, user, stixCore
 // endregion
 
 // region context
-export const stixCoreRelationshipCleanContext = (context, user, stixCoreRelationshipId) => {
-  delEditContext(user, stixCoreRelationshipId);
-  return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
-  });
+export const stixCoreRelationshipCleanContext = async (context, user, stixCoreRelationshipId) => {
+  await delEditContext(user, stixCoreRelationshipId);
+  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  return await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
 };
 
-export const stixCoreRelationshipEditContext = (context, user, stixCoreRelationshipId, input) => {
-  setEditContext(user, stixCoreRelationshipId, input);
-  return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
-  });
+export const stixCoreRelationshipEditContext = async (context, user, stixCoreRelationshipId, input) => {
+  await setEditContext(user, stixCoreRelationshipId, input);
+  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  return await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
 };
 // endregion
 

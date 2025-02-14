@@ -94,7 +94,6 @@ const inlineStyles: Record<string, CSSProperties> = {
   messages: {
     float: 'left',
     width: '10%',
-    paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -107,7 +106,6 @@ const inlineStyles: Record<string, CSSProperties> = {
   updated_at: {
     float: 'left',
     width: '15%',
-    paddingLeft: 5,
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -329,7 +327,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             <ListItem
               classes={{ root: classes.itemHead }}
               divider={false}
-              style={{ paddingTop: 0, paddingRight: 10 }}
+              style={{ paddingTop: 0 }}
             >
               <ListItemIcon>
                 <span
@@ -349,13 +347,13 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     width: '100%',
                   }}
                   >
-                    <div style={{ width: '24%' }}>
+                    <div style={{ width: '25%' }}>
                       <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ width: '10%' }}>
                       <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
-                    <div style={{ width: '14%' }}>
+                    <div style={{ width: '15%' }}>
                       <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ width: '10%' }}>

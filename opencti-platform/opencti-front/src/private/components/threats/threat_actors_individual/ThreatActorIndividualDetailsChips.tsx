@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button } from '@mui/material';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
@@ -6,9 +6,10 @@ import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__gen
 import AddPersonaThreatActorIndividual from './AddPersonasThreatActorIndividual';
 import AddIndividualsThreatActorIndividual from './AddIndividualsThreatActorIndividual';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import CardLabel from '../../../../components/CardLabel';
 
 type SupportedTypes = 'known-as' | 'impersonates';
-type SupportedFields = 'persona_name' | 'name';
+type SupportedFields = 'observable_value' | 'name';
 
 interface MappingFields {
   title: string,
@@ -20,7 +21,7 @@ interface MappingFields {
 const typeMappings: Record<SupportedTypes, MappingFields> = {
   'known-as': {
     title: 'Also known as',
-    field: 'persona_name',
+    field: 'observable_value',
     path: '/dashboard/observations/observables',
     AddComponent: AddPersonaThreatActorIndividual,
   },
@@ -62,26 +63,17 @@ ThreatActorIndividualDetailsChipsProps
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-      }}
-      >
-
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-        >
-          {title}
-        </Typography>
+      <CardLabel action={(
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
         >
           <AddComponent threatActorIndividual={data} />
         </Security>
-      </div>
-      <div className='clearfix' />
+      )}
+      >
+        {title}
+      </CardLabel>
+      <div className='clearfix'/>
       <FieldOrEmpty source={nodes}>
         {
         nodes.map(({ id, to }) => (

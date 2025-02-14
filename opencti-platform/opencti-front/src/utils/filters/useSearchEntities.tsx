@@ -902,9 +902,9 @@ const useSearchEntities = ({
                 (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs
                   ?.edges ?? []
               ).map((n) => ({
-                label: n?.node.label,
+                label: t_i18n(`entity_${n?.node.id}`),
                 value: n?.node.id,
-                type: 'Vocabulary',
+                type: n?.node.id,
               }));
               unionSetEntities(
                 filterKey,

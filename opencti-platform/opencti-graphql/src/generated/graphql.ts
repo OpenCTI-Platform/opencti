@@ -15928,6 +15928,7 @@ export type MutationUploadPendingArgs = {
   entityId?: InputMaybe<Scalars['String']['input']>;
   errorOnExisting?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
+  file_markings?: InputMaybe<Array<Scalars['String']['input']>>;
   labels?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   refreshEntity?: InputMaybe<Scalars['Boolean']['input']>;
 };

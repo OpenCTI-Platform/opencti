@@ -81,13 +81,19 @@ const inlineStylesHeaders = {
   },
   labels: {
     float: 'left',
-    width: '20%',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  markings: {
+    float: 'left',
+    width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
   lastModified: {
     float: 'left',
-    width: '20%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -126,8 +132,7 @@ export const importContentQuery = graphql`
         }
       }
     }
-    pendingFiles(first: 100)
-    @connection(key: "Pagination_global_pendingFiles") {
+    pendingFiles(first: 100) @connection(key: "Pagination_global_pendingFiles") {
       edges {
         node {
           id
@@ -401,11 +406,8 @@ const ImportContentComponent = ({
                         {sortHeader('name', 'Name', false)}
                         {sortHeader('creator_name', 'Creator', false)}
                         {sortHeader('labels', 'Labels', false)}
-                        {sortHeader(
-                          'lastModified',
-                          'Modification date',
-                          false,
-                        )}
+                        {sortHeader('markings', 'Markings', false)}
+                        {sortHeader('lastModified', 'Modification date', false)}
                       </div>
                       }
                   />
@@ -415,9 +417,7 @@ const ImportContentComponent = ({
                   <WorkbenchFileLine
                     key={file.node.id}
                     file={file.node}
-                    connectors={
-                        importConnsPerFormat[file.node.metaData.mimetype]
-                      }
+                    connectors={importConnsPerFormat[file.node.metaData.mimetype]}
                     handleOpenImport={handleOpenValidate}
                   />
                 ))}
