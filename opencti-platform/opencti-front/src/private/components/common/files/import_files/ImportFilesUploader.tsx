@@ -7,8 +7,6 @@ import { alpha } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 
-type File = { name: string; type?: string; };
-
 interface ImportFilesUploaderProps {
   files?: File[];
   onChange: (files: File[]) => void;
