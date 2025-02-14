@@ -27,7 +27,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 import { createEntity } from '../database/middleware';
-import { createRuleTask, deleteRuleTasks } from './backgroundTask';
+import { createRuleTask } from './backgroundTask';
 import { notify } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isModuleActivated } from './settings';
