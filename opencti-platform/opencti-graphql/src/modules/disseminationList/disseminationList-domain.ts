@@ -25,7 +25,7 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
-import { downloadFile, loadFile } from '../../database/file-storage';
+import { downloadFile, getFileContent, loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
@@ -84,53 +84,36 @@ export const sendDisseminationEmail = async (
   for (let i = 0; i < attachFileIds.length; i += 1) {
     const attachFileId = attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
-    // To be disseminated a file must be Accessible and A PDF
-    if (file && (file.metaData.mimetype === 'application/pdf' || file.metaData.mimetype === 'text/html')) {
+
+    // To be disseminated a file must be Accessible and A PDF or HTML
+    if (file && ['application/pdf', 'text/html'].includes(file.metaData.mimetype)) {
       sentFiles.push(file);
-      if (file.metaData.mimetype === 'text/html' && includeHtmlInBody) {
-        const stream = await downloadFile(file.id);
-        let fileContent = '';
-        const streamPromise = new Promise<void>((resolve, reject) => {
-          stream.on('data', (chunk) => {
-            fileContent += chunk;
-          });
-          stream.on('end', () => {
-            generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: fileContent });
-            const sendMailArgs: SendMailArgs = {
-              from: settings.platform_email,
-              to: toEmail,
-              bcc: [...emails, user.user_email],
-              subject: object,
-              html: generatedEmailBody,
-              attachments: undefined,
-            };
-            resolve(sendMail(sendMailArgs));
-          });
-          stream.on('error', reject);
-        });
-        await streamPromise;
-        attachmentListForSendMail.push({ filename: file.name, content: stream });
+      const stream = await downloadFile(file.id);
+      attachmentListForSendMail.push({ filename: file.name, content: stream });
+
+      // If the HTML file is included in the email body
+      if (includeHtmlInBody && file.metaData.mimetype === 'text/html') {
+        const fileContent = await getFileContent(file.id);
+        generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: fileContent });
+
+        // If the HTML file is sent as an attachment or if the file is a PDF
+      } else if (!includeHtmlInBody) {
+        const emailBodyFormatted = body.replaceAll('\n', '<br/>');
+        generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
       } else {
-        const stream = await downloadFile(file.id);
-        attachmentListForSendMail.push({ filename: file.name, content: stream });
+        throw UnsupportedError('File cant be disseminate', { id: attachFileId });
       }
-    } else {
-      throw UnsupportedError('File cant be disseminate', { id: attachFileId });
+      const sendMailArgs: SendMailArgs = {
+        from: settings.platform_email,
+        to: toEmail,
+        bcc: [...emails, user.user_email],
+        subject: object,
+        html: generatedEmailBody,
+        attachments: includeHtmlInBody ? undefined : attachmentListForSendMail,
+      };
+      await sendMail(sendMailArgs);
+      addDisseminationCount();
     }
-  }
-  if (!includeHtmlInBody) {
-    const emailBodyFormatted = body.replaceAll('\n', '<br/>');
-    generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
-    const sendMailArgs: SendMailArgs = {
-      from: settings.platform_email,
-      to: toEmail,
-      bcc: [...emails, user.user_email],
-      subject: object,
-      html: generatedEmailBody,
-      attachments: attachmentListForSendMail,
-    };
-    await sendMail(sendMailArgs);
-    addDisseminationCount();
   }
   return sentFiles;
 };
