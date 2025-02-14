@@ -29440,6 +29440,7 @@ export type UserAddInput = {
   name: Scalars['String']['input'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
   password: Scalars['String']['input'];
+  prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_auto_collapse?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_show_icons?: InputMaybe<Scalars['Boolean']['input']>;
   theme?: InputMaybe<Scalars['String']['input']>;

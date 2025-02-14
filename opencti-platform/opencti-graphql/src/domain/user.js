@@ -582,7 +582,8 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
     R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
     R.dissoc('roles'),
-    R.dissoc('groups')
+    R.dissoc('groups'),
+    R.dissoc('prevent_default_groups')
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
@@ -593,24 +594,32 @@ export const addUser = async (context, user, newUser) => {
     relationship_type: RELATION_PARTICIPATE_TO,
   }));
   await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
-  // Either use the provided groups or Assign the default groups to user (SSO)
-  const userRelationGroups = (newUser.groups ?? []).map((group) => ({
-    fromId: element.id,
-    toId: group,
-    relationship_type: RELATION_MEMBER_OF,
-  }));
-  const defaultAssignationFilter = {
-    mode: 'and',
-    filters: [{ key: 'default_assignation', values: [true] }],
-    filterGroups: [],
-  };
-  const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
-  const defaultRelationGroups = defaultGroups.edges.map((e) => ({
-    fromId: element.id,
-    toId: e.node.internal_id,
-    relationship_type: RELATION_MEMBER_OF,
-  }));
-  const relationGroups = [...userRelationGroups, ...defaultRelationGroups];
+  // Add the provided groups
+  let relationGroups = [];
+  if ((newUser.groups ?? []).length > 0) {
+    relationGroups = (newUser.groups ?? []).map((group) => ({
+      fromId: element.id,
+      toId: group,
+      relationship_type: RELATION_MEMBER_OF,
+    }));
+  }
+  // if prevent_default_groups is not true, assign the default groups to the user
+  if (newUser.prevent_default_groups !== true) {
+    const defaultAssignationFilter = {
+      mode: 'and',
+      filters: [{ key: 'default_assignation', values: [true] }],
+      filterGroups: [],
+    };
+    const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
+    const relationDefaultGroups = defaultGroups.edges
+      .filter((e) => !(newUser.groups ?? []).includes(e.node.internal_id)) // remove groups already in new user group input
+      .map((e) => ({
+        fromId: element.id,
+        toId: e.node.internal_id,
+        relationship_type: RELATION_MEMBER_OF,
+      }));
+    relationGroups = [...relationGroups, ...relationDefaultGroups];
+  }
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   if (isCreation) {
@@ -1082,7 +1091,11 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false } = opts;
+  const {
+    providerGroups = [],
+    providerOrganizations = [],
+    autoCreateGroup = false,
+  } = opts;
   const context = executionContext('login_provider');
   // region test the groups existence and eventually auto create groups
   if (providerGroups.length > 0) {
