@@ -39,9 +39,11 @@ import ItemCopy from '../../../components/ItemCopy';
 import Loader from '../../../components/Loader';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
-import { ThemesEditor_themes$key } from './__generated__/ThemesEditor_themes.graphql';
-import ThemesEditor, { refetchableThemesQuery } from './ThemesEditor';
 import type { Theme } from '../../../components/Theme';
+import Themes, { refetchableThemesQuery } from './themes/Themes';
+import { Themes_themes$key } from './themes/__generated__/Themes_themes.graphql';
+import { deserializeThemeManifest } from './themes/ThemeType';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const settingsQuery = graphql`
   query SettingsQuery {
@@ -56,24 +58,6 @@ const settingsQuery = graphql`
       platform_login_message
       platform_banner_text
       platform_banner_level
-      platform_theme_dark_background
-      platform_theme_dark_paper
-      platform_theme_dark_nav
-      platform_theme_dark_primary
-      platform_theme_dark_secondary
-      platform_theme_dark_accent
-      platform_theme_dark_logo
-      platform_theme_dark_logo_collapsed
-      platform_theme_dark_logo_login
-      platform_theme_light_background
-      platform_theme_light_paper
-      platform_theme_light_nav
-      platform_theme_light_primary
-      platform_theme_light_secondary
-      platform_theme_light_accent
-      platform_theme_light_logo
-      platform_theme_light_logo_collapsed
-      platform_theme_light_logo_login
       platform_ai_enabled
       platform_ai_type
       platform_ai_model
@@ -120,7 +104,7 @@ const settingsQuery = graphql`
         version
       }
     }
-    ...ThemesEditor_themes
+    ...Themes_themes
   }
 `;
 
@@ -133,24 +117,6 @@ export const settingsMutationFieldPatch = graphql`
         platform_favicon
         platform_email
         platform_theme
-        platform_theme_dark_background
-        platform_theme_dark_paper
-        platform_theme_dark_nav
-        platform_theme_dark_primary
-        platform_theme_dark_secondary
-        platform_theme_dark_accent
-        platform_theme_dark_logo
-        platform_theme_dark_logo_collapsed
-        platform_theme_dark_logo_login
-        platform_theme_light_background
-        platform_theme_light_paper
-        platform_theme_light_nav
-        platform_theme_light_primary
-        platform_theme_light_secondary
-        platform_theme_light_accent
-        platform_theme_light_logo
-        platform_theme_light_logo_collapsed
-        platform_theme_light_logo_login
         platform_language
         platform_whitemark
         platform_enterprise_edition {
@@ -193,24 +159,6 @@ const settingsValidation = (t: (s: string) => string) => Yup.object().shape({
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   platform_theme: Yup.string().nullable(),
-  platform_theme_dark_background: Yup.string().nullable(),
-  platform_theme_dark_paper: Yup.string().nullable(),
-  platform_theme_dark_nav: Yup.string().nullable(),
-  platform_theme_dark_primary: Yup.string().nullable(),
-  platform_theme_dark_secondary: Yup.string().nullable(),
-  platform_theme_dark_accent: Yup.string().nullable(),
-  platform_theme_dark_logo: Yup.string().nullable(),
-  platform_theme_dark_logo_collapsed: Yup.string().nullable(),
-  platform_theme_dark_logo_login: Yup.string().nullable(),
-  platform_theme_light_background: Yup.string().nullable(),
-  platform_theme_light_paper: Yup.string().nullable(),
-  platform_theme_light_nav: Yup.string().nullable(),
-  platform_theme_light_primary: Yup.string().nullable(),
-  platform_theme_light_secondary: Yup.string().nullable(),
-  platform_theme_light_accent: Yup.string().nullable(),
-  platform_theme_light_logo: Yup.string().nullable(),
-  platform_theme_light_logo_collapsed: Yup.string().nullable(),
-  platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_whitemark: Yup.string().nullable(),
   enterprise_license: Yup.string().nullable(),
@@ -225,11 +173,12 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
 
   const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
+  const [commit] = useApiMutation(settingsMutationFieldPatch);
 
   const data = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
   const [{ themes }, refetch] = useRefetchableFragment<
   SettingsQuery,
-  ThemesEditor_themes$key
+  Themes_themes$key
   >(
     refetchableThemesQuery,
     data,
@@ -251,39 +200,12 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
     });
   };
   const handleSubmitField = (id: string, name: string, value: string | null) => {
-    let finalValue = value ?? '';
-    if (
-      [
-        'platform_theme_dark_background',
-        'platform_theme_dark_paper',
-        'platform_theme_dark_nav',
-        'platform_theme_dark_primary',
-        'platform_theme_dark_secondary',
-        'platform_theme_dark_accent',
-        'platform_theme_light_background',
-        'platform_theme_light_paper',
-        'platform_theme_light_nav',
-        'platform_theme_light_primary',
-        'platform_theme_light_secondary',
-        'platform_theme_light_accent',
-      ].includes(name)
-      && finalValue.length > 0
-    ) {
-      if (!finalValue.startsWith('#')) {
-        finalValue = `#${finalValue}`;
-      }
-      finalValue = finalValue.substring(0, 7);
-      if (finalValue.length < 7) {
-        finalValue = '#000000';
-      }
-    }
+    const finalValue = value ?? '';
     settingsValidation(t_i18n)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
-        commitMutation({
-          ...defaultCommitMutation,
-          mutation: settingsMutationFieldPatch,
-          variables: { id, input: { key: name, value: finalValue || '' } },
+        commit({
+          variables: { id, input: { key: name, value: finalValue } },
         });
       })
       .catch(() => false);
@@ -307,24 +229,6 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
     'platform_login_message',
     'platform_banner_text',
     'platform_banner_level',
-    'platform_theme_dark_background',
-    'platform_theme_dark_paper',
-    'platform_theme_dark_nav',
-    'platform_theme_dark_primary',
-    'platform_theme_dark_secondary',
-    'platform_theme_dark_accent',
-    'platform_theme_dark_logo',
-    'platform_theme_dark_logo_collapsed',
-    'platform_theme_dark_logo_login',
-    'platform_theme_light_background',
-    'platform_theme_light_paper',
-    'platform_theme_light_nav',
-    'platform_theme_light_primary',
-    'platform_theme_light_secondary',
-    'platform_theme_light_accent',
-    'platform_theme_light_logo',
-    'platform_theme_light_logo_collapsed',
-    'platform_theme_light_logo_login',
   ];
   const initialValues = valsToPick.reduce((acc, key) => {
     if (key in settings) {
@@ -615,7 +519,11 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     }
                   >
                     {themes.edges?.filter((node) => !!node).map(({ node }) => (
-                      <MenuItem key={node.id} value={node.name}>{node.name}</MenuItem>
+                      <MenuItem key={node.id} value={node.name}>
+                        {deserializeThemeManifest(node.manifest)
+                          ? t_i18n(node.name)
+                          : node.name}
+                      </MenuItem>
                     ))}
                   </Field>
                   <Field
@@ -779,18 +687,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           />
         </Grid>
         <Grid item xs={8}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Theme Settings')}
-            <ThemesEditor
-              currentTheme={settings.platform_theme}
-              themes={themes}
-              refetch={handleRefetch}
-              editContext={editContext as {
-                name: string,
-                focusOn: string
-              }[]}
-            />
-          </Typography>
+          <Themes handleRefetch={handleRefetch} />
         </Grid>
         <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>
