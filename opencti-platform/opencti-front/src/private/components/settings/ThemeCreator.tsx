@@ -89,7 +89,7 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
   const [commit] = useApiMutation<ThemeCreatorCreateMutation>(
     createThemeMutation,
     undefined,
-    { successMessage: `${t_i18n('Theme')} ${t_i18n('successfully created')}` },
+    { successMessage: `${t_i18n('Theme successfully created')}` },
   );
 
   const handleSubmit = (
