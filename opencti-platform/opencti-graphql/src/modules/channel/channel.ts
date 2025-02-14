@@ -15,11 +15,13 @@ import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
@@ -42,6 +44,7 @@ import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 
 export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
   type: {
@@ -123,6 +126,9 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
         { name: ENTITY_USER_ACCOUNT, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_INTRUSION_SET, type: REL_EXTENDED },
       ]
     },
     {
