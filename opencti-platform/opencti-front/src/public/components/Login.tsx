@@ -25,6 +25,7 @@ import { useFormatter } from '../../components/i18n';
 import { isNotEmptyField } from '../../utils/utils';
 import useDimensions from '../../utils/hooks/useDimensions';
 import SystemBanners from './SystemBanners';
+import { deserializeThemeManifest } from '../../private/components/settings/themes/ThemeType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -179,9 +180,10 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
     ? settings.platform_consent_confirm_text
     : t_i18n('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
-  const loginLogo = themes?.edges?.filter((node) => !!node)
+  const defaultTheme = themes?.edges?.filter((node) => !!node)
     .map(({ node }) => ({ ...node }))
-    .filter(({ name }) => name === settings.platform_theme)?.[0]
+    .filter(({ name }) => name === settings.platform_theme)?.[0];
+  const loginLogo = deserializeThemeManifest(defaultTheme?.manifest)
     .theme_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;

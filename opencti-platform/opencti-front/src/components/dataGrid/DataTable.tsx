@@ -60,36 +60,41 @@ const DataTableInternalFilters = ({
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          gap: theme.spacing(1),
-          marginBottom: theme.spacing(2),
-        }}
-      >
-        {!hideSearch && (
-          <SearchInput
-            variant={'small'}
-            onSubmit={helpers.handleSearch}
-            keyword={searchTerm}
-          />
-        )}
+      {/* Wrap div in logic so if there are no filters and no search,
+        * there isn't an empty div block with 16px bottom margin.
+        */}
+      {(!hideFilters || !hideSearch) && (
+        <div
+          style={{
+            display: 'flex',
+            gap: theme.spacing(1),
+            marginBottom: theme.spacing(2),
+          }}
+        >
+          {!hideSearch && (
+            <SearchInput
+              variant={'small'}
+              onSubmit={helpers.handleSearch}
+              keyword={searchTerm}
+            />
+          )}
 
-        {!hideFilters && (
-          <DataTableFilters
-            additionalFilters={additionalFilters}
-            availableFilterKeys={availableFilterKeys}
-            searchContextFinal={searchContextFinal}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationshipTypes={availableRelationshipTypes}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            exportContext={exportContext}
-            paginationOptions={paginationOptions}
-            additionalHeaderButtons={additionalHeaderButtons}
-            currentView={currentView}
-          />
-        )}
-      </div>
+          {!hideFilters && (
+            <DataTableFilters
+              additionalFilters={additionalFilters}
+              availableFilterKeys={availableFilterKeys}
+              searchContextFinal={searchContextFinal}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationshipTypes={availableRelationshipTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              exportContext={exportContext}
+              paginationOptions={paginationOptions}
+              additionalHeaderButtons={additionalHeaderButtons}
+              currentView={currentView}
+            />
+          )}
+        </div>
+      )}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}

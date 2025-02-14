@@ -376,7 +376,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await addSettings(context, SYSTEM_USER, {
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
-    platform_theme: 'dark',
+    platform_theme: 'Dark',
     platform_language: 'auto',
   });
   await initCreateEntitySettings(context, SYSTEM_USER);

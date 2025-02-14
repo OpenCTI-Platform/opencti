@@ -8,7 +8,7 @@ import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
-import { CustomThemeBaseType } from '../private/components/settings/ThemeCreator';
+import { deserializeThemeManifest } from '../private/components/settings/themes/ThemeType';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
@@ -16,13 +16,17 @@ interface AppThemeProviderProps {
   themes: RootPrivateQuery$data['themes'];
 }
 
-interface AppThemeType extends Omit<
-CustomThemeBaseType,
-'theme_logo' | 'theme_logo_collapsed' | 'theme_logo_login'
-> {
-  theme_logo: string | null | undefined;
-  theme_logo_collapsed: string | null | undefined;
-  theme_logo_login: string | null | undefined;
+interface AppThemeType {
+  name: string;
+  theme_background: string;
+  theme_paper: string;
+  theme_nav: string;
+  theme_primary: string;
+  theme_secondary: string;
+  theme_accent: string;
+  theme_logo: string;
+  theme_logo_collapsed: string;
+  theme_logo_login: string;
 }
 
 const themeBuilder = (
@@ -36,7 +40,7 @@ const themeBuilder = (
   const platformThemePrimary = theme?.theme_primary ?? null;
   const platformThemeSecondary = theme?.theme_secondary ?? null;
   const platformThemeAccent = theme?.theme_accent ?? null;
-  if (theme?.name === 'light') {
+  if (theme?.name === 'Light') {
     // needed until everything is customizable, like text colors
     return themeLight(
       platformThemeLogo,
@@ -86,7 +90,16 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   const themeName = me?.theme && me.theme !== 'default' ? me.theme : platformTheme;
   const theme: AppThemeType = themes?.edges
     ?.filter((node) => !!node)
-    .map((node) => node.node)
+    .map(({ node }) => {
+      const manifestFields = deserializeThemeManifest(node.manifest);
+      return {
+        name: node.name,
+        ...manifestFields,
+        theme_logo: manifestFields.theme_logo ?? '',
+        theme_logo_collapsed: manifestFields.theme_logo_collapsed ?? '',
+        theme_logo_login: manifestFields.theme_logo_login ?? '',
+      };
+    })
     .find(({ name }) => name === themeName)
     ?? defaultTheme;
   const themeComponent = themeBuilder(theme);

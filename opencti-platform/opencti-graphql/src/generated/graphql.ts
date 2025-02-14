@@ -13988,6 +13988,7 @@ export type Mutation = {
   themeAdd?: Maybe<Theme>;
   themeDelete?: Maybe<Scalars['ID']['output']>;
   themeFieldPatch?: Maybe<Theme>;
+  themeImport?: Maybe<Theme>;
   threatActorGroupAdd?: Maybe<ThreatActorGroup>;
   threatActorGroupEdit?: Maybe<ThreatActorGroupEditMutations>;
   threatActorIndividualAdd?: Maybe<ThreatActorIndividual>;
@@ -15916,6 +15917,11 @@ export type MutationThemeFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationThemeImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -27799,31 +27805,16 @@ export type Theme = BasicObject & InternalObject & {
   __typename?: 'Theme';
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  manifest?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
-  theme_accent: Scalars['String']['output'];
-  theme_background: Scalars['String']['output'];
-  theme_logo?: Maybe<Scalars['String']['output']>;
-  theme_logo_collapsed?: Maybe<Scalars['String']['output']>;
-  theme_logo_login?: Maybe<Scalars['String']['output']>;
-  theme_nav: Scalars['String']['output'];
-  theme_paper: Scalars['String']['output'];
-  theme_primary: Scalars['String']['output'];
-  theme_secondary: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
 };
 
 export type ThemeAddInput = {
+  manifest: Scalars['String']['input'];
   name: Scalars['String']['input'];
-  theme_accent: Scalars['String']['input'];
-  theme_background: Scalars['String']['input'];
-  theme_logo?: InputMaybe<Scalars['String']['input']>;
-  theme_logo_collapsed?: InputMaybe<Scalars['String']['input']>;
-  theme_logo_login?: InputMaybe<Scalars['String']['input']>;
-  theme_nav: Scalars['String']['input'];
-  theme_paper: Scalars['String']['input'];
-  theme_primary: Scalars['String']['input'];
-  theme_secondary: Scalars['String']['input'];
 };
 
 export type ThemeConnection = {
@@ -38184,6 +38175,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   themeAdd?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<MutationThemeAddArgs, 'input'>>;
   themeDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationThemeDeleteArgs, 'id'>>;
   themeFieldPatch?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<MutationThemeFieldPatchArgs, 'id' | 'input'>>;
+  themeImport?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<MutationThemeImportArgs, 'file'>>;
   threatActorGroupAdd?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupAddArgs, 'input'>>;
   threatActorGroupEdit?: Resolver<Maybe<ResolversTypes['ThreatActorGroupEditMutations']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupEditArgs, 'id'>>;
   threatActorIndividualAdd?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualAddArgs, 'input'>>;
@@ -41579,18 +41571,11 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
 export type ThemeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Theme'] = ResolversParentTypes['Theme']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_logo_collapsed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_logo_login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  theme_nav?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_paper?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_primary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_secondary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

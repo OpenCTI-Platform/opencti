@@ -139,7 +139,7 @@ const createHttpServer = async () => {
         executeContext.req = req;
         executeContext.res = res;
         const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-        executeContext.otp_mandatory = settings.otp_mandatory ?? false;
+        executeContext.otp_mandatory = settings?.otp_mandatory ?? false;
         executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
         executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
         executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
