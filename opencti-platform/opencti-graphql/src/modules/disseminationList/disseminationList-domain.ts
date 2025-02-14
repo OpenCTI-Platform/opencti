@@ -80,7 +80,7 @@ export const sendDisseminationEmail = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const sentFiles = [];
   const attachmentListForSendMail = [];
-  let generatedEmailBody = body;
+  let generatedEmailBody;
   for (let i = 0; i < attachFileIds.length; i += 1) {
     const attachFileId = attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
