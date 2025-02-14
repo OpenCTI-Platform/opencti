@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { DeleteForeverOutlined, DeleteOutlined, RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
@@ -362,13 +362,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={8}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -378,7 +378,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </Typography>
                 <pre style={{ margin: 0 }}>{user.user_email}</pre>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -402,7 +402,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                 </pre>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
                   {t_i18n('Token')}
                 </Typography>
@@ -450,19 +450,19 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </IconButton>
                 </pre>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Firstname')}
                 </Typography>
                 {user.firstname || '-'}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Lastname')}
                 </Typography>
                 {user.lastname || '-'}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Account status')}
                 </Typography>
@@ -472,7 +472,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   variant="outlined"
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Account expiration date')}
                 </Typography>
@@ -481,13 +481,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Roles')}
                 </Typography>
@@ -517,7 +517,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Groups')}
                 </Typography>
@@ -551,7 +551,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Organizations')}
                 </Typography>
@@ -587,7 +587,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -651,12 +651,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <HiddenTypesChipList
                   hiddenTypes={user.default_hidden_types ?? []}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -671,7 +671,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </Paper>
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
-        <Grid item xs={6} style={{ marginTop: 10 }}>
+        <Grid size={{ xs: 1 }} style={{ marginTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Operations')}
           </Typography>
@@ -752,7 +752,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             )}
           </Paper>
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 10 }}>
+        <Grid size={{ xs: 1 }} style={{ marginTop: 10 }}>
           {isGrantedToAudit ? (
             <UserHistory userId={user.id} />
           ) : (

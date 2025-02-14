@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -474,7 +474,7 @@ const FeedEditionContainer = (props) => {
                               <CancelOutlined fontSize="small" />
                             </IconButton>
                             <Grid container={true} spacing={3}>
-                              <Grid item xs="auto">
+                              <Grid xs="auto">
                                 <MuiTextField
                                   variant="standard"
                                   name="attribute"
@@ -488,7 +488,6 @@ const FeedEditionContainer = (props) => {
                               {selectedTypes.map((selectedType) => (
                                 <Grid
                                   key={selectedType}
-                                  item
                                   xs="auto"
                                 >
                                   <FormControl

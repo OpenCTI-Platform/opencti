@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { Channel_channel$key } from '@components/arsenal/channels/__generated__/Channel_channel.graphql';
 import ChannelDetails from './ChannelDetails';
 import ChannelEdition from './ChannelEdition';
@@ -89,19 +89,19 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ChannelDetails channel={channel} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview stixDomainObject={channel} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={channel.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/arsenal/channels/${channel.id}/knowledge`}
@@ -110,7 +110,7 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={channel.id}
                     />
@@ -118,7 +118,7 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={channel.id}
                     />
@@ -126,7 +126,7 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={channel.id}
                     />
@@ -134,7 +134,7 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={channel.id}
                       defaultMarkings={channel.objectMarking ?? []}

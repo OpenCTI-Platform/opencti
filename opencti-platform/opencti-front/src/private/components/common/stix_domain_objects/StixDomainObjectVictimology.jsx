@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Divider from '@mui/material/Divider';
 import StixDomainObjectVictimologySectors, { stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery } from './StixDomainObjectVictimologySectors';
 import inject18n from '../../../../components/i18n';
@@ -59,9 +59,7 @@ class StixDomainObjectVictimology extends Component {
       <>
         <Grid container={true} spacing={3} style={{ marginTop: 15 }}>
           <Grid
-            item
-            xs={6}
-            style={{ height: 300, minHeight: 300, paddingTop: 0 }}
+            size={{ xs: 1 }} style={{ height: 300, minHeight: 300, paddingTop: 0 }}
           >
             <EntityStixCoreRelationshipsHorizontalBars
               title={t('Victimology (sectors)')}
@@ -73,9 +71,7 @@ class StixDomainObjectVictimology extends Component {
             />
           </Grid>
           <Grid
-            item
-            xs={6}
-            style={{ height: 300, minHeight: 300, paddingTop: 0 }}
+            size={{ xs: 1 }} style={{ height: 300, minHeight: 300, paddingTop: 0 }}
           >
             <EntityStixCoreRelationshipsHorizontalBars
               title={t('Victimology (regions)')}
@@ -87,9 +83,7 @@ class StixDomainObjectVictimology extends Component {
             />
           </Grid>
           <Grid
-            item
-            xs={6}
-            style={{
+            size={{ xs: 1 }} style={{
               marginTop: 60,
               height: 300,
               minHeight: 300,
@@ -106,9 +100,7 @@ class StixDomainObjectVictimology extends Component {
             />
           </Grid>
           <Grid
-            item
-            xs={6}
-            style={{
+            size={{ xs: 1 }} style={{
               marginTop: 60,
               height: 300,
               minHeight: 300,

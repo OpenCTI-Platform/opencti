@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import React, { CSSProperties, Suspense, useMemo } from 'react';
 import Paper from '@mui/material/Paper';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
@@ -112,7 +112,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={hasTemplates ? 6 : 12}>
+        <Grid xs={hasTemplates ? 6 : 12}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
           </Typography>
@@ -142,7 +142,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
 
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
-          <Grid item xs={12}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t_i18n('Attributes')}
             </Typography>

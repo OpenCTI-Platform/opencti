@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { ThreatActorGroup_ThreatActorGroup$key } from '@components/threats/threat_actors_group/__generated__/ThreatActorGroup_ThreatActorGroup.graphql';
 import ThreatActorGroupDetails from './ThreatActorGroupDetails';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
@@ -93,19 +93,19 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ThreatActorGroupDetails threatActorGroup={threatActorGroup} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview stixDomainObject={threatActorGroup} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={threatActorGroup.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
@@ -114,7 +114,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={threatActorGroup.id}
                     />
@@ -122,7 +122,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={threatActorGroup.id}
                     />
@@ -130,7 +130,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={threatActorGroup.id}
                     />
@@ -138,7 +138,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={threatActorGroup.id}
                       defaultMarkings={threatActorGroup.objectMarking ?? []}

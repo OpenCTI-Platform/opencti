@@ -1,5 +1,5 @@
 import React from 'react';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
@@ -114,7 +114,7 @@ const Users = () => {
       {isSetAccess || isEnterpriseEdition ? (
         renderLines()
       ) : (
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <EnterpriseEdition
             feature="Organization sharing"
           />

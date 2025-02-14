@@ -3,7 +3,7 @@ import React, { CSSProperties } from 'react';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { RestartAlt } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
@@ -60,7 +60,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
 
   return layout ? (
     <>
-      <Grid item xs={6}>
+      <Grid size={{ xs: 1 }}>
         <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }}>
           <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
             <span>{t_i18n('Overview layout customization')}</span>
@@ -87,7 +87,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
           />
         </Paper>
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={{ xs: 1 }}>
         <Typography variant="h4" gutterBottom={true} sx={{ marginTop: 1, marginBottom: 2 }}>
           {t_i18n('Preview')}
         </Typography>
@@ -98,7 +98,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
         >
           <Grid container>
             {layout.map(({ key, width, label }) => (
-              <Grid item xs={width} key={key}>
+              <Grid size={{ xs: 1 }} key={key}>
                 <Paper
                   className={'paper-for-grid'}
                   style={{

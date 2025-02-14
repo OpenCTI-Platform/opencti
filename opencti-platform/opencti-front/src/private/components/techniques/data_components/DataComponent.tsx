@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import DataComponentDetails from './DataComponentDetails';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
@@ -89,19 +89,19 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <DataComponentDetails dataComponent={dataComponent} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview stixDomainObject={dataComponent} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={dataComponent.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_components/${dataComponent.id}/knowledge`}
@@ -110,7 +110,7 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={dataComponent.id}
                     />
@@ -118,7 +118,7 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={dataComponent.id}
                     />
@@ -126,7 +126,7 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={dataComponent.id}
                     />
@@ -134,7 +134,7 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={dataComponent.id}
                       defaultMarkings={dataComponent.objectMarking ?? []}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { createRefetchContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -319,13 +319,13 @@ const ConnectorComponent = ({ connector, relay }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Type')}
                 </Typography>
@@ -335,13 +335,13 @@ const ConnectorComponent = ({ connector, relay }) => {
                   label={connector.connector_type}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Last update')}
                 </Typography>
                 {nsdt(connector.updated_at)}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Only contextual')}
                 </Typography>
@@ -350,7 +350,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   label={connectorOnlyContextualStatus.label}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Automatic trigger')}
                 </Typography>
@@ -359,7 +359,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   label={connectorTriggerStatus.label}
                 />
               </Grid>
-              <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
+              <Grid xs={connectorFiltersEnabled ? 6 : 12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Scope')}
                 </Typography>
@@ -372,7 +372,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 ))}
               </Grid>
               {connectorFiltersEnabled && (
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                       <span>{t_i18n('Trigger filters')}</span>
@@ -402,7 +402,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 </Grid>
               )}
               <Security needs={[SETTINGS_SETACCESSES]}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Associated user')}
                   </Typography>
@@ -423,7 +423,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
                   )}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Max confidence level')}
                   </Typography>
@@ -435,7 +435,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
                   )}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n("User's roles")}
                   </Typography>
@@ -469,7 +469,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
                   )}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n("User's groups")}
                   </Typography>
@@ -507,7 +507,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
                   )}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n("User's organizations")}
                   </Typography>
@@ -546,21 +546,21 @@ const ConnectorComponent = ({ connector, relay }) => {
 
           </Paper>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Details')}
           </Typography>
           <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (
-                <Grid item xs={12}>
+                <Grid size={{ xs: 1 }}>
                   <Alert severity="warning" icon={<UpdateIcon color={theme.palette.warning.main} />} style={{ alignItems: 'center' }}>
                     <strong>{t_i18n('Buffering: ')}</strong>
                     {t_i18n('Server ingestion is paused until the size of messages is reduced under max capacity')}
                   </Alert>
                 </Grid>
               )}
-              <Grid item={true} xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('State')}
                 </Typography>
@@ -574,7 +574,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 </Tooltip>
               </Grid>
 
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 {!connector.connector_info && (
                   connector.connector_state
                   && connectorStateConverted !== null
@@ -630,7 +630,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 )}
               </Grid>
 
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Next run')}
                 </Typography>
@@ -658,7 +658,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                   </Typography>
                 )}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true} >
                   {t_i18n('Server capacity')}
                 </Typography>

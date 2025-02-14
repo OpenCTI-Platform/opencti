@@ -5,7 +5,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -55,14 +55,14 @@ class ThreatActorGroupDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item xs={hasImages ? 7 : 6}>
+            <Grid xs={hasImages ? 7 : 6}>
               <Grid container={true} spacing={3}>
                 {hasImages && (
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 1 }}>
                     <ImageCarousel data={threatActorGroup} />
                   </Grid>
                 )}
-                <Grid item xs={hasImages ? 8 : 12}>
+                <Grid xs={hasImages ? 8 : 12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Threat actor types')}
                   </Typography>
@@ -92,7 +92,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item xs={hasImages ? 5 : 6}>
+            <Grid xs={hasImages ? 5 : 6}>
               <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
               <Typography
                 variant="h3"
@@ -113,7 +113,7 @@ class ThreatActorGroupDetailsComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 1 }}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -126,7 +126,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 value={threatActorGroup.sophistication}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 1 }}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -139,7 +139,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 value={threatActorGroup.resource_level}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 1 }}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -152,7 +152,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 value={threatActorGroup.primary_motivation}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 1 }}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -182,7 +182,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 1 }}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -209,7 +209,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 1 }}>
               <Typography
                 variant="h3"
                 gutterBottom={true}

@@ -85,33 +85,33 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <IndicatorDetails indicator={indicator} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={indicator}
             withPattern={true}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={indicator.id}
             stixObjectOrStixRelationshipLink={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={indicator.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={indicator.id} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={indicator.id}
             defaultMarkings={indicator.objectMarking ?? []}

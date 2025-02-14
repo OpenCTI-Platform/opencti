@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -93,7 +93,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <LocationMiniMap
             center={
               region.latitude && region.longitude
@@ -104,26 +104,26 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
             zoom={3}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={region}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={region.id}
             stixObjectOrStixRelationshipLink={`/dashboard/locations/regions/${region.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={region.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={region.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={region.id} />
         </Grid>
       </Grid>

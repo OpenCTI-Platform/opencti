@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
@@ -240,7 +240,7 @@ class StixSightingRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -369,7 +369,7 @@ class StixSightingRelationshipContainer extends Component {
               <Divider style={{ marginTop: 30 }} />
               <div style={{ padding: 15 }}>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
@@ -395,7 +395,7 @@ class StixSightingRelationshipContainer extends Component {
                     </Typography>
                     {nsdt(stixSightingRelationship.last_seen)}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 1 }}>
                     <div>
                       <StixSightingRelationshipSharing
                         elementId={stixSightingRelationship.id}
@@ -454,13 +454,13 @@ class StixSightingRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Confidence level')}
                   </Typography>
@@ -503,7 +503,7 @@ class StixSightingRelationshipContainer extends Component {
                   </Typography>
                   {nsdt(stixSightingRelationship.updated_at)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Processing status')}
                   </Typography>
@@ -539,7 +539,7 @@ class StixSightingRelationshipContainer extends Component {
             </Paper>
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 1 }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')}
               </Typography>
@@ -556,24 +556,24 @@ class StixSightingRelationshipContainer extends Component {
             </Grid>
           ) : (
             <>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreObjectOrStixRelationshipLastContainers
                   stixCoreObjectOrStixRelationshipId={
                     stixSightingRelationship.id
                   }
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <StixSightingRelationshipExternalReferences
                   stixSightingRelationshipId={stixSightingRelationship.id}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <StixSightingRelationshipLatestHistory
                   stixSightingRelationshipId={stixSightingRelationship.id}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 1 }}>
                 <StixCoreObjectOrStixCoreRelationshipNotes
                   stixCoreObjectOrStixCoreRelationshipId={
                     stixSightingRelationship.id

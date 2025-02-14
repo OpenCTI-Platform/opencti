@@ -58,7 +58,7 @@ import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -2234,7 +2234,7 @@ class DataTableToolBar extends Component {
                           <CancelOutlined fontSize="small" />
                         </IconButton>
                         <Grid container={true} spacing={3}>
-                          <Grid item xs={3}>
+                          <Grid size={{ xs: 1 }}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Action type')}</InputLabel>
                               <Select
@@ -2254,13 +2254,13 @@ class DataTableToolBar extends Component {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item xs={3}>
+                          <Grid size={{ xs: 1 }}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6}>
+                          <Grid size={{ xs: 1 }}>
                             {this.renderValuesOptions(i, selectedTypes)}
                           </Grid>
                         </Grid>

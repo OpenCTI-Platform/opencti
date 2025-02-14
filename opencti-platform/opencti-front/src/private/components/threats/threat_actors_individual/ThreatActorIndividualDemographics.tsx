@@ -1,6 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@mui/styles';
-import { Chip, Grid, Paper, Typography } from '@mui/material';
+import { Chip, Paper, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import AddThreatActorIndividualDemographic from '@components/threats/threat_actors_individual/AddThreatActorIndividualDemographic';
 import { useFormatter } from '../../../../components/i18n';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
@@ -71,7 +72,7 @@ const ThreatActorIndividualDemographics = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel action={(
               <Security
                 needs={[KNOWLEDGE_KNUPDATE]}
@@ -100,7 +101,7 @@ const ThreatActorIndividualDemographics = ({
               </FieldOrEmpty>
             </div>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel action={(
               <Security
                 needs={[KNOWLEDGE_KNUPDATE]}
@@ -129,7 +130,7 @@ const ThreatActorIndividualDemographics = ({
               </FieldOrEmpty>
             </div>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel >
               {t_i18n('Place of Birth')}
             </CardLabel>
@@ -137,7 +138,7 @@ const ThreatActorIndividualDemographics = ({
               {t_i18n(countryRelationship.place_of_birth ?? '-')}
             </div>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel >
               {t_i18n('Date of Birth')}
             </CardLabel>
@@ -147,7 +148,7 @@ const ThreatActorIndividualDemographics = ({
                 : '-'}
             </div>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel action={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <AddThreatActorIndividualDemographic
@@ -174,13 +175,13 @@ const ThreatActorIndividualDemographics = ({
               </FieldOrEmpty>
             </div>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel >
               {t_i18n('Ethnicity')}
             </CardLabel>
             <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? '-')}</div>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel >
               {t_i18n('Gender')}
             </CardLabel>
@@ -190,7 +191,7 @@ const ThreatActorIndividualDemographics = ({
               small
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel >
               {t_i18n('Marital Status')}
             </CardLabel>
@@ -200,7 +201,7 @@ const ThreatActorIndividualDemographics = ({
               small
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <CardLabel >
               {t_i18n('Job Title')}
             </CardLabel>

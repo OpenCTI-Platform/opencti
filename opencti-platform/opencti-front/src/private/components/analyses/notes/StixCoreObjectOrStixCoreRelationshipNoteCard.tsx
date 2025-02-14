@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -218,7 +218,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       />
       <CardContent>
         <Grid container={true} spacing={3}>
-          <Grid item xs={9}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Abstract')}
             </Typography>
@@ -239,14 +239,14 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
             )}
           </Grid>
-          <Grid item xs={3}>
+          <Grid size={{ xs: 1 }}>
             <StixCoreObjectLabelsView
               labels={note.objectLabel}
               id={note.id}
               entity_type={note.entity_type}
             />
             <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
@@ -259,7 +259,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                   entityType={note.entity_type}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 1 }}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}

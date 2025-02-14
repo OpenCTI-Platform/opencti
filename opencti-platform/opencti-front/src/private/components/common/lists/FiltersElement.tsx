@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -90,7 +90,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
     <>
       <Grid container={true} spacing={2}>
         {variant === FiltersVariant.dialog && (
-          <Grid item xs={12}>
+          <Grid size={{ xs: 1 }}>
             <TextField
               label={t_i18n('Global keyword')}
               variant="outlined"
@@ -109,8 +109,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
             return (
               <Grid
                 key={`${filterKey}_${index}`}
-                item
-                xs={6}
+                size={{ xs: 1 }}
               >
                 <FilterDate
                   defaultHandleAddFilter={defaultHandleAddFilter}
@@ -122,7 +121,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
               </Grid>);
           }
           return (
-            <Grid key={filterKey} item xs={6}>
+            <Grid key={filterKey} size={{ xs: 1 }}>
               <FilterAutocomplete
                 filterKey={filterKey}
                 searchContext={searchContext}

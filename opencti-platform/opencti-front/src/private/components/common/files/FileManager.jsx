@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';

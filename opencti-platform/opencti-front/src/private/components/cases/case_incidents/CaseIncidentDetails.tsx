@@ -1,5 +1,5 @@
 import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
@@ -94,7 +94,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Priority')}
             </Typography>
@@ -106,7 +106,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Severity')}
             </Typography>
@@ -118,7 +118,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Incident response type')}
             </Typography>
@@ -132,7 +132,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               ))
               : '-'}
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>

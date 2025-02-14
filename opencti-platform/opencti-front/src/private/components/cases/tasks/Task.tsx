@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import useHelper from 'src/utils/hooks/useHelper';
@@ -94,7 +94,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <TaskDetails
                       tasksData={task}
                     />
@@ -102,7 +102,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview
                       stixDomainObject={task}
                       displayAssignees
@@ -112,7 +112,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={task}
@@ -122,7 +122,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={task.id}
                     />
@@ -130,7 +130,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={task.id}
                       defaultMarkings={task.objectMarking ?? []}

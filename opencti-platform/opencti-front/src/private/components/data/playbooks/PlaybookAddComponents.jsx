@@ -9,7 +9,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -676,7 +676,7 @@ const PlaybookAddComponentsContent = ({
                                   <CancelOutlined fontSize="small" />
                                 </IconButton>
                                 <Grid container={true} spacing={3}>
-                                  <Grid item xs={3}>
+                                  <Grid size={{ xs: 1 }}>
                                     <FormControl className={classes.formControl}>
                                       <InputLabel>{t_i18n('Action type')}</InputLabel>
                                       <Select
@@ -692,13 +692,13 @@ const PlaybookAddComponentsContent = ({
                                       </Select>
                                     </FormControl>
                                   </Grid>
-                                  <Grid item xs={3}>
+                                  <Grid size={{ xs: 1 }}>
                                     <FormControl className={classes.formControl}>
                                       <InputLabel>{t_i18n('Field')}</InputLabel>
                                       {renderFieldOptions(i, values, setValues)}
                                     </FormControl>
                                   </Grid>
-                                  <Grid item xs={6}>
+                                  <Grid size={{ xs: 1 }}>
                                     {renderValuesOptions(i, setFieldValue)}
                                   </Grid>
                                 </Grid>

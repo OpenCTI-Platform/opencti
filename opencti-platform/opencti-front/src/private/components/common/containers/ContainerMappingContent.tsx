@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import StixCoreObjectMappableContent from '@components/common/stix_core_objects/StixCoreObjectMappableContent';
 import Paper from '@mui/material/Paper';
 import { Link } from 'react-router-dom';
@@ -439,7 +439,7 @@ ContainerMappingContentComponentProps
         container
         spacing={2}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectMappableContent
             containerData={containerData}
             handleTextSelection={handleTextSelection}
@@ -450,7 +450,7 @@ ContainerMappingContentComponentProps
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <Paper
             variant="outlined"
             style={{

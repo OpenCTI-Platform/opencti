@@ -129,6 +129,11 @@ const ThemeLight = (
     },
   },
   components: {
+    MuiGrid2: {
+      defaultProps: {
+        disableEqualOverflow: true,
+      },
+    },
     MuiAccordion: {
       defaultProps: {
         slotProps: {

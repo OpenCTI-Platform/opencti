@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -112,7 +112,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
   return (
-    <Grid item xs={12} style={{ marginTop: 10 }}>
+    <Grid size={{ xs: 1 }} style={{ marginTop: 10 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Triggers and Digests')}
       </Typography>

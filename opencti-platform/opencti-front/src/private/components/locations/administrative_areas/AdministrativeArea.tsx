@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -89,7 +89,7 @@ const AdministrativeArea = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <LocationMiniMap
             center={
               administrativeArea.latitude && administrativeArea.longitude
@@ -100,28 +100,28 @@ const AdministrativeArea = ({
             zoom={5}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={administrativeArea}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={administrativeArea.id}
             stixObjectOrStixRelationshipLink={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={administrativeArea.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={administrativeArea.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={administrativeArea.id}
           />

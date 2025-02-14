@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -88,19 +88,19 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <IntrusionSetDetails intrusionSet={intrusionSet} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview stixDomainObject={intrusionSet} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={intrusionSet.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
@@ -109,7 +109,7 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={intrusionSet.id}
                     />
@@ -117,7 +117,7 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={intrusionSet.id}
                     />
@@ -125,7 +125,7 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={intrusionSet.id}
                     />
@@ -133,7 +133,7 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={intrusionSet.id}
                       defaultMarkings={intrusionSet.objectMarking ?? []}

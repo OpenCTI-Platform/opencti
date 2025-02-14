@@ -6,7 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Divider from '@mui/material/Divider';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
@@ -115,7 +115,7 @@ const GroupingDetailsComponent = (props) => {
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={6} ref={ref}>
+          <Grid size={{ xs: 1 }} ref={ref}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Description')}
             </Typography>
@@ -129,7 +129,7 @@ const GroupingDetailsComponent = (props) => {
             </Typography>
             <Chip classes={{ root: classes.chip }} label={grouping.context} />
           </Grid>
-          <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
+          <Grid size={{ xs: 1 }} style={{ minHeight: 200, maxHeight: height }}>
             <StixRelationshipsHorizontalBars
               isWidget={false}
               fromId={grouping.id}

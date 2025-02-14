@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
@@ -28,7 +28,7 @@ const WidgetCreationTypes = () => {
       style={{ marginTop: 20, marginBottom: 20 }}
     >
       {visualizationTypes.map((visualizationType) => (
-        <Grid key={visualizationType.key} item xs={4}>
+        <Grid key={visualizationType.key} size={{ xs: 1 }}>
           <Card
             variant="outlined"
             style={{

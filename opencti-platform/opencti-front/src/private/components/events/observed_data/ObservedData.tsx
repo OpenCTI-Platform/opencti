@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { ObservedData_observedData$key } from '@components/events/observed_data/__generated__/ObservedData_observedData.graphql';
 import ObservedDataDetails from './ObservedDataDetails';
 import ObservedDataEdition from './ObservedDataEdition';
@@ -88,19 +88,19 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <ObservedDataDetails observedData={observedData} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixDomainObjectOverview stixDomainObject={observedData} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={observedData.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/events/observed_data/${observedData.id}/knowledge`}
@@ -109,7 +109,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={observedData.id}
                     />
@@ -117,7 +117,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={observedData.id}
                     />
@@ -125,7 +125,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={observedData.id}
                     />
@@ -133,7 +133,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: 1 }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={observedData.id}
                       defaultMarkings={observedData.objectMarking ?? []}

@@ -74,38 +74,38 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCyberObservableDetails
             stixCyberObservable={stixCyberObservable}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCyberObservableOverview
             stixCyberObservable={stixCyberObservable}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={stixCyberObservable.id}
             stixObjectOrStixRelationshipLink={`/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={stixCyberObservable.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={stixCyberObservable.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={stixCyberObservable.id}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
             defaultMarkings={stixCyberObservable.objectMarking ?? []}

@@ -90,16 +90,16 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SystemDetails system={system} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={system}
           />
         </Grid>
         {viewAs === 'knowledge' && (
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={system.id}
               stixObjectOrStixRelationshipLink={`/dashboard/entities/systems/${system.id}/knowledge`}
@@ -114,10 +114,10 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
             {...lastReportsProps}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={system.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
         </Grid>
       </Grid>

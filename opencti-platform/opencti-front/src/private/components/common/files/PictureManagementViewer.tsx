@@ -1,7 +1,7 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent } from 'react';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Paper from '@mui/material/Paper';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
@@ -72,7 +72,7 @@ PictureManagementViewerProps
     ?.filter((edge) => edge?.node)
     .map((edge) => edge?.node) ?? [];
   return (
-    <Grid item xs={6}>
+    <Grid size={{ xs: 1 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Pictures Management')}

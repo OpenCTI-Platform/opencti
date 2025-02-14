@@ -85,29 +85,29 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <EventDetails event={event} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixDomainObjectOverview
             stixDomainObject={event}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={event.id}
             stixObjectOrStixRelationshipLink={`/dashboard/entities/events/${event.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={event.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={event.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={event.id} />
         </Grid>
       </Grid>

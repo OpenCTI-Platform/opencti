@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import useHelper from 'src/utils/hooks/useHelper';
 import ExternalReferenceOverview from './ExternalReferenceOverview';
@@ -66,19 +66,19 @@ ExternalReferenceComponentProps
           switch (key) {
             case 'basicInformation':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <ExternalReferenceOverview externalReference={externalReference} />
                 </Grid>
               );
             case 'details':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <ExternalReferenceDetails externalReference={externalReference} />
                 </Grid>
               );
             case 'linkedObjects':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <ExternalReferenceStixCoreObjects
                     externalReference={externalReference}
                   />
@@ -86,7 +86,7 @@ ExternalReferenceComponentProps
               );
             case 'uploadedFiles':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={{ xs: 1 }}>
                   <ExternalReferenceFileImportViewer
                     externalReference={externalReference}
                     connectorsImport={connectorsImport}

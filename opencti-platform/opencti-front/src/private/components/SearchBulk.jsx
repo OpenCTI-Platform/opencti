@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as R from 'ramda';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import TextField from '@mui/material/TextField';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -476,7 +476,7 @@ const SearchBulk = () => {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item xs={2} style={{ marginTop: -20 }}>
+          <Grid size={{ xs: 1 }} style={{ marginTop: -20 }}>
             <TextField
               onChange={handleChangeTextField}
               value={textFieldValue}
@@ -487,7 +487,7 @@ const SearchBulk = () => {
               variant="outlined"
             />
           </Grid>
-          <Grid item xs={10} style={{ marginTop: -20 }}>
+          <Grid size={{ xs: 1 }} style={{ marginTop: -20 }}>
             <Box style={{ width: '100%', marginTop: 2 }}>
               <LinearProgress
                 variant={loading ? 'indeterminate' : 'determinate'}

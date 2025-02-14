@@ -20,7 +20,7 @@ import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
 import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
@@ -271,7 +271,7 @@ const StixCoreObjectFileExportForm = ({
                   style={{ marginTop: 0, marginBottom: 0 }}
                 >
                   {connectorScopes.map((scope) => (
-                    <Grid key={scope} item xs={4}>
+                    <Grid key={scope} size={{ xs: 1 }}>
                       <Card
                         variant="outlined"
                         style={{
@@ -299,7 +299,7 @@ const StixCoreObjectFileExportForm = ({
                     </Grid>
                   ))}
                   {isContainer && (
-                    <Grid item xs={4}>
+                    <Grid size={{ xs: 1 }}>
                       <Card
                         variant="outlined"
                         style={{

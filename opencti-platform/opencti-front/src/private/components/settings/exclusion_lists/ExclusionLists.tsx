@@ -10,7 +10,7 @@ import {
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
 import Badge from '@mui/material/Badge';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import ExclusionListsStatus, { exclusionListsStatusQuery } from '@components/settings/exclusion_lists/ExclusionListsStatus';
 import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -133,7 +133,7 @@ const ExclusionLists = () => {
     <EnrichedTooltip title={
       <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
         {exclusionListEntityTypes.map((type) => (
-          <Grid item key={type} xs={6}>
+          <Grid key={type} size={{ xs: 1 }}>
             <ItemEntityType entityType={type} />
           </Grid>
         ))}

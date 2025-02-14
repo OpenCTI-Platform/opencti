@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { SettingsInputComponent } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -135,9 +135,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
                     return (
                       <Grid
                         key={line.label}
-                        item
-                        xs={4}
-                        style={{ padding: 0 }}
+                        size={{ xs: 1 }} style={{ padding: 0 }}
                       >
                         <div
                           className={classes.label}

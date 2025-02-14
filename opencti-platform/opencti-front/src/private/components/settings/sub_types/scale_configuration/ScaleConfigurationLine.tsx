@@ -2,7 +2,7 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { DeleteOutline } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import IconButton from '@mui/material/IconButton';
 import { ObjectSchema } from 'yup';
 import TextField from '../../../../../components/TextField';
@@ -56,7 +56,7 @@ EntitySettingScaleTickLineProps
         return (
           <Form style={{ marginTop: noMargin ? 0 : 15 }}>
             <Grid container spacing={3} columns={13}>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={{ xs: 1 }} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={TextField}
                   type="number"
@@ -67,7 +67,7 @@ EntitySettingScaleTickLineProps
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value !== '' ? Number.parseInt(value, 10) : '')}
                 />
               </Grid>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={{ xs: 1 }} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={ColorPickerField}
                   variant="standard"
@@ -77,7 +77,7 @@ EntitySettingScaleTickLineProps
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />
               </Grid>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={{ xs: 1 }} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={TextField}
                   variant="standard"
@@ -88,7 +88,7 @@ EntitySettingScaleTickLineProps
                 />
               </Grid>
               {deleteEnabled && (
-                <Grid item xs={1} style={{ paddingTop: noMargin ? 0 : 24 }}>
+                <Grid size={{ xs: 1 }} style={{ paddingTop: noMargin ? 0 : 24 }}>
                   <div className={classes.button}>
                     {handleDelete && (
                       <IconButton onClick={() => handleDelete()}>

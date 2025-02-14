@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import withStyles from '@mui/styles/withStyles';
@@ -57,7 +57,7 @@ const WorkbenchFileViewerBase = ({
   };
 
   return (
-    <Grid item xs={6}>
+    <Grid size={{ xs: 1 }}>
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}

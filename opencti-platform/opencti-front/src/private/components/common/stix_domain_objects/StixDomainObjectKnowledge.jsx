@@ -5,7 +5,7 @@ import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import withStyles from '@mui/styles/withStyles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
@@ -97,7 +97,7 @@ class StixDomainObjectKnowledge extends Component {
     return (
       <>
         <Grid container={true} spacing={3}>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -138,7 +138,7 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -182,7 +182,7 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={{ xs: 1 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -229,7 +229,7 @@ class StixDomainObjectKnowledge extends Component {
           title={t('Distribution of reports')}
         />
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={6} style={{ height: 350 }}>
+          <Grid size={{ xs: 1 }} style={{ height: 350 }}>
             <EntityStixCoreRelationshipsHorizontalBars
               toId={stixDomainObjectId}
               fromTypes={[
@@ -243,7 +243,7 @@ class StixDomainObjectKnowledge extends Component {
               field="internal_id"
             />
           </Grid>
-          <Grid item xs={6} style={{ height: 350 }}>
+          <Grid size={{ xs: 1 }} style={{ height: 350 }}>
             <EntityStixSightingRelationshipsDonut
               entityId={stixDomainObjectId}
               title={t('Sightings distribution')}

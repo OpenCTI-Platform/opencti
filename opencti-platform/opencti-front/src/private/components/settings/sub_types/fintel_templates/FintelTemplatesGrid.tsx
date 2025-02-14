@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import React, { BaseSyntheticEvent, useRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import Tooltip from '@mui/material/Tooltip';
@@ -102,7 +102,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
         accept={'application/JSON'}
         onChange={onUpload}
       />
-      <Grid item xs={6}>
+      <Grid size={{ xs: 1 }}>
         <Typography
           variant="h4"
           gutterBottom={true}

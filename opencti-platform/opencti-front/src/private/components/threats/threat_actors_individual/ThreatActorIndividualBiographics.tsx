@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Grid, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { InformationOutline } from 'mdi-material-ui';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -82,7 +83,7 @@ const InfoTooltip = ({ text }: { text: string }) => (
 );
 
 const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
-  <Grid item xs={3} sx={{ mt: -1 }}>
+  <Grid size={{ xs: 1 }} sx={{ mt: -1 }}>
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <CardLabel action={(
         <InfoTooltip text={tooltip} />

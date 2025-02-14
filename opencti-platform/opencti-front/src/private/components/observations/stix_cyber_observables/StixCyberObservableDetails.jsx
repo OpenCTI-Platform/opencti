@@ -3,7 +3,7 @@ import { dissoc, filter, includes, map, pipe, toPairs } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { GetAppOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -79,7 +79,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
           {file && (
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Typography variant="h3" gutterBottom={true}>
                 {t_i18n('File')}
               </Typography>
@@ -118,7 +118,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
               </Menu>
             </Grid>
           )}
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
@@ -130,7 +130,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
           {observableAttributes.map((observableAttribute) => {
             if (observableAttribute.key === 'hashes') {
               return observableAttribute.value.filter(({ hash }) => hash !== '').map((hash) => (
-                <Grid key={hash.algorithm} item xs={6}>
+                <Grid key={hash.algorithm} size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {hash.algorithm} - hashes
                   </Typography>
@@ -142,7 +142,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
             }
             if (observableAttribute.key === 'startup_info') {
               return observableAttribute.value.map((hash) => (
-                <Grid key={hash.key} item xs={6}>
+                <Grid key={hash.key} size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {hash.key} - startup_info
                   </Typography>
@@ -159,7 +159,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
               )
             ) {
               return (
-                <Grid key={observableAttribute.key} item xs={6}>
+                <Grid key={observableAttribute.key} size={{ xs: 1 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n(observableAttribute.key)}
                   </Typography>
@@ -187,7 +187,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
               finalValue = finalValue.join('\n');
             }
             return (
-              <Grid key={observableAttribute.key} item xs={6}>
+              <Grid key={observableAttribute.key} size={{ xs: 1 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n(observableAttribute.key.replace('attribute_', ''))}
                 </Typography>

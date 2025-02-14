@@ -1,7 +1,7 @@
 import { DescriptionOutlined, DiamondOutlined } from '@mui/icons-material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
@@ -182,7 +182,7 @@ const DefaultDashboard = ({ timeField }) => {
       )}
     >
       <Grid container={true} spacing={3}>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 1 }}>
           <Card
             classes={{ root: classes.card }}
             style={{ height: 110 }}
@@ -213,7 +213,7 @@ const DefaultDashboard = ({ timeField }) => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 1 }}>
           <Card
             classes={{ root: classes.card }}
             style={{ height: 110 }}
@@ -244,7 +244,7 @@ const DefaultDashboard = ({ timeField }) => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 1 }}>
           <Card
             classes={{ root: classes.card }}
             style={{ height: 110 }}
@@ -275,7 +275,7 @@ const DefaultDashboard = ({ timeField }) => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 1 }}>
           <Card
             classes={{ root: classes.card }}
             style={{ height: 110 }}
@@ -306,7 +306,7 @@ const DefaultDashboard = ({ timeField }) => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 1 }}>
           <StixRelationshipsHorizontalBars
             title={t_i18n('Most active threats (Last 3 months)')}
             height={300}
@@ -333,7 +333,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 1 }}>
           <StixRelationshipsHorizontalBars
             title={t_i18n('Most targeted victims (Last 3 months)')}
             height={300}
@@ -360,7 +360,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 1 }}>
           <StixRelationshipsMultiAreaChart
             title={t_i18n('Relationships created')}
             height={300}
@@ -386,7 +386,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3} style={{ marginTop: 25 }}>
+        <Grid size={{ xs: 1 }} style={{ marginTop: 25 }}>
           <StixRelationshipsPolarArea
             title={t_i18n('Most active malware (Last 3 months)')}
             height={400}
@@ -412,7 +412,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3} style={{ marginTop: 25 }}>
+        <Grid size={{ xs: 1 }} style={{ marginTop: 25 }}>
           <StixRelationshipsDistributionList
             overflow="hidden"
             title={t_i18n('Most active vulnerabilities (Last 3 months)')}
@@ -440,7 +440,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 25 }}>
+        <Grid size={{ xs: 1 }} style={{ marginTop: 25 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Targeted countries (Last 3 months)')}
           </Typography>
@@ -461,7 +461,7 @@ const DefaultDashboard = ({ timeField }) => {
             </Suspense>
           </Paper>
         </Grid>
-        <Grid item xs={8}>
+        <Grid size={{ xs: 1 }}>
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
             height={410}
@@ -482,7 +482,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 1 }}>
           <StixRelationshipsHorizontalBars
             title={t_i18n('Most active labels (Last 3 months)')}
             height={410}

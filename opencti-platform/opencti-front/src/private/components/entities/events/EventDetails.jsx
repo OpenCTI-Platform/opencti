@@ -5,7 +5,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -29,7 +29,7 @@ class EventDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
@@ -47,7 +47,7 @@ class EventDetailsComponent extends Component {
                 </div>
               ))}
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 1 }}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Start date')}
               </Typography>

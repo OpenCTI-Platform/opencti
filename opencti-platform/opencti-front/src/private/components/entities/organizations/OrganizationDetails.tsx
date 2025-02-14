@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import { OrganizationDetails_organization$data } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -47,7 +47,7 @@ const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsCompone
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Organization type')}
             </Typography>
@@ -67,7 +67,7 @@ const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsCompone
               limit={400}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Reliability')}
             </Typography>

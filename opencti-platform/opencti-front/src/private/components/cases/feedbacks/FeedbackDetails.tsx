@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -68,13 +68,13 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Rating')}
             </Typography>
             <RatingField rating={data.rating} size="small" readOnly={true} />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 1 }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
