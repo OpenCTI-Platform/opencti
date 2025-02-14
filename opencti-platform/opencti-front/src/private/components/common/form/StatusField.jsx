@@ -10,6 +10,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
@@ -105,7 +106,7 @@ class StatusField extends Component {
           filterGroups: [],
           filters: [
             { key: 'type', values: [this.props.type] },
-            { key: 'scope', values: [this.props.scope || 'GLOBAL'] },
+            { key: 'scope', values: [this.props.scope || StatusScopeEnum.GLOBAL] },
           ],
         }
         : null,

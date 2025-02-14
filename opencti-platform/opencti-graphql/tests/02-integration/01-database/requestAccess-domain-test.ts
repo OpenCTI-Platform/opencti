@@ -20,6 +20,8 @@ import {
   type StatusTemplate,
 } from '../../../src/generated/graphql';
 import type { BasicStoreEntity } from '../../../src/types/store';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 
 describe('Request access domain  - initialized status', async () => {
   it('should initial data be created', async () => {
@@ -76,8 +78,10 @@ describe('Request access domain  - initialized status', async () => {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
     };
+
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
+
     const result = await findAllStatuses(testContext, ADMIN_USER, args);
-    result.edges.forEach((truc) => console.log('result:', truc));
     expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeTruthy();
     expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeFalsy();
   });
@@ -114,8 +118,8 @@ describe('Request access domain  - initialized status', async () => {
     const args:QueryStatusTemplatesByStatusScopeArgs = {
       scope: StatusScope.RequestAccess
     };
-    const globalTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
-    expect(globalTemplates?.some((template) => template?.name === 'GLOBAL_RFI')).toBeFalsy();
-    expect(globalTemplates?.some((template) => template?.name === 'REQUEST_ACCESS_SCOPE')).toBeTruthy();
+    const requestAccessTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
+    expect(requestAccessTemplates?.some((template) => template?.name === 'GLOBAL_RFI')).toBeFalsy();
+    expect(requestAccessTemplates?.some((template) => template?.name === 'REQUEST_ACCESS_SCOPE')).toBeTruthy();
   });
 });

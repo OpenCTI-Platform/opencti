@@ -1,7 +1,7 @@
 import { isFeatureEnabled, logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
-import { entitySettingEditField, findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
+import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { createStatus, createStatusTemplate } from '../domain/status';
@@ -15,6 +15,8 @@ import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { updateAttribute } from './middleware';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -228,6 +230,15 @@ const createDefaultStatusTemplates = async (context) => {
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusProgress.id, order: 2, scope: StatusScope.Global });
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3, scope: StatusScope.Global });
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4, scope: StatusScope.Global });
+
+  if (isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
+    await createStatus(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_CONTAINER_CASE_RFI,
+      { template_id: statusNew.id, order: 0, scope: StatusScope.RequestAccess }
+    );
+  }
 };
 
 export const createInitialRequestAccessFlow = async (context) => {
@@ -239,13 +250,13 @@ export const createInitialRequestAccessFlow = async (context) => {
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateDeclined.id, order: 999, scope: StatusScope.RequestAccess }
+    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess }
   );
   const statusEntityRFIApproved = await createStatus(
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateApproved.id, order: 999, scope: StatusScope.RequestAccess }
+    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess }
   );
 
   const initialConfig = {
@@ -255,13 +266,13 @@ export const createInitialRequestAccessFlow = async (context) => {
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (rfiEntitySettings) {
-    logApp.info('ANGIE INIT rfiEntitySettings:', { rfiEntitySettings });
     const editInput = [
       { key: 'request_access_workflow', value: [initialConfig] }
     ];
     // TODO use updateAttribute instead
     // await updateAttribute(context, user, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, {request_access_workflow});
-    await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
+    await updateAttribute(context, SYSTEM_USER, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, editInput);
+    // await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
   }
 };
 

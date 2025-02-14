@@ -82,14 +82,9 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
   if (!isPlatformOrgSetup) {
     message += 'Platform organization must be setup.';
   }
-  // 3. Workflow should be enabled
   const rfiEntitySettings = await getRfiEntitySettings(context);
-  const isWorkflowEnabled: boolean = rfiEntitySettings?.workflow_configuration !== undefined;
-  if (!isWorkflowEnabled) {
-    message += 'At least one workflow status must be configured.';
-  }
 
-  // 4. Request access status should be configured
+  // 3. Request access status should be configured
   const areRequestAccessStatusConfigured: boolean = rfiEntitySettings?.request_access_workflow !== undefined
     && rfiEntitySettings.request_access_workflow.declined_workflow_id !== undefined
     && rfiEntitySettings.request_access_workflow.approved_workflow_id !== undefined;
@@ -97,7 +92,7 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
     message += 'RFI status for decline and approval must be configured in entity settings.';
   }
 
-  // 5. At least one auth member admin should be configured.
+  // 4. At least one auth member admin should be configured.
   const isRequestAccesApprovalAdminConfigured: boolean = rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined
     && rfiEntitySettings?.request_access_workflow?.approval_admin.length >= 1;
   if (!isRequestAccesApprovalAdminConfigured) {
@@ -106,7 +101,6 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
 
   const isEnabled: boolean = isEEConfigured
     && isPlatformOrgSetup
-    && isWorkflowEnabled
     && areRequestAccessStatusConfigured
     && isRequestAccesApprovalAdminConfigured;
 
@@ -148,17 +142,17 @@ export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUs
     orderMode: OrderingMode.Asc,
     filters: {
       mode: FilterMode.And,
-      filters: [{ key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
+      filters: [
+        { key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] },
+        { key: ['scope'], values: [StatusScope.RequestAccess] }
+      ],
       filterGroups: [],
     },
     connectionFormat: false
   };
-  const allWorkflowStatus = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
-
-  // Need to find the first that is not a 'StatusScope.RequestAccess' scope, but global scope (aka scope undefined)
-  const allGlobalStatus = allWorkflowStatus.filter((status) => status.scope === null || status.scope === undefined || status.scope === StatusScope.Global);
-  logApp.info('[OPENCTI-MODULE][Request access] Found first status as:', { status: allGlobalStatus[0] });
-  return allGlobalStatus[0];
+  const allRequestAccessStatus = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+  logApp.info('[OPENCTI-MODULE][Request access] Found first status as:', { status: allRequestAccessStatus[0] });
+  return allRequestAccessStatus[0];
 };
 
 export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
@@ -281,6 +275,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
 
   if (rfiEntitySettings.request_access_workflow) {
     if (input.decline_status_template_id && rfiEntitySettings.request_access_workflow.declined_workflow_id) {
+      logApp.info('[OPENCTI-MODULE][Request access] - Update decline status');
       const declineStatusId = rfiEntitySettings.request_access_workflow.declined_workflow_id;
       const declineUpdateInput: EditInput[] = [{ key: 'template_id', value: [input.decline_status_template_id] }];
       await statusEditField(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI, declineStatusId, declineUpdateInput);
@@ -293,6 +288,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
     }
 
     if (input.approval_admin) {
+      logApp.info('[OPENCTI-MODULE][Request access] - Update approval admin');
       const initialConfig = {
         approval_admin: input.approval_admin,
         approved_workflow_id: rfiEntitySettings.request_access_workflow.approved_workflow_id,
@@ -301,6 +297,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
       const editInput: EditInput[] = [
         { key: 'request_access_workflow', value: [initialConfig] }
       ];
+
       await entitySettingsEditField(context, user, [rfiEntitySettings.id], editInput);
     }
   }
@@ -348,6 +345,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     workflowMapping: allActionStatuses
   };
 
+  const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
@@ -355,7 +353,8 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     description: humanDescription,
     information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
     x_opencti_request_access: `${JSON.stringify(action)}`,
-    authorized_members
+    authorized_members,
+    x_opencti_workflow_id: firstStatus.id,
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   logApp.info(`[OPENCTI-MODULE][Request access] - RFI created with id=${requestForInformation.id}`);

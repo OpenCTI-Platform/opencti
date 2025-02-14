@@ -37,29 +37,28 @@ export interface StatusTemplateFieldData {
 const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProps> = ({
   name,
   style,
-  setFieldValue,
   helpertext,
   required = false,
   scope,
 }) => {
   const { t_i18n } = useFormatter();
 
-  const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
+  // const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
   const [statusTemplates, setStatusTemplates] = useState<StatusTemplateFieldData[]>([]);
 
   const searchStatusTemplates = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    setStatusTemplateInput(
+    /* setStatusTemplateInput(
       event && event.target.value ? event.target.value : '',
-    );
+    ); */
     fetchQuery(StatusTemplateFieldScopedSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
       scope,
     })
       .toPromise()
       .then((data: any) => {
-        console.log('Data:', data);
+        // console.log('Data:', data);
         const queryData: StatusTemplateFieldScopedSearchQuery$data = data;
         const fieldData: StatusTemplateFieldData[] = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
           return { label: statusData?.name, value: statusData?.id, color: statusData?.color };

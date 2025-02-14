@@ -115,7 +115,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             <ListItemText primary={member?.name}/>
           </ListItemButton>
         );
-        })}
+      })}
     </>
   );
 };

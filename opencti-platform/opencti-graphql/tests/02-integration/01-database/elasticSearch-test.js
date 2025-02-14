@@ -443,7 +443,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('RuleManager')).toBe(1);
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
-    expect(entityTypeMap.get('Status')).toBe(6);
+    expect(entityTypeMap.get('Status')).toBe(7);
     expect(entityTypeMap.get('StatusTemplate')).toBe(8);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
@@ -591,7 +591,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('RuleManager')).toBe(1);
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
-    expect(entityTypeMap.get('Status')).toBe(6);
+    expect(entityTypeMap.get('Status')).toBe(7);
     expect(entityTypeMap.get('StatusTemplate')).toBe(8);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
@@ -704,7 +704,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('RuleManager')).toBe(1);
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
-    expect(entityTypeMap.get('Status')).toBe(6);
+    expect(entityTypeMap.get('Status')).toBe(7);
     expect(entityTypeMap.get('StatusTemplate')).toBe(8);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);

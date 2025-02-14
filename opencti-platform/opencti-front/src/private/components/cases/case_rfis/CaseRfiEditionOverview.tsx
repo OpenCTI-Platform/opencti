@@ -28,6 +28,7 @@ import { CaseRfiEditionOverview_case$key } from './__generated__/CaseRfiEditionO
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CaseRfiDeletion from './CaseRfiDeletion';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 export const caseRfiMutationFieldPatch = graphql`
   mutation CaseRfiEditionOverviewCaseFieldPatchMutation(
@@ -113,6 +114,7 @@ const caseRfiEditionOverviewFragment = graphql`
       name
       entity_type
     }
+    x_opencti_request_access
   }
 `;
 
@@ -267,6 +269,11 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
+  let statusScope = StatusScopeEnum.GLOBAL;
+  if (caseData.x_opencti_request_access) {
+    statusScope = StatusScopeEnum.REQUEST_ACCESS;
+  }
+
   return (
     <Formik
       enableReinitialize={true}
@@ -395,7 +402,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             <StatusField
               name="x_opencti_workflow_id"
               type="Case-Rfi"
-              scope="GLOBAL"
+              scope={statusScope}
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}

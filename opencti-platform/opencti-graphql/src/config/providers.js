@@ -285,7 +285,6 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           };
           providerLoginHandler({ email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
         } else {
-          logApp.info('ANGIE - Group based but no group');
           done({ message: 'Restricted access, ask your administrator' });
         }
       }, (profile) => {

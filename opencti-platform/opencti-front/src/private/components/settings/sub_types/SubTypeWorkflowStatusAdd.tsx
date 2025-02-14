@@ -15,7 +15,6 @@ import TextField from '../../../../components/TextField';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { StatusScope } from './__generated__/SubTypeQuery.graphql';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles({
