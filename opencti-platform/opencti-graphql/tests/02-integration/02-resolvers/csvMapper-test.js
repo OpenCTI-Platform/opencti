@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
 import { createUploadFromTestDataFile } from '../../utils/testQueryHelper';
+import { PLATFORM_VERSION } from '../../../src/config/conf';
 
 const MAPPER_INPUT = {
   name: 'super mapper',
@@ -146,6 +147,7 @@ const READ_QUERY = gql`
       representations {
         id
       }
+      toConfigurationExport
     }
   }
 `;
@@ -355,6 +357,20 @@ describe('CSV Mapper Resolver', () => {
     expect(csvMapper.has_header).toEqual(MAPPER_INPUT.has_header);
     expect(csvMapper.separator).toEqual(MAPPER_INPUT.separator);
     expect(csvMapper.skipLineChar).toEqual(MAPPER_INPUT.skipLineChar);
+  });
+
+  it('should generate correct export configuration', async () => {
+    const { data } = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: addedMapper.standard_id }
+    });
+    const { csvMapper } = data;
+    const expectedConfigurationExport = JSON.stringify({
+      openCTI_version: PLATFORM_VERSION,
+      type: 'csvMapper',
+      configuration: { ...MAPPER_INPUT, representations: JSON.parse(MAPPER_INPUT.representations) },
+    });
+    expect(csvMapper.toConfigurationExport).toEqual(expectedConfigurationExport);
   });
 
   it('should list all mappers', async () => {
