@@ -351,6 +351,8 @@ services:
       - cd /tmp/opencti-test-worker
       - pip3 install -r src/requirements.txt
       - python3 src/worker.py
+    depends_on:
+      - dependencies-checkout
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
