@@ -1,38 +1,28 @@
+import { toBase64 } from 'openai/core';
+import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { listEntitiesPaginated, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
+import { fromBase64, isNotEmptyField } from '../../database/utils';
 import type { EditInput, ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
 import { type BasicStoreEntityTheme } from './theme-types';
+import pjson from '../../../package.json';
+import { extractContentFrom } from '../../utils/fileToContent';
+import { checkConfigurationImport } from '../workspace/workspace-domain';
 
 const defaultLightTheme: ThemeAddInput = {
-  name: 'light',
-  theme_accent: '#eeeeee',
-  theme_background: '#f8f8f8',
-  theme_logo: '',
-  theme_logo_collapsed: '',
-  theme_logo_login: '',
-  theme_nav: '#ffffff',
-  theme_paper: '#ffffff',
-  theme_primary: '#001bda',
-  theme_secondary: '#0c7e69',
+  name: 'Light',
+  manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiI2Y4ZjhmOCIsInRoZW1lX3BhcGVyIjoiI2ZmZmZmZiIsInRoZW1lX25hdiI6IiNmZmZmZmYiLCJ0aGVtZV9wcmltYXJ5IjoiIzAwMWJkYSIsInRoZW1lX3NlY29uZGFyeSI6IiMwYzdlNjkiLCJ0aGVtZV9hY2NlbnQiOiIjZWVlZWVlIiwidGhlbWVfbG9nbyI6IiIsInRoZW1lX2xvZ29fY29sbGFwc2VkIjoiIiwidGhlbWVfbG9nb19sb2dpbiI6IiIsInN5c3RlbV9kZWZhdWx0Ijp0cnVlfQ==',
 };
 
 const defaultDarkTheme: ThemeAddInput = {
-  name: 'dark',
-  theme_accent: '#0f1e38',
-  theme_background: '#070d19',
-  theme_logo: '',
-  theme_logo_collapsed: '',
-  theme_logo_login: '',
-  theme_nav: '#070d19',
-  theme_paper: '#09101e',
-  theme_primary: '#0fbcff',
-  theme_secondary: '#00f1bd',
+  name: 'Dark',
+  manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiIzA3MGQxOSIsInRoZW1lX3BhcGVyIjoiIzA5MTAxZSIsInRoZW1lX25hdiI6IiMwNzBkMTkiLCJ0aGVtZV9wcmltYXJ5IjoiIzBmYmNmZiIsInRoZW1lX3NlY29uZGFyeSI6IiMwMGYxYmQiLCJ0aGVtZV9hY2NlbnQiOiIjMGYxZTM4IiwidGhlbWVfbG9nbyI6IiIsInRoZW1lX2xvZ29fY29sbGFwc2VkIjoiIiwidGhlbWVfbG9nb19sb2dpbiI6IiIsInN5c3RlbV9kZWZhdWx0Ijp0cnVlfQ==',
 };
 
 export const findById = (
@@ -147,4 +137,58 @@ export const editTheme = async (
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_THEME].EDIT_TOPIC, element, user);
+};
+
+const convertThemeManifestIds = (manifest: string) => {
+  const parsedManifest = JSON.parse(fromBase64(manifest) ?? '{}');
+  if (parsedManifest && isNotEmptyField(parsedManifest)) {
+    return toBase64(JSON.stringify(parsedManifest)) as string;
+  }
+  return manifest;
+};
+
+export const generateThemeExportConfiguration = async (
+  theme: BasicStoreEntityTheme,
+) => {
+  const generatedManifest = convertThemeManifestIds(theme.manifest);
+  const exportConfiguration = {
+    openCTI_version: pjson.version,
+    type: 'theme',
+    configuration: {
+      name: theme.name,
+      manifest: generatedManifest,
+    },
+  };
+  return JSON.stringify(exportConfiguration);
+};
+
+export const themeImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  file: Promise<FileHandle>,
+) => {
+  const parsedData = await extractContentFrom(file);
+  checkConfigurationImport('theme', parsedData);
+  const mappedData = {
+    openCTI_version: parsedData.openCTI_version,
+    type: parsedData.type,
+    name: parsedData.configuration.name,
+    manifest: parsedData.configuration.manifest,
+  };
+  const importThemeCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_THEME);
+  const themeId = importThemeCreation.id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `import ${importThemeCreation.name} theme`,
+    context_data: {
+      id: themeId,
+      entity_type: ENTITY_TYPE_THEME,
+      input: importThemeCreation,
+    },
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_THEME].ADDED_TOPIC, importThemeCreation, user);
+  return importThemeCreation;
 };
