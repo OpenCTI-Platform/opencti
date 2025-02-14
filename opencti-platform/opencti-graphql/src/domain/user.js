@@ -1095,7 +1095,6 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     providerGroups = [],
     providerOrganizations = [],
     autoCreateGroup = false,
-    preventDefaultGroups = false, // only use if user needs to be created
   } = opts;
   const context = executionContext('login_provider');
   // region test the groups existence and eventually auto create groups
