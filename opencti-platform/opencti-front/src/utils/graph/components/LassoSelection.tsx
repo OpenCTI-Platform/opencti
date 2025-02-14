@@ -2,9 +2,10 @@ import React, { FunctionComponent, MutableRefObject, useCallback, useEffect, use
 import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import { ForceGraphMethods } from 'react-force-graph-2d';
+import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import type { Theme } from '../../../components/Theme';
 import { pointInPolygon } from '../../Graph';
+import { GraphLink, GraphNode } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -21,7 +22,7 @@ interface LassoSelectionProps {
   activated: boolean
   setSelectedNodes: (nodes: Set<Coord>) => void
   graphDataNodes: Coord[]
-  graph: MutableRefObject<ForceGraphMethods>
+  graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
 }
 
 interface Coord {
@@ -41,7 +42,7 @@ interface ContextHandlerProps {
   setSelectedNodes?: (nodes: Set<Coord>) => void
   activated?: boolean
   storeFreeSelectionFunction?: (event: MouseEvent) => void
-  graph?: MutableRefObject<ForceGraphMethods>
+  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
 }
 
 const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
@@ -109,7 +110,7 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   };
 
   const storeFreeSelection = (e: MouseEvent) => {
-    if (freeHand && activated) {
+    if (freeHand && activated && graph.current) {
       coord = reposition(e);
       currentContext.lineTo(coord.x, coord.y);
       const { left, top } = lassoRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };

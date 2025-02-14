@@ -419,7 +419,7 @@ const ReportKnowledgeGraph = ({ enableReferences, data }: ReportKnowledgeGraphPr
   const graphData = useMemo(() => (
     buildGraphData(
       (report.objects?.edges ?? []).map((n) => ({ ...n.node, types: n.types })),
-      deserializeObject(report.x_opencti_graph_data ?? '{}'),
+      deserializeObject(report.x_opencti_graph_data),
     )
   ), [report]);
 

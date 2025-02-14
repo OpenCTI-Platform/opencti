@@ -1,5 +1,5 @@
 import Drawer from '@mui/material/Drawer';
-import React from 'react';
+import React, { useState } from 'react';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import {
   AccountBalanceOutlined,
@@ -26,12 +26,16 @@ import { useGraphContext } from '../utils/GraphContext';
 import GraphToolbarItem from './GraphToolbarItem';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import SearchInput from '../../../components/SearchInput';
+import GraphToolbarEntityTypes from './GraphToolbarEntityTypes';
 
 const GraphToolbar = () => {
   const { t_i18n } = useFormatter();
   const navOpen = localStorage.getItem('navOpen') === 'true';
 
+  const [byEntityTypeAnchor, setByEntityTypeAnchor] = useState<Element>();
+
   const {
+    stixCoreObjectTypes,
     graphState: {
       mode3D,
       modeTree,
@@ -52,6 +56,10 @@ const GraphToolbar = () => {
     toggleTimeRange,
     toggleVerticalTree,
     switchSelectRelationshipMode,
+    zoomToFit,
+    unfixNodes,
+    selectByEntityType,
+    selectAllNodes,
   } = useGraphInteractions();
 
   const titleSelectRelationshipMode = () => {
@@ -110,14 +118,14 @@ const GraphToolbar = () => {
         <GraphToolbarItem
           Icon={<AspectRatioOutlined />}
           color="primary"
-          onClick={() => console.log('handleZoomToFit')}
+          onClick={zoomToFit}
           title={t_i18n('Fit graph to canvas')}
         />
         <GraphToolbarItem
           Icon={<AutoFix />}
           disabled={!withForces}
           color="primary"
-          onClick={() => console.log('handleResetLayout')}
+          onClick={unfixNodes}
           title={t_i18n('Unfix the nodes and re-apply forces')}
         />
 
@@ -139,15 +147,23 @@ const GraphToolbar = () => {
         />
         <GraphToolbarItem
           Icon={<SelectGroup />}
-          disabled={false}
+          disabled={stixCoreObjectTypes.length === 0}
           color="primary"
-          onClick={() => console.log('handleOpenSelectByType')}
+          onClick={(e) => setByEntityTypeAnchor(e.currentTarget)}
           title={t_i18n('Select by entity type')}
+        />
+        <GraphToolbarEntityTypes
+          anchorEl={byEntityTypeAnchor}
+          onClose={() => setByEntityTypeAnchor(undefined)}
+          onSelect={(type) => {
+            selectByEntityType(type);
+            setByEntityTypeAnchor(undefined);
+          }}
         />
         <GraphToolbarItem
           Icon={<SelectAll />}
           color="primary"
-          onClick={() => console.log('handleSelectAll')}
+          onClick={selectAllNodes}
           title={t_i18n('Select all nodes')}
         />
         <GraphToolbarItem

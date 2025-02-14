@@ -1,8 +1,11 @@
 import { useGraphContext, GraphState } from './GraphContext';
 import type { GraphNode, LibGraphProps } from '../graph.types';
+import { RectangleSelectionProps } from '../components/RectangleSelection';
 
 const useGraphInteractions = () => {
   const {
+    graphData,
+    graphRef,
     graphState,
     selectedLinks,
     selectedNodes,
@@ -30,22 +33,42 @@ const useGraphInteractions = () => {
   };
 
   const toggleVerticalTree = () => {
-    setGraphStateProp('modeTree', modeTree !== 'td' ? 'td' : null);
+    const isNotVertical = modeTree !== 'td';
+    setGraphStateProp('modeTree', isNotVertical ? 'td' : null);
   };
 
   const toggleHorizontalTree = () => {
-    setGraphStateProp('modeTree', modeTree !== 'lr' ? 'lr' : null);
+    const isNotHorizontal = modeTree !== 'lr';
+    setGraphStateProp('modeTree', isNotHorizontal ? 'lr' : null);
   };
 
   const toggleForces = () => {
     setGraphStateProp('withForces', !withForces);
   };
 
+  const zoomToFit = () => {
+    graphRef.current?.zoomToFit(400, 100);
+  };
+
+  /**
+   * Remove fx and fy positions responsible for fixed positions when
+   * mode forces is on and reapply forces.
+   */
+  const unfixNodes = () => {
+    graphData?.nodes.forEach((node) => {
+      node.fx = undefined; // eslint-disable-line no-param-reassign
+      node.fy = undefined; // eslint-disable-line no-param-reassign
+    });
+    graphRef.current?.d3ReheatSimulation();
+  };
+
   const toggleSelectFreeRectangle = () => {
+    setGraphStateProp('selectFree', false);
     setGraphStateProp('selectFreeRectangle', !selectFreeRectangle);
   };
 
   const toggleSelectFree = () => {
+    setGraphStateProp('selectFreeRectangle', false);
     setGraphStateProp('selectFree', !selectFree);
   };
 
@@ -62,7 +85,7 @@ const useGraphInteractions = () => {
 
   const saveZoom = (z: GraphState['zoom']) => {
     const shouldIgnore = z?.k === 1 && z.x === 0 && z.y === 0;
-    if (shouldIgnore) return; // It's zoom values during graph init.
+    if (shouldIgnore) return; // Those zoom values are from graph init, ignore.
     setGraphStateProp('zoom', z);
   };
 
@@ -147,6 +170,44 @@ const useGraphInteractions = () => {
     setSelectedLinks([]);
   };
 
+  /**
+   * Determine which nodes are inside the rectangle and select them.
+   *
+   * @param coords Coordinates of the rectangle.
+   * @param keys If special keys has been pressed during draw.
+   */
+  const selectFromFreeRectangle: RectangleSelectionProps['onSelection'] = (coords, keys) => {
+    const { origin, target } = coords;
+    const { altKey, shiftKey } = keys;
+    const hasSpecialKey = altKey || shiftKey;
+    if (!hasSpecialKey) clearSelection();
+    const graphOrigin = graphRef.current?.screen2GraphCoords(origin[0], origin[1]);
+    const graphTarget = graphRef.current?.screen2GraphCoords(target[0], target[1]);
+    if (graphOrigin && graphTarget) {
+      const selected = (graphData?.nodes ?? []).filter((node) => {
+        return (
+          node.x >= graphOrigin.x
+          && node.x <= graphTarget.x
+          && node.y >= graphOrigin.y
+          && node.y <= graphTarget.y
+        );
+      });
+      if (!hasSpecialKey) setSelectedNodes(selected);
+      else setSelectedNodes((old) => [...old, ...selected]);
+    }
+  };
+
+  const selectByEntityType = (entityType: string) => {
+    clearSelection();
+    const matchingNodes = (graphData?.nodes ?? []).filter(({ entity_type }) => entity_type === entityType);
+    setSelectedNodes(matchingNodes);
+  };
+
+  const selectAllNodes = () => {
+    clearSelection();
+    setSelectedNodes(graphData?.nodes ?? []);
+  };
+
   return {
     toggleMode3D,
     toggleVerticalTree,
@@ -162,6 +223,11 @@ const useGraphInteractions = () => {
     clearSelection,
     moveSelection,
     fixPositionsOnDragEnd,
+    zoomToFit,
+    unfixNodes,
+    selectFromFreeRectangle,
+    selectByEntityType,
+    selectAllNodes,
   };
 };
 

@@ -1,7 +1,9 @@
-import React, { ReactNode, useContext, createContext, useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
+import React, { ReactNode, useContext, createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, MutableRefObject, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../ListParameters';
-import type { GraphNode, GraphLink } from '../graph.types';
+import { GraphNode, GraphLink, LibGraphProps } from '../graph.types';
+import { useFormatter } from '../../../components/i18n';
 
 // Stuff kept in URL and local storage.
 export interface GraphState {
@@ -21,6 +23,9 @@ export interface GraphState {
 
 // API available when calling hook useGraphContext().
 interface GraphContextProps {
+  graphData: LibGraphProps['graphData']
+  stixCoreObjectTypes: string[]
+  graphRef: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
   graphState: GraphState
   setGraphStateProp: <K extends keyof GraphState>(key: K, value: GraphState[K]) => void
   selectedNodes: GraphNode[]
@@ -39,15 +44,32 @@ interface GraphProviderProps {
   children: ReactNode
   defaultState: GraphState
   localStorageKey: string
+  data: LibGraphProps['graphData']
 }
 
 export const GraphProvider = ({
   children,
   defaultState,
   localStorageKey,
+  data,
 }: GraphProviderProps) => {
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const graphRef = useRef<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>();
+
+  const [graphData] = useState(data);
+  const stixCoreObjectTypes = useMemo(() => {
+    return (graphData?.nodes ?? [])
+      .map(({ relationship_type, entity_type }) => {
+        const prefix = relationship_type ? 'relationship_' : 'entity_';
+        return { entity_type, label: t_i18n(`${prefix}${entity_type}`) };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label))
+      .map((node) => node.entity_type)
+      .filter((v, i, a) => a.indexOf(v) === i);
+  }, [graphData]);
 
   const [selectedNodes, setSelectedNodes] = useState<GraphNode[]>([]);
   const [selectedLinks, setSelectedLinks] = useState<GraphLink[]>([]);
@@ -76,7 +98,8 @@ export const GraphProvider = ({
   };
 
   const addSelectedLink = (link: GraphLink) => {
-    setSelectedLinks((old) => [...old, link]);
+    const existing = selectedLinks.find((l) => l.id !== link.id);
+    if (!existing) setSelectedLinks((old) => [...old, link]);
   };
 
   const removeSelectedLink = (link: GraphLink) => {
@@ -84,7 +107,8 @@ export const GraphProvider = ({
   };
 
   const addSelectedNode = (node: GraphNode) => {
-    setSelectedNodes((old) => [...old, node]);
+    const existing = selectedNodes.find((n) => n.id !== node.id);
+    if (!existing) setSelectedNodes((old) => [...old, node]);
   };
 
   const removeSelectedNode = (node: GraphNode) => {
@@ -92,6 +116,9 @@ export const GraphProvider = ({
   };
 
   const value = useMemo<GraphContextProps>(() => ({
+    graphData,
+    stixCoreObjectTypes,
+    graphRef,
     graphState,
     setGraphStateProp,
     selectedLinks,
