@@ -575,38 +575,38 @@ const SearchBulk = () => {
                                 {entity.value}
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.author}>
-                                {entity.in_platform && entity.author}
+                                {entity.author}
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.creator}>
-                                {entity.in_platform && entity.creators}
+                                {entity.creators}
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.labels}>
-                                {entity.in_platform && (
-                                <StixCoreObjectLabels variant="inList" labels={entity.labels} />
+                                {(
+                                  <StixCoreObjectLabels variant="inList" labels={entity.labels} />
                                 )}
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                                {entity.in_platform && nsd(entity.created_at)}
+                                {nsd(entity.created_at)}
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.analyses}>
-                                {entity.in_platform && (
-                                <>
-                                  {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(entity.type) ? (
-                                    <Chip classes={{ root: classes.chipNoLink }} label={n(entity.analyses)} />
-                                  ) : (
-                                    <Chip
-                                      classes={{ root: classes.chip }}
-                                      label={n(entity.analyses)}
-                                      component={Link}
-                                      to={linkAnalyses}
-                                    />
-                                  )}
-                                </>
+                                {(
+                                  <>
+                                    {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(entity.type) ? (
+                                      <Chip classes={{ root: classes.chipNoLink }} label={n(entity.analyses)} />
+                                    ) : (
+                                      <Chip
+                                        classes={{ root: classes.chip }}
+                                        label={n(entity.analyses)}
+                                        component={Link}
+                                        to={linkAnalyses}
+                                      />
+                                    )}
+                                  </>
                                 )}
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.markings}>
-                                {entity.in_platform && (
-                                <ItemMarkings variant="inList" markingDefinitions={entity.markings ?? []} limit={1} />
+                                {(
+                                  <ItemMarkings variant="inList" markingDefinitions={entity.markings ?? []} limit={1} />
                                 )}
                               </div>
                             </>
