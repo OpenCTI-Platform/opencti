@@ -253,8 +253,13 @@ const createWorkForBackgroundTask = async (context, connectorId) => {
 
 export const createDefaultTask = async (context, user, input, taskType, taskExpectedNumber, scope = undefined) => {
   const taskId = generateInternalId();
-  const connectorId = await getBestBackgroundConnectorId(context, user);
-  const work = await createWorkForBackgroundTask(context, connectorId);
+  let work_id;
+  let connector_id;
+  if (taskExpectedNumber > 0) {
+    connector_id = await getBestBackgroundConnectorId(context, user);
+    const work = await createWorkForBackgroundTask(context, connector_id);
+    work_id = work.id;
+  }
   let task = {
     id: taskId,
     internal_id: taskId,
@@ -264,8 +269,8 @@ export const createDefaultTask = async (context, user, input, taskType, taskExpe
     created_at: now(),
     completed: false,
     // Associated job
-    work_id: work.id,
-    connector_id: connectorId,
+    work_id,
+    connector_id,
     // Task related
     type: taskType,
     last_execution_date: null,
