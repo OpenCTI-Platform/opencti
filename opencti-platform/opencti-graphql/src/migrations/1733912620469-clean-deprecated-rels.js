@@ -7,7 +7,6 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_IDENTITY_SECTOR,
-  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -66,7 +65,6 @@ export const up = async (next) => {
     ENTITY_TYPE_INTRUSION_SET,
     ENTITY_TYPE_CAMPAIGN,
     ENTITY_TYPE_MALWARE,
-    ENTITY_TYPE_INCIDENT,
   ];
   const optsRelatedTo = { types: threatTypes, logForMigration: true, callback: clearRelatedToObservableRels };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, optsRelatedTo);
