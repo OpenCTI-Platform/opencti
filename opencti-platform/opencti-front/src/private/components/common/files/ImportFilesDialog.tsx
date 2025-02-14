@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stepper, Step, StepButton, List, ListItem, IconButton, Grid } from '@mui/material';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stepper, Step, StepButton, List, ListItem, IconButton, Grid, Collapse, Typography, Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { CloudUploadOutlined, DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 import { Formik } from 'formik';
+import { TransitionGroup } from 'react-transition-group';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Option } from '@components/common/form/ReferenceField';
@@ -18,11 +18,10 @@ interface ImportFilesDialogProps {
   handleClose: () => void;
 }
 
-type File = { name: string, type?: string };
-
 const ImportFilesUploader = ({ files = [], onChange }: { files?: File[], onChange: (files: File[]) => void }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -33,6 +32,7 @@ const ImportFilesUploader = ({ files = [], onChange }: { files?: File[], onChang
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    setIsDragging(false);
     if (event.dataTransfer.files) {
       const newFiles = Array.from(event.dataTransfer.files).map((file) => Object.assign(file, { preview: URL.createObjectURL(file) }));
       onChange([...files, ...newFiles]);
@@ -45,41 +45,67 @@ const ImportFilesUploader = ({ files = [], onChange }: { files?: File[], onChang
 
   return (
     <Grid container>
-      {files.length > 0 && (
-        <Grid item xs={12}>
-          <List>
-            <ListItem divider>
-              {t_i18n('File')}
-            </ListItem>
-            {files?.map((file) => (
-              <ListItem key={file.name} divider secondaryAction={
-                <IconButton edge="end" onClick={() => removeFile(file.name)} color="primary">
-                  <DeleteOutlined />
-                </IconButton>
-              }
-              >
-                <UploadFileOutlined color="primary" /> {file.name}
-              </ListItem>
+      <Grid item xs={12}>
+        <List>
+          <TransitionGroup>
+            {files.length > 0 && (
+              <Collapse key="header">
+                <ListItem divider sx={{ paddingLeft: 7 }}>
+                  {t_i18n('File')}
+                </ListItem>
+              </Collapse>
+            )}
+
+            {files.map((file) => (
+              <Collapse key={file.name}>
+                <ListItem
+                  divider
+                  secondaryAction={
+                    <IconButton edge="end" onClick={() => removeFile(file.name)} color="primary">
+                      <DeleteOutlined />
+                    </IconButton>
+                  }
+                >
+                  <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
+                  {file.name}
+                </ListItem>
+              </Collapse>
             ))}
-          </List>
-        </Grid>
-      )}
+          </TransitionGroup>
+        </List>
+      </Grid>
+
       <Grid item xs={12}>
         <Box
-          onDragOver={(e) => e.preventDefault()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           sx={{
-            background: theme.palette.background.paper,
-            borderRadius: 2,
-            border: `2px dashed ${theme.palette.common.lightGrey}`,
-            padding: 5,
+            height: 300,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            background: isDragging ? alpha(theme.palette.primary.light as string, 0.1) : theme.palette.background.paper,
+            borderRadius: 4,
+            borderColor: isDragging ? theme.palette.primary.main : theme.palette.common.lightGrey,
+            borderWidth: isDragging ? '2px' : '1px',
+            borderStyle: 'dashed',
+            boxSizing: 'border-box',
+            padding: isDragging ? '19.5px' : '20px',
             textAlign: 'center',
             marginBottom: 2,
             cursor: 'default',
+            transition: 'background 0.1s, border 0.1s, padding 0.1s',
           }}
         >
-          <CloudUploadOutlined color="primary" fontSize="large"/>
-          <Typography variant="h3" sx={{ marginBlock: 2 }}>{t_i18n('Drag and drop files to import ')}</Typography>
+          <CloudUploadOutlined color="primary" fontSize="large" />
+          <Typography variant="h3" sx={{ marginBlock: 2 }}>
+            {t_i18n('Drag and drop files to import')}
+          </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
             <Button variant="contained" component="label" size="small">
               {t_i18n('Browse files')}
@@ -140,18 +166,18 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
 
   const [activeStep, setActiveStep] = useState(0);
-  const [data, setData] = useState<{ files?: File[] }>({ files: [] });
+  const [files, setFiles] = useState<File[]>([]);
 
   const steps = ['Select files', 'Specific files configurations', 'Import options'];
 
   const onCancel = () => {
     handleClose();
     setActiveStep(0);
-    setData({});
+    setFiles([]);
   };
 
   const handleSubmit = (values: SubmittedFormValues) => {
-    console.log({ values });
+    console.log({ files, values });
     handleClose();
   };
 
@@ -191,7 +217,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
               ))}
             </Stepper>
             <Box sx={{ paddingBlock: 10 }}>
-              {activeStep === 0 && <ImportFilesUploader files={data.files} onChange={(files) => setData({ files })} />}
+              {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)} />}
               {activeStep === 1 && <ImportFilesConfigurations />}
               {activeStep === 2 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
             </Box>
