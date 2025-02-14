@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -259,10 +260,9 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
   const restricted = entity === null;
   const link = `${resolveLink(data.entity_type)}/${data.id}`;
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={link}
       disabled={restricted}
@@ -351,7 +351,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
           />
         )}
       </ListItemSecondaryAction>
-    </ListItem>
+    </ListItemButton>
   );
 };
 
