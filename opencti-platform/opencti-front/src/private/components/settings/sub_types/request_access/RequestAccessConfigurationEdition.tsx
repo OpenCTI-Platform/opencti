@@ -91,7 +91,7 @@ interface RequestAccessWorkflowProps {
 interface RequestAccessEditionFormInputs {
   acceptedTemplate: StatusTemplateFieldData
   declinedTemplate: StatusTemplateFieldData
-  approvalAdmin: OptionMember[]
+  approvalAdmin: OptionMember
 }
 
 const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflowProps> = ({
@@ -101,25 +101,9 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
 }) => {
   const { t_i18n } = useFormatter();
   const queryData = useFragment(requestAccessConfigurationFragment, queryRef);
-  const adminData = queryData?.requestAccessConfiguration?.approval_admin;
-
-  const admins :OptionMember[] = [];
-  if (adminData) {
-    for (let i = 0; i < adminData.length; i += 1) {
-      const currentAdmin = adminData[i];
-      if (currentAdmin) {
-        admins.push(
-          {
-            label: currentAdmin.name || '-',
-            value: currentAdmin.id || '-',
-            type: currentAdmin.type || '',
-          },
-        );
-      }
-    }
-  }
   const approvedTemplateStatus = queryData?.requestAccessConfiguration?.approved_status?.template;
   const declinedTemplateStatus = queryData?.requestAccessConfiguration?.declined_status?.template;
+  const adminData = queryData?.requestAccessConfiguration?.approval_admin;
   const initialValues: RequestAccessEditionFormInputs = {
     acceptedTemplate: {
       color: approvedTemplateStatus ? approvedTemplateStatus.color : '#fff',
@@ -131,7 +115,11 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
       label: declinedTemplateStatus ? declinedTemplateStatus.name : '-',
       value: declinedTemplateStatus ? declinedTemplateStatus.id : '-',
     },
-    approvalAdmin: admins,
+    approvalAdmin: {
+      label: adminData && adminData[0] ? adminData[0].name : '',
+      value: adminData && adminData[0] ? adminData[0].id : '',
+      type: adminData && adminData[0] ? adminData[0].type : 'Group',
+    },
   };
 
   const [commit] = useApiMutation<RequestAccessConfigurationEditionMutation>(
@@ -147,7 +135,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     const input: RequestAccessConfigureInput = {
       approve_status_template_id: values.acceptedTemplate.value || '', // FIXME remove || ''
       decline_status_template_id: values.declinedTemplate.value || '', // FIXME remove || ''
-      approval_admin: values.approvalAdmin.map((memberOption) => memberOption.value),
+      approval_admin: [values.approvalAdmin.value],
     };
     commit({
       variables: {

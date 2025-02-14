@@ -1,28 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { Option } from '@components/common/form/ReferenceField';
 import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
+import { StatusTemplateFieldScopedSearchQuery$data } from '@components/settings/sub_types/request_access/__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
 import AutocompleteField from '../../../../../components/AutocompleteField';
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
 
 interface StatusTemplateFieldScopedProps {
   name: string;
@@ -35,8 +19,8 @@ interface StatusTemplateFieldScopedProps {
 }
 
 export const StatusTemplateFieldScopedSearchQuery = graphql`
-  query StatusTemplateFieldScopedSearchQuery($search: String) {
-      statusTemplatesByStatusScope(search: $search) {
+  query StatusTemplateFieldScopedSearchQuery($search: String, $scope:StatusScope) {
+      statusTemplatesByStatusScope(search: $search, scope:$scope) {
         id
         name
         color
@@ -58,22 +42,10 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
   required = false,
   scope,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const [statusTemplateCreation, setStatusTemplateCreation] = useState<boolean>(false);
   const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
-  const [statusTemplates, setStatusTemplates] = useState<
-  {
-    label: string | undefined;
-    value: string | undefined;
-    color: string | undefined;
-  }[]
-  >([]);
-
-  const handleOpenStatusTemplateCreation = () => setStatusTemplateCreation(true);
-
-  const handleCloseStatusTemplateCreation = () => setStatusTemplateCreation(false);
+  const [statusTemplates, setStatusTemplates] = useState<StatusTemplateFieldData[]>([]);
 
   const searchStatusTemplates = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -88,7 +60,11 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
       .toPromise()
       .then((data: any) => {
         console.log('Data:', data);
-        setStatusTemplates({ label: 'label', value: 'value', color: '#fff' });
+        const queryData: StatusTemplateFieldScopedSearchQuery$data = data;
+        const fieldData: StatusTemplateFieldData[] = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
+          return { label: statusData?.name, value: statusData?.id, color: statusData?.color };
+        }) || [];
+        setStatusTemplates(fieldData);
       });
   };
 
@@ -108,19 +84,17 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
         noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
         onInputChange={searchStatusTemplates}
-        openCreate={handleOpenStatusTemplateCreation}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: { color: string; label: string },
         ) => (
           <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <div style={{ color: option.color }}>
               <Label />
             </div>
-            <div className={classes.text}>{option.label}</div>
+            <div>{option.label}</div>
           </li>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );
