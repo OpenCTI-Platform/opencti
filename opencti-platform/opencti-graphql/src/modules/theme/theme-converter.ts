@@ -1,5 +1,5 @@
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { buildStixDomain, cleanObject } from '../../database/stix-2-1-converter';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixTheme, StoreEntityTheme } from './theme-types';
 
 const convertThemeToStix = (instance: StoreEntityTheme): StixTheme => {
@@ -7,15 +7,7 @@ const convertThemeToStix = (instance: StoreEntityTheme): StixTheme => {
   return {
     ...stixDomainObject,
     name: instance.name,
-    theme_background: instance.theme_background,
-    theme_paper: instance.theme_paper,
-    theme_nav: instance.theme_nav,
-    theme_primary: instance.theme_primary,
-    theme_secondary: instance.theme_secondary,
-    theme_accent: instance.theme_accent,
-    theme_logo: instance.theme_logo,
-    theme_logo_collapsed: instance.theme_logo_collapsed,
-    theme_logo_login: instance.theme_logo_login,
+    manifest: instance.manifest,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
