@@ -70,7 +70,7 @@ class IngestionRssLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t, nsdt } = this.props;
     return (
-      <ListItem classes={{ root: classes.size={{ xs: 1 }} }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <RssBox />
         </ListItemIcon>
