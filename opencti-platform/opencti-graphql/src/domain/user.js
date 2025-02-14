@@ -1130,7 +1130,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
     // If user doesn't exist, create it. Providers are trusted
-    const newUser = { name, firstname, lastname, user_email: userEmail, external: true, prevent_default_groups: preventDefaultGroups };
+    const newUser = { name, firstname, lastname, user_email: userEmail, external: true };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
       return loginFromProvider(userInfo, opts);
