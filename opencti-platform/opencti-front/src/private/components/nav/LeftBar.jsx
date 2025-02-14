@@ -148,7 +148,7 @@ const useStyles = makeStyles((theme) => createStyles({
     fontSize: 12,
   },
   menuSubItemWithIcon: {
-    paddingLeft: 40,
+    paddingLeft: 20,
     height: 25,
     fontWeight: 500,
     fontSize: 12,
