@@ -87,7 +87,7 @@
     "enabled": true
   },
   "expiration_scheduler": {
-    "enabled": true
+    "enabled": false
   },
   "sync_manager": {
     "enabled": true

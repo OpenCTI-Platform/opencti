@@ -138,14 +138,14 @@ export const convertTypeToStixType = (type: string): string => {
   if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
     return 'file';
   }
-  if (isStixCoreRelationship(type)) {
-    return 'relationship';
-  }
   if (isInternalRelationship(type)) {
     return 'internal-relationship';
   }
   if (isStixSightingRelationship(type)) {
     return 'sighting';
+  }
+  if (isBasicRelationship(type)) {
+    return 'relationship';
   }
   if (isStixDomainObjectThreatActor(type)) {
     return 'threat-actor';

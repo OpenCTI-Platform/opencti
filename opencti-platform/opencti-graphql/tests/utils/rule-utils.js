@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 import gql from 'graphql-tag';
 import { listThings } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
+import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import { internalFindByIds, internalLoadById, listEntities } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
@@ -51,12 +51,12 @@ export const changeRule = async (ruleId, active) => {
     });
     const doneProvision = tasks.filter((t) => !t.completed).length === 0;
     // Handle works
-    const works = await internalFindByIds(testContext, SYSTEM_USER, tasks.map((task) => task.work_id)
-      .filter((workId) => isNotEmptyField(workId)));
+    const workIds = tasks.map((task) => task.work_id).filter((workId) => isNotEmptyField(workId));
+    const works = await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] });
     works.forEach((w) => {
       expect(w.errors.length).toBe(0);
     });
-    const doneWorks = works.filter((t) => t.status !== 'completed').length === 0;
+    const doneWorks = works.filter((t) => t.status !== 'complete').length === 0;
     // Final status
     ruleActivated = doneProvision && doneWorks;
     await wait(1000);

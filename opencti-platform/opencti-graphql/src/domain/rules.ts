@@ -90,7 +90,6 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
   // Refresh the activated rules
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
   if (isRuleEngineActivated) {
-    await deleteRuleTasks(context, user, ruleId);
     await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active });
   }
   await publishUserAction({
