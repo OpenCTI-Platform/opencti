@@ -29188,12 +29188,14 @@ export type UserGroupsArgs = {
 
 
 export type UserObjectAssignedOrganizationArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<OrganizationsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
 };
 
 
 export type UserObjectOrganizationArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<OrganizationsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
 };
