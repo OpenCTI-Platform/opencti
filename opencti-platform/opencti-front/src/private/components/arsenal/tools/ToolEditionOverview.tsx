@@ -102,6 +102,7 @@ const toolEditionOverviewFragment = graphql`
     }
     killChainPhases {
       id
+      kill_chain_name
       phase_name
     }
     objectMarking {
@@ -174,7 +175,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     toolValidator,
   );
 
-  const handleSubmitField = (name: string, value: Option[] | string) => {
+  const handleSubmitField = (name: string, value: string[] | string) => {
     if (!enableReferences) {
       toolValidator
         .validateAt(name, { [name]: value })
@@ -182,14 +183,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           editor.fieldPatch({
             variables: {
               id: tool.id,
-              input: [
-                {
-                  key: name,
-                  value: Array.isArray(value)
-                    ? value.map((o) => (o as Option).value)
-                    : value,
-                },
-              ],
+              input: [{ key: name, value }],
             },
           });
         })
@@ -224,19 +218,16 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     });
   };
 
-  const createdBy = convertCreatedBy(tool);
-  const status = convertStatus(tool);
-
   const initialValues = {
     name: tool.name,
     description: tool.description ?? '',
     confidence: tool.confidence,
     tool_types: tool.tool_types ?? [],
     tool_version: tool.tool_version ?? '',
-    createdBy: createdBy as Option,
+    createdBy: convertCreatedBy(tool) as Option,
     killChainPhases: convertKillChainPhases(tool),
     objectMarking: convertMarkings(tool),
-    x_opencti_workflow_id: status as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, tool) as Option,
     references: [],
   };
 
@@ -292,6 +283,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
               type="Tool"
               onFocus={editor.changeFocus}
               onChange={editor.changeField}
+              setFieldValue={setFieldValue}
               style={{ marginTop: theme.spacing(2) }}
               helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
