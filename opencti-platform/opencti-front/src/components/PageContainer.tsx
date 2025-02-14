@@ -4,7 +4,7 @@ import type { Theme } from './Theme';
 
 export const PageContainerContext = React.createContext({ inPageContainer: false });
 
-const PageContainer: FunctionComponent<{ children: React.ReactNode, withRightMenu: boolean, withGap?: boolean }> = ({ children, withRightMenu = false, withGap = false }) => {
+const PageContainer: FunctionComponent<{ children: React.ReactNode, withRightMenu?: boolean, withGap?: boolean }> = ({ children, withRightMenu = false, withGap = false }) => {
   const theme = useTheme<Theme>();
   return (
     <PageContainerContext.Provider value={{ inPageContainer: true }}>
