@@ -82,14 +82,9 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
   if (!isPlatformOrgSetup) {
     message += 'Platform organization must be setup.';
   }
-  // 3. Workflow should be enabled
   const rfiEntitySettings = await getRfiEntitySettings(context);
-  const isWorkflowEnabled: boolean = rfiEntitySettings?.workflow_configuration !== undefined;
-  if (!isWorkflowEnabled) {
-    message += 'At least one workflow status must be configured.';
-  }
 
-  // 4. Request access status should be configured
+  // 3. Request access status should be configured
   const areRequestAccessStatusConfigured: boolean = rfiEntitySettings?.request_access_workflow !== undefined
     && rfiEntitySettings.request_access_workflow.declined_workflow_id !== undefined
     && rfiEntitySettings.request_access_workflow.approved_workflow_id !== undefined;
@@ -97,7 +92,7 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
     message += 'RFI status for decline and approval must be configured in entity settings.';
   }
 
-  // 5. At least one auth member admin should be configured.
+  // 4. At least one auth member admin should be configured.
   const isRequestAccesApprovalAdminConfigured: boolean = rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined
     && rfiEntitySettings?.request_access_workflow?.approval_admin.length >= 1;
   if (!isRequestAccesApprovalAdminConfigured) {
@@ -106,7 +101,6 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
 
   const isEnabled: boolean = isEEConfigured
     && isPlatformOrgSetup
-    && isWorkflowEnabled
     && areRequestAccessStatusConfigured
     && isRequestAccesApprovalAdminConfigured;
 
