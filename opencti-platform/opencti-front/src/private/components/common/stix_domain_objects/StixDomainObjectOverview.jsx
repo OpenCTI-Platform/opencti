@@ -169,6 +169,7 @@ const StixDomainObjectOverview = ({
 
   let requestAccess = null;
   let isRequestAccessNew = false;
+
   if (stixDomainObject.x_opencti_request_access) {
     requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
     // see RequestAccessAction interface in backend
