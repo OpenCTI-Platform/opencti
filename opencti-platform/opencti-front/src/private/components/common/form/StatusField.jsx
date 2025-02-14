@@ -150,7 +150,7 @@ class StatusField extends Component {
         groupBy={type ? undefined : (option) => option.type}
         onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
         renderOption={(props, option) => (
-          <li {...props}>
+          <li {...props} key={option.value}>
             <div className={classes.icon}>
               <Avatar
                 variant="square"

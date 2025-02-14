@@ -237,9 +237,8 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       setNewMarking({ currentValues: values, valueToReplace });
     } else onChange?.(name, values);
   };
-
   const renderOption: RenderOption = (props, option) => (
-    <li {...props}>
+    <li {...props} key={option.value}>
       <div className={classes.icon} style={{ color: option.color }}>
         <ItemIcon type="Marking-Definition" color={option.color} />
       </div>
