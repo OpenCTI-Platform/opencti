@@ -66,7 +66,6 @@ export const up = async (next) => {
     ENTITY_TYPE_INTRUSION_SET,
     ENTITY_TYPE_CAMPAIGN,
     ENTITY_TYPE_MALWARE,
-    ENTITY_TYPE_INCIDENT,
   ];
   const optsRelatedTo = { types: threatTypes, logForMigration: true, callback: clearRelatedToObservableRels };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, optsRelatedTo);
