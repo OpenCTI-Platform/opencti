@@ -13,6 +13,7 @@ import { CsvMapperRepresentationAttributesFormFragment } from '@components/data/
 import { csvMapperToFormData, formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
 import { csvMapperEditionContainerFragment } from '@components/data/csvMapper/CsvMapperEditionContainer';
+import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -35,12 +36,13 @@ interface CsvMapperCreationFormProps {
   paginationOptions: csvMappers_MappersQuery$variables
   isDuplicated?: boolean
   onClose?: () => void
-  open: boolean
   mappingCsv?: CsvMapperEditionContainerFragment_csvMapper$key | null,
+  addInputFromImport?: CsvMappersImportQuery$data['csvMapperAddInputFromImport'],
 }
 
 const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
   mappingCsv,
+  addInputFromImport,
   isDuplicated,
   onClose,
   paginationOptions,
@@ -92,23 +94,36 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     });
   };
 
-  const initialValues: CsvMapperFormData = isDuplicated && csvMapper
-    ? csvMapperToFormData(
+  let initialValues: CsvMapperFormData = {
+    id: '',
+    name: '',
+    has_header: false,
+    separator: ',',
+    skip_line_char: '',
+    entity_representations: [],
+    relationship_representations: [],
+  };
+  if (isDuplicated && csvMapper) {
+    initialValues = csvMapperToFormData(
       {
         ...csvMapper,
         name: `${csvMapper.name} - copy`,
       },
       data.csvMapperSchemaAttributes,
       computeDefaultValues,
-    ) : {
-      id: '',
-      name: '',
-      has_header: false,
-      separator: ',',
-      skip_line_char: '',
-      entity_representations: [],
-      relationship_representations: [],
-    };
+    );
+  } else if (addInputFromImport) {
+    initialValues = csvMapperToFormData(
+      {
+        ...addInputFromImport,
+        id: '',
+        errors: undefined,
+        representations: addInputFromImport.representations,
+      },
+      data.csvMapperSchemaAttributes,
+      computeDefaultValues,
+    );
+  }
 
   return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated}/>;
 };
