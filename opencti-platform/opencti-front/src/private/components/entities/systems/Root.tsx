@@ -254,7 +254,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                 element={
                   <div key={forceUpdate}>
                     <SystemKnowledge
-                      system={system}
+                      systemData={system}
                       viewAs={viewAs}
                     />
                   </div>
