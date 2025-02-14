@@ -18,7 +18,7 @@ import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import ImportFilesDialog from '@components/common/files/ImportFilesDialog';
+import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
