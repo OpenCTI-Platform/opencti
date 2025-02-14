@@ -75,7 +75,6 @@ const Notifiers = () => {
     <div className={classes.container}>
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
-      <NotifierCreation paginationOptions={paginationOptions} />
       <ListLines
         helpers={storageHelpers}
         sortBy={sortBy}
@@ -95,6 +94,7 @@ const Notifiers = () => {
         message={t_i18n(
           'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
         )}
+        createButton={<NotifierCreation paginationOptions={paginationOptions} />}
       >
         {queryRef && (
           <React.Suspense

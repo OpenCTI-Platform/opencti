@@ -9,7 +9,7 @@ export default class RolesSettingsPage {
   }
 
   getAddRoleButton() {
-    return this.page.getByLabel('Add');
+    return this.page.getByLabel('Create Role');
   }
 
   getRoleInList(ruleName: string) {
