@@ -1,19 +1,22 @@
 import { Button, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FormEvent, FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { Disposable, graphql } from 'react-relay';
+import { Disposable, graphql, useLazyLoadQuery } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../components/i18n';
 import AutocompleteField from '../../../components/AutocompleteField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import TextField from '../../../components/TextField';
-import { commitMutation, defaultCommitMutation } from '../../../relay/environment';
+import { commitMutation, defaultCommitMutation, MESSAGING$ } from '../../../relay/environment';
 import type { Theme } from '../../../components/Theme';
-import ThemeCreator, { CustomThemeBaseType } from './ThemeCreator';
-import ThemeImporter from './ThemeImporter';
+import ThemeCreator, { createThemeMutation, CustomThemeBaseType } from './ThemeCreator';
 import { ThemesEditor_themes$data } from './__generated__/ThemesEditor_themes.graphql';
+import { ThemeImporterAboutQuery } from './__generated__/ThemeImporterAboutQuery.graphql';
+import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { ThemeCreatorCreateMutation } from './__generated__/ThemeCreatorCreateMutation.graphql';
 
 export const refetchableThemesQuery = graphql`
   fragment ThemesEditor_themes on Query
@@ -59,6 +62,14 @@ const editThemeMutation = graphql`
   }
 `;
 
+const aboutQuery = graphql`
+  query ThemesEditorAboutQuery {
+    about {
+      version
+    }
+  }
+`;
+
 export interface ThemeType extends CustomThemeBaseType {
   id: string;
 }
@@ -82,7 +93,15 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
-  const [openImport, setOpenImport] = useState<boolean>(false);
+  const { about } = useLazyLoadQuery<ThemeImporterAboutQuery>(aboutQuery, {});
+  const [commit] = useApiMutation<ThemeCreatorCreateMutation>(
+    createThemeMutation,
+    undefined,
+    {
+      successMessage: `${t_i18n('Theme')} ${t_i18n('successfully created')}`,
+      errorMessage: t_i18n('Failed to import theme'),
+    },
+  );
 
   const themeOptions = themes?.edges
     ?.filter((node) => !!node)
@@ -124,11 +143,61 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
       });
     });
   };
-  const handleImport = () => setOpenImport(true);
-  const handleCloseImport = () => setOpenImport(false);
+  const handleImport = (event: FormEvent) => {
+    const inputElement = event.target as HTMLInputElement;
+    const fileReader = new FileReader();
+    const file = inputElement.files?.[0];
+    if (!file) return;
+    fileReader.readAsText(file, 'UTF-8');
+    fileReader.onload = (e) => {
+      try {
+        let targetString;
+        const target = e.target?.result;
+        if (!target) throw Error(t_i18n('No file target found'));
+        if (typeof target === 'string') {
+          targetString = target;
+        } else {
+          targetString = new TextDecoder().decode(target);
+        }
+
+        const parsedFile = JSON.parse(targetString);
+        if (!parsedFile) {
+          // JSON.parse should throw a syntax error
+          throw Error(t_i18n('Failed to parse file'));
+        }
+
+        if (parsedFile.openCTI_version !== about?.version) {
+          throw Error(t_i18n('Incompatible version'));
+        }
+        if (parsedFile.type !== 'theme') {
+          throw Error(t_i18n('Incompatible type'));
+        }
+
+        themeValidator.validate(parsedFile?.configuration)
+          .then((t) => commit({
+            variables: { input: t },
+            onCompleted: () => {
+              refetch();
+            },
+          }));
+      } catch (err) {
+        if (err instanceof Error) {
+          MESSAGING$.notifyError(`${t_i18n('Failed to import theme')}: ${err.message}`);
+        } else if (typeof err === 'string') {
+          MESSAGING$.notifyError(`${t_i18n('Failed to import theme')}: ${err}`);
+        } else {
+          MESSAGING$.notifyError(t_i18n('Failed to import theme'));
+        }
+      }
+    };
+  };
   const handleExport = (exportTheme: CustomThemeBaseType) => {
     // create file in browser
-    const json = JSON.stringify(exportTheme, null, 2);
+    const json = JSON.stringify({
+      openCTI_version: about?.version,
+      type: 'theme',
+      configuration: exportTheme,
+    }, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const href = URL.createObjectURL(blob);
 
@@ -187,7 +256,14 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
               justifyContent: 'flex-end',
             }}
             >
-              <Button onClick={handleImport}>{t_i18n('Import')}</Button>
+              {/* <Button onClick={handleImport}>{t_i18n('Import')}</Button> */}
+              <Button
+                component="label"
+                onChange={handleImport}
+              >
+                {t_i18n('Import')}
+                <VisuallyHiddenInput type="file" accept={'application/json'} />
+              </Button>
               <Button onClick={() => {
                 const { id: _, ...exportValues } = values;
                 handleExport(exportValues);
@@ -403,11 +479,6 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
       <ThemeCreator
         open={open}
         onClose={() => setOpen(false)}
-        refetch={refetch}
-      />
-      <ThemeImporter
-        open={openImport}
-        handleClose={handleCloseImport}
         refetch={refetch}
       />
     </Paper>
