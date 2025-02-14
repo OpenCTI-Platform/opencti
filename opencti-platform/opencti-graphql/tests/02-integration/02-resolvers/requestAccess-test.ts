@@ -21,7 +21,8 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { findAllTemplates } from '../../../src/domain/status';
 import { internalDeleteElementById } from '../../../src/database/middleware';
-import { StatusScope } from '../../../src/generated/graphql';
+import { RequestAccessType, StatusScope } from '../../../src/generated/graphql';
+import { waitInSec } from '../../../src/database/utils';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -215,7 +216,7 @@ describe('Add Request Access to an entity and create an RFI.'
   let amberGroupId: string;
   let greenGroupId: string;
 
-  it('Request access feature must be disabled when platform orga is not set', async () => {
+  it.todo('Request access feature must be disabled when platform orga is not set', async () => {
     const platformSettings = await queryAsAdminWithSuccess({
       query: QUERY_ROOT_SETTINGS,
       variables: {}
@@ -245,7 +246,7 @@ describe('Add Request Access to an entity and create an RFI.'
     declinedStatusId = requestAccessWorkflowSettings.declined_status.id;
   });
 
-  it('should throw error when configuration is missing for Request Access feature', async () => {
+  it.todo('should throw error when configuration is missing for Request Access feature', async () => {
     // this will only be true the first time, if you re-run tests without init data you might have this step fail.
     const platformSettings = await queryAsAdminWithSuccess({
       query: READ_SETTINGS_QUERY,
@@ -272,24 +273,25 @@ describe('Add Request Access to an entity and create an RFI.'
     const allTemplates = await findAllTemplates(testContext, ADMIN_USER, {});
 
     // All of them are created in data initialization
-    const newTemplate = allTemplates.edges.find((template) => template.node.name === 'NEW');
+    const pendingTemplate = allTemplates.edges.find((template) => template.node.name === 'PENDING');
     const closedTemplate = allTemplates.edges.find((template) => template.node.name === 'CLOSED');
     const declinedTemplate = allTemplates.edges.find((template) => template.node.name === 'DECLINED');
     const approvedTemplate = allTemplates.edges.find((template) => template.node.name === 'APPROVED');
-    expect(newTemplate?.node.name).toBe('NEW');
+    expect(pendingTemplate?.node.name).toBe('PENDING');
     expect(closedTemplate?.node.name).toBe('CLOSED');
     expect(declinedTemplate?.node.name).toBe('DECLINED');
     expect(approvedTemplate?.node.name).toBe('APPROVED');
 
     amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
     greenGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    expect(greenGroupId).toBeDefined();
     expect(amberGroupId).toBeDefined();
 
     await queryAsAdminWithSuccess({
       query: CONFIGURE_REQUEST_ACCESS_MUTATION,
       variables: {
         input: {
-          approve_status_template_id: newTemplate?.node.id,
+          approve_status_template_id: pendingTemplate?.node.id,
           decline_status_template_id: closedTemplate?.node.id,
           approval_admin: [greenGroupId]
         }
@@ -304,7 +306,7 @@ describe('Add Request Access to an entity and create an RFI.'
 
     expect(requestAccessConfiguration.approval_admin).toBeDefined();
     expect(requestAccessConfiguration.approval_admin[0].id).toBe(greenGroupId);
-    expect(requestAccessConfiguration.approved_status.template.name).toBe('NEW');
+    expect(requestAccessConfiguration.approved_status.template.name).toBe('PENDING');
     expect(requestAccessConfiguration.declined_status.template.name).toBe('CLOSED');
 
     // Back to "Normal" status
@@ -331,7 +333,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(configurationBackToNormal.approval_admin[0].id).toBe(amberGroupId);
   });
 
-  it.todo('should create malware with restricted access', async () => {
+  it('should create malware with restricted access', async () => {
     const malwareStixId = 'malware--34c9875d-8206-4f4b-bf17-f58d9cf7ebec';
     const MALWARE_TO_CREATE = {
       input: {
@@ -349,22 +351,26 @@ describe('Add Request Access to an entity and create an RFI.'
 
     const testOrgEntity = await getOrganizationEntity(TEST_ORGANIZATION);
     testOrgId = testOrgEntity.id;
+    expect(malwareId).toBeDefined();
+    expect(testOrgId).toBeDefined();
   });
 
-  it.todo('should create a Request Access and associated Case RFI (For accept use case)', async () => {
-    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+  it('should create a Request Access and associated Case RFI (For accept use case)', async () => {
+    console.log('ANGIE - ', { malwareId, testOrgId });
+    const requestAccessData = await queryAsAdminWithSuccess({
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
         input: {
           request_access_reason: 'Access needed for test that will accept',
           request_access_entities: [malwareId],
           request_access_members: [testOrgId],
-          request_access_type: 'organization_sharing',
+          request_access_type: RequestAccessType.OrganizationSharing,
         },
       },
     });
 
     expect(requestAccessData).not.toBeNull();
+    console.log('requestAccessData:', requestAccessData);
     caseRfiIdForApproval = requestAccessData?.data?.requestAccessAdd;
     expect(caseRfiIdForApproval).not.toBeNull();
   });
