@@ -277,13 +277,14 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             onSubmit={handleSubmitField}
             containerStyle={{ marginTop: theme.spacing(2) }}
             editContext={context}
+            variant="edit"
           />
           <KillChainPhasesField
             name="killChainPhases"
             setFieldValue={setFieldValue}
             style={{ marginTop: theme.spacing(2) }}
             helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
-            onChange={editor.changeField}
+            onChange={editor.changeKillChainPhases}
           />
           {tool.workflowEnabled && (
             <StatusField
@@ -300,24 +301,25 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             style={{ marginTop: theme.spacing(2) }}
             setFieldValue={setFieldValue}
             helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
-            onChange={editor.changeField}
+            onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
             style={{ marginTop: theme.spacing(2) }}
             setFieldValue={setFieldValue}
             helpertext={<SubscriptionFocus context={context} fieldName="objectMarking" />}
-            onChange={editor.changeField}
+            onChange={editor.changeMarking}
           />
           <OpenVocabField
             type="tool_types_ov"
             name="tool_types"
             label={t_i18n('Tool types')}
-            onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, value as string)}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             multiple
+            variant="edit"
+            editContext={context}
           />
           <Field
             component={TextField}
