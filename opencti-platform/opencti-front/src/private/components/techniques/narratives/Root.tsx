@@ -206,7 +206,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <NarrativeKnowledge narrative={narrative} />
+                    <NarrativeKnowledge narrativeData={narrative} />
                   </div>
                 }
               />

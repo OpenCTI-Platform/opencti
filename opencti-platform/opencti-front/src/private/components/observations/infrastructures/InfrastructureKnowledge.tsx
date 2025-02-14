@@ -14,6 +14,8 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 import { InfrastructureKnowledge_infrastructure$key } from './__generated__/InfrastructureKnowledge_infrastructure.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const infrastructureKnowledgeFragment = graphql`
   fragment InfrastructureKnowledge_infrastructure on Infrastructure {
@@ -22,6 +24,7 @@ const infrastructureKnowledgeFragment = graphql`
     aliases
     first_seen
     last_seen
+    entity_type
     ...StixCoreObjectKnowledgeBar_stixCoreObject
   }
 `;
@@ -32,6 +35,8 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
     infrastructure,
   );
   const link = `/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(infrastructureData.entity_type, schema);
   return (
     <>
       <StixCoreObjectKnowledgeBar
@@ -87,7 +92,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           element={
             <EntityStixCoreRelationships
               entityId={infrastructureData.id}
-              relationshipTypes={[]}
+              relationshipTypes={allRelationshipsTypes}
               entityLink={link}
               defaultStartTime={infrastructure.startTime}
               defaultStopTime={infrastructure.stopTime}
