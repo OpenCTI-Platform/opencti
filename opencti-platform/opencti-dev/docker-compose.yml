@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:2.18.0
+    image: opensearchproject/opensearch:2.19.0
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots
