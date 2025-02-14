@@ -552,24 +552,15 @@ const SearchBulk = () => {
                           primary={
                             <>
                               <div className={classes.bodyItem} style={inlineStyles.type}>
-                                {entity.in_platform ? (
-                                  <Chip
-                                    classes={{ root: classes.chipInList }}
-                                    style={{
-                                      backgroundColor: hexToRGB(itemColor(entity.type), 0.08),
-                                      color: itemColor(entity.type),
-                                      border: `1px solid ${itemColor(entity.type)}`,
-                                    }}
-                                    label={t_i18n(`entity_${entity.type}`)}
-                                  />
-                                ) : (
-                                  <Chip
-                                    classes={{ root: classes.chipInList }}
-                                    variant="outlined"
-                                    color="error"
-                                    label={t_i18n('Unknown')}
-                                  />
-                                )}
+                                <Chip
+                                  classes={{ root: classes.chipInList }}
+                                  style={{
+                                    backgroundColor: hexToRGB(itemColor(entity.type), 0.08),
+                                    color: itemColor(entity.type),
+                                    border: `1px solid ${itemColor(entity.type)}`,
+                                  }}
+                                  label={t_i18n(`entity_${entity.type}`)}
+                                />
                               </div>
                               <div className={classes.bodyItem} style={inlineStyles.value}>
                                 {entity.value}
@@ -613,7 +604,7 @@ const SearchBulk = () => {
                                         }
                         />
                         <ListItemIcon classes={{ root: classes.goIcon }}>
-                          {entity.in_platform && <KeyboardArrowRightOutlined />}
+                          <KeyboardArrowRightOutlined />
                         </ListItemIcon>
                       </ListItemButton>
                     ) : (
