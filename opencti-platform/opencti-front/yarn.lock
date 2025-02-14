@@ -4732,6 +4732,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-avatar@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@radix-ui/react-avatar@npm:1.1.3"
+  dependencies:
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-primitive": "npm:2.0.2"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.0"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10/02ad24e21af685666fdee33962df7ddb1ee7f815cec6c9b8349f6850391b8af554c73794b764c25cac97792623f3dc4a667c3882769c6d215ce1d2b5a9890d82
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-checkbox@npm:1.1.1":
   version: 1.1.1
   resolution: "@radix-ui/react-checkbox@npm:1.1.1"
@@ -5698,6 +5720,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-primitive@npm:2.0.2":
+  version: 2.0.2
+  resolution: "@radix-ui/react-primitive@npm:2.0.2"
+  dependencies:
+    "@radix-ui/react-slot": "npm:1.1.2"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10/877b20d63487d0dec3f152f59a11d5826507d0839603b48b6aaa3f3eededea11f040ed36d6b868c02a7364570e5fbbbdb102c624fd930d4ed308b36c57154638
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-roving-focus@npm:1.1.0":
   version: 1.1.0
   resolution: "@radix-ui/react-roving-focus@npm:1.1.0"
@@ -5853,6 +5894,21 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/5b1ee5100da356c8f9f56cd7ca273838a373fa3808f0f909b1e132c4f734282571cb666e86a548831ee82a62240e126d43379994285a9b030fd34ea43538b5e2
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-slot@npm:1.1.2":
+  version: 1.1.2
+  resolution: "@radix-ui/react-slot@npm:1.1.2"
+  dependencies:
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/6d5e1fac17b3eb79019a697581133dff23a3f6406f8ecfca476ab4a6a73baa53d66a7c9caeeebcc677363aa3b4132aa9d2168641ba9642658a2e4a297c05e4d3
   languageName: node
   linkType: hard
 
@@ -10705,6 +10761,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"embla-carousel-react@npm:8.5.2":
+  version: 8.5.2
+  resolution: "embla-carousel-react@npm:8.5.2"
+  dependencies:
+    embla-carousel: "npm:8.5.2"
+    embla-carousel-reactive-utils: "npm:8.5.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.1 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+  checksum: 10/7390154357ffad9eb4641d5d5cd7ed061d33dfaa02c7cfb1b8828e562fe0b7dfb1a0590108db832179a9c4453184b63926d4d4403ba576e8ea6710bad9fd13f0
+  languageName: node
+  linkType: hard
+
+"embla-carousel-reactive-utils@npm:8.5.2":
+  version: 8.5.2
+  resolution: "embla-carousel-reactive-utils@npm:8.5.2"
+  peerDependencies:
+    embla-carousel: 8.5.2
+  checksum: 10/b46011e7031af6642673a7ded7139559ea8af12bf61a6e9aab1ae8006cabafce78ad0c7a3e1c425e96a0fa22de02849fd6d07e86bc118da26cf84eaedccd8a6f
+  languageName: node
+  linkType: hard
+
+"embla-carousel@npm:8.5.2":
+  version: 8.5.2
+  resolution: "embla-carousel@npm:8.5.2"
+  checksum: 10/ed1407d38b86523d4d5abd88ab47804f08e194fb0da0b4b225013ca217d5bb9c40c0899e31261ba2b1748101ae9ccb02a3eaf08d509080f85c9229223f8f8ff3
+  languageName: node
+  linkType: hard
+
 "emoji-regex@npm:^8.0.0":
   version: 8.0.0
   resolution: "emoji-regex@npm:8.0.0"
@@ -12080,9 +12164,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-ui@npm:0.29.2":
-  version: 0.29.2
-  resolution: "filigran-ui@npm:0.29.2"
+"filigran-ui@npm:0.32.1":
+  version: 0.32.1
+  resolution: "filigran-ui@npm:0.32.1"
   dependencies:
     "@dnd-kit/core": "npm:6.1.0"
     "@dnd-kit/modifiers": "npm:7.0.0"
@@ -12090,6 +12174,7 @@ __metadata:
     "@hookform/resolvers": "npm:3.6.0"
     "@radix-ui/react-accordion": "npm:1.2.0"
     "@radix-ui/react-alert-dialog": "npm:1.1.1"
+    "@radix-ui/react-avatar": "npm:^1.1.3"
     "@radix-ui/react-checkbox": "npm:1.1.1"
     "@radix-ui/react-dialog": "npm:1.1.1"
     "@radix-ui/react-dropdown-menu": "npm:2.1.1"
@@ -12105,6 +12190,7 @@ __metadata:
     class-variance-authority: "npm:0.7.0"
     clsx: "npm:2.1.1"
     cmdk: "npm:1.0.0"
+    embla-carousel-react: "npm:8.5.2"
     filigran-icon: "npm:^0.10.0"
     react-easy-sort: "npm:1.6.0"
     react-hook-form: "npm:7.52.0"
@@ -12114,7 +12200,7 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0
     react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0
-  checksum: 10/a42f2f9be39ef1e46c93f0fdb711a6083b20fb4a2fe73d2be0b807656a0ade369ec9282abfa2fdeb9ef4fd7bb0c7dab023de13ecc3ca5e1dd9b3238e65eed531
+  checksum: 10/70252537bcd2aa3dc7e6523f9182a7487c21acf2a7642d8db06557970e8ca7a9b96c9b511704a5c855b83c9be0b47bc3457eca28b4030f9f4b85253f75803963
   languageName: node
   linkType: hard
 
@@ -16724,7 +16810,7 @@ __metadata:
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.12.0"
-    filigran-ui: "npm:0.29.2"
+    filigran-ui: "npm:0.32.1"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
