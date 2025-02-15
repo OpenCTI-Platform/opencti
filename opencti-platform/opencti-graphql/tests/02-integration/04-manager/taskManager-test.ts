@@ -111,7 +111,7 @@ describe('TaskManager computeQueryTaskElements', () => {
       scope: 'KNOWLEDGE',
     };
     const elements: BasicStoreEntity[] = [];
-    await taskQuery(testContext, ADMIN_USER, task, 'KNOWLEDGE_CHANGE', (results: BasicStoreEntity[]) => {
+    await taskQuery(testContext, ADMIN_USER, task, (results: BasicStoreEntity[]) => {
       elements.push(...results);
     });
     const observableOrder1: BasicStoreEntity = elements[0];
@@ -128,7 +128,7 @@ describe('TaskManager computeQueryTaskElements', () => {
       scope: 'KNOWLEDGE',
     };
     const elements: BasicStoreEntity[] = [];
-    await taskQuery(testContext, ADMIN_USER, task, 'KNOWLEDGE_CHANGE', (results: BasicStoreEntity[]) => {
+    await taskQuery(testContext, ADMIN_USER, task, (results: BasicStoreEntity[]) => {
       elements.push(...results);
     });
     const observableOrder1: BasicStoreEntity = elements[0];
