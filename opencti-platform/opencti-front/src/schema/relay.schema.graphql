@@ -7954,6 +7954,7 @@ type Query {
   stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory
+  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask]
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection

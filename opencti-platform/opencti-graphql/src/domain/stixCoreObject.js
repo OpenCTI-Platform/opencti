@@ -1,6 +1,23 @@
 import * as R from 'ramda';
-import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import {
+  buildRestrictedEntity,
+  createEntity,
+  createRelationRaw,
+  deleteElementById,
+  distributionEntities,
+  stixLoadById,
+  storeLoadByIdWithRefs,
+  timeSeriesEntities
+} from '../database/middleware';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listEntitiesPaginated,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById,
+  storeLoadByIds
+} from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
@@ -40,13 +57,13 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -80,6 +97,8 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
@@ -106,6 +125,42 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
   return types;
+};
+
+export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
+  const stixElement = await stixLoadById(context, user, id);
+  // Get all not completed works associated to background task
+  const workBackgrounds = await listAllEntities(context, user, [ENTITY_TYPE_WORK], {
+    indices: [READ_INDEX_HISTORY],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['background_task_id'], values: ['EXISTS'] },
+        { key: ['status'], values: ['complete'], operator: 'not_eq' },
+      ],
+      filterGroups: [],
+    },
+  });
+  const backgroundIds = workBackgrounds.map((work) => work.background_task_id);
+  // Get all related background tasks
+  const backTasks = await internalFindByIds(context, user, backgroundIds);
+  const activeTasks = [];
+  for (let index = 0; index < backTasks.length; index += 1) {
+    const backTask = backTasks[index];
+    let isConcerned = false;
+    if (backTask.type === 'QUERY') {
+      const excludedById = (backTask.task_excluded_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);
+      const filters = JSON.parse(backTask.task_filters);
+      isConcerned = !excludedById && await isStixMatchFilterGroup(context, user, stixElement, filters);
+    }
+    if (backTask.type === 'LIST') {
+      isConcerned = (backTask.task_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);
+    }
+    if (isConcerned) {
+      activeTasks.push(backTask);
+    }
+  }
+  return activeTasks;
 };
 
 export const findAll = async (context, user, args) => {

@@ -240,7 +240,7 @@ export const generateFiltersForSharingTask = (containerId) => {
   return {
     mode: 'and',
     filters: [{
-      key: ['internal_id'],
+      key: ['ids'],
       values: [containerId],
     }],
     filterGroups: [],

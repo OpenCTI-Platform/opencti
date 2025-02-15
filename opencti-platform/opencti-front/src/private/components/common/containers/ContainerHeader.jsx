@@ -480,7 +480,6 @@ const ContainerHeader = (props) => {
       right: 24,
     };
   }
-
   const triggersPaginationOptions = {
     includeAuthorities: true,
     filters: {
@@ -510,9 +509,7 @@ const ContainerHeader = (props) => {
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
   return (
-    <div
-      style={containerStyle}
-    >
+    <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
         {!knowledge && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -525,13 +522,7 @@ const ContainerHeader = (props) => {
               || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
             }
           >
-            <Typography
-              variant="h1"
-              sx={{
-                margin: 0,
-                lineHeight: 'unset',
-              }}
-            >
+            <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
               {truncate(
                 container.name
                 || container.attribute_abstract

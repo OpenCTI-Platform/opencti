@@ -18,6 +18,7 @@ import {
   opinionsPaginated,
   reportsPaginated,
   stixCoreAnalysis,
+  stixCoreBackgroundActiveOperations,
   stixCoreObjectAddRelation,
   stixCoreObjectAddRelations,
   stixCoreObjectAnalysisPush,
@@ -65,6 +66,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreBackgroundActiveOperations: (_, { id }, context) => stixCoreBackgroundActiveOperations(context, context.user, id),
     stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {

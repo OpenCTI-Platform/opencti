@@ -19826,6 +19826,7 @@ export type Query = {
   statusTemplates?: Maybe<StatusTemplateConnection>;
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']['output']>;
+  stixCoreBackgroundActiveOperations?: Maybe<Array<Maybe<BackgroundTask>>>;
   stixCoreObject?: Maybe<StixCoreObject>;
   stixCoreObjectAnalysis?: Maybe<Analysis>;
   stixCoreObjectAskAiActivity?: Maybe<AiActivity>;
@@ -21590,6 +21591,11 @@ export type QueryStatusesArgs = {
 
 export type QueryStixArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryStixCoreBackgroundActiveOperationsArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -39304,6 +39310,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
+  stixCoreBackgroundActiveOperations?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTask']>>>, ParentType, ContextType, RequireFields<QueryStixCoreBackgroundActiveOperationsArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
   stixCoreObjectAnalysis?: Resolver<Maybe<ResolversTypes['Analysis']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAnalysisArgs, 'contentSource' | 'contentType' | 'id'>>;
   stixCoreObjectAskAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiActivityArgs, 'id'>>;

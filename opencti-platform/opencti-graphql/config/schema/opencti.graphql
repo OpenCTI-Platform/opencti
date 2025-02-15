@@ -12962,6 +12962,7 @@ type Query {
   stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast @auth(for: [KNOWLEDGE])
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory @auth(for: [KNOWLEDGE])
+  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask] @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
