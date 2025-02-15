@@ -233,7 +233,7 @@ export const rulesCleanHandler = async (
       try {
         const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
         if (isElementCleanable) {
-          const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id) as unknown as StoreObject;
+          const processingElement: StoreObject = await storeLoadByIdWithRefs(context, user, instance.internal_id) as unknown as StoreObject;
           // In case of "inference of inference", element can be recursively cleanup by the deletion system
           if (processingElement) {
             await rule.clean(processingElement, deletedDependencies);
@@ -361,7 +361,9 @@ export const ruleApply = async (context: AuthContext, user: AuthUser, elementId:
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   const element = await internalLoadById(context, user, elementId) as BasicStoreCommon;
-  return rulesCleanHandler(context, user, [element], [rule]);
+  if (element) {
+    await rulesCleanHandler(context, user, [element], [rule]);
+  }
 };
 
 export const executeRuleElementRescan = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
