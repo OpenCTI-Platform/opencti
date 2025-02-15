@@ -453,6 +453,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'event_source_id', label: 'Event source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+    { name: 'background_task_id', label: 'Tasks', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
     { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
     { name: 'user_id', label: 'User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },

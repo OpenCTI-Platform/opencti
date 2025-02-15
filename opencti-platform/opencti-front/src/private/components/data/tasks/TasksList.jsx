@@ -260,6 +260,12 @@ const TasksList = ({ data }) => {
               <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
                   <Grid item xs={12}>
+                    {(task.scope ?? task.type)
+                        && <Grid item xs={2}>
+                          <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
+                        </Grid>
+                    }
+                    <br/>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                     </Typography>
@@ -379,14 +385,6 @@ const TasksList = ({ data }) => {
                     </Typography>
                     {nsdt(task.last_execution_date)}
                   </Grid>
-                  {(task.scope ?? task.type)
-                      && <Grid item xs={2}>
-                        <Typography variant="h3" gutterBottom={true}>
-                          {t_i18n('Scope')}
-                        </Typography>
-                        <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
-                      </Grid>
-                    }
                   <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
