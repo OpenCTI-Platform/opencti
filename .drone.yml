@@ -424,6 +424,27 @@ services:
       - yarn build:dev
       - yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+  - name: opencti-e2e-worker
+    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    volumes:
+      - name: cache-node-e2e-start-backend
+        path: /tmp/e2e-start-platform/node_modules
+    environment:
+      OPENCTI_URL: http://opencti-e2e-start:4500
+      OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      WORKER_LOG_LEVEL: info
+    commands:
+      - sleep 10
+      - cp -a opencti-worker /tmp/opencti-e2e-worker
+      - apk add build-base git libffi-dev cargo
+      - cd "$DRONE_WORKSPACE/client-python"
+      - echo "[INFO] using client-python on branch $(git branch --show-current)"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
+      - while ! nc -z opencti-e2e-start 4500 ; do sleep 1 ; done
+      - cd /tmp/opencti-e2e-worker
+      - pip install -r src/requirements.txt
+      - python3 src/worker.py
 
 volumes:
   - name: cache-node-backend
