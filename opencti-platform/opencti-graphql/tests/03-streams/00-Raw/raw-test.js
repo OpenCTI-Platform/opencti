@@ -27,7 +27,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.label.length).toBe(19);
       expect(createEventsByTypes.identity.length).toBe(35);
       expect(createEventsByTypes.location.length).toBe(19);
-      expect(createEventsByTypes.relationship.length).toBe(134);
+      expect(createEventsByTypes.relationship.length).toBe(133);
       expect(createEventsByTypes.sighting.length).toBe(4);
       expect(createEventsByTypes.indicator.length).toBe(35);
       expect(createEventsByTypes['attack-pattern'].length).toBe(9);
@@ -48,7 +48,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(342); // 328 created at init + 2 created in tests + 5 vocabulary organizations types + 7 persona
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(799);
+      expect(createEvents.length).toBe(798);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
