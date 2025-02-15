@@ -9,24 +9,14 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork, updateExpectationsNumber } from './work';
 import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectShareableContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  CONNECTOR_INTERNAL_EXPORT_FILE,
-  INPUT_GRANTED_REFS,
-} from '../schema/general';
+import { isStixDomainObjectShareableContainer } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './backgroundTask';
-import { getParentTypes } from '../schema/schemaUtils';
-import { countAllThings, internalLoadById, storeLoadById } from '../database/middleware-loader';
-import { schemaTypesDefinition } from '../schema/schema-types';
+import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
@@ -247,44 +237,29 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
 };
 
 export const generateFiltersForSharingTask = (containerId) => {
-  const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
-    .filter((s) => {
-      if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
-      return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
-    });
-  const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
   return {
     mode: 'and',
-    filters: [
-      {
-        key: ['objects'],
-        values: [containerId],
-      },
-      {
-        key: ['entity_type'],
-        values: SCAN_ENTITIES,
-      }
-    ],
+    filters: [{
+      key: ['internal_id'],
+      values: [containerId],
+    }],
     filterGroups: [],
   };
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {
   const filters = generateFiltersForSharingTask(containerId);
-  const impactsNumber = await countAllThings(context, context.user, { filters });
-  if (impactsNumber > 0) {
-    const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
-    // orderMode is on created_at, see buildQueryFilters in backgroundTask
-    // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
-    // containerId required to send an event after all container content is shared.
-    const input = {
-      filters: JSON.stringify(filters),
-      actions: [{ type, context: { values: organizationIds }, containerId }],
-      scope: 'KNOWLEDGE',
-      orderMode: 'asc'
-    };
-    await createQueryTask(context, context.user, input);
-  }
+  const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
+  // orderMode is on created_at, see buildQueryFilters in backgroundTask
+  // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
+  // containerId required to send an event after all container content is shared.
+  const input = {
+    filters: JSON.stringify(filters),
+    actions: [{ type, context: { values: organizationIds }, containerId }],
+    scope: 'KNOWLEDGE',
+    orderMode: 'asc'
+  };
+  await createQueryTask(context, context.user, input);
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {

@@ -25,7 +25,7 @@ import { now } from '../utils/format';
 import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_CONTAINER, RULE_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
@@ -60,6 +60,9 @@ import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { schemaTypesDefinition } from '../schema/schema-types';
+import { getParentTypes } from '../schema/schemaUtils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -105,23 +108,14 @@ export const taskRule = async (context, user, task, callback) => {
   }
 };
 
-export const taskQuery = async (context, user, task, actionType, callback) => {
+export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode);
   if (task_excluded_ids.length > 0) {
     options.filters = addFilter(options.filters, 'id', task_excluded_ids, 'not_eq');
   }
-  // For share / Unshare, we need to enlist in one step
-  // Its required as we need to keep the ordering and add the container at the end
-  if (isShareAction(actionType) || isUnshareAction(actionType)) {
-    const finalOpts = { ...options, connectionFormat: false, baseData: true };
-    const elements = await elList(context, user, READ_DATA_INDICES, finalOpts);
-    callback(elements);
-  } else {
-    // For other operations, it can be step by step
-    const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
-    await elList(context, user, READ_DATA_INDICES, finalOpts);
-  }
+  const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
+  await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
 
 export const taskList = async (context, user, task, callback) => {
@@ -240,35 +234,29 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     draft_id: task.draft_context ?? null,
     no_split: opts.forceNoSplit ?? false
   });
-  // Update task
-  const processedNumber = task.task_processed_number + objects.length;
-  await updateTask(context, task.id, { task_processed_number: processedNumber });
 };
 
-const shareUnshareExtraOperation = async (context, user, actionType, operations) => {
-  if (isShareAction(actionType) || isUnshareAction(actionType)) {
-    const { containerId } = operations[0];
-    if (containerId) {
-      const opts = { baseData: true, type: ENTITY_TYPE_CONTAINER };
-      const container = await internalLoadById(context, user, containerId, opts);
-      if (container) {
-        const object = {
-          id: container.standard_id,
-          type: convertTypeToStixType(container.entity_type),
-          ...baseOperationBuilder(actionType, operations, container),
-          sharing_direct_container: true,
-          extensions: {
-            [STIX_EXT_OCTI]: {
-              id: container.internal_id,
-              type: container.entity_type
-            }
-          }
-        };
-        return { forceNoSplit: true, object };
+const buildBundleElement = (element, actionType, operations) => {
+  const baseObject = {
+    id: element.standard_id,
+    type: convertTypeToStixType(element.entity_type),
+    ...baseOperationBuilder(actionType, operations, element),
+    extensions: {
+      [STIX_EXT_OCTI]: {
+        id: element.internal_id,
+        type: element.entity_type
       }
     }
+  };
+  // region Handle specific relationship attributes
+  if (isStixSightingRelationship(element.entity_type)) {
+    baseObject.sighting_of_ref = element.fromId;
+    baseObject.where_sighted_refs = [element.toId];
+  } else if (isBasicRelationship(element.entity_type)) {
+    baseObject.source_ref = element.fromId;
+    baseObject.target_ref = element.toId;
   }
-  return { forceNoSplit: false, object: null };
+  return baseObject;
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
@@ -278,27 +266,8 @@ const standardOperationCallback = async (context, user, task, actionType, operat
     let startProcessingTime = new Date().getTime();
     for (let index = 0; index < elements.length; index += 1) {
       const e = elements[index];
-      const baseObject = {
-        id: e.standard_id,
-        type: convertTypeToStixType(e.entity_type),
-        ...baseOperationBuilder(actionType, operations, e),
-        extensions: {
-          [STIX_EXT_OCTI]: {
-            id: e.internal_id,
-            type: e.entity_type
-          }
-        }
-      };
-      // region Handle specific relationship attributes
-      if (isStixSightingRelationship(e.entity_type)) {
-        baseObject.sighting_of_ref = e.fromId;
-        baseObject.where_sighted_refs = [e.toId];
-      } else if (isBasicRelationship(e.entity_type)) {
-        baseObject.source_ref = e.fromId;
-        baseObject.target_ref = e.toId;
-      }
-      // endregion
-      objects.push(baseObject);
+      const object = buildBundleElement(e, actionType, operations);
+      objects.push(object);
       // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
         startProcessingTime = new Date().getTime();
@@ -307,11 +276,10 @@ const standardOperationCallback = async (context, user, task, actionType, operat
         });
       }
     }
-    // If share / unshare with container, add the container and force worker to not split the bundle
-    const { forceNoSplit, object } = await shareUnshareExtraOperation(context, user, actionType, operations);
-    if (object) objects.push(object);
     // Send actions to queue
-    await sendResultToQueue(context, user, task, objects, { forceNoSplit });
+    await sendResultToQueue(context, user, task, objects);
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
   };
 };
 
@@ -363,6 +331,8 @@ const containerOperationCallback = async (context, user, task, containers, opera
     }
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
   };
 };
 
@@ -459,6 +429,72 @@ const promoteOperationCallback = async (context, user, task, container) => {
     }
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
+const sharingTaskFilters = (containerId) => {
+  const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((s) => {
+    if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
+    return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
+  });
+  const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
+  return {
+    mode: 'and',
+    filters: [
+      {
+        key: ['objects'],
+        values: [containerId],
+      },
+      {
+        key: ['entity_type'],
+        values: SCAN_ENTITIES,
+      }
+    ],
+    filterGroups: [],
+  };
+};
+
+const sharingOperationCallback = async (context, user, task, actionType, operations) => {
+  return async (elements) => {
+    const objects = [];
+    for (let index = 0; index < elements.length; index += 1) {
+      const element = elements[index];
+      // in case of container we need to share all inner objects
+      // We also need to push a no split bundle directly
+      if (isStixDomainObjectContainer(element.entity_type)) {
+        const containerObjects = [];
+        const filters = sharingTaskFilters(element.internal_id);
+        const sharingElements = await elList(context, user, READ_DATA_INDICES, { filters, baseData: true });
+        let startProcessingTime = new Date().getTime();
+        for (let shareIndex = 0; shareIndex < sharingElements.length; shareIndex += 1) {
+          const sharingElement = sharingElements[shareIndex];
+          containerObjects.push(buildBundleElement(sharingElement, actionType, operations));
+          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+            startProcessingTime = new Date().getTime();
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+          }
+        }
+        // Add the container at the end
+        const container = buildBundleElement(element, actionType, operations);
+        container.sharing_direct_container = true;
+        containerObjects.push(container);
+        // Send actions to queue
+        await sendResultToQueue(context, user, task, containerObjects, { forceNoSplit: true });
+      } else {
+        // If not a container add in global bundle
+        objects.push(buildBundleElement(element, actionType, operations));
+      }
+    }
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+    }
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
   };
 };
 
@@ -475,6 +511,10 @@ const computeOperationCallback = async (context, user, task, actionType, operati
     const container = containerId ? await internalLoadById(context, user, containerId, { baseData: true }) : undefined;
     return promoteOperationCallback(context, user, task, container);
   }
+  // Handle specific sharing operation, as container must share inner object
+  if (isShareAction(actionType) || isUnshareAction(actionType)) {
+    return sharingOperationCallback(context, user, task, actionType, operations);
+  }
   // If not, return standard callback
   return standardOperationCallback(context, user, task, actionType, operations);
 };
@@ -485,7 +525,7 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   // Handle queries and list
   if (task.type === TASK_TYPE_QUERY) {
     // Task query will be enlisted step by step except for sharing/un sharing
-    await taskQuery(context, user, task, actionType, callback);
+    await taskQuery(context, user, task, callback);
   }
   if (task.type === TASK_TYPE_LIST) {
     // Task list is enlist in one shot
