@@ -4595,7 +4595,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*":
+"@types/express@npm:*, @types/express@npm:5.0.0":
   version: 5.0.0
   resolution: "@types/express@npm:5.0.0"
   dependencies:
@@ -4607,7 +4607,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:4.17.21, @types/express@npm:^4.17.13, @types/express@npm:^4.17.21":
+"@types/express@npm:^4.17.13, @types/express@npm:^4.17.21":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
   dependencies:
@@ -11415,7 +11415,7 @@ __metadata:
     "@types/bluebird": "npm:3.5.42"
     "@types/dot-object": "npm:2.1.6"
     "@types/ejs": "npm:3.1.5"
-    "@types/express": "npm:4.17.21"
+    "@types/express": "npm:5.0.0"
     "@types/graphql-upload": "npm:17.0.0"
     "@types/mime-types": "npm:2.1.4"
     "@types/nconf": "npm:0.10.7"
