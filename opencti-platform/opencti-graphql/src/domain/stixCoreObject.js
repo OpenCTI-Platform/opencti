@@ -79,7 +79,7 @@ import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { getDraftChanges, getDraftFilePrefix } from '../database/draft-utils';
+import {FILES_UPDATE_KEY, getDraftChanges, getDraftFilePrefix} from '../database/draft-utils';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -734,7 +734,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: 'x_opencti_files', value: [file.id], operation: UPDATE_OPERATION_ADD };
+      const eventFileInput = { key: FILES_UPDATE_KEY, value: [file.id], operation: UPDATE_OPERATION_ADD };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
@@ -838,7 +838,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: 'x_opencti_files', value: [fileId], operation: UPDATE_OPERATION_REMOVE };
+      const eventFileInput = { key: FILES_UPDATE_KEY, value: [fileId], operation: UPDATE_OPERATION_REMOVE };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);

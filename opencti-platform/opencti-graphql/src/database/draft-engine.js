@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from './utils';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import {
   BULK_TIMEOUT,
@@ -26,9 +26,11 @@ import {
 import { SYSTEM_USER } from '../utils/access';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { buildReverseUpdateFieldPatch } from './draft-utils';
+import { buildReverseUpdateFieldPatch, FILES_UPDATE_KEY } from './draft-utils';
 import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './middleware';
 import { buildRefRelationKey } from '../schema/general';
+import { getFileContent, loadFile } from './file-storage';
+import { EditOperation } from '../generated/graphql';
 
 const completeDeleteElementsFromDraft = async (context, user, elements) => {
   const draftContext = getDraftContext(context, user);
@@ -255,4 +257,29 @@ export const elDeleteDraftContextFromWorks = async (context, user, draftId) => {
   }).catch((err) => {
     throw DatabaseError('Error deleting works draft context', { cause: err });
   });
+};
+
+export const resolveDraftUpdateFiles = async (context, user, draftUpdates) => {
+  const resolvedDraftUpdatePatch = [...draftUpdates.filter((k) => k.key !== FILES_UPDATE_KEY)];
+  const addedFiles = draftUpdates.find((k) => k.key === FILES_UPDATE_KEY && k.operation === EditOperation.Add);
+  if (addedFiles) {
+    const fileIds = addedFiles.value;
+    const loadedFileValues = [];
+    for (let i = 0; i < fileIds.length; i += 0) {
+      const currentFileId = fileIds[i];
+      const currentFile = await loadFile(context, user, currentFileId);
+      const currentFileContent = toBase64(await getFileContent(currentFileId));
+      const currentFileObject = {
+        name: currentFile.name,
+        data: currentFileContent,
+        version: currentFile.metaData.version,
+        mime_type: currentFile.metaData.mime_type,
+        object_marking_refs: currentFile.metaData.file_markings ?? [],
+      };
+      loadedFileValues.push(currentFileObject);
+    }
+    const addInput = { key: FILES_UPDATE_KEY, value: loadedFileValues, operation: EditOperation.Add };
+    resolvedDraftUpdatePatch.push(addInput);
+  }
+  return resolvedDraftUpdatePatch;
 };

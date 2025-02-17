@@ -56,7 +56,7 @@ describe('draft-utils', () => {
 
   it('should buildUpdateFieldPatch build a correct field patch input', async () => {
     const stringifiedUpdatePatch = JSON.stringify(currentUpdatePatch);
-    const fieldPatchResult = await buildUpdateFieldPatch(null, null, stringifiedUpdatePatch);
+    const fieldPatchResult = buildUpdateFieldPatch(stringifiedUpdatePatch);
     expect(fieldPatchResult.length).toBe(3);
     expect(fieldPatchResult.find((f: any) => f.key === keyA && f.operation === EditOperation.Replace && f.value.length === 2)).toBeTruthy();
     expect(fieldPatchResult.find((f: any) => f.key === keyB && f.operation === EditOperation.Add && f.value[0] === valueA)).toBeTruthy();
