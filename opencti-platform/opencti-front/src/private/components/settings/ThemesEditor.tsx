@@ -13,7 +13,7 @@ import { commitMutation, defaultCommitMutation, MESSAGING$ } from '../../../rela
 import type { Theme } from '../../../components/Theme';
 import ThemeCreator, { createThemeMutation, CustomThemeBaseType } from './ThemeCreator';
 import { ThemesEditor_themes$data } from './__generated__/ThemesEditor_themes.graphql';
-import { ThemeImporterAboutQuery } from './__generated__/ThemeImporterAboutQuery.graphql';
+import { ThemesEditorAboutQuery } from './__generated__/ThemesEditorAboutQuery.graphql';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { ThemeCreatorCreateMutation } from './__generated__/ThemeCreatorCreateMutation.graphql';
@@ -93,7 +93,7 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
-  const { about } = useLazyLoadQuery<ThemeImporterAboutQuery>(aboutQuery, {});
+  const { about } = useLazyLoadQuery<ThemesEditorAboutQuery>(aboutQuery, {});
   const [commit] = useApiMutation<ThemeCreatorCreateMutation>(
     createThemeMutation,
     undefined,
