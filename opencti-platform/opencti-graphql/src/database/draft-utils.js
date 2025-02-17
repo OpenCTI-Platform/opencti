@@ -1,10 +1,9 @@
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { READ_INDEX_DRAFT_OBJECTS, toBase64, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
+import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
-import { getFileContent, loadFile } from './file-storage';
 
 export const getDraftFilePrefix = (draftId) => {
   return `draft/${draftId}/`;
