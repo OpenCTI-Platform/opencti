@@ -81,13 +81,14 @@ const binarySearchList = (exclusionListValues: string[], valueToCheck: string) =
   let end = exclusionListValues.length - 1;
 
   // Iterate while start not meets end
+  const valueToCheckLowered = valueToCheck.toLowerCase();
   while (start <= end) {
     // Find the mid index
     const mid = Math.floor((start + end) / 2);
     const midValue = exclusionListValues[mid];
 
     // If element is present at mid, return True
-    if (valueToCheck === midValue) {
+    if (valueToCheckLowered === midValue.toLowerCase()) {
       return true;
     }
 
