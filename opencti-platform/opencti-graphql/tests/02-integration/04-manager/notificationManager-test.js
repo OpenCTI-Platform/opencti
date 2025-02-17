@@ -267,6 +267,7 @@ describe('Notification manager behaviors test', async () => {
     individual_id: undefined,
     name: 'greenUser_name',
     user_email: 'user@opencti.io',
+    inside_platform_organization: true,
     origin: { user_id: greenUserId },
     roles: [],
     groups: [],
