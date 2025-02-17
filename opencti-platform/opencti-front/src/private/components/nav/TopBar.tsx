@@ -441,7 +441,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
-      <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)} />
+      {openImportFilesDialog && (
+        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
+      )}
     </AppBar>
   );
 };

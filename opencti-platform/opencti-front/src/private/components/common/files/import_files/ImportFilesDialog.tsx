@@ -6,6 +6,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import { graphql } from 'react-relay';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { commitMutation } from '../../../../../relay/environment';
@@ -59,14 +60,10 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
 
   const steps = ['Select files', 'Specific files configurations', 'Import options'];
-
-  const onCancel = () => {
-    handleClose();
-    setActiveStep(0);
-    setFiles([]);
-  };
 
   const commitFile = ({ entityId, file, fileMarkingIds }: { entityId?: string, file: File, fileMarkingIds: string[] }) => {
     return new Promise((resolve, reject) => {
@@ -94,16 +91,16 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
   };
 
   const handleSubmit = async (values: SubmittedFormValues) => {
+    setUploadStatus('uploading');
     const entityId = values.associatedEntity?.value || undefined;
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
-    console.log({ entityId, fileMarkingIds, values });
     const filesPromises = files.map(async (file) => {
       return commitFile({ entityId, file, fileMarkingIds }).then(
-        () => console.log('file', file),
+        () => setProgress((prevProgress) => prevProgress + 1),
       );
     });
     await Promise.all(filesPromises);
-    handleClose();
+    setUploadStatus('success');
   };
 
   return (
@@ -115,7 +112,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
       }}
       onSubmit={handleSubmit}
     >
-      {({ resetForm, submitForm, setFieldValue }) => (
+      {({ submitForm, setFieldValue }) => (
         <Dialog
           open={open}
           TransitionComponent={Transition}
@@ -132,38 +129,53 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
             <Typography variant="h5">{t_i18n('Import files')}</Typography>
           </DialogTitle>
           <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
-            <Stepper nonLinear activeStep={activeStep} sx={{ marginInline: 10 }}>
-              {steps.map((label, index) => (
-                <Step key={label}>
-                  <StepButton color="inherit" onClick={() => setActiveStep(index)}>
-                    {label}
-                  </StepButton>
-                </Step>
-              ))}
-            </Stepper>
-            <Box sx={{ paddingBlock: 10 }}>
-              {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)} />}
-              {activeStep === 1 && <ImportFilesConfigurations />}
-              {activeStep === 2 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
-            </Box>
+            {!uploadStatus ? (
+              <>
+                <Stepper nonLinear activeStep={activeStep} sx={{ marginInline: 10 }}>
+                  {steps.map((label, index) => (
+                    <Step key={label}>
+                      <StepButton color="inherit" onClick={() => setActiveStep(index)}>
+                        {label}
+                      </StepButton>
+                    </Step>
+                  ))}
+                </Stepper>
+                <Box sx={{ paddingBlock: 10 }}>
+                  {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
+                  {activeStep === 1 && <ImportFilesConfigurations/>}
+                  {activeStep === 2 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
+                </Box>
+              </>
+            ) : (
+              <Box sx={{ width: '100%' }}>
+                <LinearProgress variant="determinate" sx={{ flex: 1 }} value={(progress / files.length) * 100}/>
+                {progress && (<Typography style={{ flexShrink: 0 }}>{`${progress} / ${files.length}`}</Typography>)}
+              </Box>
+            )
+            }
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => {
-              resetForm();
-              onCancel();
-            }}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            {activeStep !== steps.length - 1 ? (
-              <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary">
-                {t_i18n('Next')}
+            { !uploadStatus ? (
+              <>
+                <Button onClick={() => handleClose()}>
+                  {t_i18n('Cancel')}
+                </Button>
+                {activeStep !== steps.length - 1 ? (
+                  <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary">
+                    {t_i18n('Next')}
+                  </Button>
+                ) : (
+                  <Button onClick={submitForm} color="secondary">
+                    {t_i18n('Import')}
+                  </Button>
+                )}
+              </>
+            ) : uploadStatus === 'success' && (
+              <Button onClick={() => handleClose()}>
+                {t_i18n('Close')}
               </Button>
-            ) : (
-              <Button onClick={submitForm} color="secondary">
-                {t_i18n('Import')}
-              </Button>
-            )}
+            )
+            }
           </DialogActions>
         </Dialog>
       )}
