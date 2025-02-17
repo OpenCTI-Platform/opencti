@@ -243,7 +243,7 @@ const StixCoreObjectSimulationResult = ({
             filters,
           },
           onCompleted: (response) => {
-            setResult(response.obasThreatGenerateScenario);
+            setResult(response.obasThreatGenerateScenarioWithInjectPlaceholders);
             setIsSubmitting(false);
             handleClose();
           },
@@ -268,7 +268,7 @@ const StixCoreObjectSimulationResult = ({
             filters,
           },
           onCompleted: (response) => {
-            setResult(response.obasVictimGenerateScenario);
+            setResult(response.obasVictimGenerateScenarioWithInjectPlaceholders);
             setIsSubmitting(false);
             handleClose();
           },
