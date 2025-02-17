@@ -5,8 +5,40 @@ import { AssociatedEntityOption } from '@components/common/form/AssociatedEntity
 import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
+import { commitMutation } from '../../../../../relay/environment';
+
+const importFilesDialogGlobalMutation = graphql`
+  mutation ImportFilesDialogGlobalMutation($file: Upload!, $fileMarkings: [String]) {
+    uploadImport(file: $file, fileMarkings: $fileMarkings) {
+      id
+      ...FileLine_file
+    }
+  }
+`;
+
+const importFilesDialogEntityMutation = graphql`
+  mutation ImportFilesDialogEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]) {
+    stixCoreObjectEdit(id: $id) {
+      importPush(file: $file, fileMarkings: $fileMarkings) {
+        id
+        ...FileLine_file
+        metaData {
+          entity {
+            ... on StixObject {
+              id
+            }
+            ... on StixDomainObject {
+              ...PictureManagementViewer_entity
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 interface ImportFilesDialogProps {
   open: boolean;
@@ -36,8 +68,41 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
     setFiles([]);
   };
 
-  const handleSubmit = (values: SubmittedFormValues) => {
-    console.log({ files, values });
+  const commitFile = ({ entityId, file, fileMarkingIds }: { entityId?: string, file: File, fileMarkingIds: string[] }) => {
+    return new Promise((resolve, reject) => {
+      commitMutation({
+        mutation: entityId
+          ? importFilesDialogEntityMutation
+          : importFilesDialogGlobalMutation,
+        variables: {
+          file,
+          fileMarkings: fileMarkingIds,
+          id: entityId,
+        },
+        onError: (error: Error) => {
+          reject(error);
+        },
+        onCompleted: (response: object) => {
+          resolve(response);
+        },
+        optimisticUpdater: undefined,
+        updater: undefined,
+        optimisticResponse: undefined,
+        setSubmitting: undefined,
+      });
+    });
+  };
+
+  const handleSubmit = async (values: SubmittedFormValues) => {
+    const entityId = values.associatedEntity?.value || undefined;
+    const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
+    console.log({ entityId, fileMarkingIds, values });
+    const filesPromises = files.map(async (file) => {
+      return commitFile({ entityId, file, fileMarkingIds }).then(
+        () => console.log('file', file),
+      );
+    });
+    await Promise.all(filesPromises);
     handleClose();
   };
 
