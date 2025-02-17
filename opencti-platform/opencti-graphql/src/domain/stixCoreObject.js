@@ -734,7 +734,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
-      const eventFileInput = { key: FILES_UPDATE_KEY, value: [file.id], operation: UPDATE_OPERATION_ADD };
+      const eventFileInput = { key: FILES_UPDATE_KEY, value: [up.id], operation: UPDATE_OPERATION_ADD };
       elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
     }
     await elUpdateElement(context, user, elementWithUpdatedFiles);
