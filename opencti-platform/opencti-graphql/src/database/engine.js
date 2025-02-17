@@ -116,7 +116,6 @@ import {
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
-  isUserInsidePlatformOrganization,
   MEMBER_ACCESS_ALL,
   SYSTEM_USER,
   userFilterStoreElements
@@ -541,7 +540,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
     };
     if (settings.platform_organization) {
-      if (isUserInsidePlatformOrganization(settings, user)) {
+      if (user.inside_platform_organization) {
         // Data are visible independently of the organizations
         // Nothing to restrict.
       } else {

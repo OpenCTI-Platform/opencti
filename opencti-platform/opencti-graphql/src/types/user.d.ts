@@ -30,6 +30,7 @@ interface AuthUser extends BasicStoreIdentifier {
   name: string
   user_email: string
   account_lock_after_date: Date | undefined
+  inside_platform_organization: boolean
   origin: Partial<UserOrigin>
   roles: Array<UserRole>
   groups: Array<Group>
