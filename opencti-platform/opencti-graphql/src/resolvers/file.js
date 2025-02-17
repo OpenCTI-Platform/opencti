@@ -4,7 +4,7 @@ import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import {buildDraftVersion} from "../modules/draftWorkspace/draftWorkspace-domain";
+import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);

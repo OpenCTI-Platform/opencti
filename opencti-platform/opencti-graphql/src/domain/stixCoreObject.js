@@ -79,7 +79,7 @@ import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import {FILES_UPDATE_KEY, getDraftChanges, getDraftFilePrefix} from '../database/draft-utils';
+import { FILES_UPDATE_KEY, getDraftChanges, getDraftFilePrefix } from '../database/draft-utils';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
