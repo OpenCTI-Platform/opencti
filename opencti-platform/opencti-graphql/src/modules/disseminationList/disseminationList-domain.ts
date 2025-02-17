@@ -35,6 +35,7 @@ import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { addDisseminationCount } from '../../manager/telemetryManager';
+import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
@@ -61,6 +62,7 @@ interface SendMailArgs {
  * Actual sending of email, used by the background task.
  * @param context
  * @param user
+ * @param useOctiTemplate
  * @param object
  * @param body
  * @param emails
@@ -70,6 +72,7 @@ interface SendMailArgs {
 export const sendDisseminationEmail = async (
   context: AuthContext,
   user: AuthUser,
+  useOctiTemplate: boolean,
   object: string,
   body: string,
   emails: string[],
@@ -83,6 +86,7 @@ export const sendDisseminationEmail = async (
   let generatedEmailBody = '';
   const allowedTypesInAttachment = ['application/pdf', 'text/html'];
   const allowedTypesInBody = ['text/html'];
+  const emailTemplate = useOctiTemplate ? OCTI_EMAIL_TEMPLATE : BASIC_EMAIL_TEMPLATE;
 
   for (let i = 0; i < attachFileIds.length; i += 1) {
     const attachFileId = attachFileIds[i];
@@ -103,11 +107,11 @@ export const sendDisseminationEmail = async (
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: htmlToBodyFileId });
     }
     const fileContent = await getFileContent(bodyFile.id);
-    generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: fileContent });
+    generatedEmailBody = ejs.render(emailTemplate, { settings, body: fileContent });
     sentFiles.push(bodyFile);
   } else {
     const emailBodyFormatted = body.replaceAll('\n', '<br/>');
-    generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+    generatedEmailBody = ejs.render(emailTemplate, { settings, body: emailBodyFormatted });
   }
 
   const sendMailArgs: SendMailArgs = {
@@ -124,8 +128,8 @@ export const sendDisseminationEmail = async (
 };
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: DisseminationListSendInput) => {
-  const { entity_id, email_body, email_object, email_attachment_ids, html_to_body_file_id } = input;
-  logApp.info('Sending email to dissemination list', { id, entity_id, email_object, email_attachment_ids, html_to_body_file_id });
+  const { entity_id, use_octi_template, email_body, email_object, email_attachment_ids, html_to_body_file_id } = input;
+  logApp.info('Sending email to dissemination list', { id, entity_id, use_octi_template, email_object, email_attachment_ids, html_to_body_file_id });
 
   const disseminationList = await findById(context, user, id);
   const data: BasicStoreCommon = await internalLoadById(context, user, entity_id);
@@ -142,7 +146,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
 
   const { emails } = disseminationList;
   // sending mail
-  const sentFiles = await sendDisseminationEmail(context, user, email_object, email_body, emails, email_attachment_ids, html_to_body_file_id);
+  const sentFiles = await sendDisseminationEmail(context, user, use_octi_template, email_object, email_body, emails, email_attachment_ids, html_to_body_file_id);
   // activity logs
   const enrichInput = { ...input, files: sentFiles, dissemination: disseminationList.name };
   const baseData = {

@@ -54,7 +54,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [useFileContent, setUseFileContent] = useState(false);
-  const [useDefaultTemplate, setUseDefaultTemplate] = useState(true);
+  const [useOctiTemplate, setUseOctiTemplate] = useState(true);
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
@@ -83,11 +83,11 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         id: values.disseminationListId,
         input: {
           entity_id: entityId,
+          use_octi_template: useOctiTemplate,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
           email_attachment_ids: useFileContent ? [] : [fileId],
           html_to_body_file_id: useFileContent ? fileId : undefined,
-          use_default_template: useDefaultTemplate,
         },
       },
       onCompleted: () => {
@@ -122,12 +122,12 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             style={{ marginBottom: theme.spacing(2) }}
             control={
               <Switch
-                checked={useDefaultTemplate}
-                onChange={() => setUseDefaultTemplate(!useDefaultTemplate)}
+                checked={useOctiTemplate}
+                onChange={() => setUseOctiTemplate(!useOctiTemplate)}
                 color="primary"
               />
               }
-            label={t_i18n('Use default email template')}
+            label={t_i18n('Use OCTI email template')}
           />
           <DisseminationListField/>
           <Field
