@@ -48,7 +48,7 @@ export const changeRule = async (ruleId, active) => {
     const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], { connectionFormat: false });
     tasks.forEach((t) => {
       if (t.errors.length > 0) {
-        logApp.error('[RULE TEST] Change rule tasks failure', { active, errors: t.errors });
+        logApp.info('[RULE TEST] Change rule tasks failure', { active, errors: t.errors });
       }
       expect(t.errors.length).toBe(0);
     });
@@ -58,7 +58,7 @@ export const changeRule = async (ruleId, active) => {
     const works = await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] });
     works.forEach((w) => {
       if (w.errors.length > 0) {
-        logApp.error('[RULE TEST] Change rule works failure', { active, errors: w.errors });
+        logApp.info('[RULE TEST] Change rule works failure', { active, errors: w.errors });
       }
       expect(w.errors.length).toBe(0);
     });
