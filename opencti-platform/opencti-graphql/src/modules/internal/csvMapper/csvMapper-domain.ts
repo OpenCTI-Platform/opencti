@@ -126,7 +126,7 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
   });
 };
 
-const MINIMAL_COMPATIBLE_VERSION = '6.5.0'; // TODO set to 6.6.0
+const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
 export const csvMapperAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
