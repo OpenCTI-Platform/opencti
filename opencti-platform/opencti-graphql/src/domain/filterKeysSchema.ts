@@ -237,17 +237,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       subEntityTypes,
       elementsForFilterValuesSearch: ['reliability_ov'],
     });
-    // 'contains' is not only for containers, but might be used in any sro or sco as in "contained inside"
-    if (isStixCoreObject(type) || isStixRelationship(type)) {
-      filterDefinitionsMap.set(OBJECT_CONTAINS_FILTER, {
-        filterKey: OBJECT_CONTAINS_FILTER,
-        type: 'id',
-        label: 'Contains',
-        multiple: true,
-        subEntityTypes,
-        elementsForFilterValuesSearch: [],
-      });
-    }
     // Alias (handle both 'aliases' and 'x_opencti_aliases' attributes
     if (isStixObjectAliased(type)) {
       filterDefinitionsMap.set(ALIAS_FILTER, {
@@ -270,6 +259,17 @@ const completeFilterDefinitionMapWithSpecialKeys = (
         elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
       });
     }
+  }
+  if (isStixCoreObject(type) || isStixRelationship(type)) {
+    // 'contains' is not only for containers, but might be used in any sro, sco or relationship as in "contained inside"
+    filterDefinitionsMap.set(OBJECT_CONTAINS_FILTER, {
+      filterKey: OBJECT_CONTAINS_FILTER,
+      type: 'id',
+      label: 'Contains',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+    });
   }
   if (type === ENTITY_TYPE_HISTORY) {
     // add context filters
