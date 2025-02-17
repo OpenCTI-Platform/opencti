@@ -70,7 +70,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             </Typography>
             <FieldOrEmpty source={tool.tool_version}>
               <Tooltip title={tool.tool_version}>
-                {truncate(tool.tool_version, 20)}
+                <span>{truncate(tool.tool_version, 20)}</span>
               </Tooltip>
             </FieldOrEmpty>
           </Grid>
