@@ -469,12 +469,14 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
 const convertStoreToStixWithResolvedFiles = async (instance) => {
   const instanceInStix = convertStoreToStix(instance);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
-  for (let i = 0; i < nonResolvedFiles.length; i += 1) {
-    const currentFile = nonResolvedFiles[i];
-    const currentFileUri = currentFile.uri;
-    const fileId = currentFileUri.replace('/storage/get/', '');
-    currentFile.data = toBase64(await getFileContent(fileId));
-    currentFile.no_trigger_import = true;
+  if (nonResolvedFiles) {
+    for (let i = 0; i < nonResolvedFiles.length; i += 1) {
+      const currentFile = nonResolvedFiles[i];
+      const currentFileUri = currentFile.uri;
+      const fileId = currentFileUri.replace('/storage/get/', '');
+      currentFile.data = toBase64(await getFileContent(fileId));
+      currentFile.no_trigger_import = true;
+    }
   }
   return instanceInStix;
 };
