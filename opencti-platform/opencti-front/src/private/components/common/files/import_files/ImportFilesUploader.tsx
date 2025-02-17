@@ -40,10 +40,54 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
   return (
     <Grid container>
       <Grid item xs={12}>
+        <Box
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          sx={{
+            height: files.length > 0 ? 150 : 300,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            background: isDragging ? alpha(theme.palette.primary.light as string, 0.1) : theme.palette.background.paper,
+            borderRadius: 4,
+            borderColor: isDragging ? theme.palette.primary.main : theme.palette.common.lightGrey,
+            borderWidth: isDragging ? '2px' : '1px',
+            borderStyle: 'dashed',
+            boxSizing: 'border-box',
+            padding: isDragging ? '19.5px' : '20px',
+            textAlign: 'center',
+            marginBottom: 2,
+            cursor: 'default',
+            transition: 'height 0.2s, background 0.1s, border 0.1s, padding 0.1s',
+          }}
+        >
+          <CloudUploadOutlined color="primary" fontSize="large" />
+          <Typography variant="h3" sx={{ marginBlock: 2 }}>
+            {t_i18n('Drag and drop files to import')}
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <Button variant="contained" component="label" size="small">
+              {t_i18n('Browse files')}
+              <input type="file" hidden multiple onChange={handleFileChange} />
+            </Button>
+            <Button variant="outlined" component="label" size="small">
+              {t_i18n('Paste from clipboard')}
+              {/* TODO paste from clipboard */}
+            </Button>
+          </Box>
+        </Box>
+      </Grid>
+
+      <Grid item xs={12}>
         <List>
           <TransitionGroup>
             {files.length > 0 && (
-              <Collapse key="header">
+              <Collapse key="header" >
                 <ListItem divider sx={{ paddingLeft: 7 }}>
                   {t_i18n('File')}
                 </ListItem>
@@ -67,50 +111,6 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
             ))}
           </TransitionGroup>
         </List>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Box
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={handleDrop}
-          sx={{
-            height: 300,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: isDragging ? alpha(theme.palette.primary.light as string, 0.1) : theme.palette.background.paper,
-            borderRadius: 4,
-            borderColor: isDragging ? theme.palette.primary.main : theme.palette.common.lightGrey,
-            borderWidth: isDragging ? '2px' : '1px',
-            borderStyle: 'dashed',
-            boxSizing: 'border-box',
-            padding: isDragging ? '19.5px' : '20px',
-            textAlign: 'center',
-            marginBottom: 2,
-            cursor: 'default',
-            transition: 'background 0.1s, border 0.1s, padding 0.1s',
-          }}
-        >
-          <CloudUploadOutlined color="primary" fontSize="large" />
-          <Typography variant="h3" sx={{ marginBlock: 2 }}>
-            {t_i18n('Drag and drop files to import')}
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-            <Button variant="contained" component="label" size="small">
-              {t_i18n('Browse files')}
-              <input type="file" hidden multiple onChange={handleFileChange} />
-            </Button>
-            <Button variant="outlined" component="label" size="small">
-              {t_i18n('Paste from clipboard')}
-              {/* TODO paste from clipboard */}
-            </Button>
-          </Box>
-        </Box>
       </Grid>
     </Grid>
   );

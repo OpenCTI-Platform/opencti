@@ -96,7 +96,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
               </Button>
             ) : (
               <Button onClick={submitForm} color="secondary">
-                {t_i18n('Submit')}
+                {t_i18n('Import')}
               </Button>
             )}
           </DialogActions>
