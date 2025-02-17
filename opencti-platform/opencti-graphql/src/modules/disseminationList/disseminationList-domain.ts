@@ -65,7 +65,7 @@ interface SendMailArgs {
  * @param body
  * @param emails
  * @param attachFileIds
- * @param includeHtmlInBody
+ * @param htmlToBodyFileId
  */
 export const sendDisseminationEmail = async (
   context: AuthContext,
@@ -74,53 +74,58 @@ export const sendDisseminationEmail = async (
   body: string,
   emails: string[],
   attachFileIds: string[],
-  includeHtmlInBody: boolean
+  htmlToBodyFileId: string | null | undefined,
 ) => {
   const toEmail = conf.get('app:dissemination_list:to_email');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const sentFiles = [];
   const attachmentListForSendMail = [];
-  let generatedEmailBody;
+  let generatedEmailBody = '';
+  const allowedTypesInAttachment = ['application/pdf', 'text/html'];
+  const allowedTypesInBody = ['text/html'];
+
   for (let i = 0; i < attachFileIds.length; i += 1) {
     const attachFileId = attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
-
-    // To be disseminated a file must be Accessible and A PDF or HTML
-    if (file && ['application/pdf', 'text/html'].includes(file.metaData.mimetype)) {
-      sentFiles.push(file);
-      const stream = await downloadFile(file.id);
-      attachmentListForSendMail.push({ filename: file.name, content: stream });
-
-      // If the HTML file is included in the email body
-      if (includeHtmlInBody && file.metaData.mimetype === 'text/html') {
-        const fileContent = await getFileContent(file.id);
-        generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: fileContent });
-
-        // If the HTML file is sent as an attachment or if the file is a PDF
-      } else if (!includeHtmlInBody) {
-        const emailBodyFormatted = body.replaceAll('\n', '<br/>');
-        generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
-      } else {
-        throw UnsupportedError('File cant be disseminate', { id: attachFileId });
-      }
-      const sendMailArgs: SendMailArgs = {
-        from: settings.platform_email,
-        to: toEmail,
-        bcc: [...emails, user.user_email],
-        subject: object,
-        html: generatedEmailBody,
-        attachments: includeHtmlInBody ? undefined : attachmentListForSendMail,
-      };
-      await sendMail(sendMailArgs);
-      addDisseminationCount();
+    const canBeDisseminated = file && allowedTypesInAttachment.includes(file.metaData.mimetype);
+    if (!canBeDisseminated) {
+      throw UnsupportedError('File cant be disseminate', { id: attachFileId });
     }
+    sentFiles.push(file);
+    const stream = await downloadFile(file.id);
+    attachmentListForSendMail.push({ filename: file.name, content: stream });
   }
+
+  if (htmlToBodyFileId) {
+    const bodyFile = await loadFile(context, user, htmlToBodyFileId);
+    const canBeInBody = bodyFile && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
+    if (!canBeInBody) {
+      throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: htmlToBodyFileId });
+    }
+    const fileContent = await getFileContent(bodyFile.id);
+    generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: fileContent });
+    sentFiles.push(bodyFile);
+  } else {
+    const emailBodyFormatted = body.replaceAll('\n', '<br/>');
+    generatedEmailBody = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: emailBodyFormatted });
+  }
+
+  const sendMailArgs: SendMailArgs = {
+    from: settings.platform_email,
+    to: toEmail,
+    bcc: [...emails, user.user_email],
+    subject: object,
+    html: generatedEmailBody,
+    attachments: attachmentListForSendMail,
+  };
+  await sendMail(sendMailArgs);
+  addDisseminationCount();
   return sentFiles;
 };
 
 export const sendToDisseminationList = async (context: AuthContext, user: AuthUser, id: string, input: DisseminationListSendInput) => {
-  const { entity_id, email_body, email_object, email_attachment_ids, include_html_in_body } = input;
-  logApp.info('Sending email to dissemination list', { id, entity_id, email_object, email_attachment_ids });
+  const { entity_id, email_body, email_object, email_attachment_ids, html_to_body_file_id } = input;
+  logApp.info('Sending email to dissemination list', { id, entity_id, email_object, email_attachment_ids, html_to_body_file_id });
 
   const disseminationList = await findById(context, user, id);
   const data: BasicStoreCommon = await internalLoadById(context, user, entity_id);
@@ -137,7 +142,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
 
   const { emails } = disseminationList;
   // sending mail
-  const sentFiles = await sendDisseminationEmail(context, user, email_object, email_body, emails, email_attachment_ids, include_html_in_body);
+  const sentFiles = await sendDisseminationEmail(context, user, email_object, email_body, emails, email_attachment_ids, html_to_body_file_id);
   // activity logs
   const enrichInput = { ...input, files: sentFiles, dissemination: disseminationList.name };
   const baseData = {

@@ -12647,5 +12647,5 @@ input DisseminationListSendInput {
   email_object: String!
   email_body: String!
   email_attachment_ids: [ID!]!
-  include_html_in_body: Boolean!
+  html_to_body_file_id: ID
 }

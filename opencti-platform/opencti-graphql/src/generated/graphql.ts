@@ -6345,7 +6345,7 @@ export type DisseminationListSendInput = {
   email_body: Scalars['String']['input'];
   email_object: Scalars['String']['input'];
   entity_id: Scalars['ID']['input'];
-  include_html_in_body: Scalars['Boolean']['input'];
+  html_to_body_file_id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type Distribution = {
