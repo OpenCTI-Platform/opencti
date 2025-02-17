@@ -104,7 +104,7 @@ const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => 
       to={to}
       selected={location.pathname === to}
       dense={true}
-      sx={{ height: 37, fontSize: 9 }}
+      sx={{ height: 38, fontSize: 9 }}
     >
       <ListItemIcon style={{ minWidth: 28 }}>
         <ItemIcon size="small" type={iconType} />
