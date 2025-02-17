@@ -32,6 +32,7 @@ interface DisseminationInput {
   emailObject: string;
   emailBody: string;
   includeHtmlInBody: boolean;
+  useDefaultTemplate: boolean;
 }
 
 export const DisseminationListSendInputMutation = graphql`
@@ -53,6 +54,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [useFileContent, setUseFileContent] = useState(false);
+  const [useDefaultTemplate, setUseDefaultTemplate] = useState(true);
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
@@ -85,6 +87,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
           email_body: emailBodyFormatted,
           email_attachment_ids: [fileId],
           include_html_in_body: useFileContent,
+          use_default_template: useDefaultTemplate,
         },
       },
       onCompleted: () => {
@@ -103,6 +106,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     emailObject: '',
     emailBody: '',
     includeHtmlInBody: false,
+    useDefaultTemplate: true,
   };
   return (
     <Formik
@@ -114,6 +118,17 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <FormControlLabel
+            style={{ marginBottom: theme.spacing(2) }}
+            control={
+              <Switch
+                checked={useDefaultTemplate}
+                onChange={() => setUseDefaultTemplate(!useDefaultTemplate)}
+                color="primary"
+              />
+              }
+            label={t_i18n('Use default email template')}
+          />
           <DisseminationListField/>
           <Field
             component={TextField}
