@@ -484,10 +484,10 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
     .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
-  if(resolveStixFiles){
+  if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
-        .filter((i) => isNotEmptyField(i))
-        .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+      .filter((i) => isNotEmptyField(i))
+      .map((e) => (convertStoreToStixWithResolvedFiles(e)));
     return Promise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))
