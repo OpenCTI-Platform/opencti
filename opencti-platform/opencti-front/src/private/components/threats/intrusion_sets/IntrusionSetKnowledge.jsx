@@ -20,6 +20,7 @@ const IntrusionSetKnowledgeFragment = graphql`
     aliases
     first_seen
     last_seen
+    entity_type
   }
 `;
 
@@ -32,7 +33,7 @@ const IntrusionSetKnowledgeComponent = ({
   );
   const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
   const { schema } = useAuth();
-  const allRelationshipsTypes = getRelationshipTypesForEntityType(intrusionSetData.entity_type, schema);
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(intrusionSet.entity_type, schema);
   return (
     <>
       <Routes>
