@@ -356,10 +356,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
     maxShareableMarkings = all;
   } else { // Standard user have markings related to his groups
     computeUserMarkings = userMarkings;
-    const notShareableMarkings = userGroups.flatMap(
-      ({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none')
-        .map(({ type }) => type)
-    );
+    const notShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none').map(({ type }) => type));
     maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
     const allShareableMarkings = all.filter(({ definition_type }) => (
       !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }) => type === definition_type)
@@ -1420,11 +1417,14 @@ export const buildCompleteUsers = async (context, clients) => {
   for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
     const client = clients[userIndex];
     const user = users.get(client.internal_id);
-    const groups = user.groupIds.map((groupId) => resolvedObject[groupId]);
-    const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat()).map((roleId) => resolvedObject[roleId]);
-    const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat()).map((markingId) => markingsMap.get(markingId));
+    const groups = user.groupIds.map((groupId) => resolvedObject[groupId]).filter((e) => isNotEmptyField(e));
+    const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat())
+      .map((roleId) => resolvedObject[roleId]).filter((e) => isNotEmptyField(e));
+    const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat())
+      .map((markingId) => markingsMap.get(markingId)).filter((e) => isNotEmptyField(e));
     const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-    const capabilities = roles.map((role) => rolesCapabilities.get(role.internal_id)).flat().map((capabilityId) => resolvedObject[capabilityId]);
+    const capabilities = roles.map((role) => rolesCapabilities.get(role.internal_id)).flat()
+      .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
     // Force push the bypass for default admin
     const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
     if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
