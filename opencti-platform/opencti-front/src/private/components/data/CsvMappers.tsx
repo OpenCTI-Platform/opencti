@@ -98,7 +98,6 @@ const CsvMappers = () => {
   );
   const [open, setOpen] = useState(false);
 
-  const [importedFile, setImportedFile] = useState(null);
   const [importedFileData, setImportedFileData] = useState<CsvMappersImportQuery$data['csvMapperAddInputFromImport'] | null>(null);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -137,13 +136,11 @@ const CsvMappers = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setImportedFile(null);
     setImportedFileData(null);
   };
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];
-    setImportedFile(file);
     fetchQuery(csvMappersImportQuery, { file })
       .toPromise()
       .then((data) => {
@@ -220,19 +217,13 @@ const CsvMappers = () => {
                 FabProps={{ classes: { root: classes.speedDialButton } }}
               />
             </SpeedDial>
-            {importedFile
-              ? <>
-                {importedFileData && (
-                <React.Suspense fallback={<div />}>
-                  <CsvMapperCreationContainer
-                    importedFileData={importedFileData}
-                    paginationOptions={paginationOptions}
-                    open={true}
-                    onClose={handleClose}
-                  />
-                </React.Suspense>)
-                }
-              </>
+            {importedFileData
+              ? <CsvMapperCreationContainer
+                  importedFileData={importedFileData}
+                  paginationOptions={paginationOptions}
+                  open={true}
+                  onClose={handleClose}
+                />
               : <CsvMapperCreationContainer
                   paginationOptions={paginationOptions}
                   open={open}
