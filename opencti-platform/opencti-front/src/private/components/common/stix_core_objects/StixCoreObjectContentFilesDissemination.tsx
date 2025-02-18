@@ -127,7 +127,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
                 color="primary"
               />
               }
-            label={t_i18n('Use OCTI email template')}
+            label={t_i18n('Use OCTI template')}
           />
           <DisseminationListField/>
           <Field
