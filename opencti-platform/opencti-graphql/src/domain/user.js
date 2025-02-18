@@ -747,15 +747,14 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
-  const userAction = {
+  await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: personalUpdate ? 'extended' : 'administration',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
-  };
-  await publishUserAction(userAction);
+  });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };

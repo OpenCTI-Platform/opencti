@@ -433,7 +433,7 @@ const createApp = async (app) => {
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
-      await authenticateUser(context, req, logged, provider);
+      await authenticateUser(context, req, logged, provider, { useSession: true });
     } catch (e) {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
