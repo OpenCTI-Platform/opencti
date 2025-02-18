@@ -242,7 +242,7 @@ describe('Add Request Access to an entity and create an RFI.'
     declinedStatusId = requestAccessWorkflowSettings.declined_status.id;
   });
 
-  it.todo('should throw error when configuration is missing for Request Access feature', async () => {
+  it('should throw error when configuration is missing for Request Access feature', async () => {
     // this will only be true the first time, if you re-run tests without init data you might have this step fail.
     const platformSettings = await queryAsAdminWithSuccess({
       query: READ_SETTINGS_QUERY,
@@ -371,7 +371,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRfiIdForApproval).not.toBeNull();
   });
 
-  it.todo('should retrieve the created Case RFI with correct authorize members and objects', async () => {
+  it('should retrieve the created Case RFI with correct authorize members and objects', async () => {
     const getRfiQueryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
@@ -398,7 +398,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(action.workflowMapping.length).toBe(3); // Status for NEW, Approved and Declined.
   });
 
-  it.todo('should accept the created Case RFI first time be ok', async () => {
+  it('should accept the created Case RFI first time be ok', async () => {
     // FIXME use a user and not admin !
     /*
     const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
@@ -429,7 +429,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('APPROVED'); // 'APPROVED' coming from data-initialization
   });
 
-  it.todo('should accept the created Case RFI second time be ok too', async () => {
+  it('should accept the created Case RFI second time be ok too', async () => {
     // FIXME use a user and not admin !
     /*
     const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
@@ -444,7 +444,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(approvalResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
   });
 
-  it.todo('should create a new Request Access and associated Case RFI (For reject use case)', async () => {
+  it('should create a new Request Access and associated Case RFI (For reject use case)', async () => {
     const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
@@ -461,7 +461,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(caseRfiIdForReject).not.toBeNull();
   });
 
-  it.todo('should reject the created Case RFI first time be ok', async () => {
+  it('should reject the created Case RFI first time be ok', async () => {
     // FIXME use a user and not admin !
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: DECLINE_RFI_QUERY,
@@ -482,7 +482,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(action.status).toBe(ActionStatus.DECLINED);
   });
 
-  it.todo('should reject the created Case RFI second time be ok too', async () => {
+  it('should reject the created Case RFI second time be ok too', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: DECLINE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
@@ -490,7 +490,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(queryResult?.data?.caseRfiDecline.x_opencti_workflow_id).toBe(declinedStatusId);
   });
 
-  it.todo('should be ok to accept the Case RFI when already rejected', async () => {
+  it('should be ok to accept the Case RFI when already rejected', async () => {
     /* FIXME
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: APPROVE_RFI_QUERY,
@@ -505,7 +505,7 @@ describe('Add Request Access to an entity and create an RFI.'
     expect(queryResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
   });
 
-  it.todo('should remove platform organization and test data', async () => {
+  it('should remove platform organization and test data', async () => {
     await internalDeleteElementById(testContext, ADMIN_USER, malwareId);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject);
