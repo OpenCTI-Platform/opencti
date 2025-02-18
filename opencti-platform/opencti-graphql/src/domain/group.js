@@ -173,7 +173,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user).then(() => createdRelation);
 };
 
 export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
