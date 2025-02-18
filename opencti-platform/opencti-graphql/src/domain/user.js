@@ -355,12 +355,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
     computeUserMarkings = all;
     maxShareableMarkings = all;
   } else { // Standard user have markings related to his groups
-    if (userMarkings) {
-      computeUserMarkings = userMarkings;
-    } else {
-      const groupIds = userGroups.map((g) => g.id);
-      computeUserMarkings = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
-    }
+    computeUserMarkings = userMarkings;
     const notShareableMarkings = userGroups.flatMap(
       ({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none')
         .map(({ type }) => type)
