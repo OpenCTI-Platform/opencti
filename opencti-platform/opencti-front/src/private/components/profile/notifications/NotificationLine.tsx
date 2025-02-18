@@ -23,7 +23,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import DialogContentText from '@mui/material/DialogContentText';
 import { DataColumns } from '../../../../components/list_lines';
 import { NotificationLine_node$data, NotificationLine_node$key } from './__generated__/NotificationLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,6 +33,8 @@ import { NotificationsLinesPaginationQuery$variables } from './__generated__/Not
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../../../../utils/utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -163,7 +164,6 @@ NotificationLineProps
   const [commitDelete] = useApiMutation(
     notificationLineNotificationDeleteMutation,
   );
-  const [displayDelete, setDisplayDelete] = useState(false);
   const handleRead = (read: boolean) => {
     setUpdating(true);
     return commitMarkRead({
@@ -176,8 +176,10 @@ NotificationLineProps
       },
     });
   };
+  const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
   const handleDelete = () => {
-    setUpdating(true);
+    setDeleting(true);
     return commitDelete({
       variables: {
         id: data.id,
@@ -186,18 +188,11 @@ NotificationLineProps
         deleteNode(store, 'Pagination_myNotifications', paginationOptions, data.id);
       },
       onCompleted: () => {
-        setUpdating(false);
+        setDeleting(false);
       },
     });
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
   const eventTypes: Record<string, string> = {
     create: t_i18n('Creation'),
     update: t_i18n('Modification'),
@@ -314,8 +309,8 @@ NotificationLineProps
           <Tooltip title={t_i18n('Delete this notification')}>
             <span>
               <IconButton
-                disabled={updating}
-                onClick={() => handleOpenDelete()}
+                disabled={deleting}
+                onClick={handleOpenDelete}
                 size="large"
                 color="primary"
               >
@@ -325,29 +320,13 @@ NotificationLineProps
           </Tooltip>
         </ListItemSecondaryAction>
       </ListItem>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this notification?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={handleDelete}
-            color="secondary"
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleDelete}
+        message={t_i18n('Do you want to delete this notification?')}
+      />
+
       <Dialog
         open={open}
         TransitionComponent={Transition}
