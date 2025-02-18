@@ -375,24 +375,6 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
   return { user: computedMarkings, all, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
-export const getRoles = async (context, userGroups) => {
-  const groupIds = userGroups.map((r) => r.id);
-  return listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
-};
-
-export const getCapabilities = async (context, userId, userRoles) => {
-  const roleIds = userRoles.map((r) => r.id);
-  const capabilities = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
-  // Force push the bypass for default admin
-  const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
-  if (userId === OPENCTI_ADMIN_UUID && withoutBypass) {
-    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
-    capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
-    return capabilities;
-  }
-  return capabilities;
-};
-
 export const roleCapabilities = async (context, user, roleId) => {
   return listAllToEntitiesThroughRelations(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
 };
