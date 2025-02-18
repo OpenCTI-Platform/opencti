@@ -3,7 +3,7 @@ import base64
 import datetime
 import io
 import json
-from typing import Union
+from typing import Dict, Tuple, Union
 
 import magic
 import requests
@@ -88,13 +88,13 @@ class OpenCTIApiClient:
     :param log_level: log level for the client
     :type log_level: str, optional
     :param ssl_verify: Requiring the requests to verify the TLS certificate at the server.
-    :type ssl_verify: bool, optional
+    :type ssl_verify: bool, str, optional
     :param proxies:
     :type proxies: dict, optional, The proxy configuration, would have `http` and `https` attributes. Defaults to {}
         ```
         proxies: {
-            "http: "http://my_proxy:8080"
-            "https: "http://my_proxy:8080"
+            "http": "http://my_proxy:8080"
+            "https": "http://my_proxy:8080"
         }
         ```
     :param json_logging: format the logs as json if set to True
@@ -107,14 +107,14 @@ class OpenCTIApiClient:
 
     def __init__(
         self,
-        url,
-        token,
+        url: str,
+        token: str,
         log_level="info",
-        ssl_verify=False,
-        proxies=None,
+        ssl_verify: Union[bool, str] = False,
+        proxies: Union[Dict[str, str], None] = None,
         json_logging=False,
         bundle_send_to_queue=True,
-        cert=None,
+        cert: Union[str, Tuple[str, str], None] = None,
         auth=None,
         perform_health_check=True,
     ):
@@ -762,12 +762,13 @@ class OpenCTIApiClient:
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         entity_id = kwargs.get("entity_id", None)
+        file_markings = kwargs.get("file_markings", [])
 
         if file_name is not None:
             self.app_logger.info("Uploading a file.")
             query = """
-                    mutation UploadPending($file: Upload!, $entityId: String) {
-                        uploadPending(file: $file, entityId: $entityId) {
+                    mutation UploadPending($file: Upload!, $entityId: String, $file_markings: [String!]) {
+                        uploadPending(file: $file, entityId: $entityId, file_markings: $file_markings) {
                             id
                             name
                         }
@@ -781,7 +782,11 @@ class OpenCTIApiClient:
                     mime_type = magic.from_file(file_name, mime=True)
             return self.query(
                 query,
-                {"file": (File(file_name, data, mime_type)), "entityId": entity_id},
+                {
+                    "file": (File(file_name, data, mime_type)),
+                    "entityId": entity_id,
+                    "file_markings": file_markings,
+                },
             )
         else:
             self.app_logger.error("[upload] Missing parameter: file_name")
