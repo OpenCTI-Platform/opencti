@@ -1,18 +1,15 @@
-import CustomizationMenu from '@components/settings/CustomizationMenu';
 import React from 'react';
-import ExclusionListCreation from '@components/settings/exclusion_lists/ExclusionListCreation';
 import { graphql, useQueryLoader } from 'react-relay';
-import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import {
-  ExclusionListsLinesPaginationQuery,
-  ExclusionListsLinesPaginationQuery$variables,
-} from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
-import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
-import ExclusionListPopover from '@components/settings/exclusion_lists/ExclusionListPopover';
 import Badge from '@mui/material/Badge';
 import Grid from '@mui/material/Grid';
-import ExclusionListsStatus, { exclusionListsStatusQuery } from '@components/settings/exclusion_lists/ExclusionListsStatus';
-import { ExclusionListsStatusQuery } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { ExclusionListsLinesPaginationQuery, ExclusionListsLinesPaginationQuery$variables } from './__generated__/ExclusionListsLinesPaginationQuery.graphql';
+import { ExclusionListsLine_node$data } from './__generated__/ExclusionListsLine_node.graphql';
+import ExclusionListPopover from './ExclusionListPopover';
+import ExclusionListsStatus, { exclusionListsStatusQuery } from './ExclusionListsStatus';
+import { ExclusionListsStatusQuery } from './__generated__/ExclusionListsStatusQuery.graphql';
+import ExclusionListCreation from './ExclusionListCreation';
+import CustomizationMenu from '../CustomizationMenu';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import AlertInfo from '../../../../components/AlertInfo';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -230,7 +227,7 @@ const ExclusionLists = () => {
   return (
     <>
       <CustomizationMenu />
-      <PageContainer withRightMenu>
+      <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]}

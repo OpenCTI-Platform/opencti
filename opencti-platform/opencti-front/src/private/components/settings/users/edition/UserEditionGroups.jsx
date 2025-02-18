@@ -150,11 +150,12 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
       groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
       organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
       organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      organizationsCount: { type: "Int", defaultValue: 500 }
       rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
       rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
-      objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+      objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode, first: $organizationsCount) {
         edges {
           node {
             id

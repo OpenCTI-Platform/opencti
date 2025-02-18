@@ -1604,10 +1604,12 @@ type User implements BasicObject & InternalObject {
     orderMode: OrderingMode
   ): GroupConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   objectOrganization(
+    first: Int
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
   ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   objectAssignedOrganization(
+    first: Int
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
   ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
@@ -1700,6 +1702,7 @@ input UserAddInput {
   monochrome_labels: Boolean
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
+  prevent_default_groups: Boolean
 }
 
 input ConfidenceLevelInput {

@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.2
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:2.18.0
+    image: opensearchproject/opensearch:2.19.0
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots
@@ -84,7 +84,7 @@ services:
       - 9600:9600
   opencti-dev-opensearch-dashboards:
     profiles: [ opensearch ]
-    image: opensearchproject/opensearch-dashboards:2.18.0
+    image: opensearchproject/opensearch-dashboards:2.19.0
     container_name: opencti-dev-opensearch-dashboards
     ports:
       - 5602:5601 # Map host port 5601 to container port 5601

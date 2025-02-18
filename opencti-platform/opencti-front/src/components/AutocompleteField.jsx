@@ -62,6 +62,9 @@ const AutocompleteField = (props) => {
     fieldProps.value = null;
   }
   const defaultOptionToValue = (option, value) => option.value === value.value;
+  const defaultGetOptionLabel = ((option) => (
+    typeof option === 'object' ? truncate(option.label, optionLength) : truncate(option, optionLength)
+  ));
   return (
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
@@ -70,11 +73,7 @@ const AutocompleteField = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
-        getOptionLabel={
-          getOptionLabel || ((option) => (typeof option === 'object'
-            ? truncate(option.label, optionLength)
-            : truncate(option, optionLength)))
-        }
+        getOptionLabel={ getOptionLabel || defaultGetOptionLabel }
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}

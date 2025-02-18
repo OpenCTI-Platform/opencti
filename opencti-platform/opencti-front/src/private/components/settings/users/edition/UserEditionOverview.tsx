@@ -367,6 +367,7 @@ const UserEditionOverview = createFragmentContainer(
         groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
         organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+        organizationsCount: { type: "Int", defaultValue: 500 }
         rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
         rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
@@ -389,7 +390,7 @@ const UserEditionOverview = createFragmentContainer(
           id
           name
         }
-        objectAssignedOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+        objectAssignedOrganization(first: $organizationsCount, orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
           edges {
             node {
               id

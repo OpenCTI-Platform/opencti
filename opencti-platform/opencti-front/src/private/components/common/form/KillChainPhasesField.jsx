@@ -68,7 +68,7 @@ class KillChainPhasesField extends Component {
         onInputChange={this.searchKillChainPhases.bind(this)}
         onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
         renderOption={(props, option) => (
-          <li {...props}>
+          <li {...props} key={option.value}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Kill-Chain-Phase" />
             </div>
