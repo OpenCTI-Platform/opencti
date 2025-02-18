@@ -1194,8 +1194,8 @@ export const userAddIndividual = async (context, user) => {
   // We need to bypass validation here has we maybe not setup all require fields
   const individual = await addIndividual(context, targetUser, individualInput, { bypassValidation: true });
   await userSessionRefresh(targetUser.internal_id);
-  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
-  return individual;
+  await refreshCacheForEntity(targetUser); // Auto add must reset the local cache directly
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(() => individual);
 };
 
 export const otpUserActivation = async (context, user, { secret, code }) => {
