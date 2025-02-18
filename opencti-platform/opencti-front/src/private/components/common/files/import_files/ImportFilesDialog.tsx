@@ -9,12 +9,14 @@ import { graphql } from 'react-relay';
 import LinearProgress from '@mui/material/LinearProgress';
 import { ImportFilesDialogGlobalMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import { ImportFilesDialogEntityMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
-import { CancelOutlined, CheckCircleOutline, CheckCircleOutlined, UploadFileOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined, UploadFileOutlined } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
+import { resolveLink } from '../../../../../utils/Entity';
 
 const importFilesDialogGlobalMutation = graphql`
   mutation ImportFilesDialogGlobalMutation($file: Upload!, $fileMarkings: [String]) {
@@ -90,6 +92,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
 
   const handleSubmit = (values: SubmittedFormValues, { setErrors }) => {
     setUploadStatus('uploading');
+    console.log({ values });
     const entityId = values.associatedEntity?.value || undefined;
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
@@ -134,7 +137,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
       }}
       onSubmit={handleSubmit}
     >
-      {({ submitForm, setFieldValue }) => (
+      {({ submitForm, setFieldValue, values }) => (
         <Dialog
           open={open}
           TransitionComponent={Transition}
@@ -203,7 +206,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
             }
           </DialogContent>
           <DialogActions>
-            { !uploadStatus ? (
+            {!uploadStatus ? (
               <>
                 <Button onClick={() => handleClose()}>
                   {t_i18n('Cancel')}
@@ -218,11 +221,15 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
                   </Button>
                 )}
               </>
-            ) : uploadStatus === 'success' && (
-              <Button onClick={() => handleClose()}>
-                {t_i18n('Close')}
-              </Button>
-            )
+            ) : uploadStatus === 'success'
+              && (
+                (values.associatedEntity?.value || undefined) ? (<Button onClick={() => handleClose()} component={Link} to={`${resolveLink(values.associatedEntity.type)}/${values.associatedEntity.value}/files`}>
+                  {t_i18n('Navigate to entity')}
+                </Button>)
+                  : (<Button onClick={() => handleClose()}>
+                    {t_i18n('Close')}
+                  </Button>)
+              )
             }
           </DialogActions>
         </Dialog>
