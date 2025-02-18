@@ -48,7 +48,7 @@ export const csvMapperEditionContainerFragment = graphql`
 `;
 
 export const csvMapperEditionContainerQuery = graphql`
-  query CsvMapperEditionContainerQuery($id: String!) {
+  query CsvMapperEditionContainerQuery($id: ID!) {
     csvMapper(id: $id) {
       ...CsvMapperEditionContainerFragment_csvMapper
     }

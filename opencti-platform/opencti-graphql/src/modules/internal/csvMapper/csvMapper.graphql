@@ -52,6 +52,14 @@ type CsvMapperRepresentation {
   to: String
 }
 
+type CsvMapperAddInputFromImport {
+  name: String!
+  has_header: Boolean!
+  separator: String!
+  representations: [CsvMapperRepresentation!]!
+  skipLineChar: String
+}
+
 type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
@@ -64,6 +72,7 @@ type CsvMapper implements InternalObject & BasicObject {
   skipLineChar: String @auth
   representations: [CsvMapperRepresentation!]! @auth
   errors: String
+  toConfigurationExport: String!
 }
 
 # Ordering
@@ -106,7 +115,7 @@ type CsvMapperSchemaAttributes {
 
 # Queries
 type Query {
-  csvMapper(id: String!): CsvMapper @auth(for: [CSVMAPPERS])
+  csvMapper(id: ID!): CsvMapper @auth(for: [CSVMAPPERS])
   csvMappers(
     first: Int
     after: ID
@@ -116,6 +125,9 @@ type Query {
     search: String
   ): CsvMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE, CSVMAPPERS])
+  csvMapperAddInputFromImport(
+    file: Upload!
+  ): CsvMapperAddInputFromImport! @auth(for: [CSVMAPPERS])
 }
 
 # Mutations

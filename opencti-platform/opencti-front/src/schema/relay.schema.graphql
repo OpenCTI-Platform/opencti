@@ -8168,9 +8168,10 @@ type Query {
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
-  csvMapper(id: String!): CsvMapper
+  csvMapper(id: ID!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
+  csvMapperAddInputFromImport(file: Upload!): CsvMapperAddInputFromImport!
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
@@ -12132,6 +12133,14 @@ type CsvMapperRepresentation {
   to: String
 }
 
+type CsvMapperAddInputFromImport {
+  name: String!
+  has_header: Boolean!
+  separator: String!
+  representations: [CsvMapperRepresentation!]!
+  skipLineChar: String
+}
+
 type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -12143,6 +12152,7 @@ type CsvMapper implements InternalObject & BasicObject {
   skipLineChar: String
   representations: [CsvMapperRepresentation!]!
   errors: String
+  toConfigurationExport: String!
 }
 
 enum CsvMapperOrdering {
