@@ -93,8 +93,6 @@ class ExternalReference:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
-        if get_all:
-            first = 100
 
         self.opencti.app_logger.info(
             "Listing External-Reference with filters", {"filters": json.dumps(filters)}

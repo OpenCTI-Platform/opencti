@@ -48,10 +48,7 @@ class KillChainPhase:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
-        if get_all:
-            first = 500
 
         self.opencti.app_logger.info(
             "Listing Kill-Chain-Phase with filters", {"filters": json.dumps(filters)}

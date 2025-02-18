@@ -168,7 +168,6 @@ class ThreatActor:
         :param str after: (optional) OpenCTI object ID of the first row for pagination
         :param str orderBy: (optional) the field to order the response on
         :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
         :param bool withPagination: (optional) switch to use pagination
         """
 
@@ -179,10 +178,7 @@ class ThreatActor:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
-        if get_all:
-            first = 500
 
         self.opencti.app_logger.info(
             "Listing Threat-Actors with filters", {"filters": json.dumps(filters)}
