@@ -26,7 +26,6 @@ import {
   extractIdsFromStoreObject,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
-  INDEX_DRAFT_OBJECTS,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -53,6 +52,7 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
+  elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
   elUpdateEntityConnections,
@@ -3251,7 +3251,7 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
 
-    await elDeleteElements(context, user, [draftElement]);
+    await elMarkElementsAsDraftDelete(context, user, [draftElement]);
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3271,7 +3271,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) {
+  if (getDraftContext(context, user)) {
     return draftInternalDeleteElement(context, user, element);
   }
   // region confidence control
@@ -3300,7 +3300,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds);
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);
