@@ -21,7 +21,6 @@ const GraphToolbarItem = ({
     <Tooltip title={title}>
       <span>
         <IconButton
-          size="large"
           color={color}
           onClick={onClick}
           disabled={disabled}

@@ -1,4 +1,4 @@
-import { ForceGraphProps } from 'react-force-graph-2d';
+import { ForceGraphProps } from 'react-force-graph-3d';
 
 interface GraphElement {
   id: string
@@ -27,8 +27,10 @@ export interface GraphNode extends GraphElement {
   color: string
   x: number
   y: number
+  z: number
   fx?: number
   fy?: number
+  fz?: number
   toId?: string
   toType?: string
   fromId?: string
@@ -44,7 +46,16 @@ export interface OctiGraphPositions {
     id: string
     x: number
     y: number
+    z?: number
   }
 }
 
 export type LibGraphProps = ForceGraphProps<GraphNode, GraphLink>;
+
+export interface GraphContainer {
+  id: string
+  confidence: unknown
+  createdBy: unknown
+  objects: readonly unknown[]
+  objectMarking: readonly unknown[]
+}

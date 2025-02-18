@@ -56,10 +56,7 @@ export interface SelectedEntity {
   target_id?: string;
   markedBy?: {
     id: string;
-    definition_type: string;
     definition: string;
-    x_opencti_order: number;
-    x_opencti_color: string;
   }[];
 }
 

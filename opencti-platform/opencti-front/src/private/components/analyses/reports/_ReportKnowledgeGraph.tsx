@@ -2,6 +2,7 @@ import React, { CSSProperties, useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { graphql, useFragment } from 'react-relay';
+import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import { ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../utils/graph/Graph';
@@ -398,6 +399,7 @@ const ReportKnowledgeGraph = ({ enableReferences, data }: ReportKnowledgeGraphPr
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { buildGraphData } = useGraphParser();
+
   const [commitGraphDataMutation] = useApiMutation<ReportKnowledgeGraphDataMutation>(
     reportGraphDataMutation,
   );
@@ -438,10 +440,20 @@ const ReportKnowledgeGraph = ({ enableReferences, data }: ReportKnowledgeGraphPr
   return (
     <div style={graphContainerStyle} ref={ref}>
       <Graph
-        containerRef={ref}
+        parentRef={ref}
         graphData={graphData}
         localStorageKey={localStorageKey}
         onPositionsChanged={savePositions}
+        enableReferences={enableReferences}
+        stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+        relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+        container={{
+          id: report.id,
+          confidence: report.confidence,
+          objects: report.objects?.edges ?? [],
+          createdBy: report.createdBy,
+          objectMarking: report.objectMarking ?? [],
+        }}
       />
     </div>
   );

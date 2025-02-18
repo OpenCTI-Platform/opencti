@@ -1,5 +1,6 @@
 import { useTheme } from '@mui/material/styles';
 import SpriteText from 'three-spritetext';
+import { ForceGraphProps } from 'react-force-graph-3d';
 import type { Theme } from '../../../components/Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { useGraphContext } from './GraphContext';
@@ -182,7 +183,42 @@ const useGraphPainter = () => {
     return sprite;
   };
 
-  return { nodePaint, nodePointerAreaPaint, linkLabelPaint, linkColorPaint, nodeThreePaint };
+  /**
+   * Draws a link for 3D mode.
+   *
+   * @param link Link to draw.
+   */
+  const linkThreePaint = (link: GraphLink) => {
+    const sprite = new SpriteText(link.label);
+    sprite.color = 'lightgrey';
+    sprite.textHeight = 1.5;
+    return sprite;
+  };
+
+  /**
+   * Set the position of link labels (at the middle of the link).
+   *
+   * @param sprite Sprite of the label.
+   * @param coords Coordinates of the link.
+   */
+  const linkThreeLabelPosition: ForceGraphProps['linkPositionUpdate'] = (sprite, coords) => {
+    const { start, end } = coords;
+    Object.assign(sprite.position, {
+      x: start.x + (end.x - start.x) / 2,
+      y: start.y + (end.y - start.y) / 2,
+      z: start.z + (end.z - start.z) / 2,
+    });
+  };
+
+  return {
+    nodePaint,
+    nodePointerAreaPaint,
+    linkLabelPaint,
+    linkColorPaint,
+    nodeThreePaint,
+    linkThreePaint,
+    linkThreeLabelPosition,
+  };
 };
 
 export default useGraphPainter;

@@ -1,11 +1,22 @@
+import { useEffect } from 'react';
+import { NodeObject } from 'react-force-graph-2d';
 import { useGraphContext, GraphState } from './GraphContext';
 import type { GraphNode, LibGraphProps } from '../graph.types';
 import { RectangleSelectionProps } from '../components/RectangleSelection';
+import { getMainRepresentative, getSecondaryRepresentative } from '../../defaultRepresentatives';
+import useGraphParser, { ObjectToParse } from './useGraphParser';
 
 const useGraphInteractions = () => {
+  const { buildNode, buildLink } = useGraphParser();
+
   const {
     graphData,
-    graphRef,
+    addNode: contextAddNode,
+    removeNode: contextRemoveNode,
+    addLink: contextAddLink,
+    removeLink: contextRemoveLink,
+    graphRef2D,
+    graphRef3D,
     graphState,
     selectedLinks,
     selectedNodes,
@@ -26,7 +37,14 @@ const useGraphInteractions = () => {
     selectFree,
     selectRelationshipMode,
     showTimeRange,
+    disabledEntityTypes,
+    disabledMarkings,
+    disabledCreators,
   } = graphState;
+
+  useEffect(() => {
+    setGraphStateProp('selectRelationshipMode', null);
+  }, [selectedNodes]);
 
   const toggleMode3D = () => {
     setGraphStateProp('mode3D', !mode3D);
@@ -47,7 +65,8 @@ const useGraphInteractions = () => {
   };
 
   const zoomToFit = () => {
-    graphRef.current?.zoomToFit(400, 100);
+    graphRef2D.current?.zoomToFit(400, 100);
+    graphRef3D.current?.zoomToFit(400, 0);
   };
 
   /**
@@ -59,7 +78,8 @@ const useGraphInteractions = () => {
       node.fx = undefined; // eslint-disable-line no-param-reassign
       node.fy = undefined; // eslint-disable-line no-param-reassign
     });
-    graphRef.current?.d3ReheatSimulation();
+    graphRef2D.current?.d3ReheatSimulation();
+    graphRef3D.current?.d3ReheatSimulation();
   };
 
   const toggleSelectFreeRectangle = () => {
@@ -73,6 +93,14 @@ const useGraphInteractions = () => {
   };
 
   const switchSelectRelationshipMode = () => {
+    const selectedNodesIds = selectedNodes.map((n) => n.id);
+    setSelectedLinks((graphData?.links ?? []).filter((l) => {
+      const shouldGetFrom = selectRelationshipMode === null || selectRelationshipMode === 'children';
+      const shouldGetTo = selectRelationshipMode === null || selectRelationshipMode === 'parent';
+      return (shouldGetFrom && selectedNodesIds.includes(l.source_id))
+        || (shouldGetTo && selectedNodesIds.includes(l.target_id));
+    }));
+
     if (selectRelationshipMode === 'children') setGraphStateProp('selectRelationshipMode', 'parent');
     else if (selectRelationshipMode === 'parent') setGraphStateProp('selectRelationshipMode', 'deselect');
     else if (selectRelationshipMode === 'deselect') setGraphStateProp('selectRelationshipMode', null);
@@ -129,17 +157,22 @@ const useGraphInteractions = () => {
    * @param node The dragged node.
    * @param translate How much the dragged node has moved.
    */
-  const moveSelection: LibGraphProps['onNodeDrag'] = (node, translate) => {
+  const moveSelection = (
+    node: NodeObject<GraphNode>,
+    translate: { x: number, y: number, z?: number },
+  ) => {
     const selectedDraggedNode = selectedNodes.find((n) => n.id === node.id);
     if (selectedDraggedNode) {
       selectedNodes.forEach((n) => {
         if (n.id !== node.id) {
           n.x += translate.x; // eslint-disable-line no-param-reassign
           n.y += translate.y; // eslint-disable-line no-param-reassign
+          n.z += translate.z ?? 0; // eslint-disable-line no-param-reassign
           // During node drag, the lib force-graph set fx and fy equal to x and y.
           // so we are doing the same thing for all selected nodes.
           n.fx = n.x; // eslint-disable-line no-param-reassign
           n.fy = n.y; // eslint-disable-line no-param-reassign
+          n.fz = n.z; // eslint-disable-line no-param-reassign
         }
       });
     }
@@ -155,11 +188,13 @@ const useGraphInteractions = () => {
     const selectedDraggedNode = selectedNodes.find((n) => n.id === node.id);
     node.fx = node.x; // eslint-disable-line no-param-reassign
     node.fy = node.y; // eslint-disable-line no-param-reassign
+    node.fz = node.z; // eslint-disable-line no-param-reassign
     if (selectedDraggedNode) {
       selectedNodes.forEach((n) => {
         if (n.id !== node.id) {
           n.fx = n.x; // eslint-disable-line no-param-reassign
           n.fy = n.y; // eslint-disable-line no-param-reassign
+          n.fz = n.z; // eslint-disable-line no-param-reassign
         }
       });
     }
@@ -181,8 +216,8 @@ const useGraphInteractions = () => {
     const { altKey, shiftKey } = keys;
     const hasSpecialKey = altKey || shiftKey;
     if (!hasSpecialKey) clearSelection();
-    const graphOrigin = graphRef.current?.screen2GraphCoords(origin[0], origin[1]);
-    const graphTarget = graphRef.current?.screen2GraphCoords(target[0], target[1]);
+    const graphOrigin = graphRef2D.current?.screen2GraphCoords(origin[0], origin[1]);
+    const graphTarget = graphRef2D.current?.screen2GraphCoords(target[0], target[1]);
     if (graphOrigin && graphTarget) {
       const selected = (graphData?.nodes ?? []).filter((node) => {
         return (
@@ -208,6 +243,72 @@ const useGraphInteractions = () => {
     setSelectedNodes(graphData?.nodes ?? []);
   };
 
+  const selectBySearch = (search: string) => {
+    clearSelection();
+    if (search) {
+      const searchLow = search.toLowerCase();
+      const matchingNodes = (graphData?.nodes ?? []).filter((node) => {
+        return (getMainRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1
+          || (getSecondaryRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1
+          || (node.entity_type || '').toLowerCase().indexOf(searchLow) !== -1;
+      });
+      setSelectedNodes(matchingNodes);
+    }
+  };
+
+  const toggleEntityType = (type: string) => {
+    setGraphStateProp(
+      'disabledEntityTypes',
+      disabledEntityTypes.includes(type)
+        ? disabledEntityTypes.filter((t) => t !== type)
+        : [...disabledEntityTypes, type],
+    );
+  };
+
+  const toggleMarkingDefinition = (markingId: string) => {
+    setGraphStateProp(
+      'disabledMarkings',
+      disabledMarkings.includes(markingId)
+        ? disabledMarkings.filter((id) => id !== markingId)
+        : [...disabledMarkings, markingId],
+    );
+  };
+
+  const toggleCreator = (creatorId: string) => {
+    setGraphStateProp(
+      'disabledCreators',
+      disabledCreators.includes(creatorId)
+        ? disabledCreators.filter((id) => id !== creatorId)
+        : [...disabledCreators, creatorId],
+    );
+  };
+
+  const resetFilters = () => {
+    setGraphStateProp('disabledEntityTypes', []);
+    setGraphStateProp('disabledMarkings', []);
+    setGraphStateProp('disabledCreators', []);
+  };
+
+  const addNode = (data: ObjectToParse) => {
+    contextAddNode(buildNode(data, {}));
+    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+  };
+
+  const removeNode = (data: ObjectToParse) => {
+    contextRemoveNode(data.id);
+    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+  };
+
+  const addLink = (data: ObjectToParse) => {
+    contextAddLink(buildLink(data)); // TODO does it work with nested?
+    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+  };
+
+  const removeLink = (data: ObjectToParse) => {
+    contextRemoveLink(data.id);
+    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+  };
+
   return {
     toggleMode3D,
     toggleVerticalTree,
@@ -228,6 +329,15 @@ const useGraphInteractions = () => {
     selectFromFreeRectangle,
     selectByEntityType,
     selectAllNodes,
+    toggleEntityType,
+    toggleMarkingDefinition,
+    toggleCreator,
+    resetFilters,
+    selectBySearch,
+    addNode,
+    removeNode,
+    addLink,
+    removeLink,
   };
 };
 

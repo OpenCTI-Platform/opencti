@@ -3,12 +3,10 @@ import React, { useState } from 'react';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import {
   AccountBalanceOutlined,
-  Add,
   AspectRatioOutlined,
   CenterFocusStrongOutlined,
   DateRangeOutlined,
   DeleteOutlined,
-  EditOutlined,
   FilterAltOffOutlined,
   FilterListOutlined,
   GestureOutlined,
@@ -21,21 +19,47 @@ import {
   VisibilityOutlined,
 } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
+import { useTheme } from '@mui/material/styles';
+import Badge from '@mui/material/Badge';
+import ContainerAddStixCoreObjectsInGraph from '@components/common/containers/ContainerAddStixCoreObjectsInGraph';
+import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useFormatter } from '../../../components/i18n';
 import { useGraphContext } from '../utils/GraphContext';
 import GraphToolbarItem from './GraphToolbarItem';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import SearchInput from '../../../components/SearchInput';
-import GraphToolbarEntityTypes from './GraphToolbarEntityTypes';
+import GraphToolbarOptionsList from './GraphToolbarOptionsList';
+import type { Theme } from '../../../components/Theme';
+import { GraphContainer } from '../graph.types';
+import GraphToolbarEditObject from './GraphToolbarEditObject';
 
-const GraphToolbar = () => {
+interface GraphToolbarProps {
+  stixCoreObjectRefetchQuery: GraphQLTaggedNode
+  relationshipRefetchQuery: GraphQLTaggedNode
+  container?: GraphContainer
+  enableReferences?: boolean
+}
+
+const GraphToolbar = ({
+  stixCoreObjectRefetchQuery,
+  relationshipRefetchQuery,
+  container,
+  enableReferences,
+}: GraphToolbarProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const navOpen = localStorage.getItem('navOpen') === 'true';
 
-  const [byEntityTypeAnchor, setByEntityTypeAnchor] = useState<Element>();
+  const [selectByTypeAnchor, setSelectByTypeAnchor] = useState<Element>();
+  const [filterByTypeAnchor, setFilterByTypeAnchor] = useState<Element>();
+  const [filterByMarkingAnchor, setFilterByMarkingAnchor] = useState<Element>();
+  const [filterByCreatorAnchor, setFilterByCreatorAnchor] = useState<Element>();
 
   const {
     stixCoreObjectTypes,
+    markingDefinitions,
+    creators,
+    selectedNodes,
     graphState: {
       mode3D,
       modeTree,
@@ -44,6 +68,9 @@ const GraphToolbar = () => {
       selectFree,
       selectRelationshipMode,
       showTimeRange,
+      disabledEntityTypes,
+      disabledMarkings,
+      disabledCreators,
     },
   } = useGraphContext();
 
@@ -60,6 +87,13 @@ const GraphToolbar = () => {
     unfixNodes,
     selectByEntityType,
     selectAllNodes,
+    toggleEntityType,
+    toggleCreator,
+    toggleMarkingDefinition,
+    resetFilters,
+    selectBySearch,
+    addNode,
+    removeNode,
   } = useGraphInteractions();
 
   const titleSelectRelationshipMode = () => {
@@ -88,7 +122,14 @@ const GraphToolbar = () => {
         },
       }}
     >
-      <div style={{ height: 54, display: 'flex', alignItems: 'center' }}>
+      <div style={{
+        height: 54,
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(0.5),
+        padding: `0 ${theme.spacing(0.5)}`,
+      }}
+      >
         <GraphToolbarItem
           Icon={<Video3d />}
           color={mode3D ? 'secondary' : 'primary'}
@@ -149,15 +190,18 @@ const GraphToolbar = () => {
           Icon={<SelectGroup />}
           disabled={stixCoreObjectTypes.length === 0}
           color="primary"
-          onClick={(e) => setByEntityTypeAnchor(e.currentTarget)}
+          onClick={(e) => setSelectByTypeAnchor(e.currentTarget)}
           title={t_i18n('Select by entity type')}
         />
-        <GraphToolbarEntityTypes
-          anchorEl={byEntityTypeAnchor}
-          onClose={() => setByEntityTypeAnchor(undefined)}
+        <GraphToolbarOptionsList
+          anchorEl={selectByTypeAnchor}
+          onClose={() => setSelectByTypeAnchor(undefined)}
+          options={stixCoreObjectTypes}
+          getOptionKey={(type) => type}
+          getOptionText={(type) => t_i18n(`entity_${type}`)}
           onSelect={(type) => {
             selectByEntityType(type);
-            setByEntityTypeAnchor(undefined);
+            setSelectByTypeAnchor(undefined);
           }}
         />
         <GraphToolbarItem
@@ -168,7 +212,7 @@ const GraphToolbar = () => {
         />
         <GraphToolbarItem
           Icon={iconSelectRelationshipMode()}
-          disabled={false}
+          disabled={selectedNodes.length === 0}
           color="primary"
           onClick={() => switchSelectRelationshipMode()}
           title={titleSelectRelationshipMode()}
@@ -183,78 +227,123 @@ const GraphToolbar = () => {
           title={t_i18n('Display time range selector')}
         />
         <GraphToolbarItem
-          Icon={<FilterListOutlined />}
-          disabled={false}
+          Icon={(
+            <Badge badgeContent={disabledEntityTypes.length} color="secondary">
+              <FilterListOutlined />
+            </Badge>
+          )}
+          disabled={stixCoreObjectTypes.length === 0}
           color="primary"
-          onClick={() => console.log('handleOpenStixCoreObjectsTypes')}
+          onClick={(e) => setFilterByTypeAnchor(e.currentTarget)}
           title={t_i18n('Filter entity types')}
         />
-        <GraphToolbarItem
-          Icon={<CenterFocusStrongOutlined />}
-          disabled={false}
-          color="primary"
-          onClick={() => console.log('handleOpenMarkedBy')}
-          title={t_i18n('Filter marking definitions')}
+        <GraphToolbarOptionsList
+          isMultiple
+          anchorEl={filterByTypeAnchor}
+          onClose={() => setFilterByTypeAnchor(undefined)}
+          options={stixCoreObjectTypes}
+          getOptionKey={(type) => type}
+          getOptionText={(type) => t_i18n(`entity_${type}`)}
+          isOptionSelected={(type) => !disabledEntityTypes.includes(type)}
+          onSelect={toggleEntityType}
         />
         <GraphToolbarItem
-          Icon={<AccountBalanceOutlined />}
-          disabled={false}
+          Icon={(
+            <Badge badgeContent={disabledMarkings.length} color="secondary">
+              <CenterFocusStrongOutlined />
+            </Badge>
+          )}
+          disabled={markingDefinitions.length === 0}
           color="primary"
-          onClick={() => console.log('handleOpenCreatedBy')}
+          onClick={(e) => setFilterByMarkingAnchor(e.currentTarget)}
+          title={t_i18n('Filter marking definitions')}
+        />
+        <GraphToolbarOptionsList
+          isMultiple
+          anchorEl={filterByMarkingAnchor}
+          onClose={() => setFilterByMarkingAnchor(undefined)}
+          options={markingDefinitions}
+          getOptionKey={(marking) => marking.id}
+          getOptionText={(marking) => marking.definition}
+          isOptionSelected={(marking) => !disabledMarkings.includes(marking.id)}
+          onSelect={(marking) => toggleMarkingDefinition(marking.id)}
+        />
+        <GraphToolbarItem
+          Icon={(
+            <Badge badgeContent={disabledCreators.length} color="secondary">
+              <AccountBalanceOutlined />
+            </Badge>
+          )}
+          disabled={creators.length === 0}
+          color="primary"
+          onClick={(e) => setFilterByCreatorAnchor(e.currentTarget)}
           title={t_i18n('Filter authors (created by)')}
+        />
+        <GraphToolbarOptionsList
+          isMultiple
+          anchorEl={filterByCreatorAnchor}
+          onClose={() => setFilterByCreatorAnchor(undefined)}
+          options={creators}
+          getOptionKey={(creator) => creator.id}
+          getOptionText={(creator) => creator.name}
+          isOptionSelected={(creator) => !disabledCreators.includes(creator.id)}
+          onSelect={(creator) => toggleCreator(creator.id)}
         />
         <GraphToolbarItem
           Icon={<FilterAltOffOutlined />}
-          disabled={false}
           color="primary"
-          onClick={() => console.log('resetAllFilters')}
+          onClick={resetFilters}
           title={t_i18n('Clear all filters')}
         />
 
         <Divider sx={{ margin: 1, marginRight: 3, height: '80%' }} orientation="vertical" />
 
         <div style={{ flex: 1 }}>
-          <SearchInput
-            variant="thin"
-            onSubmit={console.log}
-          />
+          <SearchInput variant="thin" onSubmit={selectBySearch} />
         </div>
 
-        <GraphToolbarItem
-          Icon={<Add />}
-          color="primary"
-          onClick={() => console.log('TODO')}
-          title={t_i18n('Add an entity to this container')}
-        />
-        <GraphToolbarItem
-          Icon={<EditOutlined />}
-          disabled={false}
-          color="primary"
-          onClick={() => console.log('handleOpenEditItem')}
-          title={t_i18n('Edit the selected item')}
-        />
-        <GraphToolbarItem
-          Icon={<LinkOutlined />}
-          disabled={false}
-          color="primary"
-          onClick={() => console.log('handleOpenCreateRelationship')}
-          title={t_i18n('Create a relationship')}
-        />
-        <div>...</div>
-        <GraphToolbarItem
-          Icon={<VisibilityOutlined />}
-          disabled={false}
-          color="primary"
-          onClick={() => console.log('handleOpenCreateSighting')}
-          title={t_i18n('Create a sighting')}
-        />
-        <GraphToolbarItem
-          Icon={<DeleteOutlined />}
-          disabled={false}
-          color="primary"
-          onClick={() => console.log('handleOpenRemove')}
-          title={t_i18n('Remove selected items')}
-        />
+        {container && (
+          <>
+            <ContainerAddStixCoreObjectsInGraph
+              knowledgeGraph={true} // TODO change for correlation?
+              containerId={container.id}
+              containerStixCoreObjects={container.objects}
+              defaultCreatedBy={container.createdBy ?? null}
+              defaultMarkingDefinitions={container.objectMarking ?? []}
+              targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+              onAdd={addNode}
+              onDelete={removeNode}
+              confidence={container.confidence}
+              enableReferences={enableReferences}
+            />
+            <GraphToolbarEditObject
+              stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
+              relationshipRefetchQuery={relationshipRefetchQuery}
+            />
+            <GraphToolbarItem
+              Icon={<LinkOutlined />}
+              disabled={false}
+              color="primary"
+              onClick={() => console.log('handleOpenCreateRelationship')}
+              title={t_i18n('Create a relationship')}
+            />
+            <div>...</div>
+            <GraphToolbarItem
+              Icon={<VisibilityOutlined />}
+              disabled={false}
+              color="primary"
+              onClick={() => console.log('handleOpenCreateSighting')}
+              title={t_i18n('Create a sighting')}
+            />
+            <GraphToolbarItem
+              Icon={<DeleteOutlined />}
+              disabled={false}
+              color="primary"
+              onClick={() => console.log('handleOpenRemove')}
+              title={t_i18n('Remove selected items')}
+            />
+          </>
+        )}
       </div>
     </Drawer>
   );
