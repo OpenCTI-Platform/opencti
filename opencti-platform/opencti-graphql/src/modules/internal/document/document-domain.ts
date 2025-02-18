@@ -45,15 +45,17 @@ export const getIndexFromDate = async (context: AuthContext) => {
 export const buildFileDataForIndexing = (file: File, draftContext?: string | undefined) => {
   const standardId = generateFileIndexId(file.id);
   const fileData = R.dissoc('id', file);
-  return {
+  const fileIndexData = {
     ...fileData,
-    draft_ids: draftContext ? [draftContext] : null,
-    draft_change: draftContext ? { draft_operation: DRAFT_OPERATION_CREATE } : null,
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: file.metaData?.file_markings ?? []
   };
+  if (draftContext) {
+    return { ...fileIndexData, draft_ids: [draftContext], draft_change: { draft_operation: DRAFT_OPERATION_CREATE } };
+  }
+  return fileIndexData;
 };
 
 export const indexFileToDocument = async (context: AuthContext, file: any) => {
