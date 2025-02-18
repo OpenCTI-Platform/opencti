@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -26,7 +26,9 @@ import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
 import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import {
+  TopBarNotificationNumberSubscription$data
+} from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
@@ -72,9 +74,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     cursor: 'pointer',
     height: 35,
     marginRight: 4,
-  },
-  menuContainer: {
-    width: '30%',
   },
   barRight: {
     marginRight: theme.spacing(2),
@@ -260,7 +259,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         {hasKnowledgeAccess && (
-          <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
+          <div
+            style={{ display: 'flex', marginLeft: theme.spacing(3) }}
+          >
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
