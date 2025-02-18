@@ -181,7 +181,6 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     updated_at: now(),
     name: friendlyName,
     entity_type: ENTITY_TYPE_WORK,
-    draft_context: draftContext ?? null,
     // For specific type, specific id is required
     event_type: connector.connector_type,
     event_source_id: sourceId,
@@ -199,6 +198,9 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     errors: [],
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings]
   };
+  if (draftContext) {
+    work.draft_context = draftContext;
+  }
   await elIndex(INDEX_HISTORY, work);
   return loadWorkById(context, user, workId);
 };
