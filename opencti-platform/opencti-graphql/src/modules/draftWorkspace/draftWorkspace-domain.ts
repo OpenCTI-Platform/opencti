@@ -242,9 +242,9 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
-  const updateStixEntitiesWithPatchPromises = updateStixEntities.map((d: any) => {
+  const updateStixEntitiesWithPatchPromises = updateStixEntities.map(async (d: any) => {
     const updateFieldPatchNonResolved = buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch);
-    const updateFieldPatchResolved = resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchNonResolved);
+    const updateFieldPatchResolved = await resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchNonResolved);
     return { ...d, opencti_operation: 'patch', opencti_field_patch: updateFieldPatchResolved };
   });
   const updateStixEntitiesWithPatch = await Promise.all(updateStixEntitiesWithPatchPromises);

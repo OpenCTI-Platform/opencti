@@ -265,7 +265,7 @@ export const resolveDraftUpdateFiles = async (context, user, draftUpdates) => {
   if (addedFiles) {
     const fileIds = addedFiles.value;
     const loadedFileValues = [];
-    for (let i = 0; i < fileIds.length; i += 0) {
+    for (let i = 0; i < fileIds.length; i += 1) {
       const currentFileId = fileIds[i];
       const currentFile = await loadFile(context, user, currentFileId);
       const currentFileContent = toBase64(await getFileContent(currentFileId));
@@ -275,6 +275,7 @@ export const resolveDraftUpdateFiles = async (context, user, draftUpdates) => {
         version: currentFile.metaData.version,
         mime_type: currentFile.metaData.mime_type,
         object_marking_refs: currentFile.metaData.file_markings ?? [],
+        no_trigger_import: true,
       };
       loadedFileValues.push(currentFileObject);
     }
