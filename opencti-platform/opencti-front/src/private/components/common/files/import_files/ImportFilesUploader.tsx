@@ -37,6 +37,8 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
     onChange(files.filter((file) => file.name !== name));
   };
 
+  console.log(files);
+
   return (
     <Grid container>
       <Grid item xs={12}>
@@ -76,7 +78,7 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
               <input type="file" hidden multiple onChange={handleFileChange} />
             </Button>
             <Button variant="outlined" component="label" size="small">
-              {t_i18n('Paste from clipboard')}
+              {t_i18n('Copy/paste mode')}
               {/* TODO paste from clipboard */}
             </Button>
           </Box>

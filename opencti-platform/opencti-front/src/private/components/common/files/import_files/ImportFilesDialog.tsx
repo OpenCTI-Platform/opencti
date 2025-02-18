@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stepper, Step, StepButton, Typography, Box } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stepper, Step, StepButton, Typography, Box, ListItem, List } from '@mui/material';
 import { Formik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Option } from '@components/common/form/ReferenceField';
@@ -7,9 +7,14 @@ import ImportFilesUploader from '@components/common/files/import_files/ImportFil
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import { graphql } from 'react-relay';
 import LinearProgress from '@mui/material/LinearProgress';
+import { ImportFilesDialogGlobalMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
+import { ImportFilesDialogEntityMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
+import { UploadFileOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
-import { commitMutation } from '../../../../../relay/environment';
+import { handleErrorInForm } from '../../../../../relay/environment';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 
 const importFilesDialogGlobalMutation = graphql`
   mutation ImportFilesDialogGlobalMutation($file: Upload!, $fileMarkings: [String]) {
@@ -46,10 +51,6 @@ interface ImportFilesDialogProps {
   handleClose: () => void;
 }
 
-const ImportFilesConfigurations = () => {
-  return (<Box>CONFIG</Box>);
-};
-
 type SubmittedFormValues = {
   fileMarkings: Option[];
   associatedEntity: AssociatedEntityOption;
@@ -60,47 +61,53 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
-  const [progress, setProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
 
-  const steps = ['Select files', 'Specific files configurations', 'Import options'];
+  const steps = ['Select files', 'Import options'];
 
-  const commitFile = ({ entityId, file, fileMarkingIds }: { entityId?: string, file: File, fileMarkingIds: string[] }) => {
-    return new Promise((resolve, reject) => {
-      commitMutation({
-        mutation: entityId
-          ? importFilesDialogEntityMutation
-          : importFilesDialogGlobalMutation,
-        variables: {
-          file,
-          fileMarkings: fileMarkingIds,
-          id: entityId,
-        },
-        onError: (error: Error) => {
-          reject(error);
-        },
-        onCompleted: (response: object) => {
-          resolve(response);
-        },
-        optimisticUpdater: undefined,
-        updater: undefined,
-        optimisticResponse: undefined,
-        setSubmitting: undefined,
-      });
-    });
-  };
+  const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
+    importFilesDialogGlobalMutation,
+    undefined,
+    { successMessage: `${t_i18n('files')} ${t_i18n('successfully uploaded')}` },
+  );
 
-  const handleSubmit = async (values: SubmittedFormValues) => {
+  const [commitEntity] = useApiMutation<ImportFilesDialogEntityMutation>(
+    importFilesDialogEntityMutation,
+    undefined,
+    { successMessage: `${t_i18n('files')} ${t_i18n('successfully uploaded')}` },
+  );
+
+  const {
+    bulkCommit,
+    bulkCount,
+    bulkCurrentCount,
+    BulkResult,
+  } = useBulkCommit<ImportFilesDialogGlobalMutation | ImportFilesDialogEntityMutation>({
+    commit: commitGlobal,
+  });
+
+  const handleSubmit = (values: SubmittedFormValues, { setErrors }) => {
     setUploadStatus('uploading');
     const entityId = values.associatedEntity?.value || undefined;
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
-    const filesPromises = files.map(async (file) => {
-      return commitFile({ entityId, file, fileMarkingIds }).then(
-        () => setProgress((prevProgress) => prevProgress + 1),
-      );
+
+    const commit = entityId ? commitEntity : commitGlobal;
+
+    const variables = files.map((file) => (entityId
+      ? { id: entityId, file, fileMarkings: fileMarkingIds }
+      : { file, fileMarkings: fileMarkingIds }));
+
+    bulkCommit({
+      commit,
+      variables,
+      onStepError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setUploadStatus('success');
+      },
+      onCompleted: () => {
+        setUploadStatus('success');
+      },
     });
-    await Promise.all(filesPromises);
-    setUploadStatus('success');
   };
 
   return (
@@ -142,15 +149,25 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
                 </Stepper>
                 <Box sx={{ paddingBlock: 10 }}>
                   {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
-                  {activeStep === 1 && <ImportFilesConfigurations/>}
-                  {activeStep === 2 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
+                  {activeStep === 1 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
                 </Box>
               </>
             ) : (
-              <Box sx={{ width: '100%' }}>
-                <LinearProgress variant="determinate" sx={{ flex: 1 }} value={(progress / files.length) * 100}/>
-                {progress && (<Typography style={{ flexShrink: 0 }}>{`${progress} / ${files.length}`}</Typography>)}
-              </Box>
+              <div style={{ display: 'flex', height: '100%', justifyContent: 'center', flexDirection: 'column' }}>
+                <Box sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <LinearProgress
+                    variant="buffer"
+                    sx={{ flex: 1 }}
+                    value={(bulkCurrentCount / bulkCount) * 100}
+                    valueBuffer={((bulkCurrentCount / bulkCount) * 100) + 10}
+                  />
+                  {bulkCurrentCount && (<Typography style={{ flexShrink: 0 }}>{`${bulkCurrentCount}/${bulkCount}`}</Typography>)}
+                </Box>
+
+                {uploadStatus === 'success' && (
+                  <BulkResult variablesToString={(v) => v} />
+                )}
+              </div>
             )
             }
           </DialogContent>

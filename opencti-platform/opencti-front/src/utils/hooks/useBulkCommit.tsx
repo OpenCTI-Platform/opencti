@@ -4,10 +4,12 @@ import { UseMutationConfig, VariablesOf } from 'react-relay';
 import { Alert, Typography, List, ListItem, Tooltip } from '@mui/material';
 import { useFormatter } from '../../components/i18n';
 
+type ObjectType = 'entities' | 'observables' | 'files';
+
 interface UseBulkCommitArgs<M extends MutationParameters> {
   commit: (args: UseMutationConfig<M>) => void
   relayUpdater?: SelectorStoreUpdater<M['response']>
-  type?: 'entities' | 'observables'
+  type?: ObjectType
 }
 
 interface UseBulkCommit_commits<M extends MutationParameters> {
@@ -15,17 +17,18 @@ interface UseBulkCommit_commits<M extends MutationParameters> {
   onStepError?: (err: Error) => void
   onStepCompleted?: () => void
   onCompleted?: (total: number) => void
+  commit?: (args: UseMutationConfig<M>) => void
 }
 
 interface BulkResultProps<M extends MutationParameters> {
   variablesToString: (variables: VariablesOf<M>) => string
 }
 
-function useBulkCommit<M extends MutationParameters>({
-  commit,
+function useBulkCommit<T extends MutationParameters>({
+  commit: defaultCommit, // Default commit function
   relayUpdater,
   type = 'entities',
-}: UseBulkCommitArgs<M>) {
+}: UseBulkCommitArgs<T>) {
   const { t_i18n } = useFormatter();
 
   const [count, setCount] = useState(0);
@@ -44,25 +47,32 @@ function useBulkCommit<M extends MutationParameters>({
     if (currentCount === count && count !== 0) {
       onBulkCompleted.current?.(count);
     }
-  }, [count, currentCount, setCurrentCount, setCount]);
+  }, [count, currentCount]);
 
-  const bulkCommit = ({
+  // Accepts an optional `commit` function override
+  const bulkCommit = <T extends M>({
+    commit = defaultCommit, // Fallback to default commit
     variables,
     onStepCompleted,
     onStepError,
     onCompleted,
-  }: UseBulkCommit_commits<M>) => {
+  }: UseBulkCommit_commits<T> & { commit?: (args: UseMutationConfig<T>) => void }) => {
+    if (!commit) {
+      throw new Error('bulkCommit: No commit function provided.');
+    }
+
     onBulkCompleted.current = onCompleted;
     setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
+
     variables.forEach((variable) => {
       commit({
-        variables: variable,
+        variables: variable as VariablesOf<T>, // Explicitly cast variables
         updater: relayUpdater,
         onError: (error) => {
           setCurrentCount((c) => c + 1);
-          setInError((err) => [...err, [variable, error]]);
+          setInError((err) => [...err, [variable as VariablesOf<T>, error]]);
           onStepError?.(error);
         },
         onCompleted: () => {
@@ -81,7 +91,7 @@ function useBulkCommit<M extends MutationParameters>({
     ? t_i18n('entities not created')
     : t_i18n('observables not created');
 
-  const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
+  const BulkResult = ({ variablesToString }: BulkResultProps<T>) => (
     <>
       {currentCount === count && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
