@@ -12,8 +12,8 @@ import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDial from '@mui/material/SpeedDial';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
-import { graphql, useQueryLoader } from 'react-relay';
-import { CsvMappersImportQuery } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
+import { graphql } from 'react-relay';
+import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -22,6 +22,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
+import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import { RelayError } from '../../../relay/relayTypes';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
@@ -97,7 +99,7 @@ const CsvMappers = () => {
   const [open, setOpen] = useState(false);
 
   const [importedFile, setImportedFile] = useState(null);
-  const [importedFileQueryRef, loadImportedFileQuery] = useQueryLoader<CsvMappersImportQuery>(csvMappersImportQuery);
+  const [importedFileData, setImportedFileData] = useState<CsvMappersImportQuery$data['csvMapperAddInputFromImport'] | null>(null);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
@@ -136,12 +138,22 @@ const CsvMappers = () => {
   const handleClose = () => {
     setOpen(false);
     setImportedFile(null);
+    setImportedFileData(null);
   };
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];
     setImportedFile(file);
-    loadImportedFileQuery({ file });
+    fetchQuery(csvMappersImportQuery, { file })
+      .toPromise()
+      .then((data) => {
+        const { csvMapperAddInputFromImport } = data as CsvMappersImportQuery$data;
+        setImportedFileData(csvMapperAddInputFromImport);
+      })
+      .catch((e) => {
+        const { errors } = (e as unknown as RelayError).res;
+        MESSAGING$.notifyError(errors.at(0)?.message);
+      });
   };
 
   return queryRefMappers && queryRefSchemaAttributes
@@ -210,10 +222,10 @@ const CsvMappers = () => {
             </SpeedDial>
             {importedFile
               ? <>
-                {importedFileQueryRef && (
+                {importedFileData && (
                 <React.Suspense fallback={<div />}>
                   <CsvMapperCreationContainer
-                    importedFileQueryRef={importedFileQueryRef}
+                    importedFileData={importedFileData}
                     paginationOptions={paginationOptions}
                     open={true}
                     onClose={handleClose}
