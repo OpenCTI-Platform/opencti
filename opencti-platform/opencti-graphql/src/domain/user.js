@@ -162,6 +162,11 @@ const extractTokenFromBasicAuth = async (authorization) => {
   return null;
 };
 
+export const findByCache = async (context, user, userId) => {
+  const platformUsers = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
+  return platformUsers.get(userId) || INTERNAL_USERS[userId] || SYSTEM_USER;
+};
+
 export const findById = async (context, user, userId) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user
@@ -1035,7 +1040,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   await userSessionRefresh(userId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
 
 export const userDeleteRelation = async (context, user, targetUser, toId, relationshipType) => {

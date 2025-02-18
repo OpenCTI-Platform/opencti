@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
@@ -68,16 +69,17 @@ export const resetCacheForEntity = (entityType: string) => {
   });
 };
 
-const handleCacheForEntity = async (instance: BasicStoreCommon, fn: string) => {
-  const types = [instance.entity_type, ...(STORE_ENTITIES_LINKS[instance.entity_type] ?? [])];
+const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommon[], fn: string) => {
+  const instances = Array.isArray(instance) ? instance : [instance];
+  const types = R.uniq(instances.map((i) => [i.entity_type, ...(STORE_ENTITIES_LINKS[i.entity_type] ?? [])]).flat());
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
     if (cache[type]) {
       if (cache[type][fn]) {
-        logApp.debug(`${fn} reset cache for entity`, { type, entityType: instance.entity_type });
+        logApp.debug(`${fn} reset cache for entity`, { type });
         cache[type].values = await cache[type][fn](cache[type].values, instance);
       } else {
-        logApp.debug('Simple reset cache for entity', { type, entityType: instance.entity_type });
+        logApp.debug('Simple reset cache for entity', { type });
         cache[type].values = undefined;
       }
     } else {

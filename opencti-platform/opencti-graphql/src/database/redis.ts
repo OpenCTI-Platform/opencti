@@ -8,7 +8,7 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -319,10 +319,15 @@ export const getRedisVersion = async () => {
 /* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
-  if (instance) {
+  if (isNotEmptyField(instance)) {
+    let data;
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
-    const data = R.dissoc(INPUT_OBJECTS, instance);
+    if (Array.isArray(instance)) {
+      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+    } else {
+      data = R.dissoc(INPUT_OBJECTS, instance);
+    }
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
