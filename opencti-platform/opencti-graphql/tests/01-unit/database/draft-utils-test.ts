@@ -54,7 +54,7 @@ describe('draft-utils', () => {
     expect(currentUpdatePatch.keyB.removed_value[0]).toBe(valueB);
   });
 
-  it('should buildUpdateFieldPatch build a correct field patch input', async () => {
+  it('should buildUpdateFieldPatch build a correct field patch input', () => {
     const stringifiedUpdatePatch = JSON.stringify(currentUpdatePatch);
     const fieldPatchResult = buildUpdateFieldPatch(stringifiedUpdatePatch);
     expect(fieldPatchResult.length).toBe(3);
