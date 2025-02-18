@@ -64,7 +64,8 @@ const PositionPopover = ({ id }) => {
         <PositionPopoverDeletion
           positionId={id}
           handleClose={handleClose}
-          deletion={deletion} />
+          deletion={deletion}
+        />
         <QueryRenderer
           query={positionEditionQuery}
           variables={{ id }}
