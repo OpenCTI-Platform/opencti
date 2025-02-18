@@ -44,8 +44,6 @@ class Label:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
-        if get_all:
-            first = 100
 
         self.opencti.app_logger.info(
             "Listing Labels with filters", {"filters": json.dumps(filters)}
