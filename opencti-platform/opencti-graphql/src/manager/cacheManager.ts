@@ -10,10 +10,10 @@ import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/fi
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { stixLoadByIds } from '../database/middleware';
-import { type EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
-import { resolveUserById } from '../domain/user';
+import { buildCompleteUser, buildCompleteUsers, resolveUserById } from '../domain/user';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
@@ -162,15 +162,9 @@ const platformRunningPlaybooks = (context: AuthContext) => {
 };
 const platformUsers = (context: AuthContext) => {
   const loadUsers = async (ids?: string[]): Promise<AuthUser[]> => {
-    let userIds;
-    if (ids) {
-      userIds = ids;
-    } else {
-      const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
-      userIds = users.map((user) => user.internal_id);
-    }
-    return Bluebird.map(userIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY })
-      .filter((u) => u != null);
+    const users = ids ? await internalFindByIds(context, SYSTEM_USER, ids)
+      : await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
+    return buildCompleteUsers(context, users);
   };
   const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
     return values.filter((user) => user.internal_id !== instance.internal_id);

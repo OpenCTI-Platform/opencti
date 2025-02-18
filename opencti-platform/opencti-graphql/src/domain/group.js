@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
-  internalFindByIds,
   listAllFromEntitiesThroughRelations,
   listAllToEntitiesThroughRelations,
   listEntities,
@@ -82,23 +81,23 @@ export const mergeDefaultMarking = async (defaultMarkings) => {
   return results;
 };
 
-export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => {
+export const defaultMarkingDefinitionsFromGroups = async (context, userGroups) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // Retrieve default marking by groups
-  return internalFindByIds(context, SYSTEM_USER, groupIds, { type: ENTITY_TYPE_GROUP })
-    .then((groups) => groups.map((group) => {
-      const defaultMarking = group.default_marking ?? [];
-      return defaultMarking.map((entry) => {
-        return {
-          entity_type: entry.entity_type,
-          values: entry.values?.map((d) => markingsMap.get(d)),
-        };
-      });
-    }).flat())
-    // Merge default marking by group
-    .then((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
-    // Clean default marking by entity type
-    .then((defaultMarkings) => {
+  const defaultMarkingsFlat = userGroups.map((group) => {
+    const defaultMarking = group.default_marking ?? [];
+    return defaultMarking.map((entry) => {
+      return {
+        entity_type: entry.entity_type,
+        values: entry.values?.map((d) => markingsMap.get(d)),
+      };
+    });
+  }).flat();
+  // Merge default marking by group
+  // Clean default marking by entity type
+  return defaultMarkingsFlat
+    .map((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
+    .map((defaultMarkings) => {
       return Promise.all(defaultMarkings.map(async (d) => {
         return {
           entity_type: d.entity_type,
