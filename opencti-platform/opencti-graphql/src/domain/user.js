@@ -32,7 +32,7 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -52,14 +52,14 @@ import {
   BYPASS,
   executionContext,
   INTERNAL_USERS,
-  isOnlyOrgaAdmin,
+  INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
+  isOnlyOrgaAdmin,
   isUserHasCapability,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
-  VIRTUAL_ORGANIZATION_ADMIN,
-  INTERNAL_USERS_WITHOUT_REDACTED
+  VIRTUAL_ORGANIZATION_ADMIN
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -343,36 +343,35 @@ export const checkUserCanShareMarkings = async (context, user, markingsToShare) 
   }
 };
 
-const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
-  const groupIds = userGroups.map((r) => r.id);
+const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarkings, capabilities) => {
   const userCapabilities = capabilities.map((c) => c.name);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
   const allMarkingsPromise = getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
-  let userMarkings;
+  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, userGroups);
+  let computeUserMarkings;
   let maxShareableMarkings;
   const [all, defaultMarkings] = await Promise.all([allMarkingsPromise, defaultGroupMarkingsPromise]);
-
   if (shouldBypass) { // Bypass user have all platform markings and can share all markings
-    userMarkings = all;
+    computeUserMarkings = all;
     maxShareableMarkings = all;
   } else { // Standard user have markings related to his groups
-    userMarkings = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
-
+    if (userMarkings) {
+      computeUserMarkings = userMarkings;
+    } else {
+      const groupIds = userGroups.map((g) => g.id);
+      computeUserMarkings = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+    }
     const notShareableMarkings = userGroups.flatMap(
       ({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none')
         .map(({ type }) => type)
     );
-
     maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
-
     const allShareableMarkings = all.filter(({ definition_type }) => (
       !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }) => type === definition_type)
-    )).filter(({ id }) => userMarkings.some((m) => m.id === id)).map(({ id }) => id);
+    )).filter(({ id }) => computeUserMarkings.some((m) => m.id === id)).map(({ id }) => id);
     maxShareableMarkings = [...maxShareableMarkings.map(({ value }) => value), ...allShareableMarkings];
   }
-
-  const computedMarkings = computeAvailableMarkings(userMarkings, all);
+  const computedMarkings = computeAvailableMarkings(computeUserMarkings, all);
   return { user: computedMarkings, all, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
@@ -1344,11 +1343,6 @@ const virtualOrganizationAdminCapability = {
   created_at: Date.now(),
   updated_at: Date.now()
 };
-const getStackTrace = () => {
-  const obj = {};
-  Error.captureStackTrace(obj, getStackTrace);
-  return obj.stack;
-};
 
 export const isSensitiveChangesAllowed = (userId, roles) => {
   if (userId === OPENCTI_ADMIN_UUID) {
@@ -1357,76 +1351,153 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
   return roles.some(({ can_manage_sensitive_config }) => can_manage_sensitive_config);
 };
 
+export const buildCompleteUsers = async (context, clients) => {
+  const resolvedUsers = [];
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
+  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
+  const individualsPromise = listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
+  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
+  const relations = await listAllRelations(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
+  const users = new Map();
+  const roleIds = new Set();
+  const groupIds = new Set();
+  const capabilityIds = new Set();
+  const organizationIds = new Set();
+  const groupsRoles = new Map();
+  const groupsMarkings = new Map();
+  const rolesCapabilities = new Map();
+  for (let index = 0; index < relations.length; index += 1) {
+    const { fromId, entity_type, toId } = relations[index];
+    // group <- RELATION_ACCESSES_TO -> marking
+    if (entity_type === RELATION_ACCESSES_TO) {
+      if (groupsMarkings.has(fromId)) {
+        const markings = groupsMarkings.get(fromId);
+        groupsMarkings.set(toId, [...(markings ?? []), toId]);
+      } else {
+        groupsMarkings.set(fromId, [toId]);
+      }
+    }
+    // user <- RELATION_PARTICIPATE_TO -> organization
+    if (entity_type === RELATION_PARTICIPATE_TO) {
+      organizationIds.add(toId);
+      if (users.has(fromId)) {
+        const user = users.get(fromId);
+        if (user.organizationIds) {
+          user.organizationIds.push(toId);
+        } else {
+          user.organizationIds = [toId];
+        }
+        users.set(fromId, user);
+      } else {
+        users.set(fromId, { organizationIds: [toId] });
+      }
+    }
+    // user <- RELATION_MEMBER_OF -> group
+    if (entity_type === RELATION_MEMBER_OF) {
+      groupIds.add(toId);
+      if (users.has(fromId)) {
+        const user = users.get(fromId);
+        if (user.groupIds) {
+          user.groupIds.push(toId);
+        } else {
+          user.groupIds = [toId];
+        }
+        users.set(fromId, user);
+      } else {
+        users.set(fromId, { groupIds: [toId] });
+      }
+    }
+    // role <- RELATION_HAS_CAPABILITY -> capability
+    if (entity_type === RELATION_HAS_CAPABILITY) {
+      roleIds.add(fromId);
+      capabilityIds.add(toId);
+      if (rolesCapabilities.has(fromId)) {
+        const capabilities = rolesCapabilities.get(fromId);
+        rolesCapabilities.set(fromId, [...(capabilities ?? []), toId]);
+      } else {
+        rolesCapabilities.set(fromId, [toId]);
+      }
+    }
+    // group <- RELATION_HAS_ROLE -> role
+    if (entity_type === RELATION_HAS_ROLE) {
+      groupIds.add(fromId);
+      roleIds.add(toId);
+      if (groupsRoles.has(fromId)) {
+        const roles = groupsRoles.get(fromId);
+        groupsRoles.set(toId, [...(roles ?? []), toId]);
+      } else {
+        groupsRoles.set(fromId, [toId]);
+      }
+    }
+  }
+  const ids = [...Array.from(groupIds), ...Array.from(roleIds), ...Array.from(organizationIds), ...Array.from(capabilityIds)];
+  const resolvedObject = await internalFindByIds(context, SYSTEM_USER, ids, { toMap: true });
+  const individuals = await individualsPromise;
+  const individualMap = new Map();
+  for (let indexIndividual = 0; indexIndividual < individuals.length; indexIndividual += 1) {
+    const individual = individuals[indexIndividual];
+    individualMap.set(individual.contact_information, individual);
+  }
+  for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
+    const client = clients[userIndex];
+    const user = users.get(client.internal_id);
+    const groups = user.groupIds.map((groupId) => resolvedObject[groupId]);
+    const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat()).map((roleId) => resolvedObject[roleId]);
+    const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat()).map((markingId) => markingsMap.get(markingId));
+    const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
+    const capabilities = roles.map((role) => rolesCapabilities.get(role.internal_id)).flat().map((capabilityId) => resolvedObject[capabilityId]);
+    // Force push the bypass for default admin
+    const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
+    if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
+      const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+      capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
+    }
+    const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
+    const organizations = (user.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId]);
+    const userOrganizationIds = organizations.map((m) => m.internal_id);
+    const isUserPlatform = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+    const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
+    const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
+    const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
+    const administrated_organizations = organizations.filter((o) => (o.authorized_authorities ?? []).includes(client.id));
+    const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
+    const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
+    const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
+    const marking = await getUserAndGlobalMarkings(context, client.id, groups, markings, capabilities);
+    if (administrated_organizations.length > 0) {
+      capabilities.push(virtualOrganizationAdminCapability);
+    }
+    resolvedUsers.push({
+      ...client,
+      ...canManageSensitiveConfig,
+      roles,
+      capabilities,
+      default_hidden_types,
+      groups,
+      organizations,
+      administrated_organizations,
+      individual_id: individualMap.get(client.user_email)?.internal_id,
+      inside_platform_organization: isUserPlatform,
+      allowed_marking: marking.user,
+      all_marking: marking.all,
+      default_marking: marking.default,
+      max_shareable_marking: marking.max_shareable,
+      effective_confidence_level,
+      no_creators,
+      restrict_delete,
+    });
+  }
+  return resolvedUsers;
+};
+
 export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
   }
-  const initialCallStack = getStackTrace();
-  logApp.debug('Building complete user', { client, stack: initialCallStack });
-  const contactInformationFilter = {
-    mode: 'and',
-    filters: [{ key: 'contact_information', values: [client.user_email] }],
-    filterGroups: [],
-  };
-  // find user corresponding individual (we need only to get the first one)
-  const individualArgs = { first: 1, indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
-  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
-  const organizationsPromise = listAllToEntitiesThroughRelations(
-    context,
-    SYSTEM_USER,
-    client.id,
-    RELATION_PARTICIPATE_TO,
-    ENTITY_TYPE_IDENTITY_ORGANIZATION,
-    { withInferences: true }
-  );
-  const userGroupsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
-  const userOrganizationIds = organizations.map((m) => m.internal_id);
-  const isUserPlatform = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
-  const roles = await getRoles(context, groups);
-  const capabilities = await getCapabilities(context, client.id, roles);
-  const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-  const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
-  const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
-  if (administrated_organizations.length > 0) {
-    capabilities.push(virtualOrganizationAdminCapability);
-  }
-  const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
-
-  // Default hidden types
-  const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
-  const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
-  const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
-
-  // effective confidence level
-  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
-
-  // Other groups attribute
-  const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
-  const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
-
-  const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-
-  return {
-    ...client,
-    ...canManageSensitiveConfig,
-    roles,
-    capabilities,
-    default_hidden_types,
-    groups,
-    organizations,
-    administrated_organizations,
-    individual_id: individualId,
-    inside_platform_organization: isUserPlatform,
-    allowed_marking: marking.user,
-    all_marking: marking.all,
-    default_marking: marking.default,
-    max_shareable_marking: marking.max_shareable,
-    effective_confidence_level,
-    no_creators,
-    restrict_delete,
-  };
+  const users = await buildCompleteUsers(context, [client]);
+  return users[0];
 };
 
 export const resolveUserByIdFromCache = async (context, id) => {
