@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime, timezone
 
 from pythonjsonlogger import jsonlogger
 
@@ -9,8 +9,8 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
         if not log_record.get("timestamp"):
             # This doesn't use record.created, so it is slightly off
-            now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            log_record["timestamp"] = now
+            now = datetime.now(tz=timezone.utc)
+            log_record["timestamp"] = now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         if log_record.get("level"):
             log_record["level"] = log_record["level"].upper()
         else:
