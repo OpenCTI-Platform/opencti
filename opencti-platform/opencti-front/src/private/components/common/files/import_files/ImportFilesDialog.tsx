@@ -9,7 +9,7 @@ import { graphql } from 'react-relay';
 import LinearProgress from '@mui/material/LinearProgress';
 import { ImportFilesDialogGlobalMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import { ImportFilesDialogEntityMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
-import { UploadFileOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutline, CheckCircleOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -62,6 +62,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
+  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
 
   const steps = ['Select files', 'Import options'];
 
@@ -84,6 +85,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
     BulkResult,
   } = useBulkCommit<ImportFilesDialogGlobalMutation | ImportFilesDialogEntityMutation>({
     commit: commitGlobal,
+    type: 'files',
   });
 
   const handleSubmit = (values: SubmittedFormValues, { setErrors }) => {
@@ -96,13 +98,26 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
     const variables = files.map((file) => (entityId
       ? { id: entityId, file, fileMarkings: fileMarkingIds }
       : { file, fileMarkings: fileMarkingIds }));
+    setUploadedFiles(files.map(({ name }) => ({ name })));
 
     bulkCommit({
       commit,
       variables,
-      onStepError: (error) => {
+      onStepError: (error, { file: { name } }) => {
         handleErrorInForm(error, setErrors);
+        setUploadedFiles((prevUploadedFiles) => {
+          return prevUploadedFiles.map((prevFile) => {
+            return prevFile.name === name ? { name, status: 'error' } : prevFile;
+          });
+        });
         setUploadStatus('success');
+      },
+      onStepCompleted: ({ file: { name } }) => {
+        setUploadedFiles((prevUploadedFiles) => {
+          return prevUploadedFiles.map((prevFile, i) => {
+            return prevFile.name === name ? { name, status: 'success' } : prevFile;
+          });
+        });
       },
       onCompleted: () => {
         setUploadStatus('success');
@@ -161,9 +176,25 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
                     value={(bulkCurrentCount / bulkCount) * 100}
                     valueBuffer={((bulkCurrentCount / bulkCount) * 100) + 10}
                   />
-                  {bulkCurrentCount && (<Typography style={{ flexShrink: 0 }}>{`${bulkCurrentCount}/${bulkCount}`}</Typography>)}
+                  <Typography style={{ flexShrink: 0 }}>{`${bulkCurrentCount}/${bulkCount}`}</Typography>
                 </Box>
-
+                <List>
+                  {uploadedFiles.map((file) => (
+                    <ListItem
+                      divider
+                      secondaryAction={
+                        file.status === 'error' ? (
+                          <CancelOutlined fontSize="small" color="error"/>
+                        ) : (
+                          <CheckCircleOutlined fontSize="small" color={file.status ?? 'inherit'}/>
+                        )
+                      }
+                    >
+                      <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
+                      {file.name}
+                    </ListItem>
+                  ))}
+                </List>
                 {uploadStatus === 'success' && (
                   <BulkResult variablesToString={(v) => v} />
                 )}

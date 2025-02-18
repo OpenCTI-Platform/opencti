@@ -37,8 +37,6 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
     onChange(files.filter((file) => file.name !== name));
   };
 
-  console.log(files);
-
   return (
     <Grid container>
       <Grid item xs={12}>

@@ -14,8 +14,8 @@ interface UseBulkCommitArgs<M extends MutationParameters> {
 
 interface UseBulkCommit_commits<M extends MutationParameters> {
   variables: VariablesOf<M>[]
-  onStepError?: (err: Error) => void
-  onStepCompleted?: () => void
+  onStepError?: (err: Error, v: VariablesOf<M>) => void
+  onStepCompleted?: (v: VariablesOf<M>) => void
   onCompleted?: (total: number) => void
   commit?: (args: UseMutationConfig<M>) => void
 }
@@ -73,30 +73,34 @@ function useBulkCommit<T extends MutationParameters>({
         onError: (error) => {
           setCurrentCount((c) => c + 1);
           setInError((err) => [...err, [variable as VariablesOf<T>, error]]);
-          onStepError?.(error);
+          onStepError?.(error, variable);
         },
         onCompleted: () => {
           setCurrentCount((c) => c + 1);
-          onStepCompleted?.();
+          onStepCompleted?.(variable);
         },
       });
     });
   };
 
-  const createdLabel = type === 'entities'
-    ? t_i18n('entities created')
-    : t_i18n('observables created');
+  const successLabel: Record<ObjectType, string> = {
+    entities: t_i18n('entities created'),
+    observables: t_i18n('observables created'),
+    files: t_i18n('files imported'),
+  };
 
-  const notCreatedLabel = type === 'entities'
-    ? t_i18n('entities not created')
-    : t_i18n('observables not created');
+  const errorLabel: Record<ObjectType, string> = {
+    entities: t_i18n('entities not created'),
+    observables: t_i18n('observables not created'),
+    files: t_i18n('files not imported'),
+  };
 
   const BulkResult = ({ variablesToString }: BulkResultProps<T>) => (
     <>
       {currentCount === count && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
           <Typography>
-            {currentCount - inError.length} {createdLabel}
+            {currentCount - inError.length} {successLabel[type]}
           </Typography>
         </Alert>
       )}
@@ -112,7 +116,7 @@ function useBulkCommit<T extends MutationParameters>({
           }}
         >
           <Typography>
-            {inError.length} {notCreatedLabel}
+            {inError.length} {errorLabel[type]}
           </Typography>
           <List dense>
             {inError.map(([variables, error], index) => {
