@@ -167,7 +167,7 @@ const platformUsers = (context: AuthContext) => {
     return buildCompleteUsers(context, users);
   };
   const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
-    return values.filter((user) => user.internal_id !== instance.internal_id);
+    return (values ?? []).filter((user) => user.internal_id !== instance.internal_id);
   };
   const refreshUser = async (values: AuthUser[], instance: BasicStoreCommon | BasicStoreCommon[]) => {
     const users = Array.isArray(instance) ? instance : [instance];
@@ -177,9 +177,12 @@ const platformUsers = (context: AuthContext) => {
     refreshValues.push(...reloadedUsers);
     return refreshValues;
   };
-  const addUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
-    const user = await resolveUserById(context, instance.internal_id);
-    values.push(user);
+  const addUser = async (values: AuthUser[] | null, instance: BasicStoreCommon) => {
+    if (values) { // If values not preloaded yet
+      const user = await resolveUserById(context, instance.internal_id);
+      values.push(user);
+      return values;
+    }
     return values;
   };
   return { values: null, fn: loadUsers, remove: removeUser, refresh: refreshUser, add: addUser };
