@@ -141,16 +141,18 @@ const CsvMappers = () => {
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const file = event.target.files[0];
-    fetchQuery(csvMappersImportQuery, { file })
-      .toPromise()
-      .then((data) => {
-        const { csvMapperAddInputFromImport } = data as CsvMappersImportQuery$data;
-        setImportedFileData(csvMapperAddInputFromImport);
-      })
-      .catch((e) => {
-        const { errors } = (e as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
-      });
+    if (file) {
+      fetchQuery(csvMappersImportQuery, { file })
+        .toPromise()
+        .then((data) => {
+          const { csvMapperAddInputFromImport } = data as CsvMappersImportQuery$data;
+          setImportedFileData(csvMapperAddInputFromImport);
+        })
+        .catch((e) => {
+          const { errors } = (e as unknown as RelayError).res;
+          MESSAGING$.notifyError(errors.at(0)?.message);
+        });
+    }
   };
 
   return queryRefMappers && queryRefSchemaAttributes
