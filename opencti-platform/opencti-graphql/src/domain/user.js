@@ -83,7 +83,7 @@ export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
-const roleSessionRefresh = async (context, user, roleId) => {
+const computeImpactedUsersAndSessions = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = groupsRoles.map((group) => group.fromId);
@@ -92,7 +92,18 @@ const roleSessionRefresh = async (context, user, roleId) => {
   const userIds = R.uniq(usersGroups.map((u) => u.fromId));
   // Mark for refresh all impacted sessions
   const sessions = await findSessionsForUsers(userIds);
+  const users = await internalFindByIds(context, user, userIds);
+  return { sessions, users };
+};
+
+const notifySessionsUsersRefresh = async (context, user, sessions, users) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
+};
+
+const roleSessionRefresh = async (context, user, roleId) => {
+  const { sessions, users } = await computeImpactedUsersAndSessions(context, user, roleId);
+  await notifySessionsUsersRefresh(context, user, sessions, users);
 };
 
 export const usersSessionRefresh = async (userIds) => {
@@ -100,8 +111,8 @@ export const usersSessionRefresh = async (userIds) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
-export const userSessionRefresh = async (userId) => {
-  return usersSessionRefresh([userId]);
+export const userSessionRefresh = async (context, user, userId) => {
+  return usersSessionRefresh(context, user, [userId]);
 };
 
 export const userWithOrigin = (req, user) => {
@@ -402,7 +413,7 @@ export const findCapabilities = (context, user, args) => {
 };
 
 export const roleDelete = async (context, user, roleId) => {
-  await roleSessionRefresh(context, user, roleId);
+  const { sessions, users } = await computeImpactedUsersAndSessions(context, user, roleId);
   const deleted = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   await publishUserAction({
     user,
@@ -412,7 +423,8 @@ export const roleDelete = async (context, user, roleId) => {
     message: `deletes role \`${deleted.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: deleted }
   });
-  return roleId;
+  await notifySessionsUsersRefresh(context, user, sessions, users);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].DELETE_TOPIC, deleted, user).then(() => roleId);
 };
 
 export const roleCleanContext = async (context, user, roleId) => {
@@ -993,7 +1005,7 @@ export const userDelete = async (context, user, userId) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted }
   });
   await killUserSessions(userId);
-  return userId;
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
 };
 
 export const userAddRelation = async (context, user, userId, input) => {

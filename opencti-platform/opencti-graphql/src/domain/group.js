@@ -16,7 +16,6 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -29,7 +28,7 @@ const groupSessionRefresh = async (context, user, groupId) => {
   const members = await listAllFromEntitiesThroughRelations(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
   const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
-  await Promise.all(members.map((m) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, m, user)));
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
 };
 
 export const findById = (context, user, groupId) => {
@@ -127,7 +126,7 @@ export const groupDelete = async (context, user, groupId) => {
     message: `deletes group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input: group }
   });
-  return groupId;
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].DELETE_TOPIC, group, user).then(() => groupId);
 };
 
 export const groupEditField = async (context, user, groupId, input) => {
@@ -174,7 +173,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 
 export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
@@ -220,7 +219,7 @@ export const groupEditDefaultMarking = async (context, user, groupId, defaultMar
   }
   const patch = { default_marking: existingDefaultMarking };
   const { element } = await patchAttribute(context, user, groupId, ENTITY_TYPE_GROUP, patch);
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
 
 // -- CONTEXT --

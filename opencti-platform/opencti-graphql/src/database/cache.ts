@@ -1,14 +1,13 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
+import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixId, StixObject } from '../types/stix-common';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
-import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
@@ -19,9 +18,6 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
-  // Users must be reset depending on roles and groups modifications
-  [ENTITY_TYPE_ROLE]: [ENTITY_TYPE_USER],
-  [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
 };
 
 const cache: any = {};
@@ -72,13 +68,34 @@ export const resetCacheForEntity = (entityType: string) => {
   });
 };
 
-export const dynamicCacheUpdater = (instance: StoreEntity | StoreRelation) => {
-  // Dynamic update of filtering cache
-  const currentFiltersValues = cache[ENTITY_TYPE_RESOLVED_FILTERS]?.values;
-  if (currentFiltersValues?.has(instance.internal_id)) {
-    const convertedInstance = convertStoreToStix(instance);
-    currentFiltersValues.set(instance.internal_id, convertedInstance);
+const handleCacheForEntity = async (instance: BasicStoreCommon, fn: string) => {
+  const types = [instance.entity_type, ...(STORE_ENTITIES_LINKS[instance.entity_type] ?? [])];
+  for (let index = 0; index < types.length; index += 1) {
+    const type = types[index];
+    if (cache[type]) {
+      if (cache[type][fn]) {
+        logApp.debug(`${fn} reset cache for entity`, { type, entityType: instance.entity_type });
+        cache[type].values = await cache[type][fn](cache[type].values, instance);
+      } else {
+        logApp.debug('Simple reset cache for entity', { type, entityType: instance.entity_type });
+        cache[type].values = undefined;
+      }
+    } else {
+      // This entity type is not part of the caching system
+    }
   }
+};
+
+export const removeCacheForEntity = async (instance: BasicStoreCommon) => {
+  await handleCacheForEntity(instance, 'remove');
+};
+
+export const addCacheForEntity = async (instance: BasicStoreCommon) => {
+  await handleCacheForEntity(instance, 'add');
+};
+
+export const refreshCacheForEntity = async (instance: BasicStoreCommon) => {
+  await handleCacheForEntity(instance, 'refresh');
 };
 
 // not exported because mixes 2 types

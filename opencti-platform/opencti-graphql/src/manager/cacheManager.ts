@@ -1,8 +1,8 @@
 import { Promise as Bluebird } from 'bluebird';
 import * as R from 'ramda';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
-import type { AuthContext } from '../types/user';
+import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCacheForEntity } from '../database/cache';
+import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { FilterMode, OrderingMode } from '../generated/graphql';
@@ -31,7 +31,16 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import type { BasicStoreRelation, BasicStreamEntity, BasicTriggerEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity, StoreEntity, StoreRelation } from '../types/store';
+import type {
+  BasicStoreCommon,
+  BasicStoreRelation,
+  BasicStreamEntity,
+  BasicTriggerEntity,
+  BasicWorkflowStatusEntity,
+  BasicWorkflowTemplateEntity,
+  StoreEntity,
+  StoreRelation
+} from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
@@ -43,6 +52,11 @@ import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, typ
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
+import { convertStoreToStix } from '../database/stix-converter';
+
+const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
+const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
+const DELETES_TOPIC = `${TOPIC_PREFIX}*DELETE_TOPIC`;
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -94,7 +108,15 @@ const platformResolvedFilters = (context: AuthContext) => {
     }
     return new Map();
   };
-  return { values: null, fn: reloadFilters };
+  const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
+    const currentFiltersValues = values;
+    if (currentFiltersValues?.has(instance.internal_id)) {
+      const convertedInstance = convertStoreToStix(instance);
+      currentFiltersValues.set(instance.internal_id, convertedInstance);
+    }
+    return currentFiltersValues;
+  };
+  return { values: null, fn: reloadFilters, refresh: refreshFilter };
 };
 const platformConnectors = (context: AuthContext) => {
   const reloadConnectors = () => {
@@ -139,12 +161,34 @@ const platformRunningPlaybooks = (context: AuthContext) => {
   return { values: null, fn: reloadPlaybooks };
 };
 const platformUsers = (context: AuthContext) => {
-  const reloadUsers = async () => {
-    const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
-    const allUserIds = users.map((user) => user.internal_id);
-    return Bluebird.map(allUserIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY }).filter((u) => u != null);
+  const loadUsers = async (ids?: string[]): Promise<AuthUser[]> => {
+    let userIds;
+    if (ids) {
+      userIds = ids;
+    } else {
+      const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
+      userIds = users.map((user) => user.internal_id);
+    }
+    return Bluebird.map(userIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY })
+      .filter((u) => u != null);
   };
-  return { values: null, fn: reloadUsers };
+  const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
+    return values.filter((user) => user.internal_id !== instance.internal_id);
+  };
+  const refreshUser = async (values: AuthUser[], instance: BasicStoreCommon | BasicStoreCommon[]) => {
+    const users = Array.isArray(instance) ? instance : [instance];
+    const userIds = users.map((u) => u.internal_id);
+    const refreshValues = values.filter((user) => !userIds.includes(user.internal_id));
+    const reloadedUsers = await loadUsers(userIds);
+    refreshValues.push(...reloadedUsers);
+    return refreshValues;
+  };
+  const addUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
+    const user = await resolveUserById(context, instance.internal_id);
+    values.push(user);
+    return values;
+  };
+  return { values: null, fn: loadUsers, remove: removeUser, refresh: refreshUser, add: addUser };
 };
 const platformSettings = (context: AuthContext) => {
   const reloadSettings = async () => {
@@ -217,8 +261,12 @@ const platformPublicDashboards = (context: AuthContext) => {
   return { values: null, fn: reloadPublicDashboards };
 };
 
+type SubEvent = { instance: StoreEntity | StoreRelation };
+
 const initCacheManager = () => {
-  let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
+  let subscribeAdd: { topic: string; unsubscribe: () => void; };
+  let subscribeEdit: { topic: string; unsubscribe: () => void; };
+  let subscribeDelete: { topic: string; unsubscribe: () => void; };
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
     writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
@@ -237,31 +285,27 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
   };
-  const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
-    const { instance } = event;
-    // Invalid cache if any entity has changed.
-    resetCacheForEntity(instance.entity_type);
-    // Smart dynamic cache loading (for filtering ...)
-    dynamicCacheUpdater(instance);
-  };
+
   return {
     init: () => initCacheContent(), // Use for testing
     start: async () => {
       initCacheContent();
-      // Listen pub/sub configuration events
-      subscribeIdentifier = await pubSubSubscription<{ instance: StoreEntity | StoreRelation }>(`${TOPIC_PREFIX}*`, async (event) => {
-        await resetCacheContent(event);
+      subscribeAdd = await pubSubSubscription<SubEvent>(ADDS_TOPIC, async (event) => {
+        await addCacheForEntity(event.instance);
+      });
+      subscribeEdit = await pubSubSubscription<SubEvent>(EDITS_TOPIC, async (event) => {
+        await refreshCacheForEntity(event.instance);
+      });
+      subscribeDelete = await pubSubSubscription<SubEvent>(DELETES_TOPIC, async (event) => {
+        await removeCacheForEntity(event.instance);
       });
       logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
     },
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
-      if (subscribeIdentifier) {
-        try {
-          subscribeIdentifier.unsubscribe();
-        } catch { /* dont care */
-        }
-      }
+      try { subscribeAdd.unsubscribe(); } catch { /* dont care */ }
+      try { subscribeEdit.unsubscribe(); } catch { /* dont care */ }
+      try { subscribeDelete.unsubscribe(); } catch { /* dont care */ }
       return true;
     }
   };
