@@ -15,7 +15,7 @@ import {
   PLATFORM_VERSION
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, refreshCacheForEntity } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -741,9 +741,6 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
-  if (refreshSessionNeeded) { // refresh session after update
-    await userSessionRefresh(userId);
-  }
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -755,7 +752,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
-  await userSessionRefresh(userId);
+  if (refreshSessionNeeded) {
+    await userSessionRefresh(userId);
+    await refreshCacheForEntity(element); // Me edit must reset the local cache directly
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -863,7 +863,6 @@ export const meEditField = async (context, user, userId, inputs, password = null
       }
     }
   });
-
   return userEditField(context, user, userId, inputs);
 };
 
@@ -1416,7 +1415,8 @@ export const buildCompleteUsers = async (context, clients) => {
   for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
     const client = clients[userIndex];
     const user = users.get(client.internal_id);
-    const groups = user.groupIds.map((groupId) => resolvedObject[groupId]).filter((e) => isNotEmptyField(e));
+    const groups = user.groupIds.map((groupId) => resolvedObject[groupId])
+      .filter((e) => isNotEmptyField(e));
     const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat())
       .map((roleId) => resolvedObject[roleId]).filter((e) => isNotEmptyField(e));
     const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat())
