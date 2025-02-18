@@ -230,7 +230,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 path="/knowledge/*"
                 element={(
                   <div key={forceUpdate}>
-                    <SectorKnowledge sector={sector} />
+                    <SectorKnowledge sectorData={sector} />
                   </div>
                 )}
               />

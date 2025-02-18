@@ -10,12 +10,15 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { AdministrativeAreaKnowledge_administrativeArea$key } from './__generated__/AdministrativeAreaKnowledge_administrativeArea.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const administrativeAreaKnowledgeFragment = graphql`
   fragment AdministrativeAreaKnowledge_administrativeArea on AdministrativeArea {
     id
     name
     x_opencti_aliases
+    entity_type
   }
 `;
 
@@ -29,6 +32,8 @@ const AdministrativeAreaKnowledge = ({
     administrativeAreaData,
   );
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(administrativeArea.entity_type, schema);
   return (
     <>
       <Routes>
@@ -56,6 +61,19 @@ const AdministrativeAreaKnowledge = ({
             <StixDomainObjectKnowledge
               stixDomainObjectId={administrativeArea.id}
               stixDomainObjectType="Administrative-Area"
+            />
+          }
+        />
+        <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={administrativeArea.id}
+              relationshipTypes={allRelationshipsTypes}
+              entityLink={link}
+              defaultStartTime={administrativeArea.startTime}
+              defaultStopTime={administrativeArea.stopTime}
+              allDirections
             />
           }
         />
