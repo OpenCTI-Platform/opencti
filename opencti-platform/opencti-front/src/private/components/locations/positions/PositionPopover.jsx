@@ -12,6 +12,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import useHelper from '../../../../utils/hooks/useHelper';
 import { QueryRenderer } from '../../../../relay/environment';
 import PositionPopoverDeletion from './PositionPopoverDeletion';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -21,19 +22,14 @@ Transition.displayName = 'TransitionSlide';
 const PositionPopover = ({ id }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const deletion = useDeletion({ handleClose });
+  const { handleOpenDelete } = deletion;
+
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
@@ -67,10 +63,8 @@ const PositionPopover = ({ id }) => {
         </Menu>
         <PositionPopoverDeletion
           positionId={id}
-          displayDelete={displayDelete}
           handleClose={handleClose}
-          handleCloseDelete={handleCloseDelete}
-        />
+          deletion={deletion} />
         <QueryRenderer
           query={positionEditionQuery}
           variables={{ id }}
