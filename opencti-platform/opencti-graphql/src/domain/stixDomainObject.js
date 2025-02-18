@@ -11,7 +11,7 @@ import {
   updateAttributeFromLoadedWithRefs,
   validateCreatedBy,
 } from '../database/middleware';
-import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -40,7 +40,6 @@ import { usersSessionRefresh } from './user';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
-import { resetCacheForEntity } from '../database/cache';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -234,8 +233,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
       const grantedGroupsInput = input.find((i) => i.key === 'grantable_groups');
       if (grantedGroupsInput) {
         await usersSessionRefresh(updatedElem.authorized_authorities);
-        // TODO INVALIDATE CACHE???!!!!
-        resetCacheForEntity(ENTITY_TYPE_USER);
+        const users = await storeLoadByIds(context, user, updatedElem.authorized_authorities, ENTITY_TYPE_USER);
+        await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
       }
     }
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);

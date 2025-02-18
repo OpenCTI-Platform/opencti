@@ -31,7 +31,6 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE 
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
-import { notify } from '../../database/redis';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
@@ -39,6 +38,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage-helper';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { notify } from '../../database/redis';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -171,7 +171,7 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
     await elDeleteDraftContextFromUsers(context, user, draftId);
     const usersIds = usersWithDraftContext.map((u) => u.id);
     await usersSessionRefresh(usersIds);
-    await Promise.all(usersWithDraftContext.map((u) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, u, user)));
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, usersWithDraftContext, user);
   }
 };
 
