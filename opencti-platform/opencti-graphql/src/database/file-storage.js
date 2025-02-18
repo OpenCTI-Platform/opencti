@@ -446,7 +446,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
     const createConnectorWork = async (connector) => {
       const contextOutOfDraft = { ...context, draft_context: '' };
       const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
-      const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id);
+      const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
       return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector) => createConnectorWork(connector)));
