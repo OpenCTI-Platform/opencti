@@ -89,7 +89,7 @@ const NodeVictimology = ({ data }: NodeProps) => {
       </div>
       <Button
         component={Link}
-        to={`${entityLink}/victimology`}
+        to={`${entityLink}/all`}
         variant="contained"
         size="small"
         classes={{ root: classes.buttonExpand }}

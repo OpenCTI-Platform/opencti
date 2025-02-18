@@ -89,7 +89,7 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
       </div>
       <Button
         component={Link}
-        to={`${entityLink}/observables`}
+        to={`${entityLink}/all`}
         variant="contained"
         size="small"
         classes={{ root: classes.buttonExpand }}

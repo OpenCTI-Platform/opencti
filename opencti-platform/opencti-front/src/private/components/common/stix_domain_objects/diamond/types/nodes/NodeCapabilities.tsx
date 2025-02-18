@@ -89,7 +89,7 @@ const NodeCapabilities = ({ data }: NodeProps) => {
       </div>
       <Button
         component={Link}
-        to={`${entityLink}/attack_patterns`}
+        to={`${entityLink}/all`}
         variant="contained"
         size="small"
         classes={{ root: classes.buttonExpand }}
