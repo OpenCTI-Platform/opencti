@@ -16,7 +16,7 @@ import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
 import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_subType.graphql';
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
-import { StatusScope } from './__generated__/SubTypeQuery.graphql';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -54,6 +54,15 @@ export const subTypeWorkflowEditionFragment = graphql`
         color
       }
     }
+    statusesRequestAccess {
+          id
+          order
+          scope
+          template {
+              name
+              color
+          }
+      } 
   }
 `;
 
@@ -61,7 +70,7 @@ interface SubTypeEditionContainerProps {
   handleClose: () => void
   queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>
   open?: boolean
-  scope: StatusScope
+  scope: string
 }
 
 const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
@@ -78,6 +87,12 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
       subTypeWorkflowEditionFragment,
       queryData.subType,
     ) as SubTypeWorkflow_subType$data;
+
+    let statusesToDisplay = subType.statuses;
+    if (scope === StatusScopeEnum.REQUEST_ACCESS) {
+      statusesToDisplay = subType.statusesRequestAccess;
+    }
+
     return (
       <Drawer
         open={open}
@@ -89,7 +104,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
             component="nav"
             aria-labelledby="nested-list-subheader"
           >
-            {subType.statuses?.filter((status) => Boolean(status.template))
+            {statusesToDisplay?.filter((status) => Boolean(status.template))
               .map((status, idx) => {
                 if (status === null || status.template === null) {
                   return (

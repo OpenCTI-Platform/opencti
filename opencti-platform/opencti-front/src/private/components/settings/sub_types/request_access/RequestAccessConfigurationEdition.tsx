@@ -4,14 +4,16 @@ import Drawer from '@components/common/drawer/Drawer';
 import { Form, Formik } from 'formik';
 import { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
 import Button from '@mui/material/Button';
-import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
 import { FormikConfig } from 'formik/dist/types';
-import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/request_access/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
 import {
   RequestAccessConfigurationEditionMutation,
   RequestAccessConfigureInput,
 } from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEditionMutation.graphql';
 import StatusTemplateFieldScoped from '@components/settings/sub_types/request_access/StatusTemplateFieldScoped';
+import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
+import {
+  RequestAccessConfigurationEdition_requestAccess$key,
+} from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -20,43 +22,13 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
         requestAccessConfigure(input: $input) {
-            approved_status {
-                id
-                template {
-                    id
-                    color
-                    name
-                }
-            }
-            declined_status {
-                id
-                template {
-                    id
-                    color
-                    name
-                }
-            }
-            approval_admin {
-                id
-                type
-                name
-            }
-        }
-    }
-`;
-
-export const requestAccessConfigurationEditionQuery = graphql`
-    query RequestAccessConfigurationEditionQuery($id: String!) {
-        entitySetting(id: $id) {
-            ...RequestAccessStatusFragment_entitySetting
+            ...RequestAccessStatusFragment_requestAccess
         }
     }
 `;
 
 export const requestAccessConfigurationFragment = graphql`
-  fragment RequestAccessConfigurationEdition_entitySettings on EntitySetting {
-    id
-    requestAccessConfiguration {
+  fragment RequestAccessConfigurationEdition_requestAccess on RequestAccessConfiguration {
         approved_status {
             id
             template {
@@ -75,35 +47,33 @@ export const requestAccessConfigurationFragment = graphql`
         }
         approval_admin {
             id
-            type
             name
         }
-    }
   }
 `;
 
 interface RequestAccessWorkflowProps {
   handleClose: () => void;
-  queryRef: RequestAccessStatusFragment_entitySetting$key
+  data: RequestAccessConfigurationEdition_requestAccess$key
   open?: boolean
 }
 
 interface RequestAccessEditionFormInputs {
   acceptedTemplate: StatusTemplateFieldData
   declinedTemplate: StatusTemplateFieldData
-  approvalAdmin: OptionMember
+  approvalAdmin: GroupFieldOption
 }
 
 const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflowProps> = ({
   handleClose,
   open,
-  queryRef,
+  data,
 }) => {
   const { t_i18n } = useFormatter();
-  const queryData = useFragment(requestAccessConfigurationFragment, queryRef);
-  const approvedTemplateStatus = queryData?.requestAccessConfiguration?.approved_status?.template;
-  const declinedTemplateStatus = queryData?.requestAccessConfiguration?.declined_status?.template;
-  const adminData = queryData?.requestAccessConfiguration?.approval_admin;
+  const requestAccessData = useFragment(requestAccessConfigurationFragment, data);
+  const approvedTemplateStatus = requestAccessData.approved_status?.template;
+  const declinedTemplateStatus = requestAccessData.declined_status?.template;
+  const adminData = requestAccessData.approval_admin;
   const initialValues: RequestAccessEditionFormInputs = {
     acceptedTemplate: {
       color: approvedTemplateStatus ? approvedTemplateStatus.color : '#fff',
@@ -118,7 +88,6 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     approvalAdmin: {
       label: adminData && adminData[0] ? adminData[0].name : '',
       value: adminData && adminData[0] ? adminData[0].id : '',
-      type: adminData && adminData[0] ? adminData[0].type : 'Group',
     },
   };
 
@@ -133,8 +102,8 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: RequestAccessConfigureInput = {
-      approve_status_template_id: values.acceptedTemplate.value || '', // FIXME remove || ''
-      decline_status_template_id: values.declinedTemplate.value || '', // FIXME remove || ''
+      approved_status_id: values.acceptedTemplate.value || '', // FIXME remove || ''
+      declined_status_id: values.declinedTemplate.value || '', // FIXME remove || ''
       approval_admin: [values.approvalAdmin.value],
     };
     commit({
@@ -185,11 +154,10 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 style={fieldSpacingContainerStyle}
                 scope='REQUEST_ACCESS'
               />
-              <ObjectMembersField
+              <GroupField
                 name="approvalAdmin"
                 label={t_i18n('Select authorized members')}
                 onChange={setFieldValue}
-                required={true}
                 multiple={false}
                 style={fieldSpacingContainerStyle}
               />
