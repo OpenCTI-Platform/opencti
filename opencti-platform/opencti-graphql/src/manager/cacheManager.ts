@@ -170,7 +170,7 @@ const platformUsers = (context: AuthContext) => {
   const refreshUser = async (values: AuthUser[], instance: BasicStoreCommon | BasicStoreCommon[]) => {
     const users = Array.isArray(instance) ? instance : [instance];
     const userIds = users.map((u) => u.internal_id);
-    const refreshValues = values.filter((user) => !userIds.includes(user.internal_id));
+    const refreshValues = (values ?? []).filter((user) => !userIds.includes(user.internal_id));
     const reloadedUsers = await loadUsers(userIds);
     refreshValues.push(...reloadedUsers);
     return refreshValues;
