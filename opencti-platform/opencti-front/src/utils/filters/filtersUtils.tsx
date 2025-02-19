@@ -363,6 +363,9 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
       );
   }
   if (filterType === 'date') {
+    if (filterOperator === 'within') {
+      return value;
+    }
     if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
       return nsd(subDays(value, 1));
     }

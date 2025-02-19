@@ -77,6 +77,7 @@ interface BasicNumberInputProps {
   helpers?: handleFilterHelpers;
   filterValues: string[];
   label: string;
+  disabled?: boolean;
 }
 
 const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
@@ -119,11 +120,13 @@ const BasicTextInput: FunctionComponent<BasicNumberInputProps> = ({
   helpers,
   filterValues,
   label,
+  disabled = false,
 }) => {
   return (
     <TextField
       variant="outlined"
       size="small"
+      disabled={disabled}
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
       label={label}
@@ -392,13 +395,24 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     if (fDefinition?.type === 'date') {
       if (filterOperator === 'within') {
         return (
-          <BasicTextInput
-            filter={filter}
-            filterKey={filterKey}
-            filterValues={filterValues}
-            helpers={helpers}
-            label={filterLabel}
-          />
+          <>
+            <div style={{ marginBottom: 10 }}>{t_i18n('From')}</div>
+            <BasicTextInput
+              filter={filter}
+              filterKey={filterKey}
+              filterValues={filterValues}
+              helpers={helpers}
+              label={t_i18n('From')}
+            />
+            <div style={{ marginTop: 15, marginBottom: 10 }}>{t_i18n('To')}</div>
+            <BasicTextInput
+              filter={filter}
+              filterKey={filterKey}
+              filterValues={['now']}
+              label={t_i18n('To')}
+              disabled
+            />
+          </>
         );
       }
       return <BasicFilterDate />;

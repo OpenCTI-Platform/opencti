@@ -2261,11 +2261,12 @@ const buildLocalMustFilter = async (validFilter) => {
           },
         };
         valuesFiltering.push(bool);
-      } else {
+      } else { // range operators
         if (arrayKeys.length > 1) {
-          throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+          throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
         }
-        valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } }); // range operators
+        const rangeOperator = operator === 'within' ? 'gte' : operator;
+        valuesFiltering.push({ range: { [headKey]: { [rangeOperator]: values[i] } } });
       }
     }
   }
