@@ -2,7 +2,7 @@ import { beforeAll, afterAll, describe, expect, it } from 'vitest';
 import { now } from 'moment';
 import { GraphQLError } from 'graphql/index';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
-import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, TEST_ORGANIZATION, GREEN_GROUP } from '../../utils/testQuery';
+import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, TEST_ORGANIZATION, GREEN_GROUP, inPlatformContext } from '../../utils/testQuery';
 import type { ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import { addThreatActorIndividual } from '../../../src/modules/threatActorIndividual/threatActorIndividual-domain';
@@ -50,7 +50,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
         name: threatActorIndividualName,
         description: 'Created by user in org platform'
       };
-      const threatActor = await addThreatActorIndividual(testContext, userInPlatformOrg, inputOne);
+      const threatActor = await addThreatActorIndividual(inPlatformContext, userInPlatformOrg, inputOne);
 
       expect(threatActor.id).toBeDefined();
       try {
@@ -84,7 +84,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
         description: 'Created again by user with less marking',
       };
       try {
-        await addThreatActorIndividual(testContext, userInPlatformOrg, inputNext);
+        await addThreatActorIndividual(inPlatformContext, userInPlatformOrg, inputNext);
         expect(true, 'An exception should been raised before this line').toBeFalsy();
       } catch (e) {
         const exception = e as GraphQLError;

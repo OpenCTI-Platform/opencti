@@ -39,6 +39,7 @@ export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
 export const DATA_FILE_TEST = 'DATA-TEST-STIX2_v2.json';
 
 export const testContext = executionContext('testing');
+export const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
 export const generateBasicAuth = (email?: string, password?: string) => {
   const buff = Buffer.from(`${email ?? API_EMAIL}:${password ?? API_PASSWORD}`, 'utf-8');
