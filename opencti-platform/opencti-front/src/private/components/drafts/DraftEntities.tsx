@@ -31,6 +31,18 @@ const draftEntitiesLineFragment = graphql`
             x_opencti_order
             x_opencti_color
         }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+            ... on Identity {
+                id
+                name
+                entity_type
+            }
+        }
         creators {
             id
             name

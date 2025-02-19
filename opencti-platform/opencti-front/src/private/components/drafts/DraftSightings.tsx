@@ -27,6 +27,18 @@ const draftSightingsLineFragment = graphql`
             draft_id
             draft_operation
         }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         status {
             id
             order
