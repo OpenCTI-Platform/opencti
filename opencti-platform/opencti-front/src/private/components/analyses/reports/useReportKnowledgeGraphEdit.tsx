@@ -6,7 +6,7 @@ const reportKnowledgeGraphEdit = graphql`
   mutation useReportKnowledgeGraphEditMutation($id: ID!, $input: [EditInput]!) {
     reportEdit(id: $id) {
       fieldPatch(input: $input) {
-        id
+        ...ReportKnowledgeGraph_fragment
       }
     }
   }

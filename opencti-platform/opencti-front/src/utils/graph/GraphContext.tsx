@@ -38,6 +38,7 @@ interface GraphContextValue {
   stixCoreObjectTypes: string[]
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
+  positions: OctiGraphPositions
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -202,6 +203,7 @@ export const GraphProvider = ({
     stixCoreObjectTypes,
     markingDefinitions,
     creators,
+    positions: data.positions,
     graphRef2D,
     graphRef3D,
     graphState,
@@ -214,7 +216,7 @@ export const GraphProvider = ({
     setSelectedNodes,
     addSelectedNode,
     removeSelectedNode,
-  }), [graphState, selectedLinks, selectedNodes]);
+  }), [graphState, selectedLinks, selectedNodes, data, graphData]);
 
   return (
     <GraphContext.Provider value={value}>

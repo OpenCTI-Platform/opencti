@@ -15,6 +15,7 @@ const useGraphInteractions = () => {
     removeNode: contextRemoveNode,
     addLink: contextAddLink,
     removeLink: contextRemoveLink,
+    positions,
     graphRef2D,
     graphRef3D,
     graphState,
@@ -290,23 +291,19 @@ const useGraphInteractions = () => {
   };
 
   const addNode = (data: ObjectToParse) => {
-    contextAddNode(buildNode(data, {}));
-    setTimeout(() => zoomToFit(), 200); // To refresh graph.
+    contextAddNode(buildNode(data, positions));
   };
 
   const removeNode = (nodeId: string) => {
     contextRemoveNode(nodeId);
-    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
   const addLink = (data: ObjectToParse) => {
     contextAddLink(buildLink(data)); // TODO does it work with nested?
-    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
   const removeLink = (linkId: string) => {
     contextRemoveLink(linkId);
-    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
   return {
