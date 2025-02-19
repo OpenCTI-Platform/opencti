@@ -13,7 +13,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     fontSize: 'xx-small',
-    height: 14,
+    height: 18,
     display: 'inline-flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -29,7 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   containerFloating: {
     float: 'left',
     fontSize: 'xx-small',
-    height: 14,
+    height: 18,
     display: 'inline-flex',
     justifyContent: 'center',
     alignItems: 'center',
