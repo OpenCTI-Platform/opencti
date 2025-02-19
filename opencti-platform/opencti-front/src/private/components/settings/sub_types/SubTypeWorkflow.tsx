@@ -17,6 +17,7 @@ import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_su
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusScope } from './__generated__/SubTypeQuery.graphql';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -54,6 +55,15 @@ export const subTypeWorkflowEditionFragment = graphql`
         color
       }
     }
+    statusesRequestAccess {
+          id
+          order
+          scope
+          template {
+              name
+              color
+          }
+      } 
   }
 `;
 
@@ -78,10 +88,16 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
       subTypeWorkflowEditionFragment,
       queryData.subType,
     ) as SubTypeWorkflow_subType$data;
+
+    let statusesToDisplay = subType.statuses;
+    if (scope === StatusScopeEnum.REQUEST_ACCESS) {
+      statusesToDisplay = subType.statusesRequestAccess;
+    }
+
     return (
       <Drawer
         open={open}
-        title={`${t_i18n('Workflow of')} ${t_i18n(`entity_${subType.label}`)}`}
+        title={`${t_i18n('Workflow of')} ${t_i18n(`entity_${subType.label}`)} for ${scope}`}
         onClose={handleClose}
       >
         <>
@@ -89,7 +105,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
             component="nav"
             aria-labelledby="nested-list-subheader"
           >
-            {subType.statuses?.filter((status) => Boolean(status.template))
+            {statusesToDisplay?.filter((status) => Boolean(status.template))
               .map((status, idx) => {
                 if (status === null || status.template === null) {
                   return (

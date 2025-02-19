@@ -43,6 +43,7 @@ export const statusEditFragment = graphql`
   fragment SubTypeWorkflowStatusEdit_subType on Status {
     id
     order
+    scope
     template {
       id
       name
@@ -83,9 +84,11 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
         label: data.template.name,
         value: data.template.id,
         color: data.template.color,
+
       }
       : null,
     order: String(data.order) || '',
+    scope: data.scope || '',
   };
 
   const [commit] = useApiMutation(statusEditFieldPatchMutation);

@@ -59,6 +59,15 @@ export const subTypeQuery = graphql`
           color
         }
       }
+      statusesRequestAccess {
+            id
+            order
+            scope
+            template {
+                name
+                color
+            }
+        }
       
     }
   }
@@ -154,6 +163,10 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                     {t_i18n('Request access workflow')}
                     <SubTypeStatusPopover subTypeId={subType.id} scope='REQUEST_ACCESS'/>
                   </Typography>
+                  <ItemStatusTemplate
+                    statuses={subType.statusesRequestAccess}
+                    disabled={false}
+                  />
                 </div>
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
