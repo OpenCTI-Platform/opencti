@@ -46,10 +46,7 @@ export const generateBasicAuth = (email?: string, password?: string) => {
 };
 
 export const createHttpClient = (email?: string, password?: string) => {
-  const jar = new CookieJar();
   return wrapper(axios.create({
-    withCredentials: true,
-    jar,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -523,6 +520,7 @@ export const editorQuery = async (request: any, options: QueryOption = {}) => {
 export const securityQuery = async (request: any) => {
   return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
 };
+
 export const participantQuery = async (request: any) => {
   return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
 };

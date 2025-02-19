@@ -35,14 +35,14 @@ export const authDirectiveBuilder = (directiveName) => {
             const { resolve = defaultFieldResolver } = fieldConfig;
             fieldConfig.resolve = (source, args, context, info) => {
               // Get user from the session
-              const { user } = context;
+              const { user, otp_mandatory } = context;
               if (!user) {
                 throw AuthRequired();
               } // User must be authenticated.
               const isProtectedMethod = info.fieldName !== 'logout'
                 && info.fieldName !== 'otpLogin' && info.fieldName !== 'otpActivation' && info.fieldName !== 'otpGeneration';
               if (isProtectedMethod) {
-                if (user.otp_mandatory) {
+                if (otp_mandatory) {
                   if (!user.otp_activated) {
                     throw OtpRequiredActivation();
                   }

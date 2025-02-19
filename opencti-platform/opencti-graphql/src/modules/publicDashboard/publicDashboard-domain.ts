@@ -296,6 +296,7 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
   const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
   const timeSeriesParameters = dataSelection.map((selection) => {
     return { field: selection.date_attribute, filters: selection.filters };
   });
@@ -315,6 +316,7 @@ export const publicStixRelationshipsMultiTimeSeries = async (
 ) => {
   const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const timeSeriesParameters = dataSelection.map((selection) => {
     const filters = {
@@ -347,6 +349,7 @@ export const publicStixCoreObjectsNumber = async (
 ): Promise<NumberResult> => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -371,6 +374,7 @@ export const publicStixRelationshipsNumber = async (
 ): Promise<NumberResult> => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -395,6 +399,7 @@ export const publicStixCoreObjectsDistribution = async (
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
@@ -468,6 +473,7 @@ export const publicStixRelationshipsDistribution = async (
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
@@ -562,6 +568,7 @@ export const publicBookmarks = async (
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -581,6 +588,8 @@ export const publicStixCoreObjects = async (
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user; // context.user is used in standard api
+  context.user_inside_platform_organization = true;
+
   const selection = dataSelection[0];
   const { filters } = selection;
 
@@ -606,6 +615,7 @@ export const publicStixRelationships = async (
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
+  context.user_inside_platform_organization = true;
 
   const selection = dataSelection[0];
   const { filters } = selection;
