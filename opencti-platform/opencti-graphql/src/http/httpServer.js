@@ -16,9 +16,11 @@ import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
-import { executionContext } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess } from '../config/errors';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -87,7 +89,9 @@ const createHttpServer = async () => {
           group_ids: wsSession.user?.group_ids,
           organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
         };
-        context.user = { ...wsSession.user, origin };
+        const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+        const logged = platformUsers.get(wsSession?.user.id);
+        context.user = { ...wsSession?.user, ...logged, origin };
         return context;
       }
       throw ForbiddenAccess('User must be authenticated');
