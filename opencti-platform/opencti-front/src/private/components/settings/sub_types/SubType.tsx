@@ -35,7 +35,7 @@ const entitySettingSubscription = graphql`
 `;
 
 export const subTypeQuery = graphql`
-  query SubTypeQuery($id: String!) {
+  query SubTypeQuery($id: String!){
     subType(id: $id) {
       id
       label
@@ -47,19 +47,12 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
-        ...RequestAccessStatusFragment_entitySetting
-        ...RequestAccessConfigurationEdition_entitySettings
-      }
-      statuses {
-        id
-        order
-        scope
-        template {
-          name
-          color
+        requestAccessConfiguration{
+            ...RequestAccessStatusFragment_requestAccess
+            ...RequestAccessConfigurationEdition_requestAccess
         }
       }
-      
+      ...ItemStatusTemplate_global
     }
   }
 `;
@@ -97,7 +90,6 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { searchTerm } = viewStorage;
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
-  // const scope = subType.statuses.map((n) => n.scope);
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
@@ -142,24 +134,30 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                   </Typography>
                 </div>
                 <ItemStatusTemplate
-                  statuses={subType.statuses}
+                  data={subType}
                   disabled={!subType.workflowEnabled}
+                  scope={StatusScopeEnum.GLOBAL}
                 />
               </>
             }
-            {isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+            {subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
               && <>
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} scope='REQUEST_ACCESS'/>
+                    <SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.REQUEST_ACCESS}/>
                   </Typography>
+                  <ItemStatusTemplate
+                    data={subType}
+                    disabled={false}
+                    scope={StatusScopeEnum.REQUEST_ACCESS}
+                  />
                 </div>
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access action configuration')}
-                    <RequestAccessConfigurationPopover id={subType.id} data={subType.settings}/>
-                    <RequestAccessStatus data={subType.settings}/>
+                    <RequestAccessConfigurationPopover data={subType.settings.requestAccessConfiguration}/>
+                    <RequestAccessStatus data={subType.settings.requestAccessConfiguration}/>
                   </Typography>
                 </div>
               </>

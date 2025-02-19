@@ -20,6 +20,7 @@ import {
   type StatusTemplate,
 } from '../../../src/generated/graphql';
 import type { BasicStoreEntity } from '../../../src/types/store';
+import { logApp } from '../../../src/config/conf';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 
@@ -79,8 +80,6 @@ describe('Request access domain  - initialized status', async () => {
       orderMode: OrderingMode.Asc,
     };
 
-    resetCacheForEntity(ENTITY_TYPE_STATUS);
-
     const result = await findAllStatuses(testContext, ADMIN_USER, args);
     expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeTruthy();
     expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeFalsy();
@@ -106,19 +105,23 @@ describe('Request access domain  - initialized status', async () => {
   });
 
   it('should get all status template by GLOBAL scope', async () => {
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
     const args:QueryStatusTemplatesByStatusScopeArgs = {
       scope: StatusScope.Global
     };
     const globalTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
+    logApp.info('[TEST] globalTemplates', { globalTemplates });
     expect(globalTemplates?.some((template) => template?.name === 'GLOBAL_RFI')).toBeTruthy();
     expect(globalTemplates?.some((template) => template?.name === 'REQUEST_ACCESS_SCOPE')).toBeFalsy();
   });
 
   it('should get all status template by REQUEST_ACCESS scope', async () => {
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
     const args:QueryStatusTemplatesByStatusScopeArgs = {
       scope: StatusScope.RequestAccess
     };
     const requestAccessTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
+    logApp.info('[TEST] requestAccessTemplates', { requestAccessTemplates });
     expect(requestAccessTemplates?.some((template) => template?.name === 'GLOBAL_RFI')).toBeFalsy();
     expect(requestAccessTemplates?.some((template) => template?.name === 'REQUEST_ACCESS_SCOPE')).toBeTruthy();
   });

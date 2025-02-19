@@ -17,11 +17,11 @@ import {
   StatusOrdering,
   StatusScope,
   type StatusTemplate,
-  type StatusTemplateAddInput
+  type StatusTemplateAddInput,
 } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -60,7 +60,6 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
   return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };
-
 export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
   const getTypeStatusesFn = async () => {
     const args = {
@@ -79,25 +78,45 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     [SEMATTRS_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
-export const batchStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+
+// For now, we duplicate the method, there is a strange behavior with the batch loading.
+// For some reason when scope is an args of statuses and is called twice in the same graphQL query, first scope is applied for all.
+export const batchRequestAccessStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+  const batchStatusesByTypeFn = async () => {
+    const argsFilter = {
+      orderBy: StatusOrdering.Order,
+      orderMode: OrderingMode.Asc,
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.RequestAccess] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], argsFilter);
+    const statusesGrouped = R.groupBy((e) => e.type, statuses);
+    return types.map((type) => statusesGrouped[type] || []);
+  };
+  return telemetry(context, user, 'BATCH type statuses', {
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
+  }, batchStatusesByTypeFn);
+};
+
+export const batchGlobalStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
   const batchStatusesByTypeFn = async () => {
     const args = {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
       filters: {
         mode: FilterMode.And,
-        filters: [{ key: ['type'], values: types }],
+        filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.Global] }],
         filterGroups: [],
       },
       connectionFormat: false
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
-    logApp.info('[STATUS] statuses', { statuses });
-    const globalStatuses = statuses.filter((status: BasicWorkflowStatus) => {
-      return status.scope === undefined || status.scope === null || status.scope === StatusScope.Global;
-    });
-    logApp.info('[STATUS] globalStatuses', { globalStatuses });
-    const statusesGrouped = R.groupBy((e) => e.type, globalStatuses);
+    const statusesGrouped = R.groupBy((e) => e.type, statuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {

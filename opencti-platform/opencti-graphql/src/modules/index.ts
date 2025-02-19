@@ -130,5 +130,4 @@ import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
 import './savedFilter/savedFilter-graphql';
 import './requestAccess/requestAccess-graphql';
-// import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

@@ -2,9 +2,12 @@ import React from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { ArrowRightAltOutlined } from '@mui/icons-material';
-import { SubTypeQuery$data } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import Box from '@mui/material/Box';
+import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
+import { ItemStatusTemplate_global$key } from './__generated__/ItemStatusTemplate_global.graphql';
+import { StatusScopeEnum } from '../utils/statusConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -18,57 +21,104 @@ const useStyles = makeStyles(() => ({
     borderRadius: 4,
     width: 100,
   },
-  arrow: {
-    marginRight: 7,
-  },
-  statuses: {
+  container: {
     display: 'inline-flex',
     flexWrap: 'wrap',
+    alignItems: 'center',
   },
-  status: {
+  order: {
     display: 'inline-flex',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statuses: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
   },
 }));
 
 interface ItemStatusTemplateProps {
-  statuses: NonNullable<SubTypeQuery$data['subType']>['statuses'],
-  disabled: boolean
+  data: ItemStatusTemplate_global$key,
+  disabled: boolean,
+  scope: string,
 }
 
-const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => {
+const itemStatusTemplateGlobalFragment = graphql`
+ fragment ItemStatusTemplate_global on SubType {
+   statuses {
+     id
+     scope
+     order
+     template {
+       id
+       name
+       color
+     }
+   }
+   statusesRequestAccess {
+       id
+       order
+       scope
+       template {
+           id
+           name
+           color
+       }
+   }
+ }
+`;
+
+const ItemStatusTemplate = ({ data, disabled, scope }: ItemStatusTemplateProps) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  if (disabled || statuses.length === 0) {
+  const statusesData = useFragment(itemStatusTemplateGlobalFragment, data);
+
+  let statuses = statusesData.statuses ?? [];
+  if (scope === StatusScopeEnum.REQUEST_ACCESS) {
+    statuses = statusesData.statusesRequestAccess ?? [];
+  }
+
+  if (disabled) {
     return (
       <Chip
         classes={{ root: classes.chip }}
         variant="outlined"
-        label={disabled ? t_i18n('Disabled') : t_i18n('Unknown')}
+        label={t_i18n('Disabled')}
       />
     );
   }
 
+  const statusByOrder = Object.values(Object.groupBy(statuses, (({ order }) => order)));
   return (
-    <div className={classes.statuses}>
-      {statuses.map((status, idx) => (
-        <div key={status.id} className={classes.status}>
-          <Chip
-            classes={{ root: classes.chip }}
-            variant="outlined"
-            label={status.template?.name}
-            style={{
-              color: status.template?.color,
-              borderColor: status.template?.color,
-              backgroundColor: hexToRGB(
-                status.template?.color ?? '#000000',
-              ),
-            }}
-          />
-          {idx < statuses.length - 1
-            && (
-              <div className={classes.arrow}>
-                <ArrowRightAltOutlined />
-              </div>
+    <div className={classes.container}>
+      {statusByOrder.map((statusesForIndex, order) => (
+        <div key={`statuses-order-${order}`} className={classes.order}>
+          <div className={classes.statuses}>
+            {
+              statusesForIndex?.map((status) => (
+                <div key={status.id}>
+                  <Chip
+                    classes={{ root: classes.chip }}
+                    variant="outlined"
+                    label={status.template?.name}
+                    style={{
+                      color: status.template?.color,
+                      borderColor: status.template?.color,
+                      backgroundColor: hexToRGB(
+                        status.template?.color ?? '#000000',
+                      ),
+                    }}
+                  />
+                </div>
+              ))
+            }
+          </div>
+          {
+            order < statusByOrder.length - 1 && (
+              <Box sx={{ display: 'flex', marginRight: 1 }}>
+                <ArrowRightAltOutlined/>
+              </Box>
             )
           }
         </div>
@@ -76,5 +126,4 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
     </div>
   );
 };
-
 export default ItemStatusTemplate;

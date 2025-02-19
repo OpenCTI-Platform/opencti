@@ -76,6 +76,14 @@ const SUB_TYPE_FIND_BY_ID_QUERY = gql`
                     color
                 }
             }
+            statusesRequestAccess {
+                id
+                order
+                template {
+                    name
+                    color
+                }
+            }
         }
     }
 `;
@@ -187,11 +195,18 @@ describe('SubType resolver for RFI use case', () => {
 
     expect(rfiEntitySettingsWithWorkflow?.data?.subType.workflowEnabled).toBeTruthy();
 
-    // only workflow statuses should be in statuses, not request-access one
+    // only workflow 'GLOBAL' scope statuses should be in statuses, not request-access one
     const workflowStatuses = rfiEntitySettingsWithWorkflow?.data?.subType.statuses;
     expect(workflowStatuses.some((status: any) => status.template.name === 'NEW')).toBeTruthy();
     expect(workflowStatuses.some((status: any) => status.template.name === 'IN_PROGRESS')).toBeTruthy();
     expect(workflowStatuses.some((status: any) => status.template.name === 'DECLINED')).toBeFalsy();
     expect(workflowStatuses.some((status: any) => status.template.name === 'APPROVED')).toBeFalsy();
+
+    // only workflow 'REQUEST_ACCESS' scope statuses should be in statusesRequestAccess, not workflow one
+    const requestAccessStatuses = rfiEntitySettingsWithWorkflow?.data?.subType.statusesRequestAccess;
+    expect(requestAccessStatuses.some((status: any) => status.template.name === 'NEW')).toBeTruthy();
+    expect(requestAccessStatuses.some((status: any) => status.template.name === 'IN_PROGRESS')).toBeFalsy();
+    expect(requestAccessStatuses.some((status: any) => status.template.name === 'DECLINED')).toBeTruthy();
+    expect(requestAccessStatuses.some((status: any) => status.template.name === 'APPROVED')).toBeTruthy();
   });
 });

@@ -56,7 +56,7 @@ describe('StixRelationship', () => {
       },
     });
     const relationshipsNumber = await relationshipsNumberResult.count;
-    expect(relationshipsNumber).toEqual(5);
+    expect(relationshipsNumber).toEqual(4);
     // 1 malware contained in report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7
     // + 1 in note--573f623c-bf68-4f19-9500-d618f0d00af0
     // + 1 in opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f

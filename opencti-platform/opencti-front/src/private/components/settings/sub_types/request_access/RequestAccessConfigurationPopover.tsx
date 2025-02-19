@@ -1,24 +1,15 @@
 import { Edit } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import React, { FunctionComponent, useState } from 'react';
-import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
-import RequestAccessConfigurationEdition, { requestAccessConfigurationEditionQuery } from '@components/settings/sub_types/request_access/RequestAccessConfigurationEdition';
-import { RequestAccessConfigurationEditionQuery } from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEditionQuery.graphql';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import RequestAccessConfigurationEdition from '@components/settings/sub_types/request_access/RequestAccessConfigurationEdition';
+import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 
 interface RequestAccessWorkflowEditionProps {
-  id: string
-  data: RequestAccessStatusFragment_entitySetting$key
+  data: RequestAccessConfigurationEdition_requestAccess$key
 }
 const RequestAccessConfigurationPopover: FunctionComponent<RequestAccessWorkflowEditionProps> = ({
-  id,
   data,
 }) => {
-  const queryRef = useQueryLoading<RequestAccessConfigurationEditionQuery>(
-    requestAccessConfigurationEditionQuery,
-    { id },
-  );
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
@@ -33,18 +24,12 @@ const RequestAccessConfigurationPopover: FunctionComponent<RequestAccessWorkflow
       >
         <Edit fontSize="small" />
       </IconButton>
-      {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} /> }
-        >
-          <RequestAccessConfigurationEdition
-            queryRef={data}
-            handleClose={handleCloseUpdate}
-            open={displayUpdate}
-          />
-        </React.Suspense>
-      )}
 
+      <RequestAccessConfigurationEdition
+        data={data}
+        handleClose={handleCloseUpdate}
+        open={displayUpdate}
+      />
     </>
   );
 };

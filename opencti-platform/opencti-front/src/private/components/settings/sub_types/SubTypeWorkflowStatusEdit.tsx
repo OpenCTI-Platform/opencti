@@ -43,6 +43,7 @@ export const statusEditFragment = graphql`
   fragment SubTypeWorkflowStatusEdit_subType on Status {
     id
     order
+    scope
     template {
       id
       name
@@ -83,6 +84,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
         label: data.template.name,
         value: data.template.id,
         color: data.template.color,
+
       }
       : null,
     order: String(data.order) || '',
@@ -97,6 +99,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
       { key: 'template_id', value: values.template?.value || '' },
       { key: 'order', value: values.order },
     ];
+
     commit({
       variables: {
         id: subTypeId,

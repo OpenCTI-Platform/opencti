@@ -8,7 +8,7 @@ import type { EditInput, EntitySettingFintelTemplatesArgs, QueryEntitySettingsAr
 import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypes } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -117,7 +117,6 @@ export const getTemplatesForSetting = async (
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
-  logApp.info('ANGIE - entitySettingsEditField', { entitySettingIds, input });
   return Promise.all(entitySettingIds.map((entitySettingId) => entitySettingEditField(context, user, entitySettingId, input)));
 };
 

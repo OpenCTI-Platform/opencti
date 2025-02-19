@@ -721,6 +721,7 @@ type SubType {
   id: ID!
   label: String!
   statuses: [Status!]!
+  statusesRequestAccess: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting
 }
@@ -12733,7 +12734,6 @@ enum RequestAccessType {
 
 type RequestAccessMember {
   id: ID!
-  type: String!
   name: String!
 }
 
@@ -12763,7 +12763,7 @@ input RequestAccessAddInput {
 }
 
 input RequestAccessConfigureInput {
-  approve_status_template_id: ID
-  decline_status_template_id: ID
+  approved_status_id: ID
+  declined_status_id: ID
   approval_admin: [ID]
 }
