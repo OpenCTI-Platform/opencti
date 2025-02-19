@@ -540,7 +540,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
     };
     if (settings.platform_organization) {
-      if (user.inside_platform_organization) {
+      if (context.user_inside_platform_organization) {
         // Data are visible independently of the organizations
         // Nothing to restrict.
       } else {

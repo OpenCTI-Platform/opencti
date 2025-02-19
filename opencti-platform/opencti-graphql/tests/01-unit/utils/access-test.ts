@@ -12,7 +12,7 @@ import type { BasicStoreCommon } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
-import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
+import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-common';
@@ -74,7 +74,7 @@ describe('Check organization access for element.', () => {
       platform_organization: undefined,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
   });
 
   it('should element not shared be allowed to user in platform organization', async () => {
@@ -89,7 +89,6 @@ describe('Check organization access for element.', () => {
     allOrgs.push(org as BasicStoreEntityOrganization);
 
     const user: Partial<AuthUser> = {
-      inside_platform_organization: true,
       organizations: allOrgs,
       internal_id: uuid()
     };
@@ -98,7 +97,7 @@ describe('Check organization access for element.', () => {
       platform_organization: PLATFORM_ORGANIZATION.name,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
   });
 
   it('should element not shared not be allowed to user in another organization', async () => {
@@ -113,7 +112,6 @@ describe('Check organization access for element.', () => {
     allOrgs.push(org as BasicStoreEntityOrganization);
 
     const user: Partial<AuthUser> = {
-      inside_platform_organization: false,
       organizations: allOrgs,
       internal_id: uuid()
     };
@@ -122,7 +120,7 @@ describe('Check organization access for element.', () => {
       platform_organization: PLATFORM_ORGANIZATION.name,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeFalsy();
+    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeFalsy();
   });
 
   it('should element shared to user organization be allowed', async () => {
@@ -139,7 +137,6 @@ describe('Check organization access for element.', () => {
     allOrgs.push(org as BasicStoreEntityOrganization);
 
     const user: Partial<AuthUser> = {
-      inside_platform_organization: false,
       organizations: allOrgs,
       internal_id: uuid()
     };
@@ -148,7 +145,7 @@ describe('Check organization access for element.', () => {
       platform_organization: PLATFORM_ORGANIZATION.name,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
   });
 });
 
@@ -158,7 +155,6 @@ describe('User access entity testing', async () => {
     internal_id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
     capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS }],
     organizations: [],
-    inside_platform_organization: true,
     allowed_marking: [],
     roles: [ADMINISTRATOR_ROLE],
     groups: [],
@@ -167,7 +163,6 @@ describe('User access entity testing', async () => {
   const user_is_not_allowed: Partial<AuthUser> = {
     id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f',
     internal_id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f',
-    inside_platform_organization: false,
     allowed_marking: [],
     roles: [ADMINISTRATOR_ROLE],
     groups: [],
@@ -215,19 +210,19 @@ describe('User access entity testing', async () => {
   } as BasicStoreCommon;
 
   it('user in auth members should access element', () => {
-    const hasAccess = checkUserCanAccessStixElement(user_is_allowed as AuthUser, report as StixObject, true);
+    const hasAccess = checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, report as StixObject, true);
     expect(hasAccess).toEqual(true);
   });
   it('User not in authorized members should not access STIX element', () => {
-    const hasAccess = checkUserCanAccessStixElement(user_is_not_allowed as AuthUser, report as StixObject, true);
+    const hasAccess = checkUserCanAccessStixElement(testContext, user_is_not_allowed as AuthUser, report as StixObject, true);
     expect(hasAccess).toEqual(false);
   });
   it('User in authorized members should access stored element', () => {
-    const hasAccess = checkUserFilterStoreElements(user_is_allowed as AuthUser, element as BasicStoreCommon, [], true);
+    const hasAccess = checkUserFilterStoreElements(testContext, user_is_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(true);
   });
   it('User not in authorized members should not access stored element', () => {
-    const hasAccess = checkUserFilterStoreElements(user_is_not_allowed as AuthUser, element as BasicStoreCommon, [], true);
+    const hasAccess = checkUserFilterStoreElements(testContext, user_is_not_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(false);
   });
 });

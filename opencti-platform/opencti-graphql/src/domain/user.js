@@ -1171,7 +1171,6 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
     const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
     context.req.session.user.otp_validated = isValidated;
-    context.req.session.user.otp_activated = true;
     return element;
   }
   throw AuthenticationFailure();
@@ -1195,14 +1194,11 @@ export const otpUserLogin = async (req, user, { code }) => {
   return isValidated;
 };
 
-const buildSessionUser = (origin, impersonate, provider, settings) => {
-  const user = impersonate ?? origin;
+const buildSessionUser = (user, provider) => {
   return {
     id: user.id,
     session_creation: now(),
-    otp_validated: user.otp_validated || (!user.otp_activated && !settings.otp_mandatory) || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
-    impersonate: impersonate !== undefined,
-    impersonate_user_id: impersonate !== undefined ? origin.id : null,
+    otp_validated: user.otp_validated || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
   };
 };
 
@@ -1225,7 +1221,6 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
 
 export const buildCompleteUsers = async (context, clients) => {
   const resolvedUsers = [];
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
   const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
@@ -1332,8 +1327,6 @@ export const buildCompleteUsers = async (context, clients) => {
     }
     const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
     const organizations = (user.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId]);
-    const userOrganizationIds = organizations.map((m) => m.internal_id);
-    const isUserPlatform = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
     const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
@@ -1355,9 +1348,7 @@ export const buildCompleteUsers = async (context, clients) => {
       organizations,
       administrated_organizations,
       otp_activated: client.otp_activated ?? false,
-      otp_mandatory: settings.otp_mandatory ?? false,
       individual_id: individualMap.get(client.user_email)?.internal_id,
-      inside_platform_organization: isUserPlatform,
       allowed_marking: marking.user,
       all_marking: marking.all,
       default_marking: marking.default,
@@ -1393,22 +1384,18 @@ export const resolveUserById = async (context, id) => {
 export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId, provider) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   if (platformUsers.has(tokenOrId)) {
-    const logged = platformUsers.get(tokenOrId);
+    let authenticatedUser = platformUsers.get(tokenOrId);
+    authenticatedUser.otp_validated = provider === AUTH_BEARER; // TODO What about basic?
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    validateUser(logged, settings);
+    validateUser(authenticatedUser, settings);
     const applicantId = req.headers['opencti-applicant-id'];
-    if (applicantId && isBypassUser(logged)) {
-      const impersonate = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
-      if (impersonate) {
-        const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
-        const authUser = { ...sessionUser, ...impersonate };
-        return userWithOrigin(req, authUser);
+    if (applicantId && isBypassUser(authenticatedUser)) {
+      authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
+      if (!authenticatedUser) {
+        throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
       }
-      throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
     }
-    const sessionUser = buildSessionUser(logged, undefined, provider, settings);
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
+    return userWithOrigin(req, authenticatedUser);
   }
   throw FunctionalError(`Cant identify with ${tokenOrId}`);
 };
@@ -1468,7 +1455,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   validateUser(logged, settings);
   // Build and save the session
-  const sessionUser = buildSessionUser(logged, null, provider, settings);
+  const sessionUser = buildSessionUser(logged, provider);
   req.session.user = sessionUser;
   req.session.session_provider = provider;
   req.session.save();
