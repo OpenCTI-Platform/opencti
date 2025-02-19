@@ -38,6 +38,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -165,11 +166,13 @@ const ImportContentComponent = ({
   importFiles,
   pendingFiles,
   isNewImportScreensEnabled,
+  inDraftOverview,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
+  const draftContext = useDraftContext();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   setTitle(t_i18n('Import: Import | Data'));
 
@@ -310,13 +313,12 @@ const ImportContentComponent = ({
   };
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
-
   return (
-    <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
-      <Breadcrumbs
+    <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
+      {!inDraftOverview && <Breadcrumbs
         elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-      />
-      {isNewImportScreensEnabled && <ImportMenu/>}
+                           />}
+      {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
         spacing={3}
@@ -373,7 +375,7 @@ const ImportContentComponent = ({
             </Paper>
           </div>
         </Grid>
-        <Grid item xs={12}>
+        {!inDraftOverview && (<Grid item xs={12}>
           <div style={{ height: '100%' }} className="break">
             <Typography
               variant="h4"
@@ -424,12 +426,12 @@ const ImportContentComponent = ({
               </List>
             </Paper>
           </div>
-        </Grid>
+        </Grid>)}
       </Grid>
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', validation_mode: 'workbench', configuration: '', objectMarking: [] }}
+          initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [] }}
           validationSchema={importValidation(t_i18n, !!selectedConnector?.configurations)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
@@ -469,7 +471,7 @@ const ImportContentComponent = ({
                       );
                     })}
                   </Field>
-                  {isDraftFeatureEnabled && (
+                  {!draftContext && isDraftFeatureEnabled && (
                     <Field
                       component={SelectField}
                       variant="standard"

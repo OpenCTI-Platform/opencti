@@ -22,6 +22,7 @@ import { getCurrentTab } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
+import Import from '../data/import/Import';
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -132,6 +133,12 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
+          <Tab
+            component={Link}
+            to={`/dashboard/drafts/${draftId}/files`}
+            value={`/dashboard/drafts/${draftId}/files`}
+            label={t_i18n('Files')}
+          />
         </Tabs>
       </Box>
       <Routes>
@@ -158,6 +165,10 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
         <Route
           path="/containers"
           element={<DraftEntities entitiesType={'Container'}/>}
+        />
+        <Route
+          path="/files"
+          element={<Import inDraftOverview/>}
         />
       </Routes>
     </>
