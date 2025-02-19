@@ -5,43 +5,38 @@ import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
-import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/request_access/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
+import { RequestAccessStatusFragment_requestAccess$key } from '@components/settings/sub_types/request_access/__generated__/RequestAccessStatusFragment_requestAccess.graphql';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { hexToRGB } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 
 export const requestAccessFragment = graphql`
-  fragment RequestAccessStatusFragment_entitySetting on EntitySetting {
-    id
-    target_type
-    requestAccessConfiguration {
-        approved_status {
-            id
-            template {
-                id
-                color
-                name
-            }
-        }
-        declined_status {
-            id
-            template {
-                id
-                color
-                name
-            }
-        }
-        approval_admin {
-            id
-            type
-            name
-        }
-    }
+  fragment RequestAccessStatusFragment_requestAccess on RequestAccessConfiguration {
+      approved_status {
+          id
+          template {
+              id
+              color
+              name
+          }
+      }
+      declined_status {
+          id
+          template {
+              id
+              color
+              name
+          }
+      }
+      approval_admin {
+          id
+          name
+      }
   }
 `;
 
 interface RequestAccessStatusProps {
-  data: RequestAccessStatusFragment_entitySetting$key
+  data: RequestAccessStatusFragment_requestAccess$key
 }
 
 const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
@@ -49,9 +44,9 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const dataResolved = useFragment(requestAccessFragment, data);
-  const approvedToRfiStatus = dataResolved?.requestAccessConfiguration?.approved_status;
-  const declinedToRfiStatus = dataResolved?.requestAccessConfiguration?.declined_status;
-  const admins = dataResolved?.requestAccessConfiguration?.approval_admin || [];
+  const approvedToRfiStatus = dataResolved?.approved_status;
+  const declinedToRfiStatus = dataResolved?.declined_status;
+  const admins = dataResolved?.approval_admin || [];
   return (
     <>
       <Typography variant="h3" gutterBottom={true}>
@@ -59,7 +54,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         <Chip
           key={approvedToRfiStatus?.id}
           variant="outlined"
-          label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : '-'}
+          label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : 'undefined'}
           style={{
             fontSize: 12,
             lineHeight: '12px',
@@ -71,7 +66,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             color: approvedToRfiStatus?.template?.color,
             borderColor: approvedToRfiStatus?.template?.color,
             backgroundColor: hexToRGB(
-              '#000000',
+              approvedToRfiStatus?.template?.color ?? '#000000',
             ),
           }}
         />
@@ -82,7 +77,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         <Chip
           key={declinedToRfiStatus?.id}
           variant="outlined"
-          label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : '-'}
+          label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : 'undefined'}
           style={{
             fontSize: 12,
             lineHeight: '12px',
