@@ -2,7 +2,7 @@ import { Button, Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { FormEvent, FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { Disposable, graphql, useLazyLoadQuery } from 'react-relay';
+import { Disposable, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../components/i18n';
 import AutocompleteField from '../../../components/AutocompleteField';
@@ -13,7 +13,6 @@ import { commitMutation, defaultCommitMutation, MESSAGING$ } from '../../../rela
 import type { Theme } from '../../../components/Theme';
 import ThemeCreator, { createThemeMutation, CustomThemeBaseType } from './ThemeCreator';
 import { ThemesEditor_themes$data } from './__generated__/ThemesEditor_themes.graphql';
-import { ThemesEditorAboutQuery } from './__generated__/ThemesEditorAboutQuery.graphql';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { ThemeCreatorCreateMutation } from './__generated__/ThemeCreatorCreateMutation.graphql';
@@ -62,14 +61,6 @@ const editThemeMutation = graphql`
   }
 `;
 
-const aboutQuery = graphql`
-  query ThemesEditorAboutQuery {
-    about {
-      version
-    }
-  }
-`;
-
 export interface ThemeType extends CustomThemeBaseType {
   id: string;
 }
@@ -77,6 +68,7 @@ export interface ThemeType extends CustomThemeBaseType {
 interface ThemesEditorProps {
   themes: ThemesEditor_themes$data['themes'];
   refetch: () => Disposable;
+  version: string;
   editContext?: {
     name: string,
     focusOn?: string,
@@ -87,13 +79,13 @@ interface ThemesEditorProps {
 const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   themes,
   refetch,
+  version,
   editContext,
   currentTheme,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
-  const { about } = useLazyLoadQuery<ThemesEditorAboutQuery>(aboutQuery, {});
   const [commit] = useApiMutation<ThemeCreatorCreateMutation>(
     createThemeMutation,
     undefined,
@@ -166,11 +158,14 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
           throw Error(t_i18n('Failed to parse file'));
         }
 
-        if (parsedFile.openCTI_version !== about?.version) {
-          throw Error(t_i18n('Incompatible version'));
+        if (parsedFile.openCTI_version !== version) {
+          throw Error(t_i18n('', {
+            id: 'Incompatible version. Please use version ....',
+            values: { version },
+          }));
         }
         if (parsedFile.type !== 'theme') {
-          throw Error(t_i18n('Incompatible type'));
+          throw Error(t_i18n('Invalid type. Please import OpenCTI theme-type only'));
         }
 
         themeValidator.validate(parsedFile?.configuration)
@@ -194,7 +189,7 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
   const handleExport = (exportTheme: CustomThemeBaseType) => {
     // create file in browser
     const json = JSON.stringify({
-      openCTI_version: about?.version,
+      openCTI_version: version,
       type: 'theme',
       configuration: exportTheme,
     }, null, 2);
@@ -256,7 +251,6 @@ const ThemesEditor: FunctionComponent<ThemesEditorProps> = ({
               justifyContent: 'flex-end',
             }}
             >
-              {/* <Button onClick={handleImport}>{t_i18n('Import')}</Button> */}
               <Button
                 component="label"
                 onChange={handleImport}

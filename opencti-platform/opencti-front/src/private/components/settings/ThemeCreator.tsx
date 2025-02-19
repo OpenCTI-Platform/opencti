@@ -130,6 +130,7 @@ const ThemeCreator: FunctionComponent<ThemeCreatorProps> = ({
       open={open}
       onClose={onClose}
       fullWidth={true}
+      PaperProps={{ elevation: 1 }}
     >
       <DialogTitle>{t_i18n('Create a theme')}</DialogTitle>
       <Formik
