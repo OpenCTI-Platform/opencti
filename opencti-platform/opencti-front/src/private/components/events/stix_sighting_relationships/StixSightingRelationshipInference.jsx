@@ -155,6 +155,7 @@ class StixSightingRelationshipInference extends Component {
             },
             node,
             node.color,
+            theme.palette.chip.main,
             ctx,
             false,
             node.disabled,
