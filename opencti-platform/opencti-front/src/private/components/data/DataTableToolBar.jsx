@@ -19,7 +19,6 @@ import Select from '@mui/material/Select';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
 import TableBody from '@mui/material/TableBody';
@@ -2033,10 +2032,10 @@ class DataTableToolBar extends Component {
                 </div>
               </Toolbar>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={this.state.displayTask}
                 keepMounted={true}
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 onClose={this.handleCloseTask.bind(this)}
                 fullWidth={true}
                 maxWidth="md"
@@ -2321,7 +2320,27 @@ class DataTableToolBar extends Component {
                   </Typography>
                   <List>
                     {selectedElementsList.map((element) => (
-                      <ListItem key={element.id} dense={true} divider={true}>
+                      <ListItem
+                        key={element.id}
+                        dense={true}
+                        divider={true}
+                        secondaryAction={
+                          <Radio
+                            checked={
+                                      keptEntityId
+                                        ? keptEntityId === element.id
+                                        : R.head(selectedElementsList).id === element.id
+                                  }
+                            onChange={this.handleChangeKeptEntityId.bind(
+                              this,
+                              element.id,
+                            )}
+                            value={element.id}
+                            name="keptEntityID"
+                            inputProps={{ 'aria-label': 'keptEntityID' }}
+                          />
+                          }
+                      >
                         <ListItemIcon>
                           <ItemIcon type={element.entity_type} />
                         </ListItemIcon>
@@ -2351,22 +2370,6 @@ class DataTableToolBar extends Component {
                             }
                           />
                         </div>
-                        <ListItemSecondaryAction>
-                          <Radio
-                            checked={
-                              keptEntityId
-                                ? keptEntityId === element.id
-                                : R.head(selectedElementsList).id === element.id
-                            }
-                            onChange={this.handleChangeKeptEntityId.bind(
-                              this,
-                              element.id,
-                            )}
-                            value={element.id}
-                            name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
-                          />
-                        </ListItemSecondaryAction>
                       </ListItem>
                     ))}
                   </List>
@@ -2487,12 +2490,11 @@ class DataTableToolBar extends Component {
                       </Alert>
                     )}
                     {this.state.enrichConnectors.map((connector) => (
-                      <ListItem key={connector.id} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <CloudRefreshOutline />
-                        </ListItemIcon>
-                        <ListItemText primary={connector.name} />
-                        <ListItemSecondaryAction>
+                      <ListItem
+                        key={connector.id}
+                        dense={true}
+                        divider={true}
+                        secondaryAction={
                           <MuiSwitch
                             checked={this.state.enrichSelected.includes(
                               connector.id,
@@ -2503,7 +2505,12 @@ class DataTableToolBar extends Component {
                             )}
                             inputProps={{ 'aria-label': 'controlled' }}
                           />
-                        </ListItemSecondaryAction>
+                      }
+                      >
+                        <ListItemIcon>
+                          <CloudRefreshOutline />
+                        </ListItemIcon>
+                        <ListItemText primary={connector.name} />
                       </ListItem>
                     ))}
                   </List>
@@ -2578,10 +2585,10 @@ class DataTableToolBar extends Component {
                 </div>
               </Drawer>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
               >
@@ -2699,10 +2706,10 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayShare}
                 onClose={() => this.setState({ displayShare: false })}
               >
@@ -2790,10 +2797,10 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayUnshare}
                 onClose={() => this.setState({ displayUnshare: false })}
               >

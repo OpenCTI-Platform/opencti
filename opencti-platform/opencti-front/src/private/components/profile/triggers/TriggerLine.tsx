@@ -7,7 +7,6 @@ import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
@@ -125,7 +124,17 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     ? formatTimeForToday(currentTime[1])
     : formatTimeForToday(currentTime[0]);
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <TriggerPopover
+          id={data.id}
+          paginationOptions={paginationOptions}
+          disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
+        />
+      }
+    >
       <ListItemIcon>
         {data.trigger_type === 'live' ? (
           <AlarmOnOutlined color="warning" />
@@ -250,13 +259,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
           </>
         }
       />
-      <ListItemSecondaryAction>
-        <TriggerPopover
-          id={data.id}
-          paginationOptions={paginationOptions}
-          disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
-        />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -268,7 +270,15 @@ export const TriggerLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <div classes={{ root: classes.itemIconDisabled }}>
+          <MoreVert/>
+        </div>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -292,9 +302,6 @@ export const TriggerLineDummy = ({
           </>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

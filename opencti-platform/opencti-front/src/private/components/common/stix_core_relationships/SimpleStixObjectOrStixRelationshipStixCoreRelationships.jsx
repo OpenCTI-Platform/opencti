@@ -126,7 +126,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
                       key={i}
                       dense={true}
                       divider={true}
-                      button={false}
+
                     >
                       <ListItemIcon classes={{ root: classes.itemIcon }}>
                         <Skeleton

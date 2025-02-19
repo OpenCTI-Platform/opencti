@@ -200,7 +200,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
             <Form>
               <Dialog
                 open={openContextual}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 onClose={handleCloseContextual}
                 fullWidth={true}
               >

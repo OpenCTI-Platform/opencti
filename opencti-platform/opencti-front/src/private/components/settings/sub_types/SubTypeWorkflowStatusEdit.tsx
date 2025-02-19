@@ -119,10 +119,10 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
         <Form>
           <Dialog
             open={open}
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             onClose={submitForm}
             fullWidth={true}
-            TransitionComponent={Transition}
+            slots={{ transition: Transition }}
           >
             <DialogTitle>{t_i18n('Update a status')}</DialogTitle>
             <DialogContent>

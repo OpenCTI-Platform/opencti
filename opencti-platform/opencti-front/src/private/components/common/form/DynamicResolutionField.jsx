@@ -177,7 +177,9 @@ const DynamicResolutionField = ({
             multiline={true}
             fullWidth={true}
             minRows={6}
-            inputProps={{ style: { lineHeight: '34px' } }}
+            slotProps={{
+              htmlInput: { style: { lineHeight: '34px' } },
+            }}
           />
         </Grid>
         <Grid item xs={7}>

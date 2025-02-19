@@ -120,9 +120,9 @@ const GroupPopover = ({ groupId, disabled = false }: { groupId: string, disabled
       <GroupEdition groupId={groupId} handleClose={handleCloseUpdate} open={displayUpdate} />
       <Dialog
         open={displayDelete}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

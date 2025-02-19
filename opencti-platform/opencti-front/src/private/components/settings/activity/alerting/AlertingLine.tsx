@@ -7,7 +7,6 @@ import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import { DataColumns } from '../../../../../components/list_lines';
@@ -226,7 +225,17 @@ export const AlertingLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <Box classes={{ root: classes.itemIconDisabled }}>
+          <IconButton disabled={true} aria-haspopup="true" size="large">
+            <MoreVert/>
+          </IconButton>
+        </Box>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30}/>
       </ListItemIcon>
@@ -250,11 +259,6 @@ export const AlertingLineDummy = ({
           </div>
                 }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert/>
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };
