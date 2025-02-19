@@ -681,6 +681,6 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
   const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
   const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
   if (!userMarkingIds.includes(markingId)) {
-    throw FunctionalError('User trying to create the data has missing markings', { id: markingId });
+    throw FunctionalError('User trying to create the data has missing markings', { id: markingId, user_markings: userMarkingIds });
   }
 };

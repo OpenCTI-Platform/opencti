@@ -280,7 +280,6 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
   };
-
   return {
     init: () => initCacheContent(), // Use for testing
     start: async () => {
