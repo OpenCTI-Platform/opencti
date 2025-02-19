@@ -80,10 +80,12 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
   }, getTypeStatusesFn);
 };
 
+// For now, we duplicate the method, there is a strange behavior with the batch loading.
+// For some reason when scope is an args of statuses and is called twice in the same graphQL query, first scope is applied for all.
 export const batchRequestAccessStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
   logApp.info('[STATUS] batchRequestAccessStatusesByType', { types });
   const batchStatusesByTypeFn = async () => {
-    const args = {
+    const argsFilter = {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
       filters: {
@@ -93,7 +95,7 @@ export const batchRequestAccessStatusesByType = async (context: AuthContext, use
       },
       connectionFormat: false
     };
-    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], argsFilter);
     const statusesGrouped = R.groupBy((e) => e.type, statuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
@@ -152,6 +154,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
 export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput[]) => {
+  logApp.info('ANGIE - statusEditField', { subTypeId, statusId, input });
   validateSetting(subTypeId, 'workflow_configuration');
   const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
   await publishUserAction({

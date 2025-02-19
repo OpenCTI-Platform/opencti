@@ -4,7 +4,6 @@ import Drawer from '@components/common/drawer/Drawer';
 import { Form, Formik } from 'formik';
 import { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
 import Button from '@mui/material/Button';
-import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
 import { FormikConfig } from 'formik/dist/types';
 import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/request_access/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
 import {
@@ -12,6 +11,7 @@ import {
   RequestAccessConfigureInput,
 } from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEditionMutation.graphql';
 import StatusTemplateFieldScoped from '@components/settings/sub_types/request_access/StatusTemplateFieldScoped';
+import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -38,7 +38,6 @@ const requestAccessConfigurationMutation = graphql`
             }
             approval_admin {
                 id
-                type
                 name
             }
         }
@@ -75,7 +74,6 @@ export const requestAccessConfigurationFragment = graphql`
         }
         approval_admin {
             id
-            type
             name
         }
     }
@@ -91,7 +89,7 @@ interface RequestAccessWorkflowProps {
 interface RequestAccessEditionFormInputs {
   acceptedTemplate: StatusTemplateFieldData
   declinedTemplate: StatusTemplateFieldData
-  approvalAdmin: OptionMember
+  approvalAdmin: GroupFieldOption
 }
 
 const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflowProps> = ({
@@ -118,7 +116,6 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     approvalAdmin: {
       label: adminData && adminData[0] ? adminData[0].name : '',
       value: adminData && adminData[0] ? adminData[0].id : '',
-      type: adminData && adminData[0] ? adminData[0].type : 'Group',
     },
   };
 
@@ -133,8 +130,8 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: RequestAccessConfigureInput = {
-      approve_status_template_id: values.acceptedTemplate.value || '', // FIXME remove || ''
-      decline_status_template_id: values.declinedTemplate.value || '', // FIXME remove || ''
+      approved_status_id: values.acceptedTemplate.value || '', // FIXME remove || ''
+      declined_status_id: values.declinedTemplate.value || '', // FIXME remove || ''
       approval_admin: [values.approvalAdmin.value],
     };
     commit({
@@ -185,11 +182,10 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 style={fieldSpacingContainerStyle}
                 scope='REQUEST_ACCESS'
               />
-              <ObjectMembersField
+              <GroupField
                 name="approvalAdmin"
                 label={t_i18n('Select authorized members')}
                 onChange={setFieldValue}
-                required={true}
                 multiple={false}
                 style={fieldSpacingContainerStyle}
               />

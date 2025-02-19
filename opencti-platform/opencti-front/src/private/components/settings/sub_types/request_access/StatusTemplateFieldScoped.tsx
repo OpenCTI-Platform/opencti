@@ -58,7 +58,6 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
     })
       .toPromise()
       .then((data: any) => {
-        // console.log('Data:', data);
         const queryData: StatusTemplateFieldScopedSearchQuery$data = data;
         const fieldData: StatusTemplateFieldData[] = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
           return { label: statusData?.name, value: statusData?.id, color: statusData?.color };

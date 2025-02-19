@@ -88,7 +88,6 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
       }
       : null,
     order: String(data.order) || '',
-    scope: data.scope || '',
   };
 
   const [commit] = useApiMutation(statusEditFieldPatchMutation);
@@ -100,6 +99,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
       { key: 'template_id', value: values.template?.value || '' },
       { key: 'order', value: values.order },
     ];
+
     commit({
       variables: {
         id: subTypeId,

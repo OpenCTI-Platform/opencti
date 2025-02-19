@@ -16,7 +16,6 @@ import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
 import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_subType.graphql';
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
-import { StatusScope } from './__generated__/SubTypeQuery.graphql';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -71,7 +70,7 @@ interface SubTypeEditionContainerProps {
   handleClose: () => void
   queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>
   open?: boolean
-  scope: StatusScope
+  scope: string
 }
 
 const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({

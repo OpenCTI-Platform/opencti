@@ -33,7 +33,6 @@ export const requestAccessFragment = graphql`
         }
         approval_admin {
             id
-            type
             name
         }
     }
@@ -59,7 +58,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         <Chip
           key={approvedToRfiStatus?.id}
           variant="outlined"
-          label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : '-'}
+          label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : 'undefined'}
           style={{
             fontSize: 12,
             lineHeight: '12px',
@@ -71,7 +70,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             color: approvedToRfiStatus?.template?.color,
             borderColor: approvedToRfiStatus?.template?.color,
             backgroundColor: hexToRGB(
-              '#000000',
+              approvedToRfiStatus?.template?.color ?? '#000000',
             ),
           }}
         />
@@ -82,7 +81,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         <Chip
           key={declinedToRfiStatus?.id}
           variant="outlined"
-          label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : '-'}
+          label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : 'undefined'}
           style={{
             fontSize: 12,
             lineHeight: '12px',
