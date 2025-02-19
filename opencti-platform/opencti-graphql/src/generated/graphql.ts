@@ -26465,6 +26465,7 @@ export type SubType = {
   label: Scalars['String']['output'];
   settings?: Maybe<EntitySetting>;
   statuses: Array<Status>;
+  statusesRequestAccess: Array<Status>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
 };
 
@@ -40880,6 +40881,7 @@ export type SubTypeResolvers<ContextType = any, ParentType extends ResolversPare
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   settings?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType>;
   statuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType>;
+  statusesRequestAccess?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

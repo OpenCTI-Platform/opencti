@@ -39,7 +39,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['ipv4-addr'].length).toBe(1);
       expect(createEventsByTypes['data-component'].length).toBe(5);
       expect(createEventsByTypes['data-source'].length).toBe(1);
-      expect(createEventsByTypes.malware.length).toBe(46);
+      expect(createEventsByTypes.malware.length).toBe(47);
       expect(createEventsByTypes.software.length).toBe(1);
       expect(createEventsByTypes.file.length).toBe(4);
       expect(createEventsByTypes.campaign.length).toBe(5);

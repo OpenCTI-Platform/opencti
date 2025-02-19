@@ -17,7 +17,7 @@ import {
   StatusOrdering,
   StatusScope,
   type StatusTemplate,
-  type StatusTemplateAddInput
+  type StatusTemplateAddInput,
 } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -79,25 +79,45 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     [SEMATTRS_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
-export const batchStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+
+export const batchRequestAccessStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+  logApp.info('[STATUS] batchRequestAccessStatusesByType', { types });
   const batchStatusesByTypeFn = async () => {
     const args = {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
       filters: {
         mode: FilterMode.And,
-        filters: [{ key: ['type'], values: types }],
+        filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.RequestAccess] }],
         filterGroups: [],
       },
       connectionFormat: false
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
-    logApp.info('[STATUS] statuses', { statuses });
-    const globalStatuses = statuses.filter((status: BasicWorkflowStatus) => {
-      return status.scope === undefined || status.scope === null || status.scope === StatusScope.Global;
-    });
-    logApp.info('[STATUS] globalStatuses', { globalStatuses });
-    const statusesGrouped = R.groupBy((e) => e.type, globalStatuses);
+    const statusesGrouped = R.groupBy((e) => e.type, statuses);
+    return types.map((type) => statusesGrouped[type] || []);
+  };
+  return telemetry(context, user, 'BATCH type statuses', {
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
+  }, batchStatusesByTypeFn);
+};
+
+export const batchGlobalStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+  logApp.info('[STATUS] batchGlobalStatusesByType', { types });
+  const batchStatusesByTypeFn = async () => {
+    const args = {
+      orderBy: StatusOrdering.Order,
+      orderMode: OrderingMode.Asc,
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.Global] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+    const statusesGrouped = R.groupBy((e) => e.type, statuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
