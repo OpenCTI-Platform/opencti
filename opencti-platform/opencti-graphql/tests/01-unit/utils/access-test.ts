@@ -17,6 +17,8 @@ import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-common';
 
+const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
+
 describe('Check markings test coverage', () => {
   it('should element with no marking be allowed', async () => {
     const element: Partial<BasicStoreCommon> = {
@@ -74,7 +76,7 @@ describe('Check organization access for element.', () => {
       platform_organization: undefined,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+    expect(isOrganizationAllowed(inPlatformContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
   });
 
   it('should element not shared be allowed to user in platform organization', async () => {
@@ -97,7 +99,7 @@ describe('Check organization access for element.', () => {
       platform_organization: PLATFORM_ORGANIZATION.name,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+    expect(isOrganizationAllowed(inPlatformContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
   });
 
   it('should element not shared not be allowed to user in another organization', async () => {
@@ -145,7 +147,7 @@ describe('Check organization access for element.', () => {
       platform_organization: PLATFORM_ORGANIZATION.name,
     };
     const hasPlatformOrg = !!settings.platform_organization;
-    expect(isOrganizationAllowed(testContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+    expect(isOrganizationAllowed(inPlatformContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
   });
 });
 
@@ -192,6 +194,7 @@ describe('User access entity testing', async () => {
       } as StixOpenctiExtension,
     },
   };
+
   const element: Partial<BasicStoreCommon> = {
     id: 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32',
     spec_version: '2.1',
