@@ -71,21 +71,27 @@ const OperatorKeyValues: {
   within: 'Within',
 };
 
-interface BasicNumberInputProps {
+interface BasicInputProps {
   filter?: Filter;
   filterKey: string;
   helpers?: handleFilterHelpers;
   filterValues: string[];
   label: string;
+  type?: string;
+}
+
+interface RelativeDateInputProps extends BasicInputProps {
+  valueOrder: number;
   disabled?: boolean;
 }
 
-const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
+const BasicInput: FunctionComponent<BasicInputProps> = ({
   filter,
   filterKey,
   helpers,
   filterValues,
   label,
+  type,
 }) => {
   return (
     <TextField
@@ -94,7 +100,7 @@ const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
       label={label}
-      type="number"
+      type={type}
       defaultValue={filterValues[0]}
       autoFocus={true}
       onKeyDown={(event) => {
@@ -114,37 +120,41 @@ const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
     />
   );
 };
-const BasicTextInput: FunctionComponent<BasicNumberInputProps> = ({
+
+const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   filter,
   filterKey,
   helpers,
   filterValues,
   label,
-  disabled = false,
+  type,
+  valueOrder,
+  disabled,
 }) => {
+  const handleChangeRelativeDateFilter = (value: string) => {
+    helpers?.handleAddSingleValueFilter(
+      filter?.id ?? '',
+      value,
+    );
+  };
   return (
     <TextField
+      disabled={disabled}
       variant="outlined"
       size="small"
-      disabled={disabled}
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
       label={label}
-      defaultValue={filterValues[0]}
+      type={type}
+      defaultValue={filterValues[valueOrder]}
       autoFocus={true}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
-          helpers?.handleAddSingleValueFilter(
-            filter?.id ?? '',
-            (event.target as HTMLInputElement).value,
-          );
+          handleChangeRelativeDateFilter((event.target as HTMLInputElement).value);
         }
       }}
       onBlur={(event) => {
-        helpers?.handleAddSingleValueFilter(
-          filter?.id ?? '',
-          event.target.value,
-        );
+        handleChangeRelativeDateFilter(event.target.value);
       }}
     />
   );
@@ -397,19 +407,21 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         return (
           <>
             <div style={{ marginBottom: 10 }}>{t_i18n('From')}</div>
-            <BasicTextInput
+            <RelativeDateInput
               filter={filter}
               filterKey={filterKey}
               filterValues={filterValues}
               helpers={helpers}
               label={t_i18n('From')}
+              valueOrder={0}
             />
             <div style={{ marginTop: 15, marginBottom: 10 }}>{t_i18n('To')}</div>
-            <BasicTextInput
+            <RelativeDateInput
               filter={filter}
               filterKey={filterKey}
               filterValues={['now']}
-              label={t_i18n('To')}
+              label={t_i18n('now')}
+              valueOrder={1}
               disabled
             />
           </>
@@ -419,18 +431,19 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     }
     if (isNumericFilter(fDefinition?.type)) {
       return (
-        <BasicNumberInput
+        <BasicInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
           helpers={helpers}
           label={filterLabel}
+          type={'number'}
         />
       );
     }
     if (isBasicTextFilter(filterDefinition)) {
       return (
-        <BasicTextInput
+        <BasicInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
