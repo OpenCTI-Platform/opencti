@@ -18,6 +18,7 @@ import {
   opinionsPaginated,
   reportsPaginated,
   stixCoreAnalysis,
+  stixCoreBackgroundActiveOperations,
   stixCoreObjectAddRelation,
   stixCoreObjectAddRelations,
   stixCoreObjectAnalysisPush,
@@ -28,6 +29,7 @@ import {
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
   stixCoreObjectImportPush,
+  stixCoreObjectRemoveAuthMembers,
   stixCoreObjectRemoveFromDraft,
   stixCoreObjectsConnectedNumber,
   stixCoreObjectsDistribution,
@@ -64,6 +66,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreBackgroundActiveOperations: (_, { id }, context) => stixCoreBackgroundActiveOperations(context, context.user, id),
     stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
@@ -157,10 +160,16 @@ const stixCoreObjectResolvers = {
       delete: () => stixCoreObjectDelete(context, context.user, id),
       relationAdd: ({ input }) => stixCoreObjectAddRelation(context, context.user, id, input),
       relationsAdd: ({ input, commitMessage, references }) => stixCoreObjectAddRelations(context, context.user, id, input, { commitMessage, references }),
-      restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
-      restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
-      // eslint-disable-next-line max-len
-      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => {
+        return stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references });
+      },
+      clearAccessRestriction: () => stixCoreObjectRemoveAuthMembers(context, context.user, id),
+      restrictionOrganizationAdd: ({ organizationId, directContainerSharing }) => {
+        return addOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
+      },
+      restrictionOrganizationDelete: ({ organizationId, directContainerSharing }) => {
+        return removeOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
+      },
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),

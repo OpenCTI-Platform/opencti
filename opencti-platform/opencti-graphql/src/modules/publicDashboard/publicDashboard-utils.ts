@@ -124,8 +124,8 @@ export const getWidgetArguments = async (
 };
 
 export const checkUserIsAdminOnDashboard = async (context: AuthContext, user: AuthUser, id: string) => {
-  const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
-  const publicDashboard = publicDashboards.find((p) => (p.id === id));
+  const publicDashboards = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+  const publicDashboard = publicDashboards.get(id);
   if (publicDashboard === undefined) {
     throw FunctionalError('No public dashboard found', { id });
   }

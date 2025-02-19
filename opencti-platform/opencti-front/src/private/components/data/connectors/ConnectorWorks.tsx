@@ -146,11 +146,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
         if (!work) return null;
         const { tracking } = work;
         return (
-          <Paper
-            key={work.id}
-            classes={{ root: classes.paper }}
-            variant="outlined"
-          >
+          <Paper key={work.id} classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={7}>
                 <Grid container={true} spacing={1}>
