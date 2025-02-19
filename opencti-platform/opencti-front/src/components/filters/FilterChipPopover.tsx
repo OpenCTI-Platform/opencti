@@ -68,6 +68,7 @@ const OperatorKeyValues: {
   ends_with: 'Ends with',
   not_ends_with: 'Not ends with',
   search: 'Search',
+  within: 'Within',
 };
 
 interface BasicNumberInputProps {
@@ -389,6 +390,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
     if (fDefinition?.type === 'date') {
+      if (filterOperator === 'within') {
+        return (
+          <BasicTextInput
+            filter={filter}
+            filterKey={filterKey}
+            filterValues={filterValues}
+            helpers={helpers}
+            label={filterLabel}
+          />
+        );
+      }
       return <BasicFilterDate />;
     }
     if (isNumericFilter(fDefinition?.type)) {
