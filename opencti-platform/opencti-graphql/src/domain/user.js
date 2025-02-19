@@ -96,14 +96,14 @@ const computeImpactedUsersAndSessions = async (context, user, roleId) => {
   return { sessions, users };
 };
 
-const notifySessionsUsersRefresh = async (context, user, sessions, users) => {
+const notifySessionsUsersRefresh = async (user, sessions, users) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
 };
 
 const roleSessionRefresh = async (context, user, roleId) => {
   const { sessions, users } = await computeImpactedUsersAndSessions(context, user, roleId);
-  await notifySessionsUsersRefresh(context, user, sessions, users);
+  await notifySessionsUsersRefresh(user, sessions, users);
 };
 
 export const usersSessionRefresh = async (userIds) => {
@@ -401,7 +401,7 @@ export const roleDelete = async (context, user, roleId) => {
     message: `deletes role \`${deleted.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: deleted }
   });
-  await notifySessionsUsersRefresh(context, user, sessions, users);
+  await notifySessionsUsersRefresh(user, sessions, users);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].DELETE_TOPIC, deleted, user).then(() => roleId);
 };
 
