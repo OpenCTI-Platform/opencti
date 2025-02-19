@@ -3,15 +3,17 @@ import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { graphql, useFragment } from 'react-relay';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
-import { ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
+import useReportKnowledgeGraphDeleteRelation from './useReportKnowledgeGraphDeleteRelation';
+import { ReportKnowledgeGraph_fragment$data, ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
-import Graph from '../../../../utils/graph/Graph';
-import useGraphParser from '../../../../utils/graph/utils/useGraphParser';
+import Graph, { GraphProps } from '../../../../utils/graph/Graph';
 import { deserializeObject } from '../../../../utils/object';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { ReportKnowledgeGraphDataMutation } from './__generated__/ReportKnowledgeGraphDataMutation.graphql';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
+import useReportKnowledgeGraphAddRelation from './useReportKnowledgeGraphAddRelation';
+import { GraphProvider } from '../../../../utils/graph/GraphContext';
+import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
+import useReportKnowledgeGraphEdit from './useReportKnowledgeGraphEdit';
 
 const reportGraphFragment = graphql`
   fragment ReportKnowledgeGraph_fragment on Report {
@@ -379,33 +381,23 @@ const reportGraphFragment = graphql`
   }
 `;
 
-export const reportGraphDataMutation = graphql`
-  mutation ReportKnowledgeGraphDataMutation($id: ID!, $input: [EditInput]!) {
-    reportEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
-
-interface ReportKnowledgeGraphProps {
+interface ReportKnowledgeGraphComponentProps {
   enableReferences: boolean
-  data: ReportKnowledgeGraph_fragment$key
+  report: ReportKnowledgeGraph_fragment$data
 }
 
-const ReportKnowledgeGraph = ({ enableReferences, data }: ReportKnowledgeGraphProps) => {
+const ReportKnowledgeGraphComponent = ({
+  enableReferences,
+  report,
+}: ReportKnowledgeGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { buildGraphData } = useGraphParser();
+  const { addLink } = useGraphInteractions();
 
-  const [commitGraphDataMutation] = useApiMutation<ReportKnowledgeGraphDataMutation>(
-    reportGraphDataMutation,
-  );
-
-  const report = useFragment(reportGraphFragment, data);
-  const localStorageKey = `report-${report.id}-knowledge-graph`;
+  const [commitEditPositions] = useReportKnowledgeGraphEdit();
+  const [commitAddRelation] = useReportKnowledgeGraphAddRelation();
+  const [commitDeleteRelation] = useReportKnowledgeGraphDeleteRelation();
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -418,15 +410,8 @@ const ReportKnowledgeGraph = ({ enableReferences, data }: ReportKnowledgeGraphPr
     height: `calc(100vh - ${totalHeight}px)`,
   };
 
-  const graphData = useMemo(() => (
-    buildGraphData(
-      (report.objects?.edges ?? []).map((n) => ({ ...n.node, types: n.types })),
-      deserializeObject(report.x_opencti_graph_data),
-    )
-  ), [report]);
-
   const savePositions = (positions: OctiGraphPositions) => {
-    commitGraphDataMutation({
+    commitEditPositions({
       variables: {
         id: report.id,
         input: [{
@@ -437,25 +422,90 @@ const ReportKnowledgeGraph = ({ enableReferences, data }: ReportKnowledgeGraphPr
     });
   };
 
+  const addRelationInGraph: GraphProps['onAddRelation'] = (rel) => {
+    commitAddRelation({
+      variables: {
+        id: report.id,
+        input: {
+          toId: rel.id,
+          relationship_type: 'object',
+        },
+      },
+      onCompleted: () => {
+        addLink(rel);
+      },
+    });
+  };
+
+  const deleteRelationInGraph: GraphProps['onContainerDeleteRelation'] = (
+    relId,
+    onCompleted,
+    commitMessage,
+    references,
+  ) => {
+    commitDeleteRelation({
+      variables: {
+        id: report.id,
+        toId: relId,
+        relationship_type: 'object',
+        commitMessage,
+        references,
+      },
+      onCompleted,
+    });
+  };
+
   return (
     <div style={graphContainerStyle} ref={ref}>
       <Graph
         parentRef={ref}
-        graphData={graphData}
-        localStorageKey={localStorageKey}
         onPositionsChanged={savePositions}
         enableReferences={enableReferences}
         stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
         relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+        onAddRelation={addRelationInGraph}
+        onContainerDeleteRelation={deleteRelationInGraph}
         container={{
           id: report.id,
           confidence: report.confidence,
+          published: report.published,
           objects: report.objects?.edges ?? [],
           createdBy: report.createdBy,
           objectMarking: report.objectMarking ?? [],
         }}
       />
     </div>
+  );
+};
+
+interface ReportKnowledgeGraphtProps extends Omit<ReportKnowledgeGraphComponentProps, 'report'> {
+  data: ReportKnowledgeGraph_fragment$key
+}
+
+const ReportKnowledgeGraph = ({
+  data,
+  ...otherProps
+}: ReportKnowledgeGraphtProps) => {
+  const report = useFragment(reportGraphFragment, data);
+  const localStorageKey = `report-${report.id}-knowledge-graph`;
+
+  const reportData = useMemo(() => {
+    return {
+      objects: (report.objects?.edges ?? []).flatMap((n) => (n ? { ...n.node, types: n.types } : [])),
+      positions: deserializeObject(report.x_opencti_graph_data),
+    };
+  }, [report]);
+
+  return (
+    <GraphProvider
+      localStorageKey={localStorageKey}
+      data={reportData}
+    >
+      <ReportKnowledgeGraphComponent
+        report={report}
+        {...otherProps}
+      />
+    </GraphProvider>
   );
 };
 

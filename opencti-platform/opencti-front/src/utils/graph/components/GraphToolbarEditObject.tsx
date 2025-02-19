@@ -8,7 +8,7 @@ import StixNestedRefRelationshipEdition from '@components/common/stix_nested_ref
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
-import { useGraphContext } from '../utils/GraphContext';
+import { useGraphContext } from '../GraphContext';
 import type { GraphNode, GraphLink } from '../graph.types';
 import { isStixNestedRefRelationship } from '../../Relation';
 import { fetchQuery } from '../../../relay/environment';

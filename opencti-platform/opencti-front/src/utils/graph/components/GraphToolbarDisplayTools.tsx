@@ -3,7 +3,7 @@ import { AspectRatioOutlined, ScatterPlotOutlined } from '@mui/icons-material';
 import React from 'react';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
-import { useGraphContext } from '../utils/GraphContext';
+import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
 const GraphToolbarDisplayTools = () => {

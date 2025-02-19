@@ -41,6 +41,8 @@ export interface GraphNode extends GraphElement {
   numberOfConnectedElement?: number
 }
 
+export type LibGraphProps = ForceGraphProps<GraphNode, GraphLink>;
+
 export interface OctiGraphPositions {
   [key: string]: {
     id: string
@@ -50,12 +52,30 @@ export interface OctiGraphPositions {
   }
 }
 
-export type LibGraphProps = ForceGraphProps<GraphNode, GraphLink>;
-
 export interface GraphContainer {
   id: string
   confidence: unknown
   createdBy: unknown
+  published: unknown
   objects: readonly unknown[]
   objectMarking: readonly unknown[]
+}
+
+// Stuff kept in URL and local storage.
+export interface GraphState {
+  mode3D: boolean
+  modeTree: 'td' | 'lr' | null
+  withForces: boolean
+  selectFreeRectangle: boolean
+  selectFree: boolean
+  selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
+  showTimeRange: boolean
+  disabledEntityTypes: string[]
+  disabledCreators: string[]
+  disabledMarkings: string[]
+  zoom?: {
+    k: number
+    x: number
+    y: number
+  }
 }

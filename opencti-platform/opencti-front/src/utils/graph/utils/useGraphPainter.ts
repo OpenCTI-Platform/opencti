@@ -3,7 +3,7 @@ import SpriteText from 'three-spritetext';
 import { ForceGraphProps } from 'react-force-graph-3d';
 import type { Theme } from '../../../components/Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
-import { useGraphContext } from './GraphContext';
+import { useGraphContext } from '../GraphContext';
 
 interface PaintOptions {
   showNbConnectedElements?: boolean

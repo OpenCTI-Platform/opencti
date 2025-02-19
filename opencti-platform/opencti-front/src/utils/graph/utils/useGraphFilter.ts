@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGraphContext } from './GraphContext';
+import { useGraphContext } from '../GraphContext';
 
 const useGraphFilter = () => {
   const { graphData, graphState } = useGraphContext();

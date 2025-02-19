@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { NodeObject } from 'react-force-graph-2d';
-import { useGraphContext, GraphState } from './GraphContext';
-import type { GraphNode, LibGraphProps } from '../graph.types';
+import { useGraphContext } from '../GraphContext';
+import type { GraphNode, LibGraphProps, GraphState } from '../graph.types';
 import { RectangleSelectionProps } from '../components/RectangleSelection';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../defaultRepresentatives';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
@@ -291,22 +291,22 @@ const useGraphInteractions = () => {
 
   const addNode = (data: ObjectToParse) => {
     contextAddNode(buildNode(data, {}));
-    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
-  const removeNode = (data: ObjectToParse) => {
-    contextRemoveNode(data.id);
-    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+  const removeNode = (nodeId: string) => {
+    contextRemoveNode(nodeId);
+    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
   const addLink = (data: ObjectToParse) => {
     contextAddLink(buildLink(data)); // TODO does it work with nested?
-    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
-  const removeLink = (data: ObjectToParse) => {
-    contextRemoveLink(data.id);
-    setTimeout(() => zoomToFit(), 500); // To refresh graph.
+  const removeLink = (linkId: string) => {
+    contextRemoveLink(linkId);
+    setTimeout(() => zoomToFit(), 200); // To refresh graph.
   };
 
   return {

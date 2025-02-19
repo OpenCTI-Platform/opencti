@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import GraphToolbarOptionsList from './GraphToolbarOptionsList';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
-import { useGraphContext } from '../utils/GraphContext';
+import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
 const GraphToolbarFilterTools = () => {

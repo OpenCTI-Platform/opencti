@@ -2,42 +2,22 @@ import React, { ReactNode, useContext, createContext, useState, useEffect, useMe
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as graph2d from 'react-force-graph-2d';
 import * as graph3d from 'react-force-graph-3d';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../ListParameters';
-import { GraphNode, GraphLink, LibGraphProps } from '../graph.types';
-import { useFormatter } from '../../../components/i18n';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../ListParameters';
+import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } from './graph.types';
+import { useFormatter } from '../../components/i18n';
+import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 
 type GraphRef2D = graph2d.ForceGraphMethods<graph2d.NodeObject<GraphNode>, graph2d.LinkObject<GraphNode, GraphLink>>;
 type GraphRef3D = graph3d.ForceGraphMethods<graph3d.NodeObject<GraphNode>, graph3d.LinkObject<GraphNode, GraphLink>>;
 
-// Stuff kept in URL and local storage.
-export interface GraphState {
-  mode3D: boolean
-  modeTree: 'td' | 'lr' | null
-  withForces: boolean
-  selectFreeRectangle: boolean
-  selectFree: boolean
-  selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
-  showTimeRange: boolean
-  disabledEntityTypes: string[]
-  disabledCreators: string[]
-  disabledMarkings: string[]
-  zoom?: {
-    k: number
-    x: number
-    y: number
-  }
-}
-
 // API available when calling hook useGraphContext().
-interface GraphContextProps {
+interface GraphContextValue {
+  // --- data of the graph
   graphData: LibGraphProps['graphData']
   addNode: (node: GraphNode) => void
   removeNode: (id: string) => void
   addLink: (link: GraphLink) => void
   removeLink: (id: string) => void
-  stixCoreObjectTypes: string[]
-  markingDefinitions: { id: string, definition: string }[]
-  creators: { id: string, name: string }[]
   // --- DOM references
   graphRef2D: MutableRefObject<GraphRef2D | undefined>
   graphRef3D: MutableRefObject<GraphRef3D | undefined>
@@ -54,31 +34,54 @@ interface GraphContextProps {
   setSelectedLinks: Dispatch<SetStateAction<GraphLink[]>>
   addSelectedLink: (link: GraphLink) => void
   removeSelectedLink: (link: GraphLink) => void
+  // --- utils data derived from graphData
+  stixCoreObjectTypes: string[]
+  markingDefinitions: { id: string, definition: string }[]
+  creators: { id: string, name: string }[]
 }
 
-const GraphContext = createContext<GraphContextProps | undefined>(undefined);
+const GraphContext = createContext<GraphContextValue | undefined>(undefined);
+
+const DEFAULT_STATE: GraphState = {
+  mode3D: false,
+  modeTree: null,
+  withForces: true,
+  selectFreeRectangle: false,
+  selectFree: false,
+  selectRelationshipMode: null,
+  showTimeRange: false,
+  disabledEntityTypes: [],
+  disabledCreators: [],
+  disabledMarkings: [],
+};
 
 interface GraphProviderProps {
   children: ReactNode
-  defaultState: GraphState
   localStorageKey: string
-  data: LibGraphProps['graphData']
+  data: {
+    objects: ObjectToParse[]
+    positions: OctiGraphPositions
+  }
 }
 
 export const GraphProvider = ({
   children,
-  defaultState,
   localStorageKey,
   data,
 }: GraphProviderProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const location = useLocation();
+  const { buildGraphData } = useGraphParser();
 
   const graphRef2D = useRef<GraphRef2D | undefined>();
   const graphRef3D = useRef<GraphRef3D | undefined>();
 
-  const [graphData, setGraphData] = useState(data);
+  const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
+  useEffect(() => {
+    console.log('[GraphContext] Data has been rebuild');
+    setGraphData(buildGraphData(data.objects, data.positions));
+  }, [data]);
 
   const addNode = (node: GraphNode) => {
     setGraphData((oldData) => {
@@ -149,7 +152,7 @@ export const GraphProvider = ({
   const [graphState, setGraphState] = useState<GraphState>(() => {
     // Load initial state for URL and local storage.
     const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
-    return { ...defaultState, ...params };
+    return { ...DEFAULT_STATE, ...params };
   });
 
   useEffect(() => {
@@ -190,7 +193,7 @@ export const GraphProvider = ({
     setSelectedNodes((old) => old.filter((n) => n.id !== node.id));
   };
 
-  const value = useMemo<GraphContextProps>(() => ({
+  const value = useMemo<GraphContextValue>(() => ({
     graphData,
     addNode,
     removeNode,

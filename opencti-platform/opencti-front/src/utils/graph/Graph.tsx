@@ -3,12 +3,11 @@ import ForceGraph3D from 'react-force-graph-3d';
 import React, { type MutableRefObject } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import RectangleSelection from './components/RectangleSelection';
-import { GraphProvider, GraphState, useGraphContext } from './utils/GraphContext';
+import { useGraphContext } from './GraphContext';
 import useResizeObserver from '../hooks/useResizeObserver';
-import GraphToolbar from './components/GraphToolbar';
-import { GraphContainer, GraphLink, GraphNode, LibGraphProps, OctiGraphPositions } from './graph.types';
+import GraphToolbar, { GraphToolbarProps } from './components/GraphToolbar';
+import { GraphLink, GraphNode, OctiGraphPositions } from './graph.types';
 import useGraphPainter from './utils/useGraphPainter';
 import useGraphInteractions from './utils/useGraphInteractions';
 import LassoSelection from './components/LassoSelection';
@@ -16,36 +15,16 @@ import useGraphFilter from './utils/useGraphFilter';
 import EntitiesDetailsRightsBar from './components/EntitiesDetailsRightBar';
 import type { Theme } from '../../components/Theme';
 
-const DEFAULT_STATE: GraphState = {
-  mode3D: false,
-  modeTree: null,
-  withForces: true,
-  selectFreeRectangle: false,
-  selectFree: false,
-  selectRelationshipMode: null,
-  showTimeRange: false,
-  disabledEntityTypes: [],
-  disabledCreators: [],
-  disabledMarkings: [],
-};
-
-interface GraphComponentProps {
+export interface GraphProps extends GraphToolbarProps {
   parentRef: MutableRefObject<HTMLDivElement | null>
   onPositionsChanged: (positions: OctiGraphPositions) => void
-  stixCoreObjectRefetchQuery: GraphQLTaggedNode
-  relationshipRefetchQuery: GraphQLTaggedNode
-  container?: GraphContainer
-  enableReferences?: boolean
 }
 
-const GraphComponent = ({
-  container,
-  enableReferences,
+const Graph = ({
   parentRef,
   onPositionsChanged,
-  stixCoreObjectRefetchQuery,
-  relationshipRefetchQuery,
-}: GraphComponentProps) => {
+  ...toolbarProps
+}: GraphProps) => {
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
   const { width, height } = useResizeObserver(parentRef);
@@ -178,30 +157,9 @@ const GraphComponent = ({
           </RectangleSelection>
         </>
       )}
-      <GraphToolbar
-        container={container}
-        enableReferences={enableReferences}
-        stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
-        relationshipRefetchQuery={relationshipRefetchQuery}
-      />
+
+      <GraphToolbar {...toolbarProps} />
     </div>
-  );
-};
-
-interface GraphProps extends GraphComponentProps {
-  localStorageKey: string
-  graphData: LibGraphProps['graphData']
-}
-
-const Graph = ({ localStorageKey, graphData, ...props }: GraphProps) => {
-  return (
-    <GraphProvider
-      data={graphData}
-      defaultState={DEFAULT_STATE}
-      localStorageKey={localStorageKey}
-    >
-      <GraphComponent {...props} />
-    </GraphProvider>
   );
 };
 
