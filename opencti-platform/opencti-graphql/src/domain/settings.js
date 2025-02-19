@@ -15,7 +15,6 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import { now, utcDate } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
-import { markAllSessionsForRefresh } from '../database/session';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
@@ -191,10 +190,6 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     }
   }
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
-  if (data.some((i) => i.key === 'platform_organization')) {
-    // if we change platform_organization, we need to refresh all sessions
-    await markAllSessionsForRefresh();
-  }
   await publishUserAction({
     user,
     event_type: 'mutation',

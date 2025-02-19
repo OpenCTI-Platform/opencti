@@ -88,16 +88,28 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
   }
 };
 
-export const removeCacheForEntity = async (instance: BasicStoreCommon) => {
+export const removeCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommon[]) => {
   await handleCacheForEntity(instance, 'remove');
 };
 
-export const addCacheForEntity = async (instance: BasicStoreCommon) => {
+export const addCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommon[]) => {
   await handleCacheForEntity(instance, 'add');
 };
 
-export const refreshCacheForEntity = async (instance: BasicStoreCommon) => {
+export const refreshCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommon[]) => {
   await handleCacheForEntity(instance, 'refresh');
+};
+
+export const refreshLocalCacheForEntity = async (topic: string, instance: BasicStoreCommon | BasicStoreCommon[]) => {
+  if (topic.endsWith('EDIT_TOPIC')) {
+    await refreshCacheForEntity(instance);
+  }
+  if (topic.endsWith('ADDED_TOPIC')) {
+    await addCacheForEntity(instance);
+  }
+  if (topic.endsWith('DELETE_TOPIC')) {
+    await removeCacheForEntity(instance);
+  }
 };
 
 // not exported because mixes 2 types

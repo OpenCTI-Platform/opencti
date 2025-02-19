@@ -13,7 +13,7 @@ import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
-import type { StoreObject, StoreRelation } from '../types/store';
+import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
@@ -28,6 +28,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
+import { refreshLocalCacheForEntity } from './cache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -328,6 +329,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     } else {
       data = R.dissoc(INPUT_OBJECTS, instance);
     }
+    // Direct refresh the current instance cache
+    await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
+    // Dispatch the event for cluster refresh
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;

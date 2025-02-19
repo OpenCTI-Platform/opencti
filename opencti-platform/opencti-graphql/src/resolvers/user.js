@@ -11,7 +11,7 @@ import {
   addBookmark,
   addUser,
   assignOrganizationToUser,
-  authenticateUser,
+  sessionAuthenticateUser,
   batchCreator,
   batchRolesForUsers,
   batchUserEffectiveConfidenceLevel,
@@ -167,7 +167,7 @@ const userResolvers = {
         // As soon as credential is validated, stop looking for another provider
         if (user) {
           const context = executionContext(`${provider}_strategy`);
-          loggedUser = await authenticateUser(context, req, user, provider, { useSession: true });
+          loggedUser = await sessionAuthenticateUser(context, req, user, provider);
           break;
         }
       }
