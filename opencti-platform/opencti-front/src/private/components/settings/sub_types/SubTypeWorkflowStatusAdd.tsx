@@ -54,7 +54,7 @@ SubTypeWorkflowStatusAddProps
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const initialValues: StatusForm = { template: null, order: '', scope };
+  const initialValues: StatusForm = { template: null, order: '' };
   const [commit] = useApiMutation(subTypeWorkflowStatusAddCreationMutation);
   const onSubmit: FormikConfig<StatusForm>['onSubmit'] = (
     values,
