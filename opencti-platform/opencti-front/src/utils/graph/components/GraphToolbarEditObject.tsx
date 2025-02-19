@@ -13,6 +13,7 @@ import type { GraphNode, GraphLink } from '../graph.types';
 import { isStixNestedRefRelationship } from '../../Relation';
 import { fetchQuery } from '../../../relay/environment';
 import useGraphInteractions from '../utils/useGraphInteractions';
+import { ObjectToParse } from '../utils/useGraphParser';
 
 interface GraphToolbarEditObjectProps {
   stixCoreObjectRefetchQuery: GraphQLTaggedNode
@@ -27,7 +28,7 @@ const GraphToolbarEditObject = ({
 }: GraphToolbarEditObjectProps) => {
   const { t_i18n } = useFormatter();
   const { selectedNodes, selectedLinks } = useGraphContext();
-  const { addNode, addLink } = useGraphInteractions();
+  const { addNode } = useGraphInteractions();
 
   const [category, setCategory] = useState<EditionCategory>();
 

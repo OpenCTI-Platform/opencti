@@ -5,7 +5,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../components/i18n';
 import useQueryLoading from '../../hooks/useQueryLoading';
-import { RelationShipFromAndToQuery } from '../__generated__/RelationShipFromAndToQuery.graphql';
+import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../../String';
 import { getMainRepresentative } from '../../defaultRepresentatives';
 

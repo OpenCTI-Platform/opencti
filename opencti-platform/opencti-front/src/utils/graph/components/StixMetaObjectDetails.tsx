@@ -11,7 +11,7 @@ import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getMainRepresentative } from '../../defaultRepresentatives';
 import { truncate } from '../../String';
 import ItemCreators from '../../../components/ItemCreators';
-import { StixMetaObjectDetailsQuery } from '../__generated__/StixMetaObjectDetailsQuery.graphql';
+import { StixMetaObjectDetailsQuery } from './__generated__/StixMetaObjectDetailsQuery.graphql';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemEntityType from '../../../components/ItemEntityType';
 

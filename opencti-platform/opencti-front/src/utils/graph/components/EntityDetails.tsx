@@ -23,7 +23,7 @@ import type { Theme } from '../../../components/Theme';
 import { getMainRepresentative } from '../../defaultRepresentatives';
 import { truncate } from '../../String';
 import ItemCreators from '../../../components/ItemCreators';
-import { EntityDetailsQuery } from '../__generated__/EntityDetailsQuery.graphql';
+import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../../components/ItemConfidence';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import ItemEntityType from '../../../components/ItemEntityType';

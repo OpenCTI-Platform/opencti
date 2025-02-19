@@ -23,7 +23,7 @@ import RelationShipFromAndTo from './RelationShipFromAndTo';
 import type { Theme } from '../../../components/Theme';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemCreators from '../../../components/ItemCreators';
-import { RelationshipDetailsQuery } from '../__generated__/RelationshipDetailsQuery.graphql';
+import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import ItemEntityType from '../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
