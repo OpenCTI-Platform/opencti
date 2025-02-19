@@ -184,7 +184,18 @@ describe('Opinion resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
-    expect(queryResult.data.opinion.objects.edges.length).toEqual(5);
+    // {
+    //   "id": "opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f",
+    //   "object_refs": [
+    //     "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+    //     "note--573f623c-bf68-4f19-9500-d618f0d00af0",
+    //     "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+    //     "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+    //     "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+    //     "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"
+    //   ]
+    // },
+    expect(queryResult.data.opinion.objects.edges.length).toEqual(6);
   });
   it('should opinion contains stix object or stix relationship accurate', async () => {
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
