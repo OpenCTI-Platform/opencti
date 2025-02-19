@@ -29,7 +29,6 @@ const useStyles = makeStyles(() => ({
   },
   parameters: {
     float: 'left',
-    marginTop: -10,
   },
 }));
 
