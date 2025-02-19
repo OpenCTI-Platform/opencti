@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stepper, Step, StepButton, Typography, Box, ListItem, List } from '@mui/material';
+import React, { useState } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Box } from '@mui/material';
 import { Formik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import { graphql } from 'react-relay';
-import LinearProgress from '@mui/material/LinearProgress';
 import { ImportFilesDialogGlobalMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import { ImportFilesDialogEntityMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
-import { CancelOutlined, CheckCircleOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
+import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -66,8 +66,6 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
   const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
 
-  const steps = ['Select files', 'Import options'];
-
   const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
     importFilesDialogGlobalMutation,
     undefined,
@@ -117,7 +115,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
       },
       onStepCompleted: ({ file: { name } }) => {
         setUploadedFiles((prevUploadedFiles) => {
-          return prevUploadedFiles.map((prevFile, i) => {
+          return prevUploadedFiles.map((prevFile) => {
             return prevFile.name === name ? { name, status: 'success' } : prevFile;
           });
         });
@@ -156,54 +154,21 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
           <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
             {!uploadStatus ? (
               <>
-                <Stepper nonLinear activeStep={activeStep} sx={{ marginInline: 10 }}>
-                  {steps.map((label, index) => (
-                    <Step key={label}>
-                      <StepButton color="inherit" onClick={() => setActiveStep(index)}>
-                        {label}
-                      </StepButton>
-                    </Step>
-                  ))}
-                </Stepper>
+                <ImportFilesStepper activeStep={activeStep} setActiveStep={setActiveStep} />
                 <Box sx={{ paddingBlock: 10 }}>
                   {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
                   {activeStep === 1 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
                 </Box>
               </>
             ) : (
-              <div style={{ display: 'flex', height: '100%', justifyContent: 'center', flexDirection: 'column' }}>
-                <Box sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <LinearProgress
-                    variant="buffer"
-                    sx={{ flex: 1 }}
-                    value={(bulkCurrentCount / bulkCount) * 100}
-                    valueBuffer={((bulkCurrentCount / bulkCount) * 100) + 10}
-                  />
-                  <Typography style={{ flexShrink: 0 }}>{`${bulkCurrentCount}/${bulkCount}`}</Typography>
-                </Box>
-                <List>
-                  {uploadedFiles.map((file) => (
-                    <ListItem
-                      divider
-                      secondaryAction={
-                        file.status === 'error' ? (
-                          <CancelOutlined fontSize="small" color="error"/>
-                        ) : (
-                          <CheckCircleOutlined fontSize="small" color={file.status ?? 'inherit'}/>
-                        )
-                      }
-                    >
-                      <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
-                      {file.name}
-                    </ListItem>
-                  ))}
-                </List>
-                {uploadStatus === 'success' && (
-                  <BulkResult variablesToString={(v) => v} />
-                )}
-              </div>
-            )
-            }
+              <ImportFilesUploadProgress
+                currentCount={bulkCurrentCount}
+                totalCount={bulkCount}
+                uploadedFiles={uploadedFiles}
+                uploadStatus={uploadStatus}
+                BulkResult={BulkResult}
+              />
+            )}
           </DialogContent>
           <DialogActions>
             {!uploadStatus ? (
@@ -211,7 +176,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
                 <Button onClick={() => handleClose()}>
                   {t_i18n('Cancel')}
                 </Button>
-                {activeStep !== steps.length - 1 ? (
+                {activeStep < 1 ? (
                   <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary">
                     {t_i18n('Next')}
                   </Button>
