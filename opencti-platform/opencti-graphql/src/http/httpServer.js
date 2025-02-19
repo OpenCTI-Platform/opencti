@@ -16,7 +16,7 @@ import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -151,8 +151,12 @@ const createHttpServer = async () => {
               executeContext.draft_context = user.draft_context;
             }
             executeContext.user = userWithOrigin(req, user);
-            const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
-            executeContext.user_inside_platform_organization = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+            if (isBypassUser(executeContext.user)) {
+              executeContext.user_inside_platform_organization = true;
+            } else {
+              const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
+              executeContext.user_inside_platform_organization = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+            }
           }
         } catch (error) {
           logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
