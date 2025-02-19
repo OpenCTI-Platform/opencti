@@ -14,7 +14,6 @@ import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATI
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -23,10 +22,8 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const GROUP_DEFAULT = 'Default';
 
-const groupSessionRefresh = async (context, user, groupId) => {
+const groupUsersCacheRefresh = async (context, user, groupId) => {
   const members = await listAllFromEntitiesThroughRelations(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
-  const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
-  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
 };
 
@@ -140,7 +137,7 @@ export const groupEditField = async (context, user, groupId, input) => {
   });
   // on editing the group confidence level, all members might have changed their effective level
   if (input.find((i) => ['group_confidence_level', 'max_shareable_markings'].includes(i.key))) {
-    await groupSessionRefresh(context, user, groupId);
+    await groupUsersCacheRefresh(context, user, groupId);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
@@ -171,7 +168,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     message: `adds ${created.entity_type} \`${extractEntityRepresentativeName(created)}\` for group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
-  await groupSessionRefresh(context, user, groupId);
+  await groupUsersCacheRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user).then(() => createdRelation);
 };
 
@@ -200,7 +197,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     message: `removes ${target.entity_type} \`${extractEntityRepresentativeName(target)}\` for group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
-  await groupSessionRefresh(context, user, groupId);
+  await groupUsersCacheRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 

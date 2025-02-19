@@ -36,7 +36,6 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { entityLocationType, identityClass, xOpenctiType } from '../schema/attribute-definition';
-import { usersSessionRefresh } from './user';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
@@ -232,7 +231,6 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
     if (isNotEmptyField(updatedElem.authorized_authorities)) {
       const grantedGroupsInput = input.find((i) => i.key === 'grantable_groups');
       if (grantedGroupsInput) {
-        await usersSessionRefresh(updatedElem.authorized_authorities);
         const users = await storeLoadByIds(context, user, updatedElem.authorized_authorities, ENTITY_TYPE_USER);
         await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
       }

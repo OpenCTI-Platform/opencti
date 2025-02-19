@@ -21,7 +21,6 @@ import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
-import { usersSessionRefresh } from '../../domain/user';
 import { elAggregationCount, elList } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
@@ -169,8 +168,6 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
   const usersWithDraftContext = await findAllUsersWithDraftContext(context, user, draftId);
   if (usersWithDraftContext.length > 0) {
     await elDeleteDraftContextFromUsers(context, user, draftId);
-    const usersIds = usersWithDraftContext.map((u) => u.id);
-    await usersSessionRefresh(usersIds);
     await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, usersWithDraftContext, user);
   }
 };
