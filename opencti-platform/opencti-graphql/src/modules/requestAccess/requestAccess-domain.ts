@@ -21,17 +21,17 @@ import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
 import { elLoadById } from '../../database/engine';
-import type { BasicStoreBase, BasicStoreEntity, BasicWorkflowStatus } from '../../types/store';
+import type { BasicGroupEntity, BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { getEntityFromCache, resetCacheForEntity } from '../../database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { BasicStoreSettings } from '../../types/settings';
-import { entitySettingsEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
-import { findById as findStatusById, statusEditField } from '../../domain/status';
-import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../entitySetting/entitySetting-types';
-import { findAllMembers } from '../../domain/user';
+import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
+import { findById as findStatusById } from '../../domain/status';
+import { type BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
+import { findById as findGroupById } from '../../domain/group';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -61,8 +61,8 @@ export const getPlatformOrganization = async (context: AuthContext, user: AuthUs
   return settings.platform_organization;
 };
 
-export const getRfiEntitySettings = async (context: AuthContext) => {
-  return findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
+export const getRfiEntitySettings = async (context: AuthContext, user: AuthUser) => {
+  return findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
   // return getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
 };
 
@@ -82,7 +82,7 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
   if (!isPlatformOrgSetup) {
     message += 'Platform organization must be setup.';
   }
-  const rfiEntitySettings = await getRfiEntitySettings(context);
+  const rfiEntitySettings = await getRfiEntitySettings(context, user);
 
   // 3. Request access status should be configured
   const areRequestAccessStatusConfigured: boolean = rfiEntitySettings?.request_access_workflow !== undefined
@@ -123,7 +123,7 @@ export const checkRequestAccessEnabled = async (context: AuthContext, user: Auth
 };
 
 export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser, action:ActionStatus) => {
-  const rfiEntitySettings = await getRfiEntitySettings(context);
+  const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const requestAccessWorkflow = rfiEntitySettings?.request_access_workflow;
   if (requestAccessWorkflow) {
     if (action === ActionStatus.APPROVED) {
@@ -134,6 +134,13 @@ export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser
     }
   }
   return undefined;
+};
+
+export const findWorkflowStatusByTemplateId = async (context: AuthContext, user: AuthUser, templateId: string) => {
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const allStatusesByScope = platformStatuses.filter((status) => status.scope === StatusScope.RequestAccess && status.template_id === templateId);
+  logApp.info('ANGIE findWorkflowStatusByTemplateId, found', { templateId, status: allStatusesByScope[0] });
+  return allStatusesByScope[0];
 };
 
 export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUser) => {
@@ -156,7 +163,7 @@ export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUs
 };
 
 export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
-  const rfiEntitySettings = await getRfiEntitySettings(context);
+  const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const requestAccessWorkflow = rfiEntitySettings?.request_access_workflow;
   const result : RequestAccessActionStatus[] = [];
   if (requestAccessWorkflow) {
@@ -184,9 +191,9 @@ export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
   return result;
 };
 
-const computeAuthorizedMembersForRequestAccess = async (context: AuthContext) => {
+const computeAuthorizedMembersForRequestAccess = async (context: AuthContext, user: AuthUser) => {
   const authorizedMembers = [];
-  const rfiEntitySettings = await getRfiEntitySettings(context);
+  const rfiEntitySettings = await getRfiEntitySettings(context, user);
 
   if (rfiEntitySettings && rfiEntitySettings.request_access_workflow) {
     const requestAccessAdmins = rfiEntitySettings.request_access_workflow.approval_admin;
@@ -206,10 +213,13 @@ const computeAuthorizedMembersForRequestAccess = async (context: AuthContext) =>
 export const getRequestAccessConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting | undefined
 ) => {
-  const rfiEntitySettings = await getRfiEntitySettings(context);
-  logApp.info('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration - entitySetting:', { entitySetting });
+  let rfiEntitySettings = entitySetting;
+  if (entitySetting) {
+    rfiEntitySettings = await getRfiEntitySettings(context, user);
+  }
+  logApp.info('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration - entitySetting:', { rfiEntitySettings });
   let declinedStatus;
   let approvedStatus;
   let approvalAdmin;
@@ -222,10 +232,12 @@ export const getRequestAccessConfiguration = async (
 
     const declinedId = rfiEntitySettings.request_access_workflow?.declined_workflow_id;
     if (declinedId) {
+      logApp.info('[OPENCTI-MODULE][Request Access] findStatusById:', { statusId: declinedId });
       declinedStatus = await findStatusById(context, user, declinedId);
     }
 
     if (rfiEntitySettings.request_access_workflow?.approved_workflow_id) {
+      logApp.info('[OPENCTI-MODULE][Request Access] findStatusById:', { statusId: rfiEntitySettings.request_access_workflow?.approved_workflow_id });
       approvedStatus = await findStatusById(context, user, rfiEntitySettings.request_access_workflow?.approved_workflow_id);
     }
 
@@ -235,34 +247,21 @@ export const getRequestAccessConfiguration = async (
       const approvalAdminIds = rfiEntitySettings.request_access_workflow?.approval_admin;
 
       if (approvalAdminIds.length > 0) {
-        const args = {
-          connectionFormat: false,
-          first: 100,
-          filters: {
-            mode: 'and',
-            filters: [{ key: 'internal_id', values: approvalAdminIds }],
-            filterGroups: [],
-          },
+        const group: BasicGroupEntity = await findGroupById(context, user, approvalAdminIds[0]) as unknown as BasicGroupEntity;
+        logApp.info('[OPENCTI-MODULE][Request Access] approval_admin members:', { group });
+        approvalAdmin = {
+          id: group.id,
+          name: group.name
         };
-        const members: BasicStoreEntity[] = await findAllMembers(context, user, args) as unknown as BasicStoreEntity[];
-        logApp.info('[OPENCTI-MODULE][Request Access] approval_admin members:', { members });
-        approvalAdmin = members.map((member: BasicStoreEntity) => {
-          const memberData: RequestAccessMember = {
-            id: member.id,
-            type: member.entity_type,
-            name: member.name
-          };
-          return memberData;
-        });
       }
     }
 
     const requestAccessConfigResult: RequestAccessConfiguration = {
       declined_status: declinedStatus,
       approved_status: approvedStatus,
-      approval_admin: approvalAdmin
+      approval_admin: [approvalAdmin]
     };
-
+    logApp.info('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration result:', requestAccessConfigResult);
     return requestAccessConfigResult;
   }
   return null;
@@ -273,40 +272,57 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
+  const { approval_admin } = input;
+  let approved_workflow_id;
+  let declined_workflow_id;
   if (rfiEntitySettings.request_access_workflow) {
-    if (input.decline_status_template_id && rfiEntitySettings.request_access_workflow.declined_workflow_id) {
-      logApp.info('[OPENCTI-MODULE][Request access] - Update decline status');
-      const declineStatusId = rfiEntitySettings.request_access_workflow.declined_workflow_id;
-      const declineUpdateInput: EditInput[] = [{ key: 'template_id', value: [input.decline_status_template_id] }];
-      await statusEditField(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI, declineStatusId, declineUpdateInput);
-    }
+    approved_workflow_id = rfiEntitySettings.request_access_workflow.approved_workflow_id;
+    declined_workflow_id = rfiEntitySettings.request_access_workflow.declined_workflow_id;
+  }
 
-    if (input.approve_status_template_id && rfiEntitySettings.request_access_workflow.approved_workflow_id) {
-      const approveStatusId = rfiEntitySettings.request_access_workflow.approved_workflow_id;
-      const approveUpdateInput: EditInput[] = [{ key: 'template_id', value: [input.approve_status_template_id] }];
-      await statusEditField(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI, approveStatusId, approveUpdateInput);
-    }
-
-    if (input.approval_admin) {
-      logApp.info('[OPENCTI-MODULE][Request access] - Update approval admin');
-      const initialConfig = {
-        approval_admin: input.approval_admin,
-        approved_workflow_id: rfiEntitySettings.request_access_workflow.approved_workflow_id,
-        declined_workflow_id: rfiEntitySettings.request_access_workflow.declined_workflow_id,
-      };
-      const editInput: EditInput[] = [
-        { key: 'request_access_workflow', value: [initialConfig] }
-      ];
-
-      await entitySettingsEditField(context, user, [rfiEntitySettings.id], editInput);
+  let approvedStatusData;
+  if (input.approved_status_id) {
+    approvedStatusData = await findWorkflowStatusByTemplateId(context, user, input.approved_status_id);
+    logApp.info('[OPENCTI-MODULE][Request access] - found approve status', { statusId: input.approved_status_id, approvedStatusData });
+    if (approvedStatusData) {
+      approved_workflow_id = approvedStatusData?.id;
     }
   }
 
-  // FIXME should not be needed since we use editField
-  resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
-  resetCacheForEntity(ENTITY_TYPE_STATUS);
+  let declinedStatusData;
+  if (input.declined_status_id) {
+    declinedStatusData = await findWorkflowStatusByTemplateId(context, user, input.declined_status_id);
+    logApp.info('[OPENCTI-MODULE][Request access] - found declined status', { statusId: input.declined_status_id, declinedStatusData });
+    if (declinedStatusData) {
+      declined_workflow_id = declinedStatusData?.id;
+    }
+  }
 
-  return getRequestAccessConfiguration(context, user, rfiEntitySettings);
+  const newConfiguration = {
+    approval_admin,
+    approved_workflow_id,
+    declined_workflow_id,
+  };
+  const editInput: EditInput[] = [
+    { key: 'request_access_workflow', value: [newConfiguration] }
+  ];
+  logApp.info('[OPENCTI-MODULE][Request access] - Update with', { editInput });
+  const updated = await entitySettingEditField(context, user, rfiEntitySettings.id, editInput);
+  logApp.info('[OPENCTI-MODULE][Request access] - Update result', { updated });
+
+  const groupData: BasicGroupEntity = await findGroupById(context, user, approval_admin) as unknown as BasicGroupEntity;
+
+  const approvalAdmin: RequestAccessMember = {
+    id: groupData.id,
+    name: groupData.name,
+  };
+
+  const requestAccessConfigResult = {
+    declined_status: declinedStatusData,
+    approved_status: approvedStatusData,
+    approval_admin: [approvalAdmin]
+  };
+  return requestAccessConfigResult;
 };
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
@@ -326,7 +342,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   if (organizationData === undefined) {
     throw ValidationError('Organization not found for Access Request', 'request_access_entities', input);
   }
-  const authorized_members = await computeAuthorizedMembersForRequestAccess(context);
+  const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user);
   const mainRepresentative = extractEntityRepresentativeName(elementData);
 
   const humanDescription = 'Access requested:\n'

@@ -5,11 +5,10 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypeWorkflow, { subTypeWorkflowEditionQuery } from './SubTypeWorkflow';
 import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
-import { StatusScope } from './__generated__/SubTypeQuery.graphql';
 
 interface SubTypeStatusPopoverProps {
   subTypeId: string
-  scope: StatusScope
+  scope: string
 }
 
 const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ subTypeId, scope }) => {
