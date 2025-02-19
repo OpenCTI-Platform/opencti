@@ -785,6 +785,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
               currentTheme={settings.platform_theme}
               themes={themes}
               refetch={handleRefetch}
+              version={version}
               editContext={editContext as {
                 name: string,
                 focusOn: string
