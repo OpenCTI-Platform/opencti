@@ -111,8 +111,8 @@ export const usersSessionRefresh = async (userIds) => {
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
-export const userSessionRefresh = async (context, user, userId) => {
-  return usersSessionRefresh(context, user, [userId]);
+export const userSessionRefresh = async (userId) => {
+  return usersSessionRefresh([userId]);
 };
 
 export const userWithOrigin = (req, user) => {
