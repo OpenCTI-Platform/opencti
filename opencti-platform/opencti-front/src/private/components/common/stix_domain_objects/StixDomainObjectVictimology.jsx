@@ -13,7 +13,7 @@ import StixDomainObjectVictimologyMap from './StixDomainObjectVictimologyMap';
 
 const styles = (theme) => ({
   container: {
-    marginTop: 40,
+    marginTop: 25,
   },
   bottomNav: {
     zIndex: 1,
@@ -90,7 +90,7 @@ class StixDomainObjectVictimology extends Component {
             item
             xs={6}
             style={{
-              marginTop: 60,
+              marginTop: 45,
               height: 300,
               minHeight: 300,
               paddingTop: 0,
@@ -109,7 +109,7 @@ class StixDomainObjectVictimology extends Component {
             item
             xs={6}
             style={{
-              marginTop: 60,
+              marginTop: 45,
               height: 300,
               minHeight: 300,
               paddingTop: 0,
