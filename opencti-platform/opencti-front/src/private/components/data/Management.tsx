@@ -219,7 +219,7 @@ const Management = () => {
       {isRightMenuManagementEnable && (
         <ManagementMenu />
       )}
-      <PageContainer withRightMenu={isRightMenuManagementEnable}>
+      <PageContainer withGap withRightMenu={isRightMenuManagementEnable}>
         <Breadcrumbs
           elements={[
             { label: t_i18n('Data') },
