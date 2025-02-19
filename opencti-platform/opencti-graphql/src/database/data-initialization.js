@@ -160,13 +160,13 @@ const createMarkingDefinitions = async (context) => {
     definition_type: 'TLP',
     definition: 'TLP:AMBER+STRICT',
     x_opencti_color: '#d84315',
-    x_opencti_order: 3,
+    x_opencti_order: 4,
   });
   await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:RED',
     x_opencti_color: '#c62828',
-    x_opencti_order: 4,
+    x_opencti_order: 5,
   });
 
   // Creation markings for PAP
