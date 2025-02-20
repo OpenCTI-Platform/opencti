@@ -23,13 +23,13 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import LassoSelection from '../../../../utils/graph/LassoSelection';
+import LassoSelection from '../../../../utils/graph/components/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import IncidentKnowledgeGraphBar from './IncidentKnowledgeGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { caseIncidentMutationFieldPatch } from './CaseIncidentEditionOverview';
 import { hexToRGB } from '../../../../utils/Colors';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../../../utils/defaultRepresentatives';
 

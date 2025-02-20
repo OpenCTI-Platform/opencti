@@ -681,7 +681,7 @@ class StixCoreRelationshipCreation extends Component {
 
 StixCoreRelationshipCreation.propTypes = {
   open: PropTypes.bool,
-  fromObjects: PropTypes.object,
+  fromObjects: PropTypes.array,
   toObjects: PropTypes.array,
   handleResult: PropTypes.func,
   classes: PropTypes.object,
@@ -692,7 +692,7 @@ StixCoreRelationshipCreation.propTypes = {
   stopTime: PropTypes.string,
   confidence: PropTypes.number,
   defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinitions: PropTypes.object,
+  defaultMarkingDefinitions: PropTypes.array,
   handleClose: PropTypes.func,
   handleReverseRelation: PropTypes.func,
 };

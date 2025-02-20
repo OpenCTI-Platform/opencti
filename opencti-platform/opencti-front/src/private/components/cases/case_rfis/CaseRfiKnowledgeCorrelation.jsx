@@ -24,12 +24,12 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import LassoSelection from '../../../../utils/graph/LassoSelection';
+import LassoSelection from '../../../../utils/graph/components/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { caseRfiMutationFieldPatch } from './CaseRfiEditionOverview';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import CaseRfiKnowledgeGraphBar from './CaseRfiKnowledgeGraphBar';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../../../utils/defaultRepresentatives';
 
