@@ -1,9 +1,12 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
+import { fileToReadStream } from '../../../src/database/file-storage-helper';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -98,6 +101,19 @@ const READ_REPORT_QUERY = gql`
             id
             name
             description
+            importFiles{
+                edges {
+                    node{
+                        id
+                        objectMarking {
+                            standard_id
+                        }
+                        metaData {
+                            description
+                        }
+                    }
+                }
+            }
         }
     }
 `;
@@ -125,6 +141,16 @@ const REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY = gql`
     mutation StixCoreObjectEdit($id: ID!) {
         stixCoreObjectEdit(id: $id) {
             removeFromDraft
+        }
+    }
+`;
+
+const IMPORT_FILE_QUERY = gql`
+    mutation StixDomainObjectImportPush($id: ID!, $file: Upload!, $fileMarkings: [String]) {
+        stixDomainObjectEdit(id: $id) {
+            importPush(file: $file, fileMarkings: $fileMarkings) {
+                id
+            }
         }
     }
 `;
@@ -256,6 +282,36 @@ describe('Drafts workspace resolver testing', () => {
     expect(getReportOutOfDraftQuery.data.report).toBeNull();
   });
 
+  it('should add a file on stixDomainObject in draft', async () => {
+    await modifyAdminDraftContext(addedDraftId);
+    // Start by creating a report in draft
+    const REPORT_TO_CREATE = {
+      input: {
+        name: 'Report for draft file',
+        description: 'Report for draft file',
+        published: '2020-02-26T00:51:35.000Z',
+        confidence: 90,
+        objectMarking: [],
+      },
+    };
+    const report = await adminQuery({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
+    const reportInternalId = report.data.reportAdd.id;
+
+    // Add a file to stixDomainObject with importPush
+    const readStream = fileToReadStream('./tests/data/', 'test-file-to-index.txt', 'test-file-to-index.txt', 'text/plain');
+    const fileUpload = { ...readStream, encoding: 'utf8' };
+    const upload = new Upload();
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
+    upload.file = fileUpload;
+    const importPushQueryResult = await queryAsAdmin({
+      query: IMPORT_FILE_QUERY,
+      variables: { id: reportInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
+    }, addedDraftId);
+    expect(importPushQueryResult?.data?.stixDomainObjectEdit.importPush.id).toBeDefined();
+  });
+
   // modify live entity in draft context and verify that modification doesn't exist in live context
   it('modify live entity in draft context', async () => {
     const liveDescription = 'Report for live';
@@ -268,6 +324,7 @@ describe('Drafts workspace resolver testing', () => {
       },
     };
 
+    await modifyAdminDraftContext('');
     const report = await adminQuery({ query: CREATE_REPORT_QUERY, variables: LIVE_REPORT_TO_CREATE });
     const reportInternalId = report.data.reportAdd.id;
 
@@ -331,10 +388,25 @@ describe('Drafts workspace resolver testing', () => {
     const report = await adminQuery({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
     const reportStandardId = report.data.reportAdd.standard_id;
 
+    // Add a file to report
+    const readStream = fileToReadStream('./tests/data/', 'test-file-to-index.txt', 'test-file-to-index.txt', 'text/plain');
+    const fileUpload = { ...readStream, encoding: 'utf8' };
+    const upload = new Upload();
+    upload.promise = new Promise((executor) => {
+      executor(fileUpload);
+    });
+    upload.file = fileUpload;
+    await queryAsAdmin({
+      query: IMPORT_FILE_QUERY,
+      variables: { id: reportStandardId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
+    }, addedDraftId);
+
     // Verify that validation bundle contains report
     const bundleData = await buildDraftValidationBundle(testContext, ADMIN_USER, addedDraftId);
     expect(bundleData.objects.length).toEqual(1);
     expect(bundleData.objects[0].id).toEqual(reportStandardId);
+    expect(bundleData.objects[0].extensions[STIX_EXT_OCTI].files.length).toBe(1);
+    expect(bundleData.objects[0].extensions[STIX_EXT_OCTI].files[0].data).toBeDefined();
 
     // Validate draft, verify work result and that draft was correctly deleted
     const validateResult = await queryAsAdmin({

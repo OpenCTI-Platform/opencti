@@ -739,8 +739,8 @@ const serverFromUser = new ApolloServer<AuthContext>({
   persistedQueries: false,
 });
 
-export const queryAsAdmin = async <T = Record<string, any>>(request: any) => {
-  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER) });
+export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER, draftContext ?? undefined) });
   if (body.kind === 'single') {
     return body.singleResult;
   }
