@@ -120,7 +120,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
             && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
-        } else if (!user.inside_platform_organization) {
+        } else if (!context.user_inside_platform_organization) {
           // If user is not part of the platform organization, put its own organizations
           relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
@@ -272,7 +272,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
         && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!user.inside_platform_organization) {
+    } else if (!context.user_inside_platform_organization) {
       // If user is not part of the platform organization, put its own organizations
       relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }

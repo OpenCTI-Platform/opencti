@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
-  internalFindByIds,
   listAllFromEntitiesThroughRelations,
   listAllToEntitiesThroughRelations,
   listEntities,
@@ -15,8 +14,6 @@ import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATI
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -25,11 +22,9 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const GROUP_DEFAULT = 'Default';
 
-const groupSessionRefresh = async (context, user, groupId) => {
+const groupUsersCacheRefresh = async (context, user, groupId) => {
   const members = await listAllFromEntitiesThroughRelations(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
-  const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
-  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
-  await Promise.all(members.map((m) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, m, user)));
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
 };
 
 export const findById = (context, user, groupId) => {
@@ -83,23 +78,23 @@ export const mergeDefaultMarking = async (defaultMarkings) => {
   return results;
 };
 
-export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => {
+export const defaultMarkingDefinitionsFromGroups = async (context, userGroups) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // Retrieve default marking by groups
-  return internalFindByIds(context, SYSTEM_USER, groupIds, { type: ENTITY_TYPE_GROUP })
-    .then((groups) => groups.map((group) => {
-      const defaultMarking = group.default_marking ?? [];
-      return defaultMarking.map((entry) => {
-        return {
-          entity_type: entry.entity_type,
-          values: entry.values?.map((d) => markingsMap.get(d)),
-        };
-      });
-    }).flat())
-    // Merge default marking by group
-    .then((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
-    // Clean default marking by entity type
-    .then((defaultMarkings) => {
+  const defaultMarkingsFlat = userGroups.map((group) => {
+    const defaultMarking = group.default_marking ?? [];
+    return defaultMarking.map((entry) => {
+      return {
+        entity_type: entry.entity_type,
+        values: entry.values?.map((d) => markingsMap.get(d)),
+      };
+    });
+  }).flat();
+  // Merge default marking by group
+  // Clean default marking by entity type
+  return defaultMarkingsFlat
+    .map((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
+    .map((defaultMarkings) => {
       return Promise.all(defaultMarkings.map(async (d) => {
         return {
           entity_type: d.entity_type,
@@ -127,7 +122,7 @@ export const groupDelete = async (context, user, groupId) => {
     message: `deletes group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input: group }
   });
-  return groupId;
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].DELETE_TOPIC, group, user).then(() => groupId);
 };
 
 export const groupEditField = async (context, user, groupId, input) => {
@@ -142,7 +137,7 @@ export const groupEditField = async (context, user, groupId, input) => {
   });
   // on editing the group confidence level, all members might have changed their effective level
   if (input.find((i) => ['group_confidence_level', 'max_shareable_markings'].includes(i.key))) {
-    await groupSessionRefresh(context, user, groupId);
+    await groupUsersCacheRefresh(context, user, groupId);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
@@ -173,8 +168,8 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     message: `adds ${created.entity_type} \`${extractEntityRepresentativeName(created)}\` for group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
-  await groupSessionRefresh(context, user, groupId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
+  await groupUsersCacheRefresh(context, user, groupId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user).then(() => createdRelation);
 };
 
 export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
@@ -202,7 +197,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     message: `removes ${target.entity_type} \`${extractEntityRepresentativeName(target)}\` for group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
-  await groupSessionRefresh(context, user, groupId);
+  await groupUsersCacheRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 
@@ -220,7 +215,7 @@ export const groupEditDefaultMarking = async (context, user, groupId, defaultMar
   }
   const patch = { default_marking: existingDefaultMarking };
   const { element } = await patchAttribute(context, user, groupId, ENTITY_TYPE_GROUP, patch);
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
 
 // -- CONTEXT --

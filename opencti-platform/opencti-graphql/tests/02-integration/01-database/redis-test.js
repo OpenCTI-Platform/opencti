@@ -17,7 +17,8 @@ describe('Redis should lock', () => {
     const lock = await lockResource(['id1', 'id2']);
     const lock2Promise = lockResource(['id3', 'id2']);
     setTimeout(() => lock.unlock(), 3000);
-    await lock2Promise;
+    const lock2 = await lock2Promise;
+    await lock2.unlock();
   });
 });
 

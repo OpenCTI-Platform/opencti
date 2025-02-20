@@ -1403,7 +1403,6 @@ describe('Elements upsert behaviors', () => {
 describe('Elements deduplication behaviors', () => {
   it('should prevent update resulting in duplicate entities', async () => {
     const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
-    const WHITE_USER = buildStandardUser([WHITE_TLP]);
     const greenMarking = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
     const group1Name = 'THREAT_NAME_1';
     const group2Name = 'THREAT_NAME_2';
@@ -1422,7 +1421,7 @@ describe('Elements deduplication behaviors', () => {
 
     // Update should be prevented by deduplication
     const inputUpdate = { key: 'name', value: [group1Name] };
-    const update = () => updateAttribute(testContext, WHITE_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP, [inputUpdate]);
+    const update = () => updateAttribute(testContext, ADMIN_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP, [inputUpdate]);
     await expect(update()).rejects.toEqual(
       new GraphQLError('This update will produce a duplicate')
     );

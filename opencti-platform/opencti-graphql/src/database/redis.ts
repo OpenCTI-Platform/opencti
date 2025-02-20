@@ -8,12 +8,12 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
-import type { StoreObject, StoreRelation } from '../types/store';
+import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
@@ -28,6 +28,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
+import { refreshLocalCacheForEntity } from './cache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -319,10 +320,18 @@ export const getRedisVersion = async () => {
 /* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
-  if (instance) {
+  if (isNotEmptyField(instance)) {
+    let data;
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
-    const data = R.dissoc(INPUT_OBJECTS, instance);
+    if (Array.isArray(instance)) {
+      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+    } else {
+      data = R.dissoc(INPUT_OBJECTS, instance);
+    }
+    // Direct refresh the current instance cache
+    await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
+    // Dispatch the event for cluster refresh
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;

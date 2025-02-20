@@ -39,6 +39,7 @@ export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
 export const DATA_FILE_TEST = 'DATA-TEST-STIX2_v2.json';
 
 export const testContext = executionContext('testing');
+export const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
 export const generateBasicAuth = (email?: string, password?: string) => {
   const buff = Buffer.from(`${email ?? API_EMAIL}:${password ?? API_PASSWORD}`, 'utf-8');
@@ -46,10 +47,7 @@ export const generateBasicAuth = (email?: string, password?: string) => {
 };
 
 export const createHttpClient = (email?: string, password?: string) => {
-  const jar = new CookieJar();
   return wrapper(axios.create({
-    withCredentials: true,
-    jar,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -322,8 +320,6 @@ export const ADMIN_USER: AuthUser = {
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
-  all_marking: [],
-  inside_platform_organization: true,
   allowed_marking: [],
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
@@ -523,6 +519,7 @@ export const editorQuery = async (request: any, options: QueryOption = {}) => {
 export const securityQuery = async (request: any) => {
   return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
 };
+
 export const participantQuery = async (request: any) => {
   return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
 };
@@ -697,8 +694,6 @@ export const buildStandardUser = (
     roles: [DEFAULT_ROLE],
     groups: [],
     capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
-    all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],
-    inside_platform_organization: true,
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],
     max_shareable_marking: [],
