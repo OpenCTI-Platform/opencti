@@ -2435,16 +2435,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:9.4.0":
-  version: 9.4.0
-  resolution: "@ckeditor/ckeditor5-react@npm:9.4.0"
+"@ckeditor/ckeditor5-react@npm:9.5.0":
+  version: 9.5.0
+  resolution: "@ckeditor/ckeditor5-react@npm:9.5.0"
   dependencies:
     "@ckeditor/ckeditor5-integrations-common": "npm:^2.2.2"
-    prop-types: "npm:^15.7.2"
   peerDependencies:
     ckeditor5: ">=42.0.0 || ^0.0.0-nightly"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/426aaa435e4c550cc4ba08c9eb961e110a1e9f843e175a4f26a93976b1ff64bb8bee9c997822b520ebda6a84959a457db5156bf32ec3753a4e5673731cfa17cf
+  checksum: 10/f36fdb8c18026ea7e0920d7f58dd49305431656ad2ae22b329583724aedbd97a527ff470ceb1850c6967aecf6975763618ec3a69af461124b8ffad3f0bfcc671
   languageName: node
   linkType: hard
 
@@ -16783,7 +16782,7 @@ __metadata:
   resolution: "opencti-front@workspace:."
   dependencies:
     "@analytics/google-analytics": "npm:1.1.0"
-    "@ckeditor/ckeditor5-react": "npm:9.4.0"
+    "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.2.0"
     "@fontsource/geologica": "npm:5.1.1"
