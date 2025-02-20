@@ -80,7 +80,6 @@ interface ConnectorWorksComponentProps {
   options: ConnectorWorksQuery$variables[]
   relay: RelayRefetchProp
   inProgress?: boolean
-  isCompleted?: boolean
 }
 
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({
