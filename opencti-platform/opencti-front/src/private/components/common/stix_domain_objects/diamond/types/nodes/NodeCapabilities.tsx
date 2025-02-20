@@ -1,18 +1,18 @@
 import React, { memo } from 'react';
 import * as R from 'ramda';
 import { Handle, NodeProps, Position } from 'reactflow';
-import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import getFilterFromEntityTypeAndNodeType, { DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { emptyFilled } from '../../../../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const getStyles = ((theme: Theme) => ({
   node: {
     position: 'relative',
     border:
@@ -61,8 +61,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const NodeCapabilities = ({ data }: NodeProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
+  const styles = getStyles(theme);
+
   const { stixDomainObject, entityLink } = data;
+
   const usedAttackPatterns = R.uniq((stixDomainObject.attackPatternsUsed?.edges ?? [])
     .map((n: { node: { to: { name: string, x_mitre_id: string } } }) => (n?.node?.to?.x_mitre_id ? `[${n?.node?.to?.x_mitre_id}] ${n?.node?.to?.name}` : n?.node?.to?.name)))
     .join(', ');
@@ -76,17 +79,17 @@ const NodeCapabilities = ({ data }: NodeProps) => {
   const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
 
   return (
-    <div className={classes.node}>
-      <div className={classes.nodeContent}>
+    <div style={styles.node}>
+      <div style={styles.nodeContent}>
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Last used attack patterns')}
         </Typography>
         {emptyFilled(usedAttackPatterns)}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        <Typography variant="h3" gutterBottom={true} sx={styles.label}>
           {t_i18n('Last used malwares')}
         </Typography>
         {emptyFilled(usedMalwares)}
-        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        <Typography variant="h3" gutterBottom={true} sx={styles.label}>
           {t_i18n('Last used tools and channels')}
         </Typography>
         {emptyFilled(usedToolsAndChannels)}
@@ -96,13 +99,13 @@ const NodeCapabilities = ({ data }: NodeProps) => {
         to={`${entityLink}/all?filters=${generatedFilters}`}
         variant="contained"
         size="small"
-        classes={{ root: classes.buttonExpand }}
+        sx={styles.buttonExpand}
         className="nodrag nopan"
       >
         {t_i18n('View all')}
       </Button>
       <Handle
-        className={classes.handle}
+        sx={styles.handle}
         type="target"
         position={Position.Right}
         isConnectable={false}
